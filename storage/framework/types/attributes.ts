@@ -165,12 +165,20 @@ export interface Attributes {
   zone: string
   weight_from: number
   weight_to: number
+  total_items: number
+  subtotal: number
+  total: number
   driver: string
   vehicle: string
   stops: number
   delivery_time: number
   total_distance: number
   last_active: Date | string
+  total_price: number
+  tax_rate: number
+  product_name: string
+  product_sku: string
+  product_image: string
   connection: string
   queue: string
   payload: string

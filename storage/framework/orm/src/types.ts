@@ -1,4 +1,6 @@
 import type { PersonalAccessTokensTable } from '../src/models/AccessToken'
+import type { CartsTable } from '../src/models/Cart'
+import type { CartItemsTable } from '../src/models/CartItem'
 import type { CategoriesTable } from '../src/models/Category'
 import type { CouponsTable } from '../src/models/Coupon'
 import type { CustomersTable } from '../src/models/Customer'
@@ -115,7 +117,9 @@ export interface Database {
   loyalty_rewards: LoyaltyRewardsTable
   shipping_methods: ShippingMethodsTable
   shipping_rates: ShippingRatesTable
+  carts: CartsTable
   delivery_routes: DeliveryRoutesTable
+  cart_items: CartItemsTable
   failed_jobs: FailedJobsTable
   payment_methods: PaymentMethodsTable
   payment_transactions: PaymentTransactionsTable

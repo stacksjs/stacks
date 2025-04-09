@@ -1,3 +1,5 @@
+import type { CartModel } from '../orm/src/models/Cart'
+import type { CartItemModel } from '../orm/src/models/CartItem'
 import type { CategoryModel } from '../orm/src/models/Category'
 import type { CouponModel } from '../orm/src/models/Coupon'
 import type { CustomerModel } from '../orm/src/models/Customer'
@@ -110,8 +112,14 @@ export interface ModelEvents {
   'shipping-rate:created': ShippingRateModel
   'shipping-rate:updated': ShippingRateModel
   'shipping-rate:deleted': ShippingRateModel
+  'cart:created': CartModel
+  'cart:updated': CartModel
+  'cart:deleted': CartModel
   'delivery-route:created': DeliveryRouteModel
   'delivery-route:updated': DeliveryRouteModel
   'delivery-route:deleted': DeliveryRouteModel
+  'cart-item:created': CartItemModel
+  'cart-item:updated': CartItemModel
+  'cart-item:deleted': CartItemModel
 
 }

@@ -652,7 +652,7 @@ export async function writeModelRequest(): Promise<void> {
 
   let importTypes = ``
   let importTypesString = ``
-  let typeString = `import { Request } from '../core/router/src/request'\nimport type { VineType, NumericField } from '@stacksjs/types'\n\n`
+  let typeString = `import { Request } from '../core/router/src/request'\nimport type { VineType } from '@stacksjs/types'\n\n`
 
   typeString += `interface ValidationField {
     rule: VineType
@@ -712,7 +712,7 @@ export async function writeModelRequest(): Promise<void> {
       }
     }
 
-    fieldStringType += ` get<K extends any>(element: string, defaultValue?: K extends NumericField ? number : K) => K extends NumericField ? number : K`
+    fieldStringType += ` get: <T>(element: string, defaultValue?: T) => T`
 
     const otherModelRelations = await fetchOtherModelRelations(modelName)
 

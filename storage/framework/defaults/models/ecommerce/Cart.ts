@@ -140,4 +140,4 @@ export default {
   dashboard: {
     highlight: true,
   },
-} satisfies Model 
+} satisfies Model

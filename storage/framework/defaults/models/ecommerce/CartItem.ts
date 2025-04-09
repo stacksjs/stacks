@@ -28,7 +28,7 @@ export default {
     observe: true,
   },
 
-  belongsTo: ['ShoppingCart', 'Product'],
+  belongsTo: ['Cart', 'ProductItem'],
 
   attributes: {
     quantity: {
@@ -145,4 +145,4 @@ export default {
   dashboard: {
     highlight: true,
   },
-} satisfies Model 
+} satisfies Model

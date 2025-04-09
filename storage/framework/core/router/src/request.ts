@@ -66,15 +66,8 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     this.headers = headerParams
   }
 
-  public get<K extends any>(element: string, defaultValue?: K extends NumericField ? number : K): K extends NumericField ? number : K {
-    const value = this.query[element]
-
-    if (numericFields.has(element as NumericField)) {
-      const numValue = value ? Number(value) : defaultValue
-      return (numValue || defaultValue) as K extends NumericField ? number : K
-    }
-
-    return (value || defaultValue) as any
+  public get<T>(element: string, defaultValue?: T): T {
+    return this.query[typeof element] || defaultValue
   }
 
   public all(): T {
@@ -118,15 +111,15 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     return this.headers.get(headerParam)
   }
 
-  public getParam<K extends string>(key: K): K extends NumericField ? number : K {
+  public getParam<K = string>(key: string): K {
     const value = this.params[key]
 
     if (numericFields.has(key as NumericField)) {
-      const numValue = value ? Number(value) : null
-      return numValue as K extends NumericField ? number : K
+      const numValue = Number(value)
+      return (isNaN(numValue) ? null : numValue) as K
     }
 
-    return (value || null) as K extends NumericField ? number : K
+    return value as K
   }
 
   public route(key: string): number | string | null {

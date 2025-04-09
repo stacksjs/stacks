@@ -1,5 +1,9 @@
 export { default as AccessToken, type AccessTokenJsonResponse, type AccessTokenUpdate, type NewAccessToken } from './models/AccessToken'
 
+export { default as Cart, type CartJsonResponse, type CartUpdate, type NewCart } from './models/Cart'
+
+export { default as CartItem, type CartItemJsonResponse, type CartItemUpdate, type NewCartItem } from './models/CartItem'
+
 export { default as Category, type CategoryJsonResponse, type CategoryUpdate, type NewCategory } from './models/Category'
 
 export { default as Coupon, type CouponJsonResponse, type CouponUpdate, type NewCoupon } from './models/Coupon'
