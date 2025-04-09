@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'description', 'price', 'category_id', 'is_available', 'inventory_count'],
-      searchable: ['name', 'description', 'category_id'],
-      sortable: ['price', 'created_at', 'updated_at', 'inventory_count', 'preparation_time'],
-      filterable: ['category_id', 'is_available', 'allergens'],
+      displayable: ['id', 'name', 'description', 'price', 'categoryId', 'isAvailable', 'inventoryCount'],
+      searchable: ['name', 'description', 'categoryId'],
+      sortable: ['price', 'createdAt', 'updatedAt', 'inventoryCount', 'preparationTime'],
+      filterable: ['categoryId', 'isAvailable', 'allergens'],
     },
 
     useSeeder: {
@@ -69,7 +69,7 @@ export default {
       factory: faker => Number.parseFloat(faker.commerce.price({ min: 0.01, max: 1000, dec: 2 })),
     },
 
-    image_url: {
+    imageUrl: {
       required: false,
       order: 4,
       fillable: true,
@@ -82,7 +82,7 @@ export default {
       factory: faker => faker.image.url(),
     },
 
-    is_available: {
+    isAvailable: {
       required: false,
       order: 5,
       fillable: true,
@@ -92,7 +92,7 @@ export default {
       factory: () => true,
     },
 
-    inventory_count: {
+    inventoryCount: {
       required: false,
       order: 6,
       fillable: true,
@@ -105,7 +105,7 @@ export default {
       factory: faker => faker.number.int({ min: 0, max: 100 }),
     },
 
-    preparation_time: {
+    preparationTime: {
       required: true,
       order: 8,
       fillable: true,
@@ -133,7 +133,7 @@ export default {
       },
     },
 
-    nutritional_info: {
+    nutritionalInfo: {
       required: false,
       order: 10,
       fillable: true,

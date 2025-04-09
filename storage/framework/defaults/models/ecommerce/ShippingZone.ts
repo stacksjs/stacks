@@ -11,9 +11,9 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'countries', 'regions', 'postal_codes', 'status'],
+      displayable: ['id', 'name', 'countries', 'regions', 'postalCodes', 'status'],
       searchable: ['name'],
-      sortable: ['name', 'created_at', 'updated_at'],
+      sortable: ['name', 'createdAt', 'updatedAt'],
       filterable: ['status'],
     },
 
@@ -79,7 +79,7 @@ export default {
       },
     },
 
-    postal_codes: {
+    postalCodes: {
       required: false,
       order: 5,
       fillable: true,

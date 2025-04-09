@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'cart_id', 'product_id', 'quantity', 'unit_price', 'total_price'],
-      searchable: ['id', 'cart_id', 'product_id'],
-      sortable: ['created_at', 'updated_at', 'quantity', 'unit_price'],
-      filterable: ['cart_id', 'product_id'],
+      displayable: ['id', 'cartId', 'productId', 'quantity', 'unitPrice', 'totalPrice'],
+      searchable: ['id', 'cartId', 'productId'],
+      sortable: ['createdAt', 'updatedAt', 'quantity', 'unitPrice'],
+      filterable: ['cartId', 'productId'],
     },
 
     useSeeder: {
@@ -41,7 +41,7 @@ export default {
       factory: faker => faker.number.int({ min: 1, max: 10 }),
     },
 
-    unit_price: {
+    unitPrice: {
       required: true,
       order: 2,
       fillable: true,
@@ -51,7 +51,7 @@ export default {
       factory: faker => Number.parseFloat(faker.commerce.price({ min: 1, max: 100, dec: 2 })),
     },
 
-    total_price: {
+    totalPrice: {
       required: true,
       order: 3,
       fillable: true,
@@ -61,7 +61,7 @@ export default {
       factory: faker => Number.parseFloat(faker.commerce.price({ min: 1, max: 1000, dec: 2 })),
     },
 
-    tax_rate: {
+    taxRate: {
       required: false,
       order: 4,
       fillable: true,
@@ -71,7 +71,7 @@ export default {
       factory: faker => faker.number.float({ min: 0, max: 20, fractionDigits: 2 }),
     },
 
-    tax_amount: {
+    taxAmount: {
       required: false,
       order: 5,
       fillable: true,
@@ -81,7 +81,7 @@ export default {
       factory: faker => Number.parseFloat(faker.commerce.price({ min: 0, max: 50, dec: 2 })),
     },
 
-    discount_percentage: {
+    discountPercentage: {
       required: false,
       order: 6,
       fillable: true,
@@ -91,7 +91,7 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.number.float({ min: 0, max: 50, fractionDigits: 2 }), { probability: 0.3 }),
     },
 
-    discount_amount: {
+    discountAmount: {
       required: false,
       order: 7,
       fillable: true,
@@ -101,7 +101,7 @@ export default {
       factory: faker => faker.helpers.maybe(() => Number.parseFloat(faker.commerce.price({ min: 0, max: 25, dec: 2 })), { probability: 0.3 }),
     },
 
-    product_name: {
+    productName: {
       required: true,
       order: 8,
       fillable: true,
@@ -111,7 +111,7 @@ export default {
       factory: faker => faker.commerce.productName(),
     },
 
-    product_sku: {
+    productSku: {
       required: false,
       order: 9,
       fillable: true,
@@ -121,7 +121,7 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.string.alphanumeric(10), { probability: 0.8 }),
     },
 
-    product_image: {
+    productImage: {
       required: false,
       order: 10,
       fillable: true,

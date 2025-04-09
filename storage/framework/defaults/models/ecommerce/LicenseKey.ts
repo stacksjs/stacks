@@ -11,9 +11,9 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'key', 'template', 'expiry_date', 'status'],
+      displayable: ['id', 'key', 'template', 'expiryDate', 'status'],
       searchable: ['key'],
-      sortable: ['template', 'expiry_date', 'status', 'created_at', 'updated_at'],
+      sortable: ['template', 'expiryDate', 'status', 'createdAt', 'updatedAt'],
       filterable: ['status', 'template'],
     },
 
@@ -57,7 +57,7 @@ export default {
       factory: faker => faker.helpers.arrayElement(['Standard License', 'Premium License', 'Enterprise License']),
     },
 
-    expiry_date: {
+    expiryDate: {
       required: true,
       order: 3,
       fillable: true,

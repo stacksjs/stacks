@@ -11,9 +11,9 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'customer_id', 'status', 'total_items', 'subtotal', 'total', 'expires_at'],
+      displayable: ['id', 'customer_id', 'status', 'totalItems', 'subtotal', 'total', 'expiresAt'],
       searchable: ['id', 'customer_id', 'status'],
-      sortable: ['created_at', 'updated_at', 'expires_at', 'total'],
+      sortable: ['created_at', 'updated_at', 'expiresAt', 'total'],
       filterable: ['status', 'customer_id'],
     },
 
@@ -42,7 +42,7 @@ export default {
       factory: faker => faker.helpers.arrayElement(['active', 'abandoned', 'converted', 'expired']),
     },
 
-    total_items: {
+    totalItems: {
       default: 0,
       order: 2,
       fillable: true,
@@ -62,7 +62,7 @@ export default {
       factory: faker => Number.parseFloat(faker.commerce.price({ min: 0, max: 1000, dec: 2 })),
     },
 
-    tax_amount: {
+    taxAmount: {
       default: 0,
       order: 4,
       fillable: true,
@@ -72,7 +72,7 @@ export default {
       factory: faker => Number.parseFloat(faker.commerce.price({ min: 0, max: 200, dec: 2 })),
     },
 
-    discount_amount: {
+    discountAmount: {
       default: 0,
       order: 5,
       fillable: true,
@@ -92,7 +92,7 @@ export default {
       factory: faker => Number.parseFloat(faker.commerce.price({ min: 0, max: 1200, dec: 2 })),
     },
 
-    expires_at: {
+    expiresAt: {
       required: true,
       order: 7,
       fillable: true,
@@ -126,7 +126,7 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.3 }),
     },
 
-    applied_coupon_id: {
+    appliedCouponId: {
       required: false,
       order: 10,
       fillable: true,

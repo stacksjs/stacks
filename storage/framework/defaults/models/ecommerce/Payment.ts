@@ -11,9 +11,9 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'order_id', 'customer_id', 'amount', 'method', 'status', 'date'],
-      searchable: ['order_id', 'customer_id', 'reference_number'],
-      sortable: ['amount', 'created_at'],
+      displayable: ['id', 'orderId', 'customerId', 'amount', 'method', 'status', 'date'],
+      searchable: ['orderId', 'customerId', 'referenceNumber'],
+      sortable: ['amount', 'createdAt'],
       filterable: ['method', 'status', 'date'],
     },
 
@@ -49,13 +49,13 @@ export default {
         rule: schema.string(),
       },
       factory: faker => faker.helpers.arrayElement([
-        'credit_card',
-        'debit_card',
+        'creditCard',
+        'debitCard',
         'paypal',
-        'apple_pay',
-        'google_pay',
-        'bank_transfer',
-        'gift_card',
+        'applePay',
+        'googlePay',
+        'bankTransfer',
+        'giftCard',
       ]),
     },
 
@@ -72,7 +72,7 @@ export default {
         'completed',
         'failed',
         'refunded',
-        'partially_refunded',
+        'partiallyRefunded',
       ]),
     },
 
@@ -86,7 +86,7 @@ export default {
       factory: faker => faker.helpers.arrayElement(['USD', 'EUR', 'GBP', 'CAD', 'AUD']),
     },
 
-    reference_number: {
+    referenceNumber: {
       required: false,
       order: 8,
       fillable: true,
@@ -96,7 +96,7 @@ export default {
       factory: faker => faker.string.alphanumeric(16).toUpperCase(),
     },
 
-    card_last_four: {
+    cardLastFour: {
       required: false,
       order: 9,
       fillable: true,
@@ -106,7 +106,7 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.finance.creditCardNumber('####'), { probability: 0.7 }),
     },
 
-    card_brand: {
+    cardBrand: {
       required: false,
       order: 10,
       fillable: true,
@@ -116,7 +116,7 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.helpers.arrayElement(['Visa', 'Mastercard', 'Amex', 'Discover']), { probability: 0.7 }),
     },
 
-    billing_email: {
+    billingEmail: {
       required: false,
       order: 11,
       fillable: true,
@@ -126,7 +126,7 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.internet.email(), { probability: 0.8 }),
     },
 
-    transaction_id: {
+    transactionId: {
       required: false,
       order: 12,
       unique: true,
@@ -137,17 +137,17 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.string.uuid(), { probability: 0.9 }),
     },
 
-    payment_provider: {
+    paymentProvider: {
       required: false,
       order: 13,
       fillable: true,
       validation: {
         rule: schema.string(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.helpers.arrayElement(['stripe', 'paypal', 'square', 'braintree', 'authorize_net']), { probability: 0.9 }),
+      factory: faker => faker.helpers.maybe(() => faker.helpers.arrayElement(['stripe', 'paypal', 'square', 'braintree', 'authorizeNet']), { probability: 0.9 }),
     },
 
-    refund_amount: {
+    refundAmount: {
       required: false,
       order: 14,
       fillable: true,

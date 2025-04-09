@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'email', 'phone', 'party_size', 'notification_preference', 'source', 'notes', 'status'],
+      displayable: ['id', 'name', 'email', 'phone', 'partySize', 'notificationPreference', 'source', 'notes', 'status'],
       searchable: ['name', 'email', 'phone', 'source'],
-      sortable: ['name', 'party_size', 'created_at', 'updated_at', 'status'],
-      filterable: ['notification_preference', 'source', 'status'],
+      sortable: ['name', 'partySize', 'createdAt', 'updatedAt', 'status'],
+      filterable: ['notificationPreference', 'source', 'status'],
     },
 
     useSeeder: {
@@ -81,7 +81,7 @@ export default {
       factory: faker => faker.number.int({ min: 1, max: 20 }),
     },
 
-    notification_preference: {
+    notificationPreference: {
       required: true,
       order: 5,
       fillable: true,
@@ -125,7 +125,7 @@ export default {
       factory: faker => faker.helpers.arrayElement(['waiting', 'purchased', 'notified', 'cancelled']),
     },
 
-    notified_at: {
+    notifiedAt: {
       required: false,
       order: 9,
       fillable: true,
@@ -134,7 +134,7 @@ export default {
       },
       factory: faker => faker.helpers.maybe(() => faker.date.future().getTime(), { probability: 0.7 }),
     },
-    purchased_at: {
+    purchasedAt: {
       required: false,
       order: 10,
       fillable: true,
@@ -143,7 +143,7 @@ export default {
       },
       factory: faker => faker.helpers.maybe(() => faker.date.future().getTime(), { probability: 0.7 }),
     },
-    cancelled_at: {
+    cancelledAt: {
       required: false,
       order: 11,
       fillable: true,

@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'product_id', 'size', 'color', 'price', 'is_available', 'inventory_count'],
-      searchable: ['name', 'size', 'color', 'product_id'],
-      sortable: ['price', 'created_at', 'updated_at', 'inventory_count'],
-      filterable: ['product_id', 'is_available', 'size', 'color'],
+      displayable: ['id', 'name', 'productId', 'size', 'color', 'price', 'isAvailable', 'inventoryCount'],
+      searchable: ['name', 'size', 'color', 'productId'],
+      sortable: ['price', 'createdAt', 'updatedAt', 'inventoryCount'],
+      filterable: ['productId', 'isAvailable', 'size', 'color'],
     },
 
     useSeeder: {
@@ -80,7 +80,7 @@ export default {
       factory: faker => Number.parseFloat(faker.commerce.price({ min: 0.01, max: 1000, dec: 2 })),
     },
 
-    image_url: {
+    imageUrl: {
       required: false,
       order: 6,
       fillable: true,
@@ -93,7 +93,7 @@ export default {
       factory: faker => faker.image.url(),
     },
 
-    is_available: {
+    isAvailable: {
       required: false,
       order: 7,
       fillable: true,
@@ -103,7 +103,7 @@ export default {
       factory: () => true,
     },
 
-    inventory_count: {
+    inventoryCount: {
       required: false,
       order: 8,
       fillable: true,
@@ -129,7 +129,7 @@ export default {
       factory: faker => faker.string.alphanumeric(10).toUpperCase(),
     },
 
-    custom_options: {
+    customOptions: {
       required: false,
       order: 10,
       fillable: true,

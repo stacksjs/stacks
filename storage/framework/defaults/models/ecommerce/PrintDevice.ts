@@ -11,9 +11,9 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'mac_address', 'location', 'terminal', 'status', 'last_ping', 'print_count'],
-      searchable: ['name', 'mac_address', 'location', 'terminal'],
-      sortable: ['last_ping', 'print_count'],
+      displayable: ['id', 'name', 'macAddress', 'location', 'terminal', 'status', 'lastPing', 'printCount'],
+      searchable: ['name', 'macAddress', 'location', 'terminal'],
+      sortable: ['lastPing', 'printCount'],
       filterable: ['status'],
     },
 
@@ -42,7 +42,7 @@ export default {
       factory: faker => faker.company.name(),
     },
 
-    mac_address: {
+    macAddress: {
       required: true,
       order: 2,
       fillable: true,
@@ -91,7 +91,7 @@ export default {
       factory: faker => faker.helpers.arrayElement(['online', 'offline', 'warning']),
     },
 
-    last_ping: {
+    lastPing: {
       required: true,
       order: 6,
       fillable: true,
@@ -104,7 +104,7 @@ export default {
       factory: faker => faker.date.recent().toISOString(),
     },
 
-    print_count: {
+    printCount: {
       required: true,
       order: 7,
       fillable: true,

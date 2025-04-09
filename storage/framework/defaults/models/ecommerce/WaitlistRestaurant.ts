@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'email', 'phone', 'party_size', 'check_in_time', 'table_preference', 'status', 'quoted_wait_time', 'actual_wait_time', 'queue_position'],
+      displayable: ['id', 'name', 'email', 'phone', 'partySize', 'checkInTime', 'tablePreference', 'status', 'quotedWaitTime', 'actualWaitTime', 'queuePosition'],
       searchable: ['name', 'email', 'phone'],
-      sortable: ['name', 'party_size', 'check_in_time', 'created_at', 'updated_at', 'status', 'queue_position'],
-      filterable: ['table_preference', 'status'],
+      sortable: ['name', 'partySize', 'checkInTime', 'createdAt', 'updatedAt', 'status', 'queuePosition'],
+      filterable: ['tablePreference', 'status'],
     },
 
     useSeeder: {
@@ -68,7 +68,7 @@ export default {
       factory: faker => faker.phone.number(),
     },
 
-    party_size: {
+    partySize: {
       required: true,
       order: 4,
       fillable: true,
@@ -81,7 +81,7 @@ export default {
       factory: faker => faker.number.int({ min: 1, max: 20 }),
     },
 
-    check_in_time: {
+    checkInTime: {
       required: true,
       order: 5,
       fillable: true,
@@ -91,7 +91,7 @@ export default {
       factory: faker => faker.date.future().getTime(),
     },
 
-    table_preference: {
+    tablePreference: {
       required: true,
       order: 6,
       fillable: true,
@@ -150,6 +150,7 @@ export default {
       },
       factory: faker => faker.helpers.maybe(() => faker.number.int({ min: 1, max: 50 }), { probability: 0.7 }),
     },
+    
     seated_at: {
       required: false,
       order: 11,
@@ -159,7 +160,8 @@ export default {
       },
       factory: faker => faker.helpers.maybe(() => faker.date.past().getTime(), { probability: 0.7 }),
     },
-    no_show_at: {
+
+    noShowAt: {
       required: false,
       order: 12,
       fillable: true,
@@ -168,7 +170,8 @@ export default {
       },
       factory: faker => faker.helpers.maybe(() => faker.date.past().getTime(), { probability: 0.7 }),
     },
-    cancelled_at: {
+
+    cancelledAt: {
       required: false,
       order: 13,
       fillable: true,

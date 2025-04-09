@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'product_id', 'rating', 'title', 'content', 'is_verified_purchase', 'is_approved'],
-      searchable: ['title', 'content', 'product_id'],
-      sortable: ['rating', 'created_at', 'updated_at', 'helpful_votes'],
-      filterable: ['product_id', 'rating', 'is_verified_purchase', 'is_approved'],
+      displayable: ['id', 'productId', 'rating', 'title', 'content', 'isVerifiedPurchase', 'isApproved'],
+      searchable: ['title', 'content', 'productId'],
+      sortable: ['rating', 'createdAt', 'updatedAt', 'helpfulVotes'],
+      filterable: ['productId', 'rating', 'isVerifiedPurchase', 'isApproved'],
     },
 
     useSeeder: {
@@ -71,7 +71,7 @@ export default {
       factory: faker => faker.lorem.paragraphs({ min: 1, max: 3 }),
     },
 
-    is_verified_purchase: {
+    isVerifiedPurchase: {
       required: false,
       order: 6,
       fillable: true,
@@ -81,7 +81,7 @@ export default {
       factory: faker => faker.datatype.boolean({ probability: 0.7 }),
     },
 
-    is_approved: {
+    isApproved: {
       required: false,
       order: 7,
       fillable: true,
@@ -91,7 +91,7 @@ export default {
       factory: faker => faker.datatype.boolean({ probability: 0.9 }),
     },
 
-    is_featured: {
+    isFeatured: {
       required: false,
       order: 8,
       fillable: true,
@@ -101,7 +101,7 @@ export default {
       factory: faker => faker.datatype.boolean({ probability: 0.9 }),
     },
 
-    helpful_votes: {
+    helpfulVotes: {
       required: false,
       order: 9,
       default: 0,
@@ -112,7 +112,7 @@ export default {
       factory: faker => faker.number.int({ min: 0, max: 200 }),
     },
 
-    unhelpful_votes: {
+    unhelpfulVotes: {
       required: false,
       order: 10,
       default: 0,
@@ -123,7 +123,7 @@ export default {
       factory: faker => faker.number.int({ min: 0, max: 50 }),
     },
 
-    purchase_date: {
+    purchaseDate: {
       required: false,
       order: 11,
       fillable: true,

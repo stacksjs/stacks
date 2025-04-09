@@ -13,7 +13,7 @@ export default {
     useSearch: {
       displayable: ['id', 'manufacturer', 'description', 'country', 'featured'],
       searchable: ['manufacturer', 'description', 'country'],
-      sortable: ['manufacturer', 'country', 'created_at', 'updated_at'],
+      sortable: ['manufacturer', 'country', 'createdAt', 'updatedAt'],
       filterable: ['country', 'featured'],
     },
 

@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'abbreviation', 'type', 'description', 'is_default'],
+      displayable: ['id', 'name', 'abbreviation', 'type', 'description', 'isDefault'],
       searchable: ['name', 'abbreviation', 'type', 'description'],
-      sortable: ['name', 'type', 'created_at', 'updated_at'],
-      filterable: ['type', 'is_default'],
+      sortable: ['name', 'type', 'createdAt', 'updatedAt'],
+      filterable: ['type', 'isDefault'],
     },
 
     useSeeder: {
@@ -92,7 +92,7 @@ export default {
       factory: faker => faker.lorem.sentence(),
     },
 
-    is_default: {
+    isDefault: {
       required: false,
       order: 5,
       fillable: true,

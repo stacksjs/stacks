@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'description', 'is_active', 'parent_category_id', 'display_order'],
+      displayable: ['id', 'name', 'description', 'isActive', 'parentCategoryId', 'displayOrder'],
       searchable: ['name', 'description'],
-      sortable: ['display_order', 'created_at', 'updated_at'],
-      filterable: ['parent_category_id', 'is_active'],
+      sortable: ['displayOrder', 'createdAt', 'updatedAt'],
+      filterable: ['parentCategoryId', 'isActive'],
     },
 
     useSeeder: {
@@ -54,7 +54,7 @@ export default {
       factory: faker => faker.commerce.productDescription(),
     },
 
-    image_url: {
+    imageUrl: {
       required: false,
       order: 3,
       fillable: true,
@@ -64,7 +64,7 @@ export default {
       factory: faker => faker.image.url(),
     },
 
-    is_active: {
+    isActive: {
       required: false,
       order: 4,
       fillable: true,
@@ -74,7 +74,7 @@ export default {
       factory: () => true,
     },
 
-    parent_category_id: {
+    parentCategoryId: {
       required: false,
       order: 5,
       fillable: true,
@@ -84,7 +84,7 @@ export default {
       factory: () => null, // Most categories won't have a parent
     },
 
-    display_order: {
+    displayOrder: {
       required: true,
       order: 6,
       fillable: true,

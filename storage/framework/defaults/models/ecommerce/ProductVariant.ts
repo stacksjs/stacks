@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'product_id', 'variant', 'type', 'description', 'options', 'status'],
+      displayable: ['id', 'productId', 'variant', 'type', 'description', 'options', 'status'],
       searchable: ['variant', 'type', 'description', 'options'],
-      sortable: ['created_at', 'updated_at', 'variant', 'type', 'status'],
-      filterable: ['product_id', 'type', 'status'],
+      sortable: ['createdAt', 'updatedAt', 'variant', 'type', 'status'],
+      filterable: ['productId', 'type', 'status'],
     },
 
     useSeeder: {
@@ -83,7 +83,7 @@ export default {
           configuration: ['Standard', 'Deluxe', 'Premium', 'Basic', 'Pro', 'Ultimate', 'Limited Edition'],
         }
 
-        const variantType = faker.helpers.arrayElement(Object.keys(optionTypes))
+        const variantType = faker.helpers.arrayElement(Object.keys(optionTypes)) as keyof typeof optionTypes
         const optionCount = faker.number.int({ min: 2, max: 5 })
         const selectedOptions = faker.helpers.arrayElements(optionTypes[variantType], optionCount)
 
