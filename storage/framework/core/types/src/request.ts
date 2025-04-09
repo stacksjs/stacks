@@ -41,7 +41,7 @@ export interface RequestInstance {
 
   extractParamsFromRoute: (routePattern: string, pathname: string) => void
 
-  getParam: <T>(key: string) => T
+  getParam: <K extends string>(key: K) => K extends NumericField ? number : K
 
   route: (key: string) => number | string | null
 
