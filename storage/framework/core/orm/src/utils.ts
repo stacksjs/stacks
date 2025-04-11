@@ -379,7 +379,7 @@ export async function getPivotTables(
     for (const belongsToManyRelation of belongsToManyArr) {
       let modelRelation: Model
 
-      const modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
+      const modelRelationPath = findUserModel(`${belongsToManyRelation}.ts`)
 
       const coreModelRelationPath = findCoreModel(`${belongsToManyRelation}.ts`)
 
