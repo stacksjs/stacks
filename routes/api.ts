@@ -229,6 +229,12 @@ route.group({ prefix: '/cms' }, async () => {
   route.get('/posts/{id}', 'Actions/Cms/PostShowOrmAction')
   route.patch('/posts/{id}', 'Actions/Cms/PostUpdateOrmAction')
   route.delete('/posts/{id}', 'Actions/Cms/PostDestroyOrmAction')
+
+  route.get('/post-categories', 'Actions/Cms/PostCategoryIndexOrmAction')
+  route.post('/post-categories', 'Actions/Cms/PostCategoryStoreOrmAction')
+  route.get('/post-categories/{id}', 'Actions/Cms/PostCategoryShowOrmAction')
+  route.patch('/post-categories/{id}', 'Actions/Cms/PostCategoryUpdateOrmAction')
+  route.delete('/post-categories/{id}', 'Actions/Cms/PostCategoryDestroyOrmAction')
 })
 
 route.group({ prefix: '/queues' }, async () => {
