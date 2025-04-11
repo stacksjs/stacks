@@ -80,7 +80,7 @@ export default {
       factory: faker => Number.parseFloat(faker.commerce.price({ min: 0.01, max: 1000, dec: 2 })),
     },
 
-    image_url: {
+    imageUrl: {
       required: false,
       order: 6,
       fillable: true,
@@ -93,7 +93,7 @@ export default {
       factory: faker => faker.image.url(),
     },
 
-    is_available: {
+    isAvailable: {
       required: false,
       order: 7,
       fillable: true,
@@ -103,7 +103,7 @@ export default {
       factory: () => true,
     },
 
-    inventory_count: {
+    inventoryCount: {
       required: false,
       order: 8,
       fillable: true,
@@ -129,7 +129,7 @@ export default {
       factory: faker => faker.string.alphanumeric(10).toUpperCase(),
     },
 
-    custom_options: {
+    customOptions: {
       required: false,
       order: 10,
       fillable: true,

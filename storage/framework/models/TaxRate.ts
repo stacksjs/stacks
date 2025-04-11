@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'rate', 'type', 'country', 'region', 'status', 'is_default'],
+      displayable: ['id', 'name', 'rate', 'type', 'country', 'region', 'status', 'isDefault'],
       searchable: ['name', 'country', 'region'],
-      sortable: ['name', 'rate', 'status', 'created_at', 'updated_at'],
-      filterable: ['status', 'is_default'],
+      sortable: ['name', 'rate', 'status', 'createdAt', 'updatedAt'],
+      filterable: ['status', 'isDefault'],
     },
 
     useSeeder: {
@@ -102,7 +102,7 @@ export default {
       factory: faker => faker.helpers.arrayElement(['active', 'inactive']),
     },
 
-    is_default: {
+    isDefault: {
       default: false,
       order: 7,
       fillable: true,

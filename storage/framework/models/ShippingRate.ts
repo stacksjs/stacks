@@ -11,9 +11,9 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'method', 'zone', 'weight_from', 'weight_to', 'rate'],
+      displayable: ['id', 'method', 'zone', 'weightFrom', 'weightTo', 'rate'],
       searchable: ['method', 'zone'],
-      sortable: ['method', 'zone', 'weight_from', 'weight_to', 'rate', 'created_at', 'updated_at'],
+      sortable: ['method', 'zone', 'weightFrom', 'weightTo', 'rate', 'createdAt', 'updatedAt'],
       filterable: ['method', 'zone'],
     },
 
@@ -55,7 +55,7 @@ export default {
       factory: faker => faker.location.country(),
     },
 
-    weight_from: {
+    weightFrom: {
       required: true,
       order: 4,
       fillable: true,
@@ -68,7 +68,7 @@ export default {
       factory: faker => faker.number.float({ min: 0, max: 10, fractionDigits: 2 }),
     },
 
-    weight_to: {
+    weightTo: {
       required: true,
       order: 5,
       fillable: true,

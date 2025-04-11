@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'code', 'initial_balance', 'current_balance', 'status', 'expiry_date', 'is_active'],
-      searchable: ['code', 'recipient_name', 'recipient_email', 'purchaser_id'],
-      sortable: ['created_at', 'expiry_date', 'initial_balance', 'current_balance'],
-      filterable: ['status', 'is_digital', 'is_reloadable', 'is_active'],
+      displayable: ['id', 'code', 'initialBalance', 'currentBalance', 'status', 'expiryDate', 'isActive'],
+      searchable: ['code', 'recipientName', 'recipientEmail', 'purchaserId'],
+      sortable: ['createdAt', 'expiryDate', 'initialBalance', 'currentBalance'],
+      filterable: ['status', 'isDigital', 'isReloadable', 'isActive'],
     },
 
     useSeeder: {
@@ -46,7 +46,7 @@ export default {
       factory: faker => faker.string.alphanumeric(12).toUpperCase(),
     },
 
-    initial_balance: {
+    initialBalance: {
       required: true,
       order: 2,
       fillable: true,
@@ -56,7 +56,7 @@ export default {
       factory: faker => Number.parseFloat(faker.commerce.price({ min: 10, max: 200, dec: 2 })),
     },
 
-    current_balance: {
+    currentBalance: {
       required: true,
       order: 3,
       fillable: true,
@@ -106,7 +106,7 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.internet.email(), { probability: 0.7 }),
     },
 
-    recipient_name: {
+    recipientName: {
       required: false,
       order: 8,
       fillable: true,
@@ -116,7 +116,7 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.person.fullName(), { probability: 0.6 }),
     },
 
-    personal_message: {
+    personalMessage: {
       required: false,
       order: 9,
       fillable: true,
@@ -126,7 +126,7 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.4 }),
     },
 
-    is_digital: {
+    isDigital: {
       required: false,
       order: 10,
       fillable: true,
@@ -136,7 +136,7 @@ export default {
       factory: faker => faker.datatype.boolean({ probability: 0.8 }), // 80% digital
     },
 
-    is_reloadable: {
+    isReloadable: {
       required: false,
       order: 11,
       fillable: true,
@@ -146,7 +146,7 @@ export default {
       factory: faker => faker.datatype.boolean({ probability: 0.3 }), // 30% reloadable
     },
 
-    is_active: {
+    isActive: {
       required: false,
       order: 12,
       fillable: true,
@@ -157,7 +157,7 @@ export default {
       factory: faker => faker.datatype.boolean({ probability: 0.9 }), // 90% active
     },
 
-    expiry_date: {
+    expiryDate: {
       required: false,
       order: 13,
       fillable: true,
@@ -172,7 +172,7 @@ export default {
       },
     },
 
-    last_used_date: {
+    lastUsedDate: {
       required: false,
       order: 14,
       fillable: true,
@@ -182,7 +182,7 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.date.recent().getTime(), { probability: 0.3 }),
     },
 
-    template_id: {
+    templateId: {
       required: false,
       order: 15,
       fillable: true,

@@ -56,7 +56,7 @@ export default {
       factory: faker => Number.parseFloat(faker.commerce.price({ min: 10, max: 200, dec: 2 })),
     },
 
-      currentBalance: {
+    currentBalance: {
       required: true,
       order: 3,
       fillable: true,

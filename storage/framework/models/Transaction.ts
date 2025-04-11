@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'order_id', 'amount', 'status', 'payment_method', 'created_at'],
-      searchable: ['id', 'order_id', 'status', 'payment_method', 'transaction_reference'],
-      sortable: ['created_at', 'amount'],
-      filterable: ['status', 'payment_method'],
+      displayable: ['id', 'orderId', 'amount', 'status', 'paymentMethod', 'createdAt'],
+      searchable: ['id', 'orderId', 'status', 'paymentMethod', 'transactionReference'],
+      sortable: ['createdAt', 'amount'],
+      filterable: ['status', 'paymentMethod'],
     },
 
     useSeeder: {
@@ -51,7 +51,7 @@ export default {
       factory: faker => faker.helpers.arrayElement(['PENDING', 'COMPLETED', 'FAILED', 'REFUNDED']),
     },
 
-    payment_method: {
+    paymentMethod: {
       required: true,
       order: 4,
       fillable: true,
@@ -61,7 +61,7 @@ export default {
       factory: faker => faker.helpers.arrayElement(['CREDIT_CARD', 'DEBIT_CARD', 'CASH', 'WALLET']),
     },
 
-    payment_details: {
+    paymentDetails: {
       required: false,
       order: 5,
       fillable: true,
@@ -96,7 +96,7 @@ export default {
       },
     },
 
-    transaction_reference: {
+    transactionReference: {
       required: false,
       order: 6,
       fillable: true,
@@ -106,7 +106,7 @@ export default {
       factory: faker => faker.string.alphanumeric(16).toUpperCase(),
     },
 
-    loyalty_points_earned: {
+    loyaltyPointsEarned: {
       required: false,
       order: 7,
       fillable: true,
@@ -116,7 +116,7 @@ export default {
       factory: faker => faker.number.int({ min: 0, max: 100 }),
     },
 
-    loyalty_points_redeemed: {
+    loyaltyPointsRedeemed: {
       required: false,
       order: 8,
       fillable: true,

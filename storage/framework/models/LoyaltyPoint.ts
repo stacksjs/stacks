@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'wallet_id', 'points', 'source', 'description', 'expiry_date', 'is_used'],
-      searchable: ['description', 'source', 'source_reference_id'],
-      sortable: ['created_at', 'points', 'expiry_date'],
-      filterable: ['wallet_id', 'source', 'is_used'],
+      displayable: ['id', 'walletId', 'points', 'source', 'description', 'expiryDate', 'isUsed'],
+      searchable: ['description', 'source', 'sourceReferenceId'],
+      sortable: ['createdAt', 'points', 'expiryDate'],
+      filterable: ['walletId', 'source', 'isUsed'],
     },
 
     useSeeder: {
@@ -29,7 +29,7 @@ export default {
   },
 
   attributes: {
-    wallet_id: {
+    walletId: {
       required: true,
       order: 1,
       fillable: true,
@@ -59,7 +59,7 @@ export default {
       factory: faker => faker.helpers.arrayElement(['ORDER', 'PROMOTION', 'REFERRAL', 'MANUAL']),
     },
 
-    source_reference_id: {
+    sourceReferenceId: {
       required: false,
       order: 4,
       fillable: true,
@@ -84,7 +84,7 @@ export default {
       ]),
     },
 
-    expiry_date: {
+    expiryDate: {
       required: false,
       order: 6,
       fillable: true,
@@ -94,7 +94,7 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.date.future().toISOString(), { probability: 0.7 }),
     },
 
-    is_used: {
+    isUsed: {
       required: false,
       order: 7,
       fillable: true,

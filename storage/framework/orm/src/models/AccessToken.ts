@@ -840,7 +840,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
   static wherePlainTextToken(value: string): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('plainTextToken', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('plain_text_token', '=', value)
 
     return instance
   }
@@ -856,7 +856,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
   static whereLastUsedAt(value: string): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('lastUsedAt', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('last_used_at', '=', value)
 
     return instance
   }
@@ -864,7 +864,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
   static whereExpiresAt(value: string): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('expiresAt', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('expires_at', '=', value)
 
     return instance
   }
@@ -872,7 +872,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
   static whereRevokedAt(value: string): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('revokedAt', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('revoked_at', '=', value)
 
     return instance
   }
@@ -880,7 +880,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
   static whereIpAddress(value: string): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('ipAddress', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('ip_address', '=', value)
 
     return instance
   }
@@ -888,7 +888,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
   static whereDeviceName(value: string): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('deviceName', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('device_name', '=', value)
 
     return instance
   }
@@ -896,7 +896,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
   static whereIsSingleUse(value: string): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('isSingleUse', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('is_single_use', '=', value)
 
     return instance
   }

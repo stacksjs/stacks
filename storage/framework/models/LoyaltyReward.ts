@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'points_required', 'reward_type', 'is_active'],
-      searchable: ['name', 'description', 'reward_type'],
-      sortable: ['points_required', 'created_at', 'updated_at'],
-      filterable: ['reward_type', 'is_active'],
+      displayable: ['id', 'name', 'pointsRequired', 'rewardType', 'isActive'],
+      searchable: ['name', 'description', 'rewardType'],
+      sortable: ['pointsRequired', 'createdAt', 'updatedAt'],
+      filterable: ['rewardType', 'isActive'],
     },
 
     useSeeder: {
@@ -56,7 +56,7 @@ export default {
       factory: faker => faker.lorem.paragraph(),
     },
 
-    points_required: {
+    pointsRequired: {
       required: true,
       order: 3,
       fillable: true,
@@ -66,7 +66,7 @@ export default {
       factory: faker => faker.number.int({ min: 100, max: 5000 }),
     },
 
-    reward_type: {
+    rewardType: {
       required: true,
       order: 4,
       fillable: true,
@@ -76,7 +76,7 @@ export default {
       factory: faker => faker.helpers.arrayElement(['DISCOUNT', 'FREE_ITEM', 'PRIORITY_SERVICE']),
     },
 
-    discount_percentage: {
+    discountPercentage: {
       required: false,
       order: 5,
       fillable: true,
@@ -86,7 +86,7 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.number.int({ min: 5, max: 50 }), { probability: 0.6 }),
     },
 
-    free_product_id: {
+    freeProductId: {
       required: false,
       order: 6,
       fillable: true,
@@ -96,7 +96,7 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.string.uuid(), { probability: 0.4 }),
     },
 
-    is_active: {
+    isActive: {
       required: false,
       order: 7,
       fillable: true,
@@ -106,7 +106,7 @@ export default {
       factory: faker => faker.datatype.boolean({ probability: 0.9 }), // 90% active
     },
 
-    expiry_days: {
+    expiryDays: {
       required: false,
       order: 8,
       fillable: true,
@@ -116,7 +116,7 @@ export default {
       factory: faker => faker.helpers.arrayElement([7, 14, 30, 60, 90]),
     },
 
-    image_url: {
+    imageUrl: {
       required: false,
       order: 9,
       fillable: true,

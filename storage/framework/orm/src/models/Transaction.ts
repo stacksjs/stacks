@@ -53,7 +53,7 @@ export type NewTransaction = Insertable<TransactionWrite>
 export type TransactionUpdate = Updateable<TransactionWrite>
 
 export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTable, TransactionJsonResponse> {
-  private readonly hidden: Array<keyof TransactionJsonResponse> = ['payment_details']
+  private readonly hidden: Array<keyof TransactionJsonResponse> = ['paymentDetails']
   private readonly fillable: Array<keyof TransactionJsonResponse> = ['amount', 'status', 'payment_method', 'payment_details', 'transaction_reference', 'loyalty_points_earned', 'loyalty_points_redeemed', 'uuid']
   private readonly guarded: Array<keyof TransactionJsonResponse> = []
   protected attributes = {} as TransactionJsonResponse

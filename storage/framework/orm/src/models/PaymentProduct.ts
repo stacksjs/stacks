@@ -814,7 +814,7 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
   static whereUnitPrice(value: string): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('unitPrice', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('unit_price', '=', value)
 
     return instance
   }
@@ -838,7 +838,7 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
   static whereProviderId(value: string): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('providerId', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('provider_id', '=', value)
 
     return instance
   }

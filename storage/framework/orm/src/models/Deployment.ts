@@ -801,7 +801,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
   static whereCommitSha(value: string): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('commitSha', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('commit_sha', '=', value)
 
     return instance
   }
@@ -809,7 +809,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
   static whereCommitMessage(value: string): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('commitMessage', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('commit_message', '=', value)
 
     return instance
   }
@@ -833,7 +833,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
   static whereExecutionTime(value: string): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('executionTime', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('execution_time', '=', value)
 
     return instance
   }
@@ -841,7 +841,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
   static whereDeployScript(value: string): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('deployScript', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('deploy_script', '=', value)
 
     return instance
   }
@@ -849,7 +849,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
   static whereTerminalOutput(value: string): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('terminalOutput', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('terminal_output', '=', value)
 
     return instance
   }

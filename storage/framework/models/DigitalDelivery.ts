@@ -11,9 +11,9 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'description', 'download_limit', 'expiry_days', 'status'],
+      displayable: ['id', 'name', 'description', 'downloadLimit', 'expiryDays', 'status'],
       searchable: ['name', 'description'],
-      sortable: ['name', 'download_limit', 'expiry_days', 'status', 'created_at', 'updated_at'],
+      sortable: ['name', 'downloadLimit', 'expiryDays', 'status', 'createdAt', 'updatedAt'],
       filterable: ['status'],
     },
 
@@ -52,7 +52,7 @@ export default {
       factory: faker => faker.commerce.productDescription(),
     },
 
-    download_limit: {
+    downloadLimit: {
       required: false,
       order: 4,
       fillable: true,
@@ -62,7 +62,7 @@ export default {
       factory: faker => faker.number.int({ min: 1, max: 100 }),
     },
 
-    expiry_days: {
+    expiryDays: {
       required: true,
       order: 5,
       fillable: true,
@@ -72,7 +72,7 @@ export default {
       factory: faker => faker.number.int({ min: 1, max: 365 }),
     },
 
-    requires_login: {
+    requiresLogin: {
       default: false,
       order: 6,
       fillable: true,
@@ -82,7 +82,7 @@ export default {
       factory: faker => faker.datatype.boolean(),
     },
 
-    automatic_delivery: {
+    automaticDelivery: {
       default: false,
       order: 7,
       fillable: true,

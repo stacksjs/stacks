@@ -825,7 +825,7 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
   static whereProviderId(value: string): PaymentTransactionModel {
     const instance = new PaymentTransactionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('providerId', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('provider_id', '=', value)
 
     return instance
   }

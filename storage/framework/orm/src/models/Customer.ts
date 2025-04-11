@@ -898,7 +898,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
   static whereTotalSpent(value: string): CustomerModel {
     const instance = new CustomerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('totalSpent', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('total_spent', '=', value)
 
     return instance
   }
@@ -906,7 +906,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
   static whereLastOrder(value: string): CustomerModel {
     const instance = new CustomerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('lastOrder', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('last_order', '=', value)
 
     return instance
   }

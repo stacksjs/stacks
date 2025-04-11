@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { remove } from '../customers/destroy'
+import { destroy } from '../customers/destroy'
 import { fetchById } from '../customers/fetch'
 import { store } from '../customers/store'
 import { update } from '../customers/update'
@@ -290,7 +290,7 @@ describe('Customer Module', () => {
       expect(fetchedCustomer).toBeDefined()
 
       // Delete the customer
-      const result = await remove(customerId)
+      const result = await destroy(customerId)
       expect(result).toBe(true)
 
       // Verify the customer no longer exists
@@ -304,7 +304,7 @@ describe('Customer Module', () => {
 
       // Attempt to delete and expect an error
       try {
-        await remove(nonExistentId)
+        await destroy(nonExistentId)
         // If we get here, the test should fail as we expect an error
         expect(true).toBe(false) // This line should not be reached
       }
@@ -350,10 +350,10 @@ describe('Customer Module', () => {
       expect(customerIds.length).toBe(3)
 
       // Import the bulkRemove function
-      const { bulkRemove } = await import('../customers/destroy')
+      const { bulkDestroy } = await import('../customers/destroy')
 
       // Delete the customers
-      const deletedCount = await bulkRemove(customerIds)
+      const deletedCount = await bulkDestroy(customerIds)
       expect(deletedCount).toBe(3)
 
       // Verify the customers no longer exist
@@ -365,10 +365,10 @@ describe('Customer Module', () => {
 
     it('should return 0 when trying to delete an empty array of customers', async () => {
       // Import the bulkRemove function
-      const { bulkRemove } = await import('../customers/destroy')
+      const { bulkDestroy } = await import('../customers/destroy')
 
       // Try to delete with an empty array
-      const deletedCount = await bulkRemove([])
+      const deletedCount = await bulkDestroy([])
       expect(deletedCount).toBe(0)
     })
   })

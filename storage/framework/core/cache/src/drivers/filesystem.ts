@@ -27,4 +27,4 @@ export class FileSystemCacheDriver extends BaseCacheDriver {
 }
 
 // Export a singleton instance with default config
-export const fileSystem = new FileSystemCacheDriver()
+export const fileSystem: FileSystemCacheDriver = new FileSystemCacheDriver()

@@ -150,7 +150,7 @@ export default {
       },
       factory: faker => faker.helpers.maybe(() => faker.number.int({ min: 1, max: 50 }), { probability: 0.7 }),
     },
-    
+
     seated_at: {
       required: false,
       order: 11,

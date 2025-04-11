@@ -11,9 +11,9 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'driver', 'vehicle', 'stops', 'delivery_time', 'total_distance', 'last_active'],
+      displayable: ['id', 'driver', 'vehicle', 'stops', 'deliveryTime', 'totalDistance', 'lastActive'],
       searchable: ['driver', 'vehicle'],
-      sortable: ['stops', 'delivery_time', 'total_distance', 'last_active', 'created_at', 'updated_at'],
+      sortable: ['stops', 'deliveryTime', 'totalDistance', 'lastActive', 'createdAt', 'updatedAt'],
       filterable: ['driver', 'vehicle'],
     },
 
@@ -59,7 +59,7 @@ export default {
       factory: faker => faker.number.int({ min: 1, max: 20 }),
     },
 
-    delivery_time: {
+    deliveryTime: {
       required: true,
       order: 4,
       fillable: true,
@@ -69,7 +69,7 @@ export default {
       factory: faker => faker.number.int({ min: 30, max: 480 }), // 30 minutes to 8 hours
     },
 
-    total_distance: {
+    totalDistance: {
       required: true,
       order: 5,
       fillable: true,
@@ -79,7 +79,7 @@ export default {
       factory: faker => faker.number.int({ min: 5, max: 200 }), // 5 to 200 miles
     },
 
-    last_active: {
+    lastActive: {
       required: false,
       order: 6,
       fillable: true,

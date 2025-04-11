@@ -799,7 +799,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
   static whereCompanyName(value: string): TeamModel {
     const instance = new TeamModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('companyName', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('company_name', '=', value)
 
     return instance
   }
@@ -815,7 +815,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
   static whereBillingEmail(value: string): TeamModel {
     const instance = new TeamModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('billingEmail', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('billing_email', '=', value)
 
     return instance
   }
@@ -847,7 +847,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
   static whereIsPersonal(value: string): TeamModel {
     const instance = new TeamModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('isPersonal', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('is_personal', '=', value)
 
     return instance
   }

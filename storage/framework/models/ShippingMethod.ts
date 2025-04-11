@@ -11,9 +11,9 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'description', 'base_rate', 'free_shipping', 'status'],
+      displayable: ['id', 'name', 'description', 'baseRate', 'freeShipping', 'status'],
       searchable: ['name', 'description'],
-      sortable: ['name', 'base_rate', 'created_at', 'updated_at'],
+      sortable: ['name', 'baseRate', 'createdAt', 'updatedAt'],
       filterable: ['status'],
     },
 
@@ -57,7 +57,7 @@ export default {
       factory: faker => faker.lorem.paragraph(),
     },
 
-    base_rate: {
+    baseRate: {
       required: true,
       order: 4,
       fillable: true,
@@ -70,7 +70,7 @@ export default {
       factory: faker => faker.number.int({ min: 500, max: 5000 }), // 5.00 to 50.00
     },
 
-    free_shipping: {
+    freeShipping: {
       order: 5,
       fillable: true,
       validation: {

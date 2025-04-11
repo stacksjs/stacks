@@ -881,7 +881,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
   static whereJobTitle(value: string): UserModel {
     const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('jobTitle', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('job_title', '=', value)
 
     return instance
   }

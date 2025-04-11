@@ -814,7 +814,7 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
   static whereLastFour(value: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('lastFour', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('last_four', '=', value)
 
     return instance
   }
@@ -830,7 +830,7 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
   static whereExpMonth(value: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('expMonth', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('exp_month', '=', value)
 
     return instance
   }
@@ -838,7 +838,7 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
   static whereExpYear(value: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('expYear', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('exp_year', '=', value)
 
     return instance
   }
@@ -846,7 +846,7 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
   static whereIsDefault(value: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('isDefault', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('is_default', '=', value)
 
     return instance
   }
@@ -854,7 +854,7 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
   static whereProviderId(value: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('providerId', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('provider_id', '=', value)
 
     return instance
   }

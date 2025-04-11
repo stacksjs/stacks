@@ -14,9 +14,9 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'phone', 'vehicle_number', 'license', 'status'],
-      searchable: ['name', 'phone', 'vehicle_number', 'license'],
-      sortable: ['name', 'status', 'created_at', 'updated_at'],
+      displayable: ['id', 'name', 'phone', 'vehicleNumber', 'license', 'status'],
+      searchable: ['name', 'phone', 'vehicleNumber', 'license'],
+      sortable: ['name', 'status', 'createdAt', 'updatedAt'],
       filterable: ['status'],
     },
 
@@ -58,7 +58,7 @@ export default {
       factory: faker => faker.phone.number(),
     },
 
-    vehicle_number: {
+    vehicleNumber: {
       required: true,
       order: 3,
       fillable: true,

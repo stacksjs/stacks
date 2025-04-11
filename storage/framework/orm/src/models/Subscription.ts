@@ -853,7 +853,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
   static whereProviderId(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('providerId', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('provider_id', '=', value)
 
     return instance
   }
@@ -861,7 +861,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
   static whereProviderStatus(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('providerStatus', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('provider_status', '=', value)
 
     return instance
   }
@@ -869,7 +869,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
   static whereUnitPrice(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('unitPrice', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('unit_price', '=', value)
 
     return instance
   }
@@ -877,7 +877,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
   static whereProviderType(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('providerType', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('provider_type', '=', value)
 
     return instance
   }
@@ -885,7 +885,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
   static whereProviderPriceId(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('providerPriceId', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('provider_price_id', '=', value)
 
     return instance
   }
@@ -901,7 +901,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
   static whereTrialEndsAt(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('trialEndsAt', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('trial_ends_at', '=', value)
 
     return instance
   }
@@ -909,7 +909,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
   static whereEndsAt(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('endsAt', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('ends_at', '=', value)
 
     return instance
   }
@@ -917,7 +917,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
   static whereLastUsedAt(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('lastUsedAt', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('last_used_at', '=', value)
 
     return instance
   }

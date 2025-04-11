@@ -404,7 +404,7 @@ export async function generateModelString(
           toSearchableObject(): Partial<${modelName}JsonResponse> {
               return {
                   ${searchAttrs
-                    .map(attr => `${attr}: this.${snakeCase(attr)}`)
+                    .map(attr => `${snakeCase(attr)}: this.${snakeCase(attr)}`)
                     .join(',\n')}
               }
           }
@@ -802,7 +802,7 @@ export async function generateModelString(
     whereStatements += `static where${pascalCase(attribute.field)}(value: string): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('${attribute.field}', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('${snakeCase(attribute.field)}', '=', value)
 
           return instance
         } \n\n`

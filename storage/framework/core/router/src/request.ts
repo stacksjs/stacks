@@ -116,7 +116,7 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
 
     if (numericFields.has(key as NumericField)) {
       const numValue = Number(value)
-      return (isNaN(numValue) ? 0 : numValue) as K extends NumericField ? number : string
+      return (Number.isNaN(numValue) ? 0 : numValue) as K extends NumericField ? number : string
     }
 
     return value as K extends NumericField ? number : string
