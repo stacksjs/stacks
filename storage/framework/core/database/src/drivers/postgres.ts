@@ -205,14 +205,23 @@ async function createTableMigration(modelPath: string) {
 
 async function createPivotTableMigration(model: Model, modelPath: string) {
   const pivotTables = await getPivotTables(model, modelPath)
+  const processedPivotTables = new Set<string>()
 
   if (!pivotTables.length)
     return
+
   for (const pivotTable of pivotTables) {
+    // Skip if this pivot table has already been processed
+    if (processedPivotTables.has(pivotTable.table)) {
+      continue
+    }
+
     const hasBeenMigrated = await checkPivotMigration(pivotTable.table)
 
-    if (hasBeenMigrated)
-      return
+    if (hasBeenMigrated) {
+      processedPivotTables.add(pivotTable.table)
+      continue
+    }
 
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`
     migrationContent += `import { sql } from '@stacksjs/database'\n\n`
@@ -220,18 +229,47 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
     migrationContent += `  await db.schema\n`
     migrationContent += `    .createTable('${pivotTable.table}')\n`
     migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
-    migrationContent += `    .addColumn('${pivotTable.firstForeignKey}', 'integer')\n`
-    migrationContent += `    .addColumn('${pivotTable.secondForeignKey}', 'integer')\n`
-    migrationContent += `    .addColumn('created_at', 'timestamp', col => col.defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+    migrationContent += `    .addColumn('${pivotTable.firstForeignKey}', 'integer', (col) => col.notNull())\n`
+    migrationContent += `    .addColumn('${pivotTable.secondForeignKey}', 'integer', (col) => col.notNull())\n`
+    migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+    migrationContent += `    .execute()\n\n`
+
+    // Add foreign key constraints
+    migrationContent += `  await db.schema\n`
+    migrationContent += `    .alterTable('${pivotTable.table}')\n`
+    migrationContent += `    .addForeignKeyConstraint('${pivotTable.table}_${pivotTable.firstForeignKey}_fkey', ['${pivotTable.firstForeignKey}'], '${pivotTable.table.split('_')[0]}', ['id'], (cb) => cb.onDelete('cascade'))\n`
+    migrationContent += `    .addForeignKeyConstraint('${pivotTable.table}_${pivotTable.secondForeignKey}_fkey', ['${pivotTable.secondForeignKey}'], '${pivotTable.table.split('_')[1]}', ['id'], (cb) => cb.onDelete('cascade'))\n`
+    migrationContent += `    .execute()\n\n`
+
+    // Add unique constraint to prevent duplicate relationships
+    migrationContent += `  await db.schema\n`
+    migrationContent += `    .alterTable('${pivotTable.table}')\n`
+    migrationContent += `    .addUniqueConstraint('${pivotTable.table}_unique', ['${pivotTable.firstForeignKey}', '${pivotTable.secondForeignKey}'])\n`
+    migrationContent += `    .execute()\n\n`
+
+    // Add indexes for better query performance
+    migrationContent += `  await db.schema\n`
+    migrationContent += `    .createIndex('${pivotTable.table}_${pivotTable.firstForeignKey}_idx')\n`
+    migrationContent += `    .on('${pivotTable.table}')\n`
+    migrationContent += `    .column('${pivotTable.firstForeignKey}')\n`
+    migrationContent += `    .execute()\n\n`
+
+    migrationContent += `  await db.schema\n`
+    migrationContent += `    .createIndex('${pivotTable.table}_${pivotTable.secondForeignKey}_idx')\n`
+    migrationContent += `    .on('${pivotTable.table}')\n`
+    migrationContent += `    .column('${pivotTable.secondForeignKey}')\n`
     migrationContent += `    .execute()\n`
-    migrationContent += `    }\n`
+
+    migrationContent += `}\n`
 
     const timestamp = new Date().getTime().toString()
     const migrationFileName = `${timestamp}-create-${pivotTable.table}-table.ts`
     const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-    // Assuming fs.writeFileSync is available or use an equivalent method
     Bun.write(migrationFilePath, migrationContent)
+
+    // Mark this pivot table as processed
+    processedPivotTables.add(pivotTable.table)
 
     log.success(`Created migration: ${italic(migrationFileName)}`)
   }
