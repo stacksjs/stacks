@@ -16,4 +16,4 @@ export default new Action({
 
     return response.json({ success: result })
   },
-}) 
+})

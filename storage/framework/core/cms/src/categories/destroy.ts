@@ -59,4 +59,4 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
 
     throw error
   }
-} 
+}

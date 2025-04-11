@@ -17,4 +17,4 @@ export {
 
 export {
   update,
-} from './update' 
+} from './update'

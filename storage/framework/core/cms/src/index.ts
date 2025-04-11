@@ -1,5 +1,5 @@
-import * as posts from './posts'
 import * as postCategories from './categories'
+import * as posts from './posts'
 
 type PostsModule = typeof posts
 type PostCategoriesModule = typeof postCategories
@@ -17,6 +17,6 @@ export const cms: CmsNamespace = {
 export default cms
 
 export {
-  posts,
   postCategories,
+  posts,
 }

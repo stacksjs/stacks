@@ -52,4 +52,4 @@ export async function update(id: number, request: PostCategoryRequestType): Prom
 
     throw error
   }
-} 
+}
