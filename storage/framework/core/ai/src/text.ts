@@ -1,6 +1,6 @@
 import { client, InvokeModelCommand } from './utils/client-bedrock-runtime'
 
-export interface AiOptions {
+interface AiOptions {
   maxTokenCount?: number
   temperature?: number
   topP?: number

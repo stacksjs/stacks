@@ -1,5 +1,5 @@
 import type { schema } from '@stacksjs/validation'
-import type { JobRequestType } from '../types/requests'
+import type { JobsRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -11,7 +11,7 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataJob {
+interface RequestDataJobs {
   id: number
   queue: string
   payload: string
@@ -21,7 +21,7 @@ interface RequestDataJob {
   created_at?: string
   updated_at?: string
 }
-export class JobRequest extends Request<RequestDataJob> implements JobRequestType {
+export class JobsRequest extends Request<RequestDataJobs> implements JobsRequestType {
   public id = 1
   public queue = ''
   public payload = ''
@@ -33,7 +33,7 @@ export class JobRequest extends Request<RequestDataJob> implements JobRequestTyp
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('Job', this.all())
+      await validateField('Jobs', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -41,4 +41,4 @@ export class JobRequest extends Request<RequestDataJob> implements JobRequestTyp
   }
 }
 
-export const jobRequest = new JobRequest()
+export const jobsRequest = new JobsRequest()

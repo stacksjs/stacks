@@ -194,14 +194,14 @@ export interface Attributes {
   views: number
   comments: number
   published_at: number
+  attempts: number
+  available_at: number
+  reserved_at: Date | string
   status_code: number
   duration_ms: number
   memory_usage: number
   user_agent: string
   error_message: string
-  attempts: number
-  available_at: number
-  reserved_at: Date | string
   message: string
   project: string
   stacktrace: string

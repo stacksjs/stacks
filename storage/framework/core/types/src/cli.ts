@@ -314,7 +314,7 @@ export type ExamplesOptions = {
 } & {
   [key in ExamplesBoolean]: boolean
 } & CliOptions
-export type TestOptions = CliOptions & {
+export type TestingOptions = CliOptions & {
   ui?: boolean
   feature?: boolean
   unit?: boolean

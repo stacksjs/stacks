@@ -1,4 +1,4 @@
-import type { CLI, TestOptions } from '@stacksjs/types'
+import type { CLI, TestingOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
@@ -25,7 +25,7 @@ export function test(buddy: CLI): void {
     // .option('--ui', descriptions.ui, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: true })
-    .action(async (options: TestOptions) => {
+    .action(async (options: TestingOptions) => {
       const perf = await intro('buddy test')
 
       if (options.feature && options.unit) {
@@ -105,7 +105,7 @@ export function test(buddy: CLI): void {
   buddy
     .command('test:unit', descriptions.unit)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: TestOptions) => {
+    .action(async (options: TestingOptions) => {
       const perf = await intro('buddy test:unit')
       const result = await runAction(Action.TestUnit, {
         ...options,
@@ -131,7 +131,7 @@ export function test(buddy: CLI): void {
   buddy
     .command('test:feature', descriptions.feature)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: TestOptions) => {
+    .action(async (options: TestingOptions) => {
       const perf = await intro('buddy test:feature')
       const result = await runAction(Action.TestFeature, {
         ...options,
@@ -157,7 +157,7 @@ export function test(buddy: CLI): void {
   buddy
     .command('test:ui', descriptions.command)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: TestOptions) => {
+    .action(async (options: TestingOptions) => {
       const perf = await intro('buddy test:ui')
       const result = await runAction(Action.TestUi, {
         ...options,
@@ -184,7 +184,7 @@ export function test(buddy: CLI): void {
     .command('test:types', descriptions.types)
     .alias('typecheck')
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: TestOptions) => {
+    .action(async (options: TestingOptions) => {
       const perf = await intro('buddy test:types')
       const result = await runAction(Action.Typecheck, {
         ...options,

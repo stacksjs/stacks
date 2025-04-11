@@ -11,7 +11,7 @@ import type { DriversTable } from '../src/models/Driver'
 import type { ErrorsTable } from '../src/models/Error'
 import type { FailedJobsTable } from '../src/models/FailedJob'
 import type { GiftCardsTable } from '../src/models/GiftCard'
-import type { JobsTable } from '../src/models/Job'
+import type { JobsTable } from '../src/models/Jobs'
 import type { LicenseKeysTable } from '../src/models/LicenseKey'
 import type { LogsTable } from '../src/models/Log'
 import type { LoyaltyPointsTable } from '../src/models/LoyaltyPoint'
@@ -122,9 +122,9 @@ export interface Database {
   failed_jobs: FailedJobsTable
   payment_methods: PaymentMethodsTable
   posts: PostsTable
+  jobs: JobsTable
   payment_transactions: PaymentTransactionsTable
   requests: RequestsTable
-  jobs: JobsTable
   logs: LogsTable
   subscriptions: SubscriptionsTable
   errors: ErrorsTable

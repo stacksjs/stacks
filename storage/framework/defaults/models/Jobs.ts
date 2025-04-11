@@ -2,7 +2,7 @@ import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
 export default {
-  name: 'Job',
+  name: 'Jobs',
   table: 'jobs',
   primaryKey: 'id',
   autoIncrement: true,
