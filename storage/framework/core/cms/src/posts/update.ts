@@ -17,6 +17,8 @@ export async function update(id: number, request: PostRequestType): Promise<Post
       title: request.get('title'),
       author: request.get('author'),
       category: request.get('category'),
+      poster: request.get('poster'),
+      body: request.get('body'),
       views: request.get<number>('views'),
       comments: request.get<number>('comments'),
       published_at: request.get<number>('publishedAt'),
