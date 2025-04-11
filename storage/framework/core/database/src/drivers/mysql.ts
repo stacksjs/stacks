@@ -253,15 +253,23 @@ async function createPasskeyMigration() {
 
 async function createPivotTableMigration(model: Model, modelPath: string): Promise<void> {
   const pivotTables = await getPivotTables(model, modelPath)
+  const processedPivotTables = new Set<string>()
 
   if (!pivotTables.length)
     return
 
   for (const pivotTable of pivotTables) {
+    // Skip if this pivot table has already been processed
+    if (processedPivotTables.has(pivotTable.table)) {
+      continue
+    }
+
     const hasBeenMigrated = await checkPivotMigration(pivotTable.table)
 
-    if (hasBeenMigrated)
-      return
+    if (hasBeenMigrated) {
+      processedPivotTables.add(pivotTable.table)
+      continue
+    }
 
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`
     migrationContent += `import { sql } from '@stacksjs/database'\n\n`
@@ -281,6 +289,9 @@ async function createPivotTableMigration(model: Model, modelPath: string): Promi
     const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
     Bun.write(migrationFilePath, migrationContent)
+
+    // Mark this pivot table as processed
+    processedPivotTables.add(pivotTable.table)
 
     log.success(`Created pivot migration: ${migrationFileName}`)
   }
