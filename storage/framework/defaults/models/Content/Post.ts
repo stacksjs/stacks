@@ -11,7 +11,7 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'title', 'author', 'category', 'views', 'comments', 'status'],
+      displayable: ['id', 'title', 'author', 'category', 'views', 'comments', 'status', 'poster'],
       searchable: ['title', 'author', 'category'],
       sortable: ['published_at', 'views', 'comments'],
       filterable: ['category', 'status'],
@@ -72,9 +72,22 @@ export default {
       factory: faker => faker.word.noun(),
     },
 
+    poster: {
+      required: false,
+      order: 4,
+      fillable: true,
+      validation: {
+        rule: schema.string().url(),
+        message: {
+          url: 'Poster must be a valid URL',
+        },
+      },
+      factory: faker => faker.image.url(),
+    },
+
     views: {
       required: true,
-      order: 4,
+      order: 5,
       fillable: true,
       default: 0,
       validation: {
@@ -88,7 +101,7 @@ export default {
 
     comments: {
       required: true,
-      order: 5,
+      order: 6,
       fillable: true,
       default: 0,
       validation: {
@@ -102,7 +115,7 @@ export default {
 
     publishedAt: {
       required: true,
-      order: 6,
+      order: 7,
       fillable: true,
       validation: {
         rule: schema.number().min(0),
@@ -115,7 +128,7 @@ export default {
 
     status: {
       required: true,
-      order: 7,
+      order: 8,
       fillable: true,
       default: 'draft',
       validation: {
