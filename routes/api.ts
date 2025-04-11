@@ -223,6 +223,14 @@ route.group({ prefix: '/commerce' }, async () => {
   route.delete('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteDestroyOrmAction')
 })
 
+route.group({ prefix: '/cms' }, async () => {
+  route.get('/posts', 'Actions/Cms/PostIndexOrmAction')
+  route.post('/posts', 'Actions/Cms/PostStoreOrmAction')
+  route.get('/posts/{id}', 'Actions/Cms/PostShowOrmAction')
+  route.patch('/posts/{id}', 'Actions/Cms/PostUpdateOrmAction')
+  route.delete('/posts/{id}', 'Actions/Cms/PostDestroyOrmAction')
+})
+
 route.group({ prefix: '/queues' }, async () => {
   route.get('/', 'Actions/Queue/FetchQueuesAction')
 })

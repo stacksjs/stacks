@@ -6,6 +6,16 @@ route.post('users', 'UserStoreOrmAction')
 
 route.get('users/{id}', 'UserShowOrmAction')
 
+route.get('post-categories', 'PostCategoryIndexOrmAction')
+
+route.post('post-categories', 'PostCategoryStoreOrmAction')
+
+route.get('post-categories/{id}', 'PostCategoryShowOrmAction')
+
+route.patch('post-categories/{id}', 'PostCategoryUpdateOrmAction')
+
+route.delete('post-categories/{id}', 'PostCategoryDestroyOrmAction')
+
 route.get('posts', 'PostIndexOrmAction')
 
 route.post('posts', 'PostStoreOrmAction')

@@ -24,6 +24,7 @@ import type { PaymentMethodsTable } from '../src/models/PaymentMethod'
 import type { PaymentProductsTable } from '../src/models/PaymentProduct'
 import type { PaymentTransactionsTable } from '../src/models/PaymentTransaction'
 import type { PostsTable } from '../src/models/Post'
+import type { PostCategoriesTable } from '../src/models/PostCategory'
 import type { PrintDevicesTable } from '../src/models/PrintDevice'
 import type { ProductsTable } from '../src/models/Product'
 import type { ProductItemsTable } from '../src/models/ProductItem'
@@ -121,6 +122,7 @@ export interface Database {
   cart_items: CartItemsTable
   failed_jobs: FailedJobsTable
   payment_methods: PaymentMethodsTable
+  post_categories: PostCategoriesTable
   posts: PostsTable
   payment_transactions: PaymentTransactionsTable
   requests: RequestsTable

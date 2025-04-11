@@ -187,6 +187,7 @@ export interface Attributes {
   brand: string
   exp_month: number
   exp_year: number
+  slug: string
   author: string
   category: string
   poster: string
