@@ -3,10 +3,10 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .createTable('post_category_posts')
+    .createTable('teams_users')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
-    .addColumn('post_id', 'integer')
-    .addColumn('post_category_id', 'integer')
+    .addColumn('team_id', 'integer')
+    .addColumn('user_id', 'integer')
     .addColumn('created_at', 'timestamp', col => col.defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .execute()
 }

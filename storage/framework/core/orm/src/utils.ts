@@ -50,15 +50,9 @@ export function getTableName(model: Model, modelPath: string): TableNames {
 }
 
 export function getPivotTableName(formattedModelName: string, modelRelationTable: string): string {
-  const models = [formattedModelName, modelRelationTable]
-
-  models.sort()
-
-  models[0] = singular(models[0] || '')
-
-  const pivotTableName = models.join('_')
-
-  return pivotTableName
+  const tables = [formattedModelName, modelRelationTable]
+  tables.sort()
+  return tables.join('_')
 }
 
 export function hasRelations(obj: any, key: string): boolean {
@@ -378,10 +372,17 @@ export async function getPivotTables(
     const belongsToManyArr = model.belongsToMany || []
     for (const belongsToManyRelation of belongsToManyArr) {
       let modelRelation: Model
+      let relationModelName: string
 
-      const modelRelationPath = findUserModel(`${belongsToManyRelation}.ts`)
+      if (typeof belongsToManyRelation === 'string') {
+        relationModelName = belongsToManyRelation
+      }
+      else {
+        relationModelName = belongsToManyRelation.model
+      }
 
-      const coreModelRelationPath = findCoreModel(`${belongsToManyRelation}.ts`)
+      const modelRelationPath = findUserModel(`${relationModelName}.ts`)
+      const coreModelRelationPath = findCoreModel(`${relationModelName}.ts`)
 
       if (fs.existsSync(modelRelationPath))
         modelRelation = (await import(modelRelationPath)).default as Model
@@ -407,7 +408,7 @@ export async function getPivotTables(
         table:
           (typeof belongsToManyRelation === 'object' && 'pivotTable' in belongsToManyRelation
             ? belongsToManyRelation.pivotTable
-            : undefined) ?? getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
+            : undefined) ?? getPivotTableName(tableName, modelRelationTableName),
         firstForeignKey,
         secondForeignKey,
       })
