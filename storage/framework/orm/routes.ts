@@ -16,6 +16,16 @@ route.patch('post-categories/{id}', 'PostCategoryUpdateOrmAction')
 
 route.delete('post-categories/{id}', 'PostCategoryDestroyOrmAction')
 
+route.get('comments', 'CommentIndexOrmAction')
+
+route.post('comments', 'CommentStoreOrmAction')
+
+route.get('comments/{id}', 'CommentShowOrmAction')
+
+route.patch('comments/{id}', 'CommentUpdateOrmAction')
+
+route.delete('comments/{id}', 'CommentDestroyOrmAction')
+
 route.get('posts', 'PostIndexOrmAction')
 
 route.post('posts', 'PostStoreOrmAction')

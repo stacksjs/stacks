@@ -6,6 +6,8 @@ export { default as CartItem, type CartItemJsonResponse, type CartItemUpdate, ty
 
 export { default as Category, type CategoryJsonResponse, type CategoryUpdate, type NewCategory } from './models/Category'
 
+export { default as Comment, type CommentJsonResponse, type CommentUpdate, type NewComment } from './models/Comment'
+
 export { default as Coupon, type CouponJsonResponse, type CouponUpdate, type NewCoupon } from './models/Coupon'
 
 export { default as Customer, type CustomerJsonResponse, type CustomerUpdate, type NewCustomer } from './models/Customer'

@@ -2,6 +2,7 @@ import type { PersonalAccessTokensTable } from '../src/models/AccessToken'
 import type { CartsTable } from '../src/models/Cart'
 import type { CartItemsTable } from '../src/models/CartItem'
 import type { CategoriesTable } from '../src/models/Category'
+import type { CommentsTable } from '../src/models/Comment'
 import type { CouponsTable } from '../src/models/Coupon'
 import type { CustomersTable } from '../src/models/Customer'
 import type { DeliveryRoutesTable } from '../src/models/DeliveryRoute'
@@ -48,25 +49,25 @@ import type { UsersTable } from '../src/models/User'
 import type { WaitlistProductsTable } from '../src/models/WaitlistProduct'
 import type { WaitlistRestaurantsTable } from '../src/models/WaitlistRestaurant'
 
-export interface TeamUsersTable {
+export interface TeamsUsersTable {
   id?: number
   team_id: number
   user_id: number
 }
 
-export interface TeamUsersTable {
+export interface TeamsUsersTable {
   id?: number
   user_id: number
   team_id: number
 }
 
-export interface PostcategoryPostsTable {
+export interface PostCategoriesPostsTable {
   id?: number
   post_category_id: number
   post_id: number
 }
 
-export interface PostCategoryPostsTable {
+export interface PostCategoriesPostsTable {
   id?: number
   post_id: number
   post_category_id: number
@@ -95,7 +96,7 @@ export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
   personal_access_tokens: PersonalAccessTokensTable
-  team_users: PostCategoryPostsTable
+  teams_users: PostCategoriesPostsTable
   teams: TeamsTable
   subscribers: SubscribersTable
   deployments: DeploymentsTable
@@ -134,9 +135,9 @@ export interface Database {
   cart_items: CartItemsTable
   failed_jobs: FailedJobsTable
   payment_methods: PaymentMethodsTable
-  postcategory_posts: PostCategoryPostsTable
+  post_categories_posts: PostCategoriesPostsTable
   post_categories: PostCategoriesTable
-  post_category_posts: PostCategoryPostsTable
+  comments: CommentsTable
   posts: PostsTable
   payment_transactions: PaymentTransactionsTable
   requests: RequestsTable

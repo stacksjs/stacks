@@ -188,10 +188,12 @@ export interface Attributes {
   exp_month: number
   exp_year: number
   slug: string
+  body: string
+  approved_at: number
+  rejected_at: number
   author: string
   category: string
   poster: string
-  body: string
   views: number
   comments: number
   published_at: number

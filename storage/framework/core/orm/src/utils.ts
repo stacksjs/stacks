@@ -392,7 +392,6 @@ export async function getPivotTables(
       const modelRelationTableName = getTableName(modelRelation, modelRelationPath)
       const modelName = getModelName(model, modelPath)
       const tableName = getTableName(model, modelPath)
-      const formattedModelName = modelName.toLowerCase()
 
       const firstForeignKey
         = typeof belongsToManyRelation === 'object' && 'firstForeignKey' in belongsToManyRelation
