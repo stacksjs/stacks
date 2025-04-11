@@ -12,7 +12,7 @@ export default {
     useTimestamps: true,
     useSearch: {
       displayable: ['id', 'title', 'author', 'category', 'views', 'comments', 'status', 'poster'],
-      searchable: ['title', 'author', 'category'],
+      searchable: ['title', 'author', 'category', 'body'],
       sortable: ['published_at', 'views', 'comments'],
       filterable: ['category', 'status'],
     },
@@ -85,9 +85,22 @@ export default {
       factory: faker => faker.image.url(),
     },
 
-    views: {
+    body: {
       required: true,
       order: 5,
+      fillable: true,
+      validation: {
+        rule: schema.string().minLength(10),
+        message: {
+          minLength: 'Post body must have a minimum of 10 characters',
+        },
+      },
+      factory: faker => faker.lorem.paragraphs(3),
+    },
+
+    views: {
+      required: true,
+      order: 6,
       fillable: true,
       default: 0,
       validation: {
@@ -101,7 +114,7 @@ export default {
 
     comments: {
       required: true,
-      order: 6,
+      order: 7,
       fillable: true,
       default: 0,
       validation: {
@@ -115,7 +128,7 @@ export default {
 
     publishedAt: {
       required: true,
-      order: 7,
+      order: 8,
       fillable: true,
       validation: {
         rule: schema.number().min(0),
@@ -128,7 +141,7 @@ export default {
 
     status: {
       required: true,
-      order: 8,
+      order: 9,
       fillable: true,
       default: 'draft',
       validation: {

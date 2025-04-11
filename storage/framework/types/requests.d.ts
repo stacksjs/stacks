@@ -1241,6 +1241,8 @@ interface RequestDataPost {
   title: string
   author: string
   category: string
+  poster: string
+  body: string
   views: number
   comments: number
   published_at: number
@@ -1257,6 +1259,8 @@ export interface PostRequestType extends Request {
   title: string
   author: string
   category: string
+  poster: string
+  body: string
   views: number
   comments: number
   published_at: number

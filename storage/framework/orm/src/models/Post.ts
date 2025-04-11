@@ -14,6 +14,8 @@ export interface PostsTable {
   title: string
   author: string
   category: string
+  poster?: string
+  body: string
   views: number
   comments: number
   published_at: number
@@ -53,7 +55,7 @@ export type PostUpdate = Updateable<PostWrite>
 
 export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
-  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'author', 'category', 'views', 'comments', 'published_at', 'status', 'uuid', 'user_id']
+  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'author', 'category', 'poster', 'body', 'views', 'comments', 'published_at', 'status', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
   protected attributes = {} as PostJsonResponse
   protected originalAttributes = {} as PostJsonResponse
@@ -206,6 +208,14 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return this.attributes.category
   }
 
+  get poster(): string | undefined {
+    return this.attributes.poster
+  }
+
+  get body(): string {
+    return this.attributes.body
+  }
+
   get views(): number {
     return this.attributes.views
   }
@@ -244,6 +254,14 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
   set category(value: string) {
     this.attributes.category = value
+  }
+
+  set poster(value: string) {
+    this.attributes.poster = value
+  }
+
+  set body(value: string) {
+    this.attributes.body = value
   }
 
   set views(value: number) {
@@ -822,6 +840,22 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance
   }
 
+  static wherePoster(value: string): PostModel {
+    const instance = new PostModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('poster', '=', value)
+
+    return instance
+  }
+
+  static whereBody(value: string): PostModel {
+    const instance = new PostModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('body', '=', value)
+
+    return instance
+  }
+
   static whereViews(value: string): PostModel {
     const instance = new PostModel(undefined)
 
@@ -883,6 +917,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       views: this.views,
       comments: this.comments,
       status: this.status,
+      poster: this.poster,
     }
   }
 
@@ -907,6 +942,8 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       title: this.title,
       author: this.author,
       category: this.category,
+      poster: this.poster,
+      body: this.body,
       views: this.views,
       comments: this.comments,
       published_at: this.published_at,
@@ -1000,6 +1037,20 @@ export async function whereAuthor(value: string): Promise<PostModel[]> {
 
 export async function whereCategory(value: string): Promise<PostModel[]> {
   const query = DB.instance.selectFrom('posts').where('category', '=', value)
+  const results: PostJsonResponse = await query.execute()
+
+  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+}
+
+export async function wherePoster(value: string): Promise<PostModel[]> {
+  const query = DB.instance.selectFrom('posts').where('poster', '=', value)
+  const results: PostJsonResponse = await query.execute()
+
+  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+}
+
+export async function whereBody(value: string): Promise<PostModel[]> {
+  const query = DB.instance.selectFrom('posts').where('body', '=', value)
   const results: PostJsonResponse = await query.execute()
 
   return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))

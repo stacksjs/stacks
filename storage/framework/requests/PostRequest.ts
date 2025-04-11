@@ -16,6 +16,8 @@ interface RequestDataPost {
   title: string
   author: string
   category: string
+  poster: string
+  body: string
   views: number
   comments: number
   published_at: number
@@ -29,6 +31,8 @@ export class PostRequest extends Request<RequestDataPost> implements PostRequest
   public title = ''
   public author = ''
   public category = ''
+  public poster = ''
+  public body = ''
   public views = 0
   public comments = 0
   public published_at = 0

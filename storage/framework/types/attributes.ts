@@ -189,6 +189,8 @@ export interface Attributes {
   exp_year: number
   author: string
   category: string
+  poster: string
+  body: string
   views: number
   comments: number
   published_at: number

@@ -51,7 +51,7 @@ export async function update(id: number, request: PostRequestType): Promise<Post
     // Handle specific errors
     if (error instanceof Error) {
       // Re-throw the error with a more user-friendly message
-      throw new Error(`Failed to update post: ${error.message}`)
+      throw new TypeError(`Failed to update post: ${error.message}`)
     }
 
     throw error
