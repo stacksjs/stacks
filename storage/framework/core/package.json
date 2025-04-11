@@ -100,6 +100,14 @@
       "types": "./collections/dist/index.d.ts",
       "import": "./collections/dist/index.js"
     },
+    "./cms": {
+      "types": "./cms/dist/index.d.ts",
+      "import": "./cms/dist/index.js"
+    },
+    "./commerce": {
+      "types": "./commerce/dist/index.d.ts",
+      "import": "./commerce/dist/index.js"
+    },
     "./config": {
       "types": "./config/dist/index.d.ts",
       "import": "./config/dist/index.js"

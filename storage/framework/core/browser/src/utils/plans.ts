@@ -1,4 +1,4 @@
-import type { SaasOption } from "@stacksjs/types";
+import type { SaasOption } from '@stacksjs/types'
 
 export const saas: SaasOption = {
   plans: [

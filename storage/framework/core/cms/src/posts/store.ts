@@ -44,4 +44,4 @@ export async function store(request: PostRequestType): Promise<PostJsonResponse>
 
     throw error
   }
-} 
+}
