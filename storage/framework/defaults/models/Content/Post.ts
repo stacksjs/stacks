@@ -1,0 +1,130 @@
+import type { Model } from '@stacksjs/types'
+import { schema } from '@stacksjs/validation'
+
+export default {
+  name: 'Post',
+  table: 'posts',
+  primaryKey: 'id',
+  autoIncrement: true,
+
+  traits: {
+    useUuid: true,
+    useTimestamps: true,
+    useSearch: {
+      displayable: ['id', 'title', 'author', 'category', 'views', 'comments', 'status'],
+      searchable: ['title', 'author', 'category'],
+      sortable: ['published_at', 'views', 'comments'],
+      filterable: ['category', 'status'],
+    },
+
+    useSeeder: {
+      count: 20,
+    },
+
+    useApi: {
+      uri: 'posts',
+      routes: ['index', 'store', 'show', 'update', 'destroy'],
+    },
+  },
+
+  belongsTo: ['User'],
+
+  attributes: {
+    title: {
+      required: true,
+      order: 1,
+      fillable: true,
+      validation: {
+        rule: schema.string().minLength(3).maxLength(255),
+        message: {
+          minLength: 'Title must have a minimum of 3 characters',
+          maxLength: 'Title must have a maximum of 255 characters',
+        },
+      },
+      factory: faker => faker.lorem.sentence(),
+    },
+
+    author: {
+      required: true,
+      order: 2,
+      fillable: true,
+      validation: {
+        rule: schema.string().minLength(3).maxLength(255),
+        message: {
+          minLength: 'Author name must have a minimum of 3 characters',
+          maxLength: 'Author name must have a maximum of 255 characters',
+        },
+      },
+      factory: faker => faker.person.fullName(),
+    },
+
+    category: {
+      required: true,
+      order: 3,
+      fillable: true,
+      validation: {
+        rule: schema.string().minLength(2).maxLength(100),
+        message: {
+          minLength: 'Category must have a minimum of 2 characters',
+          maxLength: 'Category must have a maximum of 100 characters',
+        },
+      },
+      factory: faker => faker.word.noun(),
+    },
+
+    views: {
+      required: true,
+      order: 4,
+      fillable: true,
+      default: 0,
+      validation: {
+        rule: schema.number().min(0),
+        message: {
+          min: 'Views count cannot be negative',
+        },
+      },
+      factory: faker => faker.number.int({ min: 0, max: 1000 }),
+    },
+
+    comments: {
+      required: true,
+      order: 5,
+      fillable: true,
+      default: 0,
+      validation: {
+        rule: schema.number().min(0),
+        message: {
+          min: 'Comments count cannot be negative',
+        },
+      },
+      factory: faker => faker.number.int({ min: 0, max: 100 }),
+    },
+
+    publishedAt: {
+      required: true,
+      order: 6,
+      fillable: true,
+      validation: {
+        rule: schema.number().min(0),
+        message: {
+          min: 'Published timestamp cannot be negative',
+        },
+      },
+      factory: faker => faker.date.past().getTime(),
+    },
+
+    status: {
+      required: true,
+      order: 7,
+      fillable: true,
+      default: 'draft',
+      validation: {
+        rule: schema.enum(['published', 'draft', 'archived']),
+        message: {
+          oneOf: 'Status must be either published, draft, or archived',
+        },
+      },
+      factory: faker => faker.helpers.arrayElement(['published', 'draft', 'archived']),
+    },
+  },
+} satisfies Model

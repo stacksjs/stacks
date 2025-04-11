@@ -1,6 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { UserModel } from './User'
+import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
@@ -11,7 +12,13 @@ export interface PostsTable {
   id: Generated<number>
   user_id: number
   title: string
-  body: string
+  author: string
+  category: string
+  views: number
+  comments: number
+  published_at: number
+  status: string | string[]
+  uuid?: string
 
   created_at?: string
 
@@ -46,7 +53,7 @@ export type PostUpdate = Updateable<PostWrite>
 
 export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
-  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'body', 'uuid', 'user_id']
+  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'author', 'category', 'views', 'comments', 'published_at', 'status', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
   protected attributes = {} as PostJsonResponse
   protected originalAttributes = {} as PostJsonResponse
@@ -183,12 +190,36 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return this.attributes.id
   }
 
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
+
   get title(): string {
     return this.attributes.title
   }
 
-  get body(): string {
-    return this.attributes.body
+  get author(): string {
+    return this.attributes.author
+  }
+
+  get category(): string {
+    return this.attributes.category
+  }
+
+  get views(): number {
+    return this.attributes.views
+  }
+
+  get comments(): number {
+    return this.attributes.comments
+  }
+
+  get published_at(): number {
+    return this.attributes.published_at
+  }
+
+  get status(): string | string[] {
+    return this.attributes.status
   }
 
   get created_at(): string | undefined {
@@ -199,12 +230,36 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return this.attributes.updated_at
   }
 
+  set uuid(value: string) {
+    this.attributes.uuid = value
+  }
+
   set title(value: string) {
     this.attributes.title = value
   }
 
-  set body(value: string) {
-    this.attributes.body = value
+  set author(value: string) {
+    this.attributes.author = value
+  }
+
+  set category(value: string) {
+    this.attributes.category = value
+  }
+
+  set views(value: number) {
+    this.attributes.views = value
+  }
+
+  set comments(value: number) {
+    this.attributes.comments = value
+  }
+
+  set published_at(value: number) {
+    this.attributes.published_at = value
+  }
+
+  set status(value: string | string[]) {
+    this.attributes.status = value
   }
 
   set updated_at(value: string) {
@@ -510,6 +565,8 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
     await this.mapCustomSetters(filteredValues)
 
+    filteredValues.uuid = randomUUIDv7()
+
     const result = await DB.instance.insertInto('posts')
       .values(filteredValues)
       .executeTakeFirst()
@@ -695,6 +752,8 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
         ),
       ) as NewPost
 
+      filteredValues.uuid = randomUUIDv7()
+
       return filteredValues
     })
 
@@ -747,10 +806,50 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance
   }
 
-  static whereBody(value: string): PostModel {
+  static whereAuthor(value: string): PostModel {
     const instance = new PostModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('body', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('author', '=', value)
+
+    return instance
+  }
+
+  static whereCategory(value: string): PostModel {
+    const instance = new PostModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('category', '=', value)
+
+    return instance
+  }
+
+  static whereViews(value: string): PostModel {
+    const instance = new PostModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('views', '=', value)
+
+    return instance
+  }
+
+  static whereComments(value: string): PostModel {
+    const instance = new PostModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('comments', '=', value)
+
+    return instance
+  }
+
+  static wherePublishedAt(value: string): PostModel {
+    const instance = new PostModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('published_at', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string): PostModel {
+    const instance = new PostModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
     return instance
   }
@@ -775,6 +874,18 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return model
   }
 
+  toSearchableObject(): Partial<PostJsonResponse> {
+    return {
+      id: this.id,
+      title: this.title,
+      author: this.author,
+      category: this.category,
+      views: this.views,
+      comments: this.comments,
+      status: this.status,
+    }
+  }
+
   static distinct(column: keyof PostJsonResponse): PostModel {
     const instance = new PostModel(undefined)
 
@@ -790,9 +901,16 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
   toJSON(): PostJsonResponse {
     const output = {
 
+      uuid: this.uuid,
+
       id: this.id,
       title: this.title,
-      body: this.body,
+      author: this.author,
+      category: this.category,
+      views: this.views,
+      comments: this.comments,
+      published_at: this.published_at,
+      status: this.status,
 
       created_at: this.created_at,
 
@@ -873,8 +991,43 @@ export async function whereTitle(value: string): Promise<PostModel[]> {
   return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
 }
 
-export async function whereBody(value: string): Promise<PostModel[]> {
-  const query = DB.instance.selectFrom('posts').where('body', '=', value)
+export async function whereAuthor(value: string): Promise<PostModel[]> {
+  const query = DB.instance.selectFrom('posts').where('author', '=', value)
+  const results: PostJsonResponse = await query.execute()
+
+  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+}
+
+export async function whereCategory(value: string): Promise<PostModel[]> {
+  const query = DB.instance.selectFrom('posts').where('category', '=', value)
+  const results: PostJsonResponse = await query.execute()
+
+  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+}
+
+export async function whereViews(value: number): Promise<PostModel[]> {
+  const query = DB.instance.selectFrom('posts').where('views', '=', value)
+  const results: PostJsonResponse = await query.execute()
+
+  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+}
+
+export async function whereComments(value: number): Promise<PostModel[]> {
+  const query = DB.instance.selectFrom('posts').where('comments', '=', value)
+  const results: PostJsonResponse = await query.execute()
+
+  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+}
+
+export async function wherePublishedAt(value: number): Promise<PostModel[]> {
+  const query = DB.instance.selectFrom('posts').where('published_at', '=', value)
+  const results: PostJsonResponse = await query.execute()
+
+  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+}
+
+export async function whereStatus(value: string | string[]): Promise<PostModel[]> {
+  const query = DB.instance.selectFrom('posts').where('status', '=', value)
   const results: PostJsonResponse = await query.execute()
 
   return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))

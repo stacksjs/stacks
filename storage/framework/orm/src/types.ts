@@ -88,7 +88,6 @@ export interface Database {
   deployments: DeploymentsTable
   releases: ReleasesTable
   users: UsersTable
-  posts: PostsTable
   payment_products: PaymentProductsTable
   print_devices: PrintDevicesTable
   categories: CategoriesTable
@@ -122,6 +121,7 @@ export interface Database {
   cart_items: CartItemsTable
   failed_jobs: FailedJobsTable
   payment_methods: PaymentMethodsTable
+  posts: PostsTable
   payment_transactions: PaymentTransactionsTable
   requests: RequestsTable
   jobs: JobsTable

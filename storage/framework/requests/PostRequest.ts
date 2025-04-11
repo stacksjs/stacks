@@ -14,7 +14,12 @@ interface CustomAttributes {
 interface RequestDataPost {
   id: number
   title: string
-  body: string
+  author: string
+  category: string
+  views: number
+  comments: number
+  published_at: number
+  status: string[] | string
   user_id: number
   created_at?: string
   updated_at?: string
@@ -22,11 +27,16 @@ interface RequestDataPost {
 export class PostRequest extends Request<RequestDataPost> implements PostRequestType {
   public id = 1
   public title = ''
-  public body = ''
+  public author = ''
+  public category = ''
+  public views = 0
+  public comments = 0
+  public published_at = 0
+  public status = []
   public user_id = 0
   public created_at = ''
   public updated_at = ''
-
+  public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
       await validateField('Post', this.all())

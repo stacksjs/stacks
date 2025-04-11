@@ -119,14 +119,14 @@ export const db: Kysely<Database> = new Kysely<Database>({
       return
 
     if (event.level === 'error') {
-      console.error('Query failed : ', {
+      log.error('Query failed : ', {
         durationMs: event.queryDurationMillis,
         error: event.error,
         sql: event.query.sql,
       })
     }
-    else { // `'query'`
-      console.log('Query executed : ', {
+    else {
+      log.info('Query executed : ', {
         durationMs: event.queryDurationMillis,
         sql: event.query.sql,
       })

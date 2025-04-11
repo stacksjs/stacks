@@ -27,8 +27,6 @@ export interface Attributes {
   version: string
   job_title: string
   password: string
-  title: string
-  body: string
   key: number
   unit_price: number
   image: string
@@ -102,6 +100,7 @@ export interface Attributes {
   seated_at: number
   no_show_at: number
   rating: number
+  title: string
   content: string
   is_verified_purchase: boolean
   is_approved: boolean
@@ -188,6 +187,11 @@ export interface Attributes {
   brand: string
   exp_month: number
   exp_year: number
+  author: string
+  category: string
+  views: number
+  comments: number
+  published_at: number
   status_code: number
   duration_ms: number
   memory_usage: number
