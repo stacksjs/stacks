@@ -20,15 +20,15 @@ export interface JobsTable {
 }
 
 // Type for reading model data (created_at is required)
-export type JobsRead = JobsTable
+export type JobRead = JobsTable
 
 // Type for creating/updating model data (created_at is optional)
-export type JobsWrite = Omit<JobsTable, 'created_at'> & {
+export type JobWrite = Omit<JobsTable, 'created_at'> & {
   created_at?: string
 }
 
-export interface JobsResponse {
-  data: JobsJsonResponse[]
+export interface JobResponse {
+  data: JobJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -37,19 +37,19 @@ export interface JobsResponse {
   next_cursor: number | null
 }
 
-export interface JobsJsonResponse extends Omit<Selectable<JobsRead>, 'password'> {
+export interface JobJsonResponse extends Omit<Selectable<JobRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewJobs = Insertable<JobsWrite>
-export type JobsUpdate = Updateable<JobsWrite>
+export type NewJob = Insertable<JobWrite>
+export type JobUpdate = Updateable<JobWrite>
 
-export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
-  private readonly hidden: Array<keyof JobsJsonResponse> = []
-  private readonly fillable: Array<keyof JobsJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
-  private readonly guarded: Array<keyof JobsJsonResponse> = []
-  protected attributes = {} as JobsJsonResponse
-  protected originalAttributes = {} as JobsJsonResponse
+export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
+  private readonly hidden: Array<keyof JobJsonResponse> = []
+  private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
+  private readonly guarded: Array<keyof JobJsonResponse> = []
+  protected attributes = {} as JobJsonResponse
+  protected originalAttributes = {} as JobJsonResponse
 
   protected selectFromQuery: any
   protected updateFromQuery: any
@@ -65,15 +65,15 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
    * See BaseOrm class for the full list of inherited methods.
    */
 
-  constructor(jobs: JobsJsonResponse | undefined) {
+  constructor(job: JobJsonResponse | undefined) {
     super('jobs')
-    if (jobs) {
-      this.attributes = { ...jobs }
-      this.originalAttributes = { ...jobs }
+    if (job) {
+      this.attributes = { ...job }
+      this.originalAttributes = { ...job }
 
-      Object.keys(jobs).forEach((key) => {
+      Object.keys(job).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (jobs as JobsJsonResponse)[key]
+          this.customColumns[key] = (job as JobJsonResponse)[key]
         }
       })
     }
@@ -85,7 +85,7 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     this.hasSelect = false
   }
 
-  protected async loadRelations(models: JobsJsonResponse | JobsJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: JobJsonResponse | JobJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -96,14 +96,14 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('jobs_id', 'in', modelIds)
+        .where('job_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: JobsJsonResponse) => {
-          const records = relatedRecords.filter((record: { jobs_id: number }) => {
-            return record.jobs_id === model.id
+        models.map((model: JobJsonResponse) => {
+          const records = relatedRecords.filter((record: { job_id: number }) => {
+            return record.job_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -111,8 +111,8 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
         })
       }
       else {
-        const records = relatedRecords.filter((record: { jobs_id: number }) => {
-          return record.jobs_id === models.id
+        const records = relatedRecords.filter((record: { job_id: number }) => {
+          return record.job_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -120,17 +120,17 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     }
   }
 
-  static with(relations: string[]): JobsModel {
-    const instance = new JobsModel(undefined)
+  static with(relations: string[]): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyWith(relations)
   }
 
-  protected mapCustomGetters(models: JobsJsonResponse | JobsJsonResponse[]): void {
+  protected mapCustomGetters(models: JobJsonResponse | JobJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
-      data.map((model: JobsJsonResponse) => {
+      data.map((model: JobJsonResponse) => {
         const customGetter = {
           default: () => {
           },
@@ -159,7 +159,7 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     }
   }
 
-  async mapCustomSetters(model: NewJobs | JobsUpdate): Promise<void> {
+  async mapCustomSetters(model: NewJob | JobUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -227,14 +227,14 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     this.attributes.updated_at = value
   }
 
-  static select(params: (keyof JobsJsonResponse)[] | RawBuilder<string> | string): JobsModel {
-    const instance = new JobsModel(undefined)
+  static select(params: (keyof JobJsonResponse)[] | RawBuilder<string> | string): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applySelect(params)
   }
 
-  // Method to find a Jobs by ID
-  static async find(id: number): Promise<JobsModel | undefined> {
+  // Method to find a Job by ID
+  static async find(id: number): Promise<JobModel | undefined> {
     const query = DB.instance.selectFrom('jobs').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
@@ -242,67 +242,67 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     if (!model)
       return undefined
 
-    const instance = new JobsModel(undefined)
+    const instance = new JobModel(undefined)
     return instance.createInstance(model)
   }
 
-  static async first(): Promise<JobsModel | undefined> {
-    const instance = new JobsModel(undefined)
+  static async first(): Promise<JobModel | undefined> {
+    const instance = new JobModel(undefined)
 
     const model = await instance.applyFirst()
 
-    const data = new JobsModel(model)
+    const data = new JobModel(model)
 
     return data
   }
 
-  static async last(): Promise<JobsModel | undefined> {
-    const instance = new JobsModel(undefined)
+  static async last(): Promise<JobModel | undefined> {
+    const instance = new JobModel(undefined)
 
     const model = await instance.applyLast()
 
     if (!model)
       return undefined
 
-    return new JobsModel(model)
+    return new JobModel(model)
   }
 
-  static async firstOrFail(): Promise<JobsModel | undefined> {
-    const instance = new JobsModel(undefined)
+  static async firstOrFail(): Promise<JobModel | undefined> {
+    const instance = new JobModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
-  static async all(): Promise<JobsModel[]> {
-    const instance = new JobsModel(undefined)
+  static async all(): Promise<JobModel[]> {
+    const instance = new JobModel(undefined)
 
     const models = await DB.instance.selectFrom('jobs').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: JobsJsonResponse) => {
-      return new JobsModel(model)
+    const data = await Promise.all(models.map(async (model: JobJsonResponse) => {
+      return new JobModel(model)
     }))
 
     return data
   }
 
-  static async findOrFail(id: number): Promise<JobsModel | undefined> {
-    const instance = new JobsModel(undefined)
+  static async findOrFail(id: number): Promise<JobModel | undefined> {
+    const instance = new JobModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<JobsModel[]> {
-    const instance = new JobsModel(undefined)
+  static async findMany(ids: number[]): Promise<JobModel[]> {
+    const instance = new JobModel(undefined)
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: JobsJsonResponse) => instance.parseResult(new JobsModel(modelItem)))
+    return models.map((modelItem: JobJsonResponse) => instance.parseResult(new JobModel(modelItem)))
   }
 
-  static async latest(column: keyof JobsTable = 'created_at'): Promise<JobsModel | undefined> {
-    const instance = new JobsModel(undefined)
+  static async latest(column: keyof JobsTable = 'created_at'): Promise<JobModel | undefined> {
+    const instance = new JobModel(undefined)
 
     const model = await instance.selectFromQuery
       .selectAll()
@@ -313,11 +313,11 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     if (!model)
       return undefined
 
-    return new JobsModel(model)
+    return new JobModel(model)
   }
 
-  static async oldest(column: keyof JobsTable = 'created_at'): Promise<JobsModel | undefined> {
-    const instance = new JobsModel(undefined)
+  static async oldest(column: keyof JobsTable = 'created_at'): Promise<JobModel | undefined> {
+    const instance = new JobModel(undefined)
 
     const model = await instance.selectFromQuery
       .selectAll()
@@ -328,172 +328,172 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     if (!model)
       return undefined
 
-    return new JobsModel(model)
+    return new JobModel(model)
   }
 
-  static skip(count: number): JobsModel {
-    const instance = new JobsModel(undefined)
+  static skip(count: number): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applySkip(count)
   }
 
-  static take(count: number): JobsModel {
-    const instance = new JobsModel(undefined)
+  static take(count: number): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyTake(count)
   }
 
-  static where<V = string>(column: keyof JobsTable, ...args: [V] | [Operator, V]): JobsModel {
-    const instance = new JobsModel(undefined)
+  static where<V = string>(column: keyof JobsTable, ...args: [V] | [Operator, V]): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
 
-  static orWhere(...conditions: [string, any][]): JobsModel {
-    const instance = new JobsModel(undefined)
+  static orWhere(...conditions: [string, any][]): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
 
-  static whereNotIn<V = number>(column: keyof JobsTable, values: V[]): JobsModel {
-    const instance = new JobsModel(undefined)
+  static whereNotIn<V = number>(column: keyof JobsTable, values: V[]): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
 
-  static whereBetween<V = number>(column: keyof JobsTable, range: [V, V]): JobsModel {
-    const instance = new JobsModel(undefined)
+  static whereBetween<V = number>(column: keyof JobsTable, range: [V, V]): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
 
-  static whereRef(column: keyof JobsTable, ...args: string[]): JobsModel {
-    const instance = new JobsModel(undefined)
+  static whereRef(column: keyof JobsTable, ...args: string[]): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
 
-  static when(condition: boolean, callback: (query: JobsModel) => JobsModel): JobsModel {
-    const instance = new JobsModel(undefined)
+  static when(condition: boolean, callback: (query: JobModel) => JobModel): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
   }
 
-  static whereNull(column: keyof JobsTable): JobsModel {
-    const instance = new JobsModel(undefined)
+  static whereNull(column: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyWhereNull(column)
   }
 
-  static whereNotNull(column: keyof JobsTable): JobsModel {
-    const instance = new JobsModel(undefined)
+  static whereNotNull(column: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyWhereNotNull(column)
   }
 
-  static whereLike(column: keyof JobsTable, value: string): JobsModel {
-    const instance = new JobsModel(undefined)
+  static whereLike(column: keyof JobsTable, value: string): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
 
-  static orderBy(column: keyof JobsTable, order: 'asc' | 'desc'): JobsModel {
-    const instance = new JobsModel(undefined)
+  static orderBy(column: keyof JobsTable, order: 'asc' | 'desc'): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyOrderBy(column, order)
   }
 
-  static orderByAsc(column: keyof JobsTable): JobsModel {
-    const instance = new JobsModel(undefined)
+  static orderByAsc(column: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyOrderByAsc(column)
   }
 
-  static orderByDesc(column: keyof JobsTable): JobsModel {
-    const instance = new JobsModel(undefined)
+  static orderByDesc(column: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyOrderByDesc(column)
   }
 
-  static groupBy(column: keyof JobsTable): JobsModel {
-    const instance = new JobsModel(undefined)
+  static groupBy(column: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyGroupBy(column)
   }
 
-  static having<V = string>(column: keyof JobsTable, operator: Operator, value: V): JobsModel {
-    const instance = new JobsModel(undefined)
+  static having<V = string>(column: keyof JobsTable, operator: Operator, value: V): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyHaving<V>(column, operator, value)
   }
 
-  static inRandomOrder(): JobsModel {
-    const instance = new JobsModel(undefined)
+  static inRandomOrder(): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyInRandomOrder()
   }
 
-  static whereColumn(first: keyof JobsTable, operator: Operator, second: keyof JobsTable): JobsModel {
-    const instance = new JobsModel(undefined)
+  static whereColumn(first: keyof JobsTable, operator: Operator, second: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof JobsTable): Promise<number> {
-    const instance = new JobsModel(undefined)
+    const instance = new JobModel(undefined)
 
     return await instance.applyMax(field)
   }
 
   static async min(field: keyof JobsTable): Promise<number> {
-    const instance = new JobsModel(undefined)
+    const instance = new JobModel(undefined)
 
     return await instance.applyMin(field)
   }
 
   static async avg(field: keyof JobsTable): Promise<number> {
-    const instance = new JobsModel(undefined)
+    const instance = new JobModel(undefined)
 
     return await instance.applyAvg(field)
   }
 
   static async sum(field: keyof JobsTable): Promise<number> {
-    const instance = new JobsModel(undefined)
+    const instance = new JobModel(undefined)
 
     return await instance.applySum(field)
   }
 
   static async count(): Promise<number> {
-    const instance = new JobsModel(undefined)
+    const instance = new JobModel(undefined)
 
     return instance.applyCount()
   }
 
-  static async get(): Promise<JobsModel[]> {
-    const instance = new JobsModel(undefined)
+  static async get(): Promise<JobModel[]> {
+    const instance = new JobModel(undefined)
 
     const results = await instance.applyGet()
 
-    return results.map((item: JobsJsonResponse) => instance.createInstance(item))
+    return results.map((item: JobJsonResponse) => instance.createInstance(item))
   }
 
-  static async pluck<K extends keyof JobsModel>(field: K): Promise<JobsModel[K][]> {
-    const instance = new JobsModel(undefined)
+  static async pluck<K extends keyof JobModel>(field: K): Promise<JobModel[K][]> {
+    const instance = new JobModel(undefined)
 
     return await instance.applyPluck(field)
   }
 
-  static async chunk(size: number, callback: (models: JobsModel[]) => Promise<void>): Promise<void> {
-    const instance = new JobsModel(undefined)
+  static async chunk(size: number, callback: (models: JobModel[]) => Promise<void>): Promise<void> {
+    const instance = new JobModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: JobsJsonResponse) => instance.createInstance(item))
+      const modelInstances = models.map((item: JobJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: JobsModel[]
+    data: JobModel[]
     paging: {
       total_records: number
       page: number
@@ -501,28 +501,28 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     }
     next_cursor: number | null
   }> {
-    const instance = new JobsModel(undefined)
+    const instance = new JobModel(undefined)
 
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: JobsJsonResponse) => instance.createInstance(item)),
+      data: result.data.map((item: JobJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
   }
 
   // Instance method for creating model instances
-  createInstance(data: JobsJsonResponse): JobsModel {
-    return new JobsModel(data)
+  createInstance(data: JobJsonResponse): JobModel {
+    return new JobModel(data)
   }
 
-  async applyCreate(newJobs: NewJobs): Promise<JobsModel> {
+  async applyCreate(newJob: NewJob): Promise<JobModel> {
     const filteredValues = Object.fromEntries(
-      Object.entries(newJobs).filter(([key]) =>
+      Object.entries(newJob).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
-    ) as NewJobs
+    ) as NewJob
 
     await this.mapCustomSetters(filteredValues)
 
@@ -536,24 +536,24 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
       .executeTakeFirst()
 
     if (!model) {
-      throw new HttpError(500, 'Failed to retrieve created Jobs')
+      throw new HttpError(500, 'Failed to retrieve created Job')
     }
 
     return this.createInstance(model)
   }
 
-  async create(newJobs: NewJobs): Promise<JobsModel> {
-    return await this.applyCreate(newJobs)
+  async create(newJob: NewJob): Promise<JobModel> {
+    return await this.applyCreate(newJob)
   }
 
-  static async create(newJobs: NewJobs): Promise<JobsModel> {
-    const instance = new JobsModel(undefined)
-    return await instance.applyCreate(newJobs)
+  static async create(newJob: NewJob): Promise<JobModel> {
+    const instance = new JobModel(undefined)
+    return await instance.applyCreate(newJob)
   }
 
-  static async firstOrCreate(search: Partial<JobsTable>, values: NewJobs = {} as NewJobs): Promise<JobsModel> {
+  static async firstOrCreate(search: Partial<JobsTable>, values: NewJob = {} as NewJob): Promise<JobModel> {
     // First try to find a record matching the search criteria
-    const instance = new JobsModel(undefined)
+    const instance = new JobModel(undefined)
 
     // Apply all search conditions
     for (const [key, value] of Object.entries(search)) {
@@ -568,13 +568,13 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     }
 
     // If no record exists, create a new one with combined search criteria and values
-    const createData = { ...search, ...values } as NewJobs
-    return await JobsModel.create(createData)
+    const createData = { ...search, ...values } as NewJob
+    return await JobModel.create(createData)
   }
 
-  static async updateOrCreate(search: Partial<JobsTable>, values: NewJobs = {} as NewJobs): Promise<JobsModel> {
+  static async updateOrCreate(search: Partial<JobsTable>, values: NewJob = {} as NewJob): Promise<JobModel> {
     // First try to find a record matching the search criteria
-    const instance = new JobsModel(undefined)
+    const instance = new JobModel(undefined)
 
     // Apply all search conditions
     for (const [key, value] of Object.entries(search)) {
@@ -587,7 +587,7 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     if (existingRecord) {
       // If record exists, update it with the new values
       const model = instance.createInstance(existingRecord)
-      const updatedModel = await model.update(values as JobsUpdate)
+      const updatedModel = await model.update(values as JobUpdate)
 
       // Return the updated model instance
       if (updatedModel) {
@@ -600,16 +600,16 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     }
 
     // If no record exists, create a new one with combined search criteria and values
-    const createData = { ...search, ...values } as NewJobs
-    return await JobsModel.create(createData)
+    const createData = { ...search, ...values } as NewJob
+    return await JobModel.create(createData)
   }
 
-  async update(newJobs: JobsUpdate): Promise<JobsModel | undefined> {
+  async update(newJob: JobUpdate): Promise<JobModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(newJobs).filter(([key]) =>
+      Object.entries(newJob).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
-    ) as JobsUpdate
+    ) as JobUpdate
 
     await this.mapCustomSetters(filteredValues)
 
@@ -628,7 +628,7 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
         .executeTakeFirst()
 
       if (!model) {
-        throw new HttpError(500, 'Failed to retrieve updated Jobs')
+        throw new HttpError(500, 'Failed to retrieve updated Job')
       }
 
       return this.createInstance(model)
@@ -637,9 +637,9 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     return undefined
   }
 
-  async forceUpdate(newJobs: JobsUpdate): Promise<JobsModel | undefined> {
+  async forceUpdate(newJob: JobUpdate): Promise<JobModel | undefined> {
     await DB.instance.updateTable('jobs')
-      .set(newJobs)
+      .set(newJob)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -651,7 +651,7 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
         .executeTakeFirst()
 
       if (!model) {
-        throw new HttpError(500, 'Failed to retrieve updated Jobs')
+        throw new HttpError(500, 'Failed to retrieve updated Job')
       }
 
       return this.createInstance(model)
@@ -660,12 +660,12 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     return undefined
   }
 
-  async save(): Promise<JobsModel> {
+  async save(): Promise<JobModel> {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
       await DB.instance.updateTable('jobs')
-        .set(this.attributes as JobsUpdate)
+        .set(this.attributes as JobUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
@@ -676,7 +676,7 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
         .executeTakeFirst()
 
       if (!model) {
-        throw new HttpError(500, 'Failed to retrieve updated Jobs')
+        throw new HttpError(500, 'Failed to retrieve updated Job')
       }
 
       return this.createInstance(model)
@@ -684,7 +684,7 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     else {
       // Create new record
       const result = await DB.instance.insertInto('jobs')
-        .values(this.attributes as NewJobs)
+        .values(this.attributes as NewJob)
         .executeTakeFirst()
 
       // Get the created data
@@ -694,22 +694,22 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
         .executeTakeFirst()
 
       if (!model) {
-        throw new HttpError(500, 'Failed to retrieve created Jobs')
+        throw new HttpError(500, 'Failed to retrieve created Job')
       }
 
       return this.createInstance(model)
     }
   }
 
-  static async createMany(newJobs: NewJobs[]): Promise<void> {
-    const instance = new JobsModel(undefined)
+  static async createMany(newJob: NewJob[]): Promise<void> {
+    const instance = new JobModel(undefined)
 
-    const valuesFiltered = newJobs.map((newJobs: NewJobs) => {
+    const valuesFiltered = newJob.map((newJob: NewJob) => {
       const filteredValues = Object.fromEntries(
-        Object.entries(newJobs).filter(([key]) =>
+        Object.entries(newJob).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
-      ) as NewJobs
+      ) as NewJob
 
       return filteredValues
     })
@@ -719,25 +719,25 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
       .executeTakeFirst()
   }
 
-  static async forceCreate(newJobs: NewJobs): Promise<JobsModel> {
+  static async forceCreate(newJob: NewJob): Promise<JobModel> {
     const result = await DB.instance.insertInto('jobs')
-      .values(newJobs)
+      .values(newJob)
       .executeTakeFirst()
 
-    const instance = new JobsModel(undefined)
+    const instance = new JobModel(undefined)
     const model = await DB.instance.selectFrom('jobs')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
     if (!model) {
-      throw new HttpError(500, 'Failed to retrieve created Jobs')
+      throw new HttpError(500, 'Failed to retrieve created Job')
     }
 
     return instance.createInstance(model)
   }
 
-  // Method to remove a Jobs
+  // Method to remove a Job
   async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
@@ -755,65 +755,65 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
       .execute()
   }
 
-  static whereQueue(value: string): JobsModel {
-    const instance = new JobsModel(undefined)
+  static whereQueue(value: string): JobModel {
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('queue', '=', value)
 
     return instance
   }
 
-  static wherePayload(value: string): JobsModel {
-    const instance = new JobsModel(undefined)
+  static wherePayload(value: string): JobModel {
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('payload', '=', value)
 
     return instance
   }
 
-  static whereAttempts(value: string): JobsModel {
-    const instance = new JobsModel(undefined)
+  static whereAttempts(value: string): JobModel {
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('attempts', '=', value)
 
     return instance
   }
 
-  static whereAvailableAt(value: string): JobsModel {
-    const instance = new JobsModel(undefined)
+  static whereAvailableAt(value: string): JobModel {
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('available_at', '=', value)
 
     return instance
   }
 
-  static whereReservedAt(value: string): JobsModel {
-    const instance = new JobsModel(undefined)
+  static whereReservedAt(value: string): JobModel {
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('reserved_at', '=', value)
 
     return instance
   }
 
-  static whereIn<V = number>(column: keyof JobsTable, values: V[]): JobsModel {
-    const instance = new JobsModel(undefined)
+  static whereIn<V = number>(column: keyof JobsTable, values: V[]): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
 
-  static distinct(column: keyof JobsJsonResponse): JobsModel {
-    const instance = new JobsModel(undefined)
+  static distinct(column: keyof JobJsonResponse): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyDistinct(column)
   }
 
-  static join(table: string, firstCol: string, secondCol: string): JobsModel {
-    const instance = new JobsModel(undefined)
+  static join(table: string, firstCol: string, secondCol: string): JobModel {
+    const instance = new JobModel(undefined)
 
     return instance.applyJoin(table, firstCol, secondCol)
   }
 
-  toJSON(): JobsJsonResponse {
+  toJSON(): JobJsonResponse {
     const output = {
 
       id: this.id,
@@ -833,16 +833,16 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
     return output
   }
 
-  parseResult(model: JobsModel): JobsModel {
+  parseResult(model: JobModel): JobModel {
     for (const hiddenAttribute of this.hidden) {
-      delete model[hiddenAttribute as keyof JobsModel]
+      delete model[hiddenAttribute as keyof JobModel]
     }
 
     return model
   }
 
   // Add a protected applyFind implementation
-  protected async applyFind(id: number): Promise<JobsModel | undefined> {
+  protected async applyFind(id: number): Promise<JobModel | undefined> {
     const model = await DB.instance.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
@@ -860,7 +860,7 @@ export class JobsModel extends BaseOrm<JobsModel, JobsTable, JobsJsonResponse> {
   }
 }
 
-export async function find(id: number): Promise<JobsModel | undefined> {
+export async function find(id: number): Promise<JobModel | undefined> {
   const query = DB.instance.selectFrom('jobs').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -868,19 +868,19 @@ export async function find(id: number): Promise<JobsModel | undefined> {
   if (!model)
     return undefined
 
-  const instance = new JobsModel(undefined)
+  const instance = new JobModel(undefined)
   return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
-  const results = await JobsModel.count()
+  const results = await JobModel.count()
 
   return results
 }
 
-export async function create(newJobs: NewJobs): Promise<JobsModel> {
-  const instance = new JobsModel(undefined)
-  return await instance.applyCreate(newJobs)
+export async function create(newJob: NewJob): Promise<JobModel> {
+  const instance = new JobModel(undefined)
+  return await instance.applyCreate(newJob)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
@@ -893,41 +893,41 @@ export async function remove(id: number): Promise<void> {
     .execute()
 }
 
-export async function whereQueue(value: string): Promise<JobsModel[]> {
+export async function whereQueue(value: string): Promise<JobModel[]> {
   const query = DB.instance.selectFrom('jobs').where('queue', '=', value)
-  const results: JobsJsonResponse = await query.execute()
+  const results: JobJsonResponse = await query.execute()
 
-  return results.map((modelItem: JobsJsonResponse) => new JobsModel(modelItem))
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
 }
 
-export async function wherePayload(value: string): Promise<JobsModel[]> {
+export async function wherePayload(value: string): Promise<JobModel[]> {
   const query = DB.instance.selectFrom('jobs').where('payload', '=', value)
-  const results: JobsJsonResponse = await query.execute()
+  const results: JobJsonResponse = await query.execute()
 
-  return results.map((modelItem: JobsJsonResponse) => new JobsModel(modelItem))
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
 }
 
-export async function whereAttempts(value: number): Promise<JobsModel[]> {
+export async function whereAttempts(value: number): Promise<JobModel[]> {
   const query = DB.instance.selectFrom('jobs').where('attempts', '=', value)
-  const results: JobsJsonResponse = await query.execute()
+  const results: JobJsonResponse = await query.execute()
 
-  return results.map((modelItem: JobsJsonResponse) => new JobsModel(modelItem))
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
 }
 
-export async function whereAvailableAt(value: number): Promise<JobsModel[]> {
+export async function whereAvailableAt(value: number): Promise<JobModel[]> {
   const query = DB.instance.selectFrom('jobs').where('available_at', '=', value)
-  const results: JobsJsonResponse = await query.execute()
+  const results: JobJsonResponse = await query.execute()
 
-  return results.map((modelItem: JobsJsonResponse) => new JobsModel(modelItem))
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
 }
 
-export async function whereReservedAt(value: Date | string): Promise<JobsModel[]> {
+export async function whereReservedAt(value: Date | string): Promise<JobModel[]> {
   const query = DB.instance.selectFrom('jobs').where('reserved_at', '=', value)
-  const results: JobsJsonResponse = await query.execute()
+  const results: JobJsonResponse = await query.execute()
 
-  return results.map((modelItem: JobsJsonResponse) => new JobsModel(modelItem))
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
 }
 
-export const Jobs = JobsModel
+export const Job = JobModel
 
-export default Jobs
+export default Job

@@ -24,7 +24,7 @@ export { default as FailedJob, type FailedJobJsonResponse, type FailedJobUpdate,
 
 export { default as GiftCard, type GiftCardJsonResponse, type GiftCardUpdate, type NewGiftCard } from './models/GiftCard'
 
-export { default as Jobs, type JobsJsonResponse, type JobsUpdate, type NewJobs } from './models/Jobs'
+export { default as Job, type JobJsonResponse, type JobUpdate, type NewJob } from './models/Job'
 
 export { default as LicenseKey, type LicenseKeyJsonResponse, type LicenseKeyUpdate, type NewLicenseKey } from './models/LicenseKey'
 

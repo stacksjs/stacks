@@ -1,10 +1,10 @@
 import type { Ok } from '@stacksjs/error-handling'
+import type { JobsModel } from '@stacksjs/orm'
 import type { JitterConfig, JobOptions } from '@stacksjs/types'
-import type { JobModel } from '../../../orm/src/models/Job'
 import { ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
+import { Job } from '@stacksjs/orm'
 import { FailedJob } from '../../../orm/src/models/FailedJob'
-import { Job } from '../../../orm/src/models/Job'
 import { runJob } from './job'
 
 interface QueuePayload {
@@ -264,7 +264,7 @@ function now(): string {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
-async function updateJobAttempts(job: JobModel, currentAttempts: number, delay: number | null): Promise<void> {
+async function updateJobAttempts(job: JobsModel, currentAttempts: number, delay: number | null): Promise<void> {
   try {
     const currentDelay = job.available_at
 
