@@ -60,6 +60,18 @@ export interface TeamUsersTable {
   team_id: number
 }
 
+export interface PostcategoryPostsTable {
+  id?: number
+  post_category_id: number
+  post_id: number
+}
+
+export interface PostCategoryPostsTable {
+  id?: number
+  post_id: number
+  post_category_id: number
+}
+
 export interface MigrationsTable {
   name: string
   timestamp: string
@@ -83,7 +95,7 @@ export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
   personal_access_tokens: PersonalAccessTokensTable
-  team_users: TeamUsersTable
+  team_users: PostCategoryPostsTable
   teams: TeamsTable
   subscribers: SubscribersTable
   deployments: DeploymentsTable
@@ -122,7 +134,9 @@ export interface Database {
   cart_items: CartItemsTable
   failed_jobs: FailedJobsTable
   payment_methods: PaymentMethodsTable
+  postcategory_posts: PostCategoryPostsTable
   post_categories: PostCategoriesTable
+  post_category_posts: PostCategoryPostsTable
   posts: PostsTable
   payment_transactions: PaymentTransactionsTable
   requests: RequestsTable

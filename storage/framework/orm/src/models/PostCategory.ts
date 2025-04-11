@@ -4,6 +4,7 @@ import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
+
 import { BaseOrm } from '../utils/base'
 
 export interface PostCategoriesTable {
@@ -46,7 +47,7 @@ export type PostCategoryUpdate = Updateable<PostCategoryWrite>
 
 export class PostCategoryModel extends BaseOrm<PostCategoryModel, PostCategoriesTable, PostCategoryJsonResponse> {
   private readonly hidden: Array<keyof PostCategoryJsonResponse> = []
-  private readonly fillable: Array<keyof PostCategoryJsonResponse> = ['name', 'description', 'slug', 'uuid']
+  private readonly fillable: Array<keyof PostCategoryJsonResponse> = ['name', 'description', 'slug', 'uuid', 'post_id']
   private readonly guarded: Array<keyof PostCategoryJsonResponse> = []
   protected attributes = {} as PostCategoryJsonResponse
   protected originalAttributes = {} as PostCategoryJsonResponse
@@ -779,6 +780,25 @@ export class PostCategoryModel extends BaseOrm<PostCategoryModel, PostCategories
     const instance = new PostCategoryModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
+  }
+
+  async postCategoryPosts() {
+    if (this.id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const results = await DB.instance.selectFrom('posts')
+      .where('post_id', '=', this.id)
+      .selectAll()
+      .execute()
+
+    const tableRelationIds = results.map((result: { post_id: number }) => result.post_id)
+
+    if (!tableRelationIds.length)
+      throw new HttpError(500, 'Relation Error!')
+
+    const relationResults = await Post.whereIn('id', tableRelationIds).get()
+
+    return relationResults
   }
 
   toSearchableObject(): Partial<PostCategoryJsonResponse> {

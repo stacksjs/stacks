@@ -1241,6 +1241,7 @@ interface RequestDataPostCategory {
   name: string
   description: string
   slug: string
+  post_id: number
   created_at?: string
   updated_at?: string
 }
@@ -1252,6 +1253,7 @@ export interface PostCategoryRequestType extends Request {
   name: string
   description: string
   slug: string
+  post_id: number
   created_at?: string
   updated_at?: string
 }
@@ -1268,6 +1270,7 @@ interface RequestDataPost {
   published_at: number
   status: string[] | string
   user_id: number
+  post_category_id: number
   created_at?: string
   updated_at?: string
 }
@@ -1286,6 +1289,7 @@ export interface PostRequestType extends Request {
   published_at: number
   status: string[] | string
   user_id: number
+  post_category_id: number
   created_at?: string
   updated_at?: string
 }

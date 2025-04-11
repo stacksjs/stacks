@@ -28,6 +28,7 @@ export default {
   },
 
   belongsTo: ['User'],
+
   belongsToMany: ['PostCategory'],
 
   attributes: {

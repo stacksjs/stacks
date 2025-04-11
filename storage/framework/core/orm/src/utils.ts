@@ -1,6 +1,5 @@
 import type {
   Attribute,
-  Attributes,
   AttributesElements,
   BaseBelongsToMany,
   BaseHasOneThrough,
@@ -382,7 +381,7 @@ export async function getPivotTables(
 
       const modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
 
-      const coreModelRelationPath = path.storagePath(`framework/defaults/models/${belongsToManyRelation}.ts`)
+      const coreModelRelationPath = findCoreModel(`${belongsToManyRelation}.ts`)
 
       if (fs.existsSync(modelRelationPath))
         modelRelation = (await import(modelRelationPath)).default as Model
@@ -1411,7 +1410,7 @@ async function writeModelOrmImports(modelFiles: string[]): Promise<void> {
   await writer.end()
 }
 
-export async function extractAttributesFromModel(filePath: string): Promise<Attributes> {
+export async function extractAttributesFromModel(filePath: string): Promise<AttributesElements> {
   // Read the TypeScript file
   const content = fs.readFileSync(filePath, 'utf8')
 
@@ -1421,7 +1420,7 @@ export async function extractAttributesFromModel(filePath: string): Promise<Attr
     plugins: ['typescript', 'classProperties', 'decorators-legacy'],
   })
 
-  let fields: Attributes | undefined
+  let fields: AttributesElements | undefined
   traverse(ast, {
     ObjectExpression(path) {
       // Look for the `attributes` key in the object
@@ -1435,13 +1434,13 @@ export async function extractAttributesFromModel(filePath: string): Promise<Attr
       if (fieldsProperty && fieldsProperty.type === 'ObjectProperty' && fieldsProperty.value) {
         // Convert the AST back to code (stringify)
         const generated = generator(fieldsProperty.value, {}, content)
-        fields = generated.code as unknown as Attributes
+        fields = generated.code as unknown as AttributesElements
         path.stop() // Stop traversing further once we found the fields
       }
     },
   })
 
-  return fields as Attributes
+  return fields as AttributesElements
 }
 
 async function ensureCodeStyle(): Promise<void> {

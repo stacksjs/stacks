@@ -16,6 +16,7 @@ interface RequestDataPostCategory {
   name: string
   description: string
   slug: string
+  post_id: number
   created_at?: string
   updated_at?: string
 }
@@ -24,6 +25,7 @@ export class PostCategoryRequest extends Request<RequestDataPostCategory> implem
   public name = ''
   public description = ''
   public slug = ''
+  public post_id = 0
   public created_at = ''
   public updated_at = ''
   public uuid = ''
