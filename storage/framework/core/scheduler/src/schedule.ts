@@ -277,7 +277,7 @@ export class Schedule implements UntimedSchedule {
   }
 }
 
-export class Job extends Schedule { }
+export class Queue extends Schedule { }
 
 export function sendAt(cronTime: string | Date): Date | null {
   const cron = new Cron(cronTime)

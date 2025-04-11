@@ -109,7 +109,7 @@ export function getDialect(): MysqlDialect | PostgresDialect | BunWorkerDialect 
   throw new Error(`Unsupported driver: ${driver}`)
 }
 
-export const now: RawBuilder<any> = sql`now()`
+export const dbNow: RawBuilder<any> = sql`now()`
 
 export const db: Kysely<Database> = new Kysely<Database>({
   dialect: getDialect(),

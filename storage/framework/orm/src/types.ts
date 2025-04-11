@@ -122,9 +122,9 @@ export interface Database {
   failed_jobs: FailedJobsTable
   payment_methods: PaymentMethodsTable
   posts: PostsTable
-  jobs: JobsTable
   payment_transactions: PaymentTransactionsTable
   requests: RequestsTable
+  jobs: JobsTable
   logs: LogsTable
   subscriptions: SubscriptionsTable
   errors: ErrorsTable
