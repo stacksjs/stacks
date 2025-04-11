@@ -390,7 +390,6 @@ export async function getPivotTables(
         modelRelation = (await import(coreModelRelationPath)).default as Model
 
       const modelRelationTableName = getTableName(modelRelation, modelRelationPath)
-      const modelName = getModelName(model, modelPath)
       const tableName = getTableName(model, modelPath)
 
       const firstForeignKey

@@ -55,7 +55,7 @@ export type PostUpdate = Updateable<PostWrite>
 
 export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
-  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'author', 'category', 'poster', 'body', 'views', 'comments', 'published_at', 'status', 'uuid', 'user_id', 'post_category_id']
+  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'author', 'category', 'poster', 'body', 'views', 'comments', 'published_at', 'status', 'uuid', 'user_id', 'post_category_id', 'author_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
   protected attributes = {} as PostJsonResponse
   protected originalAttributes = {} as PostJsonResponse

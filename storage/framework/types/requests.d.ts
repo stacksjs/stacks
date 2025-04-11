@@ -1258,6 +1258,22 @@ export interface PostCategoryRequestType extends Request {
   updated_at?: string
 }
 
+interface RequestDataAuthor {
+  id: number
+  name: string
+  created_at?: string
+  updated_at?: string
+}
+export interface AuthorRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: <T>(element: string, defaultValue?: T) => T
+  all: () => RequestDataAuthor
+  id: number
+  name: string
+  created_at?: string
+  updated_at?: string
+}
+
 interface RequestDataComment {
   id: number
   title: string
@@ -1297,6 +1313,7 @@ interface RequestDataPost {
   status: string[] | string
   user_id: number
   post_category_id: number
+  author_id: number
   created_at?: string
   updated_at?: string
 }
@@ -1316,6 +1333,7 @@ export interface PostRequestType extends Request {
   status: string[] | string
   user_id: number
   post_category_id: number
+  author_id: number
   created_at?: string
   updated_at?: string
 }
@@ -1494,4 +1512,4 @@ export interface ErrorRequestType extends Request {
   updated_at?: string
 }
 
-export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PaymentProductRequestType | PrintDeviceRequestType | CategoryRequestType | PaymentRequestType | DriverRequestType | WaitlistProductRequestType | DigitalDeliveryRequestType | ManufacturerRequestType | OrderItemRequestType | ShippingZoneRequestType | CustomerRequestType | ProductRequestType | ReceiptRequestType | ProductVariantRequestType | LicenseKeyRequestType | WaitlistRestaurantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TaxRateRequestType | TransactionRequestType | LoyaltyPointRequestType | ProductItemRequestType | LoyaltyRewardRequestType | ShippingMethodRequestType | ShippingRateRequestType | CartRequestType | DeliveryRouteRequestType | CartItemRequestType | FailedJobRequestType | PaymentMethodRequestType | PostCategoryRequestType | CommentRequestType | PostRequestType | PaymentTransactionRequestType | RequestRequestType | JobRequestType | LogRequestType | SubscriptionRequestType | ErrorRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PaymentProductRequestType | PrintDeviceRequestType | CategoryRequestType | PaymentRequestType | DriverRequestType | WaitlistProductRequestType | DigitalDeliveryRequestType | ManufacturerRequestType | OrderItemRequestType | ShippingZoneRequestType | CustomerRequestType | ProductRequestType | ReceiptRequestType | ProductVariantRequestType | LicenseKeyRequestType | WaitlistRestaurantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TaxRateRequestType | TransactionRequestType | LoyaltyPointRequestType | ProductItemRequestType | LoyaltyRewardRequestType | ShippingMethodRequestType | ShippingRateRequestType | CartRequestType | DeliveryRouteRequestType | CartItemRequestType | FailedJobRequestType | PaymentMethodRequestType | PostCategoryRequestType | AuthorRequestType | CommentRequestType | PostRequestType | PaymentTransactionRequestType | RequestRequestType | JobRequestType | LogRequestType | SubscriptionRequestType | ErrorRequestType
