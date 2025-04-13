@@ -23,8 +23,6 @@ interface RequestDataPost {
   published_at: number
   status: string[] | string
   user_id: number
-  post_category_id: number
-  author_id: number
   created_at?: string
   updated_at?: string
 }
@@ -40,8 +38,6 @@ export class PostRequest extends Request<RequestDataPost> implements PostRequest
   public published_at = 0
   public status = []
   public user_id = 0
-  public post_category_id = 0
-  public author_id = 0
   public created_at = ''
   public updated_at = ''
   public uuid = ''

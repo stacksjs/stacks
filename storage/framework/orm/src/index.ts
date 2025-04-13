@@ -1,14 +1,10 @@
 export { default as AccessToken, type AccessTokenJsonResponse, type AccessTokenUpdate, type NewAccessToken } from './models/AccessToken'
 
-export { default as Author, type AuthorJsonResponse, type AuthorUpdate, type NewAuthor } from './models/Author'
-
 export { default as Cart, type CartJsonResponse, type CartUpdate, type NewCart } from './models/Cart'
 
 export { default as CartItem, type CartItemJsonResponse, type CartItemUpdate, type NewCartItem } from './models/CartItem'
 
 export { default as Category, type CategoryJsonResponse, type CategoryUpdate, type NewCategory } from './models/Category'
-
-export { default as Comment, type CommentJsonResponse, type CommentUpdate, type NewComment } from './models/Comment'
 
 export { default as Coupon, type CouponJsonResponse, type CouponUpdate, type NewCoupon } from './models/Coupon'
 
@@ -53,8 +49,6 @@ export { type NewPaymentProduct, default as PaymentProduct, type PaymentProductJ
 export { type NewPaymentTransaction, default as PaymentTransaction, type PaymentTransactionJsonResponse, type PaymentTransactionUpdate } from './models/PaymentTransaction'
 
 export { type NewPost, default as Post, type PostJsonResponse, type PostUpdate } from './models/Post'
-
-export { type NewPostCategory, default as PostCategory, type PostCategoryJsonResponse, type PostCategoryUpdate } from './models/PostCategory'
 
 export { type NewPrintDevice, default as PrintDevice, type PrintDeviceJsonResponse, type PrintDeviceUpdate } from './models/PrintDevice'
 

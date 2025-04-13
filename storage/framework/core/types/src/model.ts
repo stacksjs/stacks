@@ -132,13 +132,13 @@ export interface CategorizableOptions {
    * The categories that can be assigned to this model
    */
   categories: string[]
-  
+
   /**
    * Whether multiple categories can be assigned
    * @default false
    */
   multiple?: boolean
-  
+
   /**
    * Whether categories are required
    * @default false
@@ -152,19 +152,19 @@ export interface TaggableOptions {
    * If not provided, tags can be created dynamically
    */
   tags?: string[]
-  
+
   /**
    * Whether multiple tags can be assigned
    * @default true
    */
   multiple?: boolean
-  
+
   /**
    * Whether tags are required
    * @default false
    */
   required?: boolean
-  
+
   /**
    * Maximum number of tags that can be assigned
    * @default undefined (no limit)

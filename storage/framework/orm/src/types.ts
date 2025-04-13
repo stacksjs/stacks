@@ -1,9 +1,7 @@
 import type { PersonalAccessTokensTable } from '../src/models/AccessToken'
-import type { AuthorsTable } from '../src/models/Author'
 import type { CartsTable } from '../src/models/Cart'
 import type { CartItemsTable } from '../src/models/CartItem'
 import type { CategoriesTable } from '../src/models/Category'
-import type { CommentsTable } from '../src/models/Comment'
 import type { CouponsTable } from '../src/models/Coupon'
 import type { CustomersTable } from '../src/models/Customer'
 import type { DeliveryRoutesTable } from '../src/models/DeliveryRoute'
@@ -26,7 +24,6 @@ import type { PaymentMethodsTable } from '../src/models/PaymentMethod'
 import type { PaymentProductsTable } from '../src/models/PaymentProduct'
 import type { PaymentTransactionsTable } from '../src/models/PaymentTransaction'
 import type { PostsTable } from '../src/models/Post'
-import type { PostCategoriesTable } from '../src/models/PostCategory'
 import type { PrintDevicesTable } from '../src/models/PrintDevice'
 import type { ProductsTable } from '../src/models/Product'
 import type { ProductItemsTable } from '../src/models/ProductItem'
@@ -62,18 +59,6 @@ export interface TeamsUsersTable {
   team_id: number
 }
 
-export interface PostCategoriesPostsTable {
-  id?: number
-  post_category_id: number
-  post_id: number
-}
-
-export interface PostCategoriesPostsTable {
-  id?: number
-  post_id: number
-  post_category_id: number
-}
-
 export interface MigrationsTable {
   name: string
   timestamp: string
@@ -97,7 +82,7 @@ export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
   personal_access_tokens: PersonalAccessTokensTable
-  teams_users: PostCategoriesPostsTable
+  teams_users: TeamsUsersTable
   teams: TeamsTable
   subscribers: SubscribersTable
   deployments: DeploymentsTable
@@ -136,10 +121,6 @@ export interface Database {
   cart_items: CartItemsTable
   failed_jobs: FailedJobsTable
   payment_methods: PaymentMethodsTable
-  post_categories_posts: PostCategoriesPostsTable
-  post_categories: PostCategoriesTable
-  authors: AuthorsTable
-  comments: CommentsTable
   posts: PostsTable
   payment_transactions: PaymentTransactionsTable
   requests: RequestsTable

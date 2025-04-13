@@ -2,7 +2,6 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { Stripe } from '@stacksjs/payments'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
-import type { CommentModel } from './Comment'
 import type { CustomerModel } from './Customer'
 import type { DeploymentModel } from './Deployment'
 import type { DriverModel } from './Driver'
@@ -10,7 +9,6 @@ import type { PaymentMethodModel, PaymentMethodsTable } from './PaymentMethod'
 import type { PaymentTransactionModel, PaymentTransactionsTable } from './PaymentTransaction'
 import type { PostModel } from './Post'
 import type { SubscriberModel } from './Subscriber'
-
 import type { SubscriptionModel } from './Subscription'
 
 import { randomUUIDv7 } from 'bun'
@@ -234,10 +232,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
   get customers(): CustomerModel[] | [] {
     return this.attributes.customers
-  }
-
-  get comments(): CommentModel[] | [] {
-    return this.attributes.comments
   }
 
   get id(): number {
@@ -1210,7 +1204,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       posts: this.posts,
       payment_transactions: this.payment_transactions,
       customers: this.customers,
-      comments: this.comments,
       ...this.customColumns,
       public_passkey: this.public_passkey,
       stripe_id: this.stripe_id,

@@ -29,8 +29,6 @@ export default {
 
   belongsTo: ['User'],
 
-  belongsToMany: ['PostCategory'],
-
   attributes: {
     title: {
       required: true,

@@ -55,7 +55,7 @@ export type PostUpdate = Updateable<PostWrite>
 
 export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
-  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'author', 'category', 'poster', 'body', 'views', 'comments', 'published_at', 'status', 'uuid', 'user_id', 'post_category_id', 'author_id']
+  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'author', 'category', 'poster', 'body', 'views', 'comments', 'published_at', 'status', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
   protected attributes = {} as PostJsonResponse
   protected originalAttributes = {} as PostJsonResponse
@@ -906,25 +906,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       throw new HttpError(500, 'Model Relation Not Found!')
 
     return model
-  }
-
-  async postPostCategories() {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const results = await DB.instance.selectFrom('post_categories')
-      .where('post_category_id', '=', this.id)
-      .selectAll()
-      .execute()
-
-    const tableRelationIds = results.map((result: { post_category_id: number }) => result.post_category_id)
-
-    if (!tableRelationIds.length)
-      throw new HttpError(500, 'Relation Error!')
-
-    const relationResults = await PostCategory.whereIn('id', tableRelationIds).get()
-
-    return relationResults
   }
 
   toSearchableObject(): Partial<PostJsonResponse> {
