@@ -22,8 +22,14 @@ export async function createComment(input: CreateCommentInput): Promise<Comment>
     .values({
       ...input,
       status: 'pending',
-      created_at: now,
-      updated_at: now,
+      reports_count: 0,
+      upvotes_count: 0,
+      downvotes_count: 0,
+      approved_at: null,
+      rejected_at: null,
+      reported_at: null,
+      created_at: now.toISOString(),
+      updated_at: now.toISOString(),
     })
     .returningAll()
     .executeTakeFirstOrThrow()
@@ -37,7 +43,7 @@ export async function updateComment(
     .updateTable('comments')
     .set({
       ...input,
-      updated_at: new Date(),
+      updated_at: new Date().toISOString(),
     })
     .where('id', '=', id)
     .returningAll()
@@ -50,7 +56,7 @@ export async function approveComment(id: number): Promise<Comment> {
     .set({
       status: 'approved',
       approved_at: Date.now(),
-      updated_at: new Date(),
+      updated_at: new Date().toISOString(),
     })
     .where('id', '=', id)
     .returningAll()
@@ -63,7 +69,7 @@ export async function rejectComment(id: number): Promise<Comment> {
     .set({
       status: 'rejected',
       rejected_at: Date.now(),
-      updated_at: new Date(),
+      updated_at: new Date().toISOString(),
     })
     .where('id', '=', id)
     .returningAll()

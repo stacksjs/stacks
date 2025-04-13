@@ -1,16 +1,21 @@
 import { db } from '@stacksjs/database'
 
 export interface Comment {
-  id: number
+  id?: number
   title: string
   body: string
-  status: 'pending' | 'approved' | 'rejected'
+  status: string
   approved_at: number | null
   rejected_at: number | null
   commentable_id: number
   commentable_type: string
-  created_at: Date
-  updated_at: Date | null
+  reports_count: number
+  reported_at: number | null
+  upvotes_count: number
+  downvotes_count: number
+  user_id: number | null
+  created_at: string
+  updated_at: string | null
 }
 
 export async function fetchComments(options: {
