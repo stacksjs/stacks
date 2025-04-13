@@ -89,12 +89,46 @@ export async function createCategoriesTable(): Promise<void> {
   migrationContent += `    .createTable('categories')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
   migrationContent += `    .addColumn('name', 'varchar(255)', col => col.notNull())\n`
-  migrationContent += `    .addColumn('description', 'text')\n`
   migrationContent += `    .addColumn('slug', 'varchar(255)', col => col.notNull().unique())\n`
+  migrationContent += `    .addColumn('description', 'text')\n`
+  migrationContent += `    .addColumn('parent_id', 'integer')\n`
+  migrationContent += `    .addColumn('order', 'integer', col => col.defaultTo(0))\n`
+  migrationContent += `    .addColumn('is_active', 'boolean', col => col.defaultTo(true))\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
   migrationContent += `    .execute()\n\n`
-  migrationContent += `  await db.schema.createIndex('idx_categories_slug').on('categories').column('slug').execute()\n`
+
+  // Add indexes with more descriptive names
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('categories_id_index')\n`
+  migrationContent += `    .on('categories')\n`
+  migrationContent += `    .column('id')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('categories_slug_index')\n`
+  migrationContent += `    .on('categories')\n`
+  migrationContent += `    .column('slug')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('categories_parent_id_index')\n`
+  migrationContent += `    .on('categories')\n`
+  migrationContent += `    .column('parent_id')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('categories_order_index')\n`
+  migrationContent += `    .on('categories')\n`
+  migrationContent += `    .column('order')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('categories_is_active_index')\n`
+  migrationContent += `    .on('categories')\n`
+  migrationContent += `    .column('is_active')\n`
+  migrationContent += `    .execute()\n`
+
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
@@ -249,9 +283,9 @@ export async function createCategoriesModelsTable(): Promise<void> {
     return
 
   const migrationContent = `import type { Database } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
+  import { sql } from '@stacksjs/database'
 
-export async function up(db: Database<any>) {
+  export async function up(db: Database<any>) {
   await db.schema
     .createTable('categories_models')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
