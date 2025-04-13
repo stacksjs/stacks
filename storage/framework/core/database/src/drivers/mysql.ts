@@ -17,10 +17,11 @@ import {
   findDifferingKeys,
   getLastMigrationFields,
   hasTableBeenMigrated,
+  hasMigrationBeenCreated,
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCategoriesTable, createCommentsTable, createPasskeyMigration, dropCommonTables } from './traits'
+import { createCategoriesTable, createCommentsTable, createPasskeyMigration, createUpvoteMigration, dropCommonTables } from './traits'
 
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await dropMysqlTables()
@@ -142,6 +143,9 @@ async function createTableMigration(modelPath: string): Promise<void> {
   if (useBillable && tableName === 'users')
     await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))
 
+  if (model.traits?.likeable === true || typeof model.traits?.likeable === 'object')
+    await createUpvoteMigration(model, getModelName(model, modelPath), tableName)
+
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
@@ -190,9 +194,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
       if (!modelRelation.foreignKey)
         continue
 
-      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
-        col.references('${modelRelation.relationTable}.id').onDelete('cascade')
-      ) \n`
+      migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
     }
   }
 
@@ -210,6 +212,17 @@ async function createTableMigration(modelPath: string): Promise<void> {
     migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
 
   migrationContent += `    .execute()\n`
+
+  // Add composite indexes if defined
+  if (model.indexes?.length) {
+    migrationContent += '\n'
+    for (const index of model.indexes) {
+      migrationContent += generateIndexCreationSQL(tableName, index.name, index.columns)
+    }
+  }
+
+  migrationContent += generatePrimaryKeyIndexSQL(tableName)
+
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
@@ -317,4 +330,38 @@ export async function createAlterTableMigration(modelPath: string): Promise<void
     Bun.write(migrationFilePath, migrationContent)
     log.success(`Created alter migration: ${italic(migrationFileName)}`)
   }
+}
+
+function generateIndexCreationSQL(tableName: string, indexName: string, columns: string[]): string {
+  const columnsStr = columns.map(col => `'${snakeCase(col)}'`).join(', ')
+  return `  await db.schema.createIndex('${indexName}').on('${tableName}').columns([${columnsStr}]).execute()\n`
+}
+
+function generatePrimaryKeyIndexSQL(tableName: string): string {
+  return `  await db.schema.createIndex('${tableName}_id_index').on('${tableName}').column('id').execute()\n`
+}
+
+function generateForeignKeyIndexSQL(tableName: string, foreignKey: string): string {
+  return `  await db.schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column('${foreignKey}').execute()\n\n`
+}
+
+function reArrangeColumns(attributes: AttributesElements | undefined, tableName: string): string {
+  const fields = arrangeColumns(attributes)
+  let migrationContent = ''
+
+  let previousField = ''
+  for (const [fieldName] of fields) {
+    const fieldNameFormatted = snakeCase(fieldName)
+
+    if (previousField) {
+      migrationContent += `await sql\`
+        ALTER TABLE ${tableName}
+        MODIFY COLUMN ${fieldNameFormatted} VARCHAR(255) NOT NULL AFTER ${snakeCase(previousField)};
+      \`.execute(db)\n\n`
+    }
+
+    previousField = fieldNameFormatted
+  }
+
+  return migrationContent
 }
