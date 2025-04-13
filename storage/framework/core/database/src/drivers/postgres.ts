@@ -15,7 +15,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createPostgresPasskeyMigration, createPostgresCategoriesTable, createPostgresCommentsTable, createCategoriesModelsTable, dropCommonTables, deleteFrameworkModels, deleteMigrationFiles } from './traits'
+import { createCategoriesModelsTable, createPostgresCategoriesTable, createPostgresCommentsTable, createPostgresPasskeyMigration, deleteFrameworkModels, deleteMigrationFiles, dropCommonTables } from './traits'
 
 export async function dropPostgresTables(): Promise<void> {
   const tables = await fetchPostgresTables()
@@ -108,7 +108,6 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
 
   const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
   const useBillable = model.traits?.billable || false
-  const useUuid = model.traits?.useUuid || false
 
   // Create categories table if model is categorizable and has proper configuration
   if (model.traits?.categorizable && typeof model.traits.categorizable === 'object') {

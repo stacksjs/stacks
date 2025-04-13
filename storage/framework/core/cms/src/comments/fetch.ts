@@ -1,4 +1,3 @@
-import type { Database } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 
 export interface Comment {
@@ -52,7 +51,7 @@ export async function fetchCommentById(id: number): Promise<Comment | undefined>
 export async function fetchCommentsByCommentable(
   commentable_id: number,
   commentable_type: string,
-  options: { status?: Comment['status']; limit?: number; offset?: number } = {},
+  options: { status?: Comment['status'], limit?: number, offset?: number } = {},
 ): Promise<Comment[]> {
   let query = db
     .selectFrom('comments')

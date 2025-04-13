@@ -20,7 +20,7 @@ export default {
     useSeeder: {
       count: 20,
     },
-
+    commentable: true,
     useApi: {
       uri: 'posts',
       routes: ['index', 'store', 'show', 'update', 'destroy'],

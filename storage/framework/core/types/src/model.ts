@@ -208,7 +208,7 @@ export interface ModelOptions extends Base {
     softDeletable?: boolean | SoftDeleteOptions // useSoftDeletes alias
     categorizable?: boolean // defaults to false
     taggable?: TaggableOptions // defaults to false
-    commentable?: CommentableOptions // defaults to false
+    commentable?: boolean | CommentableOptions // defaults to false
     useAuth?: boolean | AuthOptions // defaults to false
     authenticatable?: boolean | AuthOptions // useAuth alias
     useSeeder?: boolean | SeedOptions // defaults to a count of 10

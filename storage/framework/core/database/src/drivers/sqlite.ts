@@ -8,7 +8,6 @@ import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } 
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
-import { createCommentsTable, createPasskeyMigration } from './traits'
 import {
   arrangeColumns,
   checkPivotMigration,
@@ -22,6 +21,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
+import { createCommentsTable, createPasskeyMigration, dropCommonTables } from './traits'
 
 export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
   await deleteFrameworkModels()
@@ -36,10 +36,7 @@ export async function dropSqliteTables(): Promise<void> {
   const tables = await fetchTables()
 
   for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
-  await db.schema.dropTable('migrations').ifExists().execute()
-  await db.schema.dropTable('migration_locks').ifExists().execute()
-  await db.schema.dropTable('passkeys').ifExists().execute()
-  await db.schema.dropTable('activities').ifExists().execute()
+  await dropCommonTables()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default

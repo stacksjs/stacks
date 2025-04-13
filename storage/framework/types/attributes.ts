@@ -192,7 +192,6 @@ export interface Attributes {
   poster: string
   body: string
   views: number
-  comments: number
   published_at: number
   status_code: number
   duration_ms: number

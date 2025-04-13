@@ -15,9 +15,8 @@ export async function up(db: Database<any>) {
     .addColumn('comments', 'numeric', col => col.notNull().defaultTo(0))
     .addColumn('published_at', 'numeric', col => col.notNull())
     .addColumn('status', 'text', col => col.notNull().defaultTo('draft'))
-    .addColumn('user_id', 'integer', (col) =>
-        col.references('users.id').onDelete('cascade')
-      ) 
+    .addColumn('user_id', 'integer', col =>
+      col.references('users.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()

@@ -1244,7 +1244,6 @@ interface RequestDataPost {
   poster: string
   body: string
   views: number
-  comments: number
   published_at: number
   status: string[] | string
   user_id: number
@@ -1262,7 +1261,6 @@ export interface PostRequestType extends Request {
   poster: string
   body: string
   views: number
-  comments: number
   published_at: number
   status: string[] | string
   user_id: number

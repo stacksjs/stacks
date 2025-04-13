@@ -78,6 +78,24 @@ export interface PasskeysTable {
   last_used_at: string
 }
 
+export interface CommentsTable {
+  id?: number
+  title: string
+  body: string
+  status: string
+  approved_at: number | null
+  rejected_at: number | null
+  commentable_id: number
+  commentable_type: string
+  reports_count: number
+  reported_at: number | null
+  upvotes_count: number
+  downvotes_count: number
+  user_id: number | null
+  created_at: string
+  updated_at: string | null
+}
+
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
@@ -128,6 +146,7 @@ export interface Database {
   logs: LogsTable
   subscriptions: SubscriptionsTable
   errors: ErrorsTable
-  passkeys: PasskeysTable
   migrations: MigrationsTable
+  passkeys: PasskeysTable
+  comments: CommentsTable
 }

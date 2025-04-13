@@ -1,6 +1,5 @@
-import type { Database } from '@stacksjs/database'
-import { db } from '@stacksjs/database'
 import type { Comment } from './fetch'
+import { db } from '@stacksjs/database'
 
 export interface CreateCommentInput {
   title: string
@@ -17,7 +16,7 @@ export interface UpdateCommentInput {
 
 export async function createComment(input: CreateCommentInput): Promise<Comment> {
   const now = new Date()
-  
+
   return db
     .insertInto('comments')
     .values({

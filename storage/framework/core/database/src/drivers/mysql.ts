@@ -17,17 +17,15 @@ import {
   findDifferingKeys,
   getLastMigrationFields,
   hasTableBeenMigrated,
-  isArrayEqual,
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createPasskeyMigration, createCategoriesTable, createCommentsTable, createCategoriesModelsTable, dropCommonTables } from './traits'
+import { createCategoriesTable, createCommentsTable, createPasskeyMigration, dropCommonTables } from './traits'
 
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await dropMysqlTables()
   await deleteFrameworkModels()
   await deleteMigrationFiles()
-
 
   return ok('All tables dropped successfully!')
 }

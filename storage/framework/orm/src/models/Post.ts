@@ -17,7 +17,6 @@ export interface PostsTable {
   poster?: string
   body: string
   views: number
-  comments: number
   published_at: number
   status: string | string[]
   uuid?: string
@@ -55,7 +54,7 @@ export type PostUpdate = Updateable<PostWrite>
 
 export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
-  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'author', 'category', 'poster', 'body', 'views', 'comments', 'published_at', 'status', 'uuid', 'user_id']
+  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'author', 'category', 'poster', 'body', 'views', 'published_at', 'status', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
   protected attributes = {} as PostJsonResponse
   protected originalAttributes = {} as PostJsonResponse
@@ -220,10 +219,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return this.attributes.views
   }
 
-  get comments(): number {
-    return this.attributes.comments
-  }
-
   get published_at(): number {
     return this.attributes.published_at
   }
@@ -266,10 +261,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
   set views(value: number) {
     this.attributes.views = value
-  }
-
-  set comments(value: number) {
-    this.attributes.comments = value
   }
 
   set published_at(value: number) {
@@ -864,14 +855,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance
   }
 
-  static whereComments(value: string): PostModel {
-    const instance = new PostModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('comments', '=', value)
-
-    return instance
-  }
-
   static wherePublishedAt(value: string): PostModel {
     const instance = new PostModel(undefined)
 
@@ -892,6 +875,71 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     const instance = new PostModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
+  }
+
+  async comments(id: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('comments')
+      .where('commentable_id', '=', id)
+      .where('commentable_type', '=', 'posts')
+      .selectAll()
+      .execute()
+  }
+
+  async commentCount(id: number): Promise<number> {
+    const result = await DB.instance
+      .selectFrom('comments')
+      .select(sql`count(*) as count`)
+      .where('commentable_id', '=', id)
+      .where('commentable_type', '=', 'posts')
+      .executeTakeFirst()
+
+    return Number(result?.count) || 0
+  }
+
+  async addComment(id: number, comment: { title: string, body: string }): Promise<any> {
+    return await DB.instance
+      .insertInto('comments')
+      .values({
+        ...comment,
+        commentable_id: id,
+        commentable_type: 'posts',
+        status: 'pending',
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .returningAll()
+      .executeTakeFirst()
+  }
+
+  async approvedComments(id: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('comments')
+      .where('commentable_id', '=', id)
+      .where('commentable_type', '=', 'posts')
+      .where('status', '=', 'approved')
+      .selectAll()
+      .execute()
+  }
+
+  async pendingComments(id: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('comments')
+      .where('commentable_id', '=', id)
+      .where('commentable_type', '=', 'posts')
+      .where('status', '=', 'pending')
+      .selectAll()
+      .execute()
+  }
+
+  async rejectedComments(id: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('comments')
+      .where('commentable_id', '=', id)
+      .where('commentable_type', '=', 'posts')
+      .where('status', '=', 'rejected')
+      .selectAll()
+      .execute()
   }
 
   async userBelong(): Promise<UserModel> {
@@ -915,7 +963,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       author: this.author,
       category: this.category,
       views: this.views,
-      comments: this.comments,
       status: this.status,
       poster: this.poster,
     }
@@ -945,7 +992,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       poster: this.poster,
       body: this.body,
       views: this.views,
-      comments: this.comments,
       published_at: this.published_at,
       status: this.status,
 
@@ -1058,13 +1104,6 @@ export async function whereBody(value: string): Promise<PostModel[]> {
 
 export async function whereViews(value: number): Promise<PostModel[]> {
   const query = DB.instance.selectFrom('posts').where('views', '=', value)
-  const results: PostJsonResponse = await query.execute()
-
-  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
-}
-
-export async function whereComments(value: number): Promise<PostModel[]> {
-  const query = DB.instance.selectFrom('posts').where('comments', '=', value)
   const results: PostJsonResponse = await query.execute()
 
   return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))

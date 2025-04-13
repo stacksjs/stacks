@@ -19,7 +19,6 @@ interface RequestDataPost {
   poster: string
   body: string
   views: number
-  comments: number
   published_at: number
   status: string[] | string
   user_id: number
@@ -34,7 +33,6 @@ export class PostRequest extends Request<RequestDataPost> implements PostRequest
   public poster = ''
   public body = ''
   public views = 0
-  public comments = 0
   public published_at = 0
   public status = []
   public user_id = 0

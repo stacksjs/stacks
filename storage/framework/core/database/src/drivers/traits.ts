@@ -1,10 +1,8 @@
-import type { Model } from '@stacksjs/types'
-import { log } from '@stacksjs/cli'
+import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
-import { italic } from '@stacksjs/cli'
-import { hasMigrationBeenCreated } from './index'
 import { fs } from '@stacksjs/storage'
+import { hasMigrationBeenCreated } from './index'
 
 // SQLite/MySQL version
 export async function createPasskeyMigration(): Promise<void> {

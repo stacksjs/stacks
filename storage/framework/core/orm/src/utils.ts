@@ -1229,6 +1229,24 @@ export async function generateKyselyTypes(): Promise<void> {
   text += '  last_used_at: string \n'
   text += '}\n\n'
 
+  text += '\nexport interface CommentsTable {\n'
+  text += '  id?: number\n'
+  text += '  title: string\n'
+  text += '  body: string\n'
+  text += '  status: string\n'
+  text += '  approved_at: number | null\n'
+  text += '  rejected_at: number | null\n'
+  text += '  commentable_id: number\n'
+  text += '  commentable_type: string\n'
+  text += '  reports_count: number\n'
+  text += '  reported_at: number | null\n'
+  text += '  upvotes_count: number\n'
+  text += '  downvotes_count: number\n'
+  text += '  user_id: number | null\n'
+  text += '  created_at: string\n'
+  text += '  updated_at: string | null\n'
+  text += '}\n\n'
+
   text += '\nexport interface Database {\n'
 
   const pushedTables: string[] = []
@@ -1250,13 +1268,18 @@ export async function generateKyselyTypes(): Promise<void> {
     const words = tableName.split('_')
     const formattedTableName = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
 
-    text += `  ${tableName}: ${formattedTableName}\n`
+    if (!pushedTables.includes(tableName)) {
+      text += `  ${tableName}: ${formattedTableName}\n`
+      pushedTables.push(tableName)
+    }
   }
 
-  text += 'passkeys: PasskeysTable\n'
-  text += 'migrations: MigrationsTable\n'
+  // Add trait-based tables
+  text += '  migrations: MigrationsTable\n'
+  text += '  passkeys: PasskeysTable\n'
+  text += '  comments: CommentsTable\n'
 
-  text += '}'
+  text += '}\n'
 
   const file = Bun.file(path.frameworkPath('orm/src/types.ts'))
 
