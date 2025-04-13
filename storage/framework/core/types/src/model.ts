@@ -172,6 +172,32 @@ export interface TaggableOptions {
   maxTags?: number
 }
 
+export interface CommentableOptions {
+  /**
+   * Whether comments require approval before being visible
+   * @default false
+   */
+  requiresApproval?: boolean
+
+  /**
+   * Whether comments can be reported
+   * @default true
+   */
+  reportable?: boolean
+
+  /**
+   * Whether comments can be voted on
+   * @default true
+   */
+  votable?: boolean
+
+  /**
+   * Whether comments require authentication
+   * @default false
+   */
+  requiresAuth?: boolean
+}
+
 interface Base {}
 
 /**
@@ -201,6 +227,7 @@ export interface ModelOptions extends Base {
     softDeletable?: boolean | SoftDeleteOptions // useSoftDeletes alias
     categorizable?: CategorizableOptions // defaults to false
     taggable?: TaggableOptions // defaults to false
+    commentable?: CommentableOptions // defaults to false
     useAuth?: boolean | AuthOptions // defaults to false
     authenticatable?: boolean | AuthOptions // useAuth alias
     useSeeder?: boolean | SeedOptions // defaults to a count of 10
