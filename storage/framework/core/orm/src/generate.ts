@@ -127,6 +127,7 @@ export async function generateModelString(
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
   const observer = model?.traits?.observe
   const useUuid = model?.traits?.useUuid || false
+  const useCommentable = model?.traits?.commentable || false
 
   if (useUuid)
     uuidQuery += `filteredValues['uuid'] = randomUUIDv7()`
@@ -191,6 +192,75 @@ export async function generateModelString(
       mittDeleteStaticFindStatement += 'const model = await instance.find(id)'
       mittDeleteStatement += `if (model)\n dispatch('${formattedModelName}:deleted', model);`
     }
+  }
+
+  if (useCommentable) {
+    relationMethods += `
+    async comments(id: number): Promise<any[]> {
+      return await DB.instance
+        .selectFrom('comments')
+        .where('commentable_id', '=', id)
+        .where('commentable_type', '=', '${tableName}')
+        .selectAll()
+        .execute()
+    }
+
+    async commentCount(id: number): Promise<number> {
+      const result = await DB.instance
+        .selectFrom('comments')
+        .select(sql\`count(*) as count\`)
+        .where('commentable_id', '=', id)
+        .where('commentable_type', '=', '${tableName}')
+        .executeTakeFirst()
+
+      return Number(result?.count) || 0
+    }
+
+    async addComment(id: number, comment: { title: string, body: string }): Promise<any> {
+      return await DB.instance
+        .insertInto('comments')
+        .values({
+          ...comment,
+          commentable_id: id,
+          commentable_type: '${tableName}',
+          status: 'pending',
+          created_at: new Date(),
+          updated_at: new Date(),
+        })
+        .returningAll()
+        .executeTakeFirst()
+    }
+
+    async approvedComments(id: number): Promise<any[]> {
+      return await DB.instance
+        .selectFrom('comments')
+        .where('commentable_id', '=', id)
+        .where('commentable_type', '=', '${tableName}')
+        .where('status', '=', 'approved')
+        .selectAll()
+        .execute()
+    }
+
+    async pendingComments(id: number): Promise<any[]> {
+      return await DB.instance
+        .selectFrom('comments')
+        .where('commentable_id', '=', id)
+        .where('commentable_type', '=', '${tableName}')
+        .where('status', '=', 'pending')
+        .selectAll()
+        .execute()
+    }
+
+    async rejectedComments(id: number): Promise<any[]> {
+      return await DB.instance
+        .selectFrom('comments')
+        .where('commentable_id', '=', id)
+        .where('commentable_type', '=', '${tableName}')
+        .where('status', '=', 'rejected')
+        .selectAll()
+        .execute()
+    }
+    `
   }
 
   for (const relation of relations) {
