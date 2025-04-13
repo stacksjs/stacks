@@ -1,5 +1,6 @@
 import type { Comment } from './fetch'
 import { db } from '@stacksjs/database'
+import { formatDate } from '@stacksjs/orm'
 
 export interface CreateCommentInput {
   title: string
@@ -81,4 +82,56 @@ export async function deleteComment(id: number): Promise<void> {
     .deleteFrom('comments')
     .where('id', '=', id)
     .execute()
+}
+
+interface CommentStore {
+  title: string
+  body: string
+  status: string
+  commentable_id: number
+  commentable_type: string
+  user_id?: number | null
+}
+
+/**
+ * Create a new comment
+ *
+ * @param data The comment data to store
+ * @returns The newly created comment record
+ */
+export async function store(data: CommentStore): Promise<Comment> {
+  try {
+    const now = formatDate(new Date())
+    
+    const commentData = {
+      ...data,
+      reports_count: 0,
+      upvotes_count: 0,
+      downvotes_count: 0,
+      approved_at: null,
+      rejected_at: null,
+      reported_at: null,
+      created_at: now,
+      updated_at: null,
+    }
+
+    const result = await db
+      .insertInto('comments')
+      .values(commentData)
+      .returningAll()
+      .executeTakeFirst()
+
+    if (!result) {
+      throw new Error('Failed to create comment')
+    }
+
+    return result
+  }
+  catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to store comment: ${error.message}`)
+    }
+
+    throw error
+  }
 }
