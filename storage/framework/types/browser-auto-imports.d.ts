@@ -434,9 +434,6 @@ declare global {
   export type { Component, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
-  export type { SaasOption } from '../core/browser/src/utils/plans'
-  import('../core/browser/src/utils/plans')
-  // @ts-ignore
   export type { SingletonPromiseReturn, ControlledPromise } from '../core/browser/src/utils/promise'
   import('../core/browser/src/utils/promise')
   // @ts-ignore

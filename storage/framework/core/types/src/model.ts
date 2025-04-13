@@ -127,6 +127,51 @@ export interface SoftDeleteOptions {
   deletedAt?: string // defaults to 'deleted_at' & can be used for localized tables
 }
 
+export interface CategorizableOptions {
+  /**
+   * The categories that can be assigned to this model
+   */
+  categories: string[]
+  
+  /**
+   * Whether multiple categories can be assigned
+   * @default false
+   */
+  multiple?: boolean
+  
+  /**
+   * Whether categories are required
+   * @default false
+   */
+  required?: boolean
+}
+
+export interface TaggableOptions {
+  /**
+   * The predefined tags that can be assigned to this model
+   * If not provided, tags can be created dynamically
+   */
+  tags?: string[]
+  
+  /**
+   * Whether multiple tags can be assigned
+   * @default true
+   */
+  multiple?: boolean
+  
+  /**
+   * Whether tags are required
+   * @default false
+   */
+  required?: boolean
+  
+  /**
+   * Maximum number of tags that can be assigned
+   * @default undefined (no limit)
+   */
+  maxTags?: number
+}
+
 interface Base {}
 
 /**
@@ -154,7 +199,8 @@ export interface ModelOptions extends Base {
     timestampable?: boolean | TimestampOptions // useTimestamps alias
     useSoftDeletes?: boolean | SoftDeleteOptions // defaults to false
     softDeletable?: boolean | SoftDeleteOptions // useSoftDeletes alias
-
+    categorizable?: CategorizableOptions // defaults to false
+    taggable?: TaggableOptions // defaults to false
     useAuth?: boolean | AuthOptions // defaults to false
     authenticatable?: boolean | AuthOptions // useAuth alias
     useSeeder?: boolean | SeedOptions // defaults to a count of 10
