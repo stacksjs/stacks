@@ -1254,6 +1254,18 @@ export async function generateKyselyTypes(): Promise<void> {
   text += '  created_at: string\n'
   text += '}\n\n'
 
+  text += '\nexport interface CategoriesTable {\n'
+  text += '  id?: number\n'
+  text += '  name: string\n'
+  text += '  slug: string\n'
+  text += '  description?: string\n'
+  text += '  parent_id?: number\n'
+  text += '  order: number\n'
+  text += '  is_active: boolean\n'
+  text += '  created_at: string\n'
+  text += '  updated_at?: string\n'
+  text += '}\n\n'
+
   text += '\nexport interface Database {\n'
 
   const pushedTables: string[] = []
@@ -1286,7 +1298,7 @@ export async function generateKyselyTypes(): Promise<void> {
   text += '  passkeys: PasskeysTable\n'
   text += '  comments: CommentsTable\n'
   text += '  upvotes: UpvotesTable\n'
-
+  text += '  categories: CategoriesTable\n'
   text += '}\n'
 
   const file = Bun.file(path.frameworkPath('orm/src/types.ts'))
