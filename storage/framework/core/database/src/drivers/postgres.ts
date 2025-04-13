@@ -15,6 +15,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
+import { createPostgresPasskeyMigration, createPostgresCategoriesTable } from './traits'
 
 export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   const tables = await fetchPostgresTables()
@@ -120,6 +121,21 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
   const hasBeenMigrated = await hasTableBeenMigrated(tableName)
 
   log.debug(`Has ${tableName} been migrated? ${hasBeenMigrated}`)
+
+  const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
+  const useBillable = model.traits?.billable || false
+  const useUuid = model.traits?.useUuid || false
+
+  // Create categories table if model is categorizable and has proper configuration
+  if (model.traits?.categorizable && typeof model.traits.categorizable === 'object') {
+    await createPostgresCategoriesTable()
+  }
+
+  if (usePasskey)
+    await createPostgresPasskeyMigration()
+
+  if (useBillable && tableName === 'users')
+    await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))
 
   if (haveFieldsChanged)
     await createAlterTableMigration(modelPath)
