@@ -21,7 +21,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCommentsTable, createPasskeyMigration, dropCommonTables, createCategoriesTable } from './traits'
+import { createCommentsTable, createPasskeyMigration, dropCommonTables, createCategoriesTable, createUpvoteMigration } from './traits'
 
 export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
   await deleteFrameworkModels()
@@ -319,55 +319,6 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
 
     log.success(`Created pivot migration: ${migrationFileName}`)
   }
-}
-
-async function createUpvoteMigration(model: Model, modelName: string, tableName: string) {
-  const migrationTable = getUpvoteTableName(model, tableName)
-
-  const hasBeenMigrated = await hasMigrationBeenCreated(migrationTable)
-
-  const foreignKey = getUpvoteForeignKey(model, modelName)
-
-  if (hasBeenMigrated)
-    return
-
-  let migrationContent = `import type { Database } from '@stacksjs/database'\n import { sql } from '@stacksjs/database'\n\n`
-  migrationContent += `export async function up(db: Database<any>) {\n`
-  migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('${migrationTable}')\n`
-  migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
-  migrationContent += `    .addColumn('user_id', 'integer', col => col.notNull())\n`
-  migrationContent += `    .addColumn('${foreignKey}', 'integer', col => col.notNull())\n`
-  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-  migrationContent += `    .execute()\n`
-  migrationContent += `    }\n`
-
-  const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-${migrationTable}-table.ts`
-
-  const migrationFilePath = path.userMigrationsPath(migrationFileName)
-
-  Bun.write(migrationFilePath, migrationContent)
-
-  log.success(`Created migration: ${italic(migrationFileName)}`)
-}
-
-function getUpvoteTableName(model: Model, tableName: string): string {
-  const defaultTable = `${tableName}_likes`
-  const traits = model.traits
-
-  return typeof traits?.likeable === 'object'
-    ? traits.likeable.table || defaultTable
-    : defaultTable
-}
-
-function getUpvoteForeignKey(model: Model, modelName: string): string {
-  const defaultForeignKey = `${snakeCase(modelName)}_id`
-  const traits = model.traits
-
-  return typeof traits?.likeable === 'object'
-    ? traits.likeable.foreignKey || defaultForeignKey
-    : defaultForeignKey
 }
 
 async function createAlterTableMigration(modelPath: string) {

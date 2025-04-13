@@ -204,11 +204,6 @@ export async function createCommentsTable(options: {
     migrationContent += `    .addColumn('reported_at', 'integer')\n`
   }
 
-  if (options.votable) {
-    migrationContent += `    .addColumn('upvotes_count', 'integer', col => col.defaultTo(0))\n`
-    migrationContent += `    .addColumn('downvotes_count', 'integer', col => col.defaultTo(0))\n`
-  }
-
   if (options.requiresAuth) {
     migrationContent += `    .addColumn('user_id', 'integer', col => col.notNull())\n`
   }
@@ -226,7 +221,7 @@ export async function createCommentsTable(options: {
   }
 
   if (options.votable) {
-    migrationContent += `  await db.schema.createIndex('idx_comments_votes').on('comments').columns(['upvotes_count', 'downvotes_count']).execute()\n`
+    migrationContent += `  await db.schema.createIndex('idx_comments_votes').on('comments').columns(['downvotes_count']).execute()\n`
   }
 
   if (options.requiresAuth) {
