@@ -140,7 +140,12 @@ export async function createPostgresCategoriesTable(): Promise<void> {
 }
 
 // SQLite/MySQL version
-export async function createCommentsTable(): Promise<void> {
+export async function createCommentsTable(options: {
+  requiresApproval?: boolean
+  reportable?: boolean
+  votable?: boolean
+  requiresAuth?: boolean
+} = {}): Promise<void> {
   const hasBeenMigrated = await hasMigrationBeenCreated('comments')
 
   if (hasBeenMigrated)
@@ -154,16 +159,46 @@ export async function createCommentsTable(): Promise<void> {
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
   migrationContent += `    .addColumn('title', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('body', 'text', col => col.notNull())\n`
-  migrationContent += `    .addColumn('status', 'varchar(50)', col => col.notNull().defaultTo('pending'))\n`
+  migrationContent += `    .addColumn('status', 'varchar(50)', col => col.notNull().defaultTo('${options.requiresApproval ? 'pending' : 'approved'}'))\n`
   migrationContent += `    .addColumn('approved_at', 'integer')\n`
   migrationContent += `    .addColumn('rejected_at', 'integer')\n`
   migrationContent += `    .addColumn('commentable_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('commentable_type', 'varchar(255)', col => col.notNull())\n`
+
+  if (options.reportable) {
+    migrationContent += `    .addColumn('reports_count', 'integer', col => col.defaultTo(0))\n`
+    migrationContent += `    .addColumn('reported_at', 'integer')\n`
+  }
+
+  if (options.votable) {
+    migrationContent += `    .addColumn('upvotes_count', 'integer', col => col.defaultTo(0))\n`
+    migrationContent += `    .addColumn('downvotes_count', 'integer', col => col.defaultTo(0))\n`
+  }
+
+  if (options.requiresAuth) {
+    migrationContent += `    .addColumn('user_id', 'integer', col => col.notNull())\n`
+  }
+
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
   migrationContent += `    .execute()\n\n`
+
+  // Add indexes
   migrationContent += `  await db.schema.createIndex('idx_comments_status').on('comments').column('status').execute()\n`
   migrationContent += `  await db.schema.createIndex('idx_comments_commentable').on('comments').columns(['commentable_id', 'commentable_type']).execute()\n`
+
+  if (options.reportable) {
+    migrationContent += `  await db.schema.createIndex('idx_comments_reports').on('comments').column('reports_count').execute()\n`
+  }
+
+  if (options.votable) {
+    migrationContent += `  await db.schema.createIndex('idx_comments_votes').on('comments').columns(['upvotes_count', 'downvotes_count']).execute()\n`
+  }
+
+  if (options.requiresAuth) {
+    migrationContent += `  await db.schema.createIndex('idx_comments_user').on('comments').column('user_id').execute()\n`
+  }
+
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()

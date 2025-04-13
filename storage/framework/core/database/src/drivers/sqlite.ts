@@ -8,9 +8,12 @@ import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } 
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
+import { createCommentsTable, createPasskeyMigration } from './traits'
 import {
   arrangeColumns,
   checkPivotMigration,
+  deleteFrameworkModels,
+  deleteMigrationFiles,
   fetchTables,
   findDifferingKeys,
   getLastMigrationFields,
@@ -19,12 +22,11 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createPasskeyMigration, createCategoriesTable, createCommentsTable, dropCommonTables, deleteFrameworkModels, deleteMigrationFiles } from './traits'
 
 export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
-  await dropSqliteTables()
   await deleteFrameworkModels()
   await deleteMigrationFiles()
+  await dropSqliteTables()
 
   return ok('All tables dropped successfully!')
 }
@@ -34,7 +36,10 @@ export async function dropSqliteTables(): Promise<void> {
   const tables = await fetchTables()
 
   for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
-  await dropCommonTables()
+  await db.schema.dropTable('migrations').ifExists().execute()
+  await db.schema.dropTable('migration_locks').ifExists().execute()
+  await db.schema.dropTable('passkeys').ifExists().execute()
+  await db.schema.dropTable('activities').ifExists().execute()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
@@ -163,21 +168,17 @@ async function createTableMigration(modelPath: string) {
   const useBillable = model.traits?.billable || false
   const useUuid = model.traits?.useUuid || false
 
-  // Create categories table if model is categorizable and has proper configuration
-  if (model.traits?.categorizable && typeof model.traits.categorizable === 'object') {
-    await createCategoriesTable()
+  // Handle commentable trait
+  const commentableOptions = typeof model.traits?.commentable === 'object' ? model.traits.commentable : undefined
+  const isCommentable = Boolean(model.traits?.commentable)
+
+  if (isCommentable) {
+    await createCommentsTable(commentableOptions)
   }
 
   if (usePasskey && tableName === 'users') {
     await createPasskeyMigration()
   }
-
-  if (model.traits?.commentable && typeof model.traits.commentable === 'object') {
-    await createCommentsTable()
-  }
-
-  if (useBillable && tableName === 'users')
-    await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))
 
   if (model.traits?.likeable === true || typeof model.traits?.likeable === 'object')
     await createUpvoteMigration(model, modelName, tableName)
@@ -284,23 +285,15 @@ async function createTableMigration(modelPath: string) {
 
 async function createPivotTableMigration(model: Model, modelPath: string) {
   const pivotTables = await getPivotTables(model, modelPath)
-  const processedPivotTables = new Set<string>()
 
   if (!pivotTables.length)
     return
 
   for (const pivotTable of pivotTables) {
-    // Skip if this pivot table has already been processed
-    if (processedPivotTables.has(pivotTable.table)) {
-      continue
-    }
-
     const hasBeenMigrated = await checkPivotMigration(pivotTable.table)
 
-    if (hasBeenMigrated) {
-      processedPivotTables.add(pivotTable.table)
-      continue
-    }
+    if (hasBeenMigrated)
+      return
 
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`
     migrationContent += `import { sql } from '@stacksjs/database'\n\n`
@@ -320,9 +313,6 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
     const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
     Bun.write(migrationFilePath, migrationContent)
-
-    // Mark this pivot table as processed
-    processedPivotTables.add(pivotTable.table)
 
     log.success(`Created pivot migration: ${migrationFileName}`)
   }

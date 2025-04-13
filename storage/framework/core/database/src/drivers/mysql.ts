@@ -28,15 +28,6 @@ export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await deleteFrameworkModels()
   await deleteMigrationFiles()
 
-  // Create categories_models table if any model is categorizable
-  const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
-  const hasCategorizableModel = userModelFiles.some(async (modelPath) => {
-    const model = (await import(modelPath)).default
-    return model.traits?.categorizable
-  })
-
-  if (hasCategorizableModel)
-    await createCategoriesModelsTable()
 
   return ok('All tables dropped successfully!')
 }
