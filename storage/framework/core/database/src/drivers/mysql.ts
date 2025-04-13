@@ -21,12 +21,22 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createPasskeyMigration, createCategoriesTable, createCommentsTable } from './traits'
+import { createPasskeyMigration, createCategoriesTable, createCommentsTable, createCategoriesModelsTable, dropCommonTables } from './traits'
 
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await dropMysqlTables()
-  await deleteMigrationFiles()
   await deleteFrameworkModels()
+  await deleteMigrationFiles()
+
+  // Create categories_models table if any model is categorizable
+  const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+  const hasCategorizableModel = userModelFiles.some(async (modelPath) => {
+    const model = (await import(modelPath)).default
+    return model.traits?.categorizable
+  })
+
+  if (hasCategorizableModel)
+    await createCategoriesModelsTable()
 
   return ok('All tables dropped successfully!')
 }
@@ -36,9 +46,7 @@ export async function dropMysqlTables(): Promise<void> {
   const tables = await fetchTables()
 
   for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
-  await db.schema.dropTable('migrations').ifExists().execute()
-  await db.schema.dropTable('migration_locks').ifExists().execute()
-  await db.schema.dropTable('passkeys').ifExists().execute()
+  await dropCommonTables()
 
   for (const userModel of modelFiles) {
     const userModelPath = (await import(userModel)).default
@@ -306,85 +314,18 @@ export async function createAlterTableMigration(modelPath: string): Promise<void
   for (const fieldValidation of fieldValidations) {
     hasChanged = true
     const fieldNameFormatted = snakeCase(fieldValidation.key)
-    migrationContent += `await sql\`
-        ALTER TABLE ${tableName}
-        MODIFY COLUMN ${fieldNameFormatted} VARCHAR(${fieldValidation.max})
-      \`.execute(db)\n\n`
+    migrationContent += `    .modifyColumn('${fieldNameFormatted}', 'varchar(${fieldValidation.max})')\n`
   }
-
-  // Add new fields
-  for (const fieldName of fieldsToAdd) {
-    const options = currentFields[fieldName] as Attribute
-    const columnType = mapFieldTypeToColumnType(options.validation?.rule)
-    const formattedFieldName = snakeCase(fieldName)
-
-    migrationContent += `    .addColumn('${formattedFieldName}', ${columnType}`
-
-    // Check if there are configurations that require the lambda function
-    if (options.unique || options?.required || options.default !== undefined) {
-      migrationContent += `, col => col`
-      if (options.unique)
-        migrationContent += `.unique()`
-      if (options?.required)
-        migrationContent += `.notNull()`
-      if (options.default !== undefined) {
-        if (typeof options.default === 'string')
-          migrationContent += `.defaultTo('${options.default}')`
-        else if (options.default === null)
-          migrationContent += `.defaultTo(null)`
-        else
-          migrationContent += `.defaultTo(${options.default})`
-      }
-      migrationContent += ``
-    }
-
-    migrationContent += `)\n\n`
-  }
-
-  // Remove fields that no longer exist
-  for (const fieldName of fieldsToRemove) migrationContent += `    .dropColumn('${fieldName}')\n`
-
-  if (fieldsToAdd.length || fieldsToRemove.length)
-    migrationContent += `    .execute();\n`
-
-  const lastFieldOrder = Object.values(lastFields).map(attr => attr.order)
-  const currentFieldOrder = Object.values(currentFields).map(attr => attr.order)
-
-  if (!isArrayEqual(lastFieldOrder, currentFieldOrder)) {
-    hasChanged = true
-    migrationContent += reArrangeColumns(model.attributes, tableName)
-  }
-
-  migrationContent += `}\n`
-
-  const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-update-${tableName}-table.ts`
-  const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   if (hasChanged) {
+    migrationContent += `    .execute()\n`
+    migrationContent += `}\n`
+
+    const timestamp = new Date().getTime().toString()
+    const migrationFileName = `${timestamp}-alter-${tableName}-table.ts`
+    const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
     Bun.write(migrationFilePath, migrationContent)
-
-    log.success(`Created migration: ${italic(migrationFileName)}`)
+    log.success(`Created alter migration: ${italic(migrationFileName)}`)
   }
-}
-
-function reArrangeColumns(attributes: AttributesElements | undefined, tableName: string): string {
-  const fields = arrangeColumns(attributes)
-  let migrationContent = ''
-
-  let previousField = ''
-  for (const [fieldName] of fields) {
-    const fieldNameFormatted = snakeCase(fieldName)
-
-    if (previousField) {
-      migrationContent += `await sql\`
-        ALTER TABLE ${tableName}
-        MODIFY COLUMN ${fieldNameFormatted} VARCHAR(255) NOT NULL AFTER ${snakeCase(previousField)};
-      \`.execute(db)\n\n`
-    }
-
-    previousField = fieldNameFormatted
-  }
-
-  return migrationContent
 }

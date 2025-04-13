@@ -15,50 +15,34 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createPostgresPasskeyMigration, createPostgresCategoriesTable, createPostgresCommentsTable } from './traits'
+import { createPostgresPasskeyMigration, createPostgresCategoriesTable, createPostgresCommentsTable, createCategoriesModelsTable, dropCommonTables, deleteFrameworkModels, deleteMigrationFiles } from './traits'
 
-export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
+export async function dropPostgresTables(): Promise<void> {
   const tables = await fetchPostgresTables()
+  const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
   for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
-
-  await db.schema.dropTable('migrations').ifExists().execute()
-  await db.schema.dropTable('migration_locks').ifExists().execute()
-
-  const files = await fs.readdir(path.userMigrationsPath())
-  const modelFiles = await fs.readdir(path.frameworkPath('models'))
-
-  const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+  await dropCommonTables()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
-
-    const pivotTables = await getPivotTables(userModelPath, userModelPath)
-
+    const pivotTables = await getPivotTables(userModelPath, userModel)
     for (const pivotTable of pivotTables) await db.schema.dropTable(pivotTable.table).ifExists().execute()
   }
+}
 
-  if (modelFiles.length) {
-    for (const modelFile of modelFiles) {
-      if (modelFile.endsWith('.ts')) {
-        const modelPath = path.frameworkPath(`models/${modelFile}`)
+export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
+  await dropPostgresTables()
+  await deleteFrameworkModels()
+  await deleteMigrationFiles()
 
-        if (fs.existsSync(modelPath))
-          await Bun.$`rm ${modelPath}`
-      }
-    }
-  }
-
-  if (files.length) {
-    for (const file of files) {
-      if (file.endsWith('.ts')) {
-        const migrationPath = path.userMigrationsPath(`${file}`)
-
-        if (fs.existsSync(migrationPath))
-          await Bun.$`rm ${migrationPath}`
-      }
-    }
-  }
+  await db.schema.createTable('migrations').ifNotExists().execute()
+  await db.schema.createTable('migration_locks').ifNotExists().execute()
+  await createPostgresPasskeyMigration()
+  await createPostgresCategoriesTable()
+  await createPostgresCommentsTable()
+  await createCategoriesModelsTable()
+  await db.schema.createTable('activities').ifNotExists().execute()
 
   return ok('All tables dropped successfully!')
 }

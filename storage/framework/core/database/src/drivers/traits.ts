@@ -4,6 +4,7 @@ import { db } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
 import { italic } from '@stacksjs/cli'
 import { hasMigrationBeenCreated } from './index'
+import { fs } from '@stacksjs/storage'
 
 // SQLite/MySQL version
 export async function createPasskeyMigration(): Promise<void> {
@@ -208,4 +209,88 @@ export async function createPostgresCommentsTable(): Promise<void> {
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
+}
+
+export async function createCategoriesModelsTable(): Promise<void> {
+  if (await hasMigrationBeenCreated('categories_models'))
+    return
+
+  const migrationContent = `import type { Database } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
+
+export async function up(db: Database<any>) {
+  await db.schema
+    .createTable('categories_models')
+    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
+    .addColumn('category_id', 'integer', col => col.notNull())
+    .addColumn('categorizable_id', 'integer', col => col.notNull())
+    .addColumn('categorizable_type', 'varchar(255)', col => col.notNull())
+    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql\`CURRENT_TIMESTAMP\`))
+    .addColumn('updated_at', 'timestamp')
+    .execute()
+
+  // Add indexes for better query performance
+  await db.schema
+    .createIndex('categories_models_category_id_index')
+    .on('categories_models')
+    .column('category_id')
+    .execute()
+
+  await db.schema
+    .createIndex('categories_models_categorizable_index')
+    .on('categories_models')
+    .columns(['categorizable_id', 'categorizable_type'])
+    .execute()
+}
+
+export async function down(db: Database<any>) {
+  await db.schema.dropTable('categories_models').execute()
+}
+`
+
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-create-categories-models-table.ts`
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  Bun.write(migrationFilePath, migrationContent)
+
+  log.success(`Created migration: ${italic(migrationFileName)}`)
+}
+
+export async function dropCommonTables(): Promise<void> {
+  await db.schema.dropTable('migrations').ifExists().execute()
+  await db.schema.dropTable('migration_locks').ifExists().execute()
+  await db.schema.dropTable('passkeys').ifExists().execute()
+  await db.schema.dropTable('categories').ifExists().execute()
+  await db.schema.dropTable('comments').ifExists().execute()
+  await db.schema.dropTable('categories_models').ifExists().execute()
+  await db.schema.dropTable('activities').ifExists().execute()
+}
+
+export async function deleteFrameworkModels(): Promise<void> {
+  const modelFiles = await fs.readdir(path.frameworkPath('models'))
+
+  if (modelFiles.length) {
+    for (const file of modelFiles) {
+      if (file.endsWith('.ts')) {
+        const modelPath = path.frameworkPath(`models/${file}`)
+        if (fs.existsSync(modelPath))
+          await Bun.$`rm ${modelPath}`
+      }
+    }
+  }
+}
+
+export async function deleteMigrationFiles(): Promise<void> {
+  const files = await fs.readdir(path.userMigrationsPath())
+
+  if (files.length) {
+    for (const file of files) {
+      if (file.endsWith('.ts')) {
+        const migrationPath = path.userMigrationsPath(`${file}`)
+        if (fs.existsSync(migrationPath))
+          await Bun.$`rm ${migrationPath}`
+      }
+    }
+  }
 }

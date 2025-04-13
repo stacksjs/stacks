@@ -11,8 +11,6 @@ import { snakeCase } from '@stacksjs/strings'
 import {
   arrangeColumns,
   checkPivotMigration,
-  deleteFrameworkModels,
-  deleteMigrationFiles,
   fetchTables,
   findDifferingKeys,
   getLastMigrationFields,
@@ -21,12 +19,12 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createPasskeyMigration, createCategoriesTable, createCommentsTable } from './traits'
+import { createPasskeyMigration, createCategoriesTable, createCommentsTable, dropCommonTables, deleteFrameworkModels, deleteMigrationFiles } from './traits'
 
 export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
+  await dropSqliteTables()
   await deleteFrameworkModels()
   await deleteMigrationFiles()
-  await dropSqliteTables()
 
   return ok('All tables dropped successfully!')
 }
@@ -36,10 +34,7 @@ export async function dropSqliteTables(): Promise<void> {
   const tables = await fetchTables()
 
   for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
-  await db.schema.dropTable('migrations').ifExists().execute()
-  await db.schema.dropTable('migration_locks').ifExists().execute()
-  await db.schema.dropTable('passkeys').ifExists().execute()
-  await db.schema.dropTable('activities').ifExists().execute()
+  await dropCommonTables()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
