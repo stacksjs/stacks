@@ -21,7 +21,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createPasskeyMigration, createCategoriesTable } from './traits'
+import { createPasskeyMigration, createCategoriesTable, createCommentsTable } from './traits'
 
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await dropMysqlTables()
@@ -137,6 +137,10 @@ async function createTableMigration(modelPath: string): Promise<void> {
 
   if (usePasskey)
     await createPasskeyMigration()
+
+  if (model.traits?.commentable && typeof model.traits.commentable === 'object') {
+    await createCommentsTable()
+  }
 
   if (useBillable && tableName === 'users')
     await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))

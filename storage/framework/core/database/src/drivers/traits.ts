@@ -137,3 +137,75 @@ export async function createPostgresCategoriesTable(): Promise<void> {
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
+
+// SQLite/MySQL version
+export async function createCommentsTable(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('comments')
+
+  if (hasBeenMigrated)
+    return
+
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createTable('comments')\n`
+  migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
+  migrationContent += `    .addColumn('title', 'varchar(255)', col => col.notNull())\n`
+  migrationContent += `    .addColumn('body', 'text', col => col.notNull())\n`
+  migrationContent += `    .addColumn('status', 'varchar(50)', col => col.notNull().defaultTo('pending'))\n`
+  migrationContent += `    .addColumn('approved_at', 'integer')\n`
+  migrationContent += `    .addColumn('rejected_at', 'integer')\n`
+  migrationContent += `    .addColumn('commentable_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('commentable_type', 'varchar(255)', col => col.notNull())\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
+  migrationContent += `    .execute()\n\n`
+  migrationContent += `  await db.schema.createIndex('idx_comments_status').on('comments').column('status').execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_comments_commentable').on('comments').columns(['commentable_id', 'commentable_type']).execute()\n`
+  migrationContent += `}\n`
+
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-create-comments-table.ts`
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  Bun.write(migrationFilePath, migrationContent)
+
+  log.success(`Created migration: ${italic(migrationFileName)}`)
+}
+
+// PostgreSQL version
+export async function createPostgresCommentsTable(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('comments')
+
+  if (hasBeenMigrated)
+    return
+
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createTable('comments')\n`
+  migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
+  migrationContent += `    .addColumn('title', 'varchar(255)', col => col.notNull())\n`
+  migrationContent += `    .addColumn('body', 'text', col => col.notNull())\n`
+  migrationContent += `    .addColumn('status', 'varchar(50)', col => col.notNull().defaultTo('pending'))\n`
+  migrationContent += `    .addColumn('approved_at', 'integer')\n`
+  migrationContent += `    .addColumn('rejected_at', 'integer')\n`
+  migrationContent += `    .addColumn('commentable_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('commentable_type', 'varchar(255)', col => col.notNull())\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp with time zone')\n`
+  migrationContent += `    .execute()\n\n`
+  migrationContent += `  await db.schema.createIndex('idx_comments_status').on('comments').column('status').execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_comments_commentable').on('comments').columns(['commentable_id', 'commentable_type']).execute()\n`
+  migrationContent += `}\n`
+
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-create-comments-table.ts`
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  Bun.write(migrationFilePath, migrationContent)
+
+  log.success(`Created migration: ${italic(migrationFileName)}`)
+}
