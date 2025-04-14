@@ -3,7 +3,7 @@ import type { Request } from '@stacksjs/router'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 
-type CategorizableStore = Pick<CategorizableTable, 'name' | 'slug' | 'order' | 'description'>
+type CategorizableStore = Omit<CategorizableTable, 'updated_at'>
 
 /**
  * Create a new category
@@ -17,14 +17,17 @@ export async function store(request: Request): Promise<CategorizableTable> {
 
     const categoryData: CategorizableStore = {
       name: request.get('name'),
+      slug: request.get('slug'),
       description: request.get('description'),
       order: request.get('order'),
+      categorizable_id: request.get('categorizable_id'),
+      categorizable_type: request.get('categorizable_type'),
       is_active: request.get<boolean>('is_active'),
       created_at: formatDate(new Date()),
     }
 
     const result = await db
-      .insertInto('categories')
+      .insertInto('categorizable')
       .values(categoryData)
       .returningAll()
       .executeTakeFirst()
