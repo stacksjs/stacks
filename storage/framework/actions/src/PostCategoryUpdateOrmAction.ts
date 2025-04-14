@@ -1,16 +1,11 @@
-import type { PostCategoryRequestType } from '@stacksjs/orm'
+import type { Request, response } from '@stacksjs/router'
 import { Action } from '@stacksjs/actions'
-
-import { PostCategory } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'PostCategory Update',
   description: 'PostCategory Update ORM Action',
   method: 'PATCH',
-  async handle(request: PostCategoryRequestType) {
-    await request.validate()
-
+  async handle(request: Request) {
     const id = request.getParam('id')
     const model = await PostCategory.findOrFail(id)
 

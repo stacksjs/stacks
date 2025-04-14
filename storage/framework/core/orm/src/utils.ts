@@ -22,7 +22,7 @@ import { isString } from '@stacksjs/validation'
 
 import { globSync } from 'tinyglobby'
 import { generateModelString } from './generate'
-import { generateTraitTableInterfaces } from './generated/table-traits'
+import { generateTraitRequestTypes, generateTraitTableInterfaces } from './generated/table-traits'
 
 type ModelPath = string
 
@@ -1327,6 +1327,7 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     try {
       log.info('Writing Model Attributes...')
       await writeModelAttributes()
+      await generateTraitRequestTypes()
       log.success('Wrote Model Attributes')
     }
     catch (error) {

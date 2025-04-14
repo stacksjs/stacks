@@ -3,6 +3,7 @@ import type { Request } from '@stacksjs/router'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { slugify } from 'ts-slug'
+
 type CategorizableUpdate = Partial<Omit<CategorizableTable, 'id' | 'created_at'>>
 
 /**

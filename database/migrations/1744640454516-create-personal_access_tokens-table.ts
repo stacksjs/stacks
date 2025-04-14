@@ -15,9 +15,8 @@ export async function up(db: Database<any>) {
     .addColumn('ip_address', 'text')
     .addColumn('device_name', 'text')
     .addColumn('is_single_use', 'integer')
-    .addColumn('team_id', 'integer', (col) =>
-        col.references('teams.id').onDelete('cascade')
-      ) 
+    .addColumn('team_id', 'integer', col =>
+      col.references('teams.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()

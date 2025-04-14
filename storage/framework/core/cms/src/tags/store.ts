@@ -2,6 +2,7 @@ import type { TaggableTable } from '@stacksjs/orm'
 import type { Request } from '@stacksjs/router'
 import { db } from '@stacksjs/database'
 import { slugify } from 'ts-slug'
+
 type TagStore = Omit<TaggableTable, 'updated_at'>
 
 /**

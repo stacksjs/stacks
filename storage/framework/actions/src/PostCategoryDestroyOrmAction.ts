@@ -1,19 +1,16 @@
-import type { PostCategoryRequestType } from '@stacksjs/orm'
+import type { Request } from '@stacksjs/router'
 import { Action } from '@stacksjs/actions'
-
-import { PostCategory } from '@stacksjs/orm'
+import { postCategories } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'PostCategory Destroy',
   description: 'PostCategory Destroy ORM Action',
   method: 'DELETE',
-  async handle(request: PostCategoryRequestType) {
+  async handle(request: Request) {
     const id = request.getParam('id')
 
-    const model = await PostCategory.findOrFail(id)
-
-    model?.delete()
+    await postCategories.destroy(id)
 
     return response.json({ message: 'Model deleted!' })
   },

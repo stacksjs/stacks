@@ -18,5 +18,4 @@ export async function up(db: Database<any>) {
     .on('taggable')
     .column('slug')
     .execute()
-
 }
