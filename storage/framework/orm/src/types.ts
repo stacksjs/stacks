@@ -127,6 +127,8 @@ export interface TaggableTable {
   is_active: boolean
   taggable_id: number
   taggable_type: string
+  created_at: string
+  updated_at?: string
 }
 export interface Database {
   projects: ProjectsTable
