@@ -1,6 +1,9 @@
-import type { NewPostCategory, PostCategoryJsonResponse, PostCategoryRequestType } from '@stacksjs/orm'
+import type { CategorizableTable } from '@stacksjs/orm'
+import type { Request } from '@stacksjs/router'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+
+type CategorizableStore = Pick<CategorizableTable, 'name' | 'slug' | 'order' | 'description'>
 
 /**
  * Create a new category
@@ -8,16 +11,16 @@ import { formatDate } from '@stacksjs/orm'
  * @param request The category data to create
  * @returns The created category record
  */
-export async function store(request: PostCategoryRequestType): Promise<PostCategoryJsonResponse> {
+export async function store(request: Request): Promise<CategorizableTable> {
   try {
     await request.validate()
 
-    const categoryData: NewPostCategory = {
+    const categoryData: CategorizableStore = {
       name: request.get('name'),
       description: request.get('description'),
-      slug: request.get('slug'),
+      order: request.get('order'),
+      is_active: request.get<boolean>('is_active'),
       created_at: formatDate(new Date()),
-      updated_at: formatDate(new Date()),
     }
 
     const result = await db

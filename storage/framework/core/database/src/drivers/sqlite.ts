@@ -20,7 +20,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCategoriesTable, createCommenteableTable, createCommentUpvoteMigration, createPasskeyMigration, dropCommonTables } from './traits'
+import { createCategorizableTable, createCommenteableTable, createCommentUpvoteMigration, createPasskeyMigration, dropCommonTables } from './traits'
 
 export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
   await deleteFrameworkModels()
@@ -172,7 +172,7 @@ async function createTableMigration(modelPath: string) {
   const isCategorizable = Boolean(model.traits?.categorizable)
 
   if (isCategorizable)
-    await createCategoriesTable()
+    await createCategorizableTable()
 
   if (isCommentable)
     await createCommenteableTable(commentableOptions)

@@ -21,7 +21,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCategoriesTable, createCommenteableTable, createCommentUpvoteMigration, createPasskeyMigration, dropCommonTables } from './traits'
+import { createCategorizableTable, createCommenteableTable, createCommentUpvoteMigration, createPasskeyMigration, dropCommonTables } from './traits'
 
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await dropMysqlTables()
@@ -130,7 +130,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
 
   // Create categories table if model is categorizable and has proper configuration
   if (model.traits?.categorizable && typeof model.traits.categorizable === 'object')
-    await createCategoriesTable()
+    await createCategorizableTable()
 
   if (usePasskey)
     await createPasskeyMigration()

@@ -79,7 +79,7 @@ export interface PasskeysTable {
   last_used_at: string
 }
 
-export interface Commentable {
+export interface CommentableTable {
   id?: number
   title: string
   body: string
@@ -110,9 +110,10 @@ export interface CategorizableTable {
   name: string
   slug: string
   description?: string
-  parent_id?: number
   order: number
   is_active: boolean
+  categorizable_id: number
+  categorizable_type: string
   created_at: string
   updated_at?: string
 }
@@ -168,7 +169,7 @@ export interface Database {
   errors: ErrorsTable
   migrations: MigrationsTable
   passkeys: PasskeysTable
-  commentable: Commentable
-  comment_upvotes: CommentUpvotesTable
+  commentable: CommentableTable
+  comment_upvotes: CommenteableUpvotesTable
   categorizable: CategorizableTable
 }

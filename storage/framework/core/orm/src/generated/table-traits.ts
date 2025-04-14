@@ -26,7 +26,7 @@ export interface PasskeysTable {
 
 function generateCommenteableInterface(): string {
   return `
-export interface Commentable {
+export interface CommentableTable {
   id?: number
   title: string
   body: string
@@ -58,17 +58,18 @@ export interface CommenteableUpvotesTable {
 
 function generateCategorizableTableInterface(): string {
   return `
-export interface CategorizableTable {
-  id?: number
-  name: string
-  slug: string
-  description?: string
-  parent_id?: number
-  order: number
-  is_active: boolean
-  created_at: string
-  updated_at?: string
-}`
+  export interface CategorizableTable {
+    id?: number
+    name: string
+    slug: string
+    description?: string
+    order: number
+    is_active: boolean
+    categorizable_id: number
+    categorizable_type: string
+    created_at: string
+    updated_at?: string
+  }`
 }
 
 export function generateTraitTableInterfaces(): string {

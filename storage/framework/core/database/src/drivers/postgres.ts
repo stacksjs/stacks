@@ -15,7 +15,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCategoriesModelsTable, createPostgresCategoriesTable, createPostgresCommenteableTable, createPostgresCommentUpvoteMigration, createPostgresPasskeyMigration, deleteFrameworkModels, deleteMigrationFiles, dropCommonTables } from './traits'
+import { createCategoriesModelsTable, createPostgresCategorizableTable, createPostgresCommenteableTable, createPostgresCommentUpvoteMigration, createPostgresPasskeyMigration, deleteFrameworkModels, deleteMigrationFiles, dropCommonTables } from './traits'
 
 export async function dropPostgresTables(): Promise<void> {
   const tables = await fetchPostgresTables()
@@ -39,7 +39,7 @@ export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   await db.schema.createTable('migrations').ifNotExists().execute()
   await db.schema.createTable('migration_locks').ifNotExists().execute()
   await createPostgresPasskeyMigration()
-  await createPostgresCategoriesTable()
+  await createPostgresCategorizableTable()
   await createPostgresCommenteableTable()
   await createCategoriesModelsTable()
   await db.schema.createTable('activities').ifNotExists().execute()
@@ -111,7 +111,7 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
 
   // Create categories table if model is categorizable and has proper configuration
   if (model.traits?.categorizable && typeof model.traits.categorizable === 'object')
-    await createPostgresCategoriesTable()
+    await createPostgresCategorizableTable()
 
   if (usePasskey)
     await createPostgresPasskeyMigration()

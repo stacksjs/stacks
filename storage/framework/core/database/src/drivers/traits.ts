@@ -76,7 +76,7 @@ export async function createPostgresPasskeyMigration(): Promise<void> {
 }
 
 // SQLite/MySQL version
-export async function createCategoriesTable(): Promise<void> {
+export async function createCategorizableTable(): Promise<void> {
   const hasBeenMigrated = await hasMigrationBeenCreated('categorizable')
 
   if (hasBeenMigrated)
@@ -91,9 +91,10 @@ export async function createCategoriesTable(): Promise<void> {
   migrationContent += `    .addColumn('name', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('slug', 'varchar(255)', col => col.notNull().unique())\n`
   migrationContent += `    .addColumn('description', 'text')\n`
-  migrationContent += `    .addColumn('parent_id', 'integer')\n`
   migrationContent += `    .addColumn('order', 'integer', col => col.defaultTo(0))\n`
   migrationContent += `    .addColumn('is_active', 'boolean', col => col.defaultTo(true))\n`
+  migrationContent += `    .addColumn('categorizable_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('categorizable_type', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
   migrationContent += `    .execute()\n\n`
@@ -112,9 +113,9 @@ export async function createCategoriesTable(): Promise<void> {
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('categorizable_parent_id_index')\n`
+  migrationContent += `    .createIndex('categorizable_polymorphic_index')\n`
   migrationContent += `    .on('categorizable')\n`
-  migrationContent += `    .column('parent_id')\n`
+  migrationContent += `    .columns(['categorizable_id', 'categorizable_type'])\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
@@ -141,7 +142,7 @@ export async function createCategoriesTable(): Promise<void> {
 }
 
 // PostgreSQL version
-export async function createPostgresCategoriesTable(): Promise<void> {
+export async function createPostgresCategorizableTable(): Promise<void> {
   const hasBeenMigrated = await hasMigrationBeenCreated('categorizable')
 
   if (hasBeenMigrated)
@@ -154,16 +155,44 @@ export async function createPostgresCategoriesTable(): Promise<void> {
   migrationContent += `    .createTable('categorizable')\n`
   migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
   migrationContent += `    .addColumn('name', 'varchar(255)', col => col.notNull())\n`
-  migrationContent += `    .addColumn('description', 'text')\n`
   migrationContent += `    .addColumn('slug', 'varchar(255)', col => col.notNull().unique())\n`
+  migrationContent += `    .addColumn('description', 'text')\n`
+  migrationContent += `    .addColumn('order', 'integer', col => col.defaultTo(0))\n`
+  migrationContent += `    .addColumn('is_active', 'boolean', col => col.defaultTo(true))\n`
+  migrationContent += `    .addColumn('categorizable_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('categorizable_type', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .addColumn('updated_at', 'timestamp with time zone')\n`
   migrationContent += `    .execute()\n\n`
-  migrationContent += `  await db.schema.createIndex('idx_categories_slug').on('categories').column('slug').execute()\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_categorizable_slug')\n`
+  migrationContent += `    .on('categorizable')\n`
+  migrationContent += `    .column('slug')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_categorizable_polymorphic')\n`
+  migrationContent += `    .on('categorizable')\n`
+  migrationContent += `    .columns(['categorizable_id', 'categorizable_type'])\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_categorizable_order')\n`
+  migrationContent += `    .on('categorizable')\n`
+  migrationContent += `    .column('order')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_categorizable_is_active')\n`
+  migrationContent += `    .on('categorizable')\n`
+  migrationContent += `    .column('is_active')\n`
+  migrationContent += `    .execute()\n`
+
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-categories-table.ts`
+  const migrationFileName = `${timestamp}-create-categorizable-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
