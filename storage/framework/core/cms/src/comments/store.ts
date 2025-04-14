@@ -102,7 +102,7 @@ interface CommentStore {
 export async function store(data: CommentStore): Promise<Comment> {
   try {
     const now = formatDate(new Date())
-    
+
     const commentData = {
       ...data,
       reports_count: 0,
@@ -129,7 +129,7 @@ export async function store(data: CommentStore): Promise<Comment> {
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new Error(`Failed to store comment: ${error.message}`)
+      throw new TypeError(`Failed to store comment: ${error.message}`)
     }
 
     throw error

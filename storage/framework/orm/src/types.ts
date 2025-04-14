@@ -96,6 +96,25 @@ export interface CommentsTable {
   updated_at: string | null
 }
 
+export interface UpvotesTable {
+  id?: number
+  user_id: number
+  likeable_id: number
+  created_at: string
+}
+
+export interface CategoriesTable {
+  id?: number
+  name: string
+  slug: string
+  description?: string
+  parent_id?: number
+  order: number
+  is_active: boolean
+  created_at: string
+  updated_at?: string
+}
+
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
@@ -149,4 +168,6 @@ export interface Database {
   migrations: MigrationsTable
   passkeys: PasskeysTable
   comments: CommentsTable
+  upvotes: UpvotesTable
+  categories: CategoriesTable
 }

@@ -17,7 +17,6 @@ import {
   findDifferingKeys,
   getLastMigrationFields,
   hasTableBeenMigrated,
-  hasMigrationBeenCreated,
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'

@@ -16,12 +16,11 @@ import {
   fetchTables,
   findDifferingKeys,
   getLastMigrationFields,
-  hasMigrationBeenCreated,
   isArrayEqual,
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCommentsTable, createPasskeyMigration, dropCommonTables, createCategoriesTable, createUpvoteMigration } from './traits'
+import { createCategoriesTable, createCommentsTable, createPasskeyMigration, createUpvoteMigration, dropCommonTables } from './traits'
 
 export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
   await deleteFrameworkModels()

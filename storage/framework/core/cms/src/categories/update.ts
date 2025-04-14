@@ -22,7 +22,7 @@ export async function update(id: number, request: PostCategoryRequestType): Prom
 
     if (Object.keys(updateData).length === 0) {
       return await db
-        .selectFrom('post_categories')
+        .selectFrom('categories')
         .where('id', '=', id)
         .selectAll()
         .executeTakeFirst()
@@ -30,13 +30,13 @@ export async function update(id: number, request: PostCategoryRequestType): Prom
 
     // Update the category record
     await db
-      .updateTable('post_categories')
+      .updateTable('categories')
       .set(updateData)
       .where('id', '=', id)
       .execute()
 
     const updatedCategory = await db
-      .selectFrom('post_categories')
+      .selectFrom('categories')
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()

@@ -4,8 +4,8 @@ export {
 } from './destroy'
 
 export {
-  fetchComments,
   fetchCommentById,
+  fetchComments,
   fetchCommentsByCommentable,
 } from './fetch'
 

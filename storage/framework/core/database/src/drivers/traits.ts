@@ -1,10 +1,10 @@
+import type { Model } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
-import { hasMigrationBeenCreated } from './index'
-import type { Model } from '@stacksjs/types'
 import { snakeCase } from '@stacksjs/strings'
+import { hasMigrationBeenCreated } from './index'
 
 // SQLite/MySQL version
 export async function createPasskeyMigration(): Promise<void> {
@@ -88,7 +88,7 @@ export async function createCategoriesTable(): Promise<void> {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('categories')\n`
+  migrationContent += `    .createTable('categorizable')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
   migrationContent += `    .addColumn('name', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('slug', 'varchar(255)', col => col.notNull().unique())\n`
@@ -153,7 +153,7 @@ export async function createPostgresCategoriesTable(): Promise<void> {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('categories')\n`
+  migrationContent += `    .createTable('categorizable')\n`
   migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
   migrationContent += `    .addColumn('name', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('description', 'text')\n`

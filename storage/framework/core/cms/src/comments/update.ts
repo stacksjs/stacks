@@ -1,6 +1,6 @@
+import type { Comment } from './fetch'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
-import type { Comment } from './fetch'
 
 interface CommentUpdate {
   title?: string
@@ -56,7 +56,7 @@ export async function update(id: number, data: CommentUpdate): Promise<Comment |
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new Error(`Failed to update comment: ${error.message}`)
+      throw new TypeError(`Failed to update comment: ${error.message}`)
     }
 
     throw error

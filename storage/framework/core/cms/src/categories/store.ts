@@ -21,7 +21,7 @@ export async function store(request: PostCategoryRequestType): Promise<PostCateg
     }
 
     const result = await db
-      .insertInto('post_categories')
+      .insertInto('categories')
       .values(categoryData)
       .returningAll()
       .executeTakeFirst()
