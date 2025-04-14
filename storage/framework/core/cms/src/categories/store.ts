@@ -2,6 +2,7 @@ import type { CategorizableTable } from '@stacksjs/orm'
 import type { Request } from '@stacksjs/router'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+import { slugify } from 'ts-slug'
 
 type CategorizableStore = Omit<CategorizableTable, 'updated_at'>
 
@@ -17,9 +18,8 @@ export async function store(request: Request): Promise<CategorizableTable> {
 
     const categoryData: CategorizableStore = {
       name: request.get('name'),
-      slug: request.get('slug'),
+      slug: slugify(request.get('name')),
       description: request.get('description'),
-      order: request.get('order'),
       categorizable_id: request.get('categorizable_id'),
       categorizable_type: request.get('categorizable_type'),
       is_active: request.get<boolean>('is_active'),

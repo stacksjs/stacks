@@ -40,7 +40,6 @@ export async function fetchTags(): Promise<TaggableTable[]> {
     return await db
       .selectFrom('taggable')
       .selectAll()
-      .orderBy('order', 'asc')
       .execute()
   }
   catch (error) {

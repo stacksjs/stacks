@@ -34,6 +34,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "ts-slug": "^0.1.0",
     "ts-spreadsheets": "^0.2.0"
   },
   "devDependencies": {

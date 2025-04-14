@@ -1,7 +1,8 @@
-import type { UpdateTagInput } from './store'
 import { db } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
-
+import { formatDate, type TaggableTable } from '@stacksjs/orm'
+import type { Request } from '@stacksjs/router'
+import { slugify } from 'ts-slug'
+type TagUpdate = Omit<TaggableTable, 'updated_at'>
 /**
  * Update a tag
  *
@@ -9,16 +10,26 @@ import { formatDate } from '@stacksjs/orm'
  * @param data The data to update
  * @returns The updated tag record
  */
-export async function update(id: number, data: UpdateTagInput) {
+export async function update(id: number, request: Request): Promise<TaggableTable> {
   try {
+    await request.validate()
+
     const now = formatDate(new Date())
+
+    const tagData: TagUpdate = {
+      name: request.get('name'),
+      slug: slugify(request.get('name')),
+      description: request.get('description'),
+      is_active: request.get('is_active'),
+      created_at: now,
+      taggable_id: request.get('taggable_id'),
+      taggable_type: request.get('taggable_type'),
+    }
+
 
     const result = await db
       .updateTable('taggable')
-      .set({
-        ...data,
-        updated_at: now,
-      })
+      .set(tagData)
       .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()

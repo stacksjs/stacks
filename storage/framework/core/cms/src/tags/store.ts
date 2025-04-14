@@ -1,7 +1,7 @@
 import type { TaggableTable } from '@stacksjs/orm'
 import type { Request } from '@stacksjs/router'
 import { db } from '@stacksjs/database'
-
+import { slugify } from 'ts-slug'
 type TagStore = Omit<TaggableTable, 'updated_at'>
 
 /**
@@ -18,12 +18,12 @@ export async function store(request: Request): Promise<TaggableTable> {
 
     const tagData: TagStore = {
       name: request.get('name'),
-      slug: request.get('slug'),
+      slug: slugify(request.get('name')),
       description: request.get('description'),
-      order: request.get('order'),
       is_active: request.get('is_active'),
       created_at: now.toDateString(),
-      updated_at: null,
+      taggable_id: request.get('taggable_id'),
+      taggable_type: request.get('taggable_type'),
     }
 
     const result = await db

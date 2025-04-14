@@ -2,7 +2,7 @@ import type { CategorizableTable } from '@stacksjs/orm'
 import type { Request } from '@stacksjs/router'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
-
+import { slugify } from 'ts-slug'
 type CategorizableUpdate = Partial<Omit<CategorizableTable, 'id' | 'created_at'>>
 
 /**
@@ -19,8 +19,7 @@ export async function update(id: number, request: Request): Promise<Categorizabl
     const updateData: CategorizableUpdate = {
       name: request.get('name'),
       description: request.get('description'),
-      slug: request.get('slug'),
-      order: request.get('order'),
+      slug: slugify(request.get('name')),
       categorizable_id: request.get('categorizable_id'),
       categorizable_type: request.get('categorizable_type'),
       is_active: request.get<boolean>('is_active'),
