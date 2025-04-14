@@ -72,6 +72,20 @@ function generateCategorizableTableInterface(): string {
   }`
 }
 
+function generateTaggableTableInterface(): string {
+  return `
+  export interface TaggableTable {
+    id?: number
+    name: string
+    slug: string
+    description?: string
+    order: number
+    is_active: boolean
+    taggable_id: number
+    taggable_type: string
+  }`
+}
+
 export function generateTraitTableInterfaces(): string {
   return [
     generateMigrationsTableInterface(),
@@ -79,5 +93,6 @@ export function generateTraitTableInterfaces(): string {
     generateCommenteableInterface(),
     generateCommenteableUpvotesTableInterface(),
     generateCategorizableTableInterface(),
+    generateTaggableTableInterface(),
   ].join('\n')
 }

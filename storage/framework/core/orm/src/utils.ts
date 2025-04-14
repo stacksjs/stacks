@@ -1244,6 +1244,7 @@ export async function generateKyselyTypes(): Promise<void> {
   text += '  migrations: MigrationsTable\n'
   text += '  passkeys: PasskeysTable\n'
   text += '  commentable: CommentableTable\n'
+  text += '  taggable: TaggableTable\n'
   text += '  comment_upvotes: CommenteableUpvotesTable\n'
   text += '  categorizable: CategorizableTable\n'
   text += '}\n'

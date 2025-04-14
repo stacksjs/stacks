@@ -117,6 +117,17 @@ export interface CategorizableTable {
   created_at: string
   updated_at?: string
 }
+
+export interface TaggableTable {
+  id?: number
+  name: string
+  slug: string
+  description?: string
+  order: number
+  is_active: boolean
+  taggable_id: number
+  taggable_type: string
+}
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
@@ -170,6 +181,7 @@ export interface Database {
   migrations: MigrationsTable
   passkeys: PasskeysTable
   commentable: CommentableTable
+  taggable: TaggableTable
   comment_upvotes: CommenteableUpvotesTable
   categorizable: CategorizableTable
 }

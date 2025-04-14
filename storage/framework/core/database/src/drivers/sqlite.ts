@@ -182,7 +182,7 @@ async function createTableMigration(modelPath: string) {
 
   if (isTaggable)
     await createTaggableTable()
-  
+
   if (usePasskey && tableName === 'users')
     await createPasskeyMigration()
 
