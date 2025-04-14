@@ -79,7 +79,7 @@ export async function createPostgresPasskeyMigration(): Promise<void> {
 
 // SQLite/MySQL version
 export async function createCategoriesTable(): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('categories')
+  const hasBeenMigrated = await hasMigrationBeenCreated('categorizable')
 
   if (hasBeenMigrated)
     return
@@ -102,39 +102,39 @@ export async function createCategoriesTable(): Promise<void> {
 
   // Add indexes with more descriptive names
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('categories_id_index')\n`
-  migrationContent += `    .on('categories')\n`
+  migrationContent += `    .createIndex('categorizable_id_index')\n`
+  migrationContent += `    .on('categorizable')\n`
   migrationContent += `    .column('id')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('categories_slug_index')\n`
-  migrationContent += `    .on('categories')\n`
+  migrationContent += `    .createIndex('categorizable_slug_index')\n`
+  migrationContent += `    .on('categorizable')\n`
   migrationContent += `    .column('slug')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('categories_parent_id_index')\n`
-  migrationContent += `    .on('categories')\n`
+  migrationContent += `    .createIndex('categorizable_parent_id_index')\n`
+  migrationContent += `    .on('categorizable')\n`
   migrationContent += `    .column('parent_id')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('categories_order_index')\n`
-  migrationContent += `    .on('categories')\n`
+  migrationContent += `    .createIndex('categorizable_order_index')\n`
+  migrationContent += `    .on('categorizable')\n`
   migrationContent += `    .column('order')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('categories_is_active_index')\n`
-  migrationContent += `    .on('categories')\n`
+  migrationContent += `    .createIndex('categorizable_is_active_index')\n`
+  migrationContent += `    .on('categorizable')\n`
   migrationContent += `    .column('is_active')\n`
   migrationContent += `    .execute()\n`
 
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-categories-table.ts`
+  const migrationFileName = `${timestamp}-create-categorizable-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
@@ -144,7 +144,7 @@ export async function createCategoriesTable(): Promise<void> {
 
 // PostgreSQL version
 export async function createPostgresCategoriesTable(): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('categories')
+  const hasBeenMigrated = await hasMigrationBeenCreated('categorizable')
 
   if (hasBeenMigrated)
     return
@@ -174,13 +174,13 @@ export async function createPostgresCategoriesTable(): Promise<void> {
 }
 
 // SQLite/MySQL version
-export async function createCommentsTable(options: {
+export async function createCommenteableTable(options: {
   requiresApproval?: boolean
   reportable?: boolean
   votable?: boolean
   requiresAuth?: boolean
 } = {}): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('comments')
+  const hasBeenMigrated = await hasMigrationBeenCreated('commenteable')
 
   if (hasBeenMigrated)
     return
@@ -189,7 +189,7 @@ export async function createCommentsTable(options: {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('comments')\n`
+  migrationContent += `    .createTable('commenteable')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
   migrationContent += `    .addColumn('title', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('body', 'text', col => col.notNull())\n`
@@ -213,25 +213,25 @@ export async function createCommentsTable(options: {
   migrationContent += `    .execute()\n\n`
 
   // Add indexes
-  migrationContent += `  await db.schema.createIndex('idx_comments_status').on('comments').column('status').execute()\n`
-  migrationContent += `  await db.schema.createIndex('idx_comments_commentable').on('comments').columns(['commentable_id', 'commentable_type']).execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_commenteable_status').on('commenteable').column('status').execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_commenteable_commentable').on('commenteable').columns(['commentable_id', 'commentable_type']).execute()\n`
 
   if (options.reportable) {
-    migrationContent += `  await db.schema.createIndex('idx_comments_reports').on('comments').column('reports_count').execute()\n`
+    migrationContent += `  await db.schema.createIndex('idx_commenteable_reports').on('commenteable').column('reports_count').execute()\n`
   }
 
   if (options.votable) {
-    migrationContent += `  await db.schema.createIndex('idx_comments_votes').on('comments').columns(['downvotes_count']).execute()\n`
+    migrationContent += `  await db.schema.createIndex('idx_commenteable_votes').on('commenteable').columns(['downvotes_count']).execute()\n`
   }
 
   if (options.requiresAuth) {
-    migrationContent += `  await db.schema.createIndex('idx_comments_user').on('comments').column('user_id').execute()\n`
+    migrationContent += `  await db.schema.createIndex('idx_commenteable_user').on('commenteable').column('user_id').execute()\n`
   }
 
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-comments-table.ts`
+  const migrationFileName = `${timestamp}-create-commenteable-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
@@ -240,8 +240,8 @@ export async function createCommentsTable(options: {
 }
 
 // PostgreSQL version
-export async function createPostgresCommentsTable(): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('comments')
+export async function createPostgresCommenteableTable(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('commenteable')
 
   if (hasBeenMigrated)
     return
@@ -250,7 +250,7 @@ export async function createPostgresCommentsTable(): Promise<void> {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('comments')\n`
+  migrationContent += `    .createTable('commenteable')\n`
   migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
   migrationContent += `    .addColumn('title', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('body', 'text', col => col.notNull())\n`
@@ -262,12 +262,12 @@ export async function createPostgresCommentsTable(): Promise<void> {
   migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .addColumn('updated_at', 'timestamp with time zone')\n`
   migrationContent += `    .execute()\n\n`
-  migrationContent += `  await db.schema.createIndex('idx_comments_status').on('comments').column('status').execute()\n`
-  migrationContent += `  await db.schema.createIndex('idx_comments_commentable').on('comments').columns(['commentable_id', 'commentable_type']).execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_commenteable_status').on('commenteable').column('status').execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_commenteable_commentable').on('commenteable').columns(['commentable_id', 'commentable_type']).execute()\n`
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-comments-table.ts`
+  const migrationFileName = `${timestamp}-create-commenteable-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
@@ -325,8 +325,8 @@ export async function dropCommonTables(): Promise<void> {
   await db.schema.dropTable('migrations').ifExists().execute()
   await db.schema.dropTable('migration_locks').ifExists().execute()
   await db.schema.dropTable('passkeys').ifExists().execute()
-  await db.schema.dropTable('categories').ifExists().execute()
-  await db.schema.dropTable('comments').ifExists().execute()
+  await db.schema.dropTable('categorizable_table').ifExists().execute()
+  await db.schema.dropTable('commenteable').ifExists().execute()
   await db.schema.dropTable('categories_models').ifExists().execute()
   await db.schema.dropTable('activities').ifExists().execute()
 }

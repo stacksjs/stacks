@@ -20,7 +20,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCategoriesTable, createCommentsTable, createPasskeyMigration, createUpvoteMigration, dropCommonTables } from './traits'
+import { createCategoriesTable, createCommenteableTable, createPasskeyMigration, createUpvoteMigration, dropCommonTables } from './traits'
 
 export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
   await deleteFrameworkModels()
@@ -175,7 +175,7 @@ async function createTableMigration(modelPath: string) {
   }
 
   if (isCommentable) {
-    await createCommentsTable(commentableOptions)
+    await createCommenteableTable(commentableOptions)
   }
 
   if (usePasskey && tableName === 'users') {

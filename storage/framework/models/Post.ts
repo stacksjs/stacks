@@ -11,7 +11,7 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'title', 'author', 'category', 'views', 'comments', 'status', 'poster'],
+      displayable: ['id', 'title', 'author', 'category', 'views', 'status', 'poster'],
       searchable: ['title', 'author', 'category', 'body'],
       sortable: ['published_at', 'views', 'comments'],
       filterable: ['category', 'status'],
@@ -110,20 +110,6 @@ export default {
         },
       },
       factory: faker => faker.number.int({ min: 0, max: 1000 }),
-    },
-
-    comments: {
-      required: true,
-      order: 7,
-      fillable: true,
-      default: 0,
-      validation: {
-        rule: schema.number().min(0),
-        message: {
-          min: 'Comments count cannot be negative',
-        },
-      },
-      factory: faker => faker.number.int({ min: 0, max: 100 }),
     },
 
     publishedAt: {

@@ -12,7 +12,6 @@ export async function up(db: Database<any>) {
     .addColumn('poster', 'text')
     .addColumn('body', 'text', col => col.notNull())
     .addColumn('views', 'numeric', col => col.notNull().defaultTo(0))
-    .addColumn('comments', 'numeric', col => col.notNull().defaultTo(0))
     .addColumn('published_at', 'numeric', col => col.notNull())
     .addColumn('status', 'text', col => col.notNull().defaultTo('draft'))
     .addColumn('user_id', 'integer', col =>

@@ -15,7 +15,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCategoriesModelsTable, createPostgresCategoriesTable, createPostgresCommentsTable, createPostgresPasskeyMigration, deleteFrameworkModels, deleteMigrationFiles, dropCommonTables } from './traits'
+import { createCategoriesModelsTable, createPostgresCategoriesTable, createPostgresCommenteableTable, createPostgresPasskeyMigration, deleteFrameworkModels, deleteMigrationFiles, dropCommonTables } from './traits'
 
 export async function dropPostgresTables(): Promise<void> {
   const tables = await fetchPostgresTables()
@@ -40,7 +40,7 @@ export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   await db.schema.createTable('migration_locks').ifNotExists().execute()
   await createPostgresPasskeyMigration()
   await createPostgresCategoriesTable()
-  await createPostgresCommentsTable()
+  await createPostgresCommenteableTable()
   await createCategoriesModelsTable()
   await db.schema.createTable('activities').ifNotExists().execute()
 
@@ -118,7 +118,7 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
     await createPostgresPasskeyMigration()
 
   if (model.traits?.commentable && typeof model.traits.commentable === 'object') {
-    await createPostgresCommentsTable()
+    await createPostgresCommenteableTable()
   }
 
   if (useBillable && tableName === 'users')

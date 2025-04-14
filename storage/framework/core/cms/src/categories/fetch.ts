@@ -6,7 +6,7 @@ import { db } from '@stacksjs/database'
  */
 export async function fetchById(id: number): Promise<CategoryJsonResponse | undefined> {
   return await db
-    .selectFrom('categories')
+    .selectFrom('categorizable')
     .where('id', '=', id)
     .selectAll()
     .executeTakeFirst()
@@ -16,7 +16,7 @@ export async function fetchById(id: number): Promise<CategoryJsonResponse | unde
  * Fetch all categories
  */
 export async function fetchAll(): Promise<CategoryJsonResponse[]> {
-  return await db.selectFrom('categories').selectAll().execute()
+  return await db.selectFrom('categorizable').selectAll().execute()
 }
 
 /**
@@ -24,7 +24,7 @@ export async function fetchAll(): Promise<CategoryJsonResponse[]> {
  */
 export async function fetchByName(name: string): Promise<CategoryJsonResponse[]> {
   return await db
-    .selectFrom('categories')
+    .selectFrom('categorizable')
     .where('name', '=', name)
     .selectAll()
     .execute()
@@ -35,7 +35,7 @@ export async function fetchByName(name: string): Promise<CategoryJsonResponse[]>
  */
 export async function fetchBySlug(slug: string): Promise<CategoryJsonResponse | undefined> {
   return await db
-    .selectFrom('categories')
+    .selectFrom('categorizable')
     .where('slug', '=', slug)
     .selectAll()
     .executeTakeFirst()
@@ -46,7 +46,7 @@ export async function fetchBySlug(slug: string): Promise<CategoryJsonResponse | 
  */
 export async function fetchWithPosts(id: number): Promise<CategoryJsonResponse | undefined> {
   return await db
-    .selectFrom('categories')
+    .selectFrom('categorizable')
     .where('id', '=', id)
     .selectAll()
     .executeTakeFirst()
