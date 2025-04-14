@@ -21,6 +21,8 @@ export default {
       count: 20,
     },
     categorizable: true,
+    taggable: true,
+    commentable: true,
     useApi: {
       uri: 'posts',
       routes: ['index', 'store', 'show', 'update', 'destroy'],

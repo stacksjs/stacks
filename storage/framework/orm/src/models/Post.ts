@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { CategorizableTable, Operator } from '@stacksjs/orm'
+import type { CategorizableTable, CommentableTable, Operator, TaggableTable } from '@stacksjs/orm'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -875,6 +875,137 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     const instance = new PostModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
+  }
+
+  async comments(id: number): Promise<CommentableTable[]> {
+    return await DB.instance
+      .selectFrom('comments')
+      .where('commentable_id', '=', id)
+      .where('commentable_type', '=', 'posts')
+      .selectAll()
+      .execute()
+  }
+
+  async commentCount(id: number): Promise<number> {
+    const result = await DB.instance
+      .selectFrom('comments')
+      .select(sql`count(*) as count`)
+      .where('commentable_id', '=', id)
+      .where('commentable_type', '=', 'posts')
+      .executeTakeFirst()
+
+    return Number(result?.count) || 0
+  }
+
+  async addComment(id: number, comment: { title: string, body: string }): Promise<any> {
+    return await DB.instance
+      .insertInto('comments')
+      .values({
+        ...comment,
+        commentable_id: id,
+        commentable_type: 'posts',
+        status: 'pending',
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .returningAll()
+      .executeTakeFirst()
+  }
+
+  async approvedComments(id: number): Promise<CommentableTable[]> {
+    return await DB.instance
+      .selectFrom('comments')
+      .where('commentable_id', '=', id)
+      .where('commentable_type', '=', 'posts')
+      .where('status', '=', 'approved')
+      .selectAll()
+      .execute()
+  }
+
+  async pendingComments(id: number): Promise<CommentableTable[]> {
+    return await DB.instance
+      .selectFrom('comments')
+      .where('commentable_id', '=', id)
+      .where('commentable_type', '=', 'posts')
+      .where('status', '=', 'pending')
+      .selectAll()
+      .execute()
+  }
+
+  async rejectedComments(id: number): Promise<CommentableTable[]> {
+    return await DB.instance
+      .selectFrom('comments')
+      .where('commentable_id', '=', id)
+      .where('commentable_type', '=', 'posts')
+      .where('status', '=', 'rejected')
+      .selectAll()
+      .execute()
+  }
+
+  async tags(id: number): Promise<TaggableTable[]> {
+    return await DB.instance
+      .selectFrom('taggable')
+      .where('taggable_id', '=', id)
+      .where('taggable_type', '=', 'posts')
+      .selectAll()
+      .execute()
+  }
+
+  async tagCount(id: number): Promise<number> {
+    const result = await DB.instance
+      .selectFrom('taggable')
+      .select(sql`count(*) as count`)
+      .where('taggable_id', '=', id)
+      .where('taggable_type', '=', 'posts')
+      .executeTakeFirst()
+
+    return Number(result?.count) || 0
+  }
+
+  async addTag(id: number, tag: { name: string, description?: string }): Promise<TaggableTable> {
+    return await DB.instance
+      .insertInto('taggable')
+      .values({
+        ...tag,
+        taggable_id: id,
+        taggable_type: 'posts',
+        slug: tag.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        order: 0,
+        is_active: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .returningAll()
+      .executeTakeFirst()
+  }
+
+  async activeTags(id: number): Promise<TaggableTable[]> {
+    return await DB.instance
+      .selectFrom('taggable')
+      .where('taggable_id', '=', id)
+      .where('taggable_type', '=', 'posts')
+      .where('is_active', '=', true)
+      .selectAll()
+      .execute()
+  }
+
+  async inactiveTags(id: number): Promise<TaggableTable[]> {
+    return await DB.instance
+      .selectFrom('taggable')
+      .where('taggable_id', '=', id)
+      .where('taggable_type', '=', 'posts')
+      .where('is_active', '=', false)
+      .selectAll()
+      .execute()
+  }
+
+  async removeTag(id: number, tagId: number): Promise<void> {
+    await DB.instance
+      .deleteFrom('taggable')
+      .where('taggable_id', '=', id)
+      .where('taggable_type', '=', 'posts')
+      .where('id', '=', tagId)
+      .execute()
   }
 
   async categories(id: number): Promise<CategorizableTable[]> {

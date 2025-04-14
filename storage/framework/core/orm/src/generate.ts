@@ -103,7 +103,9 @@ export async function generateModelString(
   let relationMethods = ''
   let relationImports = ''
   let paymentImports = ''
-  let categoryImports = ''
+  let categorizableImports = ''
+  let commentableImports = ''
+  let taggableImports = ''
   let twoFactorStatements = ''
   let billableStatements = ''
   let likeableStatements = ''
@@ -196,8 +198,9 @@ export async function generateModelString(
   }
 
   if (useCommentable) {
+    commentableImports += `import type { CommentableTable } from '@stacksjs/orm'\n`
     relationMethods += `
-    async comments(id: number): Promise<any[]> {
+    async comments(id: number): Promise<CommentableTable[]> {
       return await DB.instance
         .selectFrom('comments')
         .where('commentable_id', '=', id)
@@ -232,7 +235,7 @@ export async function generateModelString(
         .executeTakeFirst()
     }
 
-    async approvedComments(id: number): Promise<any[]> {
+    async approvedComments(id: number): Promise<CommentableTable[]> {
       return await DB.instance
         .selectFrom('comments')
         .where('commentable_id', '=', id)
@@ -242,7 +245,7 @@ export async function generateModelString(
         .execute()
     }
 
-    async pendingComments(id: number): Promise<any[]> {
+    async pendingComments(id: number): Promise<CommentableTable[]> {
       return await DB.instance
         .selectFrom('comments')
         .where('commentable_id', '=', id)
@@ -252,7 +255,7 @@ export async function generateModelString(
         .execute()
     }
 
-    async rejectedComments(id: number): Promise<any[]> {
+    async rejectedComments(id: number): Promise<CommentableTable[]> {
       return await DB.instance
         .selectFrom('comments')
         .where('commentable_id', '=', id)
@@ -265,8 +268,9 @@ export async function generateModelString(
   }
 
   if (model.traits?.taggable) {
+    taggableImports += `import type { TaggableTable } from '@stacksjs/orm'\n`
     relationMethods += `
-    async tags(id: number): Promise<any[]> {
+    async tags(id: number): Promise<TaggableTable[]> {
       return await DB.instance
         .selectFrom('taggable')
         .where('taggable_id', '=', id)
@@ -286,7 +290,7 @@ export async function generateModelString(
       return Number(result?.count) || 0
     }
 
-    async addTag(id: number, tag: { name: string, description?: string }): Promise<any> {
+    async addTag(id: number, tag: { name: string, description?: string }): Promise<TaggableTable> {
       return await DB.instance
         .insertInto('taggable')
         .values({
@@ -303,7 +307,7 @@ export async function generateModelString(
         .executeTakeFirst()
     }
 
-    async activeTags(id: number): Promise<any[]> {
+    async activeTags(id: number): Promise<TaggableTable[]> {
       return await DB.instance
         .selectFrom('taggable')
         .where('taggable_id', '=', id)
@@ -313,7 +317,7 @@ export async function generateModelString(
         .execute()
     }
 
-    async inactiveTags(id: number): Promise<any[]> {
+    async inactiveTags(id: number): Promise<TaggableTable[]> {
       return await DB.instance
         .selectFrom('taggable')
         .where('taggable_id', '=', id)
@@ -335,7 +339,7 @@ export async function generateModelString(
   }
 
   if (model.traits?.categorizable) {
-    categoryImports += `import type { CategorizableTable } from '@stacksjs/orm'\n`
+    categorizableImports += `import type { CategorizableTable } from '@stacksjs/orm'\n`
 
     relationMethods += `
     async categories(id: number): Promise<CategorizableTable[]> {
@@ -1150,7 +1154,9 @@ export async function generateModelString(
       import { randomUUIDv7 } from 'bun'
       ${paymentImports}
       ${relationImports}
-      ${categoryImports}
+      ${categorizableImports}
+      ${commentableImports}
+      ${taggableImports}
       export interface ${formattedTableName}Table {
         id: Generated<number>
         ${fieldString}
