@@ -1,4 +1,5 @@
 import { Action } from '@stacksjs/actions'
+import { postCategories } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -6,7 +7,7 @@ export default new Action({
   description: 'PostCategory Index ORM Action',
   method: 'GET',
   async handle() {
-    const results = await PostCategory.all()
+    const results = await postCategories.fetchAll()
 
     return response.json(results)
   },

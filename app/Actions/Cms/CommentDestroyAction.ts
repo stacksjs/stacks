@@ -1,19 +1,16 @@
-import type { CommentRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-
-import { Comment } from '@stacksjs/orm'
+import { comments } from '@stacksjs/cms'
+import { CommentableRequestType } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'Comment Destroy',
   description: 'Comment Destroy ORM Action',
   method: 'DELETE',
-  async handle(request: CommentRequestType) {
+  async handle(request: CommentableRequestType) {
     const id = request.getParam('id')
 
-    const model = await Comment.findOrFail(id)
-
-    model?.delete()
+    await comments.destroy(id)
 
     return response.json({ message: 'Model deleted!' })
   },

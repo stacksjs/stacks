@@ -1,5 +1,4 @@
-import type { CategorizableTable } from '@stacksjs/orm'
-import type { Request } from '@stacksjs/router'
+import type { CategorizableTable, CategoryRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { slugify } from 'ts-slug'
@@ -13,7 +12,7 @@ type CategorizableUpdate = Partial<Omit<CategorizableTable, 'id' | 'created_at'>
  * @param request The updated category data
  * @returns The updated category record
  */
-export async function update(id: number, request: Request): Promise<CategorizableTable | undefined> {
+export async function update(id: number, request: CategoryRequestType): Promise<CategorizableTable | undefined> {
   try {
     await request.validate()
 

@@ -1,4 +1,5 @@
 import { Action } from '@stacksjs/actions'
+import { comments } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -6,7 +7,7 @@ export default new Action({
   description: 'Comment Index ORM Action',
   method: 'GET',
   async handle() {
-    const results = await Comment.all()
+    const results = await comments.fetchCommentsByCommentable(1, 'post')
 
     return response.json(results)
   },

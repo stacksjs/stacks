@@ -1,4 +1,4 @@
-import type { CategorizableTable } from '@stacksjs/orm'
+import type { CategorizableTable, CategoryRequestType } from '@stacksjs/orm'
 import type { Request } from '@stacksjs/router'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
@@ -12,7 +12,7 @@ type CategorizableStore = Omit<CategorizableTable, 'updated_at'>
  * @param request The category data to create
  * @returns The created category record
  */
-export async function store(request: Request): Promise<CategorizableTable> {
+export async function store(request: CategoryRequestType): Promise<CategorizableTable> {
   try {
     await request.validate()
 
