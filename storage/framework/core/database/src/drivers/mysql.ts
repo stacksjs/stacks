@@ -20,7 +20,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCategoriesTable, createCommenteableTable, createPasskeyMigration, createUpvoteMigration, dropCommonTables } from './traits'
+import { createCategoriesTable, createCommenteableTable, createPasskeyMigration, createCommentUpvoteMigration, dropCommonTables } from './traits'
 
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await dropMysqlTables()
@@ -128,22 +128,20 @@ async function createTableMigration(modelPath: string): Promise<void> {
   const useUuid = model.traits?.useUuid || false
 
   // Create categories table if model is categorizable and has proper configuration
-  if (model.traits?.categorizable && typeof model.traits.categorizable === 'object') {
+  if (model.traits?.categorizable && typeof model.traits.categorizable === 'object')
     await createCategoriesTable()
-  }
 
   if (usePasskey)
     await createPasskeyMigration()
 
-  if (model.traits?.commentable && typeof model.traits.commentable === 'object') {
+  if (model.traits?.commentable && typeof model.traits.commentable === 'object')
     await createCommenteableTable()
-  }
 
   if (useBillable && tableName === 'users')
     await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))
 
   if (model.traits?.likeable === true || typeof model.traits?.likeable === 'object')
-    await createUpvoteMigration(model, getModelName(model, modelPath), tableName)
+    await createCommentUpvoteMigration()
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`

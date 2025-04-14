@@ -1247,10 +1247,11 @@ export async function generateKyselyTypes(): Promise<void> {
   text += '  updated_at: string | null\n'
   text += '}\n\n'
 
-  text += '\nexport interface UpvotesTable {\n'
+  text += '\nexport interface CommenteableUpvotesTable {\n'
   text += '  id?: number\n'
   text += '  user_id: number\n'
-  text += '  likeable_id: number\n'
+  text += '  upvoteable_id: number\n'
+  text += '  upvoteable_type: string\n'
   text += '  created_at: string\n'
   text += '}\n\n'
 
@@ -1297,7 +1298,7 @@ export async function generateKyselyTypes(): Promise<void> {
   text += '  migrations: MigrationsTable\n'
   text += '  passkeys: PasskeysTable\n'
   text += '  commenteable: Commenteable\n'
-  text += '  upvotes: UpvotesTable\n'
+  text += '  comment_upvotes: CommentUpvotesTable\n'
   text += '  categorizable: CategorizableTable\n'
   text += '}\n'
 

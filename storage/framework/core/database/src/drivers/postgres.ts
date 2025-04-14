@@ -15,7 +15,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCategoriesModelsTable, createPostgresCategoriesTable, createPostgresCommenteableTable, createPostgresPasskeyMigration, deleteFrameworkModels, deleteMigrationFiles, dropCommonTables } from './traits'
+import { createCategoriesModelsTable, createPostgresCategoriesTable, createPostgresCommenteableTable, createPostgresCommentUpvoteMigration, createPostgresPasskeyMigration, deleteFrameworkModels, deleteMigrationFiles, dropCommonTables } from './traits'
 
 export async function dropPostgresTables(): Promise<void> {
   const tables = await fetchPostgresTables()
@@ -110,19 +110,20 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
   const useBillable = model.traits?.billable || false
 
   // Create categories table if model is categorizable and has proper configuration
-  if (model.traits?.categorizable && typeof model.traits.categorizable === 'object') {
+  if (model.traits?.categorizable && typeof model.traits.categorizable === 'object')
     await createPostgresCategoriesTable()
-  }
 
   if (usePasskey)
     await createPostgresPasskeyMigration()
 
-  if (model.traits?.commentable && typeof model.traits.commentable === 'object') {
+  if (model.traits?.commentable && typeof model.traits.commentable === 'object')
     await createPostgresCommenteableTable()
-  }
 
   if (useBillable && tableName === 'users')
     await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))
+
+  if (model.traits?.likeable === true || typeof model.traits?.likeable === 'object')
+    await createPostgresCommentUpvoteMigration()
 
   if (haveFieldsChanged)
     await createAlterTableMigration(modelPath)

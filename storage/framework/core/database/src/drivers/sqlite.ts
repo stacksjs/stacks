@@ -20,7 +20,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCategoriesTable, createCommenteableTable, createPasskeyMigration, createUpvoteMigration, dropCommonTables } from './traits'
+import { createCategoriesTable, createCommenteableTable, createPasskeyMigration, createCommentUpvoteMigration, dropCommonTables } from './traits'
 
 export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
   await deleteFrameworkModels()
@@ -170,20 +170,18 @@ async function createTableMigration(modelPath: string) {
 
   // Handle categorizable trait
   const isCategorizable = Boolean(model.traits?.categorizable)
-  if (isCategorizable) {
+
+  if (isCategorizable)
     await createCategoriesTable()
-  }
 
-  if (isCommentable) {
+  if (isCommentable)
     await createCommenteableTable(commentableOptions)
-  }
 
-  if (usePasskey && tableName === 'users') {
+  if (usePasskey && tableName === 'users')
     await createPasskeyMigration()
-  }
 
   if (model.traits?.likeable === true || typeof model.traits?.likeable === 'object')
-    await createUpvoteMigration(model, modelName, tableName)
+    await createCommentUpvoteMigration()
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`

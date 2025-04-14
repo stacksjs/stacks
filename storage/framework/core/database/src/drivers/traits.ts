@@ -359,12 +359,8 @@ export async function deleteMigrationFiles(): Promise<void> {
   }
 }
 
-export async function createUpvoteMigration(model: Model, modelName: string, tableName: string): Promise<void> {
-  const migrationTable = getUpvoteTableName(model, tableName)
-
-  const hasBeenMigrated = await hasMigrationBeenCreated(migrationTable)
-
-  const foreignKey = getUpvoteForeignKey(model, modelName)
+export async function createCommentUpvoteMigration(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('commenteable_upvotes')
 
   if (hasBeenMigrated)
     return
@@ -372,17 +368,19 @@ export async function createUpvoteMigration(model: Model, modelName: string, tab
   let migrationContent = `import type { Database } from '@stacksjs/database'\n import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('${migrationTable}')\n`
+  migrationContent += `    .createTable('commenteable_upvotes')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
   migrationContent += `    .addColumn('user_id', 'integer', col => col.notNull())\n`
-  migrationContent += `    .addColumn('${foreignKey}', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('upvoteable_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('upvoteable_type', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-  migrationContent += `    .execute()\n`
-  migrationContent += `    }\n`
+  migrationContent += `    .execute()\n\n`
+  migrationContent += `  await db.schema.createIndex('idx_upvotes_user').on('upvotes').column('user_id').execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_upvotes_upvoteable').on('upvotes').columns(['upvoteable_id', 'upvoteable_type']).execute()\n`
+  migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-${migrationTable}-table.ts`
-
+  const migrationFileName = `${timestamp}-create-commenteable_upvotes-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
@@ -390,20 +388,31 @@ export async function createUpvoteMigration(model: Model, modelName: string, tab
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
 
-function getUpvoteTableName(model: Model, tableName: string): string {
-  const defaultTable = `${tableName}_likes`
-  const traits = model.traits
+export async function createPostgresCommentUpvoteMigration(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('commenteable_upvotes')
 
-  return typeof traits?.likeable === 'object'
-    ? traits.likeable.table || defaultTable
-    : defaultTable
-}
+  if (hasBeenMigrated)
+    return
 
-function getUpvoteForeignKey(model: Model, modelName: string): string {
-  const defaultForeignKey = `${snakeCase(modelName)}_id`
-  const traits = model.traits
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n import { sql } from '@stacksjs/database'\n\n`
+  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createTable('commenteable_upvotes')\n`
+  migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
+  migrationContent += `    .addColumn('user_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('upvoteable_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('upvoteable_type', 'varchar(255)', col => col.notNull())\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .execute()\n\n`
+  migrationContent += `  await db.schema.createIndex('idx_commenteable_upvotes_user').on('commenteable_upvotes').column('user_id').execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_commenteable_upvotes_upvoteable').on('commenteable_upvotes').columns(['upvoteable_id', 'upvoteable_type']).execute()\n`
+  migrationContent += `}\n`
 
-  return typeof traits?.likeable === 'object'
-    ? traits.likeable.foreignKey || defaultForeignKey
-    : defaultForeignKey
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-create-commenteable_upvotes-table.ts`
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  Bun.write(migrationFilePath, migrationContent)
+
+  log.success(`Created migration: ${italic(migrationFileName)}`)
 }
