@@ -15,7 +15,8 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCategoriesModelsTable, createPostgresCategorizableTable, createPostgresCommenteableTable, createPostgresCommentUpvoteMigration, createPostgresPasskeyMigration, deleteFrameworkModels, deleteMigrationFiles, dropCommonTables } from './traits'
+
+import { createCategoriesModelsTable, createPostgresCategorizableTable, createPostgresCommenteableTable, createPostgresCommentUpvoteMigration, createPostgresPasskeyMigration, createPostgresTaggableTable, deleteFrameworkModels, deleteMigrationFiles, dropCommonTables } from './traits'
 
 export async function dropPostgresTables(): Promise<void> {
   const tables = await fetchPostgresTables()
@@ -118,6 +119,9 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
 
   if (model.traits?.commentable && typeof model.traits.commentable === 'object')
     await createPostgresCommenteableTable()
+
+  if (model.traits?.taggable)
+    await createPostgresTaggableTable()
 
   if (useBillable && tableName === 'users')
     await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))

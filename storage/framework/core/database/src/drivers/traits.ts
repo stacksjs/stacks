@@ -75,6 +75,78 @@ export async function createPostgresPasskeyMigration(): Promise<void> {
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
 
+export async function createTaggableTable(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('taggable')
+
+  if (hasBeenMigrated)
+    return
+
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createTable('taggable')\n`
+  migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
+  migrationContent += `    .addColumn('name', 'varchar(255)', col => col.notNull())\n`
+  migrationContent += `    .addColumn('slug', 'varchar(255)', col => col.notNull().unique())\n`
+  migrationContent += `    .addColumn('description', 'text')\n`
+  migrationContent += `    .addColumn('order', 'integer', col => col.defaultTo(0))\n`
+  migrationContent += `    .addColumn('is_active', 'boolean', col => col.defaultTo(true))\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_taggable_slug')\n`
+  migrationContent += `    .on('taggable')\n`
+  migrationContent += `    .column('slug')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `}\n`
+
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-create-taggable-table.ts`
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  Bun.write(migrationFilePath, migrationContent)
+}
+
+export async function createPostgresTaggableTable(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('taggable')
+
+  if (hasBeenMigrated)
+    return
+
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createTable('taggable')\n`
+  migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
+  migrationContent += `    .addColumn('name', 'varchar(255)', col => col.notNull())\n`
+  migrationContent += `    .addColumn('slug', 'varchar(255)', col => col.notNull().unique())\n`
+  migrationContent += `    .addColumn('description', 'text')\n`
+  migrationContent += `    .addColumn('order', 'integer', col => col.defaultTo(0))\n`
+  migrationContent += `    .addColumn('is_active', 'boolean', col => col.defaultTo(true))\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_taggable_slug')\n`
+  migrationContent += `    .on('taggable')\n`
+  migrationContent += `    .column('slug')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `}\n`
+
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-create-taggable-table.ts`
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  Bun.write(migrationFilePath, migrationContent)
+}
+
 // SQLite/MySQL version
 export async function createCategorizableTable(): Promise<void> {
   const hasBeenMigrated = await hasMigrationBeenCreated('categorizable')

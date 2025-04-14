@@ -127,32 +127,6 @@ export interface SoftDeleteOptions {
   deletedAt?: string // defaults to 'deleted_at' & can be used for localized tables
 }
 
-export interface TaggableOptions {
-  /**
-   * The predefined tags that can be assigned to this model
-   * If not provided, tags can be created dynamically
-   */
-  tags?: string[]
-
-  /**
-   * Whether multiple tags can be assigned
-   * @default true
-   */
-  multiple?: boolean
-
-  /**
-   * Whether tags are required
-   * @default false
-   */
-  required?: boolean
-
-  /**
-   * Maximum number of tags that can be assigned
-   * @default undefined (no limit)
-   */
-  maxTags?: number
-}
-
 export interface CommentableOptions {
   /**
    * Whether comments require approval before being visible
@@ -207,7 +181,7 @@ export interface ModelOptions extends Base {
     useSoftDeletes?: boolean | SoftDeleteOptions // defaults to false
     softDeletable?: boolean | SoftDeleteOptions // useSoftDeletes alias
     categorizable?: boolean // defaults to false
-    taggable?: TaggableOptions // defaults to false
+    taggable?: boolean // defaults to false
     commentable?: boolean | CommentableOptions // defaults to false
     useAuth?: boolean | AuthOptions // defaults to false
     authenticatable?: boolean | AuthOptions // useAuth alias

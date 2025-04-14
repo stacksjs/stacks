@@ -21,7 +21,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCategorizableTable, createCommenteableTable, createCommentUpvoteMigration, createPasskeyMigration, dropCommonTables } from './traits'
+import { createCategorizableTable, createCommenteableTable, createCommentUpvoteMigration, createPasskeyMigration, createTaggableTable, dropCommonTables } from './traits'
 
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await dropMysqlTables()
@@ -137,6 +137,9 @@ async function createTableMigration(modelPath: string): Promise<void> {
 
   if (model.traits?.commentable && typeof model.traits.commentable === 'object')
     await createCommenteableTable()
+
+  if (model.traits?.taggable)
+    await createTaggableTable()
 
   if (useBillable && tableName === 'users')
     await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))
