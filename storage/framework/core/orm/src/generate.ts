@@ -103,6 +103,7 @@ export async function generateModelString(
   let relationMethods = ''
   let relationImports = ''
   let paymentImports = ''
+  let categoryImports = ''
   let twoFactorStatements = ''
   let billableStatements = ''
   let likeableStatements = ''
@@ -334,8 +335,10 @@ export async function generateModelString(
   }
 
   if (model.traits?.categorizable) {
+    categoryImports += `import type { CategorizableTable } from '@stacksjs/orm'\n`
+
     relationMethods += `
-    async categories(id: number): Promise<any[]> {
+    async categories(id: number): Promise<CategorizableTable[]> {
       return await DB.instance
         .selectFrom('categorizable')
         .where('categorizable_id', '=', id)
@@ -355,7 +358,7 @@ export async function generateModelString(
       return Number(result?.count) || 0
     }
 
-    async addCategory(id: number, category: { name: string, description?: string, parent_id?: number }): Promise<any> {
+    async addCategory(id: number, category: { name: string, description?: string, parent_id?: number }): Promise<CategorizableTable> {
       return await DB.instance
         .insertInto('categorizable')
         .values({
@@ -372,7 +375,7 @@ export async function generateModelString(
         .executeTakeFirst()
     }
 
-    async activeCategories(id: number): Promise<any[]> {
+    async activeCategories(id: number): Promise<CategorizableTable[]> {
       return await DB.instance
         .selectFrom('categorizable')
         .where('categorizable_id', '=', id)
@@ -382,7 +385,7 @@ export async function generateModelString(
         .execute()
     }
 
-    async inactiveCategories(id: number): Promise<any[]> {
+    async inactiveCategories(id: number): Promise<CategorizableTable[]> {
       return await DB.instance
         .selectFrom('categorizable')
         .where('categorizable_id', '=', id)
@@ -401,7 +404,7 @@ export async function generateModelString(
         .execute()
     }
 
-    async parentCategories(id: number): Promise<any[]> {
+    async parentCategories(id: number): Promise<CategorizableTable[]> {
       return await DB.instance
         .selectFrom('categorizable')
         .where('categorizable_id', '=', id)
@@ -411,7 +414,7 @@ export async function generateModelString(
         .execute()
     }
 
-    async childCategories(id: number, parentId: number): Promise<any[]> {
+    async childCategories(id: number, parentId: number): Promise<CategorizableTable[]> {
       return await DB.instance
         .selectFrom('categorizable')
         .where('categorizable_id', '=', id)
@@ -1147,7 +1150,7 @@ export async function generateModelString(
       import { randomUUIDv7 } from 'bun'
       ${paymentImports}
       ${relationImports}
-
+      ${categoryImports}
       export interface ${formattedTableName}Table {
         id: Generated<number>
         ${fieldString}

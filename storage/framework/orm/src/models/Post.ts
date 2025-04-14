@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
+import type { CategorizableTable, Operator } from '@stacksjs/orm'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -877,34 +877,36 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance.applyWhereIn<V>(column, values)
   }
 
-  async comments(id: number): Promise<any[]> {
+  async categories(id: number): Promise<CategorizableTable[]> {
     return await DB.instance
-      .selectFrom('comments')
-      .where('commentable_id', '=', id)
-      .where('commentable_type', '=', 'posts')
+      .selectFrom('categorizable')
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', 'posts')
       .selectAll()
       .execute()
   }
 
-  async commentCount(id: number): Promise<number> {
+  async categoryCount(id: number): Promise<number> {
     const result = await DB.instance
-      .selectFrom('comments')
+      .selectFrom('categorizable')
       .select(sql`count(*) as count`)
-      .where('commentable_id', '=', id)
-      .where('commentable_type', '=', 'posts')
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', 'posts')
       .executeTakeFirst()
 
     return Number(result?.count) || 0
   }
 
-  async addComment(id: number, comment: { title: string, body: string }): Promise<any> {
+  async addCategory(id: number, category: { name: string, description?: string, parent_id?: number }): Promise<CategorizableTable> {
     return await DB.instance
-      .insertInto('comments')
+      .insertInto('categorizable')
       .values({
-        ...comment,
-        commentable_id: id,
-        commentable_type: 'posts',
-        status: 'pending',
+        ...category,
+        categorizable_id: id,
+        categorizable_type: 'posts',
+        slug: category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        order: 0,
+        is_active: true,
         created_at: new Date(),
         updated_at: new Date(),
       })
@@ -912,32 +914,51 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       .executeTakeFirst()
   }
 
-  async approvedComments(id: number): Promise<any[]> {
+  async activeCategories(id: number): Promise<CategorizableTable[]> {
     return await DB.instance
-      .selectFrom('comments')
-      .where('commentable_id', '=', id)
-      .where('commentable_type', '=', 'posts')
-      .where('status', '=', 'approved')
+      .selectFrom('categorizable')
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', 'posts')
+      .where('is_active', '=', true)
       .selectAll()
       .execute()
   }
 
-  async pendingComments(id: number): Promise<any[]> {
+  async inactiveCategories(id: number): Promise<CategorizableTable[]> {
     return await DB.instance
-      .selectFrom('comments')
-      .where('commentable_id', '=', id)
-      .where('commentable_type', '=', 'posts')
-      .where('status', '=', 'pending')
+      .selectFrom('categorizable')
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', 'posts')
+      .where('is_active', '=', false)
       .selectAll()
       .execute()
   }
 
-  async rejectedComments(id: number): Promise<any[]> {
+  async removeCategory(id: number, categoryId: number): Promise<void> {
+    await DB.instance
+      .deleteFrom('categorizable')
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', 'posts')
+      .where('id', '=', categoryId)
+      .execute()
+  }
+
+  async parentCategories(id: number): Promise<CategorizableTable[]> {
     return await DB.instance
-      .selectFrom('comments')
-      .where('commentable_id', '=', id)
-      .where('commentable_type', '=', 'posts')
-      .where('status', '=', 'rejected')
+      .selectFrom('categorizable')
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', 'posts')
+      .where('parent_id', 'is', null)
+      .selectAll()
+      .execute()
+  }
+
+  async childCategories(id: number, parentId: number): Promise<CategorizableTable[]> {
+    return await DB.instance
+      .selectFrom('categorizable')
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', 'posts')
+      .where('parent_id', '=', parentId)
       .selectAll()
       .execute()
   }
