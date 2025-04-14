@@ -107,27 +107,17 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
 
   log.debug(`Has ${tableName} been migrated? ${hasBeenMigrated}`)
 
-  const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
   const useBillable = model.traits?.billable || false
 
-  // Create categories table if model is categorizable and has proper configuration
-  if (model.traits?.categorizable && typeof model.traits.categorizable === 'object')
-    await createPostgresCategorizableTable()
-
-  if (usePasskey)
-    await createPostgresPasskeyMigration()
-
-  if (model.traits?.commentable && typeof model.traits.commentable === 'object')
-    await createPostgresCommenteableTable()
-
-  if (model.traits?.taggable)
-    await createPostgresTaggableTable()
+  // Create the tables unconditionally
+  await createPostgresCategorizableTable()
+  await createPostgresCommenteableTable()
+  await createPostgresTaggableTable()
+  await createPostgresCommentUpvoteMigration()
+  await createPostgresPasskeyMigration()
 
   if (useBillable && tableName === 'users')
     await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))
-
-  if (model.traits?.likeable === true || typeof model.traits?.likeable === 'object')
-    await createPostgresCommentUpvoteMigration()
 
   if (haveFieldsChanged)
     await createAlterTableMigration(modelPath)

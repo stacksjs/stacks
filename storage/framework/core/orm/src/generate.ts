@@ -263,6 +263,166 @@ export async function generateModelString(
     `
   }
 
+  if (model.traits?.taggable) {
+    relationMethods += `
+    async tags(id: number): Promise<any[]> {
+      return await DB.instance
+        .selectFrom('taggable')
+        .where('taggable_id', '=', id)
+        .where('taggable_type', '=', '${tableName}')
+        .selectAll()
+        .execute()
+    }
+
+    async tagCount(id: number): Promise<number> {
+      const result = await DB.instance
+        .selectFrom('taggable')
+        .select(sql\`count(*) as count\`)
+        .where('taggable_id', '=', id)
+        .where('taggable_type', '=', '${tableName}')
+        .executeTakeFirst()
+
+      return Number(result?.count) || 0
+    }
+
+    async addTag(id: number, tag: { name: string, description?: string }): Promise<any> {
+      return await DB.instance
+        .insertInto('taggable')
+        .values({
+          ...tag,
+          taggable_id: id,
+          taggable_type: '${tableName}',
+          slug: tag.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          order: 0,
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date(),
+        })
+        .returningAll()
+        .executeTakeFirst()
+    }
+
+    async activeTags(id: number): Promise<any[]> {
+      return await DB.instance
+        .selectFrom('taggable')
+        .where('taggable_id', '=', id)
+        .where('taggable_type', '=', '${tableName}')
+        .where('is_active', '=', true)
+        .selectAll()
+        .execute()
+    }
+
+    async inactiveTags(id: number): Promise<any[]> {
+      return await DB.instance
+        .selectFrom('taggable')
+        .where('taggable_id', '=', id)
+        .where('taggable_type', '=', '${tableName}')
+        .where('is_active', '=', false)
+        .selectAll()
+        .execute()
+    }
+
+    async removeTag(id: number, tagId: number): Promise<void> {
+      await DB.instance
+        .deleteFrom('taggable')
+        .where('taggable_id', '=', id)
+        .where('taggable_type', '=', '${tableName}')
+        .where('id', '=', tagId)
+        .execute()
+    }
+    `
+  }
+
+  if (model.traits?.categorizable) {
+    relationMethods += `
+    async categories(id: number): Promise<any[]> {
+      return await DB.instance
+        .selectFrom('categorizable')
+        .where('categorizable_id', '=', id)
+        .where('categorizable_type', '=', '${tableName}')
+        .selectAll()
+        .execute()
+    }
+
+    async categoryCount(id: number): Promise<number> {
+      const result = await DB.instance
+        .selectFrom('categorizable')
+        .select(sql\`count(*) as count\`)
+        .where('categorizable_id', '=', id)
+        .where('categorizable_type', '=', '${tableName}')
+        .executeTakeFirst()
+
+      return Number(result?.count) || 0
+    }
+
+    async addCategory(id: number, category: { name: string, description?: string, parent_id?: number }): Promise<any> {
+      return await DB.instance
+        .insertInto('categorizable')
+        .values({
+          ...category,
+          categorizable_id: id,
+          categorizable_type: '${tableName}',
+          slug: category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          order: 0,
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date(),
+        })
+        .returningAll()
+        .executeTakeFirst()
+    }
+
+    async activeCategories(id: number): Promise<any[]> {
+      return await DB.instance
+        .selectFrom('categorizable')
+        .where('categorizable_id', '=', id)
+        .where('categorizable_type', '=', '${tableName}')
+        .where('is_active', '=', true)
+        .selectAll()
+        .execute()
+    }
+
+    async inactiveCategories(id: number): Promise<any[]> {
+      return await DB.instance
+        .selectFrom('categorizable')
+        .where('categorizable_id', '=', id)
+        .where('categorizable_type', '=', '${tableName}')
+        .where('is_active', '=', false)
+        .selectAll()
+        .execute()
+    }
+
+    async removeCategory(id: number, categoryId: number): Promise<void> {
+      await DB.instance
+        .deleteFrom('categorizable')
+        .where('categorizable_id', '=', id)
+        .where('categorizable_type', '=', '${tableName}')
+        .where('id', '=', categoryId)
+        .execute()
+    }
+
+    async parentCategories(id: number): Promise<any[]> {
+      return await DB.instance
+        .selectFrom('categorizable')
+        .where('categorizable_id', '=', id)
+        .where('categorizable_type', '=', '${tableName}')
+        .where('parent_id', 'is', null)
+        .selectAll()
+        .execute()
+    }
+
+    async childCategories(id: number, parentId: number): Promise<any[]> {
+      return await DB.instance
+        .selectFrom('categorizable')
+        .where('categorizable_id', '=', id)
+        .where('categorizable_type', '=', '${tableName}')
+        .where('parent_id', '=', parentId)
+        .selectAll()
+        .execute()
+    }
+    `
+  }
+
   for (const relation of relations) {
     const modelRelation = relation.model
     const foreignKeyRelation = relation.foreignKey

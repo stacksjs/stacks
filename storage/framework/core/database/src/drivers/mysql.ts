@@ -128,24 +128,15 @@ async function createTableMigration(modelPath: string): Promise<void> {
   const useBillable = model.traits?.billable || false
   const useUuid = model.traits?.useUuid || false
 
-  // Create categories table if model is categorizable and has proper configuration
-  if (model.traits?.categorizable && typeof model.traits.categorizable === 'object')
-    await createCategorizableTable()
-
-  if (usePasskey)
-    await createPasskeyMigration()
-
-  if (model.traits?.commentable && typeof model.traits.commentable === 'object')
-    await createCommenteableTable()
-
-  if (model.traits?.taggable)
-    await createTaggableTable()
+  // Create the tables unconditionally
+  await createCategorizableTable()
+  await createCommenteableTable()
+  await createTaggableTable()
+  await createCommentUpvoteMigration()
+  await createPasskeyMigration()
 
   if (useBillable && tableName === 'users')
     await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))
-
-  if (model.traits?.likeable === true || typeof model.traits?.likeable === 'object')
-    await createCommentUpvoteMigration()
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`

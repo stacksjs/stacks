@@ -127,32 +127,6 @@ export interface SoftDeleteOptions {
   deletedAt?: string // defaults to 'deleted_at' & can be used for localized tables
 }
 
-export interface CommentableOptions {
-  /**
-   * Whether comments require approval before being visible
-   * @default false
-   */
-  requiresApproval?: boolean
-
-  /**
-   * Whether comments can be reported
-   * @default true
-   */
-  reportable?: boolean
-
-  /**
-   * Whether comments can be voted on
-   * @default true
-   */
-  votable?: boolean
-
-  /**
-   * Whether comments require authentication
-   * @default false
-   */
-  requiresAuth?: boolean
-}
-
 interface Base {}
 
 /**
@@ -182,7 +156,7 @@ export interface ModelOptions extends Base {
     softDeletable?: boolean | SoftDeleteOptions // useSoftDeletes alias
     categorizable?: boolean // defaults to false
     taggable?: boolean // defaults to false
-    commentable?: boolean | CommentableOptions // defaults to false
+    commentable?: boolean // defaults to false
     useAuth?: boolean | AuthOptions // defaults to false
     authenticatable?: boolean | AuthOptions // useAuth alias
     useSeeder?: boolean | SeedOptions // defaults to a count of 10

@@ -164,30 +164,14 @@ async function createTableMigration(modelPath: string) {
   const useBillable = model.traits?.billable || false
   const useUuid = model.traits?.useUuid || false
 
-  // Handle commentable trait
-  const commentableOptions = typeof model.traits?.commentable === 'object' ? model.traits.commentable : undefined
-  const isCommentable = Boolean(model.traits?.commentable)
+  // Create the tables unconditionally
+  await createCategorizableTable()
+  await createCommenteableTable()
+  await createTaggableTable()
 
-  // Handle categorizable trait
-  const isCategorizable = Boolean(model.traits?.categorizable)
+  await createPasskeyMigration()
 
-  // Handle taggable trait
-  const isTaggable = Boolean(model.traits?.taggable)
-
-  if (isCategorizable)
-    await createCategorizableTable()
-
-  if (isCommentable)
-    await createCommenteableTable(commentableOptions)
-
-  if (isTaggable)
-    await createTaggableTable()
-
-  if (usePasskey && tableName === 'users')
-    await createPasskeyMigration()
-
-  if (model.traits?.likeable === true || typeof model.traits?.likeable === 'object')
-    await createCommentUpvoteMigration()
+  await createCommentUpvoteMigration()
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
