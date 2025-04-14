@@ -78,7 +78,7 @@ export interface PasskeysTable {
   last_used_at: string
 }
 
-export interface CommentsTable {
+export interface Commenteable {
   id?: number
   title: string
   body: string
@@ -103,7 +103,7 @@ export interface UpvotesTable {
   created_at: string
 }
 
-export interface CategoriesTable {
+export interface CategorizableTable {
   id?: number
   name: string
   slug: string
@@ -167,7 +167,7 @@ export interface Database {
   errors: ErrorsTable
   migrations: MigrationsTable
   passkeys: PasskeysTable
-  comments: CommentsTable
+  commenteable: Commenteable
   upvotes: UpvotesTable
-  categories: CategoriesTable
+  categorizable: CategorizableTable
 }

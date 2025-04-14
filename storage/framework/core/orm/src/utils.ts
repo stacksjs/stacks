@@ -1229,7 +1229,7 @@ export async function generateKyselyTypes(): Promise<void> {
   text += '  last_used_at: string \n'
   text += '}\n\n'
 
-  text += '\nexport interface CommentsTable {\n'
+  text += '\nexport interface Commenteable {\n'
   text += '  id?: number\n'
   text += '  title: string\n'
   text += '  body: string\n'
@@ -1296,7 +1296,7 @@ export async function generateKyselyTypes(): Promise<void> {
   // Add trait-based tables
   text += '  migrations: MigrationsTable\n'
   text += '  passkeys: PasskeysTable\n'
-  text += '  comments: CommentsTable\n'
+  text += '  commenteable: Commenteable\n'
   text += '  upvotes: UpvotesTable\n'
   text += '  categorizable: CategorizableTable\n'
   text += '}\n'
