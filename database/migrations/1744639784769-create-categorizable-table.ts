@@ -8,7 +8,6 @@ export async function up(db: Database<any>) {
     .addColumn('name', 'varchar(255)', col => col.notNull())
     .addColumn('slug', 'varchar(255)', col => col.notNull().unique())
     .addColumn('description', 'text')
-    .addColumn('order', 'integer', col => col.defaultTo(0))
     .addColumn('is_active', 'boolean', col => col.defaultTo(true))
     .addColumn('categorizable_id', 'integer', col => col.notNull())
     .addColumn('categorizable_type', 'varchar(255)', col => col.notNull())

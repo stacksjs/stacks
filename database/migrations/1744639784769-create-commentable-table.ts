@@ -10,6 +10,7 @@ export async function up(db: Database<any>) {
     .addColumn('status', 'varchar(50)', col => col.notNull().defaultTo('approved'))
     .addColumn('approved_at', 'integer')
     .addColumn('rejected_at', 'integer')
+    .addColumn('user_id', 'integer', col => col.defaultTo(0).references('users.id').onDelete('cascade'))
     .addColumn('commentable_id', 'integer', col => col.notNull())
     .addColumn('commentable_type', 'varchar(255)', col => col.notNull())
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
@@ -18,4 +19,6 @@ export async function up(db: Database<any>) {
 
   await db.schema.createIndex('idx_commenteable_status').on('commentable').column('status').execute()
   await db.schema.createIndex('idx_commenteable_commentable').on('commentable').columns(['commentable_id', 'commentable_type']).execute()
+  await db.schema.createIndex('idx_commenteable_user').on('commentable').column('user_id').execute()
+  await db.schema.createIndex('idx_commenteable_votes').on('commentable').columns(['downvotes_count']).execute()
 }

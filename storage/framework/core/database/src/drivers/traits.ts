@@ -90,7 +90,6 @@ export async function createTaggableTable(): Promise<void> {
   migrationContent += `    .addColumn('name', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('slug', 'varchar(255)', col => col.notNull().unique())\n`
   migrationContent += `    .addColumn('description', 'text')\n`
-  migrationContent += `    .addColumn('order', 'integer', col => col.defaultTo(0))\n`
   migrationContent += `    .addColumn('is_active', 'boolean', col => col.defaultTo(true))\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
@@ -126,7 +125,6 @@ export async function createPostgresTaggableTable(): Promise<void> {
   migrationContent += `    .addColumn('name', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('slug', 'varchar(255)', col => col.notNull().unique())\n`
   migrationContent += `    .addColumn('description', 'text')\n`
-  migrationContent += `    .addColumn('order', 'integer', col => col.defaultTo(0))\n`
   migrationContent += `    .addColumn('is_active', 'boolean', col => col.defaultTo(true))\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
@@ -163,7 +161,6 @@ export async function createCategorizableTable(): Promise<void> {
   migrationContent += `    .addColumn('name', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('slug', 'varchar(255)', col => col.notNull().unique())\n`
   migrationContent += `    .addColumn('description', 'text')\n`
-  migrationContent += `    .addColumn('order', 'integer', col => col.defaultTo(0))\n`
   migrationContent += `    .addColumn('is_active', 'boolean', col => col.defaultTo(true))\n`
   migrationContent += `    .addColumn('categorizable_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('categorizable_type', 'varchar(255)', col => col.notNull())\n`
@@ -295,6 +292,7 @@ export async function createCommenteableTable(options: {
   migrationContent += `    .addColumn('status', 'varchar(50)', col => col.notNull().defaultTo('${options.requiresApproval ? 'pending' : 'approved'}'))\n`
   migrationContent += `    .addColumn('approved_at', 'integer')\n`
   migrationContent += `    .addColumn('rejected_at', 'integer')\n`
+  migrationContent += `    .addColumn('user_id', 'integer', col => col.defaultTo(0).references('users.id').onDelete('cascade'))\n`
   migrationContent += `    .addColumn('commentable_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('commentable_type', 'varchar(255)', col => col.notNull())\n`
 
@@ -314,18 +312,9 @@ export async function createCommenteableTable(options: {
   // Add indexes
   migrationContent += `  await db.schema.createIndex('idx_commenteable_status').on('commentable').column('status').execute()\n`
   migrationContent += `  await db.schema.createIndex('idx_commenteable_commentable').on('commentable').columns(['commentable_id', 'commentable_type']).execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_commenteable_user').on('commentable').column('user_id').execute()\n`
 
-  if (options.reportable) {
-    migrationContent += `  await db.schema.createIndex('idx_commenteable_reports').on('commentable').column('reports_count').execute()\n`
-  }
-
-  if (options.votable) {
-    migrationContent += `  await db.schema.createIndex('idx_commenteable_votes').on('commentable').columns(['downvotes_count']).execute()\n`
-  }
-
-  if (options.requiresAuth) {
-    migrationContent += `  await db.schema.createIndex('idx_commenteable_user').on('commentable').column('user_id').execute()\n`
-  }
+  migrationContent += `  await db.schema.createIndex('idx_commenteable_votes').on('commentable').columns(['downvotes_count']).execute()\n`
 
   migrationContent += `}\n`
 
@@ -424,7 +413,9 @@ export async function dropCommonTables(): Promise<void> {
   await db.schema.dropTable('migrations').ifExists().execute()
   await db.schema.dropTable('migration_locks').ifExists().execute()
   await db.schema.dropTable('passkeys').ifExists().execute()
-  await db.schema.dropTable('categorizable_table').ifExists().execute()
+  await db.schema.dropTable('categorizable').ifExists().execute()
+  await db.schema.dropTable('commenteable_upvotes').ifExists().execute()
+  await db.schema.dropTable('taggable').ifExists().execute()
   await db.schema.dropTable('commentable').ifExists().execute()
   await db.schema.dropTable('categories_models').ifExists().execute()
   await db.schema.dropTable('activities').ifExists().execute()
@@ -474,8 +465,8 @@ export async function createCommentUpvoteMigration(): Promise<void> {
   migrationContent += `    .addColumn('upvoteable_type', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .execute()\n\n`
-  migrationContent += `  await db.schema.createIndex('idx_upvotes_user').on('upvotes').column('user_id').execute()\n`
-  migrationContent += `  await db.schema.createIndex('idx_upvotes_upvoteable').on('upvotes').columns(['upvoteable_id', 'upvoteable_type']).execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_commenteable_upvotes_user').on('commenteable_upvotes').column('user_id').execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_commenteable_upvotes_upvoteable').on('commenteable_upvotes').columns(['upvoteable_id', 'upvoteable_type']).execute()\n`
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()

@@ -110,7 +110,6 @@ export interface CategorizableTable {
   name: string
   slug: string
   description?: string
-  order: number
   is_active: boolean
   categorizable_id: number
   categorizable_type: string
@@ -123,7 +122,6 @@ export interface TaggableTable {
   name: string
   slug: string
   description?: string
-  order: number
   is_active: boolean
   taggable_id: number
   taggable_type: string

@@ -21,7 +21,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCategorizableTable, createCommenteableTable, createCommentUpvoteMigration, createPasskeyMigration, createTaggableTable, dropCommonTables } from './traits'
+import { dropCommonTables } from './traits'
 
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await dropMysqlTables()
@@ -127,13 +127,6 @@ async function createTableMigration(modelPath: string): Promise<void> {
   const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
   const useBillable = model.traits?.billable || false
   const useUuid = model.traits?.useUuid || false
-
-  // Create the tables unconditionally
-  await createCategorizableTable()
-  await createCommenteableTable()
-  await createTaggableTable()
-  await createCommentUpvoteMigration()
-  await createPasskeyMigration()
 
   if (useBillable && tableName === 'users')
     await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))

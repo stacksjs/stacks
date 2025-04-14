@@ -20,7 +20,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCategorizableTable, createCommenteableTable, createCommentUpvoteMigration, createPasskeyMigration, createTaggableTable, dropCommonTables } from './traits'
+import { dropCommonTables } from './traits'
 
 export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
   await deleteFrameworkModels()
@@ -163,15 +163,6 @@ async function createTableMigration(modelPath: string) {
   const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
   const useBillable = model.traits?.billable || false
   const useUuid = model.traits?.useUuid || false
-
-  // Create the tables unconditionally
-  await createCategorizableTable()
-  await createCommenteableTable()
-  await createTaggableTable()
-
-  await createPasskeyMigration()
-
-  await createCommentUpvoteMigration()
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`

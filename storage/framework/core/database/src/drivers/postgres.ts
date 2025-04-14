@@ -16,7 +16,7 @@ import {
   pluckChanges,
 } from '.'
 
-import { createCategoriesModelsTable, createPostgresCategorizableTable, createPostgresCommenteableTable, createPostgresCommentUpvoteMigration, createPostgresPasskeyMigration, createPostgresTaggableTable, deleteFrameworkModels, deleteMigrationFiles, dropCommonTables } from './traits'
+import { createCategoriesModelsTable, createPostgresCategorizableTable, createPostgresCommenteableTable, createPostgresPasskeyMigration, deleteFrameworkModels, deleteMigrationFiles, dropCommonTables } from './traits'
 
 export async function dropPostgresTables(): Promise<void> {
   const tables = await fetchPostgresTables()
@@ -108,13 +108,6 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
   log.debug(`Has ${tableName} been migrated? ${hasBeenMigrated}`)
 
   const useBillable = model.traits?.billable || false
-
-  // Create the tables unconditionally
-  await createPostgresCategorizableTable()
-  await createPostgresCommenteableTable()
-  await createPostgresTaggableTable()
-  await createPostgresCommentUpvoteMigration()
-  await createPostgresPasskeyMigration()
 
   if (useBillable && tableName === 'users')
     await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))

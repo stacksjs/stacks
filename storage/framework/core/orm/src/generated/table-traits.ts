@@ -63,7 +63,6 @@ function generateCategorizableTableInterface(): string {
     name: string
     slug: string
     description?: string
-    order: number
     is_active: boolean
     categorizable_id: number
     categorizable_type: string
@@ -79,7 +78,6 @@ function generateTaggableTableInterface(): string {
     name: string
     slug: string
     description?: string
-    order: number
     is_active: boolean
     taggable_id: number
     taggable_type: string

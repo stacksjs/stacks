@@ -20,6 +20,8 @@ export default {
     useSeeder: {
       count: 20,
     },
+    categorizable: true,
+    taggable: true,
     commentable: true,
     useApi: {
       uri: 'posts',
