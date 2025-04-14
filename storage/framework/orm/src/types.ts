@@ -63,6 +63,7 @@ export interface MigrationsTable {
   name: string
   timestamp: string
 }
+
 export interface PasskeysTable {
   id?: number
   cred_public_key: string
@@ -78,7 +79,7 @@ export interface PasskeysTable {
   last_used_at: string
 }
 
-export interface Commenteable {
+export interface Commentable {
   id?: number
   title: string
   body: string
@@ -96,10 +97,11 @@ export interface Commenteable {
   updated_at: string | null
 }
 
-export interface UpvotesTable {
+export interface CommenteableUpvotesTable {
   id?: number
   user_id: number
-  likeable_id: number
+  upvoteable_id: number
+  upvoteable_type: string
   created_at: string
 }
 
@@ -114,7 +116,6 @@ export interface CategorizableTable {
   created_at: string
   updated_at?: string
 }
-
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
@@ -167,7 +168,7 @@ export interface Database {
   errors: ErrorsTable
   migrations: MigrationsTable
   passkeys: PasskeysTable
-  commenteable: Commenteable
-  upvotes: UpvotesTable
+  commentable: Commentable
+  comment_upvotes: CommentUpvotesTable
   categorizable: CategorizableTable
 }

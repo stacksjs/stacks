@@ -3,7 +3,7 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .createTable('commenteable')
+    .createTable('commentable')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('title', 'varchar(255)', col => col.notNull())
     .addColumn('body', 'text', col => col.notNull())
@@ -16,6 +16,6 @@ export async function up(db: Database<any>) {
     .addColumn('updated_at', 'timestamp')
     .execute()
 
-  await db.schema.createIndex('idx_commenteable_status').on('commenteable').column('status').execute()
-  await db.schema.createIndex('idx_commenteable_commentable').on('commenteable').columns(['commentable_id', 'commentable_type']).execute()
+  await db.schema.createIndex('idx_commenteable_status').on('commentable').column('status').execute()
+  await db.schema.createIndex('idx_commenteable_commentable').on('commentable').columns(['commentable_id', 'commentable_type']).execute()
 }

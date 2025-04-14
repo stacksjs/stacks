@@ -33,7 +33,7 @@ export async function update(id: number, data: CommentUpdate): Promise<Comment |
 
     if (Object.keys(updateData).length === 0) {
       return await db
-        .selectFrom('comments')
+        .selectFrom('commentable')
         .where('id', '=', id)
         .selectAll()
         .executeTakeFirst()
@@ -41,13 +41,13 @@ export async function update(id: number, data: CommentUpdate): Promise<Comment |
 
     // Update the comment record
     await db
-      .updateTable('comments')
+      .updateTable('commentable')
       .set(updateData)
       .where('id', '=', id)
       .execute()
 
     const updatedComment = await db
-      .selectFrom('comments')
+      .selectFrom('commentable')
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()

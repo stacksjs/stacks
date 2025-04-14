@@ -20,7 +20,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCategoriesTable, createCommenteableTable, createPasskeyMigration, createCommentUpvoteMigration, dropCommonTables } from './traits'
+import { createCategoriesTable, createCommenteableTable, createCommentUpvoteMigration, createPasskeyMigration, dropCommonTables } from './traits'
 
 export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
   await deleteFrameworkModels()

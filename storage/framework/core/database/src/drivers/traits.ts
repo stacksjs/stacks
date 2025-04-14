@@ -1,9 +1,7 @@
-import type { Model } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
-import { snakeCase } from '@stacksjs/strings'
 import { hasMigrationBeenCreated } from './index'
 
 // SQLite/MySQL version
@@ -180,7 +178,7 @@ export async function createCommenteableTable(options: {
   votable?: boolean
   requiresAuth?: boolean
 } = {}): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('commenteable')
+  const hasBeenMigrated = await hasMigrationBeenCreated('commentable')
 
   if (hasBeenMigrated)
     return
@@ -189,7 +187,7 @@ export async function createCommenteableTable(options: {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('commenteable')\n`
+  migrationContent += `    .createTable('commentable')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
   migrationContent += `    .addColumn('title', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('body', 'text', col => col.notNull())\n`
@@ -213,25 +211,25 @@ export async function createCommenteableTable(options: {
   migrationContent += `    .execute()\n\n`
 
   // Add indexes
-  migrationContent += `  await db.schema.createIndex('idx_commenteable_status').on('commenteable').column('status').execute()\n`
-  migrationContent += `  await db.schema.createIndex('idx_commenteable_commentable').on('commenteable').columns(['commentable_id', 'commentable_type']).execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_commenteable_status').on('commentable').column('status').execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_commenteable_commentable').on('commentable').columns(['commentable_id', 'commentable_type']).execute()\n`
 
   if (options.reportable) {
-    migrationContent += `  await db.schema.createIndex('idx_commenteable_reports').on('commenteable').column('reports_count').execute()\n`
+    migrationContent += `  await db.schema.createIndex('idx_commenteable_reports').on('commentable').column('reports_count').execute()\n`
   }
 
   if (options.votable) {
-    migrationContent += `  await db.schema.createIndex('idx_commenteable_votes').on('commenteable').columns(['downvotes_count']).execute()\n`
+    migrationContent += `  await db.schema.createIndex('idx_commenteable_votes').on('commentable').columns(['downvotes_count']).execute()\n`
   }
 
   if (options.requiresAuth) {
-    migrationContent += `  await db.schema.createIndex('idx_commenteable_user').on('commenteable').column('user_id').execute()\n`
+    migrationContent += `  await db.schema.createIndex('idx_commenteable_user').on('commentable').column('user_id').execute()\n`
   }
 
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-commenteable-table.ts`
+  const migrationFileName = `${timestamp}-create-commentable-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
@@ -241,7 +239,7 @@ export async function createCommenteableTable(options: {
 
 // PostgreSQL version
 export async function createPostgresCommenteableTable(): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('commenteable')
+  const hasBeenMigrated = await hasMigrationBeenCreated('commentable')
 
   if (hasBeenMigrated)
     return
@@ -250,7 +248,7 @@ export async function createPostgresCommenteableTable(): Promise<void> {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('commenteable')\n`
+  migrationContent += `    .createTable('commentable')\n`
   migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
   migrationContent += `    .addColumn('title', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('body', 'text', col => col.notNull())\n`
@@ -262,12 +260,12 @@ export async function createPostgresCommenteableTable(): Promise<void> {
   migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .addColumn('updated_at', 'timestamp with time zone')\n`
   migrationContent += `    .execute()\n\n`
-  migrationContent += `  await db.schema.createIndex('idx_commenteable_status').on('commenteable').column('status').execute()\n`
-  migrationContent += `  await db.schema.createIndex('idx_commenteable_commentable').on('commenteable').columns(['commentable_id', 'commentable_type']).execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_commenteable_status').on('commentable').column('status').execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_commenteable_commentable').on('commentable').columns(['commentable_id', 'commentable_type']).execute()\n`
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-commenteable-table.ts`
+  const migrationFileName = `${timestamp}-create-commentable-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
@@ -326,7 +324,7 @@ export async function dropCommonTables(): Promise<void> {
   await db.schema.dropTable('migration_locks').ifExists().execute()
   await db.schema.dropTable('passkeys').ifExists().execute()
   await db.schema.dropTable('categorizable_table').ifExists().execute()
-  await db.schema.dropTable('commenteable').ifExists().execute()
+  await db.schema.dropTable('commentable').ifExists().execute()
   await db.schema.dropTable('categories_models').ifExists().execute()
   await db.schema.dropTable('activities').ifExists().execute()
 }

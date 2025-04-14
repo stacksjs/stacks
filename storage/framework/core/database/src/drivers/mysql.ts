@@ -17,10 +17,11 @@ import {
   findDifferingKeys,
   getLastMigrationFields,
   hasTableBeenMigrated,
+  isArrayEqual,
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { createCategoriesTable, createCommenteableTable, createPasskeyMigration, createCommentUpvoteMigration, dropCommonTables } from './traits'
+import { createCategoriesTable, createCommenteableTable, createCommentUpvoteMigration, createPasskeyMigration, dropCommonTables } from './traits'
 
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await dropMysqlTables()
@@ -293,11 +294,8 @@ export async function createAlterTableMigration(modelPath: string): Promise<void
   const currentFields = model.attributes as AttributesElements
 
   // Determine fields to add and remove
-
   const changes = pluckChanges(Object.keys(lastFields), Object.keys(currentFields))
-
   const fieldsToAdd = changes?.added || []
-
   const fieldsToRemove = changes?.removed || []
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
@@ -314,6 +312,15 @@ export async function createAlterTableMigration(modelPath: string): Promise<void
     hasChanged = true
     const fieldNameFormatted = snakeCase(fieldValidation.key)
     migrationContent += `    .modifyColumn('${fieldNameFormatted}', 'varchar(${fieldValidation.max})')\n`
+  }
+
+  // Add column rearrangement logic
+  const lastFieldOrder = Object.values(lastFields).map(attr => attr.order)
+  const currentFieldOrder = Object.values(currentFields).map(attr => attr.order)
+
+  if (!isArrayEqual(lastFieldOrder, currentFieldOrder)) {
+    hasChanged = true
+    migrationContent += reArrangeColumns(model.attributes, tableName)
   }
 
   if (hasChanged) {

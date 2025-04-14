@@ -18,7 +18,7 @@ export async function destroy(id: number): Promise<boolean> {
 
     // Delete the comment
     const result = await db
-      .deleteFrom('commenteable')
+      .deleteFrom('commentable')
       .where('id', '=', id)
       .executeTakeFirst()
 
@@ -46,7 +46,7 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
   try {
     // Delete all comments in the array
     const result = await db
-      .deleteFrom('commenteable')
+      .deleteFrom('commentable')
       .where('id', 'in', ids)
       .executeTakeFirst()
 

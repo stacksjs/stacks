@@ -1,6 +1,6 @@
 import { db } from '@stacksjs/database'
 
-export interface Commenteable {
+export interface Commentable {
   id?: number
   title: string
   body: string
@@ -19,13 +19,13 @@ export interface Commenteable {
 }
 
 export async function fetchComments(options: {
-  status?: Commenteable['status']
+  status?: Commentable['status']
   commentable_id?: number
   commentable_type?: string
   limit?: number
   offset?: number
-} = {}): Promise<Commenteable[]> {
-  let query = db.selectFrom('commenteable')
+} = {}): Promise<Commentable[]> {
+  let query = db.selectFrom('commentable')
 
   if (options.status)
     query = query.where('status', '=', options.status)
@@ -45,9 +45,9 @@ export async function fetchComments(options: {
   return query.selectAll().execute()
 }
 
-export async function fetchCommentById(id: number): Promise<Commenteable | undefined> {
+export async function fetchCommentById(id: number): Promise<Commentable | undefined> {
   return db
-    .selectFrom('commenteable')
+    .selectFrom('commentable')
     .where('id', '=', id)
     .selectAll()
     .executeTakeFirst()
@@ -56,10 +56,10 @@ export async function fetchCommentById(id: number): Promise<Commenteable | undef
 export async function fetchCommentsByCommentable(
   commentable_id: number,
   commentable_type: string,
-  options: { status?: Commenteable['status'], limit?: number, offset?: number } = {},
-): Promise<Commenteable[]> {
+  options: { status?: Commentable['status'], limit?: number, offset?: number } = {},
+): Promise<Commentable[]> {
   let query = db
-    .selectFrom('commenteable')
+    .selectFrom('commentable')
     .where('commentable_id', '=', commentable_id)
     .where('commentable_type', '=', commentable_type)
 

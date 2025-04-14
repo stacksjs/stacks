@@ -22,6 +22,7 @@ import { isString } from '@stacksjs/validation'
 
 import { globSync } from 'tinyglobby'
 import { generateModelString } from './generate'
+import { generateTraitTableInterfaces } from './generated/table-traits'
 
 type ModelPath = string
 
@@ -1200,7 +1201,6 @@ export async function generateKyselyTypes(): Promise<void> {
 
     for (const pivotTable of pivotTables) {
       const words = pivotTable.table.split('_')
-
       pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
 
       text += `export interface ${pivotFormatted} {
@@ -1211,61 +1211,7 @@ export async function generateKyselyTypes(): Promise<void> {
     }
   }
 
-  text += '\nexport interface MigrationsTable {\n'
-  text += 'name: string\n timestamp: string \n }'
-
-  text += '\nexport interface PasskeysTable {\n'
-  text += '  id?: number\n'
-  text += '  cred_public_key: string\n'
-  text += '  user_id: number;\n'
-  text += '  webauthn_user_id: string\n'
-  text += '  counter: number\n'
-  text += '  credential_type: string\n'
-  text += '  device_type: string\n'
-  text += '  backup_eligible: boolean\n'
-  text += '  backup_status: boolean\n'
-  text += '  transports?: string\n'
-  text += '  created_at?: string\n'
-  text += '  last_used_at: string \n'
-  text += '}\n\n'
-
-  text += '\nexport interface Commenteable {\n'
-  text += '  id?: number\n'
-  text += '  title: string\n'
-  text += '  body: string\n'
-  text += '  status: string\n'
-  text += '  approved_at: number | null\n'
-  text += '  rejected_at: number | null\n'
-  text += '  commentable_id: number\n'
-  text += '  commentable_type: string\n'
-  text += '  reports_count: number\n'
-  text += '  reported_at: number | null\n'
-  text += '  upvotes_count: number\n'
-  text += '  downvotes_count: number\n'
-  text += '  user_id: number | null\n'
-  text += '  created_at: string\n'
-  text += '  updated_at: string | null\n'
-  text += '}\n\n'
-
-  text += '\nexport interface CommenteableUpvotesTable {\n'
-  text += '  id?: number\n'
-  text += '  user_id: number\n'
-  text += '  upvoteable_id: number\n'
-  text += '  upvoteable_type: string\n'
-  text += '  created_at: string\n'
-  text += '}\n\n'
-
-  text += '\nexport interface CategorizableTable {\n'
-  text += '  id?: number\n'
-  text += '  name: string\n'
-  text += '  slug: string\n'
-  text += '  description?: string\n'
-  text += '  parent_id?: number\n'
-  text += '  order: number\n'
-  text += '  is_active: boolean\n'
-  text += '  created_at: string\n'
-  text += '  updated_at?: string\n'
-  text += '}\n\n'
+  text += generateTraitTableInterfaces()
 
   text += '\nexport interface Database {\n'
 
@@ -1297,7 +1243,7 @@ export async function generateKyselyTypes(): Promise<void> {
   // Add trait-based tables
   text += '  migrations: MigrationsTable\n'
   text += '  passkeys: PasskeysTable\n'
-  text += '  commenteable: Commenteable\n'
+  text += '  commentable: Commentable\n'
   text += '  comment_upvotes: CommentUpvotesTable\n'
   text += '  categorizable: CategorizableTable\n'
   text += '}\n'

@@ -1,10 +1,10 @@
-import type { CategoryJsonResponse } from '@stacksjs/orm'
+import type { CategorizableTable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 /**
  * Fetch a category by ID
  */
-export async function fetchById(id: number): Promise<CategoryJsonResponse | undefined> {
+export async function fetchById(id: number): Promise<CategorizableTable | undefined> {
   return await db
     .selectFrom('categorizable')
     .where('id', '=', id)
@@ -15,14 +15,14 @@ export async function fetchById(id: number): Promise<CategoryJsonResponse | unde
 /**
  * Fetch all categories
  */
-export async function fetchAll(): Promise<CategoryJsonResponse[]> {
+export async function fetchAll(): Promise<CategorizableTable[]> {
   return await db.selectFrom('categorizable').selectAll().execute()
 }
 
 /**
  * Fetch categories by name
  */
-export async function fetchByName(name: string): Promise<CategoryJsonResponse[]> {
+export async function fetchByName(name: string): Promise<CategorizableTable[]> {
   return await db
     .selectFrom('categorizable')
     .where('name', '=', name)
@@ -33,7 +33,7 @@ export async function fetchByName(name: string): Promise<CategoryJsonResponse[]>
 /**
  * Fetch category by slug
  */
-export async function fetchBySlug(slug: string): Promise<CategoryJsonResponse | undefined> {
+export async function fetchBySlug(slug: string): Promise<CategorizableTable | undefined> {
   return await db
     .selectFrom('categorizable')
     .where('slug', '=', slug)
@@ -44,7 +44,7 @@ export async function fetchBySlug(slug: string): Promise<CategoryJsonResponse | 
 /**
  * Fetch categories with posts
  */
-export async function fetchWithPosts(id: number): Promise<CategoryJsonResponse | undefined> {
+export async function fetchWithPosts(id: number): Promise<CategorizableTable | undefined> {
   return await db
     .selectFrom('categorizable')
     .where('id', '=', id)
