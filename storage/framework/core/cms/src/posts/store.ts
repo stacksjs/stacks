@@ -20,7 +20,6 @@ export async function store(request: PostRequestType): Promise<PostJsonResponse>
       poster: request.get('poster'),
       body: request.get('body'),
       views: request.get<number>('views') || 0,
-      comments: request.get<number>('comments') || 0,
       published_at: request.get<number>('publishedAt'),
       status: request.get('status') || 'draft',
       created_at: formatDate(new Date()),

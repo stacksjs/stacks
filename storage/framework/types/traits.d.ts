@@ -1,22 +1,13 @@
 import type { VineType } from '@stacksjs/types'
 import type { Request } from '../core/router/src/request'
 
-interface ValidationField {
-  rule: VineType
-  message: Record<string, string>
-}
-
-interface CustomAttributes {
-  [key: string]: ValidationField
-}
-
 interface RequestDataMigrations {
   name: string
   timestamp: string
 
 }
 export interface MigrationsRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
+  validate: (attributes?: CustomAttribute) => void
   get: <T>(element: string, defaultValue?: T) => T
   all: () => RequestDataMigrations
   name: string

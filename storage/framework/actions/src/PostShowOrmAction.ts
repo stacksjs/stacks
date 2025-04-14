@@ -1,7 +1,6 @@
-import type { PostRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-
-import { Post } from '@stacksjs/orm'
+import { posts } from '@stacksjs/cms'
+import { PostRequestType } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -11,7 +10,7 @@ export default new Action({
   async handle(request: PostRequestType) {
     const id = request.getParam('id')
 
-    const model = await Post.findOrFail(id)
+    const model = await posts.fetchById(id)
 
     return response.json(model)
   },

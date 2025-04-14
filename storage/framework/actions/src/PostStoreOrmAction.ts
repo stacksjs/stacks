@@ -1,7 +1,6 @@
-import type { PostRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-
-import { Post } from '@stacksjs/orm'
+import {posts} from '@stacksjs/cms'
+import { PostRequestType } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -9,8 +8,7 @@ export default new Action({
   description: 'Post Store ORM Action',
   method: 'POST',
   async handle(request: PostRequestType) {
-    await request.validate()
-    const model = await Post.create(request.all())
+    const model = await posts.store(request)
 
     return response.json(model)
   },
