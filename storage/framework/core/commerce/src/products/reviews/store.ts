@@ -1,58 +1,39 @@
-import type { NewReview, ReviewJsonResponse, ReviewRequestType } from '@stacksjs/orm'
+import type { NewReview, ReviewJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
- * Create a new gift card
+ * Create a new product review
  *
- * @param request The gift card data to store
- * @returns The newly created gift card record
+ * @param data The review data to store
+ * @returns The newly created review record
  */
-export async function store(request: ReviewRequestType): Promise<ReviewJsonResponse | undefined> {
-  await request.validate()
-
-  const reviewData: NewReview = {
-    product_id: request.get<number>('product_id'),
-    customer_id: request.get<number>('customer_id'),
-    rating: request.get<number>('rating'),
-    title: request.get('title'),
-    content: request.get('content'),
-    is_verified_purchase: request.get<boolean>('is_verified_purchase'),
-    is_approved: request.get<boolean>('is_approved'),
-    helpful_votes: request.get<number>('helpful_votes'),
-    is_featured: request.get<boolean>('is_featured'),
-    unhelpful_votes: request.get<number>('unhelpful_votes'),
-    purchase_date: request.get('purchase_date'),
-    images: request.get('purchase_date'),
-  }
-
-  reviewData.uuid = randomUUIDv7()
-
+export async function store(data: NewReview): Promise<ReviewJsonResponse> {
   try {
-    // Insert the gift card record
-    const createdReview = await db
-      .insertInto('reviews')
-      .values(reviewData)
-      .executeTakeFirst()
-
-    const insertId = Number(createdReview.insertId) || Number(createdReview.numInsertedOrUpdatedRows)
-
-    // If insert was successful, retrieve the newly created gift card
-    if (insertId) {
-      const review = await db
-        .selectFrom('reviews')
-        .where('id', '=', insertId)
-        .selectAll()
-        .executeTakeFirst()
-
-      return review
+    const reviewData = {
+      ...data,
+      uuid: randomUUIDv7(),
+      is_verified_purchase: data.is_verified_purchase ?? false,
+      is_approved: data.is_approved ?? false,
+      helpful_votes: data.helpful_votes ?? 0,
+      unhelpful_votes: data.unhelpful_votes ?? 0,
+      is_featured: data.is_featured ?? false,
     }
 
-    return undefined
+    const result = await db
+      .insertInto('reviews')
+      .values(reviewData)
+      .returningAll()
+      .executeTakeFirst()
+
+    if (!result)
+      throw new Error('Failed to create review')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
-      if (error.message.includes('Duplicate entry') && error.message.includes('code')) {
+      if (error.message.includes('Duplicate entry')) {
         throw new Error('A review with this code already exists')
       }
 

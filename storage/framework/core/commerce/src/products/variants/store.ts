@@ -1,4 +1,4 @@
-import type { NewProductVariant, ProductVariantJsonResponse, ProductVariantRequestType } from '@stacksjs/orm'
+import type { NewProductVariant, ProductVariantJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
@@ -10,9 +10,14 @@ import { db } from '@stacksjs/database'
  */
 export async function store(data: NewProductVariant): Promise<ProductVariantJsonResponse> {
   try {
+    const variantData = {
+      ...data,
+      uuid: randomUUIDv7(),
+    }
+
     const result = await db
       .insertInto('product_variants')
-      .values(data)
+      .values(variantData)
       .returningAll()
       .executeTakeFirst()
 
@@ -22,8 +27,9 @@ export async function store(data: NewProductVariant): Promise<ProductVariantJson
     return result
   }
   catch (error) {
-    if (error instanceof Error)
+    if (error instanceof Error) {
       throw new TypeError(`Failed to create product variant: ${error.message}`)
+    }
 
     throw error
   }
@@ -44,9 +50,14 @@ export async function bulkStore(data: NewProductVariant[]): Promise<number> {
   try {
     await db.transaction().execute(async (trx) => {
       for (const variant of data) {
+        const variantData = {
+          ...variant,
+          uuid: randomUUIDv7(),
+        }
+
         await trx
           .insertInto('product_variants')
-          .values(variant)
+          .values(variantData)
           .execute()
 
         createdCount++
@@ -56,8 +67,9 @@ export async function bulkStore(data: NewProductVariant[]): Promise<number> {
     return createdCount
   }
   catch (error) {
-    if (error instanceof Error)
+    if (error instanceof Error) {
       throw new TypeError(`Failed to create product variants in bulk: ${error.message}`)
+    }
 
     throw error
   }

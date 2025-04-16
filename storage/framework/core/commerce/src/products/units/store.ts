@@ -1,38 +1,29 @@
 // Import dependencies
-import type { NewProductUnit, ProductUnitJsonResponse, ProductUnitRequestType } from '@stacksjs/orm'
+import type { NewProductUnit, ProductUnitJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
  * Create a new product unit
  *
- * @param request Product unit data to store
+ * @param data The product unit data to store
  * @returns The newly created product unit record
  */
-export async function store(request: ProductUnitRequestType): Promise<ProductUnitJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function store(data: NewProductUnit): Promise<ProductUnitJsonResponse> {
   try {
-    // Prepare product unit data
-    const unitData: NewProductUnit = {
-      name: request.get<string>('name'),
-      product_id: request.get<number>('product_id'),
-      abbreviation: request.get<string>('abbreviation'),
-      type: request.get<string>('type'),
-      description: request.get<string>('description'),
-      is_default: request.get<boolean>('is_default', false),
+    const unitData = {
+      ...data,
+      uuid: randomUUIDv7(),
     }
 
-    unitData.uuid = randomUUIDv7()
-
-    // Insert the product unit
     const result = await db
       .insertInto('product_units')
       .values(unitData)
+      .returningAll()
       .executeTakeFirst()
 
-    const unitId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+    if (!result)
+      throw new Error('Failed to create product unit')
 
     // If this unit is set as default, update all other units of the same type
     if (unitData.is_default) {
@@ -40,18 +31,11 @@ export async function store(request: ProductUnitRequestType): Promise<ProductUni
         .updateTable('product_units')
         .set({ is_default: false })
         .where('type', '=', unitData.type)
-        .where('id', '!=', unitId)
+        .where('id', '!=', result.id)
         .execute()
     }
 
-    // Retrieve the newly created product unit
-    const unit = await db
-      .selectFrom('product_units')
-      .where('id', '=', unitId)
-      .selectAll()
-      .executeTakeFirst()
-
-    return unit
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -65,47 +49,36 @@ export async function store(request: ProductUnitRequestType): Promise<ProductUni
 /**
  * Create multiple product units at once
  *
- * @param requests Array of product unit data to store
+ * @param data Array of product unit data to store
  * @returns Number of product units created
  */
-export async function bulkStore(requests: ProductUnitRequestType[]): Promise<number> {
-  if (!requests.length)
+export async function bulkStore(data: NewProductUnit[]): Promise<number> {
+  if (!data.length)
     return 0
 
   let createdCount = 0
 
   try {
-    // Process each product unit
     await db.transaction().execute(async (trx) => {
-      for (const request of requests) {
-        // Validate request data
-        request.validate()
-
-        // Prepare product unit data
-        const unitData: NewProductUnit = {
-          name: request.get('name'),
-          product_id: request.get<number>('product_id'),
-          abbreviation: request.get('abbreviation'),
-          type: request.get('type'),
-          description: request.get('description'),
-          is_default: request.get('is_default') || false,
+      for (const unit of data) {
+        const unitData = {
+          ...unit,
+          uuid: randomUUIDv7(),
         }
 
-        // Insert the product unit
         const result = await trx
           .insertInto('product_units')
           .values(unitData)
+          .returningAll()
           .executeTakeFirst()
 
-        const unitId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
-
         // If this unit is set as default, update all other units of the same type
-        if (unitData.is_default) {
+        if (unitData.is_default && result) {
           await trx
             .updateTable('product_units')
             .set({ is_default: false })
             .where('type', '=', unitData.type)
-            .where('id', '!=', unitId)
+            .where('id', '!=', result.id)
             .execute()
         }
 

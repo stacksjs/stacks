@@ -1,54 +1,42 @@
-import type { ProductUnitJsonResponse, ProductUnitRequestType } from '@stacksjs/orm'
+import type { ProductUnitJsonResponse, ProductUnitUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 
 /**
- * Update an existing product unit
+ * Update a product unit
  *
- * @param id The ID of the product unit to update
- * @param request Updated product unit data
+ * @param data The product unit data to update
  * @returns The updated product unit record
  */
-export async function update(id: number, request: ProductUnitRequestType): Promise<ProductUnitJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function update(data: ProductUnitUpdate): Promise<ProductUnitJsonResponse> {
   try {
-    // Prepare unit data for update
-    const unitData = {
-      name: request.get('name'),
-      abbreviation: request.get('abbreviation'),
-      type: request.get('type'),
-      description: request.get('description'),
-      is_default: request.get<boolean>('is_default'),
-      updated_at: formatDate(new Date()),
-    }
+    if (!data.id)
+      throw new Error('Product unit ID is required for update')
 
-    // Update the product unit
-    await db
+    const result = await db
       .updateTable('product_units')
-      .set(unitData)
-      .where('id', '=', id)
-      .execute()
+      .set({
+        ...data,
+        updated_at: formatDate(new Date()),
+      })
+      .where('id', '=', data.id)
+      .returningAll()
+      .executeTakeFirst()
+
+    if (!result)
+      throw new Error('Failed to update product unit')
 
     // If this unit is set as default, update all other units of the same type
-    if (unitData.is_default === true) {
+    if (data.is_default === true && data.type) {
       await db
         .updateTable('product_units')
         .set({ is_default: false })
-        .where('type', '=', unitData.type)
-        .where('id', '!=', id)
+        .where('type', '=', data.type)
+        .where('id', '!=', data.id)
         .execute()
     }
 
-    // Retrieve the updated product unit
-    const unit = await db
-      .selectFrom('product_units')
-      .where('id', '=', id)
-      .selectAll()
-      .executeTakeFirst()
-
-    return unit
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -62,57 +50,40 @@ export async function update(id: number, request: ProductUnitRequestType): Promi
 /**
  * Update multiple product units at once
  *
- * @param updates Array of objects containing unit ID and update data
+ * @param data Array of product unit updates
  * @returns Number of product units updated
  */
-export async function bulkUpdate(updates: Array<{
-  id: number
-  data: ProductUnitRequestType
-}>): Promise<number> {
-  if (!updates.length)
+export async function bulkUpdate(data: ProductUnitUpdate[]): Promise<number> {
+  if (!data.length)
     return 0
 
   let updatedCount = 0
 
   try {
-    // Process each product unit update
     await db.transaction().execute(async (trx) => {
-      for (const { id, data } of updates) {
-        // Validate update data
-        await data.validate()
-
-        // Prepare unit data for update
-        const unitData = {
-          name: data.get<string>('name'),
-          abbreviation: data.get<string>('abbreviation'),
-          type: data.get<string>('type'),
-          description: data.get<string>('description'),
-          is_default: data.get<boolean>('is_default'),
-          updated_at: formatDate(new Date()),
-        }
-
-        // Skip if no fields to update
-        if (Object.keys(unitData).length === 0)
+      for (const unit of data) {
+        if (!unit.id)
           continue
 
-        // Update the product unit
         const result = await trx
           .updateTable('product_units')
-          .set(unitData)
-          .where('id', '=', id)
+          .set({
+            ...unit,
+            updated_at: formatDate(new Date()),
+          })
+          .where('id', '=', unit.id)
           .executeTakeFirst()
 
         // If this unit is set as default, update all other units of the same type
-        if (unitData.is_default === true) {
+        if (unit.is_default === true && unit.type) {
           await trx
             .updateTable('product_units')
             .set({ is_default: false })
-            .where('type', '=', unitData.type)
-            .where('id', '!=', id)
+            .where('type', '=', unit.type)
+            .where('id', '!=', unit.id)
             .execute()
         }
 
-        // Increment the counter if update was successful
         if (Number(result.numUpdatedRows) > 0)
           updatedCount++
       }
@@ -145,9 +116,8 @@ export async function updateDefaultStatus(id: number, isDefault: boolean): Promi
       .where('id', '=', id)
       .executeTakeFirst()
 
-    if (!unit) {
+    if (!unit)
       return false
-    }
 
     const result = await db
       .updateTable('product_units')
@@ -159,7 +129,7 @@ export async function updateDefaultStatus(id: number, isDefault: boolean): Promi
       .executeTakeFirst()
 
     // If setting this unit as default, update all other units of the same type
-    if (isDefault) {
+    if (isDefault && unit.type) {
       await db
         .updateTable('product_units')
         .set({ is_default: false })

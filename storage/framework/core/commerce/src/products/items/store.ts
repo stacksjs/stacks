@@ -1,52 +1,30 @@
-import type { NewProductItem, ProductItemJsonResponse, ProductItemRequestType } from '@stacksjs/orm'
+import type { NewProductItem, ProductItemJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
  * Create a new product item
  *
- * @param request Product item data to store
+ * @param data The product item data to store
  * @returns The newly created product item record
  */
-export async function store(request: ProductItemRequestType): Promise<ProductItemJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function store(data: NewProductItem): Promise<ProductItemJsonResponse> {
   try {
-    // Prepare product item data
-    const itemData: NewProductItem = {
-      name: request.get('name'),
-      size: request.get('size'),
-      color: request.get('color'),
-      price: request.get('price'),
-      image_url: request.get('image_url'),
-      is_available: request.get('is_available'),
-      inventory_count: request.get('inventory_count'),
-      sku: request.get('sku'),
-      custom_options: request.get('custom_options'),
-      product_id: request.get('product_id'),
-      manufacturer_id: request.get('manufacturer_id'),
-      category_id: request.get('category_id'),
+    const itemData = {
+      ...data,
+      uuid: randomUUIDv7(),
     }
 
-    itemData.uuid = randomUUIDv7()
-
-    // Insert the product item
     const result = await db
       .insertInto('product_items')
       .values(itemData)
+      .returningAll()
       .executeTakeFirst()
 
-    const itemId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+    if (!result)
+      throw new Error('Failed to create product item')
 
-    // Retrieve the newly created product item
-    const productItem = await db
-      .selectFrom('product_items')
-      .where('id', '=', itemId)
-      .selectAll()
-      .executeTakeFirst()
-
-    return productItem
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -60,41 +38,23 @@ export async function store(request: ProductItemRequestType): Promise<ProductIte
 /**
  * Create multiple product items at once
  *
- * @param requests Array of product item data to store
+ * @param data Array of product item data to store
  * @returns Number of product items created
  */
-export async function bulkStore(requests: ProductItemRequestType[]): Promise<number> {
-  if (!requests.length)
+export async function bulkStore(data: NewProductItem[]): Promise<number> {
+  if (!data.length)
     return 0
 
   let createdCount = 0
 
   try {
-    // Process each product item
     await db.transaction().execute(async (trx) => {
-      for (const request of requests) {
-        // Validate request data
-        request.validate()
-
-        // Prepare product item data
-        const itemData: NewProductItem = {
-          name: request.get('name'),
-          size: request.get('size'),
-          color: request.get('color'),
-          price: request.get('price'),
-          image_url: request.get('image_url'),
-          is_available: request.get('is_available'),
-          inventory_count: request.get('inventory_count'),
-          sku: request.get('sku'),
-          custom_options: request.get('custom_options'),
-          product_id: request.get('product_id'),
-          manufacturer_id: request.get('manufacturer_id'),
-          category_id: request.get('category_id'),
+      for (const item of data) {
+        const itemData = {
+          ...item,
+          uuid: randomUUIDv7(),
         }
 
-        itemData.uuid = randomUUIDv7()
-
-        // Insert the product item
         await trx
           .insertInto('product_items')
           .values(itemData)
