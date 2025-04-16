@@ -128,6 +128,24 @@ export interface TaggableTable {
   created_at: string
   updated_at?: string
 }
+
+export interface TaggableModelsTable {
+  id?: number
+  tag_id: number
+  taggable_id: number
+  taggable_type: string
+  created_at: string
+  updated_at?: string
+}
+
+export interface CategorizableModelsTable {
+  id?: number
+  category_id: number
+  categorizable_id: number
+  categorizable_type: string
+  created_at: string
+  updated_at?: string
+}
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
@@ -184,4 +202,6 @@ export interface Database {
   taggable: TaggableTable
   comment_upvotes: CommenteableUpvotesTable
   categorizable: CategorizableTable
+  categorizable_models: CategorizableModelsTable
+  taggable_models: TaggableModelsTable
 }

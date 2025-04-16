@@ -111,3 +111,30 @@ export async function firstOrCreate(
     throw error
   }
 }
+
+/**
+ * Count the number of posts that have been tagged
+ *
+ * @param taggableType The type of entity to count (e.g. 'posts')
+ * @returns The count of tagged posts
+ */
+export async function countTaggedPosts(taggableType: string): Promise<number> {
+  try {
+    const result = await db
+      .selectFrom('taggable_models')
+      .select(({ fn }) => [
+        fn.count<number>('id').as('count'),
+      ])
+      .where('taggable_type', '=', taggableType)
+      .executeTakeFirst()
+
+    return result?.count || 0
+  }
+  catch (error) {
+    if (error instanceof Error) {
+      throw new TypeError(`Failed to count tagged posts: ${error.message}`)
+    }
+
+    throw error
+  }
+}

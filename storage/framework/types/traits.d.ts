@@ -1,4 +1,14 @@
+import type { VineType } from '@stacksjs/types'
 import type { Request } from '../core/router/src/request'
+
+interface ValidationField {
+  rule: VineType
+  message: Record<string, string>
+}
+
+interface CustomAttributes {
+  [key: string]: ValidationField
+}
 
 interface RequestDataMigrations {
   name: string
@@ -6,7 +16,7 @@ interface RequestDataMigrations {
 
 }
 export interface MigrationsRequestType extends Request {
-  validate: (attributes?: CustomAttribute) => void
+  validate: (attributes?: CustomAttributes) => void
   get: <T>(element: string, defaultValue?: T) => T
   all: () => RequestDataMigrations
   name: string
@@ -164,4 +174,48 @@ export interface TaggableRequestType extends Request {
 
 }
 
-export type TraitRequest = MigrationsRequestType | PasskeysRequestType | CommentableRequestType | CommenteableUpvotesRequestType | CategorizableRequestType | TaggableRequestType
+interface RequestDataTaggableModels {
+  id: number
+  tag_id: number
+  taggable_id: number
+  taggable_type: string
+  created_at: string
+  updated_at: string | null
+
+}
+export interface TaggableModelsRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: <T>(element: string, defaultValue?: T) => T
+  all: () => RequestDataTaggableModels
+  id: number
+  tag_id: number
+  taggable_id: number
+  taggable_type: string
+  created_at: string
+  updated_at: string | null
+
+}
+
+interface RequestDataCategorizableModels {
+  id: number
+  category_id: number
+  categorizable_id: number
+  categorizable_type: string
+  created_at: string
+  updated_at: string | null
+
+}
+export interface CategorizableModelsRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: <T>(element: string, defaultValue?: T) => T
+  all: () => RequestDataCategorizableModels
+  id: number
+  category_id: number
+  categorizable_id: number
+  categorizable_type: string
+  created_at: string
+  updated_at: string | null
+
+}
+
+export type TraitRequest = MigrationsRequestType | PasskeysRequestType | CommentableRequestType | CommenteableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestType

@@ -88,6 +88,30 @@ function generateTaggableTableInterface(): string {
   }`
 }
 
+function generateTaggableModelsTableInterface(): string {
+  return `
+  export interface TaggableModelsTable {
+    id?: number
+    tag_id: number
+    taggable_id: number
+    taggable_type: string
+    created_at: string
+    updated_at?: string
+  }`
+}
+
+function generateCategorizableModelsTableInterface(): string {
+  return `
+  export interface CategorizableModelsTable {
+    id?: number
+    category_id: number
+    categorizable_id: number
+    categorizable_type: string
+    created_at: string
+    updated_at?: string
+  }`
+}
+
 export function generateTraitTableInterfaces(): string {
   return [
     generateMigrationsTableInterface(),
@@ -96,6 +120,8 @@ export function generateTraitTableInterfaces(): string {
     generateCommenteableUpvotesTableInterface(),
     generateCategorizableTableInterface(),
     generateTaggableTableInterface(),
+    generateTaggableModelsTableInterface(),
+    generateCategorizableModelsTableInterface(),
   ].join('\n')
 }
 
@@ -193,6 +219,28 @@ export async function generateTraitRequestTypes(): Promise<string> {
         taggable_type: 'string',
         created_at: 'string',
         updated_at: 'string',
+      },
+    },
+    {
+      name: 'TaggableModels',
+      fields: {
+        id: 'number',
+        tag_id: 'number',
+        taggable_id: 'number',
+        taggable_type: 'string',
+        created_at: 'string',
+        updated_at: 'string | null',
+      },
+    },
+    {
+      name: 'CategorizableModels',
+      fields: {
+        id: 'number',
+        category_id: 'number',
+        categorizable_id: 'number',
+        categorizable_type: 'string',
+        created_at: 'string',
+        updated_at: 'string | null',
       },
     },
   ]

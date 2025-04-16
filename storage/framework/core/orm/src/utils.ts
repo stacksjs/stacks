@@ -1247,6 +1247,8 @@ export async function generateKyselyTypes(): Promise<void> {
   text += '  taggable: TaggableTable\n'
   text += '  comment_upvotes: CommenteableUpvotesTable\n'
   text += '  categorizable: CategorizableTable\n'
+  text += '  categorizable_models: CategorizableModelsTable\n'
+  text += '  taggable_models: TaggableModelsTable\n'
   text += '}\n'
 
   const file = Bun.file(path.frameworkPath('orm/src/types.ts'))
