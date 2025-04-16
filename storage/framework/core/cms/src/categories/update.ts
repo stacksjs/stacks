@@ -1,9 +1,8 @@
 import type { CategorizableTable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
 import { slugify } from 'ts-slug'
 
-type UpdateCategoryData = {
+interface UpdateCategoryData {
   id: number
   name?: string
   description?: string
@@ -21,10 +20,7 @@ type UpdateCategoryData = {
  */
 export async function update(data: UpdateCategoryData): Promise<CategorizableTable> {
   try {
-
-    // Only include fields that are provided
     if (data.name !== undefined) {
-      data.name = data.name
       data.slug = slugify(data.name)
     }
 

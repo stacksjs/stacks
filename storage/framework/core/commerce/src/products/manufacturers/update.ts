@@ -56,7 +56,7 @@ export async function updateFeaturedStatus(
     const result = await db
       .updateTable('manufacturers')
       .set({
-        featured: featured,
+        featured,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)

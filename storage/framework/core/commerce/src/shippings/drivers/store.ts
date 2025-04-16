@@ -1,4 +1,4 @@
-import type { NewDriver, DriverJsonResponse } from '@stacksjs/orm'
+import type { DriverJsonResponse, NewDriver } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

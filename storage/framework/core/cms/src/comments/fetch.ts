@@ -1,5 +1,4 @@
-import { db, sql } from '@stacksjs/database'
-import { format } from '@stacksjs/datetime'
+import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 
 export interface Commentable {
@@ -129,7 +128,7 @@ export async function fetchCommentsByStatus(status: CommentStatus, options: { li
   }
 }
 
-export async function calculateApprovalRate(): Promise<{ approved: number; total: number; rate: number }> {
+export async function calculateApprovalRate(): Promise<{ approved: number, total: number, rate: number }> {
   try {
     const [approvedResult, totalResult] = await Promise.all([
       db
@@ -177,7 +176,7 @@ export async function fetchPostsWithMostComments(dateRange: DateRange, options: 
   try {
     let query = db
       .selectFrom('posts')
-      .leftJoin('commentable', (join) => join
+      .leftJoin('commentable', join => join
         .onRef('posts.id', '=', 'commentable.commentable_id')
         .on('commentable.commentable_type', '=', 'posts'))
       .where('commentable.created_at', '>=', formatDate(dateRange.startDate))
@@ -244,7 +243,7 @@ export async function fetchStatusDistributionDonut(dateRange: DateRange): Promis
     const results = await db
       .selectFrom('commentable')
       .where('created_at', '>=', formatDate(dateRange.startDate))
-      .where('created_at', '<=', formatDate(dateRange.endDate)  )
+      .where('created_at', '<=', formatDate(dateRange.endDate))
       .select([
         'status',
         db.fn.count('id').as('count'),
@@ -292,7 +291,7 @@ export async function fetchMonthlyCommentCounts(dateRange: DateRange): Promise<L
 
     // Group results by year and month
     const monthlyCounts = new Map<string, number>()
-    results.forEach((row: { created_at: string; count: string | number | bigint }) => {
+    results.forEach((row: { created_at: string, count: string | number | bigint }) => {
       const date = new Date(row.created_at)
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
       monthlyCounts.set(key, (monthlyCounts.get(key) || 0) + Number(row.count))

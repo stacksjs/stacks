@@ -21,7 +21,7 @@ interface RequestDataProject {
 }
 export interface ProjectRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataProject
   id: number
   name: string
@@ -41,7 +41,7 @@ interface RequestDataSubscriberEmail {
 }
 export interface SubscriberEmailRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataSubscriberEmail
   id: number
   email: string
@@ -68,7 +68,7 @@ interface RequestDataAccessToken {
 }
 export interface AccessTokenRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataAccessToken
   id: number
   name: string
@@ -102,7 +102,7 @@ interface RequestDataTeam {
 }
 export interface TeamRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataTeam
   id: number
   name: string
@@ -127,7 +127,7 @@ interface RequestDataSubscriber {
 }
 export interface SubscriberRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataSubscriber
   id: number
   subscribed: boolean
@@ -151,7 +151,7 @@ interface RequestDataDeployment {
 }
 export interface DeploymentRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataDeployment
   id: number
   commit_sha: string
@@ -175,7 +175,7 @@ interface RequestDataRelease {
 }
 export interface ReleaseRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataRelease
   id: number
   name: string
@@ -196,7 +196,7 @@ interface RequestDataUser {
 }
 export interface UserRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataUser
   id: number
   name: string
@@ -222,7 +222,7 @@ interface RequestDataPaymentProduct {
 }
 export interface PaymentProductRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataPaymentProduct
   id: number
   name: string
@@ -250,7 +250,7 @@ interface RequestDataPrintDevice {
 }
 export interface PrintDeviceRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataPrintDevice
   id: number
   name: string
@@ -277,7 +277,7 @@ interface RequestDataCategory {
 }
 export interface CategoryRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataCategory
   id: number
   name: string
@@ -311,7 +311,7 @@ interface RequestDataPayment {
 }
 export interface PaymentRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataPayment
   id: number
   amount: number
@@ -345,7 +345,7 @@ interface RequestDataDriver {
 }
 export interface DriverRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataDriver
   id: number
   name: string
@@ -378,7 +378,7 @@ interface RequestDataWaitlistProduct {
 }
 export interface WaitlistProductRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataWaitlistProduct
   id: number
   name: string
@@ -412,7 +412,7 @@ interface RequestDataDigitalDelivery {
 }
 export interface DigitalDeliveryRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataDigitalDelivery
   id: number
   name: string
@@ -437,7 +437,7 @@ interface RequestDataManufacturer {
 }
 export interface ManufacturerRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataManufacturer
   id: number
   manufacturer: string
@@ -459,7 +459,7 @@ interface RequestDataOrderItem {
 }
 export interface OrderItemRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataOrderItem
   id: number
   quantity: number
@@ -483,7 +483,7 @@ interface RequestDataShippingZone {
 }
 export interface ShippingZoneRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataShippingZone
   id: number
   name: string
@@ -511,7 +511,7 @@ interface RequestDataCustomer {
 }
 export interface CustomerRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataCustomer
   id: number
   name: string
@@ -544,7 +544,7 @@ interface RequestDataProduct {
 }
 export interface ProductRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataProduct
   id: number
   name: string
@@ -578,7 +578,7 @@ interface RequestDataReceipt {
 }
 export interface ReceiptRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataReceipt
   id: number
   printer: string
@@ -607,7 +607,7 @@ interface RequestDataProductVariant {
 }
 export interface ProductVariantRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataProductVariant
   id: number
   variant: string
@@ -634,7 +634,7 @@ interface RequestDataLicenseKey {
 }
 export interface LicenseKeyRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataLicenseKey
   id: number
   key: string
@@ -669,7 +669,7 @@ interface RequestDataWaitlistRestaurant {
 }
 export interface WaitlistRestaurantRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataWaitlistRestaurant
   id: number
   name: string
@@ -709,7 +709,7 @@ interface RequestDataReview {
 }
 export interface ReviewRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataReview
   id: number
   rating: number
@@ -741,7 +741,7 @@ interface RequestDataProductUnit {
 }
 export interface ProductUnitRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataProductUnit
   id: number
   name: string
@@ -777,7 +777,7 @@ interface RequestDataGiftCard {
 }
 export interface GiftCardRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataGiftCard
   id: number
   code: string
@@ -821,7 +821,7 @@ interface RequestDataOrder {
 }
 export interface OrderRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataOrder
   id: number
   status: string
@@ -864,7 +864,7 @@ interface RequestDataCoupon {
 }
 export interface CouponRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataCoupon
   id: number
   code: string
@@ -900,7 +900,7 @@ interface RequestDataTaxRate {
 }
 export interface TaxRateRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataTaxRate
   id: number
   name: string
@@ -928,7 +928,7 @@ interface RequestDataTransaction {
 }
 export interface TransactionRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataTransaction
   id: number
   amount: number
@@ -956,7 +956,7 @@ interface RequestDataLoyaltyPoint {
 }
 export interface LoyaltyPointRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataLoyaltyPoint
   id: number
   wallet_id: string
@@ -986,7 +986,7 @@ interface RequestDataProductItem {
 }
 export interface ProductItemRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataProductItem
   id: number
   name: string
@@ -1018,7 +1018,7 @@ interface RequestDataLoyaltyReward {
 }
 export interface LoyaltyRewardRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataLoyaltyReward
   id: number
   name: string
@@ -1046,7 +1046,7 @@ interface RequestDataShippingMethod {
 }
 export interface ShippingMethodRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataShippingMethod
   id: number
   name: string
@@ -1070,7 +1070,7 @@ interface RequestDataShippingRate {
 }
 export interface ShippingRateRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataShippingRate
   id: number
   method: string
@@ -1099,7 +1099,7 @@ interface RequestDataCart {
 }
 export interface CartRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataCart
   id: number
   status: string[] | string
@@ -1130,7 +1130,7 @@ interface RequestDataDeliveryRoute {
 }
 export interface DeliveryRouteRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataDeliveryRoute
   id: number
   driver: string
@@ -1163,7 +1163,7 @@ interface RequestDataCartItem {
 }
 export interface CartItemRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataCartItem
   id: number
   quantity: number
@@ -1194,7 +1194,7 @@ interface RequestDataFailedJob {
 }
 export interface FailedJobRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataFailedJob
   id: number
   connection: string
@@ -1221,7 +1221,7 @@ interface RequestDataPaymentMethod {
 }
 export interface PaymentMethodRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataPaymentMethod
   id: number
   type: string
@@ -1252,7 +1252,7 @@ interface RequestDataPost {
 }
 export interface PostRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataPost
   id: number
   title: string
@@ -1282,7 +1282,7 @@ interface RequestDataPaymentTransaction {
 }
 export interface PaymentTransactionRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataPaymentTransaction
   id: number
   name: string
@@ -1312,7 +1312,7 @@ interface RequestDataRequest {
 }
 export interface RequestRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataRequest
   id: number
   method: string[] | string
@@ -1340,7 +1340,7 @@ interface RequestDataJob {
 }
 export interface JobRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataJob
   id: number
   queue: string
@@ -1366,7 +1366,7 @@ interface RequestDataLog {
 }
 export interface LogRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataLog
   id: number
   timestamp: number
@@ -1399,7 +1399,7 @@ interface RequestDataSubscription {
 }
 export interface SubscriptionRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataSubscription
   id: number
   type: string
@@ -1430,7 +1430,7 @@ interface RequestDataError {
 }
 export interface ErrorRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataError
   id: number
   type: string

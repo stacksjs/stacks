@@ -1,4 +1,4 @@
-import type { NewDeliveryRoute, DeliveryRouteJsonResponse } from '@stacksjs/orm'
+import type { DeliveryRouteJsonResponse, NewDeliveryRoute } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
@@ -45,7 +45,7 @@ export async function updateLastActive(id: number): Promise<DeliveryRouteJsonRes
   try {
     const result = await db
       .updateTable('delivery_routes')
-      .set({ 
+      .set({
         last_active: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })

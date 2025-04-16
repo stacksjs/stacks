@@ -2,7 +2,6 @@ import type { DigitalDeliveryJsonResponse, DigitalDeliveryUpdate } from '@stacks
 import { db } from '@stacksjs/database'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
-import { fetchById } from './fetch'
 
 /**
  * Update a digital delivery

@@ -3,7 +3,7 @@ import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { slugify } from 'ts-slug'
 
-type CategoryData = {
+interface CategoryData {
   name: string
   description?: string
   categorizable_id: number

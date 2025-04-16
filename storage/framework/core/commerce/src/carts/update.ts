@@ -74,4 +74,4 @@ export async function bulkUpdate(data: CartUpdate[]): Promise<number> {
 
     throw error
   }
-} 
+}

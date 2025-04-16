@@ -2,7 +2,7 @@ import type { TaggableTable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { slugify } from 'ts-slug'
 
-type TagData = {
+interface TagData {
   name: string
   description?: string
   is_active?: boolean

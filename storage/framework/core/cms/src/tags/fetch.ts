@@ -170,7 +170,7 @@ export async function countTotalTags(): Promise<number> {
  * @param taggableType Optional type to filter by (e.g. 'posts', 'articles')
  * @returns The most used tag name and its count
  */
-export async function findMostUsedTag(taggableType?: string): Promise<{ name: string; count: number } | null> {
+export async function findMostUsedTag(taggableType?: string): Promise<{ name: string, count: number } | null> {
   try {
     let query = db
       .selectFrom('taggable_models')
@@ -211,7 +211,7 @@ export async function findMostUsedTag(taggableType?: string): Promise<{ name: st
  *
  * @returns The least used tag name and its count
  */
-export async function findLeastUsedTag(): Promise<{ name: string; count: number } | null> {
+export async function findLeastUsedTag(): Promise<{ name: string, count: number } | null> {
   try {
     const result = await db
       .selectFrom('taggable_models')
@@ -247,11 +247,11 @@ export async function findLeastUsedTag(): Promise<{ name: string; count: number 
  *
  * @returns Array of tags with their post counts
  */
-export async function fetchTagsWithPostCounts(): Promise<Array<{ name: string; postCount: number }>> {
+export async function fetchTagsWithPostCounts(): Promise<Array<{ name: string, postCount: number }>> {
   try {
     const result = await db
       .selectFrom('taggable')
-      .leftJoin('taggable_models', (join) => join
+      .leftJoin('taggable_models', join => join
         .onRef('taggable.id', '=', 'taggable_models.tag_id')
         .on('taggable_models.taggable_type', '=', 'posts'))
       .select(({ fn }) => [
@@ -282,11 +282,11 @@ export async function fetchTagsWithPostCounts(): Promise<Array<{ name: string; p
  *
  * @returns Array of tags with their counts and percentages
  */
-export async function fetchTagDistribution(): Promise<Array<{ name: string; count: number; percentage: number }>> {
+export async function fetchTagDistribution(): Promise<Array<{ name: string, count: number, percentage: number }>> {
   try {
     const result = await db
       .selectFrom('taggable')
-      .leftJoin('taggable_models', (join) => join
+      .leftJoin('taggable_models', join => join
         .onRef('taggable.id', '=', 'taggable_models.tag_id')
         .on('taggable_models.taggable_type', '=', 'posts'))
       .select(({ fn }) => [

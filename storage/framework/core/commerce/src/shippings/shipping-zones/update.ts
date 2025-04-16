@@ -1,7 +1,6 @@
 import type { ShippingZoneJsonResponse, ShippingZoneUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
-import { fetchById } from './fetch'
 
 /**
  * Update a shipping zone

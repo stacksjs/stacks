@@ -11,7 +11,14 @@ export default new Action({
     await request.validate()
 
     const id = request.getParam('id')
-    const model = await comments.update(id, request)
+
+    const data = {
+      title: request.get('title') as string,
+      body: request.get('body') as string,
+      status: request.get('status') as string,
+    }
+
+    const model = await comments.update(id, data)
 
     return response.json(model)
   },

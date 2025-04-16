@@ -2,7 +2,6 @@ import type { DriverJsonResponse, DriverUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
-import { fetchById } from './fetch'
 
 /**
  * Update a driver

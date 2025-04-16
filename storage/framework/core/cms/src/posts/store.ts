@@ -3,7 +3,7 @@ import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { store as storeTag } from '../tags/store'
 
-type PostData = {
+interface PostData {
   user_id: number
   title: string
   author: string

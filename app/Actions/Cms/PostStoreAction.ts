@@ -8,7 +8,19 @@ export default new Action({
   description: 'Post Store ORM Action',
   method: 'POST',
   async handle(request: PostRequestType) {
-    const model = await posts.store(request)
+    await request.validate()
+
+    const data = {
+      title: request.get('title'),
+      body: request.get('body'),
+      status: request.get('status'),
+      user_id: request.get<number>('user_id'),
+      author: request.get('author'),
+      category: request.get('category'),
+      poster: request.get('poster'),
+    }
+
+    const model = await posts.store(data)
 
     return response.json(model)
   },

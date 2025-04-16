@@ -3,7 +3,7 @@ import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { slugify } from 'ts-slug'
 
-type UpdateTagData = {
+interface UpdateTagData {
   id: number
   name?: string
   description?: string
