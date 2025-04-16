@@ -9,7 +9,7 @@ type TagUpdate = Omit<TaggableTable, 'updated_at'>
  * Update a tag
  *
  * @param id The ID of the tag to update
- * @param data The data to update
+ * @param request The data to update
  * @returns The updated tag record
  */
 export async function update(id: number, request: Request): Promise<TaggableTable> {

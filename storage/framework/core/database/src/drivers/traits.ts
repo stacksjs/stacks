@@ -116,6 +116,8 @@ export async function createTaggableTable(): Promise<void> {
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
+
+  await createTaggableModelsTable()
 }
 
 export async function createPostgresTaggableTable(): Promise<void> {
@@ -224,6 +226,8 @@ export async function createCategorizableTable(): Promise<void> {
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
+
+  await createCategorizableModelsTable()
 }
 
 // PostgreSQL version
@@ -284,7 +288,7 @@ export async function createPostgresCategorizableTable(): Promise<void> {
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 
-  await createPostgresCategoryModelsTable()
+  await createPostgresCategorizableModelsTable()
 }
 
 // SQLite/MySQL version
@@ -381,7 +385,7 @@ export async function createPostgresCommenteableTable(): Promise<void> {
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
 
-export async function createCategoriesModelsTable(): Promise<void> {
+export async function createCategorizableModelTable(): Promise<void> {
   if (await hasMigrationBeenCreated('categories_models'))
     return
 
@@ -390,7 +394,7 @@ export async function createCategoriesModelsTable(): Promise<void> {
 
   export async function up(db: Database<any>) {
   await db.schema
-    .createTable('categories_models')
+    .createTable('categorizable_models')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('category_id', 'integer', col => col.notNull())
     .addColumn('categorizable_id', 'integer', col => col.notNull())
@@ -435,7 +439,7 @@ export async function dropCommonTables(): Promise<void> {
   await db.schema.dropTable('commenteable_upvotes').ifExists().execute()
   await db.schema.dropTable('taggable').ifExists().execute()
   await db.schema.dropTable('taggable_models').ifExists().execute()
-  await db.schema.dropTable('category_models').ifExists().execute()
+  await db.schema.dropTable('categorizable_models').ifExists().execute()
   await db.schema.dropTable('commentable').ifExists().execute()
   await db.schema.dropTable('categories_models').ifExists().execute()
   await db.schema.dropTable('activities').ifExists().execute()
@@ -574,8 +578,6 @@ export async function createTaggableModelsTable(): Promise<void> {
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
-
-  await createTaggableModelsTable()
 }
 
 export async function createPostgresTaggableModelsTable(): Promise<void> {
@@ -629,8 +631,8 @@ export async function createPostgresTaggableModelsTable(): Promise<void> {
   await createPostgresTaggableModelsTable()
 }
 
-export async function createCategoryModelsTable(): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('category_models')
+export async function createCategorizableModelsTable(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('categorizable_models')
 
   if (hasBeenMigrated)
     return
@@ -639,7 +641,7 @@ export async function createCategoryModelsTable(): Promise<void> {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('category_models')\n`
+  migrationContent += `    .createTable('categorizable_models')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
   migrationContent += `    .addColumn('category_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('categorizable_id', 'integer', col => col.notNull())\n`
@@ -649,20 +651,20 @@ export async function createCategoryModelsTable(): Promise<void> {
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_category_models_category')\n`
-  migrationContent += `    .on('category_models')\n`
+  migrationContent += `    .createIndex('idx_categorizable_models_category')\n`
+  migrationContent += `    .on('categorizable_models')\n`
   migrationContent += `    .column('category_id')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_category_models_polymorphic')\n`
-  migrationContent += `    .on('category_models')\n`
+  migrationContent += `    .createIndex('idx_categorizable_models_polymorphic')\n`
+  migrationContent += `    .on('categorizable_models')\n`
   migrationContent += `    .columns(['categorizable_id', 'categorizable_type'])\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_category_models_unique')\n`
-  migrationContent += `    .on('category_models')\n`
+  migrationContent += `    .createIndex('idx_categorizable_models_unique')\n`
+  migrationContent += `    .on('categorizable_models')\n`
   migrationContent += `    .columns(['category_id', 'categorizable_id', 'categorizable_type'])\n`
   migrationContent += `    .unique()\n`
   migrationContent += `    .execute()\n\n`
@@ -670,18 +672,16 @@ export async function createCategoryModelsTable(): Promise<void> {
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-category-models-table.ts`
+  const migrationFileName = `${timestamp}-create-categorizable-models-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
-
-  await createCategoryModelsTable()
 }
 
-export async function createPostgresCategoryModelsTable(): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('category_models')
+export async function createPostgresCategorizableModelsTable(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('categorizable_models')
 
   if (hasBeenMigrated)
     return
@@ -690,7 +690,7 @@ export async function createPostgresCategoryModelsTable(): Promise<void> {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('category_models')\n`
+  migrationContent += `    .createTable('categorizable_models')\n`
   migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
   migrationContent += `    .addColumn('category_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('categorizable_id', 'integer', col => col.notNull())\n`
@@ -700,20 +700,20 @@ export async function createPostgresCategoryModelsTable(): Promise<void> {
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_category_models_category')\n`
-  migrationContent += `    .on('category_models')\n`
+  migrationContent += `    .createIndex('idx_categorizable_models_category')\n`
+  migrationContent += `    .on('categorizable_models')\n`
   migrationContent += `    .column('category_id')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_category_models_polymorphic')\n`
-  migrationContent += `    .on('category_models')\n`
+  migrationContent += `    .createIndex('idx_categorizable_models_polymorphic')\n`
+  migrationContent += `    .on('categorizable_models')\n`
   migrationContent += `    .columns(['categorizable_id', 'categorizable_type'])\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_category_models_unique')\n`
-  migrationContent += `    .on('category_models')\n`
+  migrationContent += `    .createIndex('idx_categorizable_models_unique')\n`
+  migrationContent += `    .on('categorizable_models')\n`
   migrationContent += `    .columns(['category_id', 'categorizable_id', 'categorizable_type'])\n`
   migrationContent += `    .unique()\n`
   migrationContent += `    .execute()\n\n`
@@ -721,7 +721,7 @@ export async function createPostgresCategoryModelsTable(): Promise<void> {
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-category-models-table.ts`
+  const migrationFileName = `${timestamp}-create-categorizable-models-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)

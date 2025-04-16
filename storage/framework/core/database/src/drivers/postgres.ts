@@ -16,7 +16,7 @@ import {
   pluckChanges,
 } from '.'
 
-import { createCategoriesModelsTable, createPostgresCategorizableTable, createPostgresCommenteableTable, createPostgresPasskeyMigration, deleteFrameworkModels, deleteMigrationFiles, dropCommonTables } from './traits'
+import { createPostgresCategorizableTable, createPostgresCommenteableTable, createPostgresPasskeyMigration, deleteFrameworkModels, deleteMigrationFiles, dropCommonTables } from './traits'
 
 export async function dropPostgresTables(): Promise<void> {
   const tables = await fetchPostgresTables()
@@ -42,7 +42,6 @@ export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   await createPostgresPasskeyMigration()
   await createPostgresCategorizableTable()
   await createPostgresCommenteableTable()
-  await createCategoriesModelsTable()
   await db.schema.createTable('activities').ifNotExists().execute()
 
   return ok('All tables dropped successfully!')

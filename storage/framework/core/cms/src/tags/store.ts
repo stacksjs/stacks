@@ -8,7 +8,7 @@ type TagStore = Omit<TaggableTable, 'updated_at'>
 /**
  * Create a new tag
  *
- * @param data The tag data to store
+ * @param request The tag data to store
  * @returns The newly created tag record
  */
 export async function store(request: Request): Promise<TaggableTable> {
