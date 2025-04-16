@@ -1,27 +1,39 @@
-import type { NewPost, PostJsonResponse, PostRequestType } from '@stacksjs/orm'
+import type { NewPost, PostJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+import { store as storeTag } from '../tags/store'
+
+type PostData = {
+  user_id: number
+  title: string
+  author: string
+  category: string
+  poster: string
+  body: string
+  views?: number
+  publishedAt?: number
+  status?: string
+  tags?: string[]
+}
 
 /**
  * Create a new post
  *
- * @param request The post data to create
+ * @param data The post data to create
  * @returns The created post record
  */
-export async function store(request: PostRequestType): Promise<PostJsonResponse> {
+export async function store(data: PostData): Promise<PostJsonResponse> {
   try {
-    await request.validate()
-
     const postData: NewPost = {
-      user_id: request.get<number>('user_id'),
-      title: request.get('title'),
-      author: request.get('author'),
-      category: request.get('category'),
-      poster: request.get('poster'),
-      body: request.get('body'),
-      views: request.get<number>('views') || 0,
-      published_at: request.get<number>('publishedAt'),
-      status: request.get('status') || 'draft',
+      user_id: data.user_id,
+      title: data.title,
+      author: data.author,
+      category: data.category,
+      poster: data.poster,
+      body: data.body,
+      views: data.views || 0,
+      published_at: data.publishedAt || Date.now(),
+      status: data.status || 'draft',
       created_at: formatDate(new Date()),
       updated_at: formatDate(new Date()),
     }
@@ -34,6 +46,18 @@ export async function store(request: PostRequestType): Promise<PostJsonResponse>
 
     if (!result)
       throw new Error('Failed to create post')
+
+    // Handle tags if they exist in the data
+    if (data.tags && Array.isArray(data.tags)) {
+      for (const tag of data.tags) {
+        await storeTag({
+          name: tag,
+          taggable_id: result.id,
+          taggable_type: 'posts',
+          is_active: true,
+        })
+      }
+    }
 
     return result
   }

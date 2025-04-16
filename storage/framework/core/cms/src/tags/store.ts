@@ -1,30 +1,33 @@
 import type { TaggableTable } from '@stacksjs/orm'
-import type { Request } from '@stacksjs/router'
 import { db } from '@stacksjs/database'
 import { slugify } from 'ts-slug'
 
-type TagStore = Omit<TaggableTable, 'updated_at'>
+type TagData = {
+  name: string
+  description?: string
+  is_active?: boolean
+  taggable_id: number
+  taggable_type: string
+}
 
 /**
  * Create a new tag
  *
- * @param request The tag data to store
+ * @param data The tag data to store
  * @returns The newly created tag record
  */
-export async function store(request: Request): Promise<TaggableTable> {
+export async function store(data: TagData): Promise<TaggableTable> {
   try {
-    await request.validate()
-
     const now = new Date()
 
-    const tagData: TagStore = {
-      name: request.get('name'),
-      slug: slugify(request.get('name')),
-      description: request.get('description'),
-      is_active: request.get('is_active'),
+    const tagData = {
+      name: data.name,
+      slug: slugify(data.name),
+      description: data.description,
+      is_active: data.is_active ?? true,
       created_at: now.toDateString(),
-      taggable_id: request.get('taggable_id'),
-      taggable_type: request.get('taggable_type'),
+      taggable_id: data.taggable_id,
+      taggable_type: data.taggable_type,
     }
 
     const result = await db
