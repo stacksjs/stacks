@@ -1,4 +1,6 @@
-import { db } from '@stacksjs/database'
+import { db, sql } from '@stacksjs/database'
+import { format } from '@stacksjs/datetime'
+import { formatDate } from '@stacksjs/orm'
 
 export interface Commentable {
   id?: number
@@ -167,8 +169,8 @@ export interface PostWithCommentCount {
 }
 
 export interface DateRange {
-  startDate: string
-  endDate: string
+  startDate: Date
+  endDate: Date
 }
 
 export async function fetchPostsWithMostComments(dateRange: DateRange, options: { limit?: number } = {}): Promise<PostWithCommentCount[]> {
@@ -178,8 +180,8 @@ export async function fetchPostsWithMostComments(dateRange: DateRange, options: 
       .leftJoin('commentable', (join) => join
         .onRef('posts.id', '=', 'commentable.commentable_id')
         .on('commentable.commentable_type', '=', 'posts'))
-      .where('commentable.created_at', '>=', dateRange.startDate)
-      .where('commentable.created_at', '<=', dateRange.endDate)
+      .where('commentable.created_at', '>=', formatDate(dateRange.startDate))
+      .where('commentable.created_at', '<=', formatDate(dateRange.endDate))
       .select([
         'posts.id',
         'posts.title',
@@ -241,8 +243,8 @@ export async function fetchStatusDistributionDonut(dateRange: DateRange): Promis
   try {
     const results = await db
       .selectFrom('commentable')
-      .where('created_at', '>=', dateRange.startDate)
-      .where('created_at', '<=', dateRange.endDate)
+      .where('created_at', '>=', formatDate(dateRange.startDate))
+      .where('created_at', '<=', formatDate(dateRange.endDate)  )
       .select([
         'status',
         db.fn.count('id').as('count'),
@@ -262,9 +264,54 @@ export async function fetchStatusDistributionDonut(dateRange: DateRange): Promis
     }
   }
   catch (error) {
-    if (error instanceof Error) {
+    if (error instanceof Error)
       throw new TypeError(`Failed to fetch status distribution: ${error.message}`)
-    }
+
+    throw error
+  }
+}
+
+export interface LineGraphData {
+  labels: string[]
+  values: number[]
+}
+
+export async function fetchMonthlyCommentCounts(dateRange: DateRange): Promise<LineGraphData> {
+  try {
+    const results = await db
+      .selectFrom('commentable')
+      .where('created_at', '>=', formatDate(dateRange.startDate))
+      .where('created_at', '<=', formatDate(dateRange.endDate))
+      .select([
+        db.fn.count('id').as('count'),
+        'created_at',
+      ])
+      .groupBy('created_at')
+      .orderBy('created_at', 'asc')
+      .execute()
+
+    // Group results by year and month
+    const monthlyCounts = new Map<string, number>()
+    results.forEach((row: { created_at: string; count: string | number | bigint }) => {
+      const date = new Date(row.created_at)
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+      monthlyCounts.set(key, (monthlyCounts.get(key) || 0) + Number(row.count))
+    })
+
+    // Convert to arrays for the graph
+    const labels: string[] = []
+    const values: number[] = []
+    monthlyCounts.forEach((count, key) => {
+      const [year, month] = key.split('-')
+      labels.push(new Date(Number(year), Number(month) - 1).toLocaleString('default', { month: 'short', year: 'numeric' }))
+      values.push(count)
+    })
+
+    return { labels, values }
+  }
+  catch (error) {
+    if (error instanceof Error)
+      throw new TypeError(`Failed to fetch monthly comment counts: ${error.message}`)
 
     throw error
   }
