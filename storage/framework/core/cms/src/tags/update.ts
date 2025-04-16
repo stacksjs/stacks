@@ -1,50 +1,50 @@
 import type { TaggableTable } from '@stacksjs/orm'
-import type { Request } from '@stacksjs/router'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { slugify } from 'ts-slug'
 
-type TagUpdate = Omit<TaggableTable, 'updated_at'>
+type UpdateTagData = {
+  id: number
+  name?: string
+  description?: string
+  is_active?: boolean
+  taggable_id?: number
+  taggable_type?: string
+}
+
 /**
  * Update a tag
  *
- * @param id The ID of the tag to update
- * @param request The data to update
+ * @param data The tag data to update
  * @returns The updated tag record
  */
-export async function update(id: number, request: Request): Promise<TaggableTable> {
+export async function update(data: UpdateTagData): Promise<TaggableTable> {
   try {
-    await request.validate()
+    const updateData: Record<string, any> = {
+      updated_at: formatDate(new Date()),
+    }
 
-    const now = formatDate(new Date())
-
-    const tagData: TagUpdate = {
-      name: request.get('name'),
-      slug: slugify(request.get('name')),
-      description: request.get('description'),
-      is_active: request.get('is_active'),
-      created_at: now,
-      taggable_id: request.get('taggable_id'),
-      taggable_type: request.get('taggable_type'),
+    // Only include fields that are provided
+    if (data.name !== undefined) {
+      updateData.name = data.name
+      updateData.slug = slugify(data.name)
     }
 
     const result = await db
       .updateTable('taggable')
-      .set(tagData)
-      .where('id', '=', id)
+      .set(updateData)
+      .where('id', '=', data.id)
       .returningAll()
       .executeTakeFirst()
 
-    if (!result) {
-      throw new Error(`Tag with ID ${id} not found`)
-    }
+    if (!result)
+      throw new Error('Failed to update tag')
 
     return result
   }
   catch (error) {
-    if (error instanceof Error) {
+    if (error instanceof Error)
       throw new TypeError(`Failed to update tag: ${error.message}`)
-    }
 
     throw error
   }

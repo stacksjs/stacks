@@ -1,60 +1,69 @@
-import type { PostJsonResponse, PostRequestType, PostUpdate } from '@stacksjs/orm'
+import type { PostJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+import { store as storeTag } from '../tags/store'
+
+type UpdatePostData = {
+  id: number
+  user_id?: number
+  title?: string
+  author?: string
+  category?: string
+  poster?: string
+  body?: string
+  views?: number
+  publishedAt?: number
+  status?: string
+  tags?: string[]
+}
 
 /**
- * Update a post by ID
+ * Update a post
  *
- * @param id The ID of the post to update
- * @param request The updated post data
+ * @param data The post data to update
  * @returns The updated post record
  */
-export async function update(id: number, request: PostRequestType): Promise<PostJsonResponse | undefined> {
+export async function update(data: UpdatePostData): Promise<PostJsonResponse> {
   try {
-    await request.validate()
-    // Create a single update data object directly from the request
-    const updateData: PostUpdate = {
-      title: request.get('title'),
-      author: request.get('author'),
-      category: request.get('category'),
-      poster: request.get('poster'),
-      body: request.get('body'),
-      views: request.get<number>('views'),
-      comments: request.get<number>('comments'),
-      published_at: request.get<number>('publishedAt'),
-      status: request.get('status'),
+    const updateData: Record<string, any> = {
       updated_at: formatDate(new Date()),
     }
 
-    if (Object.keys(updateData).length === 0) {
-      return await db
-        .selectFrom('posts')
-        .where('id', '=', id)
-        .selectAll()
-        .executeTakeFirst()
-    }
-
-    // Update the post record
-    await db
+    const result = await db
       .updateTable('posts')
       .set(updateData)
-      .where('id', '=', id)
-      .execute()
-
-    const updatedPost = await db
-      .selectFrom('posts')
-      .where('id', '=', id)
-      .selectAll()
+      .where('id', '=', data.id)
+      .returningAll()
       .executeTakeFirst()
 
-    return updatedPost
+    if (!result)
+      throw new Error('Failed to update post')
+
+    // Handle tags if they exist in the data
+    if (data.tags && Array.isArray(data.tags)) {
+      // First, delete existing tags for this post
+      await db
+        .deleteFrom('taggable')
+        .where('taggable_id', '=', data.id)
+        .where('taggable_type', '=', 'posts')
+        .execute()
+
+      // Then add the new tags
+      for (const tag of data.tags) {
+        await storeTag({
+          name: tag,
+          taggable_id: data.id,
+          taggable_type: 'posts',
+          is_active: true,
+        })
+      }
+    }
+
+    return result
   }
   catch (error) {
-    // Handle specific errors
-    if (error instanceof Error) {
-      // Re-throw the error with a more user-friendly message
+    if (error instanceof Error)
       throw new TypeError(`Failed to update post: ${error.message}`)
-    }
 
     throw error
   }

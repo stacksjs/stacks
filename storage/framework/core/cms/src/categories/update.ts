@@ -1,52 +1,44 @@
-import type { CategorizableTable, CategoryRequestType } from '@stacksjs/orm'
+import type { CategorizableTable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { slugify } from 'ts-slug'
 
-type CategorizableUpdate = Partial<Omit<CategorizableTable, 'id' | 'created_at'>>
+type UpdateCategoryData = {
+  id: number
+  name?: string
+  description?: string
+  categorizable_id?: number
+  categorizable_type?: string
+  is_active?: boolean
+  slug?: string
+}
 
 /**
- * Update a category by ID
+ * Update a category
  *
- * @param id The ID of the category to update
- * @param request The updated category data
+ * @param data The category data to update
  * @returns The updated category record
  */
-export async function update(id: number, request: CategoryRequestType): Promise<CategorizableTable | undefined> {
+export async function update(data: UpdateCategoryData): Promise<CategorizableTable> {
   try {
-    await request.validate()
 
-    const updateData: CategorizableUpdate = {
-      name: request.get('name'),
-      description: request.get('description'),
-      slug: slugify(request.get('name')),
-      categorizable_id: request.get('categorizable_id'),
-      categorizable_type: request.get('categorizable_type'),
-      is_active: request.get<boolean>('is_active'),
-      updated_at: formatDate(new Date()),
+    // Only include fields that are provided
+    if (data.name !== undefined) {
+      data.name = data.name
+      data.slug = slugify(data.name)
     }
 
-    if (Object.keys(updateData).length === 0) {
-      return await db
-        .selectFrom('categorizable')
-        .where('id', '=', id)
-        .selectAll()
-        .executeTakeFirst()
-    }
-
-    await db
+    const result = await db
       .updateTable('categorizable')
-      .set(updateData)
-      .where('id', '=', id)
-      .execute()
-
-    const updatedCategory = await db
-      .selectFrom('categorizable')
-      .where('id', '=', id)
-      .selectAll()
+      .set(data)
+      .where('id', '=', data.id)
+      .returningAll()
       .executeTakeFirst()
 
-    return updatedCategory
+    if (!result)
+      throw new Error('Failed to update category')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error)

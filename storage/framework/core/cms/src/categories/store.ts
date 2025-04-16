@@ -1,27 +1,31 @@
-import type { CategorizableTable, CategoryRequestType } from '@stacksjs/orm'
+import type { CategorizableTable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { slugify } from 'ts-slug'
 
-type CategorizableStore = Omit<CategorizableTable, 'updated_at'>
+type CategoryData = {
+  name: string
+  description?: string
+  categorizable_id: number
+  categorizable_type: string
+  is_active?: boolean
+}
 
 /**
  * Create a new category
  *
- * @param request The category data to create
+ * @param data The category data to create
  * @returns The created category record
  */
-export async function store(request: CategoryRequestType): Promise<CategorizableTable> {
+export async function store(data: CategoryData): Promise<CategorizableTable> {
   try {
-    await request.validate()
-
-    const categoryData: CategorizableStore = {
-      name: request.get('name'),
-      slug: slugify(request.get('name')),
-      description: request.get('description'),
-      categorizable_id: request.get('categorizable_id'),
-      categorizable_type: request.get('categorizable_type'),
-      is_active: request.get<boolean>('is_active'),
+    const categoryData = {
+      name: data.name,
+      slug: slugify(data.name),
+      description: data.description,
+      categorizable_id: data.categorizable_id,
+      categorizable_type: data.categorizable_type,
+      is_active: data.is_active ?? true,
       created_at: formatDate(new Date()),
     }
 
