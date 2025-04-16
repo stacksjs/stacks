@@ -1,53 +1,34 @@
-import type { LicenseKeyJsonResponse, LicenseKeyRequestType } from '@stacksjs/orm'
+import type { LicenseKeyJsonResponse, LicenseKeyUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 
 /**
- * Update a license key by ID
+ * Update a license key
  *
- * @param id The ID of the license key to update
- * @param request The updated license key data
+ * @param data The license key data to update
  * @returns The updated license key record
  */
-export async function update(id: number, request: LicenseKeyRequestType): Promise<LicenseKeyJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
-  // Check if license key exists
-  const existingKey = await fetchById(id)
-
-  if (!existingKey) {
-    throw new Error(`License key with ID ${id} not found`)
-  }
-
-  // Create update data object using request fields
-  const updateData = {
-    key: request.get('key'),
-    status: request.get('status'),
-    expiry_date: request.get('expiry_date'),
-    template: request.get('template'),
-    customer_id: request.get<number>('customer_id'),
-    product_id: request.get<number>('product_id'),
-    order_id: request.get<number>('order_id'),
-  }
-
-  // If no fields to update, just return the existing license key
-  if (Object.keys(updateData).length === 0) {
-    return existingKey
-  }
-
+export async function update(data: LicenseKeyUpdate): Promise<LicenseKeyJsonResponse> {
   try {
-    // Update the license key
-    await db
-      .updateTable('license_keys')
-      .set(updateData)
-      .where('id', '=', id)
-      .execute()
+    if (!data.id)
+      throw new Error('License key ID is required for update')
 
-    // Fetch and return the updated license key
-    return await fetchById(id)
+    const result = await db
+      .updateTable('license_keys')
+      .set({
+        ...data,
+        updated_at: formatDate(new Date()),
+      })
+      .where('id', '=', data.id)
+      .returningAll()
+      .executeTakeFirst()
+
+    if (!result)
+      throw new Error('Failed to update license key')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -68,27 +49,22 @@ export async function update(id: number, request: LicenseKeyRequestType): Promis
 export async function updateStatus(
   id: number,
   status: string | string[],
-): Promise<LicenseKeyJsonResponse | undefined> {
-  // Check if license key exists
-  const licenseKey = await fetchById(id)
-
-  if (!licenseKey) {
-    throw new Error(`License key with ID ${id} not found`)
-  }
-
+): Promise<LicenseKeyJsonResponse> {
   try {
-    // Update the license key status
-    await db
+    const result = await db
       .updateTable('license_keys')
       .set({
         status,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated license key
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update license key status')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -109,38 +85,26 @@ export async function updateStatus(
 export async function updateExpiration(
   id: number,
   expiryDate?: string | Date,
-): Promise<LicenseKeyJsonResponse | undefined> {
-  // Check if license key exists
-  const licenseKey = await fetchById(id)
-
-  if (!licenseKey) {
-    throw new Error(`License key with ID ${id} not found`)
-  }
-
-  // Create update data with only provided fields
-  const updateData: Record<string, any> = {
-    updated_at: formatDate(new Date()),
-  }
-
-  if (expiryDate !== undefined) {
-    updateData.expiry_date = expiryDate
-  }
-
-  // If no expiration fields to update, just return the existing license key
-  if (Object.keys(updateData).length === 1) { // Only updated_at was set
-    return licenseKey
-  }
-
+): Promise<LicenseKeyJsonResponse> {
   try {
-    // Update the license key
-    await db
+    const updateData: Record<string, any> = {
+      updated_at: formatDate(new Date()),
+    }
+
+    if (expiryDate !== undefined)
+      updateData.expiry_date = expiryDate
+
+    const result = await db
       .updateTable('license_keys')
       .set(updateData)
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated license key
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update expiration information')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {

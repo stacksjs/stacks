@@ -1,45 +1,30 @@
-import type { NewShippingMethod, ShippingMethodJsonResponse, ShippingMethodRequestType } from '@stacksjs/orm'
+import type { NewShippingMethod, ShippingMethodJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
  * Create a new shipping method
  *
- * @param request Shipping method data to store
+ * @param data The shipping method data to store
  * @returns The newly created shipping method record
  */
-export async function store(request: ShippingMethodRequestType): Promise<ShippingMethodJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function store(data: NewShippingMethod): Promise<ShippingMethodJsonResponse> {
   try {
-    // Prepare shipping method data
-    const shippingData: NewShippingMethod = {
-      name: request.get('name'),
-      description: request.get('description'),
-      base_rate: request.get<number>('base_rate'),
-      free_shipping: request.get<number>('free_shipping'),
-      status: request.get('status'),
+    const shippingData = {
+      ...data,
+      uuid: randomUUIDv7(),
     }
 
-    shippingData.uuid = randomUUIDv7()
-
-    // Insert the shipping method
     const result = await db
       .insertInto('shipping_methods')
       .values(shippingData)
+      .returningAll()
       .executeTakeFirst()
 
-    const shippingId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+    if (!result)
+      throw new Error('Failed to create shipping method')
 
-    // Retrieve the newly created shipping method
-    const shippingMethod = await db
-      .selectFrom('shipping_methods')
-      .where('id', '=', shippingId)
-      .selectAll()
-      .executeTakeFirst()
-
-    return shippingMethod
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -53,43 +38,25 @@ export async function store(request: ShippingMethodRequestType): Promise<Shippin
 /**
  * Create multiple shipping methods at once
  *
- * @param requests Array of shipping method data to store
+ * @param data Array of shipping method data to store
  * @returns Number of shipping methods created
  */
-export async function bulkStore(requests: ShippingMethodRequestType[]): Promise<number> {
-  if (!requests.length)
+export async function bulkStore(data: NewShippingMethod[]): Promise<number> {
+  if (!data.length)
     return 0
 
-  let createdCount = 0
-
   try {
-    // Process each shipping method
-    await db.transaction().execute(async (trx) => {
-      for (const request of requests) {
-        // Validate request data
-        request.validate()
+    const shippingDataArray = data.map(item => ({
+      ...item,
+      uuid: randomUUIDv7(),
+    }))
 
-        // Prepare shipping method data
-        const shippingData: NewShippingMethod = {
-          name: request.get('name'),
-          description: request.get('description'),
-          base_rate: request.get<number>('base_rate'),
-          free_shipping: request.get<number>('free_shipping'),
-          status: request.get('status'),
-          uuid: randomUUIDv7(),
-        }
+    const result = await db
+      .insertInto('shipping_methods')
+      .values(shippingDataArray)
+      .executeTakeFirst()
 
-        // Insert the shipping method
-        await trx
-          .insertInto('shipping_methods')
-          .values(shippingData)
-          .execute()
-
-        createdCount++
-      }
-    })
-
-    return createdCount
+    return Number(result.numInsertedOrUpdatedRows)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -129,14 +96,12 @@ export function formatShippingOptions(): Promise<{ id: number, name: string, sta
  */
 export async function getActiveShippingMethods(): Promise<ShippingMethodJsonResponse[]> {
   try {
-    const activeMethods = await db
+    return await db
       .selectFrom('shipping_methods')
       .selectAll()
       .where('status', '=', 'active')
       .orderBy('name')
       .execute()
-
-    return activeMethods
   }
   catch (error) {
     if (error instanceof Error) {

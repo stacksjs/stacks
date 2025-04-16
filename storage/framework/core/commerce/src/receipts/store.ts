@@ -1,48 +1,30 @@
-import type { NewReceipt, ReceiptJsonResponse, ReceiptRequestType } from '@stacksjs/orm'
+import type { NewReceipt, ReceiptJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
- * Create a new print log
+ * Create a new receipt
  *
- * @param request Print log data to store
- * @returns The newly created print log record
+ * @param data The receipt data to store
+ * @returns The newly created receipt record
  */
-export async function store(request: ReceiptRequestType): Promise<ReceiptJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function store(data: NewReceipt): Promise<ReceiptJsonResponse> {
   try {
-    // Prepare print log data
-    const receiptData: NewReceipt = {
-      printer: request.get('printer'),
-      document: request.get('document'),
-      timestamp: request.get<number>('timestamp'),
-      status: request.get('status'),
-      size: request.get<number>('size'),
-      pages: request.get<number>('pages'),
-      duration: request.get('duration'),
-      print_device_id: request.get<number>('print_device_id'),
+    const receiptData = {
+      ...data,
+      uuid: randomUUIDv7(),
     }
 
-    receiptData.uuid = randomUUIDv7()
-
-    // Insert the print log
     const result = await db
       .insertInto('receipts')
       .values(receiptData)
+      .returningAll()
       .executeTakeFirst()
 
-    const receiptId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+    if (!result)
+      throw new Error('Failed to create receipt')
 
-    // Retrieve the newly created print log
-    const receipt = await db
-      .selectFrom('receipts')
-      .where('id', '=', receiptId)
-      .selectAll()
-      .executeTakeFirst()
-
-    return receipt
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -54,36 +36,21 @@ export async function store(request: ReceiptRequestType): Promise<ReceiptJsonRes
 }
 
 /**
- * Create multiple print logs at once
+ * Create multiple receipts at once
  *
- * @param requests Array of print log data to store
- * @returns Number of print logs created
+ * @param data Array of receipt data to store
+ * @returns Number of receipts created
  */
-export async function bulkStore(requests: ReceiptRequestType[]): Promise<number> {
-  if (!requests.length)
+export async function bulkStore(data: NewReceipt[]): Promise<number> {
+  if (!data.length)
     return 0
 
   try {
-    // Prepare all print log data
-    const receiptDataArray = requests.map((request) => {
-      // Validate request data
-      request.validate()
+    const receiptDataArray = data.map(item => ({
+      ...item,
+      uuid: randomUUIDv7(),
+    }))
 
-      // Prepare print log data
-      return {
-        printer: request.get('printer'),
-        document: request.get('document'),
-        timestamp: request.get<number>('timestamp'),
-        status: request.get('status'),
-        size: request.get<number>('size'),
-        pages: request.get<number>('pages'),
-        duration: request.get<number>('duration'),
-        print_device_id: request.get<number>('print_device_id'),
-        uuid: randomUUIDv7(),
-      }
-    })
-
-    // Insert all print logs in a single statement
     const result = await db
       .insertInto('receipts')
       .values(receiptDataArray)

@@ -1,46 +1,30 @@
-import type { DriverJsonResponse, DriverRequestType, NewDriver } from '@stacksjs/orm'
+import type { NewDriver, DriverJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
  * Create a new driver
  *
- * @param request Driver data to store
+ * @param data The driver data to store
  * @returns The newly created driver record
  */
-export async function store(request: DriverRequestType): Promise<DriverJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function store(data: NewDriver): Promise<DriverJsonResponse> {
   try {
-    // Prepare driver data
-    const driverData: NewDriver = {
-      user_id: request.get('user_id'),
-      name: request.get('name'),
-      phone: request.get('phone'),
-      vehicle_number: request.get('vehicle_number'),
-      license: request.get('license'),
-      status: request.get('status'),
+    const driverData = {
+      ...data,
+      uuid: randomUUIDv7(),
     }
 
-    driverData.uuid = randomUUIDv7()
-
-    // Insert the driver
     const result = await db
       .insertInto('drivers')
       .values(driverData)
+      .returningAll()
       .executeTakeFirst()
 
-    const driverId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+    if (!result)
+      throw new Error('Failed to create driver')
 
-    // Retrieve the newly created driver
-    const driver = await db
-      .selectFrom('drivers')
-      .where('id', '=', driverId)
-      .selectAll()
-      .executeTakeFirst()
-
-    return driver
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -54,44 +38,25 @@ export async function store(request: DriverRequestType): Promise<DriverJsonRespo
 /**
  * Create multiple drivers at once
  *
- * @param requests Array of driver data to store
+ * @param data Array of driver data to store
  * @returns Number of drivers created
  */
-export async function bulkStore(requests: DriverRequestType[]): Promise<number> {
-  if (!requests.length)
+export async function bulkStore(data: NewDriver[]): Promise<number> {
+  if (!data.length)
     return 0
 
-  let createdCount = 0
-
   try {
-    // Process each driver
-    await db.transaction().execute(async (trx) => {
-      for (const request of requests) {
-        // Validate request data
-        request.validate()
+    const driverDataArray = data.map(item => ({
+      ...item,
+      uuid: randomUUIDv7(),
+    }))
 
-        // Prepare driver data
-        const driverData: NewDriver = {
-          user_id: request.get('user_id'),
-          name: request.get('name'),
-          phone: request.get('phone'),
-          vehicle_number: request.get('vehicle_number'),
-          license: request.get('license'),
-          status: request.get('status'),
-          uuid: randomUUIDv7(),
-        }
+    const result = await db
+      .insertInto('drivers')
+      .values(driverDataArray)
+      .executeTakeFirst()
 
-        // Insert the driver
-        await trx
-          .insertInto('drivers')
-          .values(driverData)
-          .execute()
-
-        createdCount++
-      }
-    })
-
-    return createdCount
+    return Number(result.numInsertedOrUpdatedRows)
   }
   catch (error) {
     if (error instanceof Error) {

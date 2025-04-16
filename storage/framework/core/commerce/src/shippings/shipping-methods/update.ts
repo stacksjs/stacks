@@ -1,51 +1,32 @@
-import type { ShippingMethodJsonResponse, ShippingMethodRequestType } from '@stacksjs/orm'
+import type { ShippingMethodJsonResponse, ShippingMethodUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
-import { fetchById } from './fetch'
 
 /**
- * Update a shipping method by ID
+ * Update a shipping method
  *
- * @param id The ID of the shipping method to update
- * @param request The updated shipping method data
+ * @param data The shipping method data to update
  * @returns The updated shipping method record
  */
-export async function update(id: number, request: ShippingMethodRequestType): Promise<ShippingMethodJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
-  // Check if shipping method exists
-  const existingMethod = await fetchById(id)
-
-  if (!existingMethod) {
-    throw new Error(`Shipping method with ID ${id} not found`)
-  }
-
-  // Create update data object using request fields
-  const updateData = {
-    name: request.get('name'),
-    description: request.get('description'),
-    base_rate: request.get<number>('base_rate'),
-    free_shipping: request.get<number>('free_shipping'),
-    status: request.get('status'),
-    updated_at: formatDate(new Date()),
-  }
-
-  // If no fields to update, just return the existing shipping method
-  if (Object.keys(updateData).length === 0) {
-    return existingMethod
-  }
-
+export async function update(data: ShippingMethodUpdate): Promise<ShippingMethodJsonResponse> {
   try {
-    // Update the shipping method
-    await db
-      .updateTable('shipping_methods')
-      .set(updateData)
-      .where('id', '=', id)
-      .execute()
+    if (!data.id)
+      throw new Error('Shipping method ID is required for update')
 
-    // Fetch and return the updated shipping method
-    return await fetchById(id)
+    const result = await db
+      .updateTable('shipping_methods')
+      .set({
+        ...data,
+        updated_at: formatDate(new Date()),
+      })
+      .where('id', '=', data.id)
+      .returningAll()
+      .executeTakeFirst()
+
+    if (!result)
+      throw new Error('Failed to update shipping method')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -66,27 +47,22 @@ export async function update(id: number, request: ShippingMethodRequestType): Pr
 export async function updateStatus(
   id: number,
   status: string | string[],
-): Promise<ShippingMethodJsonResponse | undefined> {
-  // Check if shipping method exists
-  const shippingMethod = await fetchById(id)
-
-  if (!shippingMethod) {
-    throw new Error(`Shipping method with ID ${id} not found`)
-  }
-
+): Promise<ShippingMethodJsonResponse> {
   try {
-    // Update the shipping method status
-    await db
+    const result = await db
       .updateTable('shipping_methods')
       .set({
         status,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated shipping method
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update shipping method status')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -101,50 +77,36 @@ export async function updateStatus(
  * Update pricing information for a shipping method
  *
  * @param id The ID of the shipping method
- * @param base_rate The updated base rate
- * @param free_shipping The updated free shipping threshold
+ * @param base_rate Optional updated base rate
+ * @param free_shipping Optional updated free shipping threshold
  * @returns The updated shipping method
  */
 export async function updatePricing(
   id: number,
   base_rate?: number,
   free_shipping?: number,
-): Promise<ShippingMethodJsonResponse | undefined> {
-  // Check if shipping method exists
-  const shippingMethod = await fetchById(id)
-
-  if (!shippingMethod) {
-    throw new Error(`Shipping method with ID ${id} not found`)
-  }
-
-  // Create update data with only provided fields
-  const updateData: Record<string, any> = {
-    updated_at: formatDate(new Date()),
-  }
-
-  if (base_rate !== undefined) {
-    updateData.base_rate = base_rate
-  }
-
-  if (free_shipping !== undefined) {
-    updateData.free_shipping = free_shipping
-  }
-
-  // If no pricing fields to update, just return the existing shipping method
-  if (Object.keys(updateData).length === 1) { // Only updated_at was set
-    return shippingMethod
-  }
-
+): Promise<ShippingMethodJsonResponse> {
   try {
-    // Update the shipping method
-    await db
+    const updateData: Record<string, any> = {
+      updated_at: formatDate(new Date()),
+    }
+
+    if (base_rate !== undefined)
+      updateData.base_rate = base_rate
+    if (free_shipping !== undefined)
+      updateData.free_shipping = free_shipping
+
+    const result = await db
       .updateTable('shipping_methods')
       .set(updateData)
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated shipping method
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update pricing information')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {

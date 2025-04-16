@@ -1,44 +1,32 @@
-import type { ShippingRateJsonResponse, ShippingRateRequestType } from '@stacksjs/orm'
+import type { ShippingRateJsonResponse, ShippingRateUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 
 /**
- * Update an existing shipping rate
+ * Update a shipping rate
  *
- * @param id The ID of the shipping rate to update
- * @param request Updated shipping rate data
+ * @param data The shipping rate data to update
  * @returns The updated shipping rate record
  */
-export async function update(id: number, request: ShippingRateRequestType): Promise<ShippingRateJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function update(data: ShippingRateUpdate): Promise<ShippingRateJsonResponse> {
   try {
-    // Prepare rate data for update
-    const rateData = {
-      method: request.get('method'),
-      zone: request.get('zone'),
-      weight_from: request.get<number>('weight_from'),
-      weight_to: request.get<number>('weight_to'),
-      rate: request.get<number>('rate'),
-      updated_at: formatDate(new Date()),
-    }
+    if (!data.id)
+      throw new Error('Shipping rate ID is required for update')
 
-    // Update the shipping rate
-    await db
+    const result = await db
       .updateTable('shipping_rates')
-      .set(rateData)
-      .where('id', '=', id)
-      .execute()
-
-    // Retrieve the updated shipping rate
-    const rate = await db
-      .selectFrom('shipping_rates')
-      .where('id', '=', id)
-      .selectAll()
+      .set({
+        ...data,
+        updated_at: formatDate(new Date()),
+      })
+      .where('id', '=', data.id)
+      .returningAll()
       .executeTakeFirst()
 
-    return rate
+    if (!result)
+      throw new Error('Failed to update shipping rate')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -57,46 +45,27 @@ export async function update(id: number, request: ShippingRateRequestType): Prom
  */
 export async function bulkUpdate(updates: Array<{
   id: number
-  data: ShippingRateRequestType
+  data: ShippingRateUpdate
 }>): Promise<number> {
   if (!updates.length)
     return 0
 
-  let updatedCount = 0
-
   try {
-    // Process each shipping rate update
-    await db.transaction().execute(async (trx) => {
-      for (const { id, data } of updates) {
-        // Validate update data
-        await data.validate()
+    let updatedCount = 0
 
-        // Prepare rate data for update
-        const rateData = {
-          method: data.get('method'),
-          zone: data.get('zone'),
-          weight_from: data.get<number>('weight_from'),
-          weight_to: data.get<number>('weight_to'),
-          rate: data.get<number>('rate'),
+    for (const { id, data } of updates) {
+      const result = await db
+        .updateTable('shipping_rates')
+        .set({
+          ...data,
           updated_at: formatDate(new Date()),
-        }
+        })
+        .where('id', '=', id)
+        .executeTakeFirst()
 
-        // Skip if no fields to update
-        if (Object.keys(rateData).length === 0)
-          continue
-
-        // Update the shipping rate
-        const result = await trx
-          .updateTable('shipping_rates')
-          .set(rateData)
-          .where('id', '=', id)
-          .executeTakeFirst()
-
-        // Increment the counter if update was successful
-        if (Number(result.numUpdatedRows) > 0)
-          updatedCount++
-      }
-    })
+      if (Number(result.numUpdatedRows) > 0)
+        updatedCount++
+    }
 
     return updatedCount
   }
@@ -116,24 +85,14 @@ export async function bulkUpdate(updates: Array<{
  * @param data The update data to apply
  * @returns Number of shipping rates updated
  */
-export async function updateByZone(zone: string, data: ShippingRateRequestType): Promise<number> {
+export async function updateByZone(zone: string, data: ShippingRateUpdate): Promise<number> {
   try {
-    // Validate the update data
-    await data.validate()
-
-    // Prepare rate data for update
-    const rateData = {
-      method: data.get('method'),
-      weight_from: data.get<number>('weight_from'),
-      weight_to: data.get<number>('weight_to'),
-      rate: data.get<number>('rate'),
-      updated_at: formatDate(new Date()),
-    }
-
-    // Update all shipping rates for the specified zone
     const result = await db
       .updateTable('shipping_rates')
-      .set(rateData)
+      .set({
+        ...data,
+        updated_at: formatDate(new Date()),
+      })
       .where('zone', '=', zone)
       .executeTakeFirst()
 
@@ -155,24 +114,14 @@ export async function updateByZone(zone: string, data: ShippingRateRequestType):
  * @param data The update data to apply
  * @returns Number of shipping rates updated
  */
-export async function updateByMethod(method: string, data: ShippingRateRequestType): Promise<number> {
+export async function updateByMethod(method: string, data: ShippingRateUpdate): Promise<number> {
   try {
-    // Validate the update data
-    await data.validate()
-
-    // Prepare rate data for update
-    const rateData = {
-      zone: data.get('zone'),
-      weight_from: data.get<number>('weight_from'),
-      weight_to: data.get<number>('weight_to'),
-      rate: data.get<number>('rate'),
-      updated_at: formatDate(new Date()),
-    }
-
-    // Update all shipping rates for the specified method
     const result = await db
       .updateTable('shipping_rates')
-      .set(rateData)
+      .set({
+        ...data,
+        updated_at: formatDate(new Date()),
+      })
       .where('method', '=', method)
       .executeTakeFirst()
 

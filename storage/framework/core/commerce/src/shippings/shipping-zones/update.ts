@@ -1,54 +1,33 @@
-import type { ShippingZoneRequestType } from '@stacksjs/orm'
-import type { ShippingZoneJsonResponse } from '../../../../orm/src/models/ShippingZone'
+import type { ShippingZoneJsonResponse, ShippingZoneUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
-// Import dependencies
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 
 /**
- * Update a shipping zone by ID
+ * Update a shipping zone
  *
- * @param id The ID of the shipping zone to update
- * @param request The updated shipping zone data
+ * @param data The shipping zone data to update
  * @returns The updated shipping zone record
  */
-export async function update(id: number, request: ShippingZoneRequestType): Promise<ShippingZoneJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
-  // Check if shipping zone exists
-  const existingZone = await fetchById(id)
-
-  if (!existingZone) {
-    throw new Error(`Shipping zone with ID ${id} not found`)
-  }
-
-  // Create update data object using request fields
-  const updateData = {
-    name: request.get('name'),
-    countries: request.get('countries'),
-    regions: request.get('regions'),
-    postal_codes: request.get('postal_codes'),
-    status: request.get('status'),
-    shipping_method_id: request.get<number>('shipping_method_id'),
-    updated_at: formatDate(new Date()),
-  }
-
-  // If no fields to update, just return the existing shipping zone
-  if (Object.keys(updateData).length === 0) {
-    return existingZone
-  }
-
+export async function update(data: ShippingZoneUpdate): Promise<ShippingZoneJsonResponse> {
   try {
-    // Update the shipping zone
-    await db
-      .updateTable('shipping_zones')
-      .set(updateData)
-      .where('id', '=', id)
-      .execute()
+    if (!data.id)
+      throw new Error('Shipping zone ID is required for update')
 
-    // Fetch and return the updated shipping zone
-    return await fetchById(id)
+    const result = await db
+      .updateTable('shipping_zones')
+      .set({
+        ...data,
+        updated_at: formatDate(new Date()),
+      })
+      .where('id', '=', data.id)
+      .returningAll()
+      .executeTakeFirst()
+
+    if (!result)
+      throw new Error('Failed to update shipping zone')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -69,27 +48,22 @@ export async function update(id: number, request: ShippingZoneRequestType): Prom
 export async function updateStatus(
   id: number,
   status: string | string[],
-): Promise<ShippingZoneJsonResponse | undefined> {
-  // Check if shipping zone exists
-  const shippingZone = await fetchById(id)
-
-  if (!shippingZone) {
-    throw new Error(`Shipping zone with ID ${id} not found`)
-  }
-
+): Promise<ShippingZoneJsonResponse> {
   try {
-    // Update the shipping zone status
-    await db
+    const result = await db
       .updateTable('shipping_zones')
       .set({
         status,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated shipping zone
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update shipping zone status')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -110,27 +84,22 @@ export async function updateStatus(
 export async function updateCountries(
   id: number,
   countries: string,
-): Promise<ShippingZoneJsonResponse | undefined> {
-  // Check if shipping zone exists
-  const shippingZone = await fetchById(id)
-
-  if (!shippingZone) {
-    throw new Error(`Shipping zone with ID ${id} not found`)
-  }
-
+): Promise<ShippingZoneJsonResponse> {
   try {
-    // Update the shipping zone countries
-    await db
+    const result = await db
       .updateTable('shipping_zones')
       .set({
         countries,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated shipping zone
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update shipping zone countries')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -153,42 +122,28 @@ export async function updateRegionsAndPostalCodes(
   id: number,
   regions?: string,
   postal_codes?: string,
-): Promise<ShippingZoneJsonResponse | undefined> {
-  // Check if shipping zone exists
-  const shippingZone = await fetchById(id)
-
-  if (!shippingZone) {
-    throw new Error(`Shipping zone with ID ${id} not found`)
-  }
-
-  // Create update data with only provided fields
-  const updateData: Record<string, any> = {
-    updated_at: formatDate(new Date()),
-  }
-
-  if (regions !== undefined) {
-    updateData.regions = regions
-  }
-
-  if (postal_codes !== undefined) {
-    updateData.postal_codes = postal_codes
-  }
-
-  // If no fields to update, just return the existing shipping zone
-  if (Object.keys(updateData).length === 1) { // Only updated_at was set
-    return shippingZone
-  }
-
+): Promise<ShippingZoneJsonResponse> {
   try {
-    // Update the shipping zone
-    await db
+    const updateData: Record<string, any> = {
+      updated_at: formatDate(new Date()),
+    }
+
+    if (regions !== undefined)
+      updateData.regions = regions
+    if (postal_codes !== undefined)
+      updateData.postal_codes = postal_codes
+
+    const result = await db
       .updateTable('shipping_zones')
       .set(updateData)
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated shipping zone
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update regions and postal codes')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {

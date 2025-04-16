@@ -1,52 +1,34 @@
-import type { DriverJsonResponse, DriverRequestType } from '@stacksjs/orm'
+import type { DriverJsonResponse, DriverUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 
 /**
- * Update a driver by ID
+ * Update a driver
  *
- * @param id The ID of the driver to update
- * @param request The updated driver data
+ * @param data The driver data to update
  * @returns The updated driver record
  */
-export async function update(id: number, request: DriverRequestType): Promise<DriverJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
-  // Check if driver exists
-  const existingDriver = await fetchById(id)
-
-  if (!existingDriver) {
-    throw new Error(`Driver with ID ${id} not found`)
-  }
-
-  // Create update data object using request fields
-  const updateData = {
-    name: request.get('name'),
-    phone: request.get('phone'),
-    vehicle_number: request.get('vehicle_number'),
-    license: request.get('license'),
-    status: request.get('status'),
-    updated_at: formatDate(new Date()),
-  }
-
-  // If no fields to update, just return the existing driver
-  if (Object.keys(updateData).length === 0) {
-    return existingDriver
-  }
-
+export async function update(data: DriverUpdate): Promise<DriverJsonResponse> {
   try {
-    // Update the driver
-    await db
-      .updateTable('drivers')
-      .set(updateData)
-      .where('id', '=', id)
-      .execute()
+    if (!data.id)
+      throw new Error('Driver ID is required for update')
 
-    // Fetch and return the updated driver
-    return await fetchById(id)
+    const result = await db
+      .updateTable('drivers')
+      .set({
+        ...data,
+        updated_at: formatDate(new Date()),
+      })
+      .where('id', '=', data.id)
+      .returningAll()
+      .executeTakeFirst()
+
+    if (!result)
+      throw new Error('Failed to update driver')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -67,27 +49,22 @@ export async function update(id: number, request: DriverRequestType): Promise<Dr
 export async function updateStatus(
   id: number,
   status: 'active' | 'on_delivery' | 'on_break',
-): Promise<DriverJsonResponse | undefined> {
-  // Check if driver exists
-  const driver = await fetchById(id)
-
-  if (!driver) {
-    throw new Error(`Driver with ID ${id} not found`)
-  }
-
+): Promise<DriverJsonResponse> {
   try {
-    // Update the driver status
-    await db
+    const result = await db
       .updateTable('drivers')
       .set({
         status,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated driver
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update driver status')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -108,38 +85,26 @@ export async function updateStatus(
 export async function updateContact(
   id: number,
   phone?: string,
-): Promise<DriverJsonResponse | undefined> {
-  // Check if driver exists
-  const driver = await fetchById(id)
-
-  if (!driver) {
-    throw new Error(`Driver with ID ${id} not found`)
-  }
-
-  // Create update data with only provided fields
-  const updateData: Record<string, any> = {
-    updated_at: formatDate(new Date()),
-  }
-
-  if (phone !== undefined) {
-    updateData.phone = phone
-  }
-
-  // If no contact fields to update, just return the existing driver
-  if (Object.keys(updateData).length === 1) { // Only updated_at was set
-    return driver
-  }
-
+): Promise<DriverJsonResponse> {
   try {
-    // Update the driver
-    await db
+    const updateData: Record<string, any> = {
+      updated_at: formatDate(new Date()),
+    }
+
+    if (phone !== undefined)
+      updateData.phone = phone
+
+    const result = await db
       .updateTable('drivers')
       .set(updateData)
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated driver
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update contact information')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {

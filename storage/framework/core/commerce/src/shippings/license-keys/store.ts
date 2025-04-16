@@ -6,43 +6,26 @@ import { db } from '@stacksjs/database'
 /**
  * Create a new license key
  *
- * @param request License key data to store
+ * @param data The license key data to store
  * @returns The newly created license key record
  */
-export async function store(request: LicenseKeyRequestType): Promise<LicenseKeyJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function store(data: NewLicenseKey): Promise<LicenseKeyJsonResponse> {
   try {
-    // Prepare license key data
-    const licenseData: NewLicenseKey = {
-      key: request.get('key'),
-      status: request.get('status'),
-      expiry_date: request.get('expiry_date'),
-      template: request.get('template'),
-      customer_id: request.get<number>('customer_id'),
-      product_id: request.get<number>('product_id'),
-      order_id: request.get<number>('order_id'),
+    const licenseData = {
+      ...data,
+      uuid: randomUUIDv7(),
     }
 
-    licenseData.uuid = randomUUIDv7()
-
-    // Insert the license key
     const result = await db
       .insertInto('license_keys')
       .values(licenseData)
+      .returningAll()
       .executeTakeFirst()
 
-    const licenseId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+    if (!result)
+      throw new Error('Failed to create license key')
 
-    // Retrieve the newly created license key
-    const licenseKey = await db
-      .selectFrom('license_keys')
-      .where('id', '=', licenseId)
-      .selectAll()
-      .executeTakeFirst()
-
-    return licenseKey
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -56,45 +39,25 @@ export async function store(request: LicenseKeyRequestType): Promise<LicenseKeyJ
 /**
  * Create multiple license keys at once
  *
- * @param requests Array of license key data to store
+ * @param data Array of license key data to store
  * @returns Number of license keys created
  */
-export async function bulkStore(requests: LicenseKeyRequestType[]): Promise<number> {
-  if (!requests.length)
+export async function bulkStore(data: NewLicenseKey[]): Promise<number> {
+  if (!data.length)
     return 0
 
-  let createdCount = 0
-
   try {
-    // Process each license key
-    await db.transaction().execute(async (trx) => {
-      for (const request of requests) {
-        // Validate request data
-        request.validate()
+    const licenseDataArray = data.map(item => ({
+      ...item,
+      uuid: randomUUIDv7(),
+    }))
 
-        // Prepare license key data
-        const licenseData: NewLicenseKey = {
-          key: request.get('key'),
-          status: request.get('status'),
-          expiry_date: request.get('expiry_date'),
-          template: request.get('template'),
-          customer_id: request.get<number>('customer_id'),
-          product_id: request.get<number>('product_id'),
-          order_id: request.get<number>('order_id'),
-          uuid: randomUUIDv7(),
-        }
+    const result = await db
+      .insertInto('license_keys')
+      .values(licenseDataArray)
+      .executeTakeFirst()
 
-        // Insert the license key
-        await trx
-          .insertInto('license_keys')
-          .values(licenseData)
-          .execute()
-
-        createdCount++
-      }
-    })
-
-    return createdCount
+    return Number(result.numInsertedOrUpdatedRows)
   }
   catch (error) {
     if (error instanceof Error) {

@@ -1,49 +1,34 @@
-import type { DigitalDeliveryJsonResponse, DigitalDeliveryRequestType } from '@stacksjs/orm'
+import type { DigitalDeliveryJsonResponse, DigitalDeliveryUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 
 /**
- * Update a digital delivery by ID
+ * Update a digital delivery
  *
- * @param id The ID of the digital delivery to update
- * @param request The updated digital delivery data
+ * @param data The digital delivery data to update
  * @returns The updated digital delivery record
  */
-export async function update(id: number, request: DigitalDeliveryRequestType): Promise<DigitalDeliveryJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
-  // Check if digital delivery exists
-  const existingDelivery = await fetchById(id)
-
-  if (!existingDelivery) {
-    throw new Error(`Digital delivery with ID ${id} not found`)
-  }
-
-  // Create update data object using request fields
-  const updateData = {
-    name: request.get('name'),
-    description: request.get('description'),
-    download_limit: request.get<number>('download_limit'),
-    expiry_days: request.get<number>('expiry_days'),
-    requires_login: request.get<boolean>('requires_login'),
-    automatic_delivery: request.get<boolean>('automatic_delivery'),
-    status: request.get('status'),
-    updated_at: formatDate(new Date()),
-  }
-
+export async function update(data: DigitalDeliveryUpdate): Promise<DigitalDeliveryJsonResponse> {
   try {
-    // Update the digital delivery
-    await db
-      .updateTable('digital_deliveries')
-      .set(updateData)
-      .where('id', '=', id)
-      .execute()
+    if (!data.id)
+      throw new Error('Digital delivery ID is required for update')
 
-    // Fetch and return the updated digital delivery
-    return await fetchById(id)
+    const result = await db
+      .updateTable('digital_deliveries')
+      .set({
+        ...data,
+        updated_at: formatDate(new Date()),
+      })
+      .where('id', '=', data.id)
+      .returningAll()
+      .executeTakeFirst()
+
+    if (!result)
+      throw new Error('Failed to update digital delivery')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -64,27 +49,22 @@ export async function update(id: number, request: DigitalDeliveryRequestType): P
 export async function updateStatus(
   id: number,
   status: string | string[],
-): Promise<DigitalDeliveryJsonResponse | undefined> {
-  // Check if digital delivery exists
-  const digitalDelivery = await fetchById(id)
-
-  if (!digitalDelivery) {
-    throw new Error(`Digital delivery with ID ${id} not found`)
-  }
-
+): Promise<DigitalDeliveryJsonResponse> {
   try {
-    // Update the digital delivery status
-    await db
+    const result = await db
       .updateTable('digital_deliveries')
       .set({
         status,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated digital delivery
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update digital delivery status')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -111,50 +91,32 @@ export async function updateDeliverySettings(
   expiry_days?: number,
   requires_login?: boolean,
   automatic_delivery?: boolean,
-): Promise<DigitalDeliveryJsonResponse | undefined> {
-  // Check if digital delivery exists
-  const digitalDelivery = await fetchById(id)
-
-  if (!digitalDelivery) {
-    throw new Error(`Digital delivery with ID ${id} not found`)
-  }
-
-  // Create update data with only provided fields
-  const updateData: Record<string, any> = {
-    updated_at: formatDate(new Date()),
-  }
-
-  if (download_limit !== undefined) {
-    updateData.download_limit = download_limit
-  }
-
-  if (expiry_days !== undefined) {
-    updateData.expiry_days = expiry_days
-  }
-
-  if (requires_login !== undefined) {
-    updateData.requires_login = requires_login
-  }
-
-  if (automatic_delivery !== undefined) {
-    updateData.automatic_delivery = automatic_delivery
-  }
-
-  // If no fields to update, just return the existing digital delivery
-  if (Object.keys(updateData).length === 1) { // Only updated_at was set
-    return digitalDelivery
-  }
-
+): Promise<DigitalDeliveryJsonResponse> {
   try {
-    // Update the digital delivery
-    await db
+    const updateData: Record<string, any> = {
+      updated_at: formatDate(new Date()),
+    }
+
+    if (download_limit !== undefined)
+      updateData.download_limit = download_limit
+    if (expiry_days !== undefined)
+      updateData.expiry_days = expiry_days
+    if (requires_login !== undefined)
+      updateData.requires_login = requires_login
+    if (automatic_delivery !== undefined)
+      updateData.automatic_delivery = automatic_delivery
+
+    const result = await db
       .updateTable('digital_deliveries')
       .set(updateData)
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated digital delivery
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update delivery settings')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {

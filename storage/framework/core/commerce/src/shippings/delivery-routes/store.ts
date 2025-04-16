@@ -1,46 +1,30 @@
-import type { DeliveryRouteJsonResponse, DeliveryRouteRequestType, NewDeliveryRoute } from '@stacksjs/orm'
+import type { NewDeliveryRoute, DeliveryRouteJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
  * Create a new delivery route
  *
- * @param request Delivery route data to store
+ * @param data The delivery route data to store
  * @returns The newly created delivery route record
  */
-export async function store(request: DeliveryRouteRequestType): Promise<DeliveryRouteJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function store(data: NewDeliveryRoute): Promise<DeliveryRouteJsonResponse> {
   try {
-    // Prepare delivery route data
-    const routeData: NewDeliveryRoute = {
-      driver: request.get('driver'),
-      vehicle: request.get('vehicle'),
-      stops: request.get('stops'),
-      delivery_time: request.get('delivery_time'),
-      total_distance: request.get('total_distance'),
-      last_active: request.get('last_active'),
+    const routeData = {
+      ...data,
+      uuid: randomUUIDv7(),
     }
 
-    routeData.uuid = randomUUIDv7()
-
-    // Insert the delivery route
     const result = await db
       .insertInto('delivery_routes')
       .values(routeData)
+      .returningAll()
       .executeTakeFirst()
 
-    const routeId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+    if (!result)
+      throw new Error('Failed to create delivery route')
 
-    // Retrieve the newly created delivery route
-    const deliveryRoute = await db
-      .selectFrom('delivery_routes')
-      .where('id', '=', routeId)
-      .selectAll()
-      .executeTakeFirst()
-
-    return deliveryRoute
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -57,22 +41,22 @@ export async function store(request: DeliveryRouteRequestType): Promise<Delivery
  * @param id The ID of the delivery route to update
  * @returns The updated delivery route record
  */
-export async function updateLastActive(id: number): Promise<DeliveryRouteJsonResponse | undefined> {
+export async function updateLastActive(id: number): Promise<DeliveryRouteJsonResponse> {
   try {
     const result = await db
       .updateTable('delivery_routes')
-      .set({ last_active: new Date().toISOString() })
+      .set({ 
+        last_active: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
       .where('id', '=', id)
+      .returningAll()
       .executeTakeFirst()
 
     if (!result)
-      return undefined
+      throw new Error('Failed to update delivery route last active')
 
-    return await db
-      .selectFrom('delivery_routes')
-      .where('id', '=', id)
-      .selectAll()
-      .executeTakeFirst()
+    return result
   }
   catch (error) {
     if (error instanceof Error) {

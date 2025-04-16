@@ -1,46 +1,31 @@
 // Import dependencies
-import type { NewShippingRate, ShippingRateJsonResponse, ShippingRateRequestType } from '@stacksjs/orm'
+import type { NewShippingRate, ShippingRateJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
  * Create a new shipping rate
  *
- * @param request Shipping rate data to store
+ * @param data The shipping rate data to store
  * @returns The newly created shipping rate record
  */
-export async function store(request: ShippingRateRequestType): Promise<ShippingRateJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function store(data: NewShippingRate): Promise<ShippingRateJsonResponse> {
   try {
-    // Prepare shipping rate data
-    const rateData: NewShippingRate = {
-      method: request.get('method'),
-      zone: request.get('zone'),
-      weight_from: request.get('weight_from'),
-      weight_to: request.get('weight_to'),
-      rate: request.get('rate'),
+    const rateData = {
+      ...data,
+      uuid: randomUUIDv7(),
     }
 
-    rateData.uuid = randomUUIDv7()
-
-    // Insert the shipping rate
     const result = await db
       .insertInto('shipping_rates')
       .values(rateData)
+      .returningAll()
       .executeTakeFirst()
 
-    const rateId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+    if (!result)
+      throw new Error('Failed to create shipping rate')
 
-    // Retrieve the newly created shipping rate
-    const shippingRate = await db
-      .selectFrom('shipping_rates')
-      .where('id', '=', rateId)
-      .selectAll()
-      .executeTakeFirst()
-
-    return shippingRate
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -54,43 +39,25 @@ export async function store(request: ShippingRateRequestType): Promise<ShippingR
 /**
  * Create multiple shipping rates at once
  *
- * @param requests Array of shipping rate data to store
+ * @param data Array of shipping rate data to store
  * @returns Number of shipping rates created
  */
-export async function bulkStore(requests: ShippingRateRequestType[]): Promise<number> {
-  if (!requests.length)
+export async function bulkStore(data: NewShippingRate[]): Promise<number> {
+  if (!data.length)
     return 0
 
-  let createdCount = 0
-
   try {
-    // Process each shipping rate
-    await db.transaction().execute(async (trx) => {
-      for (const request of requests) {
-        // Validate request data
-        request.validate()
+    const rateDataArray = data.map(item => ({
+      ...item,
+      uuid: randomUUIDv7(),
+    }))
 
-        // Prepare shipping rate data
-        const rateData: NewShippingRate = {
-          method: request.get('method'),
-          zone: request.get('zone'),
-          weight_from: request.get('weight_from'),
-          weight_to: request.get('weight_to'),
-          rate: request.get('rate'),
-          uuid: randomUUIDv7(),
-        }
+    const result = await db
+      .insertInto('shipping_rates')
+      .values(rateDataArray)
+      .executeTakeFirst()
 
-        // Insert the shipping rate
-        await trx
-          .insertInto('shipping_rates')
-          .values(rateData)
-          .execute()
-
-        createdCount++
-      }
-    })
-
-    return createdCount
+    return Number(result.numInsertedOrUpdatedRows)
   }
   catch (error) {
     if (error instanceof Error) {
