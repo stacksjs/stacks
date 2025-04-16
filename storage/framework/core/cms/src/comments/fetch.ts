@@ -167,25 +167,19 @@ export interface PostWithCommentCount {
 }
 
 export interface DateRange {
-  startDate?: string
-  endDate?: string
+  startDate: string
+  endDate: string
 }
 
-export async function fetchPostsWithMostComments(options: { limit?: number, dateRange?: DateRange } = {}): Promise<PostWithCommentCount[]> {
+export async function fetchPostsWithMostComments(dateRange: DateRange, options: { limit?: number } = {}): Promise<PostWithCommentCount[]> {
   try {
     let query = db
       .selectFrom('posts')
       .leftJoin('commentable', (join) => join
         .onRef('posts.id', '=', 'commentable.commentable_id')
         .on('commentable.commentable_type', '=', 'posts'))
-
-    if (options.dateRange?.startDate)
-      query = query.where('commentable.created_at', '>=', options.dateRange.startDate)
-
-    if (options.dateRange?.endDate)
-      query = query.where('commentable.created_at', '<=', options.dateRange.endDate)
-
-    query = query
+      .where('commentable.created_at', '>=', dateRange.startDate)
+      .where('commentable.created_at', '<=', dateRange.endDate)
       .select([
         'posts.id',
         'posts.title',
@@ -200,14 +194,76 @@ export async function fetchPostsWithMostComments(options: { limit?: number, date
     const results = await query.execute()
 
     return results.map(row => ({
-      id: row.id,
-      title: row.title,
+      id: Number(row.id),
+      title: String(row.title),
       comment_count: Number(row.comment_count),
     }))
   }
   catch (error) {
     if (error instanceof Error) {
       throw new TypeError(`Failed to fetch posts with most comments: ${error.message}`)
+    }
+
+    throw error
+  }
+}
+
+export interface BarGraphData {
+  labels: string[]
+  values: number[]
+}
+
+export async function fetchCommentCountBarGraph(dateRange: DateRange, options: { limit?: number } = {}): Promise<BarGraphData> {
+  try {
+    const posts = await fetchPostsWithMostComments(dateRange, options)
+
+    return {
+      labels: posts.map(post => post.title),
+      values: posts.map(post => post.comment_count),
+    }
+  }
+  catch (error) {
+    if (error instanceof Error) {
+      throw new TypeError(`Failed to fetch bar graph data: ${error.message}`)
+    }
+
+    throw error
+  }
+}
+
+export interface DonutGraphData {
+  labels: string[]
+  values: number[]
+  percentages: number[]
+}
+
+export async function fetchStatusDistributionDonut(dateRange: DateRange): Promise<DonutGraphData> {
+  try {
+    const results = await db
+      .selectFrom('commentable')
+      .where('created_at', '>=', dateRange.startDate)
+      .where('created_at', '<=', dateRange.endDate)
+      .select([
+        'status',
+        db.fn.count('id').as('count'),
+      ])
+      .groupBy('status')
+      .execute()
+
+    const total = results.reduce((sum, row) => sum + Number(row.count), 0)
+    const labels = results.map(row => row.status)
+    const values = results.map(row => Number(row.count))
+    const percentages = values.map(value => total > 0 ? (value / total) * 100 : 0)
+
+    return {
+      labels,
+      values,
+      percentages,
+    }
+  }
+  catch (error) {
+    if (error instanceof Error) {
+      throw new TypeError(`Failed to fetch status distribution: ${error.message}`)
     }
 
     throw error
