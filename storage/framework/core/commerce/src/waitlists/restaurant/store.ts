@@ -1,50 +1,32 @@
-import type { WaitlistRestaurantJsonResponse, WaitlistRestaurantRequestType } from '@stacksjs/orm'
+import type { NewWaitlistRestaurant, WaitlistRestaurantJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
  * Create a new restaurant waitlist entry
  *
- * @param request Restaurant waitlist data to store
+ * @param data Restaurant waitlist data to store
  * @returns The newly created restaurant waitlist record
  */
-export async function store(request: WaitlistRestaurantRequestType): Promise<WaitlistRestaurantJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function store(data: NewWaitlistRestaurant): Promise<WaitlistRestaurantJsonResponse> {
   try {
-    // Prepare restaurant waitlist data
     const waitlistData = {
-      name: request.get('name'),
-      email: request.get('email'),
-      phone: request.get('phone'),
-      party_size: Number(request.get('party_size')),
-      check_in_time: Math.floor(new Date(request.get('check_in_time')).getTime() / 1000),
-      table_preference: request.get('table_preference'),
-      status: request.get('status') || 'waiting',
-      quoted_wait_time: Number(request.get('quoted_wait_time')),
-      actual_wait_time: request.get('actual_wait_time') ? Number(request.get('actual_wait_time')) : undefined,
-      queue_position: request.get('queue_position') ? Number(request.get('queue_position')) : undefined,
-      customer_id: Number(request.get('customer_id')),
+      ...data,
       uuid: randomUUIDv7(),
+      status: data.status || 'waiting',
+      check_in_time: data.check_in_time ? Math.floor(new Date(data.check_in_time).getTime() / 1000) : undefined,
     }
 
-    // Insert the restaurant waitlist entry
     const result = await db
       .insertInto('waitlist_restaurants')
       .values(waitlistData)
+      .returningAll()
       .executeTakeFirst()
 
-    const waitlistId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+    if (!result)
+      throw new Error('Failed to create restaurant waitlist entry')
 
-    // Retrieve the newly created restaurant waitlist entry
-    const waitlistEntry = await db
-      .selectFrom('waitlist_restaurants')
-      .where('id', '=', waitlistId)
-      .selectAll()
-      .executeTakeFirst()
-
-    return waitlistEntry
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -58,49 +40,27 @@ export async function store(request: WaitlistRestaurantRequestType): Promise<Wai
 /**
  * Create multiple restaurant waitlist entries at once
  *
- * @param requests Array of restaurant waitlist data to store
+ * @param data Array of restaurant waitlist data to store
  * @returns Number of restaurant waitlist entries created
  */
-export async function bulkStore(requests: WaitlistRestaurantRequestType[]): Promise<number> {
-  if (!requests.length)
+export async function bulkStore(data: NewWaitlistRestaurant[]): Promise<number> {
+  if (!data.length)
     return 0
 
-  let createdCount = 0
-
   try {
-    // Process each restaurant waitlist entry
-    await db.transaction().execute(async (trx) => {
-      for (const request of requests) {
-        // Validate request data
-        request.validate()
+    const waitlistDataArray = data.map(item => ({
+      ...item,
+      uuid: randomUUIDv7(),
+      status: item.status || 'waiting',
+      check_in_time: item.check_in_time ? Math.floor(new Date(item.check_in_time).getTime() / 1000) : undefined,
+    }))
 
-        // Prepare restaurant waitlist data
-        const waitlistData = {
-          name: request.get('name'),
-          email: request.get('email'),
-          phone: request.get('phone'),
-          party_size: Number(request.get('party_size')),
-          check_in_time: Math.floor(new Date(request.get('check_in_time')).getTime() / 1000),
-          table_preference: request.get('table_preference'),
-          status: request.get('status') || 'waiting',
-          quoted_wait_time: Number(request.get('quoted_wait_time')),
-          actual_wait_time: request.get('actual_wait_time') ? Number(request.get('actual_wait_time')) : undefined,
-          queue_position: request.get('queue_position') ? Number(request.get('queue_position')) : undefined,
-          customer_id: Number(request.get('customer_id')),
-          uuid: randomUUIDv7(),
-        }
+    const result = await db
+      .insertInto('waitlist_restaurants')
+      .values(waitlistDataArray)
+      .executeTakeFirst()
 
-        // Insert the restaurant waitlist entry
-        await trx
-          .insertInto('waitlist_restaurants')
-          .values(waitlistData)
-          .execute()
-
-        createdCount++
-      }
-    })
-
-    return createdCount
+    return Number(result.numInsertedOrUpdatedRows)
   }
   catch (error) {
     if (error instanceof Error) {

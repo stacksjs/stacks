@@ -1,47 +1,30 @@
-import type { NewTaxRate, TaxRateJsonResponse, TaxRateRequestType } from '@stacksjs/orm'
+import type { NewTaxRate, TaxRateJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
  * Create a new tax rate
  *
- * @param request Tax rate data to store
+ * @param data Tax rate data to store
  * @returns The newly created tax rate record
  */
-export async function store(request: TaxRateRequestType): Promise<TaxRateJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function store(data: NewTaxRate): Promise<TaxRateJsonResponse> {
   try {
-    // Prepare tax rate data
-    const taxData: NewTaxRate = {
-      name: request.get('name'),
-      rate: request.get('rate'),
-      type: request.get('type'),
-      country: request.get('country'),
-      region: request.get('region'),
-      status: request.get('status'),
-      is_default: request.get('is_default'),
+    const taxData = {
+      ...data,
+      uuid: randomUUIDv7(),
     }
 
-    taxData.uuid = randomUUIDv7()
-
-    // Insert the tax rate
     const result = await db
       .insertInto('tax_rates')
       .values(taxData)
+      .returningAll()
       .executeTakeFirst()
 
-    const taxId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+    if (!result)
+      throw new Error('Failed to create tax rate')
 
-    // Retrieve the newly created tax rate
-    const taxRate = await db
-      .selectFrom('tax_rates')
-      .where('id', '=', taxId)
-      .selectAll()
-      .executeTakeFirst()
-
-    return taxRate
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -55,46 +38,25 @@ export async function store(request: TaxRateRequestType): Promise<TaxRateJsonRes
 /**
  * Create multiple tax rates at once
  *
- * @param requests Array of tax rate data to store
+ * @param data Array of tax rate data to store
  * @returns Number of tax rates created
  */
-export async function bulkStore(requests: TaxRateRequestType[]): Promise<number> {
-  if (!requests.length)
+export async function bulkStore(data: NewTaxRate[]): Promise<number> {
+  if (!data.length)
     return 0
 
-  let createdCount = 0
-
   try {
-    // Process each tax rate
-    await db.transaction().execute(async (trx) => {
-      for (const request of requests) {
-        // Validate request data
-        request.validate()
+    const taxDataArray = data.map(item => ({
+      ...item,
+      uuid: randomUUIDv7(),
+    }))
 
-        // Prepare tax rate data
-        const taxData: NewTaxRate = {
-          name: request.get('name'),
-          rate: request.get('rate'),
-          type: request.get('type'),
-          country: request.get('country'),
-          region: request.get('region'),
-          status: request.get('status'),
-          is_default: request.get('is_default'),
-        }
+    const result = await db
+      .insertInto('tax_rates')
+      .values(taxDataArray)
+      .executeTakeFirst()
 
-        taxData.uuid = randomUUIDv7()
-
-        // Insert the tax rate
-        await trx
-          .insertInto('tax_rates')
-          .values(taxData)
-          .execute()
-
-        createdCount++
-      }
-    })
-
-    return createdCount
+    return Number(result.numInsertedOrUpdatedRows)
   }
   catch (error) {
     if (error instanceof Error) {

@@ -1,57 +1,42 @@
-import type { WaitlistRestaurantJsonResponse, WaitlistRestaurantRequestType } from '@stacksjs/orm'
+import type { WaitlistRestaurantJsonResponse, WaitlistRestaurantUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
-import { fetchById } from './fetch'
 
 /**
- * Update a restaurant waitlist entry by ID
+ * Update a restaurant waitlist entry
  *
- * @param id The ID of the restaurant waitlist entry to update
- * @param request The updated restaurant waitlist data
+ * @param data The restaurant waitlist data to update
  * @returns The updated restaurant waitlist record
  */
-export async function update(id: number, request: WaitlistRestaurantRequestType): Promise<WaitlistRestaurantJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
-  // Check if restaurant waitlist entry exists
-  const existingEntry = await fetchById(id)
-
-  if (!existingEntry) {
-    throw new Error(`Restaurant waitlist entry with ID ${id} not found`)
-  }
-
-  // Create update data object using request fields
-  const updateData = {
-    name: request.get('name'),
-    email: request.get('email'),
-    phone: request.get('phone'),
-    party_size: Number(request.get('party_size')),
-    check_in_time: request.get('check_in_time'),
-    table_preference: request.get('table_preference'),
-    status: request.get('status'),
-    quoted_wait_time: Number(request.get('quoted_wait_time')),
-    actual_wait_time: request.get('actual_wait_time') ? Number(request.get('actual_wait_time')) : undefined,
-    queue_position: request.get('queue_position') ? Number(request.get('queue_position')) : undefined,
-    customer_id: Number(request.get('customer_id')),
-    updated_at: formatDate(new Date()),
-  }
-
-  // If no fields to update, just return the existing entry
-  if (Object.keys(updateData).length === 0) {
-    return existingEntry
-  }
-
+export async function update(data: WaitlistRestaurantUpdate): Promise<WaitlistRestaurantJsonResponse> {
   try {
-    // Update the restaurant waitlist entry
-    await db
-      .updateTable('waitlist_restaurants')
-      .set(updateData)
-      .where('id', '=', id)
-      .execute()
+    if (!data.id)
+      throw new Error('Restaurant waitlist entry ID is required for update')
 
-    // Fetch and return the updated entry
-    return await fetchById(id)
+    const result = await db
+      .updateTable('waitlist_restaurants')
+      .set({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        party_size: data.party_size,
+        check_in_time: data.check_in_time ? Math.floor(new Date(data.check_in_time).getTime() / 1000) : undefined,
+        table_preference: data.table_preference,
+        status: data.status,
+        quoted_wait_time: data.quoted_wait_time,
+        actual_wait_time: data.actual_wait_time,
+        queue_position: data.queue_position,
+        customer_id: data.customer_id,
+        updated_at: formatDate(new Date()),
+      })
+      .where('id', '=', data.id)
+      .returningAll()
+      .executeTakeFirst()
+
+    if (!result)
+      throw new Error('Failed to update restaurant waitlist entry')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -72,27 +57,22 @@ export async function update(id: number, request: WaitlistRestaurantRequestType)
 export async function updateStatus(
   id: number,
   status: 'waiting' | 'seated',
-): Promise<WaitlistRestaurantJsonResponse | undefined> {
-  // Check if restaurant waitlist entry exists
-  const waitlistEntry = await fetchById(id)
-
-  if (!waitlistEntry) {
-    throw new Error(`Restaurant waitlist entry with ID ${id} not found`)
-  }
-
+): Promise<WaitlistRestaurantJsonResponse> {
   try {
-    // Update the restaurant waitlist entry status
-    await db
+    const result = await db
       .updateTable('waitlist_restaurants')
       .set({
         status,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated entry
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update restaurant waitlist entry status')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -113,27 +93,22 @@ export async function updateStatus(
 export async function updatePartySize(
   id: number,
   partySize: number,
-): Promise<WaitlistRestaurantJsonResponse | undefined> {
-  // Check if restaurant waitlist entry exists
-  const waitlistEntry = await fetchById(id)
-
-  if (!waitlistEntry) {
-    throw new Error(`Restaurant waitlist entry with ID ${id} not found`)
-  }
-
+): Promise<WaitlistRestaurantJsonResponse> {
   try {
-    // Update the restaurant waitlist entry party size
-    await db
+    const result = await db
       .updateTable('waitlist_restaurants')
       .set({
         party_size: partySize,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated entry
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update party size')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -156,28 +131,23 @@ export async function updateWaitTimes(
   id: number,
   quotedWaitTime: number,
   actualWaitTime?: number,
-): Promise<WaitlistRestaurantJsonResponse | undefined> {
-  // Check if restaurant waitlist entry exists
-  const waitlistEntry = await fetchById(id)
-
-  if (!waitlistEntry) {
-    throw new Error(`Restaurant waitlist entry with ID ${id} not found`)
-  }
-
+): Promise<WaitlistRestaurantJsonResponse> {
   try {
-    // Update the restaurant waitlist entry wait times
-    await db
+    const result = await db
       .updateTable('waitlist_restaurants')
       .set({
         quoted_wait_time: quotedWaitTime,
-        actual_wait_time: actualWaitTime ?? undefined,
+        actual_wait_time: actualWaitTime,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated entry
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update wait times')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -198,27 +168,22 @@ export async function updateWaitTimes(
 export async function updateQueuePosition(
   id: number,
   queuePosition: number,
-): Promise<WaitlistRestaurantJsonResponse | undefined> {
-  // Check if restaurant waitlist entry exists
-  const waitlistEntry = await fetchById(id)
-
-  if (!waitlistEntry) {
-    throw new Error(`Restaurant waitlist entry with ID ${id} not found`)
-  }
-
+): Promise<WaitlistRestaurantJsonResponse> {
   try {
-    // Update the restaurant waitlist entry queue position
-    await db
+    const result = await db
       .updateTable('waitlist_restaurants')
       .set({
         queue_position: queuePosition,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated entry
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update queue position')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {

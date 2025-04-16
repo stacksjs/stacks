@@ -1,53 +1,38 @@
-import type { TaxRateJsonResponse, TaxRateRequestType } from '@stacksjs/orm'
+import type { TaxRateJsonResponse, TaxRateUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
-import { fetchById } from './fetch'
 
 /**
- * Update a tax rate by ID
+ * Update a tax rate
  *
- * @param id The ID of the tax rate to update
- * @param request The updated tax rate data
+ * @param data The tax rate data to update
  * @returns The updated tax rate record
  */
-export async function update(id: number, request: TaxRateRequestType): Promise<TaxRateJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
-  // Check if tax rate exists
-  const existingRate = await fetchById(id)
-
-  if (!existingRate) {
-    throw new Error(`Tax rate with ID ${id} not found`)
-  }
-
-  // Create update data object using request fields
-  const updateData = {
-    name: request.get('name'),
-    rate: request.get<number>('rate'),
-    type: request.get('type'),
-    country: request.get('country'),
-    region: request.get('region'),
-    status: request.get('status'),
-    is_default: request.get<boolean>('is_default'),
-    updated_at: formatDate(new Date()),
-  }
-
-  // If no fields to update, just return the existing tax rate
-  if (Object.keys(updateData).length === 0) {
-    return existingRate
-  }
-
+export async function update(data: TaxRateUpdate): Promise<TaxRateJsonResponse> {
   try {
-    // Update the tax rate
-    await db
-      .updateTable('tax_rates')
-      .set(updateData)
-      .where('id', '=', id)
-      .execute()
+    if (!data.id)
+      throw new Error('Tax rate ID is required for update')
 
-    // Fetch and return the updated tax rate
-    return await fetchById(id)
+    const result = await db
+      .updateTable('tax_rates')
+      .set({
+        name: data.name,
+        rate: data.rate,
+        type: data.type,
+        country: data.country,
+        region: data.region,
+        status: data.status,
+        is_default: data.is_default,
+        updated_at: formatDate(new Date()),
+      })
+      .where('id', '=', data.id)
+      .returningAll()
+      .executeTakeFirst()
+
+    if (!result)
+      throw new Error('Failed to update tax rate')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -68,27 +53,22 @@ export async function update(id: number, request: TaxRateRequestType): Promise<T
 export async function updateStatus(
   id: number,
   status: 'active' | 'inactive',
-): Promise<TaxRateJsonResponse | undefined> {
-  // Check if tax rate exists
-  const taxRate = await fetchById(id)
-
-  if (!taxRate) {
-    throw new Error(`Tax rate with ID ${id} not found`)
-  }
-
+): Promise<TaxRateJsonResponse> {
   try {
-    // Update the tax rate status
-    await db
+    const result = await db
       .updateTable('tax_rates')
       .set({
         status,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated tax rate
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update tax rate status')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -108,39 +88,23 @@ export async function updateStatus(
  */
 export async function updateRate(
   id: number,
-  rate?: number,
-): Promise<TaxRateJsonResponse | undefined> {
-  // Check if tax rate exists
-  const taxRate = await fetchById(id)
-
-  if (!taxRate) {
-    throw new Error(`Tax rate with ID ${id} not found`)
-  }
-
-  // Create update data with only provided fields
-  const updateData: Record<string, any> = {
-    updated_at: formatDate(new Date()),
-  }
-
-  if (rate !== undefined) {
-    updateData.rate = rate
-  }
-
-  // If no rate fields to update, just return the existing tax rate
-  if (Object.keys(updateData).length === 1) { // Only updated_at was set
-    return taxRate
-  }
-
+  rate: number,
+): Promise<TaxRateJsonResponse> {
   try {
-    // Update the tax rate
-    await db
+    const result = await db
       .updateTable('tax_rates')
-      .set(updateData)
+      .set({
+        rate,
+        updated_at: formatDate(new Date()),
+      })
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch the updated tax rate
-    return await fetchById(id)
+    if (!result)
+      throw new Error('Failed to update rate information')
+
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
