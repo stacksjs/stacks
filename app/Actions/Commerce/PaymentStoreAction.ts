@@ -8,7 +8,17 @@ export default new Action({
   description: 'Payment Store ORM Action',
   method: 'POST',
   async handle(request: PaymentRequestType) {
-    const model = await payments.store(request)
+    await request.validate()
+
+    const data = {
+      order_id: request.get<number>('order_id'),
+      customer_id: request.get<number>('customer_id'),
+      amount: request.get<number>('amount'),
+      method: request.get('method'),
+      status: request.get('status'),
+    }
+
+    const model = await payments.store(data)
 
     return response.json(model)
   },

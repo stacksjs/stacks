@@ -9,9 +9,22 @@ export default new Action({
   description: 'Receipt Update ORM Action',
   method: 'PATCH',
   async handle(request: ReceiptRequestType) {
+    await request.validate()
+
     const id = request.getParam('id')
 
-    const result = await receipts.update(id, request)
+    const data = {
+      order_id: request.get<number>('order_id'),
+      customer_id: request.get<number>('customer_id'),
+      amount: request.get<number>('amount'),
+      print_device_id: request.get<number>('print_device_id'),
+      printer: request.get('printer'),
+      document: request.get('document'),
+      timestamp: request.get<number>('timestamp'),
+      status: request.get('status'),
+    }
+
+    const result = await receipts.update(id, data)
 
     return response.json(result)
   },

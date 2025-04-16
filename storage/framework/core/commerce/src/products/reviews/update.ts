@@ -8,7 +8,7 @@ import { formatDate } from '@stacksjs/orm'
  * @param data The review data to update
  * @returns The updated review record
  */
-export async function update(data: ReviewUpdate): Promise<ReviewJsonResponse> {
+export async function update(id: number, data: ReviewUpdate): Promise<ReviewJsonResponse> {
   try {
     if (!data.id)
       throw new Error('Review ID is required for update')

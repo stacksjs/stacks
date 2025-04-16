@@ -8,8 +8,26 @@ export default new Action({
   description: 'WaitlistRestaurant Update ORM Action',
   method: 'PATCH',
   async handle(request: WaitlistRestaurantRequestType) {
+    await request.validate()
+
     const id = request.getParam('id')
-    const model = await waitlists.restaurant.update(id, request)
+
+    const data = {
+      restaurant_id: request.get<number>('restaurant_id'),
+      customer_id: request.get<number>('customer_id'),
+      name: request.get('name'),
+      email: request.get('email'),
+      quantity: request.get<number>('quantity'),
+      notification_preference: request.get('notification_preference'),
+      source: request.get('source'),
+      status: request.get('status'),
+      party_size: request.get<number>('party_size'),
+      check_in_time: request.get<number>('check_in_time'),
+      table_preference: request.get('table_preference'),
+      quoted_wait_time: request.get<number>('quoted_wait_time'),
+    }
+    
+    const model = await waitlists.restaurant.update(id, data)
 
     return response.json(model)
   },

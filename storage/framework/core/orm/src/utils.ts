@@ -761,7 +761,7 @@ export async function writeModelRequest(): Promise<void> {
     }\n`
 
     const types = `export interface ${modelName}RequestType extends Request {
-      validate(attributes?: CustomAttributes): void
+      validate(attributes?: CustomAttributes): Promise<void>
       ${fieldStringType}
       all(): RequestData${modelName}
       ${fieldString}

@@ -9,7 +9,19 @@ export default new Action({
   description: 'PrintDevice Store ORM Action',
   method: 'POST',
   async handle(request: PrintDeviceRequestType) {
-    const model = await devices.store(request)
+    await request.validate()
+
+    const data = {
+      name: request.get('name'),
+      mac_address: request.get('mac_address'),
+      location: request.get('location'),
+      terminal: request.get('terminal'),
+      status: request.get('status'),
+      last_ping: request.get<number>('last_ping'),
+      print_count: request.get<number>('print_count'),
+    }
+
+    const model = await devices.store(data)
 
     return response.json(model)
   },

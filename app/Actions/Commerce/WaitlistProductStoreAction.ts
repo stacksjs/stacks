@@ -8,7 +8,20 @@ export default new Action({
   description: 'WaitlistProduct Store ORM Action',
   method: 'POST',
   async handle(request: WaitlistProductRequestType) {
-    const model = await waitlists.products.store(request)
+    await request.validate()
+
+    const data = {
+      product_id: request.get<number>('product_id'),
+      customer_id: request.get<number>('customer_id'),
+      name: request.get('name'),
+      email: request.get('email'),
+      quantity: request.get<number>('quantity'),
+      notification_preference: request.get('notification_preference'),
+      source: request.get('source'),
+      status: request.get('status'),
+    }
+    
+    const model = await waitlists.products.store(data)
 
     return response.json(model)
   },

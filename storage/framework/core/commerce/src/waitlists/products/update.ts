@@ -8,7 +8,7 @@ import { formatDate } from '@stacksjs/orm'
  * @param data The waitlist product data to update
  * @returns The updated waitlist product record
  */
-export async function update(data: WaitlistProductUpdate): Promise<WaitlistProductJsonResponse> {
+export async function update(id: number, data: WaitlistProductUpdate): Promise<WaitlistProductJsonResponse> {
   try {
     if (!data.id)
       throw new Error('Waitlist product ID is required for update')
@@ -19,7 +19,7 @@ export async function update(data: WaitlistProductUpdate): Promise<WaitlistProdu
         name: data.name,
         email: data.email,
         phone: data.phone,
-        party_size: data.party_size,
+        quantity: data.quantity,
         notification_preference: data.notification_preference,
         source: data.source,
         notes: data.notes,
@@ -31,7 +31,7 @@ export async function update(data: WaitlistProductUpdate): Promise<WaitlistProdu
         cancelled_at: data.cancelled_at,
         updated_at: formatDate(new Date()),
       })
-      .where('id', '=', data.id)
+      .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
 

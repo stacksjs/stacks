@@ -9,9 +9,19 @@ export default new Action({
   description: 'PrintDevice Update ORM Action',
   method: 'PATCH',
   async handle(request: PrintDeviceRequestType) {
+    await request.validate()
+
     const id = request.getParam('id')
 
-    const model = await devices.update(id, request)
+    const data = {
+      name: request.get('name'),
+      mac_address: request.get('mac_address'),
+      location: request.get('location'),
+      terminal: request.get('terminal'),
+      status: request.get('status'),
+    }
+
+    const model = await devices.update(id, data)
 
     return response.json(model)
   },

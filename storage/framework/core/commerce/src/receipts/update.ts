@@ -8,7 +8,7 @@ import { formatDate } from '@stacksjs/orm'
  * @param data The receipt data to update
  * @returns The updated receipt record
  */
-export async function update(data: ReceiptUpdate): Promise<ReceiptJsonResponse> {
+export async function update(id: number, data: ReceiptUpdate): Promise<ReceiptJsonResponse> {
   try {
     if (!data.id)
       throw new Error('Receipt ID is required for update')

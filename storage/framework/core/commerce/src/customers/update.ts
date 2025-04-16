@@ -8,7 +8,7 @@ import { formatDate } from '@stacksjs/orm'
  * @param data The customer data to update
  * @returns The updated customer record
  */
-export async function update(data: CustomerUpdate): Promise<CustomerJsonResponse> {
+export async function update(id: number, data: CustomerUpdate): Promise<CustomerJsonResponse> {
   try {
     if (!data.id)
       throw new Error('Customer ID is required for update')
@@ -19,7 +19,7 @@ export async function update(data: CustomerUpdate): Promise<CustomerJsonResponse
         ...data,
         updated_at: formatDate(new Date()),
       })
-      .where('id', '=', data.id)
+      .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
 

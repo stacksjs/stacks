@@ -4,11 +4,13 @@ import { products } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
-  name: 'Review Store',
-  description: 'Review Store ORM Action',
-  method: 'POST',
+  name: 'Review Update',
+  description: 'Review Update ORM Action',
+  method: 'PATCH',
   async handle(request: ReviewRequestType) {
     await request.validate()
+
+    const id = request.getParam('id')
 
     const data = {
       product_id: request.get<number>('product_id'),
@@ -20,7 +22,7 @@ export default new Action({
       is_approved: request.get<boolean>('is_approved'),
     }
 
-    const model = await products.reviews.store(data)
+    const model = await products.reviews.update(id, data)
 
     return response.json(model)
   },

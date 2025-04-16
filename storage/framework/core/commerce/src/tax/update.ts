@@ -8,7 +8,7 @@ import { formatDate } from '@stacksjs/orm'
  * @param data The tax rate data to update
  * @returns The updated tax rate record
  */
-export async function update(data: TaxRateUpdate): Promise<TaxRateJsonResponse> {
+export async function update(id: number, data: TaxRateUpdate): Promise<TaxRateJsonResponse> {
   try {
     if (!data.id)
       throw new Error('Tax rate ID is required for update')

@@ -12,7 +12,14 @@ export default new Action({
   async handle(request: CouponRequestType) {
     const id = request.getParam('id')
 
-    const model = await coupons.update(id, request)
+    const data = {
+      code: request.get('code'),
+      discount_type: request.get('discount_type'),
+      discount_value: Number(request.get('discount_value')),
+      expiry_date: request.get('expiry_date'),
+    }
+
+    const model = await coupons.update(id, data)
 
     return response.json(model)
   },

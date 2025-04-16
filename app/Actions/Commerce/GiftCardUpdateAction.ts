@@ -12,7 +12,15 @@ export default new Action({
   async handle(request: GiftCardRequestType) {
     const id = request.getParam('id')
 
-    const model = await giftCards.update(id, request)
+    const data = {
+      code: request.get('code'),
+      initial_balance: request.get<number>('initial_balance'),
+      current_balance: request.get<number>('current_balance'),
+      status: request.get('status'),
+      currency: request.get('currency'),
+    }
+
+    const model = await giftCards.update(id, data)
 
     return response.json(model)
   },

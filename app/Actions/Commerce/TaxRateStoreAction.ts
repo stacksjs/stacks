@@ -8,7 +8,17 @@ export default new Action({
   description: 'TaxRate Store ORM Action',
   method: 'POST',
   async handle(request: TaxRateRequestType) {
-    const model = await tax.store(request)
+    await request.validate()
+
+    const data = {
+      name: request.get('name'),
+      rate: request.get<number>('rate'),
+      type: request.get('type'),
+      country: request.get('country'),
+      region: request.get('region'),
+    }
+
+    const model = await tax.store(data)
 
     return response.json(model)
   },

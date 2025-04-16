@@ -9,7 +9,20 @@ export default new Action({
   description: 'Receipt Store ORM Action',
   method: 'POST',
   async handle(request: ReceiptRequestType) {
-    const model = await receipts.store(request)
+    await request.validate()
+
+    const data = {
+      order_id: request.get<number>('order_id'),
+      customer_id: request.get<number>('customer_id'),
+      amount: request.get<number>('amount'),
+      print_device_id: request.get<number>('print_device_id'),
+      printer: request.get('printer'),
+      document: request.get('document'),
+      timestamp: request.get<number>('timestamp'),
+      status: request.get('status'),
+    }
+
+    const model = await receipts.store(data)
 
     return response.json(model)
   },
