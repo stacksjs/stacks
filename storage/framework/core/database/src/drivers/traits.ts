@@ -283,6 +283,8 @@ export async function createPostgresCategorizableTable(): Promise<void> {
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
+
+  await createPostgresCategoryModelsTable()
 }
 
 // SQLite/MySQL version
@@ -433,6 +435,7 @@ export async function dropCommonTables(): Promise<void> {
   await db.schema.dropTable('commenteable_upvotes').ifExists().execute()
   await db.schema.dropTable('taggable').ifExists().execute()
   await db.schema.dropTable('taggable_models').ifExists().execute()
+  await db.schema.dropTable('category_models').ifExists().execute()
   await db.schema.dropTable('commentable').ifExists().execute()
   await db.schema.dropTable('categories_models').ifExists().execute()
   await db.schema.dropTable('activities').ifExists().execute()
@@ -525,7 +528,6 @@ export async function createPostgresCommentUpvoteMigration(): Promise<void> {
 }
 
 export async function createTaggableModelsTable(): Promise<void> {
-  
   const hasBeenMigrated = await hasMigrationBeenCreated('taggable_models')
 
   if (hasBeenMigrated)
@@ -618,6 +620,108 @@ export async function createPostgresTaggableModelsTable(): Promise<void> {
 
   const timestamp = new Date().getTime().toString()
   const migrationFileName = `${timestamp}-create-taggable-models-table.ts`
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  Bun.write(migrationFilePath, migrationContent)
+
+  log.success(`Created migration: ${italic(migrationFileName)}`)
+
+  await createPostgresTaggableModelsTable()
+}
+
+export async function createCategoryModelsTable(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('category_models')
+
+  if (hasBeenMigrated)
+    return
+
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createTable('category_models')\n`
+  migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
+  migrationContent += `    .addColumn('category_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('categorizable_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('categorizable_type', 'varchar(255)', col => col.notNull())\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_category_models_category')\n`
+  migrationContent += `    .on('category_models')\n`
+  migrationContent += `    .column('category_id')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_category_models_polymorphic')\n`
+  migrationContent += `    .on('category_models')\n`
+  migrationContent += `    .columns(['categorizable_id', 'categorizable_type'])\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_category_models_unique')\n`
+  migrationContent += `    .on('category_models')\n`
+  migrationContent += `    .columns(['category_id', 'categorizable_id', 'categorizable_type'])\n`
+  migrationContent += `    .unique()\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `}\n`
+
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-create-category-models-table.ts`
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  Bun.write(migrationFilePath, migrationContent)
+
+  log.success(`Created migration: ${italic(migrationFileName)}`)
+
+  await createCategoryModelsTable()
+}
+
+export async function createPostgresCategoryModelsTable(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('category_models')
+
+  if (hasBeenMigrated)
+    return
+
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createTable('category_models')\n`
+  migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
+  migrationContent += `    .addColumn('category_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('categorizable_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('categorizable_type', 'varchar(255)', col => col.notNull())\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp with time zone')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_category_models_category')\n`
+  migrationContent += `    .on('category_models')\n`
+  migrationContent += `    .column('category_id')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_category_models_polymorphic')\n`
+  migrationContent += `    .on('category_models')\n`
+  migrationContent += `    .columns(['categorizable_id', 'categorizable_type'])\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_category_models_unique')\n`
+  migrationContent += `    .on('category_models')\n`
+  migrationContent += `    .columns(['category_id', 'categorizable_id', 'categorizable_type'])\n`
+  migrationContent += `    .unique()\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `}\n`
+
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-create-category-models-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)

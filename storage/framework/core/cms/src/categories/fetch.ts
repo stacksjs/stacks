@@ -55,7 +55,7 @@ export async function fetchWithPosts(id: number): Promise<CategorizableTable | u
 
 /**
  * Find a category by name or create it if it doesn't exist
- * 
+ *
  * @param name The name of the category to find or create
  * @param categorizableId ID of the categorizable entity
  * @param categorizableType Type of the categorizable entity

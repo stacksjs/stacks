@@ -1,5 +1,4 @@
 import type { CategorizableTable, CategoryRequestType } from '@stacksjs/orm'
-import type { Request } from '@stacksjs/router'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { slugify } from 'ts-slug'

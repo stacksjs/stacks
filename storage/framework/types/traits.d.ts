@@ -1,4 +1,3 @@
-import type { VineType } from '@stacksjs/types'
 import type { Request } from '../core/router/src/request'
 
 interface RequestDataMigrations {

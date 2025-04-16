@@ -1,8 +1,6 @@
 import type { TaggableTable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { slugify } from 'ts-slug'
-import { store } from './store'
-import type { Request } from '@stacksjs/router'
 
 /**
  * Fetch a tag by its ID
@@ -56,7 +54,7 @@ export async function fetchTags(): Promise<TaggableTable[]> {
 
 /**
  * Find a tag by name or create it if it doesn't exist
- * 
+ *
  * @param name The name of the tag to find or create
  * @param taggableId ID of the taggable entity
  * @param taggableType Type of the taggable entity
