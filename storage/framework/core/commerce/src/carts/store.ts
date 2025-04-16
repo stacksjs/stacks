@@ -1,57 +1,34 @@
-import type { CartJsonResponse, CartRequestType, NewCart } from '@stacksjs/orm'
+import type { CartJsonResponse, NewCart } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
  * Create a new cart
  *
- * @param request Cart data to store
+ * @param data Cart data to store
  * @returns The newly created cart record
  */
-export async function store(request: CartRequestType): Promise<CartJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function store(data: NewCart): Promise<CartJsonResponse> {
   try {
-    // Prepare cart data
     const cartData: NewCart = {
-      status: request.get('status'),
-      total_items: request.get('total_items'),
-      subtotal: request.get('subtotal'),
-      tax_amount: request.get('tax_amount'),
-      discount_amount: request.get('discount_amount'),
-      total: request.get('total'),
-      expires_at: request.get('expires_at'),
-      currency: request.get('currency'),
-      notes: request.get('notes'),
-      applied_coupon_id: request.get('applied_coupon_id'),
-      customer_id: request.get('customer_id'),
-      coupon_id: request.get('coupon_id'),
+      ...data,
+      uuid: randomUUIDv7(),
     }
 
-    cartData.uuid = randomUUIDv7()
-
-    // Insert the cart
     const result = await db
       .insertInto('carts')
       .values(cartData)
+      .returningAll()
       .executeTakeFirst()
 
-    const cartId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+    if (!result)
+      throw new Error('Failed to create cart')
 
-    // Retrieve the newly created cart
-    const cart = await db
-      .selectFrom('carts')
-      .where('id', '=', cartId)
-      .selectAll()
-      .executeTakeFirst()
-
-    return cart
+    return result
   }
   catch (error) {
-    if (error instanceof Error) {
+    if (error instanceof Error)
       throw new TypeError(`Failed to create cart: ${error.message}`)
-    }
 
     throw error
   }
@@ -60,41 +37,23 @@ export async function store(request: CartRequestType): Promise<CartJsonResponse 
 /**
  * Create multiple carts at once
  *
- * @param requests Array of cart data to store
+ * @param data Array of cart data to store
  * @returns Number of carts created
  */
-export async function bulkStore(requests: CartRequestType[]): Promise<number> {
-  if (!requests.length)
+export async function bulkStore(data: NewCart[]): Promise<number> {
+  if (!data.length)
     return 0
 
   let createdCount = 0
 
   try {
-    // Process each cart
     await db.transaction().execute(async (trx) => {
-      for (const request of requests) {
-        // Validate request data
-        request.validate()
-
-        // Prepare cart data
+      for (const cart of data) {
         const cartData: NewCart = {
-          status: request.get('status'),
-          total_items: request.get('total_items'),
-          subtotal: request.get('subtotal'),
-          tax_amount: request.get('tax_amount'),
-          discount_amount: request.get('discount_amount'),
-          total: request.get('total'),
-          expires_at: request.get('expires_at'),
-          currency: request.get('currency'),
-          notes: request.get('notes'),
-          applied_coupon_id: request.get('applied_coupon_id'),
-          customer_id: request.get('customer_id'),
-          coupon_id: request.get('coupon_id'),
+          ...cart,
+          uuid: randomUUIDv7(),
         }
 
-        cartData.uuid = randomUUIDv7()
-
-        // Insert the cart
         await trx
           .insertInto('carts')
           .values(cartData)
@@ -107,9 +66,8 @@ export async function bulkStore(requests: CartRequestType[]): Promise<number> {
     return createdCount
   }
   catch (error) {
-    if (error instanceof Error) {
+    if (error instanceof Error)
       throw new TypeError(`Failed to create carts in bulk: ${error.message}`)
-    }
 
     throw error
   }

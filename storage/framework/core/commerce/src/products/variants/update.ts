@@ -1,51 +1,34 @@
-import type { ProductVariantRequestType } from '@stacksjs/orm'
-import type { ProductVariantJsonResponse } from '../../../../orm/src/models/ProductVariant'
+import type { ProductVariantJsonResponse, ProductVariantUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
-// Import dependencies
 import { formatDate } from '@stacksjs/orm'
 
 /**
- * Update an existing product variant
+ * Update a product variant
  *
  * @param id The ID of the product variant to update
- * @param request Updated product variant data
+ * @param data The product variant data to update
  * @returns The updated product variant record
  */
-export async function update(id: number, request: ProductVariantRequestType): Promise<ProductVariantJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function update(id: number, data: Omit<ProductVariantUpdate, 'id'>): Promise<ProductVariantJsonResponse> {
   try {
-    // Prepare variant data for update
-    const variantData = {
-      variant: request.get('variant'),
-      type: request.get('type'),
-      description: request.get('description'),
-      options: request.get('options'),
-      status: request.get('status'),
-      updated_at: formatDate(new Date()),
-    }
-
-    // Update the product variant
-    await db
+    const result = await db
       .updateTable('product_variants')
-      .set(variantData)
+      .set({
+        ...data,
+        updated_at: formatDate(new Date()),
+      })
       .where('id', '=', id)
-      .execute()
-
-    // Retrieve the updated product variant
-    const variant = await db
-      .selectFrom('product_variants')
-      .where('id', '=', id)
-      .selectAll()
+      .returningAll()
       .executeTakeFirst()
 
-    return variant
+    if (!result)
+      throw new Error('Failed to update product variant')
+
+    return result
   }
   catch (error) {
-    if (error instanceof Error) {
+    if (error instanceof Error)
       throw new TypeError(`Failed to update product variant: ${error.message}`)
-    }
 
     throw error
   }
@@ -54,47 +37,30 @@ export async function update(id: number, request: ProductVariantRequestType): Pr
 /**
  * Update multiple product variants at once
  *
- * @param updates Array of objects containing variant ID and update data
+ * @param data Array of objects containing variant ID and update data
  * @returns Number of product variants updated
  */
-export async function bulkUpdate(updates: Array<{
-  id: number
-  data: ProductVariantRequestType
-}>): Promise<number> {
-  if (!updates.length)
+export async function bulkUpdate(data: ProductVariantUpdate[]): Promise<number> {
+  if (!data.length)
     return 0
 
   let updatedCount = 0
 
   try {
-    // Process each product variant update
     await db.transaction().execute(async (trx) => {
-      for (const { id, data } of updates) {
-        // Validate update data
-        await data.validate()
-
-        // Prepare variant data for update
-        const variantData = {
-          variant: data.get<string>('variant'),
-          type: data.get<string>('type'),
-          description: data.get<string>('description'),
-          options: data.get<string>('options'),
-          status: data.get<string>('status'),
-          updated_at: formatDate(new Date()),
-        }
-
-        // Skip if no fields to update
-        if (Object.keys(variantData).length === 0)
+      for (const variant of data) {
+        if (!variant.id)
           continue
 
-        // Update the product variant
         const result = await trx
           .updateTable('product_variants')
-          .set(variantData)
-          .where('id', '=', id)
+          .set({
+            ...variant,
+            updated_at: formatDate(new Date()),
+          })
+          .where('id', '=', variant.id)
           .executeTakeFirst()
 
-        // Increment the counter if update was successful
         if (Number(result.numUpdatedRows) > 0)
           updatedCount++
       }
@@ -103,9 +69,8 @@ export async function bulkUpdate(updates: Array<{
     return updatedCount
   }
   catch (error) {
-    if (error instanceof Error) {
+    if (error instanceof Error)
       throw new TypeError(`Failed to update product variants in bulk: ${error.message}`)
-    }
 
     throw error
   }
@@ -132,9 +97,8 @@ export async function updateStatus(id: number, status: string): Promise<boolean>
     return Number(result.numUpdatedRows) > 0
   }
   catch (error) {
-    if (error instanceof Error) {
+    if (error instanceof Error)
       throw new TypeError(`Failed to update product variant status: ${error.message}`)
-    }
 
     throw error
   }

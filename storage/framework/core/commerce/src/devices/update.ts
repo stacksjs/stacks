@@ -1,4 +1,4 @@
-import type { PrintDeviceJsonResponse, PrintDeviceRequestType } from '@stacksjs/orm'
+import type { PrintDeviceJsonResponse, PrintDeviceUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
@@ -7,13 +7,10 @@ import { fetchById } from './fetch'
  * Update a print device by ID
  *
  * @param id The ID of the print device to update
- * @param request The updated print device data
+ * @param data The updated print device data
  * @returns The updated print device record
  */
-export async function update(id: number, request: PrintDeviceRequestType): Promise<PrintDeviceJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function update(id: number, data: Omit<PrintDeviceUpdate, 'id'>): Promise<PrintDeviceJsonResponse | undefined> {
   // Check if print device exists
   const existingDevice = await fetchById(id)
 
@@ -21,28 +18,14 @@ export async function update(id: number, request: PrintDeviceRequestType): Promi
     throw new Error(`Print device with ID ${id} not found`)
   }
 
-  // Create update data object using request fields
-  const updateData = {
-    name: request.get('name'),
-    mac_address: request.get('mac_address'),
-    location: request.get('location'),
-    terminal: request.get('terminal'),
-    status: request.get('status'),
-    last_ping: request.get<number>('last_ping'),
-    print_count: request.get<number>('print_count'),
-    updated_at: formatDate(new Date()),
-  }
-
-  // If no fields to update, just return the existing print device
-  if (Object.keys(updateData).length === 0) {
-    return existingDevice
-  }
-
   try {
     // Update the print device
     await db
       .updateTable('print_devices')
-      .set(updateData)
+      .set({
+        ...data,
+        updated_at: formatDate(new Date()),
+      })
       .where('id', '=', id)
       .execute()
 
@@ -117,25 +100,14 @@ export async function updatePrintCount(
     throw new Error(`Print device with ID ${id} not found`)
   }
 
-  // Create update data with only provided fields
-  const updateData: Record<string, any> = {
-    updated_at: formatDate(new Date()),
-  }
-
-  if (printCount !== undefined) {
-    updateData.print_count = printCount
-  }
-
-  // If no print count fields to update, just return the existing print device
-  if (Object.keys(updateData).length === 1) { // Only updated_at was set
-    return printDevice
-  }
-
   try {
     // Update the print device
     await db
       .updateTable('print_devices')
-      .set(updateData)
+      .set({
+        print_count: printCount,
+        updated_at: formatDate(new Date()),
+      })
       .where('id', '=', id)
       .execute()
 

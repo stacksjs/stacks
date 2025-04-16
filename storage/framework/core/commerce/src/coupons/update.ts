@@ -1,4 +1,4 @@
-import type { CouponJsonResponse, CouponRequestType } from '@stacksjs/orm'
+import type { CouponJsonResponse, CouponUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
@@ -7,55 +7,24 @@ import { fetchById } from './fetch'
  * Update a coupon by ID
  *
  * @param id The ID of the coupon to update
- * @param request The updated coupon data
+ * @param data The updated coupon data
  * @returns The updated coupon record
  */
-export async function update(id: number, request: CouponRequestType): Promise<CouponJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function update(id: number, data: Omit<CouponUpdate, 'id'>): Promise<CouponJsonResponse | undefined> {
   // Check if coupon exists
   const existingCoupon = await fetchById(id)
   if (!existingCoupon) {
     throw new Error(`Coupon with ID ${id} not found`)
   }
 
-  // Prepare update data object with proper type
-  const updateData: Record<string, any> = {
-    code: request.get('code'),
-    description: request.get('description'),
-    discount_type: request.get('discount_type'),
-    discount_value: request.get<number>('discount_value'),
-    product_id: request.get<number>('product_id'),
-    min_order_amount: request.get<number>('min_order_amount'),
-    max_discount_amount: request.get<number>('max_discount_amount'),
-    free_product_id: request.get('free_product_id'),
-    is_active: request.get<boolean>('is_active'),
-    usage_limit: request.get<number>('usage_limit'),
-    start_date: request.get('start_date'),
-    end_date: request.get('end_date'),
-    updated_at: formatDate(new Date()),
-  }
-
-  // Process arrays to JSON strings if provided
-  if (request.has('applicable_products')) {
-    updateData.applicable_products = JSON.stringify(request.get<string[]>('applicable_products'))
-  }
-
-  if (request.has('applicable_categories')) {
-    updateData.applicable_categories = JSON.stringify(request.get<string[]>('applicable_categories'))
-  }
-
-  // If no fields to update, just return the existing coupon
-  if (Object.keys(updateData).length === 0) {
-    return existingCoupon
-  }
-
   try {
     // Update the coupon
     await db
       .updateTable('coupons')
-      .set(updateData)
+      .set({
+        ...data,
+        updated_at: formatDate(new Date()),
+      })
       .where('id', '=', id)
       .execute()
 

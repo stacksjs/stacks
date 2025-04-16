@@ -5,47 +5,25 @@ import { db } from '@stacksjs/database'
 /**
  * Create a new product variant
  *
- * @param request Product variant data to store
+ * @param data The product variant data to store
  * @returns The newly created product variant record
  */
-export async function store(request: ProductVariantRequestType): Promise<ProductVariantJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function store(data: NewProductVariant): Promise<ProductVariantJsonResponse> {
   try {
-    // Prepare variant data
-    const variantData: NewProductVariant = {
-      product_id: request.get<number>('product_id'),
-      variant: request.get('variant'),
-      type: request.get('type'),
-      description: request.get('description'),
-      options: request.get('options'),
-      status: request.get('status', 'draft'),
-    }
-
-    variantData.uuid = randomUUIDv7()
-
-    // Insert the product variant
     const result = await db
       .insertInto('product_variants')
-      .values(variantData)
+      .values(data)
+      .returningAll()
       .executeTakeFirst()
 
-    const variantId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+    if (!result)
+      throw new Error('Failed to create product variant')
 
-    // Retrieve the newly created product variant
-    const variant = await db
-      .selectFrom('product_variants')
-      .where('id', '=', variantId)
-      .selectAll()
-      .executeTakeFirst()
-
-    return variant
+    return result
   }
   catch (error) {
-    if (error instanceof Error) {
+    if (error instanceof Error)
       throw new TypeError(`Failed to create product variant: ${error.message}`)
-    }
 
     throw error
   }
@@ -54,36 +32,22 @@ export async function store(request: ProductVariantRequestType): Promise<Product
 /**
  * Create multiple product variants at once
  *
- * @param requests Array of product variant data to store
+ * @param data Array of product variant data to store
  * @returns Number of product variants created
  */
-export async function bulkStore(requests: ProductVariantRequestType[]): Promise<number> {
-  if (!requests.length)
+export async function bulkStore(data: NewProductVariant[]): Promise<number> {
+  if (!data.length)
     return 0
 
   let createdCount = 0
 
   try {
-    // Process each product variant
     await db.transaction().execute(async (trx) => {
-      for (const request of requests) {
-        // Validate request data
-        await request.validate()
-
-        // Prepare variant data
-        const variantData: NewProductVariant = {
-          product_id: request.get('product_id'),
-          variant: request.get('variant'),
-          type: request.get('type'),
-          description: request.get('description'),
-          options: request.get('options'),
-          status: request.get('status', 'draft'),
-        }
-
+      for (const variant of data) {
         await trx
           .insertInto('product_variants')
-          .values(variantData)
-          .executeTakeFirst()
+          .values(variant)
+          .execute()
 
         createdCount++
       }
@@ -92,9 +56,8 @@ export async function bulkStore(requests: ProductVariantRequestType[]): Promise<
     return createdCount
   }
   catch (error) {
-    if (error instanceof Error) {
+    if (error instanceof Error)
       throw new TypeError(`Failed to create product variants in bulk: ${error.message}`)
-    }
 
     throw error
   }
