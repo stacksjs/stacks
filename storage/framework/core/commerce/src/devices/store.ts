@@ -1,30 +1,20 @@
-import type { NewPrintDevice, PrintDeviceJsonResponse, PrintDeviceRequestType } from '@stacksjs/orm'
+import type { NewPrintDevice, PrintDeviceJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
  * Create a new print device
  *
- * @param request Print device data to store
+ * @param data Print device data to store
  * @returns The newly created print device record
  */
-export async function store(request: PrintDeviceRequestType): Promise<PrintDeviceJsonResponse | undefined> {
-  // Validate the request data
-  await request.validate()
-
+export async function store(data: NewPrintDevice): Promise<PrintDeviceJsonResponse | undefined> {
   try {
     // Prepare print device data
     const deviceData: NewPrintDevice = {
-      name: request.get('name'),
-      mac_address: request.get('mac_address'),
-      location: request.get('location'),
-      terminal: request.get('terminal'),
-      status: request.get('status'),
-      last_ping: request.get('last_ping'),
-      print_count: request.get('print_count'),
+      ...data,
+      uuid: randomUUIDv7(),
     }
-
-    deviceData.uuid = randomUUIDv7()
 
     // Insert the print device
     const result = await db
@@ -55,11 +45,11 @@ export async function store(request: PrintDeviceRequestType): Promise<PrintDevic
 /**
  * Create multiple print devices at once
  *
- * @param requests Array of print device data to store
+ * @param data Array of print device data to store
  * @returns Number of print devices created
  */
-export async function bulkStore(requests: PrintDeviceRequestType[]): Promise<number> {
-  if (!requests.length)
+export async function bulkStore(data: NewPrintDevice[]): Promise<number> {
+  if (!data.length)
     return 0
 
   let createdCount = 0
@@ -67,22 +57,12 @@ export async function bulkStore(requests: PrintDeviceRequestType[]): Promise<num
   try {
     // Process each print device
     await db.transaction().execute(async (trx) => {
-      for (const request of requests) {
-        // Validate request data
-        request.validate()
-
+      for (const device of data) {
         // Prepare print device data
         const deviceData: NewPrintDevice = {
-          name: request.get('name'),
-          mac_address: request.get('mac_address'),
-          location: request.get('location'),
-          terminal: request.get('terminal'),
-          status: request.get('status'),
-          last_ping: request.get('last_ping'),
-          print_count: request.get('print_count'),
+          ...device,
+          uuid: randomUUIDv7(),
         }
-
-        deviceData.uuid = randomUUIDv7()
 
         // Insert the print device
         await trx

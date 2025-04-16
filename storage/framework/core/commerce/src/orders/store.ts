@@ -1,5 +1,5 @@
 // Import dependencies
-import type { NewOrder, OrderJsonResponse, OrderRequestType } from '@stacksjs/orm'
+import type { NewOrder, OrderJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
@@ -7,26 +7,13 @@ import { formatDate } from '@stacksjs/orm'
 /**
  * Create a new order
  *
- * @param request The order data to store
+ * @param data The order data to store
  * @returns The newly created order record
  */
-export async function store(request: OrderRequestType): Promise<OrderJsonResponse | undefined> {
-  await request.validate()
-
+export async function store(data: NewOrder): Promise<OrderJsonResponse | undefined> {
   const orderData: NewOrder = {
-    customer_id: request.get<number>('customer_id'),
-    coupon_id: request.get<number>('coupon_id'),
-    status: request.get('status') || 'PENDING',
-    total_amount: request.get<number>('total_amount'),
-    tax_amount: request.get<number>('tax_amount'),
-    discount_amount: request.get<number>('discount_amount'),
-    delivery_fee: request.get<number>('delivery_fee'),
-    tip_amount: request.get<number>('tip_amount'),
-    order_type: request.get('order_type'),
-    delivery_address: request.get('delivery_address'),
-    special_instructions: request.get('special_instructions'),
-    estimated_delivery_time: request.get('estimated_delivery_time'),
-    applied_coupon_id: request.get('applied_coupon_id'),
+    ...data,
+    status: data.status || 'PENDING',
     uuid: randomUUIDv7(),
     created_at: formatDate(new Date()),
     updated_at: formatDate(new Date()),
