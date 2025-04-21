@@ -111,9 +111,6 @@ export async function store(data: CommentStore): Promise<Commentable> {
       commentable_type: data.commentable_type,
       user_id: data.user_id,
       is_active: data.is_active,
-      reports_count: 0,
-      upvotes_count: 0,
-      downvotes_count: 0,
     }
 
     const result = await db

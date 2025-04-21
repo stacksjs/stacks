@@ -5,7 +5,7 @@ import { formatDate } from '@stacksjs/orm'
 
 /**
  * Update a driver
- *  
+ *
  * @param id The id of the driver to update
  * @param data The driver data to update
  * @returns The updated driver record

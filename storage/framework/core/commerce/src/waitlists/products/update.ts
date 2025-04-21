@@ -4,7 +4,7 @@ import { formatDate } from '@stacksjs/orm'
 
 /**
  * Update a waitlist product
- *  
+ *
  * @param id The id of the waitlist product to update
  * @param data The waitlist product data to update
  * @returns The updated waitlist product record
