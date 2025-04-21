@@ -6,23 +6,6 @@ import { fetchAll, fetchById } from '../shippings/license-keys/fetch'
 import { bulkStore, store } from '../shippings/license-keys/store'
 import { update, updateExpiration, updateStatus } from '../shippings/license-keys/update'
 
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-}
-
 beforeEach(async () => {
   await refreshDatabase()
 })
@@ -40,8 +23,7 @@ describe('License Key Module', () => {
         order_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const license = await store(request as any)
+      const license = await store(requestData)
 
       expect(license).toBeDefined()
       expect(license?.key).toBe('XXXX-XXXX-XXXX-XXXX-XXXX')
@@ -70,10 +52,12 @@ describe('License Key Module', () => {
         template: 'Standard License',
         expiry_date: formatDate(new Date('2025-12-31')),
         status: 'unassigned',
+        customer_id: 1,
+        product_id: 1,
+        order_id: 1,
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const license = await store(request as any)
+      const license = await store(minimalRequestData)
 
       expect(license).toBeDefined()
       expect(license?.key).toBe('XXXX-XXXX-XXXX-XXXX-XXXX')
@@ -85,27 +69,36 @@ describe('License Key Module', () => {
 
     it('should create multiple license keys with bulk store', async () => {
       const requests = [
-        new TestRequest({
+        {
           key: 'XXXX-XXXX-XXXX-XXXX-XXXX',
           template: 'Standard License',
           expiry_date: formatDate(new Date('2025-12-31')),
           status: 'unassigned',
-        }),
-        new TestRequest({
+          customer_id: 1,
+          product_id: 1,
+          order_id: 1,
+        },
+        {
           key: 'YYYY-YYYY-YYYY-YYYY-YYYY',
           template: 'Premium License',
           expiry_date: formatDate(new Date('2026-12-31')),
           status: 'unassigned',
-        }),
-        new TestRequest({
+          customer_id: 1,
+          product_id: 1,
+          order_id: 1,
+        },
+        {
           key: 'ZZZZ-ZZZZ-ZZZZ-ZZZZ-ZZZZ',
           template: 'Enterprise License',
           expiry_date: formatDate(new Date('2027-12-31')),
           status: 'unassigned',
-        }),
+          customer_id: 1,
+          product_id: 1,
+          order_id: 1,
+        },
       ]
 
-      const count = await bulkStore(requests as any)
+      const count = await bulkStore(requests)
       expect(count).toBe(3)
 
       // Verify licenses can be fetched
@@ -127,11 +120,13 @@ describe('License Key Module', () => {
         template: 'Standard License',
         expiry_date: formatDate(new Date('2025-12-31')),
         status: 'unassigned',
+        customer_id: 1,
+        product_id: 1,
+        order_id: 1,
       }
 
       // Create the license
-      const createRequest = new TestRequest(requestData)
-      const license = await store(createRequest as any)
+      const license = await store(requestData)
       const licenseId = license?.id !== undefined ? Number(license.id) : undefined
 
       // Make sure we have a valid license ID before proceeding
@@ -151,8 +146,7 @@ describe('License Key Module', () => {
         order_id: 1,
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedLicense = await update(licenseId, updateRequest as any)
+      const updatedLicense = await update(licenseId, updateData)
 
       // Verify the update was successful
       expect(updatedLicense).toBeDefined()
@@ -173,10 +167,12 @@ describe('License Key Module', () => {
         template: 'Standard License',
         expiry_date: formatDate(new Date('2025-12-31')),
         status: 'unassigned',
+        customer_id: 1,
+        product_id: 1,
+        order_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const license = await store(request as any)
+      const license = await store(requestData)
       const licenseId = license?.id !== undefined ? Number(license.id) : undefined
 
       // Make sure we have a valid license ID before proceeding
@@ -203,10 +199,12 @@ describe('License Key Module', () => {
         template: 'Standard License',
         expiry_date: formatDate(new Date('2026-12-31')),
         status: 'unassigned',
+        customer_id: 1,
+        product_id: 1,
+        order_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const license = await store(request as any)
+      const license = await store(requestData)
       const licenseId = license?.id !== undefined ? Number(license.id) : undefined
 
       expect(licenseId).toBeDefined()
@@ -232,11 +230,13 @@ describe('License Key Module', () => {
         template: 'Standard License',
         expiry_date: formatDate(new Date('2025-12-31')),
         status: 'unassigned',
+        customer_id: 1,
+        product_id: 1,
+        order_id: 1,
       }
 
       // Create the license
-      const request = new TestRequest(requestData)
-      const license = await store(request as any)
+      const license = await store(requestData)
       const licenseId = license?.id !== undefined ? Number(license.id) : undefined
 
       // Make sure we have a valid license ID before proceeding
@@ -265,11 +265,13 @@ describe('License Key Module', () => {
         template: 'Standard License',
         expiry_date: formatDate(new Date('2025-12-31')),
         status: 'unassigned',
+        customer_id: 1,
+        product_id: 1,
+        order_id: 1,
       }
 
       // Create the license
-      const request = new TestRequest(requestData)
-      const license = await store(request as any)
+      const license = await store(requestData)
       const licenseId = license?.id !== undefined ? Number(license.id) : undefined
 
       expect(licenseId).toBeDefined()
@@ -298,10 +300,12 @@ describe('License Key Module', () => {
           template: 'Standard License',
           expiry_date: formatDate(new Date('2025-12-31')),
           status: 'unassigned',
+          customer_id: 1,
+          product_id: 1,
+          order_id: 1,
         }
 
-        const request = new TestRequest(requestData)
-        const license = await store(request as any)
+        const license = await store(requestData)
 
         const licenseId = license?.id !== undefined ? Number(license.id) : undefined
         expect(licenseId).toBeDefined()
@@ -336,10 +340,12 @@ describe('License Key Module', () => {
           template: 'Standard License',
           expiry_date: formatDate(new Date('2025-12-31')),
           status: 'unassigned',
+          customer_id: 1,
+          product_id: 1,
+          order_id: 1,
         }
-
-        const request = new TestRequest(requestData)
-        const license = await store(request as any)
+        
+        const license = await store(requestData)
 
         const licenseId = license?.id !== undefined ? Number(license.id) : undefined
         expect(licenseId).toBeDefined()

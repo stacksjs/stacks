@@ -9,9 +9,9 @@ import { formatDate } from '@stacksjs/orm'
  * @param data The driver data to update
  * @returns The updated driver record
  */
-export async function update(data: DriverUpdate): Promise<DriverJsonResponse> {
+export async function update(id: number, data: DriverUpdate): Promise<DriverJsonResponse> {
   try {
-    if (!data.id)
+    if (!id)
       throw new Error('Driver ID is required for update')
 
     const result = await db
@@ -20,7 +20,7 @@ export async function update(data: DriverUpdate): Promise<DriverJsonResponse> {
         ...data,
         updated_at: formatDate(new Date()),
       })
-      .where('id', '=', data.id)
+      .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
 

@@ -5,23 +5,6 @@ import { fetchAll, fetchById } from '../shippings/drivers/fetch'
 import { bulkStore, store } from '../shippings/drivers/store'
 import { update, updateContact, updateStatus } from '../shippings/drivers/update'
 
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-}
-
 beforeEach(async () => {
   await refreshDatabase()
 })
@@ -30,6 +13,7 @@ describe('Driver Module', () => {
   describe('store', () => {
     it('should create a new driver in the database', async () => {
       const requestData = {
+        user_id: 1,
         name: 'John Doe',
         phone: '+1234567890',
         vehicle_number: 'ABC123',
@@ -37,8 +21,7 @@ describe('Driver Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(requestData)
-      const driver = await store(request as any)
+      const driver = await store(requestData)
 
       expect(driver).toBeDefined()
       expect(driver?.name).toBe('John Doe')
@@ -66,10 +49,10 @@ describe('Driver Module', () => {
         vehicle_number: 'XYZ789',
         license: 'DL789012',
         status: 'active',
+        user_id: 1,
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const driver = await store(request as any)
+      const driver = await store(minimalRequestData)
 
       expect(driver).toBeDefined()
       expect(driver?.name).toBe('Jane Smith')
@@ -82,27 +65,30 @@ describe('Driver Module', () => {
 
     it('should create multiple drivers with bulk store', async () => {
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           phone: '+1234567890',
           vehicle_number: 'ABC123',
           license: 'DL123456',
           status: 'active',
-        }),
-        new TestRequest({
+          user_id: 1,
+        },
+        {
           name: 'Jane Smith',
           phone: '+1987654321',
           vehicle_number: 'XYZ789',
           license: 'DL789012',
           status: 'on_break',
-        }),
-        new TestRequest({
+          user_id: 1,
+        },
+        {
           name: 'Bob Wilson',
           phone: '+1122334455',
           vehicle_number: 'DEF456',
           license: 'DL345678',
           status: 'on_delivery',
-        }),
+          user_id: 1,
+        },
       ]
 
       const count = await bulkStore(requests as any)
@@ -128,11 +114,11 @@ describe('Driver Module', () => {
         vehicle_number: 'ABC123',
         license: 'DL123456',
         status: 'active',
+        user_id: 1,
       }
 
       // Create the driver
-      const createRequest = new TestRequest(requestData)
-      const driver = await store(createRequest as any)
+      const driver = await store(requestData)
       const driverId = driver?.id !== undefined ? Number(driver.id) : undefined
 
       // Make sure we have a valid driver ID before proceeding
@@ -150,8 +136,7 @@ describe('Driver Module', () => {
         status: 'on_delivery',
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedDriver = await update(driverId, updateRequest as any)
+      const updatedDriver = await update(driverId, updateData)
 
       // Verify the update was successful
       expect(updatedDriver).toBeDefined()
@@ -171,10 +156,10 @@ describe('Driver Module', () => {
         vehicle_number: 'ABC123',
         license: 'DL123456',
         status: 'active',
+        user_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const driver = await store(request as any)
+      const driver = await store(requestData)
       const driverId = driver?.id !== undefined ? Number(driver.id) : undefined
 
       // Make sure we have a valid driver ID before proceeding
@@ -202,10 +187,10 @@ describe('Driver Module', () => {
         vehicle_number: 'ABC123',
         license: 'DL123456',
         status: 'active',
+        user_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const driver = await store(request as any)
+      const driver = await store(requestData)
       const driverId = driver?.id !== undefined ? Number(driver.id) : undefined
 
       expect(driverId).toBeDefined()
@@ -231,11 +216,11 @@ describe('Driver Module', () => {
         vehicle_number: 'ABC123',
         license: 'DL123456',
         status: 'active',
+        user_id: 1,
       }
 
       // Create the driver
-      const request = new TestRequest(requestData)
-      const driver = await store(request as any)
+      const driver = await store(requestData)
       const driverId = driver?.id !== undefined ? Number(driver.id) : undefined
 
       // Make sure we have a valid driver ID before proceeding

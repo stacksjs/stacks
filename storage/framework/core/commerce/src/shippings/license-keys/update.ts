@@ -6,12 +6,13 @@ import { formatDate } from '@stacksjs/orm'
 /**
  * Update a license key
  *
+ * @param id The ID of the license key
  * @param data The license key data to update
  * @returns The updated license key record
  */
-export async function update(data: LicenseKeyUpdate): Promise<LicenseKeyJsonResponse> {
+export async function update(id: number, data: LicenseKeyUpdate): Promise<LicenseKeyJsonResponse> {
   try {
-    if (!data.id)
+    if (!id)
       throw new Error('License key ID is required for update')
 
     const result = await db
@@ -20,7 +21,7 @@ export async function update(data: LicenseKeyUpdate): Promise<LicenseKeyJsonResp
         ...data,
         updated_at: formatDate(new Date()),
       })
-      .where('id', '=', data.id)
+      .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
 

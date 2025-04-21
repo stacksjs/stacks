@@ -5,12 +5,13 @@ import { formatDate } from '@stacksjs/orm'
 /**
  * Update a customer
  *
+ * @param id The ID of the customer to update
  * @param data The customer data to update
  * @returns The updated customer record
  */
-export async function update(id: number, data: CustomerUpdate): Promise<CustomerJsonResponse> {
+export async function update(id: number, data: Omit<CustomerUpdate, 'id'>): Promise<CustomerJsonResponse> {
   try {
-    if (!data.id)
+    if (!id)
       throw new Error('Customer ID is required for update')
 
     const result = await db

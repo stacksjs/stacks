@@ -5,12 +5,13 @@ import { formatDate } from '@stacksjs/orm'
 /**
  * Update a manufacturer
  *
+ * @param id The ID of the manufacturer to update
  * @param data The manufacturer data to update
  * @returns The updated manufacturer record
  */
-export async function update(data: ManufacturerUpdate): Promise<ManufacturerJsonResponse> {
+export async function update(id: number, data: ManufacturerUpdate): Promise<ManufacturerJsonResponse> {
   try {
-    if (!data.id)
+    if (!id)
       throw new Error('Manufacturer ID is required for update')
 
     const result = await db
@@ -19,7 +20,7 @@ export async function update(data: ManufacturerUpdate): Promise<ManufacturerJson
         ...data,
         updated_at: formatDate(new Date()),
       })
-      .where('id', '=', data.id)
+      .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
 

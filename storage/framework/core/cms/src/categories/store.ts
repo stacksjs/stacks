@@ -32,7 +32,6 @@ export async function store(data: CategoryData): Promise<CategorizableTable> {
       categorizable_id: data.categorizable_id,
       categorizable_type: data.categorizable_type,
       is_active: data.is_active ?? true,
-      created_at: formatDate(new Date()),
     }
 
     // Start a transaction to ensure both inserts succeed or fail together
@@ -52,7 +51,6 @@ export async function store(data: CategoryData): Promise<CategorizableTable> {
         category_id: category.id!, // We know this exists because we checked category exists
         categorizable_id: data.categorizable_id,
         categorizable_type: data.categorizable_type,
-        created_at: formatDate(new Date()),
       }
 
       await trx

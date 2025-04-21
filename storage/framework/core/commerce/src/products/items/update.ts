@@ -6,12 +6,13 @@ import { fetchById } from './fetch'
 /**
  * Update a product item
  *
+ * @param id The ID of the product item to update
  * @param data The product item data to update
  * @returns The updated product item record
  */
-export async function update(data: ProductItemUpdate): Promise<ProductItemJsonResponse> {
+export async function update(id: number, data: Omit<ProductItemUpdate, 'id'>): Promise<ProductItemJsonResponse> {
   try {
-    if (!data.id)
+    if (!id)
       throw new Error('Product item ID is required for update')
 
     const result = await db
@@ -20,7 +21,7 @@ export async function update(data: ProductItemUpdate): Promise<ProductItemJsonRe
         ...data,
         updated_at: formatDate(new Date()),
       })
-      .where('id', '=', data.id)
+      .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
 

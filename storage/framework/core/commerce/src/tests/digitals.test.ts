@@ -5,23 +5,6 @@ import { fetchAll, fetchById } from '../shippings/digital-deliveries/fetch'
 import { bulkStore, store } from '../shippings/digital-deliveries/store'
 import { update, updateDeliverySettings, updateStatus } from '../shippings/digital-deliveries/update'
 
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-}
-
 beforeEach(async () => {
   await refreshDatabase()
 })
@@ -39,8 +22,7 @@ describe('Digital Delivery Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(requestData)
-      const delivery = await store(request as any)
+      const delivery = await store(requestData)
 
       expect(delivery).toBeDefined()
       expect(delivery?.name).toBe('Premium Ebook')
@@ -71,8 +53,7 @@ describe('Digital Delivery Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const delivery = await store(request as any)
+      const delivery = await store(minimalRequestData)
 
       expect(delivery).toBeDefined()
       expect(delivery?.name).toBe('Basic PDF')
@@ -84,24 +65,24 @@ describe('Digital Delivery Module', () => {
 
     it('should create multiple digital deliveries with bulk store', async () => {
       const requests = [
-        new TestRequest({
+        {
           name: 'Ebook 1',
           description: 'First ebook',
           expiry_days: 30,
           status: 'active',
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Ebook 2',
           description: 'Second ebook',
           expiry_days: 60,
           status: 'active',
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Ebook 3',
           description: 'Third ebook',
           expiry_days: 90,
           status: 'active',
-        }),
+        },
       ]
 
       const count = await bulkStore(requests as any)
@@ -132,8 +113,7 @@ describe('Digital Delivery Module', () => {
       }
 
       // Create the delivery
-      const createRequest = new TestRequest(requestData)
-      const delivery = await store(createRequest as any)
+      const delivery = await store(requestData)
       const deliveryId = delivery?.id !== undefined ? Number(delivery.id) : undefined
 
       // Make sure we have a valid delivery ID before proceeding
@@ -153,8 +133,7 @@ describe('Digital Delivery Module', () => {
         status: 'inactive',
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedDelivery = await update(deliveryId, updateRequest as any)
+      const updatedDelivery = await update(deliveryId, updateData)
 
       // Verify the update was successful
       expect(updatedDelivery).toBeDefined()
@@ -177,8 +156,7 @@ describe('Digital Delivery Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(requestData)
-      const delivery = await store(request as any)
+      const delivery = await store(requestData)
       const deliveryId = delivery?.id !== undefined ? Number(delivery.id) : undefined
 
       // Make sure we have a valid delivery ID before proceeding
@@ -210,8 +188,7 @@ describe('Digital Delivery Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(requestData)
-      const delivery = await store(request as any)
+      const delivery = await store(requestData)
       const deliveryId = delivery?.id !== undefined ? Number(delivery.id) : undefined
 
       expect(deliveryId).toBeDefined()
@@ -247,8 +224,7 @@ describe('Digital Delivery Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(requestData)
-      const delivery = await store(request as any)
+      const delivery = await store(requestData)
       const deliveryId = delivery?.id !== undefined ? Number(delivery.id) : undefined
 
       expect(deliveryId).toBeDefined()
@@ -282,8 +258,7 @@ describe('Digital Delivery Module', () => {
       }
 
       // Create the delivery
-      const request = new TestRequest(requestData)
-      const delivery = await store(request as any)
+      const delivery = await store(requestData)
       const deliveryId = delivery?.id !== undefined ? Number(delivery.id) : undefined
 
       // Make sure we have a valid delivery ID before proceeding
@@ -315,8 +290,7 @@ describe('Digital Delivery Module', () => {
       }
 
       // Create the delivery
-      const request = new TestRequest(requestData)
-      const delivery = await store(request as any)
+      const delivery = await store(requestData)
       const deliveryId = delivery?.id !== undefined ? Number(delivery.id) : undefined
 
       expect(deliveryId).toBeDefined()
@@ -347,8 +321,7 @@ describe('Digital Delivery Module', () => {
           status: 'active',
         }
 
-        const request = new TestRequest(requestData)
-        const delivery = await store(request as any)
+        const delivery = await store(requestData)
 
         const deliveryId = delivery?.id !== undefined ? Number(delivery.id) : undefined
         expect(deliveryId).toBeDefined()
@@ -385,8 +358,7 @@ describe('Digital Delivery Module', () => {
           status: 'active',
         }
 
-        const request = new TestRequest(requestData)
-        const delivery = await store(request as any)
+        const delivery = await store(requestData)
 
         const deliveryId = delivery?.id !== undefined ? Number(delivery.id) : undefined
         expect(deliveryId).toBeDefined()

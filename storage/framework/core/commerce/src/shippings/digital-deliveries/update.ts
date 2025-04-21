@@ -9,7 +9,7 @@ import { formatDate } from '@stacksjs/orm'
  * @param data The digital delivery data to update
  * @returns The updated digital delivery record
  */
-export async function update(data: DigitalDeliveryUpdate): Promise<DigitalDeliveryJsonResponse> {
+export async function update(id: number, data: DigitalDeliveryUpdate): Promise<DigitalDeliveryJsonResponse> {
   try {
     if (!data.id)
       throw new Error('Digital delivery ID is required for update')
@@ -20,7 +20,7 @@ export async function update(data: DigitalDeliveryUpdate): Promise<DigitalDelive
         ...data,
         updated_at: formatDate(new Date()),
       })
-      .where('id', '=', data.id)
+      .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
 

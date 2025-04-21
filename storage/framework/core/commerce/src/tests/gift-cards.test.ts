@@ -1,26 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { remove } from '../gift-cards/destroy'
+import { bulkDestroy, destroy } from '../gift-cards/destroy'
 import { fetchByCode, fetchById } from '../gift-cards/fetch'
 import { store } from '../gift-cards/store'
 import { update, updateBalance } from '../gift-cards/update'
-
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-}
 
 beforeEach(async () => {
   await refreshDatabase()
@@ -35,14 +18,15 @@ describe('Gift Card Module', () => {
       const requestData = {
         code: uniqueCode,
         initial_balance: 100,
+        current_balance: 100,
+        status: 'ACTIVE',
         currency: 'USD',
         customer_id: 1,
         is_digital: true,
         is_active: true,
       }
-
-      const request = new TestRequest(requestData)
-      const giftCard = await store(request as any)
+      
+      const giftCard = await store(requestData)
 
       expect(giftCard).toBeDefined()
       expect(giftCard?.code).toBe(uniqueCode)
@@ -70,12 +54,15 @@ describe('Gift Card Module', () => {
       const firstGiftCardData = {
         code: uniqueCode,
         initial_balance: 100,
+        current_balance: 100,
         currency: 'USD',
         customer_id: 1,
+        is_digital: true,
+        is_active: true,
+        status: 'ACTIVE',
       }
 
-      const firstRequest = new TestRequest(firstGiftCardData)
-      const firstGiftCard = await store(firstRequest as any)
+      const firstGiftCard = await store(firstGiftCardData)
       expect(firstGiftCard).toBeDefined()
 
       // Try to create a second gift card with the same code
@@ -84,12 +71,14 @@ describe('Gift Card Module', () => {
         initial_balance: 50,
         currency: 'USD',
         customer_id: 2,
+        is_digital: true,
+        is_active: true,
+        status: 'ACTIVE',
+        current_balance: 50,
       }
 
-      const secondRequest = new TestRequest(secondGiftCardData)
-
       try {
-        await store(secondRequest as any)
+        await store(secondGiftCardData)
         // If we get here, the test should fail as we expect an error
         expect(true).toBe(false) // This line should not be reached
       }
@@ -113,11 +102,13 @@ describe('Gift Card Module', () => {
         initial_balance: 75,
         currency: 'EUR',
         customer_id: 1,
-        // Other fields are omitted to test defaults
+        is_digital: true,
+        is_active: true,
+        status: 'ACTIVE',
+        current_balance: 75,
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const giftCard = await store(request as any)
+      const giftCard = await store(minimalRequestData)
 
       expect(giftCard).toBeDefined()
       expect(giftCard?.code).toBe(uniqueCode)
@@ -137,10 +128,13 @@ describe('Gift Card Module', () => {
         initial_balance: 100,
         currency: 'USD',
         customer_id: 1,
+        is_digital: true,
+        is_active: true,
+        status: 'ACTIVE',
+        current_balance: 100,
       }
 
-      const request = new TestRequest(requestData)
-      const giftCard = await store(request as any)
+      const giftCard = await store(requestData)
       const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
 
       // Make sure we have a valid gift card ID before proceeding
@@ -166,10 +160,13 @@ describe('Gift Card Module', () => {
         initial_balance: 150,
         currency: 'USD',
         customer_id: 1,
+        is_digital: true,
+        is_active: true,
+        status: 'ACTIVE',
+        current_balance: 150,
       }
 
-      const request = new TestRequest(requestData)
-      const giftCard = await store(request as any)
+      const giftCard = await store(requestData)
       expect(giftCard).toBeDefined()
 
       // Now fetch the gift card by code
@@ -190,11 +187,14 @@ describe('Gift Card Module', () => {
         initial_balance: 100,
         currency: 'USD',
         customer_id: 1,
+        is_digital: true,
+        is_active: true,
+        status: 'ACTIVE',
+        current_balance: 100,
       }
 
       // Create the gift card
-      const createRequest = new TestRequest(initialData)
-      const giftCard = await store(createRequest as any)
+      const giftCard = await store(initialData)
       const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
 
       // Make sure we have a valid gift card ID before proceeding
@@ -210,8 +210,7 @@ describe('Gift Card Module', () => {
         personal_message: 'Happy Birthday!',
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedGiftCard = await update(giftCardId, updateRequest as any)
+      const updatedGiftCard = await update(giftCardId, updateData)
 
       // Verify the update was successful
       expect(updatedGiftCard).toBeDefined()
@@ -235,12 +234,15 @@ describe('Gift Card Module', () => {
       const firstGiftCardData = {
         code: code1,
         initial_balance: 100,
+        current_balance: 100,
         currency: 'USD',
         customer_id: 1,
+        is_digital: true,
+        is_active: true,
+        status: 'ACTIVE',
       }
 
-      const firstRequest = new TestRequest(firstGiftCardData)
-      const firstGiftCard = await store(firstRequest as any)
+      const firstGiftCard = await store(firstGiftCardData)
       const firstGiftCardId = firstGiftCard?.id !== undefined ? Number(firstGiftCard.id) : undefined
       expect(firstGiftCardId).toBeDefined()
 
@@ -248,12 +250,15 @@ describe('Gift Card Module', () => {
       const secondGiftCardData = {
         code: code2,
         initial_balance: 200,
+        current_balance: 200,
         currency: 'USD',
         customer_id: 1,
+        is_digital: true,
+        is_active: true,
+        status: 'ACTIVE',
       }
 
-      const secondRequest = new TestRequest(secondGiftCardData)
-      const secondGiftCard = await store(secondRequest as any)
+      const secondGiftCard = await store(secondGiftCardData)
       const secondGiftCardId = secondGiftCard?.id !== undefined ? Number(secondGiftCard.id) : undefined
       expect(secondGiftCardId).toBeDefined()
 
@@ -265,10 +270,8 @@ describe('Gift Card Module', () => {
         code: code1, // This should conflict with the first gift card
       }
 
-      const updateRequest = new TestRequest(updateData)
-
       try {
-        await update(secondGiftCardId, updateRequest as any)
+        await update(secondGiftCardId, updateData)
         // If we get here, the test should fail as we expect an error
         expect(true).toBe(false) // This line should not be reached
       }
@@ -295,10 +298,11 @@ describe('Gift Card Module', () => {
         customer_id: 1,
         status: 'ACTIVE',
         is_active: true,
+        is_digital: true,
+        current_balance: 100,
       }
 
-      const request = new TestRequest(requestData)
-      const giftCard = await store(request as any)
+      const giftCard = await store(requestData)
       const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
 
       // Make sure we have a valid gift card ID before proceeding
@@ -333,10 +337,11 @@ describe('Gift Card Module', () => {
         customer_id: 1,
         status: 'ACTIVE',
         is_active: true,
+        is_digital: true,
+        current_balance: 50,
       }
 
-      const request = new TestRequest(requestData)
-      const giftCard = await store(request as any)
+      const giftCard = await store(requestData)
       const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
 
       // Make sure we have a valid gift card ID before proceeding
@@ -368,10 +373,11 @@ describe('Gift Card Module', () => {
         customer_id: 1,
         status: 'DEACTIVATED',
         is_active: false,
+        is_digital: true,
+        current_balance: 50,
       }
 
-      const request = new TestRequest(requestData)
-      const giftCard = await store(request as any)
+      const giftCard = await store(requestData)
       const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
 
       // Make sure we have a valid gift card ID before proceeding
@@ -403,11 +409,14 @@ describe('Gift Card Module', () => {
         initial_balance: 100,
         currency: 'USD',
         customer_id: 1,
+        is_digital: true,
+        is_active: true,
+        status: 'ACTIVE',
+        current_balance: 100,
       }
 
       // Create the gift card
-      const request = new TestRequest(requestData)
-      const giftCard = await store(request as any)
+      const giftCard = await store(requestData)
       const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
 
       // Make sure we have a valid gift card ID before proceeding
@@ -421,7 +430,7 @@ describe('Gift Card Module', () => {
       expect(fetchedGiftCard).toBeDefined()
 
       // Delete the gift card
-      const result = await remove(giftCardId)
+      const result = await destroy(giftCardId)
       expect(result).toBe(true)
 
       // Verify the gift card no longer exists
@@ -435,7 +444,7 @@ describe('Gift Card Module', () => {
 
       // Attempt to delete and expect an error
       try {
-        await remove(nonExistentId)
+        await destroy(nonExistentId)
         // If we get here, the test should fail as we expect an error
         expect(true).toBe(false) // This line should not be reached
       }
@@ -461,10 +470,13 @@ describe('Gift Card Module', () => {
           initial_balance: 50 + (i * 10),
           currency: 'USD',
           customer_id: 1,
+          is_digital: true,
+          is_active: true,
+          status: 'ACTIVE',
+          current_balance: 50 + (i * 10),
         }
 
-        const request = new TestRequest(requestData)
-        const giftCard = await store(request as any)
+        const giftCard = await store(requestData)
         expect(giftCard).toBeDefined()
 
         const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
@@ -479,11 +491,9 @@ describe('Gift Card Module', () => {
       // Ensure we have created the gift cards
       expect(giftCardIds.length).toBe(3)
 
-      // Import the bulkRemove function
-      const { bulkRemove } = await import('../gift-cards/destroy')
 
       // Delete the gift cards
-      const deletedCount = await bulkRemove(giftCardIds)
+      const deletedCount = await bulkDestroy(giftCardIds)
       expect(deletedCount).toBe(3)
 
       // Verify the gift cards no longer exist
@@ -494,11 +504,9 @@ describe('Gift Card Module', () => {
     })
 
     it('should return 0 when trying to delete an empty array of gift cards', async () => {
-      // Import the bulkRemove function
-      const { bulkRemove } = await import('../gift-cards/destroy')
 
       // Try to delete with an empty array
-      const deletedCount = await bulkRemove([])
+      const deletedCount = await bulkDestroy([])
       expect(deletedCount).toBe(0)
     })
   })

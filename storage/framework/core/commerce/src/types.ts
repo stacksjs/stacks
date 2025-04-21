@@ -244,25 +244,8 @@ export interface CategoryStats {
  * Options for fetching product manufacturers
  */
 export interface FetchManufacturersOptions {
-  /** Page number for pagination */
-  page?: number
-
-  /** Number of items per page */
-  limit?: number
-
-  /** Field to sort by */
-  sortBy?: 'manufacturer' | 'country' | 'created_at' | 'updated_at'
-
-  /** Sort direction */
-  sortDirection?: 'asc' | 'desc'
-
-  /** Filter by country */
   country?: string
-
-  /** Filter by featured status */
   featured?: boolean
-
-  /** Search term to filter results */
   search?: string
 }
 

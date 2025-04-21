@@ -1,26 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, destroy } from '../manufacturer/destroy'
-import { fetchByCountry, fetchById, fetchFeatured, fetchWithProductCount } from '../manufacturer/fetch'
-import { bulkStore, store } from '../manufacturer/store'
-import { update, updateFeaturedStatus } from '../manufacturer/update'
-
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-}
+import { bulkDestroy, destroy } from '../products/manufacturers/destroy'
+import { fetchByCountry, fetchById, fetchFeatured, fetchWithProductCount } from '../products/manufacturers/fetch'
+import { bulkStore, store } from '../products/manufacturers/store'
+import { update, updateFeaturedStatus } from '../products/manufacturers/update'
 
 beforeEach(async () => {
   await refreshDatabase()
@@ -38,8 +21,7 @@ describe('Manufacturer Module', () => {
         featured: true,
       }
 
-      const request = new TestRequest(requestData)
-      const manufacturer = await store(request as any)
+      const manufacturer = await store(requestData)
 
       expect(manufacturer).toBeDefined()
       expect(manufacturer?.manufacturer).toBe(manufacturerName)
@@ -69,8 +51,7 @@ describe('Manufacturer Module', () => {
         country: 'USA',
       }
 
-      const firstRequest = new TestRequest(firstManufacturerData)
-      const firstManufacturer = await store(firstRequest as any)
+      const firstManufacturer = await store(firstManufacturerData)
       expect(firstManufacturer).toBeDefined()
 
       // Try to create a second manufacturer with the same name
@@ -80,10 +61,10 @@ describe('Manufacturer Module', () => {
         country: 'Canada',
       }
 
-      const secondRequest = new TestRequest(secondManufacturerData)
+      const secondManufacturer = await store(secondManufacturerData)
 
       try {
-        await store(secondRequest as any)
+        await store(secondManufacturerData)
         // If we get here, the test should fail as we expect an error
         expect(true).toBe(false) // This line should not be reached
       }
@@ -108,8 +89,7 @@ describe('Manufacturer Module', () => {
         // Other fields are omitted to test defaults
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const manufacturer = await store(request as any)
+      const manufacturer = await store(minimalRequestData)
 
       expect(manufacturer).toBeDefined()
       expect(manufacturer?.manufacturer).toBe(manufacturerName)
@@ -122,22 +102,22 @@ describe('Manufacturer Module', () => {
     it('should create multiple manufacturers at once', async () => {
       const baseTime = Date.now()
       const requests = [
-        new TestRequest({
+        {
           manufacturer: `Bulk Manufacturer 1 ${baseTime}`,
           description: 'Description 1',
           country: 'Japan',
-        }),
-        new TestRequest({
+        },
+        {
           manufacturer: `Bulk Manufacturer 2 ${baseTime}`,
           description: 'Description 2',
           country: 'China',
           featured: true,
-        }),
-        new TestRequest({
+        },
+        {
           manufacturer: `Bulk Manufacturer 3 ${baseTime}`,
           description: 'Description 3',
           country: 'Korea',
-        }),
+        },
       ]
 
       const createdCount = await bulkStore(requests as any)
@@ -164,8 +144,7 @@ describe('Manufacturer Module', () => {
         country: 'France',
       }
 
-      const request = new TestRequest(requestData)
-      const manufacturer = await store(request as any)
+      const manufacturer = await store(requestData)
       const manufacturerId = manufacturer?.id !== undefined ? Number(manufacturer.id) : undefined
 
       // Make sure we have a valid manufacturer ID before proceeding
@@ -193,23 +172,23 @@ describe('Manufacturer Module', () => {
       ]
 
       for (const name of featuredNames) {
-        const request = new TestRequest({
+        const requestData = {
           manufacturer: name,
           description: 'Featured description',
           country: 'Spain',
           featured: true,
-        })
-        await store(request as any)
+        }
+        await store(requestData)
       }
 
       // Create a non-featured manufacturer
-      const nonFeaturedRequest = new TestRequest({
+      const nonFeaturedRequest = {
         manufacturer: `Non-Featured Manufacturer ${baseTime}`,
         description: 'Non-featured description',
         country: 'Spain',
         featured: false,
-      })
-      await store(nonFeaturedRequest as any)
+      }
+      await store(nonFeaturedRequest)
 
       // Fetch featured manufacturers
       const featuredManufacturers = await fetchFeatured(5)
@@ -234,24 +213,24 @@ describe('Manufacturer Module', () => {
       ]
 
       for (const name of brazilianManufacturers) {
-        const request = new TestRequest({
+        const requestData = {
           manufacturer: name,
           description: 'Brazilian description',
           country,
-        })
-        await store(request as any)
+        }
+        await store(requestData)
       }
 
       // Create a manufacturer from a different country
-      const otherRequest = new TestRequest({
+      const otherRequest = {
         manufacturer: `Non-Brazilian Manufacturer ${baseTime}`,
         description: 'Other description',
         country: 'Argentina',
-      })
-      await store(otherRequest as any)
+      }
+      await store(otherRequest)
 
       // Fetch manufacturers from Brazil with pagination (limit 2)
-      const result = await fetchByCountry(country, { page: 1, limit: 2 })
+      const result = await fetchByCountry(country)
 
       // Verify pagination info
       expect(result.data.length).toBeLessThanOrEqual(2)
@@ -261,7 +240,7 @@ describe('Manufacturer Module', () => {
       expect(result.next_cursor).toBe(2)
 
       // Fetch the second page
-      const page2 = await fetchByCountry(country, { page: 2, limit: 2 })
+      const page2 = await fetchByCountry(country)
       expect(page2.data.length).toBeGreaterThanOrEqual(1)
       expect(page2.paging.page).toBe(2)
     })
@@ -286,25 +265,21 @@ describe('Manufacturer Module', () => {
         featured: false,
       }
 
-      await store(new TestRequest(requestData1) as any)
-      await store(new TestRequest(requestData2) as any)
+      await store(requestData1)
+      await store(requestData2)
 
       // Fetch manufacturers with product count, filtered by featured status
-      const featuredResults = await fetchWithProductCount({ featured: true, limit: 10 })
-      const nonFeaturedResults = await fetchWithProductCount({ featured: false, limit: 10 })
+      const featuredResults = await fetchWithProductCount({ featured: true })
+      const nonFeaturedResults = await fetchWithProductCount({ featured: false })
 
       // Verify our test manufacturers are in the appropriate result sets
-      expect(featuredResults.data.some(m =>
+      expect(featuredResults.some(m =>
         m.manufacturer === `ProductCount Manufacturer 1 ${baseTime}`,
       )).toBe(true)
 
-      expect(nonFeaturedResults.data.some(m =>
+      expect(nonFeaturedResults.some(m =>
         m.manufacturer === `ProductCount Manufacturer 2 ${baseTime}`,
       )).toBe(true)
-
-      // Verify pagination structure is present
-      expect(featuredResults.paging).toBeDefined()
-      expect(featuredResults.paging.total_records).toBeGreaterThanOrEqual(1)
     })
   })
 
@@ -320,8 +295,7 @@ describe('Manufacturer Module', () => {
       }
 
       // Create the manufacturer
-      const createRequest = new TestRequest(initialData)
-      const manufacturer = await store(createRequest as any)
+      const manufacturer = await store(initialData)
       const manufacturerId = manufacturer?.id !== undefined ? Number(manufacturer.id) : undefined
 
       // Make sure we have a valid manufacturer ID before proceeding
@@ -337,8 +311,7 @@ describe('Manufacturer Module', () => {
         featured: true,
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedManufacturer = await update(manufacturerId, updateRequest as any)
+      const updatedManufacturer = await update(manufacturerId, updateData)
 
       // Verify the update was successful
       expect(updatedManufacturer).toBeDefined()
@@ -363,8 +336,7 @@ describe('Manufacturer Module', () => {
         country: 'UK',
       }
 
-      const firstRequest = new TestRequest(firstManufacturerData)
-      const firstManufacturer = await store(firstRequest as any)
+      const firstManufacturer = await store(firstManufacturerData)
       const firstManufacturerId = firstManufacturer?.id !== undefined ? Number(firstManufacturer.id) : undefined
       expect(firstManufacturerId).toBeDefined()
 
@@ -375,8 +347,7 @@ describe('Manufacturer Module', () => {
         country: 'UK',
       }
 
-      const secondRequest = new TestRequest(secondManufacturerData)
-      const secondManufacturer = await store(secondRequest as any)
+      const secondManufacturer = await store(secondManufacturerData)
       const secondManufacturerId = secondManufacturer?.id !== undefined ? Number(secondManufacturer.id) : undefined
       expect(secondManufacturerId).toBeDefined()
 
@@ -388,10 +359,8 @@ describe('Manufacturer Module', () => {
         manufacturer: name1, // This should conflict with the first manufacturer
       }
 
-      const updateRequest = new TestRequest(updateData)
-
-      try {
-        await update(secondManufacturerId, updateRequest as any)
+        try {
+        await update(secondManufacturerId, updateData)
         // If we get here, the test should fail as we expect an error
         expect(true).toBe(false) // This line should not be reached
       }
@@ -416,10 +385,8 @@ describe('Manufacturer Module', () => {
         description: 'This update should fail',
       }
 
-      const updateRequest = new TestRequest(updateData)
-
       try {
-        await update(nonExistentId, updateRequest as any)
+        await update(nonExistentId, updateData)
         // If we get here, the test should fail as we expect an error
         expect(true).toBe(false) // This line should not be reached
       }
@@ -442,8 +409,7 @@ describe('Manufacturer Module', () => {
         featured: false,
       }
 
-      const request = new TestRequest(requestData)
-      const manufacturer = await store(request as any)
+      const manufacturer = await store(requestData)
       const manufacturerId = manufacturer?.id !== undefined ? Number(manufacturer.id) : undefined
 
       // Make sure we have a valid manufacturer ID before proceeding
@@ -477,8 +443,7 @@ describe('Manufacturer Module', () => {
       }
 
       // Create the manufacturer
-      const request = new TestRequest(requestData)
-      const manufacturer = await store(request as any)
+      const manufacturer = await store(requestData)
       const manufacturerId = manufacturer?.id !== undefined ? Number(manufacturer.id) : undefined
 
       // Make sure we have a valid manufacturer ID before proceeding
@@ -517,8 +482,7 @@ describe('Manufacturer Module', () => {
           country: 'Egypt',
         }
 
-        const request = new TestRequest(requestData)
-        const manufacturer = await store(request as any)
+        const manufacturer = await store(requestData)
         expect(manufacturer).toBeDefined()
 
         const manufacturerId = manufacturer?.id !== undefined ? Number(manufacturer.id) : undefined
