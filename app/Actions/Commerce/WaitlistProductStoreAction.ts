@@ -20,7 +20,7 @@ export default new Action({
       source: request.get('source'),
       status: request.get('status'),
     }
-    
+
     const model = await waitlists.products.store(data)
 
     return response.json(model)

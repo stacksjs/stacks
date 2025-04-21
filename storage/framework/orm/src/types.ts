@@ -76,6 +76,7 @@ export interface PasskeysTable {
   backup_status: boolean
   transports?: string
   created_at?: string
+  updated_at?: string
   last_used_at: string
 }
 
@@ -93,8 +94,8 @@ export interface CommentableTable {
   upvotes_count: number
   downvotes_count: number
   user_id: number | null
-  created_at: string
-  updated_at: string | null
+  created_at?: string
+  updated_at?: string | null
 }
 
 export interface CommenteableUpvotesTable {
@@ -102,7 +103,7 @@ export interface CommenteableUpvotesTable {
   user_id: number
   upvoteable_id: number
   upvoteable_type: string
-  created_at: string
+  created_at?: string
 }
 
 export interface CategorizableTable {
@@ -113,7 +114,7 @@ export interface CategorizableTable {
   is_active: boolean
   categorizable_id: number
   categorizable_type: string
-  created_at: string
+  created_at?: string
   updated_at?: string
 }
 
@@ -125,7 +126,7 @@ export interface TaggableTable {
   is_active: boolean
   taggable_id: number
   taggable_type: string
-  created_at: string
+  created_at?: string
   updated_at?: string
 }
 
@@ -134,7 +135,7 @@ export interface TaggableModelsTable {
   tag_id: number
   taggable_id: number
   taggable_type: string
-  created_at: string
+  created_at?: string
   updated_at?: string
 }
 
@@ -143,7 +144,7 @@ export interface CategorizableModelsTable {
   category_id: number
   categorizable_id: number
   categorizable_type: string
-  created_at: string
+  created_at?: string
   updated_at?: string
 }
 export interface Database {

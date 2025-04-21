@@ -13,6 +13,7 @@ export {
 
 export {
   store,
+  storeCategorizableModel,
 } from './store'
 
 export {

@@ -36,6 +36,7 @@ interface RequestDataPasskeys {
   backup_status: boolean
   transports: string
   created_at: string
+  updated_at: string
   last_used_at: string
 
 }
@@ -54,6 +55,7 @@ export interface PasskeysRequestType extends Request {
   backup_status: boolean
   transports: string
   created_at: string
+  updated_at: string
   last_used_at: string
 
 }

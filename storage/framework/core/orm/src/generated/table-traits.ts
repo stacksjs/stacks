@@ -22,6 +22,7 @@ export interface PasskeysTable {
   backup_status: boolean
   transports?: string
   created_at?: string
+  updated_at?: string
   last_used_at: string
 }`
 }
@@ -42,8 +43,8 @@ export interface CommentableTable {
   upvotes_count: number
   downvotes_count: number
   user_id: number | null
-  created_at: string
-  updated_at: string | null
+  created_at?: string
+  updated_at?: string | null
 }`
 }
 
@@ -54,7 +55,7 @@ export interface CommenteableUpvotesTable {
   user_id: number
   upvoteable_id: number
   upvoteable_type: string
-  created_at: string
+  created_at?: string
 }`
 }
 
@@ -68,7 +69,7 @@ function generateCategorizableTableInterface(): string {
     is_active: boolean
     categorizable_id: number
     categorizable_type: string
-    created_at: string
+    created_at?: string
     updated_at?: string
   }`
 }
@@ -83,7 +84,7 @@ function generateTaggableTableInterface(): string {
     is_active: boolean
     taggable_id: number
     taggable_type: string
-    created_at: string
+    created_at?: string
     updated_at?: string
   }`
 }
@@ -95,7 +96,7 @@ function generateTaggableModelsTableInterface(): string {
     tag_id: number
     taggable_id: number
     taggable_type: string
-    created_at: string
+    created_at?: string
     updated_at?: string
   }`
 }
@@ -107,7 +108,7 @@ function generateCategorizableModelsTableInterface(): string {
     category_id: number
     categorizable_id: number
     categorizable_type: string
-    created_at: string
+    created_at?: string
     updated_at?: string
   }`
 }
@@ -160,6 +161,7 @@ export async function generateTraitRequestTypes(): Promise<string> {
         backup_status: 'boolean',
         transports: 'string',
         created_at: 'string',
+        updated_at: 'string',
         last_used_at: 'string',
       },
     },

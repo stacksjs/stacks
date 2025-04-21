@@ -26,7 +26,7 @@ export default new Action({
       table_preference: request.get('table_preference'),
       quoted_wait_time: request.get<number>('quoted_wait_time'),
     }
-    
+
     const model = await waitlists.restaurant.update(id, data)
 
     return response.json(model)
