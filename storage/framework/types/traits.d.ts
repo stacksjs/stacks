@@ -60,15 +60,15 @@ export interface PasskeysRequestType extends Request {
 
 }
 
-interface RequestDataCommentable {
+interface RequestDatacommentables {
   id: number
   title: string
   body: string
   status: string
   approved_at: number | null
   rejected_at: number | null
-  commentable_id: number
-  commentable_type: string
+  commentables_id: number
+  commentables_type: string
   reports_count: number
   reported_at: number | null
   upvotes_count: number
@@ -78,18 +78,18 @@ interface RequestDataCommentable {
   updated_at: string | null
 
 }
-export interface CommentableRequestType extends Request {
+export interface commentablesRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
   get: <T>(element: string, defaultValue?: T) => T
-  all: () => RequestDataCommentable
+  all: () => RequestDatacommentables
   id: number
   title: string
   body: string
   status: string
   approved_at: number | null
   rejected_at: number | null
-  commentable_id: number
-  commentable_type: string
+  commentables_id: number
+  commentables_type: string
   reports_count: number
   reported_at: number | null
   upvotes_count: number
@@ -220,4 +220,4 @@ export interface CategorizableModelsRequestType extends Request {
 
 }
 
-export type TraitRequest = MigrationsRequestType | PasskeysRequestType | CommentableRequestType | CommenteableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestType
+export type TraitRequest = MigrationsRequestType | PasskeysRequestType | commentablesRequestType | CommenteableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestType

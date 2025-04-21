@@ -1,4 +1,4 @@
-import type { Comment } from './fetch'
+import type { commentablesTable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 
@@ -8,10 +8,8 @@ interface CommentUpdate {
   status?: string
   approved_at?: number | null
   rejected_at?: number | null
-  reports_count?: number
-  reported_at?: number | null
-  upvotes_count?: number
-  downvotes_count?: number
+  commentables_id?: number
+  commentables_type?: string
   user_id?: number | null
   updated_at?: string | null
 }
@@ -23,17 +21,22 @@ interface CommentUpdate {
  * @param data The updated comment data
  * @returns The updated comment record
  */
-export async function update(id: number, data: CommentUpdate): Promise<Comment | undefined> {
+export async function update(id: number, data: CommentUpdate): Promise<commentablesTable | undefined> {
   try {
-    // Create update data object
-    const updateData: CommentUpdate = {
-      ...data,
+    const commentData = {
+      title: data.title,
+      body: data.body,
+      commentables_id: data.commentables_id,
+      commentables_type: data.commentables_type,
+      status: 'pending',
+      approved_at: data.approved_at,
+      rejected_at: data.rejected_at,
       updated_at: formatDate(new Date()),
     }
 
-    if (Object.keys(updateData).length === 0) {
+    if (Object.keys(commentData).length === 0) {
       return await db
-        .selectFrom('commentable')
+        .selectFrom('commentables')
         .where('id', '=', id)
         .selectAll()
         .executeTakeFirst()
@@ -41,13 +44,13 @@ export async function update(id: number, data: CommentUpdate): Promise<Comment |
 
     // Update the comment record
     await db
-      .updateTable('commentable')
-      .set(updateData)
+      .updateTable('commentables')
+      .set(commentData)
       .where('id', '=', id)
       .execute()
 
     const updatedComment = await db
-      .selectFrom('commentable')
+      .selectFrom('commentables')
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()

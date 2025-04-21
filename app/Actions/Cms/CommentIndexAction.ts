@@ -7,7 +7,7 @@ export default new Action({
   description: 'Comment Index ORM Action',
   method: 'GET',
   async handle() {
-    const results = await comments.fetchCommentsByCommentable(1, 'post')
+    const results = await comments.fetchCommentsBycommentables(1, 'post')
 
     return response.json(results)
   },

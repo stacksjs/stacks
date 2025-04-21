@@ -17,8 +17,8 @@ describe('Comment Module', () => {
         body: 'This is a very insightful article.',
         status: 'approved',
         user_id: 1,
-        commentable_id: 1,
-        commentable_type: 'posts',
+        commentables_id: 1,
+        commentables_type: 'posts',
       }
 
       const comment = await store(commentData)
@@ -28,8 +28,8 @@ describe('Comment Module', () => {
       expect(comment?.body).toBe('This is a very insightful article.')
       expect(comment?.status).toBe('approved')
       expect(comment?.user_id).toBe(1)
-      expect(comment?.commentable_id).toBe(1)
-      expect(comment?.commentable_type).toBe('posts')
+      expect(comment?.commentables_id).toBe(1)
+      expect(comment?.commentables_type).toBe('posts')
 
       const commentId = comment?.id !== undefined ? Number(comment.id) : undefined
 
@@ -46,8 +46,8 @@ describe('Comment Module', () => {
         body: 'First comment on this post',
         status: 'approved',
         user_id: 1,
-        commentable_id: 1,
-        commentable_type: 'posts',
+        commentables_id: 1,
+        commentables_type: 'posts',
       })
 
       const secondComment = await store({
@@ -55,14 +55,14 @@ describe('Comment Module', () => {
         body: 'Second comment on this post',
         status: 'approved',
         user_id: 2,
-        commentable_id: 1,
-        commentable_type: 'posts',
+        commentables_id: 1,
+        commentables_type: 'posts',
       })
 
       expect(firstComment).toBeDefined()
       expect(secondComment).toBeDefined()
-      expect(firstComment?.commentable_id).toBe(secondComment?.commentable_id)
-      expect(firstComment?.commentable_type).toBe(secondComment?.commentable_type)
+      expect(firstComment?.commentables_id).toBe(secondComment?.commentables_id)
+      expect(firstComment?.commentables_type).toBe(secondComment?.commentables_type)
       expect(firstComment?.user_id).not.toBe(secondComment?.user_id)
     })
 
@@ -72,8 +72,8 @@ describe('Comment Module', () => {
         body: '', // Empty body should fail
         status: 'invalid_status',
         user_id: -1,
-        commentable_id: -1,
-        commentable_type: '',
+        commentables_id: -1,
+        commentables_type: '',
       }
 
       try {
@@ -93,8 +93,8 @@ describe('Comment Module', () => {
         body: 'This is an approved comment',
         status: 'approved',
         user_id: 1,
-        commentable_id: 1,
-        commentable_type: 'posts',
+        commentables_id: 1,
+        commentables_type: 'posts',
       })
 
       expect(approvedComment?.status).toBe('approved')
@@ -105,8 +105,8 @@ describe('Comment Module', () => {
         body: 'This is a rejected comment',
         status: 'rejected',
         user_id: 1,
-        commentable_id: 1,
-        commentable_type: 'posts',
+        commentables_id: 1,
+        commentables_type: 'posts',
       })
 
       expect(rejectedComment?.status).toBe('rejected')
@@ -120,8 +120,8 @@ describe('Comment Module', () => {
         body: 'This is a test comment',
         status: 'approved',
         user_id: 1,
-        commentable_id: 1,
-        commentable_type: 'posts',
+        commentables_id: 1,
+        commentables_type: 'posts',
       }
 
       const comment = await store(commentData)
@@ -149,8 +149,8 @@ describe('Comment Module', () => {
         body: 'Original comment body',
         status: 'pending',
         user_id: 1,
-        commentable_id: 1,
-        commentable_type: 'posts',
+        commentables_id: 1,
+        commentables_type: 'posts',
       }
 
       const comment = await store(commentData)
@@ -180,8 +180,8 @@ describe('Comment Module', () => {
         body: 'Test comment body',
         status: 'pending',
         user_id: 1,
-        commentable_id: 1,
-        commentable_type: 'posts',
+        commentables_id: 1,
+        commentables_type: 'posts',
       }
 
       const comment = await store(commentData)
@@ -211,8 +211,8 @@ describe('Comment Module', () => {
         body: 'Testing status changes',
         status: 'pending',
         user_id: 1,
-        commentable_id: 1,
-        commentable_type: 'posts',
+        commentables_id: 1,
+        commentables_type: 'posts',
       }
 
       const comment = await store(commentData)
@@ -245,8 +245,8 @@ describe('Comment Module', () => {
         body: 'This comment will be deleted',
         status: 'approved',
         user_id: 1,
-        commentable_id: 1,
-        commentable_type: 'posts',
+        commentables_id: 1,
+        commentables_type: 'posts',
       }
 
       const comment = await store(commentData)

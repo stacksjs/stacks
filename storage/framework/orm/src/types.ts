@@ -80,15 +80,15 @@ export interface PasskeysTable {
   last_used_at: string
 }
 
-export interface CommentableTable {
+export interface commentablesTable {
   id?: number
   title: string
   body: string
   status: string
   approved_at: number | null
   rejected_at: number | null
-  commentable_id: number
-  commentable_type: string
+  commentables_id: number
+  commentables_type: string
   user_id: number | null
   created_at?: string
   updated_at?: string | null
@@ -195,7 +195,7 @@ export interface Database {
   errors: ErrorsTable
   migrations: MigrationsTable
   passkeys: PasskeysTable
-  commentable: CommentableTable
+  commentables: commentablesTable
   taggable: TaggableTable
   comment_upvotes: CommenteableUpvotesTable
   categorizable: CategorizableTable

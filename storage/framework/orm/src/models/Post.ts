@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { CategorizableTable, CommentableTable, Operator, TaggableTable } from '@stacksjs/orm'
+import type { CategorizableTable, commentablesTable, Operator, TaggableTable } from '@stacksjs/orm'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -877,11 +877,11 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance.applyWhereIn<V>(column, values)
   }
 
-  async comments(id: number): Promise<CommentableTable[]> {
+  async comments(id: number): Promise<commentablesTable[]> {
     return await DB.instance
       .selectFrom('comments')
-      .where('commentable_id', '=', id)
-      .where('commentable_type', '=', 'posts')
+      .where('commentables_id', '=', id)
+      .where('commentables_type', '=', 'posts')
       .selectAll()
       .execute()
   }
@@ -890,8 +890,8 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     const result = await DB.instance
       .selectFrom('comments')
       .select(sql`count(*) as count`)
-      .where('commentable_id', '=', id)
-      .where('commentable_type', '=', 'posts')
+      .where('commentables_id', '=', id)
+      .where('commentables_type', '=', 'posts')
       .executeTakeFirst()
 
     return Number(result?.count) || 0
@@ -902,8 +902,8 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       .insertInto('comments')
       .values({
         ...comment,
-        commentable_id: id,
-        commentable_type: 'posts',
+        commentables_id: id,
+        commentables_type: 'posts',
         status: 'pending',
         created_at: new Date(),
         updated_at: new Date(),
@@ -912,31 +912,31 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       .executeTakeFirst()
   }
 
-  async approvedComments(id: number): Promise<CommentableTable[]> {
+  async approvedComments(id: number): Promise<commentablesTable[]> {
     return await DB.instance
       .selectFrom('comments')
-      .where('commentable_id', '=', id)
-      .where('commentable_type', '=', 'posts')
+      .where('commentables_id', '=', id)
+      .where('commentables_type', '=', 'posts')
       .where('status', '=', 'approved')
       .selectAll()
       .execute()
   }
 
-  async pendingComments(id: number): Promise<CommentableTable[]> {
+  async pendingComments(id: number): Promise<commentablesTable[]> {
     return await DB.instance
       .selectFrom('comments')
-      .where('commentable_id', '=', id)
-      .where('commentable_type', '=', 'posts')
+      .where('commentables_id', '=', id)
+      .where('commentables_type', '=', 'posts')
       .where('status', '=', 'pending')
       .selectAll()
       .execute()
   }
 
-  async rejectedComments(id: number): Promise<CommentableTable[]> {
+  async rejectedComments(id: number): Promise<commentablesTable[]> {
     return await DB.instance
       .selectFrom('comments')
-      .where('commentable_id', '=', id)
-      .where('commentable_type', '=', 'posts')
+      .where('commentables_id', '=', id)
+      .where('commentables_type', '=', 'posts')
       .where('status', '=', 'rejected')
       .selectAll()
       .execute()

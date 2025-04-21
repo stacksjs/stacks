@@ -1,15 +1,15 @@
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 
-export interface Commentable {
+export interface commentables {
   id?: number
   title: string
   body: string
   status: string
   approved_at: number | null
   rejected_at: number | null
-  commentable_id: number
-  commentable_type: string
+  commentables_id: number
+  commentables_type: string
   reports_count: number
   reported_at: number | null
   upvotes_count: number
@@ -22,22 +22,22 @@ export interface Commentable {
 export type CommentStatus = 'approved' | 'pending' | 'spam'
 
 export async function fetchComments(options: {
-  status?: Commentable['status']
-  commentable_id?: number
-  commentable_type?: string
+  status?: commentables['status']
+  commentables_id?: number
+  commentables_type?: string
   limit?: number
   offset?: number
-} = {}): Promise<Commentable[]> {
-  let query = db.selectFrom('commentable')
+} = {}): Promise<commentables[]> {
+  let query = db.selectFrom('commentables')
 
   if (options.status)
     query = query.where('status', '=', options.status)
 
-  if (options.commentable_id)
-    query = query.where('commentable_id', '=', options.commentable_id)
+  if (options.commentables_id)
+    query = query.where('commentables_id', '=', options.commentables_id)
 
-  if (options.commentable_type)
-    query = query.where('commentable_type', '=', options.commentable_type)
+  if (options.commentables_type)
+    query = query.where('commentables_type', '=', options.commentables_type)
 
   if (options.limit)
     query = query.limit(options.limit)
@@ -48,23 +48,23 @@ export async function fetchComments(options: {
   return query.selectAll().execute()
 }
 
-export async function fetchCommentById(id: number): Promise<Commentable | undefined> {
+export async function fetchCommentById(id: number): Promise<commentables | undefined> {
   return db
-    .selectFrom('commentable')
+    .selectFrom('commentables')
     .where('id', '=', id)
     .selectAll()
     .executeTakeFirst()
 }
 
-export async function fetchCommentsByCommentable(
-  commentable_id: number,
-  commentable_type: string,
-  options: { status?: Commentable['status'], limit?: number, offset?: number } = {},
-): Promise<Commentable[]> {
+export async function fetchCommentsBycommentables(
+  commentables_id: number,
+  commentables_type: string,
+  options: { status?: commentables['status'], limit?: number, offset?: number } = {},
+): Promise<commentables[]> {
   let query = db
-    .selectFrom('commentable')
-    .where('commentable_id', '=', commentable_id)
-    .where('commentable_type', '=', commentable_type)
+    .selectFrom('commentables')
+    .where('commentables_id', '=', commentables_id)
+    .where('commentables_type', '=', commentables_type)
 
   if (options.status)
     query = query.where('status', '=', options.status)
@@ -87,7 +87,7 @@ export async function fetchCommentsByCommentable(
 export async function fetchCommentCountByPeriod(days: number): Promise<number> {
   try {
     const result = await db
-      .selectFrom('commentable')
+      .selectFrom('commentables')
       .select(eb => [
         eb.fn.count('id').as('count'),
       ])
@@ -105,10 +105,10 @@ export async function fetchCommentCountByPeriod(days: number): Promise<number> {
   }
 }
 
-export async function fetchCommentsByStatus(status: CommentStatus, options: { limit?: number, offset?: number } = {}): Promise<Commentable[]> {
+export async function fetchCommentsByStatus(status: CommentStatus, options: { limit?: number, offset?: number } = {}): Promise<commentables[]> {
   try {
     let query = db
-      .selectFrom('commentable')
+      .selectFrom('commentables')
       .where('status', '=', status)
 
     if (options.limit)
@@ -132,12 +132,12 @@ export async function calculateApprovalRate(): Promise<{ approved: number, total
   try {
     const [approvedResult, totalResult] = await Promise.all([
       db
-        .selectFrom('commentable')
+        .selectFrom('commentables')
         .select(db.fn.count('id').as('count'))
         .where('status', '=', 'approved')
         .executeTakeFirst(),
       db
-        .selectFrom('commentable')
+        .selectFrom('commentables')
         .select(db.fn.count('id').as('count'))
         .executeTakeFirst(),
     ])
@@ -176,15 +176,15 @@ export async function fetchPostsWithMostComments(dateRange: DateRange, options: 
   try {
     let query = db
       .selectFrom('posts')
-      .leftJoin('commentable', join => join
-        .onRef('posts.id', '=', 'commentable.commentable_id')
-        .on('commentable.commentable_type', '=', 'posts'))
-      .where('commentable.created_at', '>=', formatDate(dateRange.startDate))
-      .where('commentable.created_at', '<=', formatDate(dateRange.endDate))
+      .leftJoin('commentables', join => join
+        .onRef('posts.id', '=', 'commentables.commentables_id')
+        .on('commentables.commentables_type', '=', 'posts'))
+      .where('commentables.created_at', '>=', formatDate(dateRange.startDate))
+      .where('commentables.created_at', '<=', formatDate(dateRange.endDate))
       .select([
         'posts.id',
         'posts.title',
-        db.fn.count('commentable.id').as('comment_count'),
+        db.fn.count('commentables.id').as('comment_count'),
       ])
       .groupBy(['posts.id', 'posts.title'])
       .orderBy('comment_count', 'desc')
@@ -241,7 +241,7 @@ export interface DonutGraphData {
 export async function fetchStatusDistributionDonut(dateRange: DateRange): Promise<DonutGraphData> {
   try {
     const results = await db
-      .selectFrom('commentable')
+      .selectFrom('commentables')
       .where('created_at', '>=', formatDate(dateRange.startDate))
       .where('created_at', '<=', formatDate(dateRange.endDate))
       .select([
@@ -278,7 +278,7 @@ export interface LineGraphData {
 export async function fetchMonthlyCommentCounts(dateRange: DateRange): Promise<LineGraphData> {
   try {
     const results = await db
-      .selectFrom('commentable')
+      .selectFrom('commentables')
       .where('created_at', '>=', formatDate(dateRange.startDate))
       .where('created_at', '<=', formatDate(dateRange.endDate))
       .select([

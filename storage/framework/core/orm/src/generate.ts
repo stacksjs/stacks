@@ -104,7 +104,7 @@ export async function generateModelString(
   let relationImports = ''
   let paymentImports = ''
   let categorizableImports = ''
-  let commentableImports = ''
+  let commentablesImports = ''
   let taggableImports = ''
   let twoFactorStatements = ''
   let billableStatements = ''
@@ -130,7 +130,7 @@ export async function generateModelString(
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
   const observer = model?.traits?.observe
   const useUuid = model?.traits?.useUuid || false
-  const useCommentable = model?.traits?.commentable || false
+  const usecommentables = model?.traits?.commentables || false
 
   if (useUuid)
     uuidQuery += `filteredValues['uuid'] = randomUUIDv7()`
@@ -197,14 +197,14 @@ export async function generateModelString(
     }
   }
 
-  if (useCommentable) {
-    commentableImports += `import type { CommentableTable } from '@stacksjs/orm'\n`
+  if (usecommentables) {
+    commentablesImports += `import type { commentablesTable } from '@stacksjs/orm'\n`
     relationMethods += `
-    async comments(id: number): Promise<CommentableTable[]> {
+    async comments(id: number): Promise<commentablesTable[]> {
       return await DB.instance
         .selectFrom('comments')
-        .where('commentable_id', '=', id)
-        .where('commentable_type', '=', '${tableName}')
+        .where('commentables_id', '=', id)
+        .where('commentables_type', '=', '${tableName}')
         .selectAll()
         .execute()
     }
@@ -213,8 +213,8 @@ export async function generateModelString(
       const result = await DB.instance
         .selectFrom('comments')
         .select(sql\`count(*) as count\`)
-        .where('commentable_id', '=', id)
-        .where('commentable_type', '=', '${tableName}')
+        .where('commentables_id', '=', id)
+        .where('commentables_type', '=', '${tableName}')
         .executeTakeFirst()
 
       return Number(result?.count) || 0
@@ -225,8 +225,8 @@ export async function generateModelString(
         .insertInto('comments')
         .values({
           ...comment,
-          commentable_id: id,
-          commentable_type: '${tableName}',
+          commentables_id: id,
+          commentables_type: '${tableName}',
           status: 'pending',
           created_at: new Date(),
           updated_at: new Date(),
@@ -235,31 +235,31 @@ export async function generateModelString(
         .executeTakeFirst()
     }
 
-    async approvedComments(id: number): Promise<CommentableTable[]> {
+    async approvedComments(id: number): Promise<commentablesTable[]> {
       return await DB.instance
         .selectFrom('comments')
-        .where('commentable_id', '=', id)
-        .where('commentable_type', '=', '${tableName}')
+        .where('commentables_id', '=', id)
+        .where('commentables_type', '=', '${tableName}')
         .where('status', '=', 'approved')
         .selectAll()
         .execute()
     }
 
-    async pendingComments(id: number): Promise<CommentableTable[]> {
+    async pendingComments(id: number): Promise<commentablesTable[]> {
       return await DB.instance
         .selectFrom('comments')
-        .where('commentable_id', '=', id)
-        .where('commentable_type', '=', '${tableName}')
+        .where('commentables_id', '=', id)
+        .where('commentables_type', '=', '${tableName}')
         .where('status', '=', 'pending')
         .selectAll()
         .execute()
     }
 
-    async rejectedComments(id: number): Promise<CommentableTable[]> {
+    async rejectedComments(id: number): Promise<commentablesTable[]> {
       return await DB.instance
         .selectFrom('comments')
-        .where('commentable_id', '=', id)
-        .where('commentable_type', '=', '${tableName}')
+        .where('commentables_id', '=', id)
+        .where('commentables_type', '=', '${tableName}')
         .where('status', '=', 'rejected')
         .selectAll()
         .execute()
@@ -1155,7 +1155,7 @@ export async function generateModelString(
       ${paymentImports}
       ${relationImports}
       ${categorizableImports}
-      ${commentableImports}
+      ${commentablesImports}
       ${taggableImports}
       export interface ${formattedTableName}Table {
         id: Generated<number>

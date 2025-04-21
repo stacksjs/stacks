@@ -1,36 +1,34 @@
-import type { Commentable } from '@stacksjs/orm'
+import type { commentablesTable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 export interface CreateCommentInput {
   title: string
   body: string
-  commentable_id: number
-  commentable_type: string
+  commentables_id: number
+  commentables_type: string
 }
 
 export interface UpdateCommentInput {
   title?: string
   body?: string
-  status?: Commentable['status']
+  status?: commentablesTable['status']
 }
 
-export async function createComment(input: CreateCommentInput): Promise<Commentable> {
+export async function createComment(data: CreateCommentInput): Promise<commentablesTable> {
   const now = new Date()
 
+  const commentData = {
+    title: data.title,
+    body: data.body,
+    commentables_id: data.commentables_id,
+    commentables_type: data.commentables_type,
+    status: 'pending',
+    created_at: now.toISOString(),
+  }
+
   return db
-    .insertInto('commentable')
-    .values({
-      ...input,
-      status: 'pending',
-      reports_count: 0,
-      upvotes_count: 0,
-      downvotes_count: 0,
-      approved_at: null,
-      rejected_at: null,
-      reported_at: null,
-      created_at: now.toISOString(),
-      updated_at: now.toISOString(),
-    })
+    .insertInto('commentables')
+    .values(commentData)
     .returningAll()
     .executeTakeFirstOrThrow()
 }
@@ -38,9 +36,9 @@ export async function createComment(input: CreateCommentInput): Promise<Commenta
 export async function updateComment(
   id: number,
   input: UpdateCommentInput,
-): Promise<Commentable> {
+): Promise<commentablesTable> {
   return db
-    .updateTable('commentable')
+    .updateTable('commentables')
     .set({
       ...input,
       updated_at: new Date().toISOString(),
@@ -50,9 +48,9 @@ export async function updateComment(
     .executeTakeFirstOrThrow()
 }
 
-export async function approveComment(id: number): Promise<Commentable> {
+export async function approveComment(id: number): Promise<commentablesTable> {
   return db
-    .updateTable('commentable')
+    .updateTable('commentables')
     .set({
       status: 'approved',
       approved_at: Date.now(),
@@ -63,9 +61,9 @@ export async function approveComment(id: number): Promise<Commentable> {
     .executeTakeFirstOrThrow()
 }
 
-export async function rejectComment(id: number): Promise<Commentable> {
+export async function rejectComment(id: number): Promise<commentablesTable> {
   return db
-    .updateTable('commentable')
+    .updateTable('commentables')
     .set({
       status: 'rejected',
       rejected_at: Date.now(),
@@ -78,7 +76,7 @@ export async function rejectComment(id: number): Promise<Commentable> {
 
 export async function deleteComment(id: number): Promise<void> {
   await db
-    .deleteFrom('commentable')
+    .deleteFrom('commentables')
     .where('id', '=', id)
     .execute()
 }
@@ -88,8 +86,8 @@ interface CommentStore {
   body: string
   status: string
   user_id: number
-  commentable_id: number
-  commentable_type: string
+  commentables_id: number
+  commentables_type: string
   is_active?: boolean | null
   approved_at?: number | null
   rejected_at?: number | null
@@ -101,20 +99,20 @@ interface CommentStore {
  * @param data The comment data to store
  * @returns The newly created comment record
  */
-export async function store(data: CommentStore): Promise<Commentable> {
+export async function store(data: CommentStore): Promise<commentablesTable> {
   try {
     const commentData = {
       title: data.title,
       body: data.body,
       status: data.status,
-      commentable_id: data.commentable_id,
-      commentable_type: data.commentable_type,
+      commentables_id: data.commentables_id,
+      commentables_type: data.commentables_type,
       user_id: data.user_id,
       is_active: data.is_active,
     }
 
     const result = await db
-      .insertInto('commentable')
+      .insertInto('commentables')
       .values(commentData)
       .returningAll()
       .executeTakeFirst()

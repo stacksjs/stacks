@@ -22,7 +22,7 @@ export default {
     },
     categorizable: true,
     taggable: true,
-    commentable: true,
+    commentables: true,
     useApi: {
       uri: 'posts',
       routes: ['index', 'store', 'show', 'update', 'destroy'],
