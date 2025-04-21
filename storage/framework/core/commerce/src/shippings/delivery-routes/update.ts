@@ -5,12 +5,13 @@ import { formatDate } from '@stacksjs/orm'
 /**
  * Update a delivery route
  *
+ * @param id The ID of the delivery route
  * @param data The delivery route data to update
  * @returns The updated delivery route record
  */
-export async function update(data: DeliveryRouteUpdate): Promise<DeliveryRouteJsonResponse> {
+export async function update(id: number, data: DeliveryRouteUpdate): Promise<DeliveryRouteJsonResponse> {
   try {
-    if (!data.id)
+    if (!id)
       throw new Error('Delivery route ID is required for update')
 
     const result = await db
@@ -19,7 +20,7 @@ export async function update(data: DeliveryRouteUpdate): Promise<DeliveryRouteJs
         ...data,
         updated_at: formatDate(new Date()),
       })
-      .where('id', '=', data.id)
+      .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
 

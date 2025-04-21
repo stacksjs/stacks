@@ -1,25 +1,8 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, destroy } from '../unit/destroy'
-import { bulkStore, formatUnitOptions, getDefaultUnit, store } from '../unit/store'
-import { bulkUpdate, update, updateDefaultStatus } from '../unit/update'
-
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string, defaultValue?: any): T {
-    return key in this.data ? this.data[key] as T : defaultValue as T
-  }
-}
+import { bulkDestroy, destroy } from '../products/units/destroy'
+import { bulkStore, formatUnitOptions, getDefaultUnit, store } from '../products/units/store'
+import { bulkUpdate, update, updateDefaultStatus } from '../products/units/update'
 
 beforeEach(async () => {
   await refreshDatabase()
@@ -37,8 +20,7 @@ describe('Product Unit Module', () => {
         is_default: true,
       }
 
-      const request = new TestRequest(requestData)
-      const unit = await store(request as any)
+      const unit = await store(requestData)
 
       expect(unit).toBeDefined()
       expect(unit?.name).toBe('Kilogram')
@@ -71,8 +53,7 @@ describe('Product Unit Module', () => {
         is_default: true,
       }
 
-      const firstRequest = new TestRequest(firstUnitData)
-      const firstUnit = await store(firstRequest as any)
+      const firstUnit = await store(firstUnitData)
       expect(firstUnit).toBeDefined()
       expect(Boolean(firstUnit?.is_default)).toBe(true)
 
@@ -86,8 +67,7 @@ describe('Product Unit Module', () => {
         is_default: true,
       }
 
-      const secondRequest = new TestRequest(secondUnitData)
-      const secondUnit = await store(secondRequest as any)
+      const secondUnit = await store(secondUnitData)
       expect(secondUnit).toBeDefined()
       expect(Boolean(secondUnit?.is_default)).toBe(true)
 
@@ -126,8 +106,7 @@ describe('Product Unit Module', () => {
         type: 'quantity',
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const unit = await store(request as any)
+      const unit = await store(minimalRequestData)
 
       expect(unit).toBeDefined()
       expect(unit?.name).toBe('Piece')
@@ -141,33 +120,33 @@ describe('Product Unit Module', () => {
   describe('bulkStore', () => {
     it('should create multiple product units at once', async () => {
       const unitRequests = [
-        new TestRequest({
+        {
           name: 'Kilogram',
           product_id: 1,
           abbreviation: 'kg',
           type: 'weight',
           description: 'Standard weight unit',
           is_default: true,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Liter',
           product_id: 1,
           abbreviation: 'L',
           type: 'volume',
           description: 'Standard volume unit',
           is_default: true,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Piece',
           product_id: 1,
           abbreviation: 'pc',
           type: 'quantity',
           description: 'Standard quantity unit',
           is_default: true,
-        }),
+        },
       ]
 
-      const createdCount = await bulkStore(unitRequests as any)
+      const createdCount = await bulkStore(unitRequests)
       expect(createdCount).toBe(3)
 
       // Verify each type has a default unit
@@ -191,25 +170,25 @@ describe('Product Unit Module', () => {
 
     it('should ensure only one unit per type is default even in bulk operations', async () => {
       const unitRequests = [
-        new TestRequest({
+        {
           name: 'Kilogram',
           product_id: 1,
           abbreviation: 'kg',
           type: 'weight',
           description: 'Standard weight unit',
           is_default: true,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Gram',
           product_id: 1,
           abbreviation: 'g',
           type: 'weight',
           description: 'Smaller weight unit',
           is_default: true,
-        }),
+        },
       ]
 
-      const createdCount = await bulkStore(unitRequests as any)
+      const createdCount = await bulkStore(unitRequests)
       expect(createdCount).toBe(2)
 
       // Verify only one unit is default
@@ -227,30 +206,30 @@ describe('Product Unit Module', () => {
     it('should format unit options correctly', async () => {
       // Create units first
       const unitRequests = [
-        new TestRequest({
+        {
           name: 'Kilogram',
           product_id: 1,
           abbreviation: 'kg',
           type: 'weight',
           is_default: true,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Gram',
           product_id: 1,
           abbreviation: 'g',
           type: 'weight',
           is_default: false,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Liter',
           product_id: 1,
           abbreviation: 'L',
           type: 'volume',
           is_default: true,
-        }),
+        },
       ]
 
-      await bulkStore(unitRequests as any)
+      await bulkStore(unitRequests)
 
       // Test formatting options for weight units
       const weightUnits = await formatUnitOptions('weight')
@@ -270,23 +249,23 @@ describe('Product Unit Module', () => {
     it('should get the default unit for a type', async () => {
       // Create units first
       const unitRequests = [
-        new TestRequest({
+        {
           name: 'Kilogram',
           product_id: 1,
           abbreviation: 'kg',
           type: 'weight',
           is_default: true,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Gram',
           product_id: 1,
           abbreviation: 'g',
           type: 'weight',
           is_default: false,
-        }),
+        },
       ]
 
-      await bulkStore(unitRequests as any)
+      await bulkStore(unitRequests)
 
       // Get default weight unit
       const defaultWeightUnit = await getDefaultUnit('weight')
@@ -313,8 +292,7 @@ describe('Product Unit Module', () => {
         is_default: false,
       }
 
-      const createRequest = new TestRequest(initialData)
-      const unit = await store(createRequest as any)
+      const unit = await store(initialData)
       const unitId = unit?.id !== undefined ? Number(unit.id) : undefined
 
       expect(unitId).toBeDefined()
@@ -330,8 +308,7 @@ describe('Product Unit Module', () => {
         is_default: true,
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedUnit = await update(unitId, updateRequest as any)
+      const updatedUnit = await update(unitId, updateData)
 
       // Verify the update was successful
       expect(updatedUnit).toBeDefined()
@@ -348,23 +325,23 @@ describe('Product Unit Module', () => {
     it('should ensure only one unit per type is default when updating', async () => {
       // Create two units
       const unitRequests = [
-        new TestRequest({
+        {
           name: 'Kilogram',
           product_id: 1,
           abbreviation: 'kg',
           type: 'weight',
           is_default: true,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Gram',
           product_id: 1,
           abbreviation: 'g',
           type: 'weight',
           is_default: false,
-        }),
+        },
       ]
 
-      await bulkStore(unitRequests as any)
+      await bulkStore(unitRequests)
 
       // Get the units
       const weightUnits = await formatUnitOptions('weight')
@@ -383,8 +360,7 @@ describe('Product Unit Module', () => {
         is_default: true,
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedUnit = await update(Number(nonDefaultUnit.id), updateRequest as any)
+      const updatedUnit = await update(Number(nonDefaultUnit.id), updateData)
 
       expect(updatedUnit).toBeDefined()
       expect(Boolean(updatedUnit?.is_default)).toBe(true)
@@ -401,23 +377,23 @@ describe('Product Unit Module', () => {
     it('should update multiple product units at once', async () => {
       // First create units to update
       const unitRequests = [
-        new TestRequest({
+        {
           name: 'Kilogram',
           product_id: 1,
           abbreviation: 'kg',
           type: 'weight',
           is_default: true,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Liter',
           product_id: 1,
           abbreviation: 'L',
           type: 'volume',
           is_default: true,
-        }),
+        },
       ]
 
-      await bulkStore(unitRequests as any)
+      await bulkStore(unitRequests)
 
       // Get the created units
       const { db } = await import('@stacksjs/database')
@@ -432,17 +408,17 @@ describe('Product Unit Module', () => {
       const updates = [
         {
           id: Number(createdUnits[0].id),
-          data: new TestRequest({
+          data: {
             name: 'Updated Kilogram',
             description: 'Updated weight unit',
-          }),
+          },
         },
         {
           id: Number(createdUnits[1].id),
-          data: new TestRequest({
+          data: {
             name: 'Updated Liter',
             description: 'Updated volume unit',
-          }),
+          },
         },
       ]
 
@@ -470,30 +446,30 @@ describe('Product Unit Module', () => {
     it('should ensure only one unit per type is default when bulk updating', async () => {
       // Create three units of the same type
       const unitRequests = [
-        new TestRequest({
+        {
           name: 'Kilogram',
           product_id: 1,
           abbreviation: 'kg',
           type: 'weight',
           is_default: true,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Gram',
           product_id: 1,
           abbreviation: 'g',
           type: 'weight',
           is_default: false,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Milligram',
           product_id: 1,
           abbreviation: 'mg',
           type: 'weight',
           is_default: false,
-        }),
+        },
       ]
 
-      await bulkStore(unitRequests as any)
+      await bulkStore(unitRequests)
 
       // Get the created units
       const { db } = await import('@stacksjs/database')
@@ -509,15 +485,15 @@ describe('Product Unit Module', () => {
       const updates = [
         {
           id: Number(createdUnits[1].id), // Gram
-          data: new TestRequest({
+          data: {
             is_default: true,
-          }),
+          },
         },
         {
           id: Number(createdUnits[2].id), // Milligram
-          data: new TestRequest({
+          data: {
             is_default: true,
-          }),
+          },
         },
       ]
 
@@ -542,8 +518,7 @@ describe('Product Unit Module', () => {
         is_default: false,
       }
 
-      const request = new TestRequest(unitData)
-      const unit = await store(request as any)
+      const unit = await store(unitData)
       const unitId = unit?.id !== undefined ? Number(unit.id) : undefined
 
       expect(unitId).toBeDefined()
@@ -573,23 +548,23 @@ describe('Product Unit Module', () => {
     it('should ensure only one unit per type is default when updating default status', async () => {
       // Create two units
       const unitRequests = [
-        new TestRequest({
+        {
           name: 'Kilogram',
           product_id: 1,
           abbreviation: 'kg',
           type: 'weight',
           is_default: true,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Gram',
           product_id: 1,
           abbreviation: 'g',
           type: 'weight',
           is_default: false,
-        }),
+        },
       ]
 
-      await bulkStore(unitRequests as any)
+      await bulkStore(unitRequests)
 
       // Get the units
       const weightUnits = await formatUnitOptions('weight')
@@ -625,8 +600,7 @@ describe('Product Unit Module', () => {
         type: 'weight',
       }
 
-      const request = new TestRequest(unitData)
-      const unit = await store(request as any)
+      const unit = await store(unitData)
       const unitId = unit?.id !== undefined ? Number(unit.id) : undefined
 
       expect(unitId).toBeDefined()
@@ -663,27 +637,27 @@ describe('Product Unit Module', () => {
     it('should delete multiple product units from the database', async () => {
       // First create multiple units to delete
       const unitRequests = [
-        new TestRequest({
+        {
           name: 'Kilogram',
           product_id: 1,
           abbreviation: 'kg',
           type: 'weight',
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Liter',
           product_id: 1,
           abbreviation: 'L',
           type: 'volume',
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Piece',
           product_id: 1,
           abbreviation: 'pc',
           type: 'quantity',
-        }),
+        },
       ]
 
-      await bulkStore(unitRequests as any)
+        await bulkStore(unitRequests)
 
       // Get the created units
       const { db } = await import('@stacksjs/database')

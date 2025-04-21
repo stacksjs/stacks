@@ -5,23 +5,6 @@ import { fetchById } from '../shippings/shipping-methods/fetch'
 import { bulkStore, formatShippingOptions, getActiveShippingMethods, store } from '../shippings/shipping-methods/store'
 import { update, updatePricing, updateStatus } from '../shippings/shipping-methods/update'
 
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-}
-
 beforeEach(async () => {
   await refreshDatabase()
 })
@@ -37,8 +20,7 @@ describe('Shipping Methods Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(requestData)
-      const shippingMethod = await store(request as any)
+      const shippingMethod = await store(requestData)
 
       expect(shippingMethod).toBeDefined()
       expect(shippingMethod?.name).toBe('Express Delivery')
@@ -67,8 +49,7 @@ describe('Shipping Methods Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const shippingMethod = await store(request as any)
+      const shippingMethod = await store(minimalRequestData)
 
       expect(shippingMethod).toBeDefined()
       expect(shippingMethod?.name).toBe('Standard Shipping')
@@ -79,20 +60,20 @@ describe('Shipping Methods Module', () => {
 
     it('should create multiple shipping methods at once', async () => {
       const requests = [
-        new TestRequest({
+        {
           name: 'Standard Shipping',
           base_rate: 500,
           status: 'active',
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Express Shipping',
           base_rate: 1500,
           zones: JSON.stringify(['North America', 'Europe']),
           status: 'active',
-        }),
+        },
       ]
 
-      const createdCount = await bulkStore(requests as any)
+      const createdCount = await bulkStore(requests)
       expect(createdCount).toBe(2)
 
       // Verify we can retrieve active shipping methods
@@ -102,20 +83,22 @@ describe('Shipping Methods Module', () => {
 
     it('should format shipping options correctly', async () => {
       // Create test shipping methods
-      const request1 = new TestRequest({
+      const request1 = {
         name: 'Standard Shipping',
         base_rate: 500,
         status: 'active',
-      })
-      await store(request1 as any)
+      }
 
-      const request2 = new TestRequest({
+      await store(request1)
+
+      const request2 = {
         name: 'Express Shipping',
         base_rate: 1500,
         zones: JSON.stringify(['North America', 'Europe']),
         status: 'active',
-      })
-      await store(request2 as any)
+      }
+      
+      await store(request2)
 
       // Get formatted options
       const options = await formatShippingOptions()
@@ -139,8 +122,7 @@ describe('Shipping Methods Module', () => {
       }
 
       // Create the shipping method
-      const createRequest = new TestRequest(requestData)
-      const method = await store(createRequest as any)
+      const method = await store(requestData)
       const methodId = method?.id !== undefined ? Number(method.id) : undefined
 
       // Make sure we have a valid ID before proceeding
@@ -157,8 +139,7 @@ describe('Shipping Methods Module', () => {
         status: 'active',
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedMethod = await update(methodId, updateRequest as any)
+      const updatedMethod = await update(methodId, updateData)
 
       // Verify the update was successful
       expect(updatedMethod).toBeDefined()
@@ -177,8 +158,7 @@ describe('Shipping Methods Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(requestData)
-      const method = await store(request as any)
+      const method = await store(requestData)
       const methodId = method?.id !== undefined ? Number(method.id) : undefined
 
       // Make sure we have a valid ID before proceeding
@@ -205,8 +185,7 @@ describe('Shipping Methods Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(requestData)
-      const method = await store(request as any)
+      const method = await store(requestData)
       const methodId = method?.id !== undefined ? Number(method.id) : undefined
 
       // Make sure we have a valid ID before proceeding
@@ -242,8 +221,7 @@ describe('Shipping Methods Module', () => {
       }
 
       // Create the shipping method
-      const request = new TestRequest(requestData)
-      const method = await store(request as any)
+        const method = await store(requestData)
       const methodId = method?.id !== undefined ? Number(method.id) : undefined
 
       // Make sure we have a valid ID before proceeding
@@ -273,8 +251,7 @@ describe('Shipping Methods Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(requestData)
-      const method = await store(request as any)
+      const method = await store(requestData)
       const methodId = method?.id !== undefined ? Number(method.id) : undefined
 
       // Make sure we have a valid ID before proceeding
@@ -305,9 +282,8 @@ describe('Shipping Methods Module', () => {
           zones: JSON.stringify(['North America']),
           status: 'active',
         }
-
-        const request = new TestRequest(requestData)
-        const method = await store(request as any)
+        
+        const method = await store(requestData)
 
         const methodId = method?.id !== undefined ? Number(method.id) : undefined
         expect(methodId).toBeDefined()
@@ -344,8 +320,7 @@ describe('Shipping Methods Module', () => {
           status: 'active',
         }
 
-        const request = new TestRequest(requestData)
-        const method = await store(request as any)
+        const method = await store(requestData)
 
         const methodId = method?.id !== undefined ? Number(method.id) : undefined
         expect(methodId).toBeDefined()
@@ -391,28 +366,28 @@ describe('Shipping Methods Module', () => {
   describe('fetch', () => {
     it('should get active shipping methods only', async () => {
       // Create an active shipping method
-      const activeRequest = new TestRequest({
+      const activeRequest = {
         name: 'Active Shipping',
         base_rate: 1000,
         status: 'active',
-      })
-      await store(activeRequest as any)
+      }
+      await store(activeRequest)
 
       // Create an inactive shipping method
-      const inactiveRequest = new TestRequest({
+      const inactiveRequest = {
         name: 'Inactive Shipping',
         base_rate: 1500,
         status: 'inactive',
-      })
-      await store(inactiveRequest as any)
+      }
+      await store(inactiveRequest)
 
       // Create a draft shipping method
-      const draftRequest = new TestRequest({
+      const draftRequest = {
         name: 'Draft Shipping',
         base_rate: 2000,
         status: 'draft',
-      })
-      await store(draftRequest as any)
+      }
+      await store(draftRequest)
 
       // Get active shipping methods
       const activeMethods = await getActiveShippingMethods()

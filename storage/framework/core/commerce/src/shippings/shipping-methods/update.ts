@@ -5,12 +5,13 @@ import { formatDate } from '@stacksjs/orm'
 /**
  * Update a shipping method
  *
+ * @param id The ID of the shipping method
  * @param data The shipping method data to update
  * @returns The updated shipping method record
  */
-export async function update(data: ShippingMethodUpdate): Promise<ShippingMethodJsonResponse> {
+export async function update(id: number, data: ShippingMethodUpdate): Promise<ShippingMethodJsonResponse> {
   try {
-    if (!data.id)
+    if (!id)
       throw new Error('Shipping method ID is required for update')
 
     const result = await db
@@ -19,7 +20,7 @@ export async function update(data: ShippingMethodUpdate): Promise<ShippingMethod
         ...data,
         updated_at: formatDate(new Date()),
       })
-      .where('id', '=', data.id)
+      .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
 

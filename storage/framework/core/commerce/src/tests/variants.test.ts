@@ -1,25 +1,8 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, destroy } from '../variants/destroy'
-import { bulkStore, formatVariantOptions, generateVariantCombinations, store } from '../variants/store'
-import { bulkUpdate, update, updateStatus } from '../variants/update'
-
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string, defaultValue?: any): T {
-    return key in this.data ? this.data[key] as T : defaultValue as T
-  }
-}
+import { bulkDestroy, destroy } from '../products/variants/destroy'
+import { bulkStore, formatVariantOptions, generateVariantCombinations, store } from '../products/variants/store'
+import { bulkUpdate, update, updateStatus } from '../products/variants/update'
 
 // Helper function to fetch a variant by ID (similar to fetchById in gift-cards)
 async function fetchVariantById(id: number) {
@@ -45,10 +28,10 @@ describe('Product Variant Module', () => {
         type: 'dropdown',
         description: 'Available colors',
         options: JSON.stringify(['Red', 'Blue', 'Green']),
+        status: 'draft'
       }
-
-      const request = new TestRequest(requestData)
-      const variant = await store(request as any)
+      
+      const variant = await store(requestData)
 
       expect(variant).toBeDefined()
       expect(variant?.product_id).toBe(1)
@@ -76,11 +59,10 @@ describe('Product Variant Module', () => {
         type: 'radio',
         description: 'Available sizes',
         options: JSON.stringify(['S', 'M', 'L', 'XL']),
-        // Status omitted to test default
+        status: 'draft',
       }
 
-      const request = new TestRequest(requestData)
-      const variant = await store(request as any)
+      const variant = await store(requestData)
 
       expect(variant).toBeDefined()
       expect(variant?.status).toBe('draft') // Default value
@@ -96,8 +78,7 @@ describe('Product Variant Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(requestData)
-      const variant = await store(request as any)
+      const variant = await store(requestData)
 
       expect(variant).toBeDefined()
       expect(variant?.status).toBe('active')
@@ -113,6 +94,7 @@ describe('Product Variant Module', () => {
           type: 'dropdown',
           description: 'Available colors',
           options: JSON.stringify(['Red', 'Blue', 'Green']),
+          status: 'draft',
         },
         {
           product_id: 1,
@@ -120,11 +102,11 @@ describe('Product Variant Module', () => {
           type: 'radio',
           description: 'Available sizes',
           options: JSON.stringify(['S', 'M', 'L', 'XL']),
+          status: 'draft',
         },
       ]
 
-      const requests = requestsData.map(data => new TestRequest(data) as any)
-      const createdCount = await bulkStore(requests)
+      const createdCount = await bulkStore(requestsData)
 
       expect(createdCount).toBe(2)
     })
@@ -144,11 +126,11 @@ describe('Product Variant Module', () => {
         type: 'dropdown',
         description: 'Available colors',
         options: JSON.stringify(['Red', 'Blue', 'Green']),
+        status: 'draft',
       }
 
       // Create the variant
-      const createRequest = new TestRequest(initialData)
-      const variant = await store(createRequest as any)
+      const variant = await store(initialData)
       const variantId = variant?.id !== undefined ? Number(variant.id) : undefined
 
       // Make sure we have a valid variant ID before proceeding
@@ -164,8 +146,7 @@ describe('Product Variant Module', () => {
         status: 'active',
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedVariant = await update(variantId, updateRequest as any)
+      const updatedVariant = await update(variantId, updateData)
 
       // Verify the update was successful
       expect(updatedVariant).toBeDefined()
@@ -190,6 +171,7 @@ describe('Product Variant Module', () => {
         type: 'dropdown',
         description: 'Available colors',
         options: JSON.stringify(['Red', 'Blue', 'Green']),
+        status: 'draft',
       }
 
       const variantData2 = {
@@ -198,13 +180,11 @@ describe('Product Variant Module', () => {
         type: 'radio',
         description: 'Available sizes',
         options: JSON.stringify(['S', 'M', 'L', 'XL']),
+        status: 'draft',
       }
 
-      const request1 = new TestRequest(variantData1)
-      const request2 = new TestRequest(variantData2)
-
-      const variant1 = await store(request1 as any)
-      const variant2 = await store(request2 as any)
+      const variant1 = await store(variantData1)
+      const variant2 = await store(variantData2)
 
       const variant1Id = variant1?.id !== undefined ? Number(variant1.id) : undefined
       const variant2Id = variant2?.id !== undefined ? Number(variant2.id) : undefined
@@ -218,20 +198,20 @@ describe('Product Variant Module', () => {
       }
 
       // Create update data for both variants
-      const updateData1 = new TestRequest({
+      const updateData1 = {
         status: 'active',
         description: 'Updated color description',
-      })
+      }
 
-      const updateData2 = new TestRequest({
+      const updateData2 = {
         options: JSON.stringify(['S', 'M', 'L', 'XL', 'XXL']),
         status: 'active',
-      })
+      }
 
       // Perform the bulk update
       const updateCount = await bulkUpdate([
-        { id: variant1Id, data: updateData1 as any },
-        { id: variant2Id, data: updateData2 as any },
+        { id: variant1Id, ...updateData1 },
+        { id: variant2Id, ...updateData2 },
       ])
 
       expect(updateCount).toBe(2)
@@ -267,8 +247,7 @@ describe('Product Variant Module', () => {
         status: 'draft',
       }
 
-      const request = new TestRequest(variantData)
-      const variant = await store(request as any)
+      const variant = await store(variantData)
       const variantId = variant?.id !== undefined ? Number(variant.id) : undefined
 
       expect(variantId).toBeDefined()
@@ -298,11 +277,11 @@ describe('Product Variant Module', () => {
         type: 'dropdown',
         description: 'Available colors',
         options: JSON.stringify(['Red', 'Blue', 'Green']),
+        status: 'draft',
       }
 
       // Create the variant
-      const request = new TestRequest(variantData)
-      const variant = await store(request as any)
+        const variant = await store(variantData)
       const variantId = variant?.id !== undefined ? Number(variant.id) : undefined
 
       // Make sure we have a valid variant ID before proceeding
@@ -339,10 +318,10 @@ describe('Product Variant Module', () => {
           type: 'dropdown',
           description: `Test variant ${i}`,
           options: JSON.stringify([`Option-${i}-1`, `Option-${i}-2`]),
+          status: 'draft',
         }
 
-        const request = new TestRequest(variantData)
-        const variant = await store(request as any)
+        const variant = await store(variantData)
         expect(variant).toBeDefined()
 
         const variantId = variant?.id !== undefined ? Number(variant.id) : undefined

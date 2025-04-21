@@ -5,12 +5,13 @@ import { formatDate } from '@stacksjs/orm'
 /**
  * Update a product unit
  *
+ * @param id The ID of the product unit
  * @param data The product unit data to update
  * @returns The updated product unit record
  */
-export async function update(data: ProductUnitUpdate): Promise<ProductUnitJsonResponse> {
+export async function update(id: number, data: ProductUnitUpdate): Promise<ProductUnitJsonResponse> {
   try {
-    if (!data.id)
+    if (!id)
       throw new Error('Product unit ID is required for update')
 
     const result = await db
@@ -19,7 +20,7 @@ export async function update(data: ProductUnitUpdate): Promise<ProductUnitJsonRe
         ...data,
         updated_at: formatDate(new Date()),
       })
-      .where('id', '=', data.id)
+      .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
 
@@ -32,7 +33,7 @@ export async function update(data: ProductUnitUpdate): Promise<ProductUnitJsonRe
         .updateTable('product_units')
         .set({ is_default: false })
         .where('type', '=', data.type)
-        .where('id', '!=', data.id)
+        .where('id', '!=', id)
         .execute()
     }
 

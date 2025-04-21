@@ -5,28 +5,6 @@ import { bulkDestroy, destroy } from '../shippings/delivery-routes/destroy'
 import { fetchByDriver, fetchById } from '../shippings/delivery-routes/fetch'
 import { store } from '../shippings/delivery-routes/store'
 import { update, updateMetrics, updateStops } from '../shippings/delivery-routes/update'
-
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-
-  has(key: string): boolean {
-    return key in this.data
-  }
-}
-
 beforeEach(async () => {
   await refreshDatabase()
 })
@@ -43,8 +21,7 @@ describe('Delivery Route Module', () => {
         last_active: formatDate(new Date()),
       }
 
-      const request = new TestRequest(requestData)
-      const route = await store(request as any)
+      const route = await store(requestData)
 
       expect(route).toBeDefined()
       expect(route?.driver).toBe('John Doe')
@@ -75,8 +52,7 @@ describe('Delivery Route Module', () => {
         total_distance: 25,
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const route = await store(request as any)
+      const route = await store(minimalRequestData)
 
       expect(route).toBeDefined()
       expect(route?.driver).toBe('Jane Smith')
@@ -100,8 +76,7 @@ describe('Delivery Route Module', () => {
       }
 
       // Create the route
-      const createRequest = new TestRequest(requestData)
-      const route = await store(createRequest as any)
+      const route = await store(requestData)
       const routeId = route?.id !== undefined ? Number(route.id) : undefined
 
       // Make sure we have a valid route ID before proceeding
@@ -119,8 +94,7 @@ describe('Delivery Route Module', () => {
         total_distance: 75,
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedRoute = await update(routeId, updateRequest as any)
+      const updatedRoute = await update(routeId, updateData)
 
       // Verify the update was successful
       expect(updatedRoute).toBeDefined()
@@ -142,8 +116,7 @@ describe('Delivery Route Module', () => {
         total_distance: 50,
       }
 
-      const request = new TestRequest(requestData)
-      const route = await store(request as any)
+      const route = await store(requestData)
       const routeId = route?.id !== undefined ? Number(route.id) : undefined
 
       // Make sure we have a valid route ID before proceeding
@@ -168,8 +141,7 @@ describe('Delivery Route Module', () => {
         total_distance: 50,
       }
 
-      const request = new TestRequest(requestData)
-      const route = await store(request as any)
+      const route = await store(requestData)
       const routeId = route?.id !== undefined ? Number(route.id) : undefined
 
       expect(routeId).toBeDefined()
@@ -208,7 +180,7 @@ describe('Delivery Route Module', () => {
 
       // Store each route individually
       for (const routeData of routes) {
-        await store(new TestRequest(routeData) as any)
+        await store(routeData)
       }
 
       const driverRoutes = await fetchByDriver(driverName)
@@ -229,8 +201,7 @@ describe('Delivery Route Module', () => {
       }
 
       // Create the route
-      const request = new TestRequest(requestData)
-      const route = await store(request as any)
+      const route = await store(requestData)
       const routeId = route?.id !== undefined ? Number(route.id) : undefined
 
       // Make sure we have a valid route ID before proceeding
@@ -266,8 +237,7 @@ describe('Delivery Route Module', () => {
           total_distance: 25 + i * 10,
         }
 
-        const request = new TestRequest(requestData)
-        const route = await store(request as any)
+        const route = await store(requestData)
 
         const routeId = route?.id !== undefined ? Number(route.id) : undefined
         expect(routeId).toBeDefined()

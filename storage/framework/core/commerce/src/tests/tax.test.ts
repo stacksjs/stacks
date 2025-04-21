@@ -5,23 +5,6 @@ import { fetchAll, fetchById } from '../tax/fetch'
 import { bulkStore, store } from '../tax/store'
 import { update, updateRate, updateStatus } from '../tax/update'
 
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-}
-
 beforeEach(async () => {
   await refreshDatabase()
 })
@@ -39,8 +22,7 @@ describe('Tax Rate Module', () => {
         is_default: true,
       }
 
-      const request = new TestRequest(requestData)
-      const taxRate = await store(request as any)
+      const taxRate = await store(requestData)
 
       expect(taxRate).toBeDefined()
       expect(taxRate?.name).toBe('Standard VAT')
@@ -72,8 +54,7 @@ describe('Tax Rate Module', () => {
         region: 'North America',
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const taxRate = await store(request as any)
+      const taxRate = await store(minimalRequestData)
 
       expect(taxRate).toBeDefined()
       expect(taxRate?.name).toBe('Basic Tax')
@@ -88,7 +69,7 @@ describe('Tax Rate Module', () => {
 
     it('should create multiple tax rates with bulk store', async () => {
       const requests = [
-        new TestRequest({
+        {
           name: 'Standard VAT',
           rate: 20,
           type: 'VAT',
@@ -96,8 +77,8 @@ describe('Tax Rate Module', () => {
           region: 'Europe',
           status: 'active',
           is_default: true,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'GST',
           rate: 10,
           type: 'GST',
@@ -105,8 +86,8 @@ describe('Tax Rate Module', () => {
           region: 'Oceania',
           status: 'active',
           is_default: false,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Sales Tax',
           rate: 8.875,
           type: 'Sales Tax',
@@ -114,10 +95,10 @@ describe('Tax Rate Module', () => {
           region: 'North America',
           status: 'active',
           is_default: false,
-        }),
+        },
       ]
 
-      const count = await bulkStore(requests as any)
+      const count = await bulkStore(requests)
       expect(count).toBe(3)
 
       // Verify tax rates can be fetched
@@ -145,8 +126,7 @@ describe('Tax Rate Module', () => {
       }
 
       // Create the tax rate
-      const createRequest = new TestRequest(requestData)
-      const taxRate = await store(createRequest as any)
+      const taxRate = await store(requestData)
       const taxRateId = taxRate?.id !== undefined ? Number(taxRate.id) : undefined
 
       // Make sure we have a valid tax rate ID before proceeding
@@ -165,8 +145,7 @@ describe('Tax Rate Module', () => {
         is_default: false,
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedTaxRate = await update(taxRateId, updateRequest as any)
+      const updatedTaxRate = await update(taxRateId, updateData)
 
       // Verify the update was successful
       expect(updatedTaxRate).toBeDefined()
@@ -192,8 +171,7 @@ describe('Tax Rate Module', () => {
         is_default: true,
       }
 
-      const request = new TestRequest(requestData)
-      const taxRate = await store(request as any)
+      const taxRate = await store(requestData)
       const taxRateId = taxRate?.id !== undefined ? Number(taxRate.id) : undefined
 
       // Make sure we have a valid tax rate ID before proceeding
@@ -225,8 +203,7 @@ describe('Tax Rate Module', () => {
         is_default: true,
       }
 
-      const request = new TestRequest(requestData)
-      const taxRate = await store(request as any)
+      const taxRate = await store(requestData)
       const taxRateId = taxRate?.id !== undefined ? Number(taxRate.id) : undefined
 
       expect(taxRateId).toBeDefined()
@@ -256,8 +233,7 @@ describe('Tax Rate Module', () => {
       }
 
       // Create the tax rate
-      const request = new TestRequest(requestData)
-      const taxRate = await store(request as any)
+      const taxRate = await store(requestData)
       const taxRateId = taxRate?.id !== undefined ? Number(taxRate.id) : undefined
 
       // Make sure we have a valid tax rate ID before proceeding
@@ -294,9 +270,8 @@ describe('Tax Rate Module', () => {
           status: 'active',
           is_default: false,
         }
-
-        const request = new TestRequest(requestData)
-        const taxRate = await store(request as any)
+        
+        const taxRate = await store(requestData)
 
         const taxRateId = taxRate?.id !== undefined ? Number(taxRate.id) : undefined
         expect(taxRateId).toBeDefined()

@@ -20,23 +20,6 @@ import {
 import { bulkStore, store } from '../waitlists/products/store'
 import { update, updatePartySize, updateStatus } from '../waitlists/products/update'
 
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-}
-
 beforeEach(async () => {
   await refreshDatabase()
 })
@@ -55,10 +38,10 @@ describe('Waitlist Product Module', () => {
         status: 'waiting',
         product_id: 1,
         customer_id: 1,
+        quantity: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const waitlistProduct = await store(request as any)
+      const waitlistProduct = await store(requestData)
 
       expect(waitlistProduct).toBeDefined()
       expect(waitlistProduct?.name).toBe('John Doe')
@@ -92,11 +75,12 @@ describe('Waitlist Product Module', () => {
         notification_preference: 'sms',
         source: 'app',
         product_id: 1,
+        quantity: 1,
         customer_id: 1,
+        status: 'waiting',
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const waitlistProduct = await store(request as any)
+      const waitlistProduct = await store(minimalRequestData)
 
       expect(waitlistProduct).toBeDefined()
       expect(waitlistProduct?.name).toBe('Jane Smith')
@@ -112,7 +96,7 @@ describe('Waitlist Product Module', () => {
 
     it('should create multiple waitlist products with bulk store', async () => {
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           phone: '+1234567890',
@@ -122,8 +106,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           phone: '+0987654321',
@@ -133,8 +118,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
@@ -143,10 +129,11 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 3,
           customer_id: 3,
-        }),
+          quantity: 1,
+        },
       ]
 
-      const count = await bulkStore(requests as any)
+      const count = await bulkStore(requests)
       expect(count).toBe(3)
 
       // Verify waitlist products can be fetched
@@ -173,11 +160,11 @@ describe('Waitlist Product Module', () => {
         status: 'waiting',
         product_id: 1,
         customer_id: 1,
+        quantity: 1,
       }
 
       // Create the waitlist product
-      const createRequest = new TestRequest(requestData)
-      const waitlistProduct = await store(createRequest as any)
+      const waitlistProduct = await store(requestData)
       const waitlistId = waitlistProduct?.id !== undefined ? Number(waitlistProduct.id) : undefined
 
       // Make sure we have a valid waitlist ID before proceeding
@@ -197,10 +184,10 @@ describe('Waitlist Product Module', () => {
         status: 'waiting',
         product_id: 1,
         customer_id: 1,
+        quantity: 1,
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedWaitlist = await update(waitlistId, updateRequest as any)
+      const updatedWaitlist = await update(waitlistId, updateData)
 
       // Verify the update was successful
       expect(updatedWaitlist).toBeDefined()
@@ -225,10 +212,10 @@ describe('Waitlist Product Module', () => {
         status: 'waiting',
         product_id: 1,
         customer_id: 1,
+        quantity: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const waitlistProduct = await store(request as any)
+      const waitlistProduct = await store(requestData)
       const waitlistId = waitlistProduct?.id !== undefined ? Number(waitlistProduct.id) : undefined
 
       // Make sure we have a valid waitlist ID before proceeding
@@ -259,10 +246,10 @@ describe('Waitlist Product Module', () => {
         status: 'waiting',
         product_id: 1,
         customer_id: 1,
+        quantity: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const waitlistProduct = await store(request as any)
+      const waitlistProduct = await store(requestData)
       const waitlistId = waitlistProduct?.id !== undefined ? Number(waitlistProduct.id) : undefined
 
       expect(waitlistId).toBeDefined()
@@ -290,11 +277,11 @@ describe('Waitlist Product Module', () => {
         status: 'waiting',
         product_id: 1,
         customer_id: 1,
+        quantity: 1,
       }
 
       // Create the waitlist product
-      const request = new TestRequest(requestData)
-      const waitlistProduct = await store(request as any)
+      const waitlistProduct = await store(requestData)
       const waitlistId = waitlistProduct?.id !== undefined ? Number(waitlistProduct.id) : undefined
 
       // Make sure we have a valid waitlist ID before proceeding
@@ -328,7 +315,7 @@ describe('Waitlist Product Module', () => {
     it('should fetch count of waitlist products grouped by source', async () => {
       // Create test waitlist products with different sources
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
@@ -337,8 +324,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
@@ -347,8 +335,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
@@ -357,8 +346,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 3,
           customer_id: 3,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Alice Brown',
           email: 'alice@example.com',
           party_size: 3,
@@ -367,11 +357,12 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 4,
           customer_id: 4,
-        }),
+          quantity: 1,
+        },
       ]
 
       // Create the waitlist products
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch the counts by source
       const sourceCounts = await fetchCountBySource()
@@ -389,7 +380,7 @@ describe('Waitlist Product Module', () => {
     it('should handle both populated and empty waitlist products', async () => {
       // First test with data
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
@@ -398,8 +389,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
@@ -408,11 +400,12 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-        }),
+          quantity: 1,
+        },
       ]
 
       // Create the waitlist products
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Verify with data
       const sourceCounts = await fetchCountBySource()
@@ -433,7 +426,7 @@ describe('Waitlist Product Module', () => {
 
       // Create test waitlist products with explicit dates
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
@@ -442,8 +435,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
@@ -452,11 +446,12 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-        }),
+          quantity: 1,
+        },
       ]
 
       // Create the waitlist products
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       const count = await fetchCountByDate(testDate)
       expect(count).toBe(2)
@@ -469,7 +464,7 @@ describe('Waitlist Product Module', () => {
     it('should fetch count of waitlist products with specific quantity', async () => {
       // Create test waitlist products with different quantities
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
@@ -478,8 +473,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 4,
@@ -488,8 +484,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 2,
@@ -498,11 +495,12 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 3,
           customer_id: 3,
-        }),
+          quantity: 1,
+        },
       ]
 
       // Create the waitlist products
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Test fetching count for party_size = 4
       const countOfFour = await fetchCountByQuantity(4)
@@ -520,7 +518,7 @@ describe('Waitlist Product Module', () => {
     it('should fetch count of waitlist products grouped by quantity', async () => {
       // Create test waitlist products with different quantities
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
@@ -529,8 +527,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 4,
@@ -539,8 +538,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 2,
@@ -549,11 +549,12 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 3,
           customer_id: 3,
-        }),
+          quantity: 1,
+        },
       ]
 
       // Create the waitlist products
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch counts by quantity
       const quantityCounts = await fetchCountByAllQuantities()
@@ -581,7 +582,7 @@ describe('Waitlist Product Module', () => {
 
       // Create test waitlist products
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
@@ -590,8 +591,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
@@ -600,8 +602,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
@@ -609,12 +612,13 @@ describe('Waitlist Product Module', () => {
           source: 'app',
           status: 'waiting',
           product_id: 3,
+          quantity: 1,
           customer_id: 3,
-        }),
+        },
       ]
 
       // Create the waitlist products
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch waitlists between dates
       const waitlists = await fetchBetweenDates(startDate, endDate)
@@ -633,7 +637,7 @@ describe('Waitlist Product Module', () => {
 
       // Create test waitlist products with different notification dates
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
@@ -643,8 +647,9 @@ describe('Waitlist Product Module', () => {
           product_id: 1,
           customer_id: 1,
           notified_at: formatDate(startDate),
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
@@ -654,8 +659,9 @@ describe('Waitlist Product Module', () => {
           product_id: 2,
           customer_id: 2,
           notified_at: formatDate(endDate),
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
@@ -664,7 +670,8 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 3,
           customer_id: 3,
-        }),
+          quantity: 1,
+        },
       ]
 
       // Create the waitlist products
@@ -686,7 +693,7 @@ describe('Waitlist Product Module', () => {
 
       // Create test waitlist products with different purchase dates
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
@@ -695,9 +702,10 @@ describe('Waitlist Product Module', () => {
           status: 'purchased',
           product_id: 1,
           customer_id: 1,
-          purchased_at: formatDate(startDate),
-        }),
-        new TestRequest({
+          purchased_at: startDate.getTime(),
+          quantity: 1,
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
@@ -706,9 +714,10 @@ describe('Waitlist Product Module', () => {
           status: 'purchased',
           product_id: 2,
           customer_id: 2,
-          purchased_at: formatDate(endDate),
-        }),
-        new TestRequest({
+          purchased_at: endDate.getTime(),
+          quantity: 1,
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
@@ -717,11 +726,12 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 3,
           customer_id: 3,
-        }),
+          quantity: 1,
+        },
       ]
 
       // Create the waitlist products
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch purchased waitlists between dates
       const purchasedWaitlists = await fetchPurchasedBetweenDates(startDate, endDate)
@@ -739,7 +749,7 @@ describe('Waitlist Product Module', () => {
 
       // Create test waitlist products with different cancellation dates
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
@@ -749,8 +759,9 @@ describe('Waitlist Product Module', () => {
           product_id: 1,
           customer_id: 1,
           cancelled_at: formatDate(startDate),
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
@@ -760,8 +771,9 @@ describe('Waitlist Product Module', () => {
           product_id: 2,
           customer_id: 2,
           cancelled_at: formatDate(endDate),
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
@@ -770,7 +782,8 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 3,
           customer_id: 3,
-        }),
+          quantity: 1,
+        },
       ]
 
       // Create the waitlist products
@@ -787,7 +800,7 @@ describe('Waitlist Product Module', () => {
     it('should fetch all waitlist products with waiting status', async () => {
       // Create test waitlist products with different statuses
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
@@ -796,8 +809,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
@@ -806,8 +820,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
@@ -816,8 +831,9 @@ describe('Waitlist Product Module', () => {
           status: 'notified',
           product_id: 3,
           customer_id: 3,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Alice Brown',
           email: 'alice@example.com',
           party_size: 3,
@@ -826,7 +842,8 @@ describe('Waitlist Product Module', () => {
           status: 'purchased',
           product_id: 4,
           customer_id: 4,
-        }),
+          quantity: 1,
+        },
       ]
 
       // Create the waitlist products
@@ -843,7 +860,7 @@ describe('Waitlist Product Module', () => {
     it('should fetch conversion rates for waitlist products', async () => {
       // Create test waitlist products with different statuses
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
@@ -852,8 +869,9 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
@@ -862,8 +880,9 @@ describe('Waitlist Product Module', () => {
           status: 'purchased',
           product_id: 2,
           customer_id: 2,
-        }),
-        new TestRequest({
+          quantity: 1,
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
@@ -872,7 +891,8 @@ describe('Waitlist Product Module', () => {
           status: 'cancelled',
           product_id: 3,
           customer_id: 3,
-        }),
+          quantity: 1,
+        },
       ]
 
       // Create the waitlist products

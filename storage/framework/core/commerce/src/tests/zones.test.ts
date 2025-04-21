@@ -1,26 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, destroy } from '../zones/destroy'
-import { fetchById, formatZoneOptions, getActiveShippingZones, getZonesByCountry } from '../zones/fetch'
-import { bulkStore, store } from '../zones/store'
-import { update, updateCountries, updateRegionsAndPostalCodes, updateStatus } from '../zones/update'
-
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-}
+import { bulkDestroy, destroy } from '../shippings/shipping-zones/destroy'
+import { fetchById, formatZoneOptions, getActiveShippingZones, getZonesByCountry } from '../shippings/shipping-zones/fetch'
+import { bulkStore, store } from '../shippings/shipping-zones/store'
+import { update, updateCountries, updateRegionsAndPostalCodes, updateStatus } from '../shippings/shipping-zones/update'
 
 beforeEach(async () => {
   await refreshDatabase()
@@ -38,8 +21,7 @@ describe('Shipping Zone Module', () => {
         shipping_method_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const zone = await store(request as any)
+      const zone = await store(requestData)
 
       expect(zone).toBeDefined()
       expect(zone?.name).toBe('US Zone')
@@ -70,8 +52,7 @@ describe('Shipping Zone Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const zone = await store(request as any)
+      const zone = await store(minimalRequestData)
 
       expect(zone).toBeDefined()
       expect(zone?.name).toBe('Minimal Zone')
@@ -82,27 +63,27 @@ describe('Shipping Zone Module', () => {
 
     it('should create multiple shipping zones with bulk store', async () => {
       const requests = [
-        new TestRequest({
+        {
           name: 'Zone 1',
           countries: JSON.stringify(['US']),
           shipping_method_id: 1,
           status: 'active',
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Zone 2',
           countries: JSON.stringify(['CA']),
           shipping_method_id: 1,
           status: 'active',
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Zone 3',
           countries: JSON.stringify(['MX']),
           shipping_method_id: 1,
           status: 'active',
-        }),
+        },
       ]
 
-      const count = await bulkStore(requests as any)
+      const count = await bulkStore(requests)
       expect(count).toBe(3)
 
       // Verify zones can be found by country
@@ -122,19 +103,19 @@ describe('Shipping Zone Module', () => {
 
     it('should format zone options for dropdowns', async () => {
       // First create some zones
-      await store(new TestRequest({
+      await store({
         name: 'Zone A',
         countries: JSON.stringify(['US']),
         status: 'active',
         shipping_method_id: 1,
-      }) as any)
+      })
 
-      await store(new TestRequest({
+      await store({
         name: 'Zone B',
         countries: JSON.stringify(['CA']),
         status: 'inactive',
         shipping_method_id: 1,
-      }) as any)
+      })
 
       // Now get formatted options
       const options = await formatZoneOptions()
@@ -156,20 +137,20 @@ describe('Shipping Zone Module', () => {
 
     it('should get active shipping zones', async () => {
       // Create active zone
-      await store(new TestRequest({
+      await store({
         name: 'Active Zone',
         countries: JSON.stringify(['US']),
         status: 'active',
         shipping_method_id: 1,
-      }) as any)
+      })
 
       // Create inactive zone
-      await store(new TestRequest({
+      await store({
         name: 'Inactive Zone',
         countries: JSON.stringify(['CA']),
         status: 'inactive',
         shipping_method_id: 1,
-      }) as any)
+      })
 
       // Get active zones
       const activeZones = await getActiveShippingZones()
@@ -193,8 +174,7 @@ describe('Shipping Zone Module', () => {
       }
 
       // Create the zone
-      const createRequest = new TestRequest(requestData)
-      const zone = await store(createRequest as any)
+      const zone = await store(requestData)
       const zoneId = zone?.id !== undefined ? Number(zone.id) : undefined
 
       // Make sure we have a valid zone ID before proceeding
@@ -210,8 +190,7 @@ describe('Shipping Zone Module', () => {
         status: 'inactive',
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedZone = await update(zoneId, updateRequest as any)
+      const updatedZone = await update(zoneId, updateData)
 
       // Verify the update was successful
       expect(updatedZone).toBeDefined()
@@ -234,8 +213,7 @@ describe('Shipping Zone Module', () => {
         shipping_method_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const zone = await store(request as any)
+      const zone = await store(requestData)
       const zoneId = zone?.id !== undefined ? Number(zone.id) : undefined
 
       // Make sure we have a valid zone ID before proceeding
@@ -264,8 +242,7 @@ describe('Shipping Zone Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(requestData)
-      const zone = await store(request as any)
+      const zone = await store(requestData)
       const zoneId = zone?.id !== undefined ? Number(zone.id) : undefined
 
       // Make sure we have a valid zone ID before proceeding
@@ -293,8 +270,7 @@ describe('Shipping Zone Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(requestData)
-      const zone = await store(request as any)
+      const zone = await store(requestData)
       const zoneId = zone?.id !== undefined ? Number(zone.id) : undefined
 
       // Make sure we have a valid zone ID before proceeding
@@ -325,8 +301,7 @@ describe('Shipping Zone Module', () => {
         status: 'active',
       }
 
-      const request = new TestRequest(requestData)
-      const zone = await store(request as any)
+      const zone = await store(requestData)
       const zoneId = zone?.id !== undefined ? Number(zone.id) : undefined
 
       expect(zoneId).toBeDefined()
@@ -355,8 +330,7 @@ describe('Shipping Zone Module', () => {
       }
 
       // Create the zone
-      const request = new TestRequest(requestData)
-      const zone = await store(request as any)
+      const zone = await store(requestData)
       const zoneId = zone?.id !== undefined ? Number(zone.id) : undefined
 
       // Make sure we have a valid zone ID before proceeding
@@ -390,9 +364,8 @@ describe('Shipping Zone Module', () => {
           shipping_method_id: 1,
           status: 'active',
         }
-
-        const request = new TestRequest(requestData)
-        const zone = await store(request as any)
+        
+        const zone = await store(requestData)
 
         const zoneId = zone?.id !== undefined ? Number(zone.id) : undefined
         expect(zoneId).toBeDefined()
