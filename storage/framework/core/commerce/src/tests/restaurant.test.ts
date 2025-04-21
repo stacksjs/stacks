@@ -1,6 +1,5 @@
 import type { WaitlistRestaurantJsonResponse } from '@stacksjs/orm'
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { formatDate } from '@stacksjs/orm'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../waitlists/restaurant/destroy'
 import {
@@ -36,17 +35,16 @@ describe('Restaurant Waitlist Module', () => {
         email: 'john@example.com',
         phone: '+1234567890',
         party_size: 4,
-        check_in_time: formatDate(new Date()),
+        check_in_time: Date.now(),
         table_preference: 'indoor',
         status: 'waiting',
         quoted_wait_time: 30,
-        actual_wait_time: null,
+        actual_wait_time: undefined,
         queue_position: 1,
         customer_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const waitlistEntry = await store(request as any)
+      const waitlistEntry = await store(requestData)
 
       expect(waitlistEntry).toBeDefined()
       expect(waitlistEntry?.name).toBe('John Doe')
@@ -57,7 +55,7 @@ describe('Restaurant Waitlist Module', () => {
       expect(waitlistEntry?.table_preference).toBe('indoor')
       expect(waitlistEntry?.status).toBe('waiting')
       expect(waitlistEntry?.quoted_wait_time).toBe(30)
-      expect(waitlistEntry?.actual_wait_time).toBeNull()
+      expect(waitlistEntry?.actual_wait_time).toBeUndefined()
       expect(waitlistEntry?.queue_position).toBe(1)
       expect(waitlistEntry?.customer_id).toBe(1)
       expect(waitlistEntry?.uuid).toBeDefined()
@@ -78,14 +76,15 @@ describe('Restaurant Waitlist Module', () => {
         name: 'Jane Smith',
         email: 'jane@example.com',
         party_size: 2,
-        check_in_time: formatDate(new Date()),
+        check_in_time: Date.now(),
         table_preference: 'bar',
         quoted_wait_time: 15,
         customer_id: 1,
+        uuid: '1234567890',
+        status: 'waiting',
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const waitlistEntry = await store(request as any)
+      const waitlistEntry = await store(minimalRequestData)
 
       expect(waitlistEntry).toBeDefined()
       expect(waitlistEntry?.name).toBe('Jane Smith')
@@ -101,41 +100,41 @@ describe('Restaurant Waitlist Module', () => {
 
     it('should create multiple waitlist entries with bulk store', async () => {
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           phone: '+1234567890',
           party_size: 4,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'waiting',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           phone: '+0987654321',
           party_size: 2,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'waiting',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'booth',
           status: 'waiting',
           quoted_wait_time: 45,
           customer_id: 3,
-        }),
+        },
       ]
 
-      const count = await bulkStore(requests as any)
+      const count = await bulkStore(requests)
       expect(count).toBe(3)
 
       // Verify waitlist entries can be fetched
@@ -157,7 +156,7 @@ describe('Restaurant Waitlist Module', () => {
         email: 'john@example.com',
         phone: '+1234567890',
         party_size: 4,
-        check_in_time: formatDate(new Date()),
+        check_in_time: Date.now(),
         table_preference: 'indoor',
         status: 'waiting',
         quoted_wait_time: 30,
@@ -165,8 +164,7 @@ describe('Restaurant Waitlist Module', () => {
       }
 
       // Create the waitlist entry
-      const createRequest = new TestRequest(requestData)
-      const waitlistEntry = await store(createRequest as any)
+      const waitlistEntry = await store(requestData)
       const waitlistId = waitlistEntry?.id !== undefined ? Number(waitlistEntry.id) : undefined
 
       // Make sure we have a valid waitlist ID before proceeding
@@ -181,15 +179,14 @@ describe('Restaurant Waitlist Module', () => {
         email: 'john.jr@example.com',
         phone: '+1234567891',
         party_size: 5,
-        check_in_time: formatDate(new Date()),
+        check_in_time: Date.now(),
         table_preference: 'booth',
         status: 'waiting',
         quoted_wait_time: 45,
         customer_id: 1,
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedWaitlist = await update(waitlistId, updateRequest as any)
+      const updatedWaitlist = await update(waitlistId, updateData)
 
       // Verify the update was successful
       expect(updatedWaitlist).toBeDefined()
@@ -208,15 +205,14 @@ describe('Restaurant Waitlist Module', () => {
         name: 'John Doe',
         email: 'john@example.com',
         party_size: 4,
-        check_in_time: formatDate(new Date()),
+        check_in_time: Date.now(),
         table_preference: 'indoor',
         status: 'waiting',
         quoted_wait_time: 30,
         customer_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const waitlistEntry = await store(request as any)
+      const waitlistEntry = await store(requestData)
       const waitlistId = waitlistEntry?.id !== undefined ? Number(waitlistEntry.id) : undefined
 
       // Make sure we have a valid waitlist ID before proceeding
@@ -237,15 +233,14 @@ describe('Restaurant Waitlist Module', () => {
         name: 'John Doe',
         email: 'john@example.com',
         party_size: 4,
-        check_in_time: formatDate(new Date()),
+        check_in_time: Date.now(),
         table_preference: 'indoor',
         status: 'waiting',
         quoted_wait_time: 30,
         customer_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const waitlistEntry = await store(request as any)
+      const waitlistEntry = await store(requestData)
       const waitlistId = waitlistEntry?.id !== undefined ? Number(waitlistEntry.id) : undefined
 
       expect(waitlistId).toBeDefined()
@@ -266,15 +261,14 @@ describe('Restaurant Waitlist Module', () => {
         name: 'John Doe',
         email: 'john@example.com',
         party_size: 4,
-        check_in_time: formatDate(new Date()),
+        check_in_time: Date.now(),
         table_preference: 'indoor',
         status: 'waiting',
         quoted_wait_time: 30,
         customer_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const waitlistEntry = await store(request as any)
+      const waitlistEntry = await store(requestData)
       const waitlistId = waitlistEntry?.id !== undefined ? Number(waitlistEntry.id) : undefined
 
       expect(waitlistId).toBeDefined()
@@ -296,15 +290,14 @@ describe('Restaurant Waitlist Module', () => {
         name: 'John Doe',
         email: 'john@example.com',
         party_size: 4,
-        check_in_time: formatDate(new Date()),
+        check_in_time: Date.now(),
         table_preference: 'indoor',
         status: 'waiting',
         quoted_wait_time: 30,
         customer_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const waitlistEntry = await store(request as any)
+      const waitlistEntry = await store(requestData)
       const waitlistId = waitlistEntry?.id !== undefined ? Number(waitlistEntry.id) : undefined
 
       expect(waitlistId).toBeDefined()
@@ -327,7 +320,7 @@ describe('Restaurant Waitlist Module', () => {
         name: 'John Doe',
         email: 'john@example.com',
         party_size: 4,
-        check_in_time: formatDate(new Date()),
+        check_in_time: Date.now(),
         table_preference: 'indoor',
         status: 'waiting',
         quoted_wait_time: 30,
@@ -335,8 +328,7 @@ describe('Restaurant Waitlist Module', () => {
       }
 
       // Create the waitlist entry
-      const request = new TestRequest(requestData)
-      const waitlistEntry = await store(request as any)
+      const waitlistEntry = await store(requestData)
       const waitlistId = waitlistEntry?.id !== undefined ? Number(waitlistEntry.id) : undefined
 
       // Make sure we have a valid waitlist ID before proceeding
@@ -370,50 +362,50 @@ describe('Restaurant Waitlist Module', () => {
     it('should fetch count of waitlist entries grouped by table preference', async () => {
       // Create test waitlist entries with different table preferences
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'waiting',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'waiting',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'waiting',
           quoted_wait_time: 45,
           customer_id: 3,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Alice Brown',
           email: 'alice@example.com',
           party_size: 3,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'booth',
           status: 'waiting',
           quoted_wait_time: 20,
           customer_id: 4,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch the counts by table preference
       const preferenceCounts = await fetchCountByTablePreference()
@@ -434,30 +426,30 @@ describe('Restaurant Waitlist Module', () => {
 
       // Create test waitlist entries with explicit dates
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(testDate),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'waiting',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(testDate),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'waiting',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       const count = await fetchCountByDate(testDate)
       expect(count).toBe(2)
@@ -470,40 +462,40 @@ describe('Restaurant Waitlist Module', () => {
     it('should fetch count of waitlist entries with specific party size', async () => {
       // Create test waitlist entries with different party sizes
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'waiting',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 4,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'waiting',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 2,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'booth',
           status: 'waiting',
           quoted_wait_time: 45,
           customer_id: 3,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Test fetching count for party_size = 4
       const countOfFour = await fetchCountByPartySize(4)
@@ -521,40 +513,40 @@ describe('Restaurant Waitlist Module', () => {
     it('should fetch count of waitlist entries grouped by party size', async () => {
       // Create test waitlist entries with different party sizes
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'waiting',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 4,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'waiting',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 2,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'booth',
           status: 'waiting',
           quoted_wait_time: 45,
           customer_id: 3,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch counts by party size
       const sizeCounts = await fetchCountByAllPartySizes()
@@ -576,40 +568,40 @@ describe('Restaurant Waitlist Module', () => {
 
       // Create test waitlist entries
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(startDate),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'waiting',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(endDate),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'waiting',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'booth',
           status: 'waiting',
           quoted_wait_time: 45,
           customer_id: 3,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch entries between dates
       const entries = await fetchBetweenDates(startDate, endDate)
@@ -628,40 +620,40 @@ describe('Restaurant Waitlist Module', () => {
 
       // Create test waitlist entries with different statuses
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(startDate),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'seated',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(endDate),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'seated',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'booth',
           status: 'waiting',
           quoted_wait_time: 45,
           customer_id: 3,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch seated entries between dates
       const seatedEntries = await fetchSeatedBetweenDates(startDate, endDate)
@@ -674,40 +666,40 @@ describe('Restaurant Waitlist Module', () => {
     it('should fetch all waitlist entries with waiting status', async () => {
       // Create test waitlist entries with different statuses
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'waiting',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'waiting',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'booth',
           status: 'seated',
           quoted_wait_time: 45,
           customer_id: 3,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch entries with waiting status
       const waitingEntries = await fetchWaiting()
@@ -720,40 +712,40 @@ describe('Restaurant Waitlist Module', () => {
     it('should fetch conversion rates for waitlist entries', async () => {
       // Create test waitlist entries with different statuses
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'waiting',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'seated',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'booth',
           status: 'waiting',
           quoted_wait_time: 45,
           customer_id: 3,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch conversion rates
       const rates = await fetchConversionRates()
@@ -772,42 +764,42 @@ describe('Restaurant Waitlist Module', () => {
     it('should fetch average wait times for waitlist entries', async () => {
       // Create test waitlist entries with different wait times
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'seated',
           quoted_wait_time: 30,
           actual_wait_time: 35,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'seated',
           quoted_wait_time: 15,
           actual_wait_time: 20,
           customer_id: 2,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'booth',
           status: 'waiting',
           quoted_wait_time: 45,
           customer_id: 3,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch average wait times
       const waitTimes = await fetchAverageWaitTimes()
@@ -821,40 +813,40 @@ describe('Restaurant Waitlist Module', () => {
     it('should fetch waiting entries with quoted wait times', async () => {
       // Create test waitlist entries with different wait times and statuses
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'waiting',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'waiting',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'booth',
           status: 'seated',
           quoted_wait_time: 45,
           customer_id: 3,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch waiting entries with quoted times
       const result = await fetchWaitingWithQuotedTimes()
@@ -876,30 +868,30 @@ describe('Restaurant Waitlist Module', () => {
     it('should handle empty waiting list for quoted times', async () => {
       // Create only seated entries
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'seated',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'seated',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch waiting entries with quoted times
       const result = await fetchWaitingWithQuotedTimes()
@@ -915,50 +907,50 @@ describe('Restaurant Waitlist Module', () => {
     it('should fetch waiting entries with party size calculations', async () => {
       // Create test waitlist entries with different party sizes and statuses
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'waiting',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 4,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'waiting',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 2,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'booth',
           status: 'waiting',
           quoted_wait_time: 45,
           customer_id: 3,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Alice Brown',
           email: 'alice@example.com',
           party_size: 6,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'seated',
           quoted_wait_time: 60,
           customer_id: 4,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch waiting entries with party sizes
       const result = await fetchWaitingWithPartySizes()
@@ -985,30 +977,30 @@ describe('Restaurant Waitlist Module', () => {
     it('should handle empty waiting list for party sizes', async () => {
       // Create only seated entries
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'seated',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'seated',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch waiting entries with party sizes
       const result = await fetchWaitingWithPartySizes()
@@ -1032,50 +1024,50 @@ describe('Restaurant Waitlist Module', () => {
 
       // Create test waitlist entries with different statuses and table preferences
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(startOfDay),
+          check_in_time: startOfDay.getTime() ,
           table_preference: 'indoor',
           status: 'seated',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(endOfDay),
+          check_in_time: endOfDay.getTime(),
           table_preference: 'bar',
           status: 'seated',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'booth',
           status: 'seated',
           quoted_wait_time: 45,
           customer_id: 3,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Alice Brown',
           email: 'alice@example.com',
           party_size: 3,
-          check_in_time: formatDate(new Date()),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'waiting',
           quoted_wait_time: 20,
           customer_id: 4,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch tables turned statistics
       const stats = await fetchTablesTurnedToday()
@@ -1108,40 +1100,40 @@ describe('Restaurant Waitlist Module', () => {
       yesterday.setDate(yesterday.getDate() - 1)
 
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(yesterday),
+          check_in_time: yesterday.getTime(),
           table_preference: 'indoor',
           status: 'seated',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(yesterday),
+          check_in_time: yesterday.getTime(),
           table_preference: 'bar',
           status: 'seated',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
-          check_in_time: formatDate(today),
+          check_in_time: Date.now(),
           table_preference: 'booth',
           status: 'waiting',
           quoted_wait_time: 45,
           customer_id: 3,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch tables turned statistics
       const stats = await fetchTablesTurnedToday()
@@ -1165,60 +1157,60 @@ describe('Restaurant Waitlist Module', () => {
 
       // Create test waitlist entries with different statuses
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(today),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'seated',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(today),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'seated',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
-          check_in_time: formatDate(today),
+          check_in_time: Date.now(),
           table_preference: 'booth',
           status: 'waiting',
           quoted_wait_time: 45,
           customer_id: 3,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Alice Brown',
           email: 'alice@example.com',
           party_size: 3,
-          check_in_time: formatDate(today),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'waiting',
           quoted_wait_time: 20,
           customer_id: 4,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Charlie Davis',
           email: 'charlie@example.com',
           party_size: 5,
-          check_in_time: formatDate(today),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'cancelled',
           quoted_wait_time: 30,
           customer_id: 5,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch seating rate statistics
       const stats = await fetchSeatingRate(startDate, endDate)
@@ -1268,50 +1260,50 @@ describe('Restaurant Waitlist Module', () => {
 
       // Create test waitlist entries with different statuses
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(today),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'no_show',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(today),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'no_show',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
-          check_in_time: formatDate(today),
+          check_in_time: Date.now(),
           table_preference: 'booth',
           status: 'waiting',
           quoted_wait_time: 45,
           customer_id: 3,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Alice Brown',
           email: 'alice@example.com',
           party_size: 3,
-          check_in_time: formatDate(today),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'seated',
           quoted_wait_time: 20,
           customer_id: 4,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch no-show statistics
       const stats = await fetchNoShowStats(startDate, endDate)
@@ -1346,30 +1338,30 @@ describe('Restaurant Waitlist Module', () => {
 
       // Create test entries with no no-shows
       const requests = [
-        new TestRequest({
+        {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(today),
+          check_in_time: Date.now(),
           table_preference: 'indoor',
           status: 'seated',
           quoted_wait_time: 30,
           customer_id: 1,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(today),
+          check_in_time: Date.now(),
           table_preference: 'bar',
           status: 'waiting',
           quoted_wait_time: 15,
           customer_id: 2,
-        }),
+        },
       ]
 
       // Create the waitlist entries
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch no-show statistics
       const stats = await fetchNoShowStats(startDate, endDate)

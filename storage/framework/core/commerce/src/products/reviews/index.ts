@@ -10,6 +10,7 @@ export {
   fetchById,
   fetchByProductId,
   fetchByUserId,
+  fetchMostHelpfulByProductId,
 } from './fetch'
 
 // Functions from store.ts
