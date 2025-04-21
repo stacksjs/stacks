@@ -40,8 +40,6 @@ export default {
     },
 
     observe: true,
-
-    billable: true,
   },
 
   belongsTo: ['User'],

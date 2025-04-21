@@ -863,4 +863,224 @@ export class BaseOrm<T, C, J> {
   protected mapCustomGetters(_model: T): void {}
 
   protected async loadRelations(_model: T): Promise<void> {}
+
+  // Base implementations for categorizable trait
+  protected async baseCategories(id: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('categorizable')
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', this.tableName)
+      .selectAll()
+      .execute()
+  }
+
+  protected async baseCategoryCount(id: number): Promise<number> {
+    const result = await DB.instance
+      .selectFrom('categorizable')
+      .select(sql`count(*) as count`)
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', this.tableName)
+      .executeTakeFirst()
+
+    return Number(result?.count) || 0
+  }
+
+  protected async baseAddCategory(id: number, category: { name: string, description?: string, parent_id?: number }): Promise<any> {
+    return await DB.instance
+      .insertInto('categorizable')
+      .values({
+        ...category,
+        categorizable_id: id,
+        categorizable_type: this.tableName,
+        slug: category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        order: 0,
+        is_active: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .returningAll()
+      .executeTakeFirst()
+  }
+
+  protected async baseActiveCategories(id: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('categorizable')
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', this.tableName)
+      .where('is_active', '=', true)
+      .selectAll()
+      .execute()
+  }
+
+  protected async baseInactiveCategories(id: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('categorizable')
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', this.tableName)
+      .where('is_active', '=', false)
+      .selectAll()
+      .execute()
+  }
+
+  protected async baseRemoveCategory(id: number, categoryId: number): Promise<void> {
+    await DB.instance
+      .deleteFrom('categorizable')
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', this.tableName)
+      .where('id', '=', categoryId)
+      .execute()
+  }
+
+  protected async baseParentCategories(id: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('categorizable')
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', this.tableName)
+      .where('parent_id', 'is', null)
+      .selectAll()
+      .execute()
+  }
+
+  protected async baseChildCategories(id: number, parentId: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('categorizable')
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', this.tableName)
+      .where('parent_id', '=', parentId)
+      .selectAll()
+      .execute()
+  }
+
+  // Base implementations for taggable trait
+  protected async baseTags(id: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('taggable')
+      .where('taggable_id', '=', id)
+      .where('taggable_type', '=', this.tableName)
+      .selectAll()
+      .execute()
+  }
+
+  protected async baseTagCount(id: number): Promise<number> {
+    const result = await DB.instance
+      .selectFrom('taggable')
+      .select(sql`count(*) as count`)
+      .where('taggable_id', '=', id)
+      .where('taggable_type', '=', this.tableName)
+      .executeTakeFirst()
+
+    return Number(result?.count) || 0
+  }
+
+  protected async baseAddTag(id: number, tag: { name: string, description?: string }): Promise<any> {
+    return await DB.instance
+      .insertInto('taggable')
+      .values({
+        ...tag,
+        taggable_id: id,
+        taggable_type: this.tableName,
+        slug: tag.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        order: 0,
+        is_active: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .returningAll()
+      .executeTakeFirst()
+  }
+
+  protected async baseActiveTags(id: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('taggable')
+      .where('taggable_id', '=', id)
+      .where('taggable_type', '=', this.tableName)
+      .where('is_active', '=', true)
+      .selectAll()
+      .execute()
+  }
+
+  protected async baseInactiveTags(id: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('taggable')
+      .where('taggable_id', '=', id)
+      .where('taggable_type', '=', this.tableName)
+      .where('is_active', '=', false)
+      .selectAll()
+      .execute()
+  }
+
+  protected async baseRemoveTag(id: number, tagId: number): Promise<void> {
+    await DB.instance
+      .deleteFrom('taggable')
+      .where('taggable_id', '=', id)
+      .where('taggable_type', '=', this.tableName)
+      .where('id', '=', tagId)
+      .execute()
+  }
+
+  // Base implementations for commentable trait
+  protected async baseComments(id: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('comments')
+      .where('commentables_id', '=', id)
+      .where('commentables_type', '=', this.tableName)
+      .selectAll()
+      .execute()
+  }
+
+  protected async baseCommentCount(id: number): Promise<number> {
+    const result = await DB.instance
+      .selectFrom('comments')
+      .select(sql`count(*) as count`)
+      .where('commentables_id', '=', id)
+      .where('commentables_type', '=', this.tableName)
+      .executeTakeFirst()
+
+    return Number(result?.count) || 0
+  }
+
+  protected async baseAddComment(id: number, comment: { title: string, body: string }): Promise<any> {
+    return await DB.instance
+      .insertInto('comments')
+      .values({
+        ...comment,
+        commentables_id: id,
+        commentables_type: this.tableName,
+        status: 'pending',
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .returningAll()
+      .executeTakeFirst()
+  }
+
+  protected async baseApprovedComments(id: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('comments')
+      .where('commentables_id', '=', id)
+      .where('commentables_type', '=', this.tableName)
+      .where('status', '=', 'approved')
+      .selectAll()
+      .execute()
+  }
+
+  protected async basePendingComments(id: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('comments')
+      .where('commentables_id', '=', id)
+      .where('commentables_type', '=', this.tableName)
+      .where('status', '=', 'pending')
+      .selectAll()
+      .execute()
+  }
+
+  protected async baseRejectedComments(id: number): Promise<any[]> {
+    return await DB.instance
+      .selectFrom('comments')
+      .where('commentables_id', '=', id)
+      .where('commentables_type', '=', this.tableName)
+      .where('status', '=', 'rejected')
+      .selectAll()
+      .execute()
+  }
 }

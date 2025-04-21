@@ -992,89 +992,35 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
   }
 
   async categories(id: number): Promise<CategorizableTable[]> {
-    return await DB.instance
-      .selectFrom('categorizable')
-      .where('categorizable_id', '=', id)
-      .where('categorizable_type', '=', 'posts')
-      .selectAll()
-      .execute()
+    return await this.baseCategories(id)
   }
 
   async categoryCount(id: number): Promise<number> {
-    const result = await DB.instance
-      .selectFrom('categorizable')
-      .select(sql`count(*) as count`)
-      .where('categorizable_id', '=', id)
-      .where('categorizable_type', '=', 'posts')
-      .executeTakeFirst()
-
-    return Number(result?.count) || 0
+    return await this.baseCategoryCount(id)
   }
 
   async addCategory(id: number, category: { name: string, description?: string, parent_id?: number }): Promise<CategorizableTable> {
-    return await DB.instance
-      .insertInto('categorizable')
-      .values({
-        ...category,
-        categorizable_id: id,
-        categorizable_type: 'posts',
-        slug: category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        order: 0,
-        is_active: true,
-        created_at: new Date(),
-        updated_at: new Date(),
-      })
-      .returningAll()
-      .executeTakeFirst()
+    return await this.baseAddCategory(id, category)
   }
 
   async activeCategories(id: number): Promise<CategorizableTable[]> {
-    return await DB.instance
-      .selectFrom('categorizable')
-      .where('categorizable_id', '=', id)
-      .where('categorizable_type', '=', 'posts')
-      .where('is_active', '=', true)
-      .selectAll()
-      .execute()
+    return await this.baseActiveCategories(id)
   }
 
   async inactiveCategories(id: number): Promise<CategorizableTable[]> {
-    return await DB.instance
-      .selectFrom('categorizable')
-      .where('categorizable_id', '=', id)
-      .where('categorizable_type', '=', 'posts')
-      .where('is_active', '=', false)
-      .selectAll()
-      .execute()
+    return await this.baseInactiveCategories(id)
   }
 
   async removeCategory(id: number, categoryId: number): Promise<void> {
-    await DB.instance
-      .deleteFrom('categorizable')
-      .where('categorizable_id', '=', id)
-      .where('categorizable_type', '=', 'posts')
-      .where('id', '=', categoryId)
-      .execute()
+    await this.baseRemoveCategory(id, categoryId)
   }
 
   async parentCategories(id: number): Promise<CategorizableTable[]> {
-    return await DB.instance
-      .selectFrom('categorizable')
-      .where('categorizable_id', '=', id)
-      .where('categorizable_type', '=', 'posts')
-      .where('parent_id', 'is', null)
-      .selectAll()
-      .execute()
+    return await this.baseParentCategories(id)
   }
 
   async childCategories(id: number, parentId: number): Promise<CategorizableTable[]> {
-    return await DB.instance
-      .selectFrom('categorizable')
-      .where('categorizable_id', '=', id)
-      .where('categorizable_type', '=', 'posts')
-      .where('parent_id', '=', parentId)
-      .selectAll()
-      .execute()
+    return await this.baseChildCategories(id, parentId)
   }
 
   async authorBelong(): Promise<AuthorModel> {
