@@ -1257,7 +1257,6 @@ export interface AuthorRequestType extends Request {
 interface RequestDataPost {
   id: number
   title: string
-  author: string
   category: string
   poster: string
   body: string
@@ -1265,6 +1264,7 @@ interface RequestDataPost {
   published_at: number
   status: string[] | string
   user_id: number
+  author_id: number
   created_at?: string
   updated_at?: string
 }
@@ -1274,7 +1274,6 @@ export interface PostRequestType extends Request {
   all: () => RequestDataPost
   id: number
   title: string
-  author: string
   category: string
   poster: string
   body: string
@@ -1282,6 +1281,7 @@ export interface PostRequestType extends Request {
   published_at: number
   status: string[] | string
   user_id: number
+  author_id: number
   created_at?: string
   updated_at?: string
 }

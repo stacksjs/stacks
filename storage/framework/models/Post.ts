@@ -29,7 +29,7 @@ export default {
     },
   },
 
-  belongsTo: ['User'],
+  belongsTo: ['Author'],
 
   attributes: {
     title: {
@@ -44,20 +44,6 @@ export default {
         },
       },
       factory: faker => faker.lorem.sentence(),
-    },
-
-    author: {
-      required: true,
-      order: 2,
-      fillable: true,
-      validation: {
-        rule: schema.string().minLength(3).maxLength(255),
-        message: {
-          minLength: 'Author name must have a minimum of 3 characters',
-          maxLength: 'Author name must have a maximum of 255 characters',
-        },
-      },
-      factory: faker => faker.person.fullName(),
     },
 
     category: {

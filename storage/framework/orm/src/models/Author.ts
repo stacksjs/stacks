@@ -4,6 +4,7 @@ import type { Stripe } from '@stacksjs/payments'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import type { PaymentMethodsTable } from './PaymentMethod'
 import type { PaymentTransactionsTable } from './PaymentTransaction'
+import type { PostModel } from './Post'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -11,6 +12,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, manageTransaction } from '@stacksjs/payments'
+
 import { BaseOrm } from '../utils/base'
 
 export interface AuthorsTable {
@@ -176,6 +178,10 @@ export class AuthorModel extends BaseOrm<AuthorModel, AuthorsTable, AuthorJsonRe
     for (const [key, fn] of Object.entries(customSetter)) {
       (model as any)[key] = await fn()
     }
+  }
+
+  get posts(): PostModel[] | [] {
+    return this.attributes.posts
   }
 
   get user_id(): number {
@@ -1110,6 +1116,7 @@ export class AuthorModel extends BaseOrm<AuthorModel, AuthorsTable, AuthorJsonRe
 
       updated_at: this.updated_at,
 
+      posts: this.posts,
       user_id: this.user_id,
       user: this.user,
       ...this.customColumns,

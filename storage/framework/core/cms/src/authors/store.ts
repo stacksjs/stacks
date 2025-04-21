@@ -1,7 +1,7 @@
-import type { NewAuthor, AuthorJsonResponse } from '@stacksjs/orm'
+import type { AuthorJsonResponse, NewAuthor } from '@stacksjs/orm'
+import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
-import { randomUUIDv7 } from 'bun'
 
 /**
  * Create a new author

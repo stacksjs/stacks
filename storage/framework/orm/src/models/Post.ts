@@ -1,6 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { CategorizableTable, commentablesTable, Operator, TaggableTable } from '@stacksjs/orm'
-import type { UserModel } from './User'
+import type { AuthorModel } from './Author'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -10,9 +10,8 @@ import { BaseOrm } from '../utils/base'
 
 export interface PostsTable {
   id: Generated<number>
-  user_id: number
+  author_id: number
   title: string
-  author: string
   category: string
   poster?: string
   body: string
@@ -54,7 +53,7 @@ export type PostUpdate = Updateable<PostWrite>
 
 export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
-  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'author', 'category', 'poster', 'body', 'views', 'published_at', 'status', 'uuid', 'user_id']
+  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'category', 'poster', 'body', 'views', 'published_at', 'status', 'uuid', 'user_id', 'author_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
   protected attributes = {} as PostJsonResponse
   protected originalAttributes = {} as PostJsonResponse
@@ -179,12 +178,12 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     }
   }
 
-  get user_id(): number {
-    return this.attributes.user_id
+  get author_id(): number {
+    return this.attributes.author_id
   }
 
-  get user(): UserModel | undefined {
-    return this.attributes.user
+  get author(): AuthorModel | undefined {
+    return this.attributes.author
   }
 
   get id(): number {
@@ -197,10 +196,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
   get title(): string {
     return this.attributes.title
-  }
-
-  get author(): string {
-    return this.attributes.author
   }
 
   get category(): string {
@@ -241,10 +236,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
   set title(value: string) {
     this.attributes.title = value
-  }
-
-  set author(value: string) {
-    this.attributes.author = value
   }
 
   set category(value: string) {
@@ -815,14 +806,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance
   }
 
-  static whereAuthor(value: string): PostModel {
-    const instance = new PostModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('author', '=', value)
-
-    return instance
-  }
-
   static whereCategory(value: string): PostModel {
     const instance = new PostModel(undefined)
 
@@ -1094,12 +1077,12 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       .execute()
   }
 
-  async userBelong(): Promise<UserModel> {
-    if (this.user_id === undefined)
+  async authorBelong(): Promise<AuthorModel> {
+    if (this.author_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const model = await User
-      .where('id', '=', this.user_id)
+    const model = await Author
+      .where('id', '=', this.author_id)
       .first()
 
     if (!model)
@@ -1139,7 +1122,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
       id: this.id,
       title: this.title,
-      author: this.author,
       category: this.category,
       poster: this.poster,
       body: this.body,
@@ -1151,8 +1133,8 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
       updated_at: this.updated_at,
 
-      user_id: this.user_id,
-      user: this.user,
+      author_id: this.author_id,
+      author: this.author,
       ...this.customColumns,
     }
 
@@ -1221,13 +1203,6 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereTitle(value: string): Promise<PostModel[]> {
   const query = DB.instance.selectFrom('posts').where('title', '=', value)
-  const results: PostJsonResponse = await query.execute()
-
-  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
-}
-
-export async function whereAuthor(value: string): Promise<PostModel[]> {
-  const query = DB.instance.selectFrom('posts').where('author', '=', value)
   const results: PostJsonResponse = await query.execute()
 
   return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))

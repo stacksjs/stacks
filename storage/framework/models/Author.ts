@@ -45,6 +45,7 @@ export default {
   },
 
   belongsTo: ['User'],
+  hasMany: ['Post'],
 
   attributes: {
     name: {
