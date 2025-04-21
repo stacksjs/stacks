@@ -4,6 +4,7 @@ import { destroy } from '../posts/destroy'
 import { fetchById } from '../posts/fetch'
 import { store } from '../posts/store'
 import { update } from '../posts/update'
+import { db } from '@stacksjs/database'
 
 beforeEach(async () => {
   await refreshDatabase()
@@ -20,7 +21,7 @@ describe('Post Module', () => {
         poster: 'https://example.com/default-poster.jpg',
         body: 'This is a test post body with more than 10 characters.',
         views: 0,
-        publishedAt: Date.now(),
+        published_at: Date.now(),
         status: 'draft',
       }
 
@@ -54,7 +55,7 @@ describe('Post Module', () => {
         body: 'This is a test post body with more than 10 characters.',
         poster: 'https://example.com/poster.jpg',
         views: 0,
-        publishedAt: Date.now(),
+        published_at: Date.now(),
         status: 'draft',
       }
 
@@ -73,7 +74,7 @@ describe('Post Module', () => {
         poster: 'https://example.com/poster.jpg',
         body: 'Too short',
         views: -1,
-        publishedAt: -1,
+        published_at: -1,
         status: 'invalid',
       }
 
@@ -85,6 +86,140 @@ describe('Post Module', () => {
         expect(error).toBeDefined()
         expect(error instanceof Error).toBe(true)
       }
+    })
+
+    it('should create a post and associate it with a category', async () => {
+      // Create a post first
+      const postData = {
+        user_id: 1,
+        title: 'Post with Category',
+        author: 'Test Author',
+        category: 'Technology',
+        body: 'This is a test post body with more than 10 characters.',
+        views: 0,
+        published_at: Date.now(),
+        status: 'draft'
+      }
+
+      const post = await store(postData)
+      expect(post).toBeDefined()
+      const postId = Number(post?.id)
+
+      // Create a category and associate it with the post
+      const category = await db
+        .insertInto('categorizable')
+        .values({
+          name: 'Technology',
+          description: 'Technology related content',
+          is_active: true,
+          categorizable_id: postId,
+          categorizable_type: 'posts',
+          slug: 'technology'
+        })
+        .returningAll()
+        .executeTakeFirst()
+
+      expect(category).toBeDefined()
+      const categoryId = Number(category?.id)
+
+      // Create the relationship in categorizable_models
+      const relationship = await db
+        .insertInto('categorizable_models')
+        .values({
+          category_id: categoryId,
+          categorizable_id: postId,
+          categorizable_type: 'posts'
+        })
+        .returningAll()
+        .executeTakeFirst()
+
+      expect(relationship).toBeDefined()
+      expect(relationship?.category_id).toBe(categoryId)
+      expect(relationship?.categorizable_id).toBe(postId)
+      expect(relationship?.categorizable_type).toBe('posts')
+
+      // Verify we can fetch the relationship
+      const fetchedRelationship = await db
+        .selectFrom('categorizable_models')
+        .selectAll()
+        .where('category_id', '=', categoryId)
+        .where('categorizable_id', '=', postId)
+        .executeTakeFirst()
+
+      expect(fetchedRelationship).toBeDefined()
+      expect(fetchedRelationship?.category_id).toBe(categoryId)
+    })
+
+    it('should allow a post to have multiple categories', async () => {
+      // Create a post
+      const postData = {
+        user_id: 1,
+        title: 'Multi-Category Post',
+        author: 'Test Author',
+        category: 'Technology',
+        body: 'This is a test post body with more than 10 characters.',
+        views: 0,
+        published_at: Date.now(),
+        status: 'draft'
+      }
+
+      const post = await store(postData)
+      expect(post).toBeDefined()
+      const postId = Number(post?.id)
+
+      // Create multiple categories
+      const categoryData = [
+        { name: 'Technology', description: 'Tech content', slug: 'technology' },
+        { name: 'Programming', description: 'Programming content', slug: 'programming' },
+        { name: 'Web Development', description: 'Web dev content', slug: 'web-development' }
+      ]
+
+      // Insert categories and create relationships
+      const categories = await Promise.all(
+        categoryData.map(async (data) => {
+          // Create category
+          const category = await db
+            .insertInto('categorizable')
+            .values({
+              name: data.name,
+              description: data.description,
+              is_active: true,
+              categorizable_id: postId,
+              categorizable_type: 'posts',
+              slug: data.slug
+            })
+            .returningAll()
+            .executeTakeFirst()
+
+          if (!category) throw new Error('Failed to create category')
+
+          // Create relationship
+          await db
+            .insertInto('categorizable_models')
+            .values({
+              category_id: Number(category.id),
+              categorizable_id: postId,
+              categorizable_type: 'posts'
+            })
+            .execute()
+
+          return category
+        })
+      )
+
+      expect(categories).toHaveLength(3)
+
+      // Verify all relationships were created
+      const relationships = await db
+        .selectFrom('categorizable_models')
+        .selectAll()
+        .where('categorizable_id', '=', postId)
+        .where('categorizable_type', '=', 'posts')
+        .execute()
+
+      expect(relationships).toHaveLength(3)
+      expect(relationships.every(rel => rel.categorizable_id === postId)).toBe(true)
+      expect(relationships.every(rel => rel.categorizable_type === 'posts')).toBe(true)
     })
   })
 
@@ -99,7 +234,7 @@ describe('Post Module', () => {
         poster: 'https://example.com/poster.jpg',
         body: 'This is a test post body with more than 10 characters.',
         views: 0,
-        publishedAt: Date.now(),
+        published_at: Date.now(),
         status: 'draft',
       }
 
@@ -133,7 +268,7 @@ describe('Post Module', () => {
         poster: 'https://example.com/poster.jpg',
         body: 'This is a test post body with more than 10 characters.',
         views: 0,
-        publishedAt: Date.now(),
+        published_at: Date.now(),
         status: 'draft',
       }
 
@@ -179,7 +314,7 @@ describe('Post Module', () => {
         poster: 'https://example.com/poster.jpg',
         body: 'This is a test post body with more than 10 characters.',
         views: 0,
-        publishedAt: Date.now(),
+        published_at: Date.now(), 
         status: 'draft',
       }
 
@@ -219,7 +354,7 @@ describe('Post Module', () => {
         poster: 'https://example.com/poster.jpg',
         body: 'This is a test post body with more than 10 characters.',
         views: 0,
-        publishedAt: Date.now(),
+        published_at: Date.now(),
         status: 'draft',
       }
 
