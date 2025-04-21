@@ -1,4 +1,5 @@
 import type { PersonalAccessTokensTable } from '../src/models/AccessToken'
+import type { AuthorsTable } from '../src/models/Author'
 import type { CartsTable } from '../src/models/Cart'
 import type { CartItemsTable } from '../src/models/CartItem'
 import type { CategoriesTable } from '../src/models/Category'
@@ -186,6 +187,7 @@ export interface Database {
   cart_items: CartItemsTable
   failed_jobs: FailedJobsTable
   payment_methods: PaymentMethodsTable
+  authors: AuthorsTable
   posts: PostsTable
   payment_transactions: PaymentTransactionsTable
   requests: RequestsTable

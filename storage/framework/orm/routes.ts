@@ -6,6 +6,12 @@ route.post('users', 'UserStoreOrmAction')
 
 route.get('users/{id}', 'UserShowOrmAction')
 
+route.get('authors', 'AuthorIndexOrmAction')
+
+route.post('authors', 'AuthorStoreOrmAction')
+
+route.get('authors/{id}', 'AuthorShowOrmAction')
+
 route.get('posts', 'PostIndexOrmAction')
 
 route.post('posts', 'PostStoreOrmAction')

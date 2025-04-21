@@ -1,3 +1,4 @@
+import type { AuthorModel } from '../orm/src/models/Author'
 import type { CartModel } from '../orm/src/models/Cart'
 import type { CartItemModel } from '../orm/src/models/CartItem'
 import type { CategoryModel } from '../orm/src/models/Category'
@@ -121,5 +122,8 @@ export interface ModelEvents {
   'cart-item:created': CartItemModel
   'cart-item:updated': CartItemModel
   'cart-item:deleted': CartItemModel
+  'author:created': AuthorModel
+  'author:updated': AuthorModel
+  'author:deleted': AuthorModel
 
 }
