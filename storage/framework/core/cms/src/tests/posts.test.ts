@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
+import { db } from '@stacksjs/database'
 import { refreshDatabase } from '@stacksjs/testing'
 import { destroy } from '../posts/destroy'
 import { fetchById } from '../posts/fetch'
 import { store } from '../posts/store'
 import { update } from '../posts/update'
-import { db } from '@stacksjs/database'
 
 beforeEach(async () => {
   await refreshDatabase()
@@ -98,7 +98,7 @@ describe('Post Module', () => {
         body: 'This is a test post body with more than 10 characters.',
         views: 0,
         published_at: Date.now(),
-        status: 'draft'
+        status: 'draft',
       }
 
       const post = await store(postData)
@@ -114,7 +114,7 @@ describe('Post Module', () => {
           is_active: true,
           categorizable_id: postId,
           categorizable_type: 'posts',
-          slug: 'technology'
+          slug: 'technology',
         })
         .returningAll()
         .executeTakeFirst()
@@ -128,7 +128,7 @@ describe('Post Module', () => {
         .values({
           category_id: categoryId,
           categorizable_id: postId,
-          categorizable_type: 'posts'
+          categorizable_type: 'posts',
         })
         .returningAll()
         .executeTakeFirst()
@@ -160,7 +160,7 @@ describe('Post Module', () => {
         body: 'This is a test post body with more than 10 characters.',
         views: 0,
         published_at: Date.now(),
-        status: 'draft'
+        status: 'draft',
       }
 
       const post = await store(postData)
@@ -171,7 +171,7 @@ describe('Post Module', () => {
       const categoryData = [
         { name: 'Technology', description: 'Tech content', slug: 'technology' },
         { name: 'Programming', description: 'Programming content', slug: 'programming' },
-        { name: 'Web Development', description: 'Web dev content', slug: 'web-development' }
+        { name: 'Web Development', description: 'Web dev content', slug: 'web-development' },
       ]
 
       // Insert categories and create relationships
@@ -186,12 +186,13 @@ describe('Post Module', () => {
               is_active: true,
               categorizable_id: postId,
               categorizable_type: 'posts',
-              slug: data.slug
+              slug: data.slug,
             })
             .returningAll()
             .executeTakeFirst()
 
-          if (!category) throw new Error('Failed to create category')
+          if (!category)
+            throw new Error('Failed to create category')
 
           // Create relationship
           await db
@@ -199,12 +200,12 @@ describe('Post Module', () => {
             .values({
               category_id: Number(category.id),
               categorizable_id: postId,
-              categorizable_type: 'posts'
+              categorizable_type: 'posts',
             })
             .execute()
 
           return category
-        })
+        }),
       )
 
       expect(categories).toHaveLength(3)
@@ -232,7 +233,7 @@ describe('Post Module', () => {
         body: 'This is a test post body with more than 10 characters.',
         views: 0,
         published_at: Date.now(),
-        status: 'draft'
+        status: 'draft',
       }
 
       const post = await store(postData)
@@ -248,7 +249,7 @@ describe('Post Module', () => {
           is_active: true,
           taggable_id: postId,
           taggable_type: 'posts',
-          slug: 'javascript'
+          slug: 'javascript',
         })
         .returningAll()
         .executeTakeFirst()
@@ -270,7 +271,7 @@ describe('Post Module', () => {
         body: 'This is a test post body with more than 10 characters.',
         views: 0,
         published_at: Date.now(),
-        status: 'draft'
+        status: 'draft',
       }
 
       const post = await store(postData)
@@ -281,7 +282,7 @@ describe('Post Module', () => {
       const tagData = [
         { name: 'JavaScript', description: 'JavaScript content', slug: 'javascript' },
         { name: 'TypeScript', description: 'TypeScript content', slug: 'typescript' },
-        { name: 'Web Development', description: 'Web dev content', slug: 'web-development' }
+        { name: 'Web Development', description: 'Web dev content', slug: 'web-development' },
       ]
 
       // Insert tags
@@ -295,7 +296,7 @@ describe('Post Module', () => {
               is_active: true,
               taggable_id: postId,
               taggable_type: 'posts',
-              slug: data.slug
+              slug: data.slug,
             })
             .returningAll()
             .executeTakeFirst()
@@ -304,7 +305,7 @@ describe('Post Module', () => {
           expect(tag?.taggable_id).toBe(postId)
           expect(tag?.taggable_type).toBe('posts')
           return tag
-        })
+        }),
       )
 
       expect(tags).toHaveLength(3)
@@ -420,7 +421,7 @@ describe('Post Module', () => {
         poster: 'https://example.com/poster.jpg',
         body: 'This is a test post body with more than 10 characters.',
         views: 0,
-        published_at: Date.now(), 
+        published_at: Date.now(),
         status: 'draft',
       }
 

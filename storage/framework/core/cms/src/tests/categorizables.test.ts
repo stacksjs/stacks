@@ -17,7 +17,7 @@ describe('Category Module', () => {
         description: 'Technology related content',
         categorizable_id: 1,
         categorizable_type: 'posts',
-        is_active: true
+        is_active: true,
       }
 
       const category = await store(categoryData)
@@ -43,7 +43,7 @@ describe('Category Module', () => {
         description: 'Technology related content',
         categorizable_id: 1,
         categorizable_type: 'posts',
-        is_active: true
+        is_active: true,
       })
 
       const secondCategory = await store({
@@ -51,7 +51,7 @@ describe('Category Module', () => {
         description: 'Programming related content',
         categorizable_id: 1,
         categorizable_type: 'posts',
-        is_active: true
+        is_active: true,
       })
 
       expect(firstCategory).toBeDefined()
@@ -66,7 +66,7 @@ describe('Category Module', () => {
         description: '',
         categorizable_id: -1,
         categorizable_type: '',
-        is_active: false
+        is_active: false,
       }
 
       try {
@@ -87,7 +87,7 @@ describe('Category Module', () => {
         description: 'Test category description',
         categorizable_id: 1,
         categorizable_type: 'posts',
-        is_active: true
+        is_active: true,
       }
 
       const category = await store(categoryData)
@@ -114,7 +114,7 @@ describe('Category Module', () => {
         description: 'Original description',
         categorizable_id: 1,
         categorizable_type: 'posts',
-        is_active: true
+        is_active: true,
       }
 
       const category = await store(categoryData)
@@ -128,7 +128,7 @@ describe('Category Module', () => {
       const updatedCategory = await update({
         id: categoryId,
         name: 'Updated Category',
-        description: 'Updated description'
+        description: 'Updated description',
       })
 
       expect(updatedCategory).toBeDefined()
@@ -143,7 +143,7 @@ describe('Category Module', () => {
         description: 'Test description',
         categorizable_id: 1,
         categorizable_type: 'posts',
-        is_active: true
+        is_active: true,
       }
 
       const category = await store(categoryData)
@@ -157,7 +157,7 @@ describe('Category Module', () => {
         await update({
           id: categoryId,
           name: '', // Empty name should fail
-          description: ''
+          description: '',
         })
         expect(true).toBe(false) // This line should not be reached
       }
@@ -175,7 +175,7 @@ describe('Category Module', () => {
         description: 'This category will be deleted',
         categorizable_id: 1,
         categorizable_type: 'posts',
-        is_active: true
+        is_active: true,
       }
 
       const category = await store(categoryData)

@@ -364,7 +364,7 @@ describe('Shipping Zone Module', () => {
           shipping_method_id: 1,
           status: 'active',
         }
-        
+
         const zone = await store(requestData)
 
         const zoneId = zone?.id !== undefined ? Number(zone.id) : undefined

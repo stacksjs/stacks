@@ -1,6 +1,5 @@
 import type { CategorizableModelsTable, CategorizableTable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
 import { slugify } from 'ts-slug'
 
 interface CategoryData {

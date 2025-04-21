@@ -6,12 +6,13 @@ import { formatDate } from '@stacksjs/orm'
 /**
  * Update a digital delivery
  *
+ * @param id The id of the digital delivery to update
  * @param data The digital delivery data to update
  * @returns The updated digital delivery record
  */
 export async function update(id: number, data: DigitalDeliveryUpdate): Promise<DigitalDeliveryJsonResponse> {
   try {
-    if (!data.id)
+    if (!id)
       throw new Error('Digital delivery ID is required for update')
 
     const result = await db

@@ -1028,7 +1028,7 @@ describe('Restaurant Waitlist Module', () => {
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: startOfDay.getTime() ,
+          check_in_time: startOfDay.getTime(),
           table_preference: 'indoor',
           status: 'seated',
           quoted_wait_time: 30,

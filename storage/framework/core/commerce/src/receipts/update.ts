@@ -5,12 +5,13 @@ import { formatDate } from '@stacksjs/orm'
 /**
  * Update a receipt
  *
+ * @param id The id of the receipt to update
  * @param data The receipt data to update
  * @returns The updated receipt record
  */
 export async function update(id: number, data: ReceiptUpdate): Promise<ReceiptJsonResponse> {
   try {
-    if (!data.id)
+    if (!id)
       throw new Error('Receipt ID is required for update')
 
     const result = await db
@@ -19,7 +20,7 @@ export async function update(id: number, data: ReceiptUpdate): Promise<ReceiptJs
         ...data,
         updated_at: formatDate(new Date()),
       })
-      .where('id', '=', data.id)
+      .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
 

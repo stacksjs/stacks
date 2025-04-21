@@ -28,9 +28,9 @@ describe('Product Variant Module', () => {
         type: 'dropdown',
         description: 'Available colors',
         options: JSON.stringify(['Red', 'Blue', 'Green']),
-        status: 'draft'
+        status: 'draft',
       }
-      
+
       const variant = await store(requestData)
 
       expect(variant).toBeDefined()
@@ -281,7 +281,7 @@ describe('Product Variant Module', () => {
       }
 
       // Create the variant
-        const variant = await store(variantData)
+      const variant = await store(variantData)
       const variantId = variant?.id !== undefined ? Number(variant.id) : undefined
 
       // Make sure we have a valid variant ID before proceeding

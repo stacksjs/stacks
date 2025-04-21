@@ -5,12 +5,13 @@ import { formatDate } from '@stacksjs/orm'
 /**
  * Update a tax rate
  *
+ * @param id The id of the tax rate to update
  * @param data The tax rate data to update
  * @returns The updated tax rate record
  */
 export async function update(id: number, data: TaxRateUpdate): Promise<TaxRateJsonResponse> {
   try {
-    if (!data.id)
+    if (!id)
       throw new Error('Tax rate ID is required for update')
 
     const result = await db
@@ -25,7 +26,7 @@ export async function update(id: number, data: TaxRateUpdate): Promise<TaxRateJs
         is_default: data.is_default,
         updated_at: formatDate(new Date()),
       })
-      .where('id', '=', data.id)
+      .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
 

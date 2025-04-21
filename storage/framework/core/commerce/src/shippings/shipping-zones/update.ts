@@ -4,7 +4,7 @@ import { formatDate } from '@stacksjs/orm'
 
 /**
  * Update a shipping zone
- *  
+ *
  * @param id The ID of the shipping zone
  * @param data The shipping zone data to update
  * @returns The updated shipping zone record

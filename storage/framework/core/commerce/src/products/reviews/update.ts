@@ -5,12 +5,13 @@ import { formatDate } from '@stacksjs/orm'
 /**
  * Update a review
  *
+ * @param id The id of the review to update
  * @param data The review data to update
  * @returns The updated review record
  */
 export async function update(id: number, data: ReviewUpdate): Promise<ReviewJsonResponse> {
   try {
-    if (!data.id)
+    if (!id)
       throw new Error('Review ID is required for update')
 
     const result = await db
@@ -19,7 +20,7 @@ export async function update(id: number, data: ReviewUpdate): Promise<ReviewJson
         ...data,
         updated_at: formatDate(new Date()),
       })
-      .where('id', '=', data.id)
+      .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
 

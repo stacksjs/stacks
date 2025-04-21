@@ -5,12 +5,13 @@ import { formatDate } from '@stacksjs/orm'
 /**
  * Update a restaurant waitlist entry
  *
+ * @param id The id of the restaurant waitlist entry to update
  * @param data The restaurant waitlist data to update
  * @returns The updated restaurant waitlist record
  */
 export async function update(id: number, data: WaitlistRestaurantUpdate): Promise<WaitlistRestaurantJsonResponse> {
   try {
-    if (!data.id)
+    if (!id)
       throw new Error('Restaurant waitlist entry ID is required for update')
 
     const result = await db

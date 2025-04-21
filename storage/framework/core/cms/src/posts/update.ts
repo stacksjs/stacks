@@ -5,6 +5,7 @@ import { formatDate } from '@stacksjs/orm'
 /**
  * Update a post
  *
+ * @param id The id of the post to update
  * @param data The post data to update
  * @returns The updated post record
  */

@@ -517,7 +517,7 @@ describe('Product Review Module', () => {
           title: `Bulk delete review ${i}`,
           content: `This is review ${i} for bulk deletion`,
         }
-        
+
         const review = await store(requestData)
 
         const reviewId = review?.id !== undefined ? Number(review.id) : undefined

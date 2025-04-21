@@ -344,7 +344,7 @@ describe('License Key Module', () => {
           product_id: 1,
           order_id: 1,
         }
-        
+
         const license = await store(requestData)
 
         const licenseId = license?.id !== undefined ? Number(license.id) : undefined

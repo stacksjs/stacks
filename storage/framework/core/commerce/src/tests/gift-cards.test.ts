@@ -25,7 +25,7 @@ describe('Gift Card Module', () => {
         is_digital: true,
         is_active: true,
       }
-      
+
       const giftCard = await store(requestData)
 
       expect(giftCard).toBeDefined()
@@ -491,7 +491,6 @@ describe('Gift Card Module', () => {
       // Ensure we have created the gift cards
       expect(giftCardIds.length).toBe(3)
 
-
       // Delete the gift cards
       const deletedCount = await bulkDestroy(giftCardIds)
       expect(deletedCount).toBe(3)
@@ -504,7 +503,6 @@ describe('Gift Card Module', () => {
     })
 
     it('should return 0 when trying to delete an empty array of gift cards', async () => {
-
       // Try to delete with an empty array
       const deletedCount = await bulkDestroy([])
       expect(deletedCount).toBe(0)

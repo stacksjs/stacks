@@ -1,6 +1,5 @@
 import type { Commentable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
 
 export interface CreateCommentInput {
   title: string
@@ -88,9 +87,12 @@ interface CommentStore {
   title: string
   body: string
   status: string
+  user_id: number
   commentable_id: number
   commentable_type: string
-  user_id?: number | null
+  is_active?: boolean | null
+  approved_at?: number | null
+  rejected_at?: number | null
 }
 
 /**
@@ -101,18 +103,17 @@ interface CommentStore {
  */
 export async function store(data: CommentStore): Promise<Commentable> {
   try {
-    const now = formatDate(new Date())
-
     const commentData = {
-      ...data,
+      title: data.title,
+      body: data.body,
+      status: data.status,
+      commentable_id: data.commentable_id,
+      commentable_type: data.commentable_type,
+      user_id: data.user_id,
+      is_active: data.is_active,
       reports_count: 0,
       upvotes_count: 0,
       downvotes_count: 0,
-      approved_at: null,
-      rejected_at: null,
-      reported_at: null,
-      created_at: now,
-      updated_at: null,
     }
 
     const result = await db

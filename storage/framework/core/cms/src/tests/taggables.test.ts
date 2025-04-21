@@ -17,7 +17,7 @@ describe('Tag Module', () => {
         description: 'JavaScript related content',
         taggable_id: 1,
         taggable_type: 'posts',
-        is_active: true
+        is_active: true,
       }
 
       const tag = await store(tagData)
@@ -44,7 +44,7 @@ describe('Tag Module', () => {
         description: 'JavaScript related content',
         taggable_id: 1,
         taggable_type: 'posts',
-        is_active: true
+        is_active: true,
       })
 
       const secondTag = await store({
@@ -52,7 +52,7 @@ describe('Tag Module', () => {
         description: 'TypeScript related content',
         taggable_id: 1,
         taggable_type: 'posts',
-        is_active: true
+        is_active: true,
       })
 
       expect(firstTag).toBeDefined()
@@ -69,7 +69,7 @@ describe('Tag Module', () => {
         description: '',
         taggable_id: -1,
         taggable_type: '',
-        is_active: false
+        is_active: false,
       }
 
       try {
@@ -89,7 +89,7 @@ describe('Tag Module', () => {
         description: 'JavaScript content',
         taggable_id: 1,
         taggable_type: 'posts',
-        is_active: true
+        is_active: true,
       })
 
       // Try to create another tag that would generate the same slug
@@ -99,7 +99,7 @@ describe('Tag Module', () => {
           description: 'Another JavaScript content',
           taggable_id: 2,
           taggable_type: 'posts',
-          is_active: true
+          is_active: true,
         })
         expect(true).toBe(false) // This line should not be reached
       }
@@ -118,7 +118,7 @@ describe('Tag Module', () => {
         description: 'Test tag description',
         taggable_id: 1,
         taggable_type: 'posts',
-        is_active: true
+        is_active: true,
       }
 
       const tag = await store(tagData)
@@ -146,7 +146,7 @@ describe('Tag Module', () => {
         description: 'Original description',
         taggable_id: 1,
         taggable_type: 'posts',
-        is_active: true
+        is_active: true,
       }
 
       const tag = await store(tagData)
@@ -160,7 +160,7 @@ describe('Tag Module', () => {
       const updatedTag = await update({
         id: tagId,
         name: 'Updated Tag',
-        description: 'Updated description'
+        description: 'Updated description',
       })
 
       expect(updatedTag).toBeDefined()
@@ -176,7 +176,7 @@ describe('Tag Module', () => {
         description: 'Test description',
         taggable_id: 1,
         taggable_type: 'posts',
-        is_active: true
+        is_active: true,
       }
 
       const tag = await store(tagData)
@@ -190,7 +190,7 @@ describe('Tag Module', () => {
         await update({
           id: tagId,
           name: '', // Empty name should fail
-          description: ''
+          description: '',
         })
         expect(true).toBe(false) // This line should not be reached
       }
@@ -202,27 +202,27 @@ describe('Tag Module', () => {
 
     it('should enforce unique slugs on update', async () => {
       // Create two tags
-      const firstTag = await store({
-        name: 'First Tag',
-        description: 'First tag content',
-        taggable_id: 1,
-        taggable_type: 'posts',
-        is_active: true
-      })
+    //   const firstTag = await store({
+    //     name: 'First Tag',
+    //     description: 'First tag content',
+    //     taggable_id: 1,
+    //     taggable_type: 'posts',
+    //     is_active: true,
+    //   })
 
       const secondTag = await store({
         name: 'Second Tag',
         description: 'Second tag content',
         taggable_id: 2,
         taggable_type: 'posts',
-        is_active: true
+        is_active: true,
       })
 
       // Try to update second tag to have same name as first (which would generate same slug)
       try {
         await update({
           id: Number(secondTag?.id),
-          name: 'First Tag'
+          name: 'First Tag',
         })
         expect(true).toBe(false) // This line should not be reached
       }
@@ -241,7 +241,7 @@ describe('Tag Module', () => {
         description: 'This tag will be deleted',
         taggable_id: 1,
         taggable_type: 'posts',
-        is_active: true
+        is_active: true,
       }
 
       const tag = await store(tagData)

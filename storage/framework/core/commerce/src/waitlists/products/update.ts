@@ -4,13 +4,14 @@ import { formatDate } from '@stacksjs/orm'
 
 /**
  * Update a waitlist product
- *
+ *  
+ * @param id The id of the waitlist product to update
  * @param data The waitlist product data to update
  * @returns The updated waitlist product record
  */
 export async function update(id: number, data: WaitlistProductUpdate): Promise<WaitlistProductJsonResponse> {
   try {
-    if (!data.id)
+    if (!id)
       throw new Error('Waitlist product ID is required for update')
 
     const result = await db

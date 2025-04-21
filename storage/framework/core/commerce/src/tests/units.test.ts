@@ -657,7 +657,7 @@ describe('Product Unit Module', () => {
         },
       ]
 
-        await bulkStore(unitRequests)
+      await bulkStore(unitRequests)
 
       // Get the created units
       const { db } = await import('@stacksjs/database')

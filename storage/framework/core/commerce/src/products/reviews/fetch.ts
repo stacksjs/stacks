@@ -53,7 +53,6 @@ export async function fetchApprovedByProductId(productId: number): Promise<Revie
     .execute()
 }
 
-
 export async function fetchMostHelpfulByProductId(productId: number): Promise<ReviewJsonResponse[]> {
   return await db
     .selectFrom('reviews')
@@ -61,4 +60,4 @@ export async function fetchMostHelpfulByProductId(productId: number): Promise<Re
     .orderBy('helpful_votes', 'desc')
     .selectAll()
     .execute()
-} 
+}

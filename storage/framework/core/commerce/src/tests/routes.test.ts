@@ -5,6 +5,7 @@ import { bulkDestroy, destroy } from '../shippings/delivery-routes/destroy'
 import { fetchByDriver, fetchById } from '../shippings/delivery-routes/fetch'
 import { store } from '../shippings/delivery-routes/store'
 import { update, updateMetrics, updateStops } from '../shippings/delivery-routes/update'
+
 beforeEach(async () => {
   await refreshDatabase()
 })

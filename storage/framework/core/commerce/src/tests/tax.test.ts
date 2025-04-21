@@ -270,7 +270,7 @@ describe('Tax Rate Module', () => {
           status: 'active',
           is_default: false,
         }
-        
+
         const taxRate = await store(requestData)
 
         const taxRateId = taxRate?.id !== undefined ? Number(taxRate.id) : undefined

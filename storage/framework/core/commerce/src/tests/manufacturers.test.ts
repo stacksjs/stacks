@@ -61,8 +61,6 @@ describe('Manufacturer Module', () => {
         country: 'Canada',
       }
 
-      const secondManufacturer = await store(secondManufacturerData)
-
       try {
         await store(secondManufacturerData)
         // If we get here, the test should fail as we expect an error
@@ -359,7 +357,7 @@ describe('Manufacturer Module', () => {
         manufacturer: name1, // This should conflict with the first manufacturer
       }
 
-        try {
+      try {
         await update(secondManufacturerId, updateData)
         // If we get here, the test should fail as we expect an error
         expect(true).toBe(false) // This line should not be reached

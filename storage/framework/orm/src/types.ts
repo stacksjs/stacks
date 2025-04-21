@@ -89,10 +89,6 @@ export interface CommentableTable {
   rejected_at: number | null
   commentable_id: number
   commentable_type: string
-  reports_count: number
-  reported_at: number | null
-  upvotes_count: number
-  downvotes_count: number
   user_id: number | null
   created_at?: string
   updated_at?: string | null

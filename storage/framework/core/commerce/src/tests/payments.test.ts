@@ -52,7 +52,7 @@ describe('Payment Module', () => {
       const payment = await store(requestData)
 
       expect(payment).toBeDefined()
-      expect(payment?.order_id).toBe(1) 
+      expect(payment?.order_id).toBe(1)
       expect(payment?.customer_id).toBe(1)
       expect(payment?.amount).toBe(100)
       expect(payment?.method).toBe('credit_card')

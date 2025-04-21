@@ -97,7 +97,7 @@ describe('Shipping Methods Module', () => {
         zones: JSON.stringify(['North America', 'Europe']),
         status: 'active',
       }
-      
+
       await store(request2)
 
       // Get formatted options
@@ -221,7 +221,7 @@ describe('Shipping Methods Module', () => {
       }
 
       // Create the shipping method
-        const method = await store(requestData)
+      const method = await store(requestData)
       const methodId = method?.id !== undefined ? Number(method.id) : undefined
 
       // Make sure we have a valid ID before proceeding
@@ -282,7 +282,7 @@ describe('Shipping Methods Module', () => {
           zones: JSON.stringify(['North America']),
           status: 'active',
         }
-        
+
         const method = await store(requestData)
 
         const methodId = method?.id !== undefined ? Number(method.id) : undefined
