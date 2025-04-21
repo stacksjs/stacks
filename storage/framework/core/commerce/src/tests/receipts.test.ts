@@ -6,23 +6,6 @@ import { fetchAll, fetchById, fetchPageStats, fetchPrintJobStats, fetchPrintsPer
 import { bulkStore, store } from '../receipts/store'
 import { update, updatePrintJob, updateStatus } from '../receipts/update'
 
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-}
-
 beforeEach(async () => {
   await refreshDatabase()
 })
@@ -38,10 +21,11 @@ describe('Print Log Module', () => {
         size: 1024,
         pages: 5,
         duration: 30,
+        uuid: '1234567890',
+        print_device_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const receipt = await store(request as any)
+      const receipt = await store(requestData)
 
       expect(receipt).toBeDefined()
       expect(receipt?.printer).toBe('HP LaserJet')
@@ -69,10 +53,11 @@ describe('Print Log Module', () => {
         document: 'report.pdf',
         timestamp: Date.now(),
         status: 'success',
+        uuid: '1234567890',
+        print_device_id: 1,
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const receipt = await store(request as any)
+      const receipt = await store(minimalRequestData)
 
       expect(receipt).toBeDefined()
       expect(receipt?.printer).toBe('Epson Printer')
@@ -86,7 +71,7 @@ describe('Print Log Module', () => {
 
     it('should create multiple print logs with bulk store', async () => {
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice.pdf',
           timestamp: Date.now(),
@@ -94,8 +79,10 @@ describe('Print Log Module', () => {
           size: 1024,
           pages: 5,
           duration: 30,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Epson Printer',
           document: 'report.pdf',
           timestamp: Date.now(),
@@ -103,8 +90,10 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 10,
           duration: 45,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'document.pdf',
           timestamp: Date.now(),
@@ -112,10 +101,12 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 2,
           duration: 15,
-        }),
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
       ]
 
-      const count = await bulkStore(requests as any)
+      const count = await bulkStore(requests)
       expect(count).toBe(3)
 
       // Verify print logs can be fetched
@@ -140,11 +131,12 @@ describe('Print Log Module', () => {
         size: 1024,
         pages: 5,
         duration: 30,
+        uuid: '1234567890',
+        print_device_id: 1,
       }
 
       // Create the print log
-      const createRequest = new TestRequest(requestData)
-      const receipt = await store(createRequest as any)
+      const receipt = await store(requestData)
       const receiptId = receipt?.id !== undefined ? Number(receipt.id) : undefined
 
       // Make sure we have a valid print ID before proceeding
@@ -162,10 +154,11 @@ describe('Print Log Module', () => {
         size: 2048,
         pages: 10,
         duration: 45,
+        uuid: '1234567890',
+        print_device_id: 1,
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedReceipt = await update(receiptId, updateRequest as any)
+      const updatedReceipt = await update(receiptId, updateData)
 
       // Verify the update was successful
       expect(updatedReceipt).toBeDefined()
@@ -188,10 +181,11 @@ describe('Print Log Module', () => {
         size: 1024,
         pages: 5,
         duration: 30,
+        uuid: '1234567890',
+        print_device_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const receipt = await store(request as any)
+      const receipt = await store(requestData)
       const receiptId = receipt?.id !== undefined ? Number(receipt.id) : undefined
 
       // Make sure we have a valid print ID before proceeding
@@ -221,10 +215,11 @@ describe('Print Log Module', () => {
         size: 1024,
         pages: 5,
         duration: 30,
+        uuid: '1234567890',
+        print_device_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const receipt = await store(request as any)
+      const receipt = await store(requestData)
       const receiptId = receipt?.id !== undefined ? Number(receipt.id) : undefined
 
       expect(receiptId).toBeDefined()
@@ -253,11 +248,12 @@ describe('Print Log Module', () => {
         size: 1024,
         pages: 5,
         duration: 30,
+        uuid: '1234567890',
+        print_device_id: 1,
       }
 
       // Create the print log
-      const request = new TestRequest(requestData)
-      const receipt = await store(request as any)
+      const receipt = await store(requestData)
       const receiptId = receipt?.id !== undefined ? Number(receipt.id) : undefined
 
       // Make sure we have a valid print ID before proceeding
@@ -290,7 +286,7 @@ describe('Print Log Module', () => {
     it('should fetch all print logs', async () => {
       // Create test print logs
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice.pdf',
           timestamp: Date.now(),
@@ -298,8 +294,10 @@ describe('Print Log Module', () => {
           size: 1024,
           pages: 5,
           duration: 30,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Epson Printer',
           document: 'report.pdf',
           timestamp: Date.now(),
@@ -307,8 +305,10 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 10,
           duration: 45,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'document.pdf',
           timestamp: Date.now(),
@@ -316,11 +316,13 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 2,
           duration: 15,
-        }),
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
       ]
 
       // Create the print logs
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch all print logs
       const allReceipts = await fetchAll()
@@ -341,10 +343,11 @@ describe('Print Log Module', () => {
         size: 1024,
         pages: 5,
         duration: 30,
+        uuid: '1234567890',
+        print_device_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const receipt = await store(request as any)
+      const receipt = await store(requestData)
       const receiptId = receipt?.id !== undefined ? Number(receipt.id) : undefined
 
       expect(receiptId).toBeDefined()
@@ -372,7 +375,7 @@ describe('Print Log Module', () => {
 
       // Create test print logs with different statuses and metrics
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice.pdf',
           timestamp: startDate,
@@ -380,8 +383,10 @@ describe('Print Log Module', () => {
           size: 1024,
           pages: 5,
           duration: 30,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Epson Printer',
           document: 'report.pdf',
           timestamp: startDate,
@@ -389,8 +394,10 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 10,
           duration: 45,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'document.pdf',
           timestamp: startDate,
@@ -398,8 +405,10 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 2,
           duration: 15,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Brother Printer',
           document: 'error.pdf',
           timestamp: startDate,
@@ -407,11 +416,13 @@ describe('Print Log Module', () => {
           size: 256,
           pages: 1,
           duration: 5,
-        }),
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
       ]
 
       // Create the print logs
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch statistics
       const stats = await fetchPrintJobStats(startDate, endDate)
@@ -453,7 +464,7 @@ describe('Print Log Module', () => {
 
       // Create print logs with different dates
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice.pdf',
           timestamp: startDate,
@@ -461,8 +472,10 @@ describe('Print Log Module', () => {
           size: 1024,
           pages: 5,
           duration: 30,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Epson Printer',
           document: 'report.pdf',
           timestamp: startDate - 86400000, // Yesterday
@@ -470,8 +483,10 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 10,
           duration: 45,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'document.pdf',
           timestamp: endDate + 1, // Tomorrow
@@ -479,11 +494,13 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 2,
           duration: 15,
-        }),
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
       ]
 
       // Create the print logs
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch statistics
       const stats = await fetchPrintJobStats(startDate, endDate)
@@ -506,7 +523,7 @@ describe('Print Log Module', () => {
 
       // Create test print logs with different statuses
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice.pdf',
           timestamp: startDate,
@@ -514,8 +531,10 @@ describe('Print Log Module', () => {
           size: 1024,
           pages: 5,
           duration: 30,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Epson Printer',
           document: 'report.pdf',
           timestamp: startDate,
@@ -523,8 +542,10 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 10,
           duration: 45,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'document.pdf',
           timestamp: startDate,
@@ -532,8 +553,10 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 2,
           duration: 15,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Brother Printer',
           document: 'error.pdf',
           timestamp: startDate,
@@ -541,10 +564,12 @@ describe('Print Log Module', () => {
           size: 256,
           pages: 1,
           duration: 5,
-        }),
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
       ]
 
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch success rate
       const stats = await fetchSuccessRate(startDate, endDate)
@@ -580,7 +605,7 @@ describe('Print Log Module', () => {
 
       // Create test print logs with all successful status
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice.pdf',
           timestamp: startDate,
@@ -588,8 +613,10 @@ describe('Print Log Module', () => {
           size: 1024,
           pages: 5,
           duration: 30,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Epson Printer',
           document: 'report.pdf',
           timestamp: startDate,
@@ -597,8 +624,10 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 10,
           duration: 45,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'document.pdf',
           timestamp: startDate,
@@ -606,10 +635,12 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 2,
           duration: 15,
-        }),
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
       ]
 
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       const stats = await fetchSuccessRate(startDate, endDate)
 
@@ -628,7 +659,7 @@ describe('Print Log Module', () => {
 
       // Create print logs with different dates
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice.pdf',
           timestamp: startDate,
@@ -636,8 +667,9 @@ describe('Print Log Module', () => {
           size: 1024,
           pages: 5,
           duration: 30,
-        }),
-        new TestRequest({
+          print_device_id: 1,
+        },
+        {
           printer: 'Epson Printer',
           document: 'report.pdf',
           timestamp: startDate - 86400000, // Yesterday
@@ -645,8 +677,9 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 10,
           duration: 45,
-        }),
-        new TestRequest({
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'document.pdf',
           timestamp: endDate + 1, // Tomorrow
@@ -654,10 +687,11 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 2,
           duration: 15,
-        }),
+          print_device_id: 1,
+        },
       ]
 
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       const stats = await fetchSuccessRate(startDate, endDate)
 
@@ -677,7 +711,7 @@ describe('Print Log Module', () => {
 
       // Create test receipts with different page counts
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice.pdf',
           timestamp: startDate,
@@ -685,8 +719,10 @@ describe('Print Log Module', () => {
           size: 1024,
           pages: 5,
           duration: 30,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Epson Printer',
           document: 'report.pdf',
           timestamp: startDate,
@@ -694,8 +730,10 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 10,
           duration: 45,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'document.pdf',
           timestamp: startDate,
@@ -703,8 +741,10 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 2,
           duration: 15,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Brother Printer',
           document: 'error.pdf',
           timestamp: startDate,
@@ -712,10 +752,12 @@ describe('Print Log Module', () => {
           size: 256,
           pages: 1,
           duration: 5,
-        }),
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
       ]
 
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch page statistics
       const stats = await fetchPageStats(startDate, endDate)
@@ -747,7 +789,7 @@ describe('Print Log Module', () => {
 
       // Create test receipts with same page count
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice1.pdf',
           timestamp: startDate,
@@ -755,8 +797,10 @@ describe('Print Log Module', () => {
           size: 1024,
           pages: 1,
           duration: 30,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Epson Printer',
           document: 'invoice2.pdf',
           timestamp: startDate,
@@ -764,8 +808,10 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 1,
           duration: 45,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'invoice3.pdf',
           timestamp: startDate,
@@ -773,10 +819,12 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 1,
           duration: 15,
-        }),
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
       ]
 
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       const stats = await fetchPageStats(startDate, endDate)
 
@@ -793,7 +841,7 @@ describe('Print Log Module', () => {
 
       // Create receipts with different dates
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice.pdf',
           timestamp: startDate,
@@ -801,8 +849,10 @@ describe('Print Log Module', () => {
           size: 1024,
           pages: 5,
           duration: 30,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Epson Printer',
           document: 'report.pdf',
           timestamp: startDate - 86400000, // Yesterday
@@ -810,8 +860,10 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 10,
           duration: 45,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'document.pdf',
           timestamp: endDate + 1, // Tomorrow
@@ -819,10 +871,12 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 2,
           duration: 15,
-        }),
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
       ]
 
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       const stats = await fetchPageStats(startDate, endDate)
 
@@ -840,7 +894,7 @@ describe('Print Log Module', () => {
 
       // Create test receipts with different durations
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice.pdf',
           timestamp: startDate,
@@ -848,8 +902,10 @@ describe('Print Log Module', () => {
           size: 1024,
           pages: 5,
           duration: 30,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Epson Printer',
           document: 'report.pdf',
           timestamp: startDate,
@@ -857,8 +913,10 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 10,
           duration: 45,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'document.pdf',
           timestamp: startDate,
@@ -866,8 +924,10 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 2,
           duration: 15,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Brother Printer',
           document: 'error.pdf',
           timestamp: startDate,
@@ -875,10 +935,12 @@ describe('Print Log Module', () => {
           size: 256,
           pages: 1,
           duration: 5,
-        }),
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
       ]
 
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch print time statistics
       const stats = await fetchPrintTimeStats(startDate, endDate)
@@ -912,7 +974,7 @@ describe('Print Log Module', () => {
 
       // Create test receipts with same duration
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice1.pdf',
           timestamp: startDate,
@@ -920,8 +982,10 @@ describe('Print Log Module', () => {
           size: 1024,
           pages: 1,
           duration: 30,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Epson Printer',
           document: 'invoice2.pdf',
           timestamp: startDate,
@@ -929,8 +993,10 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 1,
           duration: 30,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'invoice3.pdf',
           timestamp: startDate,
@@ -938,10 +1004,12 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 1,
           duration: 30,
-        }),
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
       ]
 
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       const stats = await fetchPrintTimeStats(startDate, endDate)
 
@@ -959,7 +1027,7 @@ describe('Print Log Module', () => {
 
       // Create receipts with different dates
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice.pdf',
           timestamp: startDate,
@@ -967,8 +1035,10 @@ describe('Print Log Module', () => {
           size: 1024,
           pages: 5,
           duration: 30,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Epson Printer',
           document: 'report.pdf',
           timestamp: startDate - 86400000, // Yesterday
@@ -976,8 +1046,10 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 10,
           duration: 45,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'document.pdf',
           timestamp: endDate + 1, // Tomorrow
@@ -985,10 +1057,12 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 2,
           duration: 15,
-        }),
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
       ]
 
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       const stats = await fetchPrintTimeStats(startDate, endDate)
 
@@ -1009,7 +1083,7 @@ describe('Print Log Module', () => {
 
       // Create test receipts with different timestamps
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice.pdf',
           timestamp: startDate + (2 * 3600000), // 2 AM
@@ -1017,8 +1091,10 @@ describe('Print Log Module', () => {
           size: 1024,
           pages: 5,
           duration: 30,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Epson Printer',
           document: 'report.pdf',
           timestamp: startDate + (2 * 3600000), // 2 AM
@@ -1026,8 +1102,10 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 10,
           duration: 45,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'document.pdf',
           timestamp: startDate + (14 * 3600000), // 2 PM
@@ -1035,8 +1113,10 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 2,
           duration: 15,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Brother Printer',
           document: 'error.pdf',
           timestamp: startDate + (14 * 3600000), // 2 PM
@@ -1044,10 +1124,12 @@ describe('Print Log Module', () => {
           size: 256,
           pages: 1,
           duration: 5,
-        }),
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
       ]
 
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch prints per hour statistics
       const stats = await fetchPrintsPerHour(startDate, endDate)
@@ -1093,16 +1175,18 @@ describe('Print Log Module', () => {
 
       // Create test receipts all in the same hour
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice1.pdf',
           timestamp: startDate,
           status: 'success',
           size: 1024,
           pages: 1,
+          uuid: '1234567890',
+          print_device_id: 1,
           duration: 30,
-        }),
-        new TestRequest({
+        },
+        {
           printer: 'Epson Printer',
           document: 'invoice2.pdf',
           timestamp: startDate + 1800000, // 30 minutes later
@@ -1110,8 +1194,10 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 1,
           duration: 45,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'invoice3.pdf',
           timestamp: startDate + 3000000, // 50 minutes later
@@ -1119,10 +1205,12 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 1,
           duration: 15,
-        }),
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
       ]
 
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       const stats = await fetchPrintsPerHour(startDate, endDate)
 
@@ -1144,7 +1232,7 @@ describe('Print Log Module', () => {
 
       // Create receipts with different dates
       const requests = [
-        new TestRequest({
+        {
           printer: 'HP LaserJet',
           document: 'invoice.pdf',
           timestamp: startDate,
@@ -1152,8 +1240,10 @@ describe('Print Log Module', () => {
           size: 1024,
           pages: 5,
           duration: 30,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Epson Printer',
           document: 'report.pdf',
           timestamp: startDate - 86400000, // Yesterday
@@ -1161,8 +1251,10 @@ describe('Print Log Module', () => {
           size: 2048,
           pages: 10,
           duration: 45,
-        }),
-        new TestRequest({
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
+        {
           printer: 'Canon Printer',
           document: 'document.pdf',
           timestamp: endDate + 1, // Tomorrow
@@ -1170,10 +1262,12 @@ describe('Print Log Module', () => {
           size: 512,
           pages: 2,
           duration: 15,
-        }),
+          uuid: '1234567890',
+          print_device_id: 1,
+        },
       ]
 
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       const stats = await fetchPrintsPerHour(startDate, endDate)
 

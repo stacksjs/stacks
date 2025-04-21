@@ -5,23 +5,6 @@ import { fetchById, formatShippingRateOptions, getRateByWeightAndZone, getRatesB
 import { bulkStore, store } from '../shippings/shipping-rates/store'
 import { update, updateByMethod, updateByZone } from '../shippings/shipping-rates/update'
 
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-}
-
 beforeEach(async () => {
   await refreshDatabase()
 })
@@ -37,8 +20,7 @@ describe('Shipping Rate Module', () => {
         rate: 1500, // $15.00
       }
 
-      const request = new TestRequest(requestData)
-      const rate = await store(request as any)
+      const rate = await store(requestData)
 
       expect(rate).toBeDefined()
       expect(rate?.method).toBe('Standard Shipping')
@@ -61,30 +43,30 @@ describe('Shipping Rate Module', () => {
 
     it('should create multiple shipping rates with bulk store', async () => {
       const requests = [
-        new TestRequest({
+        {
           method: 'Standard',
           zone: 'US',
           weight_from: 0,
           weight_to: 5,
           rate: 1000,
-        }),
-        new TestRequest({
+        },
+        {
           method: 'Express',
           zone: 'US',
           weight_from: 0,
           weight_to: 5,
           rate: 2000,
-        }),
-        new TestRequest({
+        },
+        {
           method: 'Standard',
           zone: 'CA',
           weight_from: 0,
           weight_to: 5,
           rate: 1500,
-        }),
+        },
       ]
 
-      const count = await bulkStore(requests as any)
+      const count = await bulkStore(requests)
       expect(count).toBe(3)
 
       // Verify rates can be found by zone
@@ -107,21 +89,21 @@ describe('Shipping Rate Module', () => {
   describe('fetch', () => {
     it('should get shipping rates by zone', async () => {
       // Create test rates
-      await store(new TestRequest({
+      await store({
         method: 'Standard',
         zone: 'US',
         weight_from: 0,
         weight_to: 5,
         rate: 1000,
-      }) as any)
+      })
 
-      await store(new TestRequest({
+      await store({
         method: 'Express',
         zone: 'US',
         weight_from: 0,
         weight_to: 5,
         rate: 2000,
-      }) as any)
+      })
 
       const rates = await getRatesByZone('US')
       expect(rates.length).toBe(2)
@@ -130,13 +112,13 @@ describe('Shipping Rate Module', () => {
     })
 
     it('should get shipping rate by weight and zone', async () => {
-      await store(new TestRequest({
+      await store({
         method: 'Standard',
         zone: 'US',
         weight_from: 0,
         weight_to: 5,
         rate: 1000,
-      }) as any)
+      })
 
       const rate = await getRateByWeightAndZone(3, 'US')
       expect(rate).toBeDefined()
@@ -146,13 +128,13 @@ describe('Shipping Rate Module', () => {
     })
 
     it('should format shipping rate options', async () => {
-      await store(new TestRequest({
+      await store({
         method: 'Standard',
         zone: 'US',
         weight_from: 0,
         weight_to: 5,
         rate: 1000,
-      }) as any)
+      })
 
       const options = await formatShippingRateOptions()
       expect(options.length).toBe(1)
@@ -165,15 +147,15 @@ describe('Shipping Rate Module', () => {
   describe('update', () => {
     it('should update an existing shipping rate', async () => {
       // First create a rate to update
-      const createRequest = new TestRequest({
+      const createRequest = {
         method: 'Standard',
         zone: 'US',
         weight_from: 0,
         weight_to: 5,
         rate: 1000,
-      })
+      }
 
-      const rate = await store(createRequest as any)
+      const rate = await store(createRequest)
       const rateId = rate?.id !== undefined ? Number(rate.id) : undefined
 
       expect(rateId).toBeDefined()
@@ -189,8 +171,7 @@ describe('Shipping Rate Module', () => {
         rate: 2000,
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedRate = await update(rateId, updateRequest as any)
+      const updatedRate = await update(rateId, updateData)
 
       expect(updatedRate).toBeDefined()
       expect(updatedRate?.method).toBe('Premium')
@@ -200,21 +181,21 @@ describe('Shipping Rate Module', () => {
 
     it('should update rates by zone', async () => {
       // Create test rates
-      await store(new TestRequest({
+      await store({
         method: 'Standard',
         zone: 'US',
         weight_from: 0,
         weight_to: 5,
         rate: 1000,
-      }) as any)
+      })
 
-      await store(new TestRequest({
+      await store({
         method: 'Express',
         zone: 'US',
         weight_from: 0,
         weight_to: 5,
         rate: 2000,
-      }) as any)
+      })
 
       const updateData = {
         weight_from: 1,
@@ -222,8 +203,7 @@ describe('Shipping Rate Module', () => {
         rate: 1500,
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedCount = await updateByZone('US', updateRequest as any)
+      const updatedCount = await updateByZone('US', updateData)
 
       expect(updatedCount).toBe(2)
 
@@ -235,28 +215,27 @@ describe('Shipping Rate Module', () => {
 
     it('should update rates by method', async () => {
       // Create test rates
-      await store(new TestRequest({
+      await store({
         method: 'Standard',
         zone: 'US',
         weight_from: 0,
         weight_to: 5,
         rate: 1000,
-      }) as any)
+      })
 
-      await store(new TestRequest({
+      await store({
         method: 'Standard',
         zone: 'CA',
         weight_from: 0,
         weight_to: 5,
         rate: 1500,
-      }) as any)
+      })
 
       const updateData = {
         rate: 2000,
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedCount = await updateByMethod('Standard', updateRequest as any)
+      const updatedCount = await updateByMethod('Standard', updateData)
 
       expect(updatedCount).toBe(2)
 
@@ -269,15 +248,15 @@ describe('Shipping Rate Module', () => {
   describe('destroy', () => {
     it('should delete a shipping rate from the database', async () => {
       // Create a rate to delete
-      const request = new TestRequest({
+      const request = {
         method: 'Standard',
         zone: 'US',
         weight_from: 0,
         weight_to: 5,
         rate: 1000,
-      })
+      }
 
-      const rate = await store(request as any)
+      const rate = await store(request)
       const rateId = rate?.id !== undefined ? Number(rate.id) : undefined
 
       expect(rateId).toBeDefined()
@@ -302,15 +281,15 @@ describe('Shipping Rate Module', () => {
 
       // Create 3 test rates
       for (let i = 0; i < 3; i++) {
-        const request = new TestRequest({
+        const request = {
           method: `Method ${i}`,
           zone: 'US',
           weight_from: 0,
           weight_to: 5,
           rate: 1000 + i * 500,
-        })
+        }
 
-        const rate = await store(request as any)
+        const rate = await store(request)
         const rateId = rate?.id !== undefined ? Number(rate.id) : undefined
         expect(rateId).toBeDefined()
         if (rateId)
@@ -332,21 +311,21 @@ describe('Shipping Rate Module', () => {
 
     it('should delete rates by zone', async () => {
       // Create test rates
-      await store(new TestRequest({
+      await store({
         method: 'Standard',
         zone: 'US',
         weight_from: 0,
         weight_to: 5,
         rate: 1000,
-      }) as any)
+      })
 
-      await store(new TestRequest({
+      await store({
         method: 'Express',
         zone: 'US',
         weight_from: 0,
         weight_to: 5,
         rate: 2000,
-      }) as any)
+      })
 
       const deletedCount = await destroyByZone('US')
       expect(deletedCount).toBe(2)
@@ -357,21 +336,21 @@ describe('Shipping Rate Module', () => {
 
     it('should delete rates by method', async () => {
       // Create test rates
-      await store(new TestRequest({
+      await store({
         method: 'Standard',
         zone: 'US',
         weight_from: 0,
         weight_to: 5,
         rate: 1000,
-      }) as any)
+      })
 
-      await store(new TestRequest({
+      await store({
         method: 'Standard',
         zone: 'CA',
         weight_from: 0,
         weight_to: 5,
         rate: 1500,
-      }) as any)
+      })
 
       const deletedCount = await destroyByMethod('Standard')
       expect(deletedCount).toBe(2)

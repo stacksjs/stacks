@@ -24,23 +24,6 @@ import {
 import { bulkStore, store } from '../waitlists/restaurant/store'
 import { update, updatePartySize, updateQueuePosition, updateStatus, updateWaitTimes } from '../waitlists/restaurant/update'
 
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-}
-
 beforeEach(async () => {
   await refreshDatabase()
 })
