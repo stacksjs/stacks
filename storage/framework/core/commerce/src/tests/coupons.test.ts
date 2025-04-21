@@ -6,27 +6,6 @@ import { fetchActive, fetchAll, fetchByCode, fetchById } from '../coupons/fetch'
 import { store } from '../coupons/store'
 import { update } from '../coupons/update'
 
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-
-  has(key: string): boolean {
-    return key in this.data
-  }
-}
-
 beforeEach(async () => {
   await refreshDatabase()
 })
@@ -37,7 +16,7 @@ describe('Coupon Module', () => {
       // Create a unique code to avoid conflicts
       const uniqueCode = `COUPON-${Date.now()}`
 
-      const requestData = {
+      const couponData = {
         code: uniqueCode,
         description: 'Test coupon',
         discount_type: 'percentage',
@@ -48,8 +27,7 @@ describe('Coupon Module', () => {
         end_date: formatDate(new Date('2023-12-31')),
       }
 
-      const request = new TestRequest(requestData)
-      const coupon = await store(request as any)
+      const coupon = await store(couponData)
 
       expect(coupon).toBeDefined()
       expect(coupon?.code).toBe(uniqueCode)
@@ -83,8 +61,7 @@ describe('Coupon Module', () => {
         end_date: formatDate(new Date('2023-12-31')),
       }
 
-      const firstRequest = new TestRequest(firstCouponData)
-      const firstCoupon = await store(firstRequest as any)
+      const firstCoupon = await store(firstCouponData)
       expect(firstCoupon).toBeDefined()
 
       // Try to create a second coupon with the same code
@@ -98,10 +75,8 @@ describe('Coupon Module', () => {
         end_date: formatDate(new Date('2023-12-31')),
       }
 
-      const secondRequest = new TestRequest(secondCouponData)
-
       try {
-        await store(secondRequest as any)
+        await store(secondCouponData)
         // If we get here, the test should fail as we expect an error
         expect(true).toBe(false) // This line should not be reached
       }
@@ -116,7 +91,7 @@ describe('Coupon Module', () => {
       // Create a coupon with only required fields
       const uniqueCode = `COUPON-DEFAULT-${Date.now()}`
 
-      const minimalRequestData = {
+      const minimalCouponData = {
         code: uniqueCode,
         discount_type: 'percentage',
         discount_value: 15,
@@ -126,8 +101,7 @@ describe('Coupon Module', () => {
         // Other fields are omitted to test defaults
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const coupon = await store(request as any)
+      const coupon = await store(minimalCouponData)
 
       expect(coupon).toBeDefined()
       expect(coupon?.code).toBe(uniqueCode)
@@ -142,7 +116,7 @@ describe('Coupon Module', () => {
     it('should fetch a coupon by ID', async () => {
       // First create a coupon to fetch
       const uniqueCode = `COUPON-FETCH-${Date.now()}`
-      const requestData = {
+      const couponData = {
         code: uniqueCode,
         description: 'Fetch test coupon',
         discount_type: 'percentage',
@@ -152,8 +126,7 @@ describe('Coupon Module', () => {
         end_date: formatDate(new Date('2023-12-31')),
       }
 
-      const request = new TestRequest(requestData)
-      const coupon = await store(request as any)
+      const coupon = await store(couponData)
       const couponId = coupon?.id !== undefined ? Number(coupon.id) : undefined
 
       // Make sure we have a valid coupon ID before proceeding
@@ -178,7 +151,7 @@ describe('Coupon Module', () => {
     it('should fetch a coupon by code', async () => {
       // Create a coupon with a unique code
       const uniqueCode = `COUPON-FETCH-CODE-${Date.now()}`
-      const requestData = {
+      const couponData = {
         code: uniqueCode,
         description: 'Fetch by code test coupon',
         discount_type: 'fixed',
@@ -188,8 +161,7 @@ describe('Coupon Module', () => {
         end_date: formatDate(new Date('2023-12-31')),
       }
 
-      const request = new TestRequest(requestData)
-      const coupon = await store(request as any)
+      const coupon = await store(couponData)
       expect(coupon).toBeDefined()
 
       // Now fetch the coupon by code
@@ -208,7 +180,7 @@ describe('Coupon Module', () => {
         const code = `COUPON-ALL-${i}-${Date.now()}`
         codes.push(code)
 
-        const requestData = {
+        const couponData = {
           code,
           discount_type: 'percentage',
           discount_value: 10 + i,
@@ -217,7 +189,7 @@ describe('Coupon Module', () => {
           end_date: formatDate(new Date('2023-12-31')),
         }
 
-        await store(new TestRequest(requestData) as any)
+        await store(couponData)
       }
 
       // Fetch all coupons
@@ -250,7 +222,7 @@ describe('Coupon Module', () => {
         is_active: true,
       }
 
-      await store(new TestRequest(activeData) as any)
+      await store(activeData)
 
       // Create an inactive coupon (same date range but is_active = false)
       const inactiveCode = `COUPON-INACTIVE-${Date.now()}`
@@ -264,7 +236,7 @@ describe('Coupon Module', () => {
         is_active: false,
       }
 
-      await store(new TestRequest(inactiveData) as any)
+      await store(inactiveData)
 
       // Fetch active coupons
       const activeCoupons = await fetchActive()
@@ -294,8 +266,7 @@ describe('Coupon Module', () => {
       }
 
       // Create the coupon
-      const createRequest = new TestRequest(initialData)
-      const coupon = await store(createRequest as any)
+      const coupon = await store(initialData)
       const couponId = coupon?.id !== undefined ? Number(coupon.id) : undefined
 
       // Make sure we have a valid coupon ID before proceeding
@@ -309,12 +280,11 @@ describe('Coupon Module', () => {
         description: 'Updated description',
         discount_value: 15,
         is_active: true,
-        applicable_products: ['product1', 'product2'],
-        applicable_categories: ['category1'],
+        applicable_products: JSON.stringify(['product1', 'product2']),
+        applicable_categories: JSON.stringify(['category1']),
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedCoupon = await update(couponId, updateRequest as any)
+      const updatedCoupon = await update(couponId, updateData)
 
       // Verify the update was successful
       expect(updatedCoupon).toBeDefined()
@@ -324,8 +294,8 @@ describe('Coupon Module', () => {
       expect(updatedCoupon?.is_active).toBe(true)
 
       // Check JSON arrays are properly parsed
-      expect(updatedCoupon?.applicable_products).toEqual(JSON.parse(JSON.stringify(['product1', 'product2'])))
-      expect(updatedCoupon?.applicable_categories).toEqual(JSON.parse(JSON.stringify(['category1'])))
+      expect(updatedCoupon?.applicable_products).toEqual(JSON.stringify(['product1', 'product2']))
+      expect(updatedCoupon?.applicable_categories).toEqual(JSON.stringify(['category1']))
 
       // The original fields should remain unchanged
       expect(updatedCoupon?.code).toBe(uniqueCode)
@@ -347,8 +317,7 @@ describe('Coupon Module', () => {
         end_date: formatDate(new Date('2023-12-31')),
       }
 
-      const firstRequest = new TestRequest(firstCouponData)
-      const firstCoupon = await store(firstRequest as any)
+      const firstCoupon = await store(firstCouponData)
       const firstCouponId = firstCoupon?.id !== undefined ? Number(firstCoupon.id) : undefined
       expect(firstCouponId).toBeDefined()
 
@@ -362,8 +331,7 @@ describe('Coupon Module', () => {
         end_date: formatDate(new Date('2023-12-31')),
       }
 
-      const secondRequest = new TestRequest(secondCouponData)
-      const secondCoupon = await store(secondRequest as any)
+      const secondCoupon = await store(secondCouponData)
       const secondCouponId = secondCoupon?.id !== undefined ? Number(secondCoupon.id) : undefined
       expect(secondCouponId).toBeDefined()
 
@@ -375,10 +343,8 @@ describe('Coupon Module', () => {
         code: code1, // This should conflict with the first coupon
       }
 
-      const updateRequest = new TestRequest(updateData)
-
       try {
-        await update(secondCouponId, updateRequest as any)
+        await update(secondCouponId, updateData)
         // If we get here, the test should fail as we expect an error
         expect(true).toBe(false) // This line should not be reached
       }
@@ -394,7 +360,7 @@ describe('Coupon Module', () => {
     it('should delete a coupon from the database', async () => {
       // First create a coupon to delete
       const uniqueCode = `COUPON-DELETE-${Date.now()}`
-      const requestData = {
+      const couponData = {
         code: uniqueCode,
         discount_type: 'percentage',
         discount_value: 10,
@@ -404,8 +370,7 @@ describe('Coupon Module', () => {
       }
 
       // Create the coupon
-      const request = new TestRequest(requestData)
-      const coupon = await store(request as any)
+      const coupon = await store(couponData)
       const couponId = coupon?.id !== undefined ? Number(coupon.id) : undefined
 
       // Make sure we have a valid coupon ID before proceeding
@@ -439,7 +404,7 @@ describe('Coupon Module', () => {
       // Create 3 expired coupons
       for (let i = 0; i < 3; i++) {
         const uniqueCode = `COUPON-EXPIRED-${i}-${Date.now()}`
-        const requestData = {
+        const couponData = {
           code: uniqueCode,
           discount_type: 'percentage',
           discount_value: 10,
@@ -448,8 +413,7 @@ describe('Coupon Module', () => {
           end_date: pastDateStr,
         }
 
-        const request = new TestRequest(requestData)
-        const coupon = await store(request as any)
+        const coupon = await store(couponData)
         expect(coupon).toBeDefined()
 
         const couponId = coupon?.id !== undefined ? Number(coupon.id) : undefined
@@ -474,8 +438,7 @@ describe('Coupon Module', () => {
         end_date: futureDateStr,
       }
 
-      const validRequest = new TestRequest(validData)
-      const validCoupon = await store(validRequest as any)
+      const validCoupon = await store(validData)
       const validCouponId = validCoupon?.id !== undefined ? Number(validCoupon.id) : undefined
 
       // Delete expired coupons

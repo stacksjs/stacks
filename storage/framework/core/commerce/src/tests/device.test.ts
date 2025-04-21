@@ -7,23 +7,6 @@ import { bulkStore, store } from '../devices/store'
 import { update, updatePrintCount, updateStatus } from '../devices/update'
 import { store as storeReceipt } from '../receipts/store'
 
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-}
-
 beforeEach(async () => {
   await refreshDatabase()
 })
@@ -31,7 +14,7 @@ beforeEach(async () => {
 describe('Print Device Module', () => {
   describe('store', () => {
     it('should create a new print device in the database', async () => {
-      const requestData = {
+      const deviceData = {
         name: 'Main Printer',
         mac_address: '00:11:22:33:44:55',
         location: 'Office 101',
@@ -41,8 +24,7 @@ describe('Print Device Module', () => {
         print_count: 0,
       }
 
-      const request = new TestRequest(requestData)
-      const device = await store(request as any)
+      const device = await store(deviceData)
 
       expect(device).toBeDefined()
       expect(device?.name).toBe('Main Printer')
@@ -65,7 +47,7 @@ describe('Print Device Module', () => {
     })
 
     it('should create a print device with minimal required fields', async () => {
-      const minimalRequestData = {
+      const minimalDeviceData = {
         name: 'Backup Printer',
         mac_address: 'AA:BB:CC:DD:EE:FF',
         location: 'Server Room',
@@ -75,8 +57,7 @@ describe('Print Device Module', () => {
         print_count: 0,
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const device = await store(request as any)
+      const device = await store(minimalDeviceData)
 
       expect(device).toBeDefined()
       expect(device?.name).toBe('Backup Printer')
@@ -89,8 +70,8 @@ describe('Print Device Module', () => {
     })
 
     it('should create multiple print devices with bulk store', async () => {
-      const requests = [
-        new TestRequest({
+      const devices = [
+        {
           name: 'Printer 1',
           mac_address: '00:11:22:33:44:55',
           location: 'Office 101',
@@ -98,8 +79,8 @@ describe('Print Device Module', () => {
           status: 'online',
           last_ping: Date.now(),
           print_count: 0,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Printer 2',
           mac_address: 'AA:BB:CC:DD:EE:FF',
           location: 'Office 102',
@@ -107,8 +88,8 @@ describe('Print Device Module', () => {
           status: 'online',
           last_ping: Date.now(),
           print_count: 0,
-        }),
-        new TestRequest({
+        },
+        {
           name: 'Printer 3',
           mac_address: '11:22:33:44:55:66',
           location: 'Office 103',
@@ -116,10 +97,10 @@ describe('Print Device Module', () => {
           status: 'online',
           last_ping: Date.now(),
           print_count: 0,
-        }),
+        },
       ]
 
-      const count = await bulkStore(requests as any)
+      const count = await bulkStore(devices)
       expect(count).toBe(3)
 
       // Verify devices can be fetched
@@ -136,7 +117,7 @@ describe('Print Device Module', () => {
   describe('update', () => {
     it('should update an existing print device', async () => {
       // First create a device to update
-      const requestData = {
+      const deviceData = {
         name: 'Main Printer',
         mac_address: '00:11:22:33:44:55',
         location: 'Office 101',
@@ -147,8 +128,7 @@ describe('Print Device Module', () => {
       }
 
       // Create the device
-      const createRequest = new TestRequest(requestData)
-      const device = await store(createRequest as any)
+      const device = await store(deviceData)
       const deviceId = device?.id !== undefined ? Number(device.id) : undefined
 
       // Make sure we have a valid device ID before proceeding
@@ -167,8 +147,7 @@ describe('Print Device Module', () => {
         print_count: 100,
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedDevice = await update(deviceId, updateRequest as any)
+      const updatedDevice = await update(deviceId, updateData)
 
       // Verify the update was successful
       expect(updatedDevice).toBeDefined()
@@ -183,7 +162,7 @@ describe('Print Device Module', () => {
 
     it('should update a device\'s status', async () => {
       // Create a device
-      const requestData = {
+      const deviceData = {
         name: 'Main Printer',
         mac_address: '00:11:22:33:44:55',
         location: 'Office 101',
@@ -193,8 +172,7 @@ describe('Print Device Module', () => {
         print_count: 0,
       }
 
-      const request = new TestRequest(requestData)
-      const device = await store(request as any)
+      const device = await store(deviceData)
       const deviceId = device?.id !== undefined ? Number(device.id) : undefined
 
       // Make sure we have a valid device ID before proceeding
@@ -216,7 +194,7 @@ describe('Print Device Module', () => {
 
     it('should update print count', async () => {
       // Create a device
-      const requestData = {
+      const deviceData = {
         name: 'Main Printer',
         mac_address: '00:11:22:33:44:55',
         location: 'Office 101',
@@ -226,8 +204,7 @@ describe('Print Device Module', () => {
         print_count: 0,
       }
 
-      const request = new TestRequest(requestData)
-      const device = await store(request as any)
+      const device = await store(deviceData)
       const deviceId = device?.id !== undefined ? Number(device.id) : undefined
 
       expect(deviceId).toBeDefined()
@@ -245,7 +222,7 @@ describe('Print Device Module', () => {
   describe('destroy', () => {
     it('should delete a print device from the database', async () => {
       // First create a device to delete
-      const requestData = {
+      const deviceData = {
         name: 'Main Printer',
         mac_address: '00:11:22:33:44:55',
         location: 'Office 101',
@@ -256,8 +233,7 @@ describe('Print Device Module', () => {
       }
 
       // Create the device
-      const request = new TestRequest(requestData)
-      const device = await store(request as any)
+      const device = await store(deviceData)
       const deviceId = device?.id !== undefined ? Number(device.id) : undefined
 
       // Make sure we have a valid device ID before proceeding
@@ -285,7 +261,7 @@ describe('Print Device Module', () => {
 
       // Create 3 test devices
       for (let i = 0; i < 3; i++) {
-        const requestData = {
+        const deviceData = {
           name: `Printer ${i}`,
           mac_address: `00:11:22:33:44:${i.toString().padStart(2, '0')}`,
           location: `Office ${100 + i}`,
@@ -295,8 +271,7 @@ describe('Print Device Module', () => {
           print_count: 0,
         }
 
-        const request = new TestRequest(requestData)
-        const device = await store(request as any)
+        const device = await store(deviceData)
 
         const deviceId = device?.id !== undefined ? Number(device.id) : undefined
         expect(deviceId).toBeDefined()
@@ -330,7 +305,7 @@ describe('Print Device Module', () => {
   describe('export', () => {
     it('should export print devices to CSV format', async () => {
       // Create a test device
-      const requestData = {
+      const deviceData = {
         name: 'Main Printer',
         mac_address: '00:11:22:33:44:55',
         location: 'Office 101',
@@ -340,8 +315,7 @@ describe('Print Device Module', () => {
         print_count: 100,
       }
 
-      const request = new TestRequest(requestData)
-      await store(request as any)
+      await store(deviceData)
 
       // Export devices
       const spreadsheet = await exportPrintDevices('csv')
@@ -350,7 +324,7 @@ describe('Print Device Module', () => {
 
     it('should export print devices to Excel format', async () => {
       // Create a test device
-      const requestData = {
+      const deviceData = {
         name: 'Main Printer',
         mac_address: '00:11:22:33:44:55',
         location: 'Office 101',
@@ -360,8 +334,7 @@ describe('Print Device Module', () => {
         print_count: 100,
       }
 
-      const request = new TestRequest(requestData)
-      await store(request as any)
+      await store(deviceData)
 
       // Export devices
       const spreadsheet = await exportPrintDevices('excel')
@@ -377,7 +350,7 @@ describe('Print Device Module', () => {
   describe('print counting', () => {
     it('should count total prints across all devices', async () => {
       // Create a test device
-      const requestData = {
+      const deviceData = {
         name: 'Main Printer',
         mac_address: '00:11:22:33:44:55',
         location: 'Office 101',
@@ -387,8 +360,7 @@ describe('Print Device Module', () => {
         print_count: 0,
       }
 
-      const request = new TestRequest(requestData)
-      const device = await store(request as any)
+      const device = await store(deviceData)
       const deviceId = device?.id !== undefined ? Number(device.id) : undefined
 
       expect(deviceId).toBeDefined()
@@ -426,8 +398,8 @@ describe('Print Device Module', () => {
         print_count: 0,
       }
 
-      const device1 = await store(new TestRequest(device1Data) as any)
-      const device2 = await store(new TestRequest(device2Data) as any)
+      const device1 = await store(device1Data)
+      const device2 = await store(device2Data)
 
       const device1Id = device1?.id !== undefined ? Number(device1.id) : undefined
       const device2Id = device2?.id !== undefined ? Number(device2.id) : undefined
@@ -476,7 +448,7 @@ describe('Print Device Module', () => {
         print_count: 0,
       }
 
-      const device = await store(new TestRequest(deviceData) as any)
+      const device = await store(deviceData)
       const deviceId = device?.id !== undefined ? Number(device.id) : undefined
 
       expect(deviceId).toBeDefined()
@@ -484,7 +456,7 @@ describe('Print Device Module', () => {
         throw new Error('Failed to create test device')
       }
 
-      await storeReceipt(new TestRequest({
+      await storeReceipt({
         printer: 'Main Printer',
         document: 'Test Document',
         timestamp: Date.now(),
@@ -493,9 +465,9 @@ describe('Print Device Module', () => {
         size: 100,
         pages: 1,
         print_device_id: deviceId,
-      }) as any)
+      })
 
-      await storeReceipt(new TestRequest({
+      await storeReceipt({
         printer: 'Main2 Printer',
         document: 'Test Document',
         timestamp: Date.now(),
@@ -504,9 +476,9 @@ describe('Print Device Module', () => {
         size: 100,
         pages: 1,
         print_device_id: deviceId,
-      }) as any)
+      })
 
-      await storeReceipt(new TestRequest({
+      await storeReceipt({
         printer: 'Main3 Printer',
         document: 'Test Document',
         timestamp: Date.now(),
@@ -515,7 +487,7 @@ describe('Print Device Module', () => {
         size: 100,
         pages: 1,
         print_device_id: deviceId,
-      }) as any)
+      })
 
       const errorRate = await calculateErrorRate()
       expect(errorRate).toBe(0)
@@ -533,7 +505,7 @@ describe('Print Device Module', () => {
         print_count: 0,
       }
 
-      const device = await store(new TestRequest(deviceData) as any)
+      const device = await store(deviceData)
       const deviceId = device?.id !== undefined ? Number(device.id) : undefined
 
       expect(deviceId).toBeDefined()
@@ -541,7 +513,7 @@ describe('Print Device Module', () => {
         throw new Error('Failed to create test device')
       }
 
-      await storeReceipt(new TestRequest({
+      await storeReceipt({
         printer: 'Main12 Printer',
         document: 'Test Document',
         timestamp: Date.now(),
@@ -550,9 +522,9 @@ describe('Print Device Module', () => {
         size: 100,
         pages: 1,
         print_device_id: deviceId,
-      }) as any)
+      })
 
-      await storeReceipt(new TestRequest({
+      await storeReceipt({
         printer: 'Main34 Printer',
         document: 'Test Document',
         timestamp: Date.now(),
@@ -561,9 +533,9 @@ describe('Print Device Module', () => {
         size: 100,
         pages: 1,
         print_device_id: deviceId,
-      }) as any)
+      })
 
-      await storeReceipt(new TestRequest({
+      await storeReceipt({
         printer: 'Main2 Printer',
         document: 'Test Document',
         timestamp: Date.now(),
@@ -572,9 +544,9 @@ describe('Print Device Module', () => {
         size: 100,
         pages: 1,
         print_device_id: deviceId,
-      }) as any)
+      })
 
-      await storeReceipt(new TestRequest({
+      await storeReceipt({
         printer: 'Main33 Printer',
         document: 'Test Document',
         timestamp: Date.now(),
@@ -583,7 +555,7 @@ describe('Print Device Module', () => {
         size: 100,
         pages: 1,
         print_device_id: deviceId,
-      }) as any)
+      })
 
       const errorRate = await calculateErrorRate()
       expect(errorRate).toBe(50) // 2 out of 4 receipts have error status
@@ -629,7 +601,7 @@ describe('Print Device Module', () => {
       ]
 
       for (const printer of printers) {
-        await store(new TestRequest(printer) as any)
+        await store(printer)
       }
 
       const health = await calculatePrinterHealth()
@@ -678,7 +650,7 @@ describe('Print Device Module', () => {
       ]
 
       for (const printer of printers) {
-        await store(new TestRequest(printer) as any)
+        await store(printer)
       }
 
       const health = await calculatePrinterHealth()
@@ -734,7 +706,7 @@ describe('Print Device Module', () => {
       ]
 
       for (const printer of printers) {
-        await store(new TestRequest(printer) as any)
+        await store(printer)
       }
 
       const counts = await getPrinterStatusCounts()

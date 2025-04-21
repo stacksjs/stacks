@@ -192,14 +192,13 @@ describe('Post Module', () => {
 
       // Try to update with invalid data
       const updateData = {
-        id: postId,
         title: '', // Empty title should fail
         status: 'invalid',
         views: -1,
       }
 
       try {
-        await update(updateData)
+        await update(postId, updateData)
         expect(true).toBe(false) // This line should not be reached
       }
       catch (error) {

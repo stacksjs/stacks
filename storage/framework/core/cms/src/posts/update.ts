@@ -1,21 +1,6 @@
-import type { PostJsonResponse } from '@stacksjs/orm'
+import type { PostJsonResponse, PostUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
-import { store as storeTag } from '../tags/store'
-
-interface UpdatePostData {
-  id?: number
-  user_id?: number
-  title?: string
-  author?: string
-  category?: string
-  poster?: string
-  body?: string
-  views?: number
-  publishedAt?: number
-  status?: string
-  tags?: string[]
-}
 
 /**
  * Update a post
@@ -23,7 +8,7 @@ interface UpdatePostData {
  * @param data The post data to update
  * @returns The updated post record
  */
-export async function update(id: number, data: UpdatePostData): Promise<PostJsonResponse> {
+export async function update(id: number, data: PostUpdate): Promise<PostJsonResponse> {
   try {
     const updateData = {
       ...data,
@@ -40,25 +25,25 @@ export async function update(id: number, data: UpdatePostData): Promise<PostJson
     if (!result)
       throw new Error('Failed to update post')
 
-    // Handle tags if they exist in the data
-    if (data.tags && Array.isArray(data.tags)) {
-      // First, delete existing tags for this post
-      await db
-        .deleteFrom('taggable')
-        .where('taggable_id', '=', id)
-        .where('taggable_type', '=', 'posts')
-        .execute()
+    // // Handle tags if they exist in the data
+    // if (data.tags && Array.isArray(data.tags)) {
+    //   // First, delete existing tags for this post
+    //   await db
+    //     .deleteFrom('taggable')
+    //     .where('taggable_id', '=', id)
+    //     .where('taggable_type', '=', 'posts')
+    //     .execute()
 
-      // Then add the new tags
-      for (const tag of data.tags) {
-        await storeTag({
-          name: tag,
-          taggable_id: id,
-          taggable_type: 'posts',
-          is_active: true,
-        })
-      }
-    }
+    //   // Then add the new tags
+    //   for (const tag of data.tags) {
+    //     await storeTag({
+    //       name: tag,
+    //       taggable_id: id,
+    //       taggable_type: 'posts',
+    //       is_active: true,
+    //     })
+    //   }
+    // }
 
     return result
   }

@@ -5,23 +5,6 @@ import { fetchById } from '../customers/fetch'
 import { store } from '../customers/store'
 import { update } from '../customers/update'
 
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-}
-
 beforeEach(async () => {
   await refreshDatabase()
 })
@@ -32,7 +15,7 @@ describe('Customer Module', () => {
       // Create a unique email to avoid conflicts
       const uniqueEmail = `test-${Date.now()}@example.com`
 
-      const requestData = {
+      const customerData = {
         name: 'Test Customer',
         email: uniqueEmail,
         phone: '555-123-4567',
@@ -40,8 +23,7 @@ describe('Customer Module', () => {
         user_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const customer = await store(request as any)
+      const customer = await store(customerData)
 
       expect(customer).toBeDefined()
       expect(customer?.name).toBe('Test Customer')
@@ -72,8 +54,7 @@ describe('Customer Module', () => {
         user_id: 1,
       }
 
-      const firstRequest = new TestRequest(firstCustomerData)
-      const firstCustomer = await store(firstRequest as any)
+      const firstCustomer = await store(firstCustomerData)
       expect(firstCustomer).toBeDefined()
 
       // Try to create a second customer with the same email
@@ -85,10 +66,8 @@ describe('Customer Module', () => {
         user_id: 2,
       }
 
-      const secondRequest = new TestRequest(secondCustomerData)
-
       try {
-        await store(secondRequest as any)
+        await store(secondCustomerData)
         // If we get here, the test should fail as we expect an error
         expect(true).toBe(false) // This line should not be reached
       }
@@ -108,16 +87,16 @@ describe('Customer Module', () => {
       // Create a customer with only required fields
       const uniqueEmail = `test-defaults-${Date.now()}@example.com`
 
-      const minimalRequestData = {
+      const minimalCustomerData = {
         name: 'Minimal Customer',
         email: uniqueEmail,
         phone: '555-123-9876',
         user_id: 1,
-        // status is omitted to test defaults
+        status: 'Active',
+        // Other fields are omitted to test defaults
       }
 
-      const request = new TestRequest(minimalRequestData)
-      const customer = await store(request as any)
+      const customer = await store(minimalCustomerData)
 
       expect(customer).toBeDefined()
       expect(customer?.name).toBe('Minimal Customer')
@@ -131,7 +110,7 @@ describe('Customer Module', () => {
     it('should fetch a customer by ID', async () => {
       // First create a customer to fetch
       const uniqueEmail = `test-fetch-${Date.now()}@example.com`
-      const requestData = {
+      const customerData = {
         name: 'Fetch Test Customer',
         email: uniqueEmail,
         phone: '555-987-6543',
@@ -139,8 +118,7 @@ describe('Customer Module', () => {
         user_id: 1,
       }
 
-      const request = new TestRequest(requestData)
-      const customer = await store(request as any)
+      const customer = await store(customerData)
       const customerId = customer?.id !== undefined ? Number(customer.id) : undefined
 
       // Make sure we have a valid customer ID before proceeding
@@ -172,8 +150,7 @@ describe('Customer Module', () => {
       }
 
       // Create the customer
-      const createRequest = new TestRequest(initialData)
-      const customer = await store(createRequest as any)
+      const customer = await store(initialData)
       const customerId = customer?.id !== undefined ? Number(customer.id) : undefined
 
       // Make sure we have a valid customer ID before proceeding
@@ -188,8 +165,7 @@ describe('Customer Module', () => {
         phone: '555-333-4444',
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedCustomer = await update(customerId, updateRequest as any)
+      const updatedCustomer = await update(customerId, updateData)
 
       // Verify the update was successful
       expect(updatedCustomer).toBeDefined()
@@ -215,8 +191,7 @@ describe('Customer Module', () => {
         user_id: 1,
       }
 
-      const firstRequest = new TestRequest(firstCustomerData)
-      const firstCustomer = await store(firstRequest as any)
+      const firstCustomer = await store(firstCustomerData)
       const firstCustomerId = firstCustomer?.id !== undefined ? Number(firstCustomer.id) : undefined
       expect(firstCustomerId).toBeDefined()
 
@@ -229,8 +204,7 @@ describe('Customer Module', () => {
         user_id: 1,
       }
 
-      const secondRequest = new TestRequest(secondCustomerData)
-      const secondCustomer = await store(secondRequest as any)
+      const secondCustomer = await store(secondCustomerData)
       const secondCustomerId = secondCustomer?.id !== undefined ? Number(secondCustomer.id) : undefined
       expect(secondCustomerId).toBeDefined()
 
@@ -242,10 +216,8 @@ describe('Customer Module', () => {
         email: email1, // This should conflict with the first customer
       }
 
-      const updateRequest = new TestRequest(updateData)
-
       try {
-        await update(secondCustomerId, updateRequest as any)
+        await update(secondCustomerId, updateData)
         // If we get here, the test should fail as we expect an error
         expect(true).toBe(false) // This line should not be reached
       }
@@ -266,7 +238,7 @@ describe('Customer Module', () => {
     it('should delete a customer from the database', async () => {
       // First create a customer to delete
       const uniqueEmail = `test-delete-${Date.now()}@example.com`
-      const requestData = {
+      const customerData = {
         name: 'Delete Test Customer',
         email: uniqueEmail,
         phone: '555-999-8888',
@@ -275,8 +247,7 @@ describe('Customer Module', () => {
       }
 
       // Create the customer
-      const request = new TestRequest(requestData)
-      const customer = await store(request as any)
+      const customer = await store(customerData)
       const customerId = customer?.id !== undefined ? Number(customer.id) : undefined
 
       // Make sure we have a valid customer ID before proceeding
@@ -325,7 +296,7 @@ describe('Customer Module', () => {
       // Create 3 test customers
       for (let i = 0; i < 3; i++) {
         const uniqueEmail = `test-bulk-delete-${i}-${Date.now()}@example.com`
-        const requestData = {
+        const customerData = {
           name: `Bulk Delete Test Customer ${i}`,
           email: uniqueEmail,
           phone: `555-999-${1000 + i}`,
@@ -333,8 +304,7 @@ describe('Customer Module', () => {
           user_id: 1,
         }
 
-        const request = new TestRequest(requestData)
-        const customer = await store(request as any)
+        const customer = await store(customerData)
         expect(customer).toBeDefined()
 
         const customerId = customer?.id !== undefined ? Number(customer.id) : undefined
