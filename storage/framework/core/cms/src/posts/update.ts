@@ -4,7 +4,7 @@ import { formatDate } from '@stacksjs/orm'
 import { store as storeTag } from '../tags/store'
 
 interface UpdatePostData {
-  id: number
+  id?: number
   user_id?: number
   title?: string
   author?: string
@@ -23,16 +23,17 @@ interface UpdatePostData {
  * @param data The post data to update
  * @returns The updated post record
  */
-export async function update(data: UpdatePostData): Promise<PostJsonResponse> {
+export async function update(id: number, data: UpdatePostData): Promise<PostJsonResponse> {
   try {
-    const updateData: Record<string, any> = {
+    const updateData = {
+      ...data,
       updated_at: formatDate(new Date()),
     }
 
     const result = await db
       .updateTable('posts')
       .set(updateData)
-      .where('id', '=', data.id)
+      .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
 
@@ -44,7 +45,7 @@ export async function update(data: UpdatePostData): Promise<PostJsonResponse> {
       // First, delete existing tags for this post
       await db
         .deleteFrom('taggable')
-        .where('taggable_id', '=', data.id)
+        .where('taggable_id', '=', id)
         .where('taggable_type', '=', 'posts')
         .execute()
 
@@ -52,7 +53,7 @@ export async function update(data: UpdatePostData): Promise<PostJsonResponse> {
       for (const tag of data.tags) {
         await storeTag({
           name: tag,
-          taggable_id: data.id,
+          taggable_id: id,
           taggable_type: 'posts',
           is_active: true,
         })

@@ -5,23 +5,6 @@ import { fetchById } from '../posts/fetch'
 import { store } from '../posts/store'
 import { update } from '../posts/update'
 
-// Create a request-like object for testing
-class TestRequest {
-  private data: Record<string, any> = {}
-
-  constructor(data: Record<string, any>) {
-    this.data = data
-  }
-
-  validate() {
-    return Promise.resolve()
-  }
-
-  get<T = any>(key: string): T {
-    return this.data[key] as T
-  }
-}
-
 beforeEach(async () => {
   await refreshDatabase()
 })
@@ -29,19 +12,19 @@ beforeEach(async () => {
 describe('Post Module', () => {
   describe('store', () => {
     it('should create a new post in the database', async () => {
-      const requestData = {
+      const postData = {
+        user_id: 1,
         title: 'Test Post Title',
         author: 'Test Author',
         category: 'Technology',
+        poster: 'https://example.com/default-poster.jpg',
         body: 'This is a test post body with more than 10 characters.',
         views: 0,
-        comments: 0,
         publishedAt: Date.now(),
         status: 'draft',
       }
 
-      const request = new TestRequest(requestData)
-      const post = await store(request as any)
+      const post = await store(postData)
 
       expect(post).toBeDefined()
       expect(post?.title).toBe('Test Post Title')
@@ -49,7 +32,6 @@ describe('Post Module', () => {
       expect(post?.category).toBe('Technology')
       expect(post?.body).toBe('This is a test post body with more than 10 characters.')
       expect(post?.views).toBe(0)
-      expect(post?.comments).toBe(0)
       expect(post?.status).toBe('draft')
 
       // Save the ID and convert from Generated<number> to number
@@ -63,42 +45,40 @@ describe('Post Module', () => {
       }
     })
 
-    it('should create a post with optional poster field', async () => {
-      const requestData = {
+    it('should create a post with custom poster field', async () => {
+      const postData = {
+        user_id: 1,
         title: 'Post with Poster',
         author: 'Test Author',
         category: 'Technology',
         body: 'This is a test post body with more than 10 characters.',
         poster: 'https://example.com/poster.jpg',
         views: 0,
-        comments: 0,
         publishedAt: Date.now(),
         status: 'draft',
       }
 
-      const request = new TestRequest(requestData)
-      const post = await store(request as any)
+      const post = await store(postData)
 
       expect(post).toBeDefined()
       expect(post?.poster).toBe('https://example.com/poster.jpg')
     })
 
     it('should throw an error when trying to create a post with invalid data', async () => {
-      const requestData = {
-        title: 'Too short', // Less than 3 characters
+      const postData = {
+        user_id: 1,
+        title: '', // Empty title should fail
         author: 'Test Author',
         category: 'Tech',
-        body: 'Too short', // Less than 10 characters
-        views: -1, // Negative value
-        comments: -1, // Negative value
-        publishedAt: -1, // Negative value
-        status: 'invalid', // Invalid status
+        poster: 'https://example.com/poster.jpg',
+        body: 'Too short',
+        views: -1,
+        publishedAt: -1,
+        status: 'invalid',
       }
 
-      const request = new TestRequest(requestData)
-
       try {
-        await store(request as any)
+        await store(postData)
         expect(true).toBe(false) // This line should not be reached
       }
       catch (error) {
@@ -111,19 +91,19 @@ describe('Post Module', () => {
   describe('fetchById', () => {
     it('should fetch a post by ID', async () => {
       // First create a post to fetch
-      const requestData = {
+      const postData = {
+        user_id: 1,
         title: 'Fetch Test Post',
         author: 'Test Author',
         category: 'Technology',
+        poster: 'https://example.com/poster.jpg',
         body: 'This is a test post body with more than 10 characters.',
         views: 0,
-        comments: 0,
         publishedAt: Date.now(),
         status: 'draft',
       }
 
-      const request = new TestRequest(requestData)
-      const post = await store(request as any)
+      const post = await store(postData)
       const postId = post?.id !== undefined ? Number(post.id) : undefined
 
       // Make sure we have a valid post ID before proceeding
@@ -145,20 +125,21 @@ describe('Post Module', () => {
   describe('update', () => {
     it('should update an existing post', async () => {
       // First create a post to update
-      const requestData = {
+      const postData = {
+        user_id: 1,
         title: 'Update Test Post',
         author: 'Test Author',
         category: 'Technology',
+        poster: 'https://example.com/poster.jpg',
         body: 'This is a test post body with more than 10 characters.',
         views: 0,
-        comments: 0,
         publishedAt: Date.now(),
         status: 'draft',
       }
 
       // Create the post
-      const createRequest = new TestRequest(requestData)
-      const post = await store(createRequest as any)
+      const post = await store(postData)
+
       const postId = post?.id !== undefined ? Number(post.id) : undefined
 
       // Make sure we have a valid post ID before proceeding
@@ -174,8 +155,7 @@ describe('Post Module', () => {
         views: 100,
       }
 
-      const updateRequest = new TestRequest(updateData)
-      const updatedPost = await update(postId, updateRequest as any)
+      const updatedPost = await update(postId, updateData)
 
       // Verify the update was successful
       expect(updatedPost).toBeDefined()
@@ -191,19 +171,19 @@ describe('Post Module', () => {
 
     it('should throw an error when trying to update a post with invalid data', async () => {
       // First create a post to update
-      const requestData = {
+      const postData = {
+        user_id: 1,
         title: 'Invalid Update Test Post',
         author: 'Test Author',
         category: 'Technology',
+        poster: 'https://example.com/poster.jpg',
         body: 'This is a test post body with more than 10 characters.',
         views: 0,
-        comments: 0,
         publishedAt: Date.now(),
         status: 'draft',
       }
 
-      const createRequest = new TestRequest(requestData)
-      const post = await store(createRequest as any)
+      const post = await store(postData)
       const postId = post?.id !== undefined ? Number(post.id) : undefined
 
       if (!postId) {
@@ -212,15 +192,14 @@ describe('Post Module', () => {
 
       // Try to update with invalid data
       const updateData = {
-        title: 'Too short', // Less than 3 characters
-        status: 'invalid', // Invalid status
-        views: -1, // Negative value
+        id: postId,
+        title: '', // Empty title should fail
+        status: 'invalid',
+        views: -1,
       }
 
-      const updateRequest = new TestRequest(updateData)
-
       try {
-        await update(postId, updateRequest as any)
+        await update(updateData)
         expect(true).toBe(false) // This line should not be reached
       }
       catch (error) {
@@ -233,20 +212,20 @@ describe('Post Module', () => {
   describe('destroy', () => {
     it('should delete a post from the database', async () => {
       // First create a post to delete
-      const requestData = {
+      const postData = {
+        user_id: 1,
         title: 'Delete Test Post',
         author: 'Test Author',
         category: 'Technology',
+        poster: 'https://example.com/poster.jpg',
         body: 'This is a test post body with more than 10 characters.',
         views: 0,
-        comments: 0,
         publishedAt: Date.now(),
         status: 'draft',
       }
 
       // Create the post
-      const request = new TestRequest(requestData)
-      const post = await store(request as any)
+      const post = await store(postData)
       const postId = post?.id !== undefined ? Number(post.id) : undefined
 
       // Make sure we have a valid post ID before proceeding
