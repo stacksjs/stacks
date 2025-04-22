@@ -22,29 +22,29 @@ export async function fetchAll(): Promise<AuthorJsonResponse[]> {
 /**
  * Fetch authors by name
  */
-export async function fetchByName(name: string): Promise<AuthorJsonResponse[]> {
+export async function findByName(name: string): Promise<AuthorJsonResponse | undefined> {
   return await db
     .selectFrom('authors')
     .where('name', '=', name)
     .selectAll()
-    .execute()
+    .executeTakeFirst()
 }
 
 /**
  * Fetch authors by email
  */
-export async function fetchByEmail(email: string): Promise<AuthorJsonResponse[]> {
+export async function findByEmail(email: string): Promise<AuthorJsonResponse | undefined> {
   return await db
     .selectFrom('authors')
     .where('email', '=', email)
     .selectAll()
-    .execute()
+    .executeTakeFirst()
 }
 
 /**
  * Fetch author by UUID
  */
-export async function fetchByUuid(uuid: string): Promise<AuthorJsonResponse | undefined> {
+export async function findByUuid(uuid: string): Promise<AuthorJsonResponse | undefined> {
   return await db
     .selectFrom('authors')
     .where('uuid', '=', uuid)
@@ -55,10 +55,10 @@ export async function fetchByUuid(uuid: string): Promise<AuthorJsonResponse | un
 /**
  * Fetch authors by user ID
  */
-export async function fetchByUserId(userId: number): Promise<AuthorJsonResponse[]> {
+export async function findByUserId(userId: number): Promise<AuthorJsonResponse | undefined> {
   return await db
     .selectFrom('authors')
     .where('user_id', '=', userId)
     .selectAll()
-    .execute()
+    .executeTakeFirst()
 }

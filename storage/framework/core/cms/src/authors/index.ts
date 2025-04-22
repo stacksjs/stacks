@@ -3,12 +3,14 @@ export {
 } from './destroy'
 
 export {
-  fetchAll,
-  fetchById,
-  fetchByName,
+  findByName,
+  findByEmail,
+  findByUuid,
+  findByUserId,
 } from './fetch'
 
 export {
+  findOrCreate,
   store,
 } from './store'
 

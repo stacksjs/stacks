@@ -10,10 +10,9 @@ import { formatDate } from '@stacksjs/orm'
  */
 export async function store(data: NewPost): Promise<PostJsonResponse> {
   try {
-    const postData: NewPost = {
-      user_id: data.user_id,
+    const postData = {
+      author_id: data.author_id,
       title: data.title,
-      author: data.author,
       category: data.category,
       poster: data.poster,
       body: data.body,
