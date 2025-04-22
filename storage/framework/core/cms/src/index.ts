@@ -1,8 +1,8 @@
+import * as authors from './authors'
 import * as postCategories from './categories'
 import * as comments from './comments'
 import * as posts from './posts'
 import * as tags from './tags'
-import * as authors from './authors'
 
 type PostsModule = typeof posts
 type PostCategoriesModule = typeof postCategories
@@ -29,9 +29,9 @@ export const cms: CmsNamespace = {
 export default cms
 
 export {
+  authors,
   comments,
   postCategories,
   posts,
   tags,
-  authors,
 }

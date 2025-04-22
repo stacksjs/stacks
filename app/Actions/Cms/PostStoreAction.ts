@@ -1,6 +1,6 @@
 import type { PostRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-import { posts, authors } from '@stacksjs/cms'
+import { authors, posts } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
 
 export default new Action({

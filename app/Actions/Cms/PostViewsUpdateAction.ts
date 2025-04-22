@@ -9,12 +9,12 @@ export default new Action({
   method: 'PATCH',
   async handle(request: PostRequestType) {
     const postId = Number(request.getParam('id'))
-    
+
     if (!postId)
       throw new Error('Post ID is required')
 
     const post = await posts.fetchById(postId)
-    
+
     if (!post)
       throw new Error(`Post with ID ${postId} not found`)
 
@@ -24,4 +24,4 @@ export default new Action({
 
     return response.json(updatedPost)
   },
-}) 
+})

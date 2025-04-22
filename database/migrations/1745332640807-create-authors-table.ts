@@ -13,7 +13,6 @@ export async function up(db: Database<any>) {
     .addColumn('updated_at', 'timestamp')
     .execute()
 
-
   await db.schema.createIndex('authors_email_name_index').on('authors').columns(['email', 'name']).execute()
   await db.schema.createIndex('authors_id_index').on('authors').column('id').execute()
 }

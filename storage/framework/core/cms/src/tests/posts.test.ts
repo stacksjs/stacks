@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { db } from '@stacksjs/database'
 import { refreshDatabase } from '@stacksjs/testing'
+import { findOrCreate as findOrCreateAuthor } from '../authors/store'
 import { destroy } from '../posts/destroy'
 import { fetchById } from '../posts/fetch'
 import { store } from '../posts/store'
 import { update } from '../posts/update'
-import { findOrCreate as findOrCreateAuthor } from '../authors/store'
 
 beforeEach(async () => {
   await refreshDatabase()

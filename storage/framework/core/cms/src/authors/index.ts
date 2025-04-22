@@ -3,10 +3,10 @@ export {
 } from './destroy'
 
 export {
-  findByName,
   findByEmail,
-  findByUuid,
+  findByName,
   findByUserId,
+  findByUuid,
 } from './fetch'
 
 export {

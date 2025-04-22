@@ -35,7 +35,7 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
       .where('email', '=', data.email)
       .selectAll()
       .executeTakeFirst()
-    
+
     if (!user) {
       // Create a new user if one doesn't exist
       const result = await db
@@ -54,7 +54,7 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
 
       if (!result)
         throw new Error('Failed to create user')
-        
+
       user = result
     }
 
