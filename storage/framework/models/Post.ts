@@ -87,7 +87,7 @@ export default {
     },
 
     views: {
-      required: true,
+      required: false,
       order: 6,
       fillable: true,
       default: 0,

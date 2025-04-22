@@ -1,64 +1,66 @@
-import type { PersonalAccessTokensTable } from '../src/models/AccessToken'
-import type { AuthorsTable } from '../src/models/Author'
-import type { CartsTable } from '../src/models/Cart'
-import type { CartItemsTable } from '../src/models/CartItem'
-import type { CategoriesTable } from '../src/models/Category'
-import type { CouponsTable } from '../src/models/Coupon'
-import type { CustomersTable } from '../src/models/Customer'
-import type { DeliveryRoutesTable } from '../src/models/DeliveryRoute'
-import type { DeploymentsTable } from '../src/models/Deployment'
-import type { DigitalDeliveriesTable } from '../src/models/DigitalDelivery'
-import type { DriversTable } from '../src/models/Driver'
-import type { ErrorsTable } from '../src/models/Error'
-import type { FailedJobsTable } from '../src/models/FailedJob'
-import type { GiftCardsTable } from '../src/models/GiftCard'
-import type { JobsTable } from '../src/models/Job'
-import type { LicenseKeysTable } from '../src/models/LicenseKey'
-import type { LogsTable } from '../src/models/Log'
-import type { LoyaltyPointsTable } from '../src/models/LoyaltyPoint'
-import type { LoyaltyRewardsTable } from '../src/models/LoyaltyReward'
-import type { ManufacturersTable } from '../src/models/Manufacturer'
-import type { OrdersTable } from '../src/models/Order'
-import type { OrderItemsTable } from '../src/models/OrderItem'
-import type { PaymentsTable } from '../src/models/Payment'
-import type { PaymentMethodsTable } from '../src/models/PaymentMethod'
-import type { PaymentProductsTable } from '../src/models/PaymentProduct'
-import type { PaymentTransactionsTable } from '../src/models/PaymentTransaction'
-import type { PostsTable } from '../src/models/Post'
-import type { PrintDevicesTable } from '../src/models/PrintDevice'
-import type { ProductsTable } from '../src/models/Product'
-import type { ProductItemsTable } from '../src/models/ProductItem'
-import type { ProductUnitsTable } from '../src/models/ProductUnit'
-import type { ProductVariantsTable } from '../src/models/ProductVariant'
 import type { ProjectsTable } from '../src/models/Project'
-import type { ReceiptsTable } from '../src/models/Receipt'
+import type { SubscriberEmailsTable } from '../src/models/SubscriberEmail'
+import type { PersonalAccessTokensTable } from '../src/models/AccessToken'
+import type { TeamsTable } from '../src/models/Team'
+import type { SubscribersTable } from '../src/models/Subscriber'
+import type { DeploymentsTable } from '../src/models/Deployment'
 import type { ReleasesTable } from '../src/models/Release'
-import type { RequestsTable } from '../src/models/Request'
+import type { UsersTable } from '../src/models/User'
+import type { PaymentProductsTable } from '../src/models/PaymentProduct'
+import type { PrintDevicesTable } from '../src/models/PrintDevice'
+import type { CategoriesTable } from '../src/models/Category'
+import type { PaymentsTable } from '../src/models/Payment'
+import type { DriversTable } from '../src/models/Driver'
+import type { WaitlistProductsTable } from '../src/models/WaitlistProduct'
+import type { DigitalDeliveriesTable } from '../src/models/DigitalDelivery'
+import type { ManufacturersTable } from '../src/models/Manufacturer'
+import type { OrderItemsTable } from '../src/models/OrderItem'
+import type { ShippingZonesTable } from '../src/models/ShippingZone'
+import type { CustomersTable } from '../src/models/Customer'
+import type { ProductsTable } from '../src/models/Product'
+import type { ReceiptsTable } from '../src/models/Receipt'
+import type { ProductVariantsTable } from '../src/models/ProductVariant'
+import type { LicenseKeysTable } from '../src/models/LicenseKey'
+import type { WaitlistRestaurantsTable } from '../src/models/WaitlistRestaurant'
 import type { ReviewsTable } from '../src/models/Review'
+import type { ProductUnitsTable } from '../src/models/ProductUnit'
+import type { GiftCardsTable } from '../src/models/GiftCard'
+import type { OrdersTable } from '../src/models/Order'
+import type { CouponsTable } from '../src/models/Coupon'
+import type { TaxRatesTable } from '../src/models/TaxRate'
+import type { TransactionsTable } from '../src/models/Transaction'
+import type { LoyaltyPointsTable } from '../src/models/LoyaltyPoint'
+import type { ProductItemsTable } from '../src/models/ProductItem'
+import type { LoyaltyRewardsTable } from '../src/models/LoyaltyReward'
 import type { ShippingMethodsTable } from '../src/models/ShippingMethod'
 import type { ShippingRatesTable } from '../src/models/ShippingRate'
-import type { ShippingZonesTable } from '../src/models/ShippingZone'
-import type { SubscribersTable } from '../src/models/Subscriber'
-import type { SubscriberEmailsTable } from '../src/models/SubscriberEmail'
+import type { CartsTable } from '../src/models/Cart'
+import type { DeliveryRoutesTable } from '../src/models/DeliveryRoute'
+import type { CartItemsTable } from '../src/models/CartItem'
+import type { FailedJobsTable } from '../src/models/FailedJob'
+import type { PaymentMethodsTable } from '../src/models/PaymentMethod'
+import type { AuthorsTable } from '../src/models/Author'
+import type { PostsTable } from '../src/models/Post'
+import type { PaymentTransactionsTable } from '../src/models/PaymentTransaction'
+import type { RequestsTable } from '../src/models/Request'
+import type { JobsTable } from '../src/models/Job'
+import type { LogsTable } from '../src/models/Log'
 import type { SubscriptionsTable } from '../src/models/Subscription'
-import type { TaxRatesTable } from '../src/models/TaxRate'
-import type { TeamsTable } from '../src/models/Team'
-import type { TransactionsTable } from '../src/models/Transaction'
-import type { UsersTable } from '../src/models/User'
-import type { WaitlistProductsTable } from '../src/models/WaitlistProduct'
-import type { WaitlistRestaurantsTable } from '../src/models/WaitlistRestaurant'
+import type { ErrorsTable } from '../src/models/Error'
+import type { Generated } from 'kysely'
 
 export interface TeamsUsersTable {
-  id?: number
-  team_id: number
-  user_id: number
-}
+        id?: number
+        team_id: number
+        user_id: number
+      }
 
 export interface TeamsUsersTable {
-  id?: number
-  user_id: number
-  team_id: number
-}
+        id?: number
+        user_id: number
+        team_id: number
+      }
+
 
 export interface MigrationsTable {
   name: string
@@ -103,47 +105,47 @@ export interface CommenteableUpvotesTable {
   created_at?: string
 }
 
-export interface CategorizableTable {
-  id?: number
-  name: string
-  slug: string
-  description?: string
-  is_active: boolean
-  categorizable_id: number
-  categorizable_type: string
-  created_at?: string
-  updated_at?: string
-}
+  export interface CategorizableTable {
+    id?: number
+    name: string
+    slug: string
+    description?: string
+    is_active: boolean
+    categorizable_id: number
+    categorizable_type: string
+    created_at?: string
+    updated_at?: string
+  }
 
-export interface TaggableTable {
-  id?: number
-  name: string
-  slug: string
-  description?: string
-  is_active: boolean
-  taggable_id: number
-  taggable_type: string
-  created_at?: string
-  updated_at?: string
-}
+  export interface TaggableTable {
+    id?: number
+    name: string
+    slug: string
+    description?: string
+    is_active: boolean
+    taggable_id: number
+    taggable_type: string
+    created_at?: string
+    updated_at?: string
+  }
 
-export interface TaggableModelsTable {
-  id?: number
-  tag_id: number
-  taggable_id: number
-  taggable_type: string
-  created_at?: string
-  updated_at?: string
-}
+  export interface TaggableModelsTable {
+    id?: number
+    tag_id: number
+    taggable_id: number
+    taggable_type: string
+    created_at?: string
+    updated_at?: string
+  }
 
-export interface CategorizableModelsTable {
-  id?: number
-  category_id: number
-  categorizable_id: number
-  categorizable_type: string
-  created_at?: string
-  updated_at?: string
-}
+  export interface CategorizableModelsTable {
+    id?: number
+    category_id: number
+    categorizable_id: number
+    categorizable_type: string
+    created_at?: string
+    updated_at?: string
+  }
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
