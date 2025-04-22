@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@iconify-json/carbon": "^1.2.8",
-    "@shikijs/vitepress-twoslash": "^3.2.2",
+    "@shikijs/vitepress-twoslash": "^3.3.0",
     "@vite-pwa/assets-generator": "^1.0.0",
     "@vite-pwa/vitepress": "^1.0.0",
     "unocss": "^66.0.0",
