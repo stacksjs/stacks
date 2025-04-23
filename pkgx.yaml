@@ -10,7 +10,7 @@
 
 dependencies:
   aws/cli: ^2.22.26
-  bun: ^1.2.5
+  bun: ^1.2.10
   gh: ^2.69.0
   zip: ^3.0
   unzip: ^6.0

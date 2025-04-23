@@ -279,6 +279,7 @@ resx
 retriable
 rimraf
 roadmap
+rolldown
 Runtimes
 rustfmt
 safelist
