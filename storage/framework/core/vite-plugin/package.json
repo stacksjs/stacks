@@ -102,5 +102,8 @@
     "vite-plugin-pwa": "^1.0.0",
     "vite-ssg": "^26.1.1",
     "vite-ssg-sitemap": "^0.8.1"
+  },
+  "overrides": {
+    "vite": "npm:rolldown-vite@latest"
   }
 }
