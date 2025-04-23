@@ -448,6 +448,8 @@
     "now": true,
     "parse": true,
     "RetryOptions": true,
-    "Fetch": true
+    "Fetch": true,
+    "Slot": true,
+    "Slots": true
   }
 }

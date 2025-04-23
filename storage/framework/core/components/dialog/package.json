@@ -45,5 +45,8 @@
     "@vue/tsconfig": "^0.7.0",
     "unocss": "66.0.0",
     "unplugin-icons": "^22.1.0"
+  },
+  "overrides": {
+    "vite": "npm:rolldown-vite@latest"
   }
 }

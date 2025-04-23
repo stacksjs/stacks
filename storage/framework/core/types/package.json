@@ -73,5 +73,8 @@
     "vite-ssg": "^26.1.1",
     "vitepress": "1.6.3",
     "vue": "^3.5.13"
+  },
+  "overrides": {
+    "vite": "npm:rolldown-vite@latest"
   }
 }

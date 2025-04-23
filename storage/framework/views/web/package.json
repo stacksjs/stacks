@@ -52,4 +52,8 @@
     "vite-ssg-sitemap": "^0.8.1",
     "vue-tsc": "^2.2.10"
   }
+  ,
+  "overrides": {
+    "vite": "npm:rolldown-vite@latest"
+  }
 }

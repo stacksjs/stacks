@@ -50,5 +50,8 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*"
+  },
+  "overrides": {
+    "vite": "npm:rolldown-vite@latest"
   }
 }
