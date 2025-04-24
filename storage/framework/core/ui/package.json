@@ -59,7 +59,7 @@
   "devDependencies": {
     "@headlessui/vue": "^1.7.23",
     "@iconify-json/hugeicons": "^1.2.4",
-    "@iconify/json": "^2.2.330",
+    "@iconify/json": "^2.2.331",
     "@julr/unocss-preset-forms": "^1.0.0",
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
