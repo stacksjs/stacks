@@ -1,8 +1,8 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { passwordResets } from '@stacksjs/auth'
 import { User } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
-import { RequestInstance } from '@stacksjs/types'
 
 export default new Action({
   name: 'PasswordResetAction',

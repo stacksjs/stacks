@@ -1,4 +1,5 @@
-import type { EmailAddress, EmailMessage, EmailResult, MailtrapResponse, RenderOptions } from '@stacksjs/types'
+import type { EmailAddress, EmailMessage, EmailResult, MailtrapResponse } from '@stacksjs/types'
+import type { RenderOptions } from '@vue-email/compiler'
 import { Buffer } from 'node:buffer'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'

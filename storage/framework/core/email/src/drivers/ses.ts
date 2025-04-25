@@ -1,4 +1,5 @@
-import type { EmailMessage, EmailResult, RenderOptions } from '@stacksjs/types'
+import type { EmailMessage, EmailResult } from '@stacksjs/types'
+import type { RenderOptions } from '@vue-email/compiler'
 import { SendEmailCommand, SES } from '@aws-sdk/client-ses'
 import { config } from '@stacksjs/config'
 import { template } from '../template'

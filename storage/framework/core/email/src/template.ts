@@ -1,4 +1,4 @@
-import type { RenderOptions } from '@stacksjs/types'
+import type { RenderOptions } from '@vue-email/compiler'
 import process from 'node:process'
 import { resourcesPath } from '@stacksjs/path'
 import { config } from '@vue-email/compiler'

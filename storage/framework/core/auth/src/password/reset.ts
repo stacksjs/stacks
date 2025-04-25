@@ -55,43 +55,44 @@ export function passwordResets(email: string): PasswordResetActions {
 
     try {
       const resetRecord = await trx
-      .selectFrom('password_resets')
-      .where('token', '=', token)
-      .where('email', '=', email)
-      .selectAll()
-      .executeTakeFirst()
+        .selectFrom('password_resets')
+        .where('token', '=', token)
+        .where('email', '=', email)
+        .selectAll()
+        .executeTakeFirst()
 
-    if (!resetRecord)
-      return false
+      if (!resetRecord)
+        return false
 
-    // Update the user's password
-    const user = await db
-      .selectFrom('users')
-      .where('email', '=', email)
-      .selectAll()
-      .executeTakeFirst()
+      // Update the user's password
+      const user = await db
+        .selectFrom('users')
+        .where('email', '=', email)
+        .selectAll()
+        .executeTakeFirst()
 
-    if (!user)
-      return false
+      if (!user)
+        return false
 
-    const hashedPassword = await makeHash(newPassword, { algorithm: 'bcrypt' })
+      const hashedPassword = await makeHash(newPassword, { algorithm: 'bcrypt' })
 
-    // Update password
-    await db
-      .updateTable('users')
-      .set({ password: hashedPassword })
-      .where('email', '=', email)
-      .executeTakeFirst()
+      // Update password
+      await db
+        .updateTable('users')
+        .set({ password: hashedPassword })
+        .where('email', '=', email)
+        .executeTakeFirst()
 
-    // Delete the used reset token
-    await db
-      .deleteFrom('password_resets')
-      .where('token', '=', token)
-      .where('email', '=', email)
-      .execute()
+      // Delete the used reset token
+      await db
+        .deleteFrom('password_resets')
+        .where('token', '=', token)
+        .where('email', '=', email)
+        .execute()
 
       await trx.commit().execute()
-    } catch (error) {
+    }
+    catch (error) {
       await trx.rollback().execute()
 
       throw error
