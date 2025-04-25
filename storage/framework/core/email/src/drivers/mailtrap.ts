@@ -35,7 +35,6 @@ export class MailtrapDriver extends BaseEmailDriver {
       if (message.template)
         templ = await template(message.template, options)
 
-
       const mailtrapPayload = {
         from: {
           email: message.from?.address || config.email.from?.address || '',

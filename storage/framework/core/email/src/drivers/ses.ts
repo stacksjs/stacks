@@ -95,12 +95,12 @@ export class SESDriver extends BaseEmailDriver {
   protected formatAddresses(addresses: string | string[] | { address: string, name?: string }[] | undefined): string[] {
     if (!addresses)
       return []
-    
+
     if (typeof addresses === 'string')
       return [addresses]
-    
-    return addresses.map(addr => 
-      typeof addr === 'string' ? addr : addr.address
+
+    return addresses.map(addr =>
+      typeof addr === 'string' ? addr : addr.address,
     )
   }
 }

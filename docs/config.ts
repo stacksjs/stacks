@@ -360,7 +360,7 @@ const sidebar = {
             { text: 'Comments', link: '/guide/cms/comments' },
             { text: 'Authors', link: '/guide/cms/authors' },
             { text: 'SEO', link: '/guide/cms/seo' },
-            ],
+          ],
         },
 
         {

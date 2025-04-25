@@ -87,7 +87,7 @@ export interface PasskeysTable {
   last_used_at: string
 }
 
-export interface commentablesTable {
+export interface CommentablesTable {
   id?: number
   title: string
   body: string
@@ -101,7 +101,7 @@ export interface commentablesTable {
   updated_at?: string | null
 }
 
-export interface CommenteableUpvotesTable {
+export interface CommentableUpvotesTable {
   id?: number
   user_id: number
   upvoteable_id: number

@@ -80,7 +80,7 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
       throw new Error('Failed to create author')
 
     await trx.commit().execute()
-    
+
     return result
   }
   catch (error) {

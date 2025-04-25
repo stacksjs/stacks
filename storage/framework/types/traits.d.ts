@@ -76,7 +76,7 @@ export interface PasskeysRequestType extends Request {
 
 }
 
-interface RequestDatacommentables {
+interface RequestDataCommentables {
   id: number
   title: string
   body: string
@@ -85,19 +85,15 @@ interface RequestDatacommentables {
   rejected_at: number | null
   commentables_id: number
   commentables_type: string
-  reports_count: number
-  reported_at: number | null
-  upvotes_count: number
-  downvotes_count: number
   user_id: number | null
   created_at: string
   updated_at: string | null
 
 }
-export interface commentablesRequestType extends Request {
+export interface CommentablesRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
   get: <T = string>(element: string, defaultValue?: T) => T
-  all: () => RequestDatacommentables
+  all: () => RequestDataCommentables
   id: number
   title: string
   body: string
@@ -106,17 +102,13 @@ export interface commentablesRequestType extends Request {
   rejected_at: number | null
   commentables_id: number
   commentables_type: string
-  reports_count: number
-  reported_at: number | null
-  upvotes_count: number
-  downvotes_count: number
   user_id: number | null
   created_at: string
   updated_at: string | null
 
 }
 
-interface RequestDataCommenteableUpvotes {
+interface RequestDataCommentableUpvotes {
   id: number
   user_id: number
   upvoteable_id: number
@@ -124,10 +116,10 @@ interface RequestDataCommenteableUpvotes {
   created_at: string
 
 }
-export interface CommenteableUpvotesRequestType extends Request {
+export interface CommentableUpvotesRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
   get: <T = string>(element: string, defaultValue?: T) => T
-  all: () => RequestDataCommenteableUpvotes
+  all: () => RequestDataCommentableUpvotes
   id: number
   user_id: number
   upvoteable_id: number
@@ -236,4 +228,4 @@ export interface CategorizableModelsRequestType extends Request {
 
 }
 
-export type TraitRequest = MigrationsRequestType | PasswordResetsRequestType | PasskeysRequestType | commentablesRequestType | CommenteableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestType
+export type TraitRequest = MigrationsRequestType | PasswordResetsRequestType | PasskeysRequestType | CommentablesRequestType | CommentableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestType
