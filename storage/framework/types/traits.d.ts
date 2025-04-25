@@ -24,6 +24,22 @@ export interface MigrationsRequestType extends Request {
 
 }
 
+interface RequestDataPasswordResets {
+  email: string
+  token: string
+  created_at: string
+
+}
+export interface PasswordResetsRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: <T>(element: string, defaultValue?: T) => T
+  all: () => RequestDataPasswordResets
+  email: string
+  token: string
+  created_at: string
+
+}
+
 interface RequestDataPasskeys {
   id: number
   cred_public_key: string
@@ -220,4 +236,4 @@ export interface CategorizableModelsRequestType extends Request {
 
 }
 
-export type TraitRequest = MigrationsRequestType | PasskeysRequestType | commentablesRequestType | CommenteableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestType
+export type TraitRequest = MigrationsRequestType | PasswordResetsRequestType | PasskeysRequestType | commentablesRequestType | CommenteableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestType

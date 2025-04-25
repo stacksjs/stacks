@@ -36,7 +36,7 @@ export interface PasskeysTable {
 }`
 }
 
-function generateCommenteableInterface(): string {
+function generateCommentableInterface(): string {
   return `
 export interface commentablesTable {
   id?: number
@@ -53,7 +53,7 @@ export interface commentablesTable {
 }`
 }
 
-function generateCommenteableUpvotesTableInterface(): string {
+function generateCommentableUpvotesTableInterface(): string {
   return `
 export interface CommenteableUpvotesTable {
   id?: number
@@ -123,8 +123,8 @@ export function generateTraitTableInterfaces(): string {
     generateMigrationsTableInterface(),
     generatePasswordResetsTableInterface(),
     generatePasskeysTableInterface(),
-    generateCommenteableInterface(),
-    generateCommenteableUpvotesTableInterface(),
+    generateCommentableInterface(),
+    generateCommentableUpvotesTableInterface(),
     generateCategorizableTableInterface(),
     generateTaggableTableInterface(),
     generateTaggableModelsTableInterface(),

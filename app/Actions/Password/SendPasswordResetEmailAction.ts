@@ -2,6 +2,7 @@ import type { UserRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { User } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { passwordResets } from '@stacksjs/auth'
 
 export default new Action({
   name: 'SendPasswordResetEmailAction',
@@ -9,15 +10,16 @@ export default new Action({
   method: 'POST',
   requestFile: 'PasswordResetEmailRequest',
   async handle(request: UserRequestType) {
-
     const email = request.get('email')
-    
+
     const user = await User.where('email', email).first()
 
     if (!user) {
       return response.error('User not found')
     }
-    
-    return model
+
+    const token = await passwordResets(email).getToken()
+
+    return token
   },
 })

@@ -65,6 +65,12 @@ export interface MigrationsTable {
   timestamp: string
 }
 
+export interface PasswordResetsTable {
+  email: string
+  token: string
+  created_at?: string
+}
+
 export interface PasskeysTable {
   id?: number
   cred_public_key: string
@@ -203,4 +209,5 @@ export interface Database {
   categorizable: CategorizableTable
   categorizable_models: CategorizableModelsTable
   taggable_models: TaggableModelsTable
+  password_resets: PasswordResetsTable
 }
