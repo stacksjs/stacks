@@ -317,22 +317,6 @@ const sidebar = {
               ],
             },
             {
-              text: 'Commerce',
-              collapsible: true,
-              collapsed: true,
-              items: [
-                { text: 'Customers', link: '/guide/commerce/customers' },
-                { text: 'Orders', link: '/guide/commerce/orders' },
-                { text: 'Coupons', link: '/guide/commerce/coupons' },
-                { text: 'Gift Cards', link: '/guide/commerce/gift-cards' },
-                { text: 'Printers', link: '/guide/commerce/printers' },
-                { text: 'Products', link: '/guide/commerce/products' },
-                { text: 'Taxes', link: '/guide/commerce/taxes' },
-                { text: 'Waitlist', link: '/guide/commerce/waitlist' },
-                { text: 'Payments', link: '/guide/commerce/payments' },
-              ],
-            },
-            {
               text: 'Storage',
               collapsible: true,
               collapsed: true,
@@ -344,6 +328,44 @@ const sidebar = {
             { text: 'Validation', link: '/packages/validation' },
           ],
         },
+
+        {
+          text: 'Commerce',
+          collapsible: true,
+          collapsed: true,
+          items: [
+            { text: 'Customers', link: '/guide/commerce/customers' },
+            { text: 'Orders', link: '/guide/commerce/orders' },
+            { text: 'Coupons', link: '/guide/commerce/coupons' },
+            { text: 'Gift Cards', link: '/guide/commerce/gift-cards' },
+            { text: 'Printers', link: '/guide/commerce/printers' },
+            { text: 'Products', link: '/guide/commerce/products' },
+            { text: 'Taxes', link: '/guide/commerce/taxes' },
+            { text: 'Waitlist', link: '/guide/commerce/waitlist' },
+            { text: 'Payments', link: '/guide/commerce/payments' },
+          ],
+        },
+
+        {
+          text: 'CMS',
+          collapsible: true,
+          collapsed: true,
+          items: [
+            { text: 'Customers', link: '/guide/commerce/customers' },
+            { text: 'POS', link: '/guide/commerce/pos' },
+            { text: 'Orders', link: '/guide/commerce/orders' },
+            { text: 'Customers', link: '/guide/commerce/customers' },
+            { text: 'Delivery', link: '/guide/commerce/delivery' },
+            { text: 'Coupons', link: '/guide/commerce/coupons' },
+            { text: 'Gift Cards', link: '/guide/commerce/gift-cards' },
+            { text: 'Printers', link: '/guide/commerce/printers' },
+            { text: 'Products', link: '/guide/commerce/products' },
+            { text: 'Taxes', link: '/guide/commerce/taxes' },
+            { text: 'Waitlist', link: '/guide/commerce/waitlist' },
+            { text: 'Payments', link: '/guide/commerce/payments' },
+          ],
+        },
+
 
         {
           text: 'Cloud',
