@@ -56,7 +56,7 @@ export async function fetchCommentById(id: number): Promise<commentables | undef
     .executeTakeFirst()
 }
 
-export async function fetchCommentsBycommentables(
+export async function fetchCommentsByCommentables(
   commentables_id: number,
   commentables_type: string,
   options: { status?: commentables['status'], limit?: number, offset?: number } = {},

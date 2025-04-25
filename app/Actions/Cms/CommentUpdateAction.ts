@@ -13,9 +13,9 @@ export default new Action({
     const id = request.getParam('id')
 
     const data = {
-      title: request.get('title') as string,
-      body: request.get('body') as string,
-      status: request.get('status') as string,
+      title: request.get('title'),
+      body: request.get('body'),
+      status: request.get('status'),
     }
 
     const model = await comments.update(id, data)

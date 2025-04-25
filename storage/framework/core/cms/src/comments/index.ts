@@ -6,7 +6,7 @@ export {
 export {
   fetchCommentById,
   fetchComments,
-  fetchCommentsBycommentables,
+  fetchCommentsByCommentables,
 } from './fetch'
 
 export {

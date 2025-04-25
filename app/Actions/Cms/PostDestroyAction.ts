@@ -13,7 +13,7 @@ export default new Action({
 
     const model = await Post.findOrFail(id)
 
-    model?.delete()
+    await model?.delete()
 
     return response.json({ message: 'Model deleted!' })
   },

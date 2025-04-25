@@ -11,11 +11,12 @@ export default new Action({
     await request.validate()
 
     const data = {
-      title: request.get('title') as string,
-      body: request.get('body') as string,
-      status: request.get('status') as string,
+      title: request.get('title'),
+      body: request.get('body'),
+      status: request.get('status'),
       commentables_id: request.get<number>('commentables_id'),
       commentables_type: request.get<string>('commentables_type'),
+      user_id: request.get<number>('user_id'),
     }
 
     const model = await comments.store(data)
