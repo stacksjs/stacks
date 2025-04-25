@@ -2,7 +2,7 @@ import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
-import { hasMigrationBeenCreated } from './index'
+import { hasMigrationBeenCreated } from '../index'
 
 // SQLite/MySQL version
 export async function createPasskeyMigration(): Promise<void> {

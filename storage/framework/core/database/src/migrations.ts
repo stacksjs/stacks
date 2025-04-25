@@ -7,7 +7,7 @@ import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { FileMigrationProvider, Migrator } from 'kysely'
 import { generateMysqlMigration, generatePostgresMigration, generateSqliteMigration, resetMysqlDatabase, resetPostgresDatabase, resetSqliteDatabase } from './drivers'
-import { createCategorizableModelsTable, createCategorizableTable, createcommentablesTable, createCommentUpvoteMigration, createPasskeyMigration, createPostgresCategorizableTable, createPostgresCommenteableTable, createPostgresCommentUpvoteMigration, createPostgresPasskeyMigration, createPostgresTaggableTable, createTaggableTable } from './drivers/traits'
+import { createCategorizableModelsTable, createCategorizableTable, createcommentablesTable, createCommentUpvoteMigration, createPasskeyMigration, createPostgresCategorizableTable, createPostgresCommenteableTable, createPostgresCommentUpvoteMigration, createPostgresPasskeyMigration, createPostgresTaggableTable, createTaggableTable } from './drivers/defaults/traits'
 import { db } from './utils'
 
 function getDriver(): string {

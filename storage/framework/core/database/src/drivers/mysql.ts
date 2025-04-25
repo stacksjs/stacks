@@ -21,7 +21,7 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { dropCommonTables } from './traits'
+import { dropCommonTables } from './defaults/traits'
 
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await dropMysqlTables()
