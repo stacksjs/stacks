@@ -51,8 +51,10 @@ export function passwordResets(email: string): PasswordResetActions {
   }
 
   async function resetPassword(token: string, newPassword: string): Promise<boolean> {
-    // First verify the token is valid
-    const resetRecord = await db
+    const trx = await db.startTransaction().execute()
+
+    try {
+      const resetRecord = await trx
       .selectFrom('password_resets')
       .where('token', '=', token)
       .where('email', '=', email)
@@ -87,6 +89,13 @@ export function passwordResets(email: string): PasswordResetActions {
       .where('token', '=', token)
       .where('email', '=', email)
       .execute()
+
+      await trx.commit().execute()
+    } catch (error) {
+      await trx.rollback().execute()
+
+      throw error
+    }
 
     return true
   }
