@@ -27,7 +27,15 @@ class Mail {
     if (!driver)
       throw new Error(`Email driver '${this.defaultDriver}' is not available`)
 
-    return driver.send(message)
+    const defaultFrom = {
+      name: config.email.from?.name || 'Stacks',
+      address: config.email.from?.address || 'no-reply@stacksjs.org',
+    }
+
+    return driver.send({
+      ...message,
+      from: message.from || defaultFrom,
+    })
   }
 
   // Optional method to switch drivers on the fly

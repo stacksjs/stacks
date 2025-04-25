@@ -23,8 +23,8 @@ export abstract class BaseEmailDriver implements EmailDriver {
    * Validates email message fields
    */
   protected validateMessage(message: EmailMessage): boolean {
-    if (!message.from?.address) {
-      throw new Error('Email sender address is required')
+    if (!message.from?.address && !this.config.email.from?.address) {
+      throw new Error('Email sender address is required either in message or config')
     }
 
     if (!message.to || (Array.isArray(message.to) && message.to.length === 0)) {

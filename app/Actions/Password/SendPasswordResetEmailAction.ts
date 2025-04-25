@@ -18,8 +18,8 @@ export default new Action({
       return response.error('User not found')
     }
 
-    const token = await passwordResets(email).getToken()
+    await passwordResets(email).sendEmail()
 
-    return token
+    return response.success('Email sent')
   },
 })

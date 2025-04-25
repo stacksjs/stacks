@@ -1,36 +1,42 @@
 import type { PasswordResetsRequestType, PasswordResetsTable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { mail } from '@stacksjs/email'
+import { config } from '@stacksjs/config'
 import { randomBytes } from 'node:crypto'
 
 export interface PasswordResetActions {
-  getToken: () => Promise<string>
+  sendEmail: () => Promise<void>
   verifyToken: (token: string) => Promise<boolean>
 }
 
 export function passwordResets(email: string): PasswordResetActions {
-  /**
-   * Generate a secure random token for password reset
-   */
   function generateResetToken(): string {
     return randomBytes(32).toString('hex')
   }
 
-
-  async function getToken(): Promise<string> {
+  async function createResetToken(): Promise<string> {
     const token = generateResetToken()
     
-    const passwordResetData = {
-      email: email,
-      token,
-    }
-  
-    const result = await db
+    await db
       .insertInto('password_resets')
-      .values(passwordResetData)
-      .returningAll()
+      .values({
+        email,
+        token,
+      })
       .executeTakeFirst()
-  
+
     return token
+  }
+
+  async function sendEmail(): Promise<void> {
+    const token = await createResetToken()
+    const url = config.app.url || 'https://localhost:5173'
+    
+    await mail.send({
+      to: email,
+      subject: 'Password Reset',
+      text: `Click <a href="${url}/password/reset/${token}">here</a> to reset your password`,
+    })
   }
 
   async function verifyToken(token: string): Promise<boolean> {
@@ -44,7 +50,7 @@ export function passwordResets(email: string): PasswordResetActions {
   }
 
   return {
-      getToken,
-      verifyToken,
+    sendEmail,
+    verifyToken,
   }
 }

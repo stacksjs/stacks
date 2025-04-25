@@ -52,8 +52,8 @@ export interface EmailDriver {
 }
 
 export interface EmailMessage {
-  /** Required sender email address */
-  from: EmailAddress
+  /** Sender email address (optional, will use config default if not provided) */
+  from?: EmailAddress
   /** Primary recipient(s) */
   to: string | string[] | EmailAddress[]
   /** Carbon copy recipient(s) */
