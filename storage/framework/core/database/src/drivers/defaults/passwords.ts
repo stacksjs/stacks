@@ -1,6 +1,5 @@
-import { log } from '@stacksjs/cli'
+import { italic, log } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'
-import { italic } from '@stacksjs/cli'
 import { hasMigrationBeenCreated } from '../index'
 
 // SQLite/MySQL version

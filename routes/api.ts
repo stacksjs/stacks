@@ -242,6 +242,8 @@ route.group({ prefix: '/queues' }, async () => {
   route.get('/', 'Actions/Queue/FetchQueuesAction')
 })
 
+route.post('/password/send-password-reset-email', 'Actions/Password/SendPasswordResetEmailAction')
+
 // route.action('/example') // equivalent to `route.get('/example', 'ExampleAction')`
 // route.action('Dashboard/GetProjects')
 // route.action('Dashboard/Settings/UpdateAiConfig')

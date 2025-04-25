@@ -8,6 +8,15 @@ export interface MigrationsTable {
 }`
 }
 
+function generatePasswordResetsTableInterface(): string {
+  return `
+export interface PasswordResetsTable {
+  email: string
+  token: string
+  created_at?: string
+}`
+}
+
 function generatePasskeysTableInterface(): string {
   return `
 export interface PasskeysTable {
@@ -112,6 +121,7 @@ function generateCategorizableModelsTableInterface(): string {
 export function generateTraitTableInterfaces(): string {
   return [
     generateMigrationsTableInterface(),
+    generatePasswordResetsTableInterface(),
     generatePasskeysTableInterface(),
     generateCommenteableInterface(),
     generateCommenteableUpvotesTableInterface(),
@@ -141,6 +151,14 @@ export async function generateTraitRequestTypes(): Promise<string> {
       fields: {
         name: 'string',
         timestamp: 'string',
+      },
+    },
+    {
+      name: 'PasswordResets',
+      fields: {
+        email: 'string',
+        token: 'string',
+        created_at: 'string',
       },
     },
     {
