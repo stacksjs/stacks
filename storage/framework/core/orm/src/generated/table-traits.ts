@@ -273,7 +273,7 @@ export async function generateTraitRequestTypes(): Promise<string> {
       fieldString += ` ${field}: ${type}\n     `
     }
 
-    fieldStringType += ` get: <T>(element: string, defaultValue?: T) => T`
+    fieldStringType += ` get: <T = string>(element: string, defaultValue?: T) => T`
 
     const types = `export interface ${trait.name}RequestType extends Request {
       validate(attributes?: CustomAttributes): void

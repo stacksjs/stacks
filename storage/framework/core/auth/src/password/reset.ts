@@ -1,12 +1,13 @@
-import type { PasswordResetsRequestType, PasswordResetsTable } from '@stacksjs/orm'
+import { randomBytes } from 'node:crypto'
+import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { mail } from '@stacksjs/email'
-import { config } from '@stacksjs/config'
-import { randomBytes } from 'node:crypto'
+import { makeHash } from '@stacksjs/security'
 
 export interface PasswordResetActions {
   sendEmail: () => Promise<void>
   verifyToken: (token: string) => Promise<boolean>
+  resetPassword: (token: string, newPassword: string) => Promise<boolean>
 }
 
 export function passwordResets(email: string): PasswordResetActions {
@@ -16,7 +17,7 @@ export function passwordResets(email: string): PasswordResetActions {
 
   async function createResetToken(): Promise<string> {
     const token = generateResetToken()
-    
+
     await db
       .insertInto('password_resets')
       .values({
@@ -31,7 +32,7 @@ export function passwordResets(email: string): PasswordResetActions {
   async function sendEmail(): Promise<void> {
     const token = await createResetToken()
     const url = config.app.url || 'https://localhost:5173'
-    
+
     await mail.send({
       to: email,
       subject: 'Password Reset',
@@ -49,8 +50,50 @@ export function passwordResets(email: string): PasswordResetActions {
     return result !== undefined
   }
 
+  async function resetPassword(token: string, newPassword: string): Promise<boolean> {
+    // First verify the token is valid
+    const resetRecord = await db
+      .selectFrom('password_resets')
+      .where('token', '=', token)
+      .where('email', '=', email)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!resetRecord)
+      return false
+
+    // Update the user's password
+    const user = await db
+      .selectFrom('users')
+      .where('email', '=', email)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!user)
+      return false
+
+    const hashedPassword = await makeHash(newPassword, { algorithm: 'bcrypt' })
+
+    // Update password
+    await db
+      .updateTable('users')
+      .set({ password: hashedPassword })
+      .where('email', '=', email)
+      .executeTakeFirst()
+
+    // Delete the used reset token
+    await db
+      .deleteFrom('password_resets')
+      .where('token', '=', token)
+      .where('email', '=', email)
+      .execute()
+
+    return true
+  }
+
   return {
     sendEmail,
     verifyToken,
+    resetPassword,
   }
 }

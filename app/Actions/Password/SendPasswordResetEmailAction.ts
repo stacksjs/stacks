@@ -1,15 +1,15 @@
-import type { UserRequestType } from '@stacksjs/orm'
+import type { PasswordResetsRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
+import { passwordResets } from '@stacksjs/auth'
 import { User } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
-import { passwordResets } from '@stacksjs/auth'
 
 export default new Action({
   name: 'SendPasswordResetEmailAction',
   description: 'Send Password Reset Email',
   method: 'POST',
-  requestFile: 'PasswordResetEmailRequest',
-  async handle(request: UserRequestType) {
+  requestFile: 'PasswordResetRequest',
+  async handle(request: PasswordResetsRequestType) {
     const email = request.get('email')
 
     const user = await User.where('email', email).first()
