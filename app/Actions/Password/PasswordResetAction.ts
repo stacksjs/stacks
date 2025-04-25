@@ -12,7 +12,11 @@ export default new Action({
   async handle(request: RequestInstance) {
     const token = request.get('token')
     const password = request.get('password')
+    const passwordConfirmation = request.get('password_confirmation')
     const email = request.get('email')
+
+    if (password !== passwordConfirmation)
+      return response.error('Password confirmation does not match')
 
     if (!token || !password || !email)
       return response.error('Missing required fields')

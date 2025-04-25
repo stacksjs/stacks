@@ -243,6 +243,7 @@ route.group({ prefix: '/queues' }, async () => {
 })
 
 route.post('/password/send-password-reset-email', 'Actions/Password/SendPasswordResetEmailAction')
+route.post('/password/reset', 'Actions/Password/PasswordResetAction')
 
 // route.action('/example') // equivalent to `route.get('/example', 'ExampleAction')`
 // route.action('Dashboard/GetProjects')
