@@ -67,12 +67,12 @@ features:
   - title: Streamlined Testing
     icon: 🧪
     details: A fast built-in testing framework. Enjoyable support for both unit & feature tests.
-  - title: CMS
-    icon: 📃
-    details: A fast built-in testing framework. Enjoyable support for both unit & feature tests.
   - title: Commerce
     icon: 💴
     details: A fast built-in testing framework. Enjoyable support for both unit & feature tests.
+  - title: Realtime
+    icon: 🏃🏻
+    details: Build real-time features with WebSockets. Add live updates, chat, notifications & collaborative features with ease.
 ---
 
 <Home />
