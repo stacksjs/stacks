@@ -38,7 +38,7 @@ export interface PasskeysTable {
 
 function generateCommentableInterface(): string {
   return `
-export interface commentablesTable {
+export interface CommentablesTable {
   id?: number
   title: string
   body: string
@@ -55,7 +55,7 @@ export interface commentablesTable {
 
 function generateCommentableUpvotesTableInterface(): string {
   return `
-export interface CommenteableUpvotesTable {
+export interface CommentableUpvotesTable {
   id?: number
   user_id: number
   upvoteable_id: number
@@ -180,7 +180,7 @@ export async function generateTraitRequestTypes(): Promise<string> {
       },
     },
     {
-      name: 'commentables',
+      name: 'Commentables',
       fields: {
         id: 'number',
         title: 'string',
@@ -190,17 +190,13 @@ export async function generateTraitRequestTypes(): Promise<string> {
         rejected_at: 'number | null',
         commentables_id: 'number',
         commentables_type: 'string',
-        reports_count: 'number',
-        reported_at: 'number | null',
-        upvotes_count: 'number',
-        downvotes_count: 'number',
         user_id: 'number | null',
         created_at: 'string',
         updated_at: 'string | null',
       },
     },
     {
-      name: 'CommenteableUpvotes',
+      name: 'CommentableUpvotes',
       fields: {
         id: 'number',
         user_id: 'number',
