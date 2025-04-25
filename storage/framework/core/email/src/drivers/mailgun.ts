@@ -42,7 +42,11 @@ export class MailgunDriver extends BaseEmailDriver {
       }
 
       const formData = new FormData()
-      formData.append('from', this.formatMailgunAddress(message.from))
+      const fromAddress = {
+        address: message.from?.address || config.email.from?.address || '',
+        name: message.from?.name || config.email.from?.name,
+      }
+      formData.append('from', this.formatMailgunAddress(fromAddress))
 
       // Handle multiple recipients
       this.formatMailgunAddresses(message.to).forEach(to => formData.append('to', to))

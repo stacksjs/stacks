@@ -35,10 +35,11 @@ export class MailtrapDriver extends BaseEmailDriver {
       if (message.template)
         templ = await template(message.template, options)
 
+
       const mailtrapPayload = {
         from: {
-          email: message.from.address || config.email.from?.address,
-          ...(message.from.name && { name: message.from.name }),
+          email: message.from?.address || config.email.from?.address || '',
+          name: message.from?.name || config.email.from?.name,
         },
         to: this.formatMailtrapAddresses(message.to),
         ...(message.cc && { cc: this.formatMailtrapAddresses(message.cc) }),

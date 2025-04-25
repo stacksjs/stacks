@@ -60,7 +60,10 @@ export class SESDriver extends BaseEmailDriver {
       }
 
       const params = {
-        Source: message.from?.address || config.email.from?.address,
+        Source: this.formatSourceAddress({
+          address: message.from?.address || config.email.from?.address || '',
+          name: message.from?.name || config.email.from?.name,
+        }),
 
         Destination: {
           ToAddresses: this.formatAddresses(message.to),
@@ -83,6 +86,22 @@ export class SESDriver extends BaseEmailDriver {
     catch (error) {
       return this.handleError(error, message)
     }
+  }
+
+  private formatSourceAddress(from: { address: string, name?: string }): string {
+    return from.name ? `${from.name} <${from.address}>` : from.address
+  }
+
+  protected formatAddresses(addresses: string | string[] | { address: string, name?: string }[] | undefined): string[] {
+    if (!addresses)
+      return []
+    
+    if (typeof addresses === 'string')
+      return [addresses]
+    
+    return addresses.map(addr => 
+      typeof addr === 'string' ? addr : addr.address
+    )
   }
 }
 

@@ -70,8 +70,8 @@ export class SendGridDriver extends BaseEmailDriver {
           },
         ],
         from: {
-          email: message.from.address || config.email.from?.address,
-          ...(message.from.name && { name: message.from.name }),
+          email: message.from?.address || config.email.from?.address || '',
+          name: message.from?.name || config.email.from?.name,
         },
         content,
         ...(message.attachments && {
