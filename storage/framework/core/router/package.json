@@ -49,6 +49,6 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "unplugin-vue-router": "^0.12.0",
-    "vue-router": "^4.5.0"
+    "vue-router": "^4.5.1"
   }
 }
