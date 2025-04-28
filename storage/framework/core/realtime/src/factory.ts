@@ -1,5 +1,6 @@
 import type { RealtimeDriver } from './drivers/base'
 import { SocketDriver } from './drivers/socket'
+import { PusherDriver } from './drivers/pusher'
 
 export type DriverType = 'socket' | 'pusher' // Add more driver types as needed
 
@@ -16,11 +17,17 @@ export class RealtimeFactory {
     return RealtimeFactory.instance
   }
 
-  getDriver(type: DriverType): RealtimeDriver {
+  getDriver(type: DriverType, options?: any): RealtimeDriver {
     if (!this.drivers.has(type)) {
       switch (type) {
         case 'socket':
-          this.drivers.set(type, new SocketDriver())
+          this.drivers.set(type, new SocketDriver(options))
+          break
+        case 'pusher':
+          if (!options?.appId || !options?.key || !options?.secret) {
+            throw new Error('Pusher driver requires appId, key, and secret options')
+          }
+          this.drivers.set(type, new PusherDriver(options))
           break
         // Add more cases for other drivers here
         default:
