@@ -31,6 +31,12 @@ export class RealtimeFactory {
       }
     }
 
-    return this.drivers.get(type)!
+    const driver = this.drivers.get(type)
+    
+    if (!driver) {
+      throw new Error(`Driver not found for type: ${type}`)
+    }
+
+    return driver
   }
 }

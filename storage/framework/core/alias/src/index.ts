@@ -228,6 +228,7 @@ export const alias: Record<string, string> = {
   '~/config/ai': p.projectConfigPath('ai.ts'),
   '~/config/analytics': p.projectConfigPath('analytics.ts'),
   '~/config/app': p.projectConfigPath('app.ts'),
+  '~/config/broadcasting': p.projectConfigPath('broadcasting.ts'),
   '~/config/cache': p.projectConfigPath('cache.ts'),
   '~/config/cli': p.projectConfigPath('cli.ts'),
   '~/config/cloud': p.projectConfigPath('cloud.ts'),

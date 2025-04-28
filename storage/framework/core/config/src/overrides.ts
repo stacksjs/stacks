@@ -10,6 +10,7 @@ import type { StacksConfig } from '@stacksjs/types'
 import ai from '~/config/ai'
 import analytics from '~/config/analytics'
 import app from '~/config/app'
+import broadcasting from '~/config/broadcasting'
 import cache from '~/config/cache'
 import cli from '~/config/cli'
 import cloud from '~/config/cloud'
@@ -43,6 +44,7 @@ export const overrides: StacksConfig = {
   cloud,
   database,
   dns,
+  broadcasting,
   // docs,
   email,
   errors,
