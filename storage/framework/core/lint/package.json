@@ -51,7 +51,7 @@
     "@commitlint/cli": "^19.8.0",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/eslint-config": "^4.10.2-beta.3",
-    "bun-git-hooks": "^0.2.12",
+    "bun-git-hooks": "^0.2.13",
     "lint-staged": "^15.5.1",
     "publint": "^0.3.12"
   }
