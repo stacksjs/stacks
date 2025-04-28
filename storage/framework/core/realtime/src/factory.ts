@@ -1,6 +1,5 @@
 import type { BroadcastingConfig } from '@stacksjs/types'
-import type { RealtimeDriver } from './drivers/base'
-import type { DriverType } from './types'
+import type { RealtimeDriver, DriverType } from './types'
 import { PusherDriver } from './drivers/pusher'
 import { SocketDriver } from './drivers/socket'
 
