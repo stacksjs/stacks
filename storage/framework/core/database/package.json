@@ -47,7 +47,7 @@
     "dynamodb-toolbox": "^2.1.2"
   },
   "optionalDependencies": {
-    "mysql2": "^3.14.0"
+    "mysql2": "^3.14.1"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
