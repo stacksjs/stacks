@@ -1,6 +1,6 @@
-import type { DriverType, RealtimeDriver } from './types'
-import { RealtimeFactory } from './factory'
+import type { RealtimeDriver } from './types'
 import { config } from '@stacksjs/config'
+import { RealtimeFactory } from './factory'
 
 export * from './drivers'
 

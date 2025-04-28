@@ -1,5 +1,5 @@
 import type { BroadcastingConfig } from '@stacksjs/types'
-import type { RealtimeDriver, DriverType } from './types'
+import type { DriverType, RealtimeDriver } from './types'
 import { PusherDriver } from './drivers/pusher'
 import { SocketDriver } from './drivers/socket'
 
@@ -32,7 +32,7 @@ export class RealtimeFactory {
     }
 
     const driver = this.drivers.get(type)
-    
+
     if (!driver) {
       throw new Error(`Driver not found for type: ${type}`)
     }
