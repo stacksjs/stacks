@@ -37,9 +37,11 @@ export async function validateField(modelFile: string, params: RequestData): Pro
       ruleObject[snakeCase(key)] = attributes[key]?.validation?.rule
       const validatorMessages = attributes[key]?.validation?.message
 
-      for (const validatorMessageKey in validatorMessages) {
-        const validatorMessageString = `${key}.${validatorMessageKey}`
-        messageObject[validatorMessageString] = attributes[key]?.validation?.message[validatorMessageKey] || ''
+      if (validatorMessages) {
+        for (const validatorMessageKey in validatorMessages) {
+          const validatorMessageString = `${key}.${validatorMessageKey}`
+          messageObject[validatorMessageString] = validatorMessages[validatorMessageKey] || ''
+        }
       }
     }
   }
