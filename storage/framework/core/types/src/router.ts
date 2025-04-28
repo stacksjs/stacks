@@ -97,7 +97,7 @@ export interface RouterInterface {
   getRoutes: () => Promise<Route[]>
 }
 
-export interface RequestInstance {
+export interface RouterInstance {
   query: any
   params: RouteParams
   headers: any

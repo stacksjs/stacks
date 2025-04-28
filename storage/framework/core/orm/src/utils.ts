@@ -651,16 +651,7 @@ export async function writeModelRequest(): Promise<void> {
 
   let importTypes = ``
   let importTypesString = ``
-  let typeString = `import { Request } from '../core/router/src/request'\nimport type { VineType } from '@stacksjs/types'\n\n`
-
-  typeString += `interface ValidationField {
-    rule: VineType
-    message: Record<string, string>
-  }\n\n`
-
-  typeString += `interface CustomAttributes {
-    [key: string]: ValidationField
-  }\n\n`
+  let typeString = `import { Request } from '../core/router/src/request'\nimport type { VineType, CustomAttributes } from '@stacksjs/types'\n\n`
 
   for (let i = 0; i < modelFiles.length; i++) {
     let fieldStringType = ``

@@ -195,7 +195,7 @@ export interface SlackResponse {
 /**
  * Render options for templates
  */
-export interface RenderOptions {
+interface RenderOptions {
   /**
    * Data to be used for template rendering
    */

@@ -1,14 +1,5 @@
-import type { VineType } from '@stacksjs/types'
+import type { CustomAttributes, VineType } from '@stacksjs/types'
 import type { Request } from '../core/router/src/request'
-
-interface ValidationField {
-  rule: VineType
-  message: Record<string, string>
-}
-
-interface CustomAttributes {
-  [key: string]: ValidationField
-}
 
 interface RequestDataProject {
   id: number
