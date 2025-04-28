@@ -1,4 +1,4 @@
-import type { CustomAttributes, VineType } from '@stacksjs/types'
+import type { CustomAttributes } from '@stacksjs/types'
 import type { Request } from '../core/router/src/request'
 
 interface RequestDataProject {

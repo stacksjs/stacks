@@ -1,7 +1,7 @@
-export * from './drivers'
-import type { RealtimeDriver } from './drivers/base'
+import type { DriverType, RealtimeDriver } from './types'
 import { RealtimeFactory } from './factory'
-import type { DriverType } from './factory'
+
+export * from './drivers'
 
 // Convenience function to get a driver instance
 export function realtime(type: DriverType = 'socket'): RealtimeDriver {

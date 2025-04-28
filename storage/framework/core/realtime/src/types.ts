@@ -1,3 +1,5 @@
+export type DriverType = 'socket' | 'pusher' // Add more driver types as needed
+
 export interface RealtimeDriver {
   connect: () => Promise<void>
   disconnect: () => Promise<void>

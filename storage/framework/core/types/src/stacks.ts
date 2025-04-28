@@ -3,6 +3,7 @@ import type {
   AnalyticsConfig,
   AppConfig,
   BinaryConfig,
+  BroadcastingConfig,
   CacheConfig,
   CloudConfig,
   DatabaseConfig,
@@ -54,6 +55,15 @@ export interface StacksOptions {
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
   app: AppConfig
+
+  /**
+   * **Broadcasting Options**
+   *
+   * This configuration defines all of your Broadcasting options. Because Stacks is fully-typed,
+   * you may hover any of the options below and the definitions will be provided. In case
+   * you have any questions, feel free to reach out via Discord or GitHub Discussions.
+   */
+  broadcasting: BroadcastingConfig
 
   /**
    * **Cache Options**

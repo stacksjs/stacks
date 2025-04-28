@@ -191,23 +191,3 @@ export interface SlackResponse {
    */
   [key: string]: any
 }
-
-/**
- * Render options for templates
- */
-interface RenderOptions {
-  /**
-   * Data to be used for template rendering
-   */
-  data?: Record<string, any>
-
-  /**
-   * Template engine options
-   */
-  engineOptions?: Record<string, any>
-
-  /**
-   * Additional rendering options
-   */
-  [key: string]: any
-}

@@ -1,5 +1,5 @@
+import type { RealtimeDriver } from '../types'
 import { log } from '@stacksjs/logging'
-import type { RealtimeDriver } from './base'
 import { Server } from 'socket.io'
 
 export class SocketDriver implements RealtimeDriver {

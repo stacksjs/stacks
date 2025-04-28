@@ -1,5 +1,6 @@
+import type { RealtimeDriver } from '../types'
+import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
-import type { RealtimeDriver } from './base'
 import Pusher from 'pusher'
 
 export class PusherDriver implements RealtimeDriver {
@@ -7,15 +8,11 @@ export class PusherDriver implements RealtimeDriver {
   private isConnectedState = false
   private channels: Map<string, any> = new Map()
 
-  constructor(
-    private options: {
-      appId: string
-      key: string
-      secret: string
-      cluster?: string
-      useTLS?: boolean
+  constructor() {
+    if (!config.broadcasting.pusher?.appId || !config.broadcasting.pusher?.key || !config.broadcasting.pusher?.secret) {
+      throw new Error('Pusher driver requires appId, key, and secret in broadcasting configuration')
     }
-  ) {}
+  }
 
   async connect(): Promise<void> {
     if (this.pusher) {
@@ -23,11 +20,11 @@ export class PusherDriver implements RealtimeDriver {
     }
 
     this.pusher = new Pusher({
-      appId: this.options.appId,
-      key: this.options.key,
-      secret: this.options.secret,
-      cluster: this.options.cluster || 'mt1',
-      useTLS: this.options.useTLS ?? true,
+      appId: config.broadcasting.pusher?.appId || '',
+      key: config.broadcasting.pusher?.key || '',
+      secret: config.broadcasting.pusher?.secret || '',
+      cluster: config.broadcasting.pusher?.cluster || 'mt1',
+      useTLS: config.broadcasting.pusher?.useTLS ?? true,
     })
 
     this.isConnectedState = true
@@ -74,4 +71,4 @@ export class PusherDriver implements RealtimeDriver {
   isConnected(): boolean {
     return this.isConnectedState
   }
-} 
+}
