@@ -1,14 +1,14 @@
-import type { Items } from '../../../types'
+import type { ProductItems } from '../../types'
 import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent items array using VueUse's useStorage
-const items = useStorage<Items[]>('items', [])
+const items = useStorage<ProductItems[]>('items', [])
 
 const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all items
-async function fetchItems(): Promise<Items[]> {
-  const { error, data } = useFetch<Items[]>(`${baseURL}/commerce/products/items`)
+async function fetchItems(): Promise<ProductItems[]> {
+  const { error, data } = useFetch<ProductItems[]>(`${baseURL}/commerce/products/items`)
 
   if (error.value) {
     console.error('Error fetching items:', error.value)
@@ -25,8 +25,8 @@ async function fetchItems(): Promise<Items[]> {
   }
 }
 
-async function createItem(item: Items): Promise<Items | null> {
-  const { error, data } = useFetch<Items>(`${baseURL}/commerce/products/items`, {
+async function createItem(item: ProductItems): Promise<ProductItems | null> {
+  const { error, data } = useFetch<ProductItems>(`${baseURL}/commerce/products/items`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -46,8 +46,8 @@ async function createItem(item: Items): Promise<Items | null> {
   return null
 }
 
-async function updateItem(item: Items): Promise<Items | null> {
-  const { error, data } = useFetch<Items>(`${baseURL}/commerce/products/items/${item.id}`, {
+async function updateItem(item: ProductItems): Promise<ProductItems | null> {
+  const { error, data } = useFetch<ProductItems>(`${baseURL}/commerce/products/items/${item.id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',

@@ -1,17 +1,5 @@
+import type { Units } from '../../types'
 import { useFetch, useStorage } from '@vueuse/core'
-
-export interface Units {
-  id: number
-  product_id: number
-  name: string
-  abbreviation: string
-  type: string
-  description?: string
-  is_default?: boolean
-  uuid?: string
-  created_at?: string
-  updated_at?: string
-}
 
 // Create a persistent units array using VueUse's useStorage
 const units = useStorage<Units[]>('units', [])

@@ -1,4 +1,4 @@
-import type { DigitalDeliveries } from '../../../types'
+import type { DigitalDeliveries } from '../../types'
 import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent digital deliveries array using VueUse's useStorage

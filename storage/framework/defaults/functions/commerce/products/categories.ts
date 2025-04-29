@@ -1,4 +1,4 @@
-import type { Categories } from '../../../types'
+import type { Categories } from '../../types'
 import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent categories array using VueUse's useStorage

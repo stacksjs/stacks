@@ -148,3 +148,183 @@ export interface TaxRates {
   updated_at?: string
 
 }
+
+export interface Categories {
+  id: number
+  name: string
+  description?: string
+  image_url?: string
+  is_active?: boolean
+  parent_category_id?: string
+  display_order: number
+  uuid?: string
+
+  created_at?: string
+
+  updated_at?: string
+
+}
+export interface Units {
+  id: number
+  product_id: number
+  name: string
+  abbreviation: string
+  type: string
+  description?: string
+  is_default?: boolean
+  uuid?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface ProductItems {
+  id: number
+  product_id: number
+  manufacturer_id: number
+  category_id: number
+  name: string
+  size?: string
+  color?: string
+  price: number
+  image_url?: string
+  is_available?: boolean
+  inventory_count?: number
+  sku: string
+  custom_options?: string
+  uuid?: string
+
+  created_at?: string
+
+  updated_at?: string
+
+}
+
+export interface Reviews {
+  id: number
+  product_id: number
+  customer_id: number
+  rating: number
+  title: string
+  content: string
+  is_verified_purchase?: boolean
+  is_approved?: boolean
+  is_featured?: boolean
+  helpful_votes?: number
+  unhelpful_votes?: number
+  purchase_date?: string
+  images?: string
+  uuid?: string
+
+  created_at?: string
+
+  updated_at?: string
+
+}
+export interface ProductVariants {
+  id: number
+  product_id: number
+  variant: string
+  type: string
+  description?: string
+  options?: string
+  status: string | string[]
+  uuid?: string
+
+  created_at?: string
+
+  updated_at?: string
+
+}
+
+export interface Drivers {
+  id: number
+  user_id: number
+  name: string
+  phone: string
+  vehicle_number: string
+  license: string
+  status?: string | string[]
+  uuid?: string
+
+  created_at?: string
+
+  updated_at?: string
+
+}
+export interface DeliveryRoutes {
+  id: number
+  driver: string
+  vehicle: string
+  stops: number
+  delivery_time: number
+  total_distance: number
+  last_active?: Date | string
+  uuid?: string
+
+  created_at?: string
+
+  updated_at?: string
+
+}
+
+export interface DigitalDeliveries {
+  id: number
+  name: string
+  description: string
+  download_limit?: number
+  expiry_days: number
+  requires_login?: boolean
+  automatic_delivery?: boolean
+  status?: string | string[]
+  uuid?: string
+
+  created_at?: string
+
+  updated_at?: string
+
+}
+
+export interface ShippingMethods {
+  id: number
+  name: string
+  description?: string
+  base_rate: number
+  free_shipping?: number
+  status: string | string[]
+  uuid?: string
+
+  created_at?: string
+
+  updated_at?: string
+
+}
+
+export interface ShippingRates {
+  id: number
+  method: string
+  zone: string
+  weight_from: number
+  weight_to: number
+  rate: number
+  uuid?: string
+
+  created_at?: string
+
+  updated_at?: string
+}
+
+export interface ShippingZones {
+  id: number
+  shipping_method_id: number
+  name: string
+  countries?: string
+  regions?: string
+  postal_codes?: string
+  status: string | string[]
+  uuid?: string
+
+  created_at?: string
+
+  updated_at?: string
+
+}

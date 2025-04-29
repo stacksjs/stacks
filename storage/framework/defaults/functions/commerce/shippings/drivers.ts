@@ -1,4 +1,4 @@
-import type { Drivers } from '../../../types'
+import type { Drivers } from '../../types'
 import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent drivers array using VueUse's useStorage

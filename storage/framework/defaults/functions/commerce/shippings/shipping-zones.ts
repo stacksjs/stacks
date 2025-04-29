@@ -1,4 +1,4 @@
-import type { ShippingZones } from '../../../types'
+import type { ShippingZones } from '../../types'
 import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent shipping zones array using VueUse's useStorage
