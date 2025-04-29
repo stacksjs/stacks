@@ -72,7 +72,6 @@ function generateCategorizableTableInterface(): string {
     slug: string
     description?: string
     is_active: boolean
-    categorizable_id: number
     categorizable_type: string
     created_at?: string
     updated_at?: string
@@ -111,7 +110,6 @@ function generateCategorizableModelsTableInterface(): string {
   export interface CategorizableModelsTable {
     id?: number
     category_id: number
-    categorizable_id: number
     categorizable_type: string
     created_at?: string
     updated_at?: string

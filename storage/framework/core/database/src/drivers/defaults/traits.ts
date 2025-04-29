@@ -180,7 +180,6 @@ export async function createCategorizableTable(): Promise<void> {
   migrationContent += `    .addColumn('slug', 'varchar(255)', col => col.notNull().unique())\n`
   migrationContent += `    .addColumn('description', 'text')\n`
   migrationContent += `    .addColumn('is_active', 'boolean', col => col.defaultTo(true))\n`
-  migrationContent += `    .addColumn('categorizable_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('categorizable_type', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
@@ -202,7 +201,7 @@ export async function createCategorizableTable(): Promise<void> {
   migrationContent += `  await db.schema\n`
   migrationContent += `    .createIndex('categorizable_polymorphic_index')\n`
   migrationContent += `    .on('categorizable')\n`
-  migrationContent += `    .columns(['categorizable_id', 'categorizable_type'])\n`
+  migrationContent += `    .columns(['categorizable_type'])\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
@@ -248,7 +247,6 @@ export async function createPostgresCategorizableTable(): Promise<void> {
   migrationContent += `    .addColumn('description', 'text')\n`
   migrationContent += `    .addColumn('order', 'integer', col => col.defaultTo(0))\n`
   migrationContent += `    .addColumn('is_active', 'boolean', col => col.defaultTo(true))\n`
-  migrationContent += `    .addColumn('categorizable_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('categorizable_type', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .addColumn('updated_at', 'timestamp with time zone')\n`
@@ -263,7 +261,7 @@ export async function createPostgresCategorizableTable(): Promise<void> {
   migrationContent += `  await db.schema\n`
   migrationContent += `    .createIndex('idx_categorizable_polymorphic')\n`
   migrationContent += `    .on('categorizable')\n`
-  migrationContent += `    .columns(['categorizable_id', 'categorizable_type'])\n`
+  migrationContent += `    .columns(['categorizable_type'])\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
@@ -413,7 +411,7 @@ export async function createCategorizableModelTable(): Promise<void> {
   await db.schema
     .createIndex('categories_models_categorizable_index')
     .on('categories_models')
-    .columns(['categorizable_id', 'categorizable_type'])
+    .columns(['categorizable_type'])
     .execute()
 }
 

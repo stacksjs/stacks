@@ -5,14 +5,12 @@ import { slugify } from 'ts-slug'
 interface CategoryData {
   name: string
   description?: string
-  categorizable_id: number
   categorizable_type: string
   is_active?: boolean
 }
 
 interface CategorizableModelData {
   category_id: number
-  categorizable_id: number
   categorizable_type: string
 }
 
@@ -28,7 +26,6 @@ export async function store(data: CategoryData): Promise<CategorizableTable> {
       name: data.name,
       slug: slugify(data.name),
       description: data.description,
-      categorizable_id: data.categorizable_id,
       categorizable_type: data.categorizable_type,
       is_active: data.is_active ?? true,
     }
@@ -48,7 +45,6 @@ export async function store(data: CategoryData): Promise<CategorizableTable> {
       // Insert into categorizable_models pivot table
       const pivotData = {
         category_id: category.id!, // We know this exists because we checked category exists
-        categorizable_id: data.categorizable_id,
         categorizable_type: data.categorizable_type,
       }
 
@@ -80,7 +76,6 @@ export async function storeCategorizableModel(data: CategorizableModelData): Pro
   try {
     const modelData = {
       category_id: data.category_id,
-      categorizable_id: data.categorizable_id,
       categorizable_type: data.categorizable_type,
     }
 

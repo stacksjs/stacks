@@ -115,7 +115,6 @@ export interface CategorizableTable {
   slug: string
   description?: string
   is_active: boolean
-  categorizable_id: number
   categorizable_type: string
   created_at?: string
   updated_at?: string
@@ -145,7 +144,6 @@ export interface TaggableModelsTable {
 export interface CategorizableModelsTable {
   id?: number
   category_id: number
-  categorizable_id: number
   categorizable_type: string
   created_at?: string
   updated_at?: string

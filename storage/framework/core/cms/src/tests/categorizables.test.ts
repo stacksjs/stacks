@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { destroy } from '../categories/destroy'
-import { fetchById } from '../categories/fetch'
-import { store } from '../categories/store'
-import { update } from '../categories/update'
+import { destroy } from '../categorizable/destroy'
+import { fetchById } from '../categorizable/fetch'
+import { store } from '../categorizable/store'
+import { update } from '../categorizable/update'
 
 beforeEach(async () => {
   await refreshDatabase()
@@ -15,7 +15,6 @@ describe('Category Module', () => {
       const categoryData = {
         name: 'Technology',
         description: 'Technology related content',
-        categorizable_id: 1,
         categorizable_type: 'posts',
         is_active: true,
       }
@@ -25,7 +24,6 @@ describe('Category Module', () => {
       expect(category).toBeDefined()
       expect(category?.name).toBe('Technology')
       expect(category?.description).toBe('Technology related content')
-      expect(category?.categorizable_id).toBe(1)
       expect(category?.categorizable_type).toBe('posts')
 
       const categoryId = category?.id !== undefined ? Number(category.id) : undefined
@@ -41,7 +39,6 @@ describe('Category Module', () => {
       const firstCategory = await store({
         name: 'Technology',
         description: 'Technology related content',
-        categorizable_id: 1,
         categorizable_type: 'posts',
         is_active: true,
       })
@@ -49,14 +46,12 @@ describe('Category Module', () => {
       const secondCategory = await store({
         name: 'Programming',
         description: 'Programming related content',
-        categorizable_id: 1,
         categorizable_type: 'posts',
         is_active: true,
       })
 
       expect(firstCategory).toBeDefined()
       expect(secondCategory).toBeDefined()
-      expect(firstCategory?.categorizable_id).toBe(secondCategory?.categorizable_id)
       expect(firstCategory?.categorizable_type).toBe(secondCategory?.categorizable_type)
     })
 
@@ -64,7 +59,6 @@ describe('Category Module', () => {
       const categoryData = {
         name: '', // Empty name should fail
         description: '',
-        categorizable_id: -1,
         categorizable_type: '',
         is_active: false,
       }
@@ -85,7 +79,6 @@ describe('Category Module', () => {
       const categoryData = {
         name: 'Test Category',
         description: 'Test category description',
-        categorizable_id: 1,
         categorizable_type: 'posts',
         is_active: true,
       }
@@ -112,7 +105,6 @@ describe('Category Module', () => {
       const categoryData = {
         name: 'Original Category',
         description: 'Original description',
-        categorizable_id: 1,
         categorizable_type: 'posts',
         is_active: true,
       }
@@ -141,7 +133,6 @@ describe('Category Module', () => {
       const categoryData = {
         name: 'Test Category',
         description: 'Test description',
-        categorizable_id: 1,
         categorizable_type: 'posts',
         is_active: true,
       }
@@ -173,7 +164,6 @@ describe('Category Module', () => {
       const categoryData = {
         name: 'Category to Delete',
         description: 'This category will be deleted',
-        categorizable_id: 1,
         categorizable_type: 'posts',
         is_active: true,
       }

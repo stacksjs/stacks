@@ -1,6 +1,6 @@
 import * as authors from './authors'
-import * as postCategories from './categories'
-import * as comments from './comments'
+import * as postCategories from './categorizable'
+import * as comments from './commentable'
 import * as posts from './posts'
 import * as tags from './tags'
 

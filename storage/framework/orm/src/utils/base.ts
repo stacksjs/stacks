@@ -868,7 +868,6 @@ export class BaseOrm<T, C, J> {
   protected async baseCategories(id: number): Promise<any[]> {
     return await DB.instance
       .selectFrom('categorizable')
-      .where('categorizable_id', '=', id)
       .where('categorizable_type', '=', this.tableName)
       .selectAll()
       .execute()
@@ -878,7 +877,6 @@ export class BaseOrm<T, C, J> {
     const result = await DB.instance
       .selectFrom('categorizable')
       .select(sql`count(*) as count`)
-      .where('categorizable_id', '=', id)
       .where('categorizable_type', '=', this.tableName)
       .executeTakeFirst()
 
@@ -890,7 +888,6 @@ export class BaseOrm<T, C, J> {
       .insertInto('categorizable')
       .values({
         ...category,
-        categorizable_id: id,
         categorizable_type: this.tableName,
         slug: category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         order: 0,
@@ -905,7 +902,6 @@ export class BaseOrm<T, C, J> {
   protected async baseActiveCategories(id: number): Promise<any[]> {
     return await DB.instance
       .selectFrom('categorizable')
-      .where('categorizable_id', '=', id)
       .where('categorizable_type', '=', this.tableName)
       .where('is_active', '=', true)
       .selectAll()
@@ -915,7 +911,6 @@ export class BaseOrm<T, C, J> {
   protected async baseInactiveCategories(id: number): Promise<any[]> {
     return await DB.instance
       .selectFrom('categorizable')
-      .where('categorizable_id', '=', id)
       .where('categorizable_type', '=', this.tableName)
       .where('is_active', '=', false)
       .selectAll()
@@ -925,7 +920,6 @@ export class BaseOrm<T, C, J> {
   protected async baseRemoveCategory(id: number, categoryId: number): Promise<void> {
     await DB.instance
       .deleteFrom('categorizable')
-      .where('categorizable_id', '=', id)
       .where('categorizable_type', '=', this.tableName)
       .where('id', '=', categoryId)
       .execute()
@@ -934,7 +928,6 @@ export class BaseOrm<T, C, J> {
   protected async baseParentCategories(id: number): Promise<any[]> {
     return await DB.instance
       .selectFrom('categorizable')
-      .where('categorizable_id', '=', id)
       .where('categorizable_type', '=', this.tableName)
       .where('parent_id', 'is', null)
       .selectAll()
@@ -944,7 +937,6 @@ export class BaseOrm<T, C, J> {
   protected async baseChildCategories(id: number, parentId: number): Promise<any[]> {
     return await DB.instance
       .selectFrom('categorizable')
-      .where('categorizable_id', '=', id)
       .where('categorizable_type', '=', this.tableName)
       .where('parent_id', '=', parentId)
       .selectAll()

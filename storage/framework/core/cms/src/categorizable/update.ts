@@ -6,7 +6,6 @@ interface UpdateCategoryData {
   id: number
   name?: string
   description?: string
-  categorizable_id?: number
   categorizable_type?: string
   is_active?: boolean
   slug?: string

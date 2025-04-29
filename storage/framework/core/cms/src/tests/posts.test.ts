@@ -130,7 +130,6 @@ describe('Post Module', () => {
           name: 'Technology',
           description: 'Technology related content',
           is_active: true,
-          categorizable_id: postId,
           categorizable_type: 'posts',
           slug: 'technology',
         })
@@ -145,7 +144,6 @@ describe('Post Module', () => {
         .insertInto('categorizable_models')
         .values({
           category_id: categoryId,
-          categorizable_id: postId,
           categorizable_type: 'posts',
         })
         .returningAll()
@@ -193,7 +191,6 @@ describe('Post Module', () => {
               name: data.name,
               description: data.description,
               is_active: true,
-              categorizable_id: postId,
               categorizable_type: 'posts',
               slug: data.slug,
             })
@@ -208,7 +205,6 @@ describe('Post Module', () => {
             .insertInto('categorizable_models')
             .values({
               category_id: Number(category.id),
-              categorizable_id: postId,
               categorizable_type: 'posts',
             })
             .execute()
@@ -223,12 +219,10 @@ describe('Post Module', () => {
       const relationships = await db
         .selectFrom('categorizable_models')
         .selectAll()
-        .where('categorizable_id', '=', postId)
         .where('categorizable_type', '=', 'posts')
         .execute()
 
       expect(relationships).toHaveLength(3)
-      expect(relationships.every(rel => rel.categorizable_id === postId)).toBe(true)
       expect(relationships.every(rel => rel.categorizable_type === 'posts')).toBe(true)
     })
 

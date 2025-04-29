@@ -88,7 +88,6 @@ export async function firstOrCreate(
       description,
       is_active: true,
       created_at: now.toDateString(),
-      categorizable_id: categorizableId,
       categorizable_type: categorizableType,
     }
 

@@ -10,6 +10,14 @@ export default new Action({
   async handle(request: PostRequestType) {
     await request.validate()
 
+    const postCategoryData = {
+      name: request.get('category'),
+      description: request.get('description'),
+      categorizable_type: request.get('categorizable_type'),
+    }
+
+    const postCategories = await postCategories.store()
+
     const author = await authors.findOrCreate({
       name: request.get('author_name'),
       email: request.get('author_email'),
@@ -20,7 +28,6 @@ export default new Action({
       title: request.get('title'),
       body: request.get('body'),
       status: request.get('status'),
-      category: request.get('category'),
       poster: request.get('poster'),
       views: 0,
       published_at: Date.now(),
