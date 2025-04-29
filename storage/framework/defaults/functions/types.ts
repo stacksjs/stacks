@@ -220,21 +220,6 @@ export interface Reviews {
   updated_at?: string
 
 }
-export interface ProductVariants {
-  id: number
-  product_id: number
-  variant: string
-  type: string
-  description?: string
-  options?: string
-  status: string | string[]
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
 
 export interface Drivers {
   id: number
@@ -320,6 +305,22 @@ export interface ShippingZones {
   countries?: string
   regions?: string
   postal_codes?: string
+  status: string | string[]
+  uuid?: string
+
+  created_at?: string
+
+  updated_at?: string
+
+}
+
+export interface ProductVariants {
+  id: number
+  product_id: number
+  variant: string
+  type: string
+  description?: string
+  options?: string
   status: string | string[]
   uuid?: string
 

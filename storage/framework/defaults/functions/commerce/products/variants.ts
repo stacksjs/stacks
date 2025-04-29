@@ -1,14 +1,14 @@
-import type { Variants } from '../../types'
+import type { ProductVariants } from '../../types'
 import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent variants array using VueUse's useStorage
-const variants = useStorage<Variants[]>('variants', [])
+const variants = useStorage<ProductVariants[]>('variants', [])
 
 const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all variants
 async function fetchVariants() {
-  const { error, data } = useFetch<Variants[]>(`${baseURL}/commerce/products/variants`)
+  const { error, data } = useFetch<ProductVariants[]>(`${baseURL}/commerce/products/variants`)
 
   if (error.value) {
     console.error('Error fetching variants:', error.value)
@@ -25,8 +25,8 @@ async function fetchVariants() {
   }
 }
 
-async function createVariant(variant: Variants) {
-  const { error, data } = useFetch<Variants>(`${baseURL}/commerce/products/variants`, {
+async function createVariant(variant: ProductVariants) {
+  const { error, data } = useFetch<ProductVariants>(`${baseURL}/commerce/products/variants`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -46,8 +46,8 @@ async function createVariant(variant: Variants) {
   return null
 }
 
-async function updateVariant(variant: Variants) {
-  const { error, data } = useFetch<Variants>(`${baseURL}/commerce/products/variants/${variant.id}`, {
+async function updateVariant(variant: ProductVariants) {
+  const { error, data } = useFetch<ProductVariants>(`${baseURL}/commerce/products/variants/${variant.id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
