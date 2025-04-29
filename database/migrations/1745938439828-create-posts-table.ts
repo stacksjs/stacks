@@ -7,7 +7,6 @@ export async function up(db: Database<any>) {
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'text')
     .addColumn('title', 'text', col => col.notNull())
-    .addColumn('category', 'text', col => col.notNull())
     .addColumn('poster', 'text')
     .addColumn('body', 'text', col => col.notNull())
     .addColumn('views', 'numeric', col => col.defaultTo(0))

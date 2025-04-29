@@ -45,21 +45,6 @@ export default {
       },
       factory: faker => faker.lorem.sentence(),
     },
-
-    category: {
-      required: true,
-      order: 3,
-      fillable: true,
-      validation: {
-        rule: schema.string().minLength(2).maxLength(100),
-        message: {
-          minLength: 'Category must have a minimum of 2 characters',
-          maxLength: 'Category must have a maximum of 100 characters',
-        },
-      },
-      factory: faker => faker.word.noun(),
-    },
-
     poster: {
       required: false,
       order: 4,

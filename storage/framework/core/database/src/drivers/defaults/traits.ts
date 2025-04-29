@@ -435,6 +435,7 @@ export async function dropCommonTables(): Promise<void> {
   await db.schema.dropTable('migrations').ifExists().execute()
   await db.schema.dropTable('migration_locks').ifExists().execute()
   await db.schema.dropTable('passkeys').ifExists().execute()
+  await db.schema.dropTable('password_resets').ifExists().execute()
   await db.schema.dropTable('categorizable').ifExists().execute()
   await db.schema.dropTable('commenteable_upvotes').ifExists().execute()
   await db.schema.dropTable('taggable').ifExists().execute()
