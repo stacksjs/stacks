@@ -1,4 +1,4 @@
-import type { commentablesTable } from '@stacksjs/orm'
+import type { CommentablesTable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 export interface CreateCommentInput {
@@ -11,10 +11,10 @@ export interface CreateCommentInput {
 export interface UpdateCommentInput {
   title?: string
   body?: string
-  status?: commentablesTable['status']
+  status?: CommentablesTable['status']
 }
 
-export async function createComment(data: CreateCommentInput): Promise<commentablesTable> {
+export async function createComment(data: CreateCommentInput): Promise<CommentablesTable> {
   const now = new Date()
 
   const commentData = {
@@ -36,7 +36,7 @@ export async function createComment(data: CreateCommentInput): Promise<commentab
 export async function updateComment(
   id: number,
   input: UpdateCommentInput,
-): Promise<commentablesTable> {
+): Promise<CommentablesTable> {
   return db
     .updateTable('commentables')
     .set({
@@ -48,7 +48,7 @@ export async function updateComment(
     .executeTakeFirstOrThrow()
 }
 
-export async function approveComment(id: number): Promise<commentablesTable> {
+export async function approveComment(id: number): Promise<CommentablesTable> {
   return db
     .updateTable('commentables')
     .set({
@@ -61,7 +61,7 @@ export async function approveComment(id: number): Promise<commentablesTable> {
     .executeTakeFirstOrThrow()
 }
 
-export async function rejectComment(id: number): Promise<commentablesTable> {
+export async function rejectComment(id: number): Promise<CommentablesTable> {
   return db
     .updateTable('commentables')
     .set({
@@ -99,7 +99,7 @@ interface CommentStore {
  * @param data The comment data to store
  * @returns The newly created comment record
  */
-export async function store(data: CommentStore): Promise<commentablesTable> {
+export async function store(data: CommentStore): Promise<CommentablesTable> {
   try {
     const commentData = {
       title: data.title,

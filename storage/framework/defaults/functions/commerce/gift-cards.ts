@@ -1,14 +1,14 @@
-import type { GiftCard } from '../../../types'
+import type { GiftCards } from '../types'
 import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent gift cards array using VueUse's useStorage
-const giftCards = useStorage<GiftCard[]>('giftCards', [])
+const giftCards = useStorage<GiftCards[]>('giftCards', [])
 
 const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all gift cards
-async function fetchGiftCards(): Promise<GiftCard[]> {
-  const { error, data } = useFetch<GiftCard[]>(`${baseURL}/commerce/gift-cards`)
+async function fetchGiftCards(): Promise<GiftCards[]> {
+  const { error, data } = useFetch<GiftCards[]>(`${baseURL}/commerce/gift-cards`)
 
   if (error.value) {
     console.error('Error fetching gift cards:', error.value)
@@ -25,8 +25,8 @@ async function fetchGiftCards(): Promise<GiftCard[]> {
   }
 }
 
-async function createGiftCard(giftCard: GiftCard): Promise<GiftCard | null> {
-  const { error, data } = useFetch<GiftCard>(`${baseURL}/commerce/gift-cards`, {
+async function createGiftCard(giftCard: GiftCards): Promise<GiftCards | null> {
+  const { error, data } = useFetch<GiftCards>(`${baseURL}/commerce/gift-cards`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -46,8 +46,8 @@ async function createGiftCard(giftCard: GiftCard): Promise<GiftCard | null> {
   return null
 }
 
-async function updateGiftCard(giftCard: GiftCard): Promise<GiftCard | null> {
-  const { error, data } = useFetch<GiftCard>(`${baseURL}/commerce/gift-cards/${giftCard.id}`, {
+async function updateGiftCard(giftCard: GiftCards): Promise<GiftCards | null> {
+  const { error, data } = useFetch<GiftCards>(`${baseURL}/commerce/gift-cards/${giftCard.id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',

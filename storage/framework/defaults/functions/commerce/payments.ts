@@ -1,14 +1,14 @@
-import type { Payment } from '../../../types'
+import type { Payments } from '../types'
 import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent payments array using VueUse's useStorage
-const payments = useStorage<Payment[]>('payments', [])
+const payments = useStorage<Payments[]>('payments', [])
 
 const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all payments
-async function fetchPayments(): Promise<Payment[]> {
-  const { error, data } = useFetch<Payment[]>(`${baseURL}/commerce/payments`)
+async function fetchPayments(): Promise<Payments[]> {
+  const { error, data } = useFetch<Payments[]>(`${baseURL}/commerce/payments`)
 
   if (error.value) {
     console.error('Error fetching payments:', error.value)
@@ -25,8 +25,8 @@ async function fetchPayments(): Promise<Payment[]> {
   }
 }
 
-async function createPayment(payment: Payment): Promise<Payment | null> {
-  const { error, data } = useFetch<Payment>(`${baseURL}/commerce/payments`, {
+async function createPayment(payment: Payments): Promise<Payments | null> {
+  const { error, data } = useFetch<Payments>(`${baseURL}/commerce/payments`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -46,8 +46,8 @@ async function createPayment(payment: Payment): Promise<Payment | null> {
   return null
 }
 
-async function updatePayment(payment: Payment): Promise<Payment | null> {
-  const { error, data } = useFetch<Payment>(`${baseURL}/commerce/payments/${payment.id}`, {
+async function updatePayment(payment: Payments): Promise<Payments | null> {
+  const { error, data } = useFetch<Payments>(`${baseURL}/commerce/payments/${payment.id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',

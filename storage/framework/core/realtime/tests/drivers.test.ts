@@ -1,7 +1,6 @@
-import { describe, expect, it, beforeEach, afterEach, mock } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { PusherDriver } from '../src/drivers/pusher'
 import { SocketDriver } from '../src/drivers/socket'
-import { config } from '@stacksjs/config'
 
 // Mock Pusher
 const mockPusher = {
@@ -104,4 +103,4 @@ describe('Realtime Drivers', () => {
       expect(mockSocketServer.emit).toHaveBeenCalledWith('test-channel', testData)
     })
   })
-}) 
+})

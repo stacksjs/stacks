@@ -198,9 +198,9 @@ export async function generateModelString(
   }
 
   if (useCommentables) {
-    commentablesImports += `import type { commentablesTable } from '@stacksjs/orm'\n`
+    commentablesImports += `import type { CommentablesTable } from '@stacksjs/orm'\n`
     relationMethods += `
-      async comments(id: number): Promise<commentablesTable[]> {
+      async comments(id: number): Promise<CommentablesTable[]> {
         return await this.baseComments(id)
       }
 
@@ -212,15 +212,15 @@ export async function generateModelString(
         return await this.baseAddComment(id, comment)
       }
 
-      async approvedComments(id: number): Promise<commentablesTable[]> {
+      async approvedComments(id: number): Promise<CommentablesTable[]> {
         return await this.baseApprovedComments(id)
       }
 
-      async pendingComments(id: number): Promise<commentablesTable[]> {
+      async pendingComments(id: number): Promise<CommentablesTable[]> {
         return await this.basePendingComments(id)
       }
 
-      async rejectedComments(id: number): Promise<commentablesTable[]> {
+      async rejectedComments(id: number): Promise<CommentablesTable[]> {
         return await this.baseRejectedComments(id)
       }
     `

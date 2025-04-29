@@ -292,7 +292,7 @@ export async function createPostgresCategorizableTable(): Promise<void> {
 }
 
 // SQLite/MySQL version
-export async function createcommentablesTable(options: {
+export async function createCommentablesTable(options: {
   requiresApproval?: boolean
   reportable?: boolean
   votable?: boolean

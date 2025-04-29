@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { CategorizableTable, commentablesTable, Operator, TaggableTable } from '@stacksjs/orm'
+import type { CategorizableTable, CommentablesTable, Operator, TaggableTable } from '@stacksjs/orm'
 import type { AuthorModel } from './Author'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -860,7 +860,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance.applyWhereIn<V>(column, values)
   }
 
-  async comments(id: number): Promise<commentablesTable[]> {
+  async comments(id: number): Promise<CommentablesTable[]> {
     return await this.baseComments(id)
   }
 
@@ -872,15 +872,15 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return await this.baseAddComment(id, comment)
   }
 
-  async approvedComments(id: number): Promise<commentablesTable[]> {
+  async approvedComments(id: number): Promise<CommentablesTable[]> {
     return await this.baseApprovedComments(id)
   }
 
-  async pendingComments(id: number): Promise<commentablesTable[]> {
+  async pendingComments(id: number): Promise<CommentablesTable[]> {
     return await this.basePendingComments(id)
   }
 
-  async rejectedComments(id: number): Promise<commentablesTable[]> {
+  async rejectedComments(id: number): Promise<CommentablesTable[]> {
     return await this.baseRejectedComments(id)
   }
 

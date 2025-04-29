@@ -8,7 +8,7 @@ import { fs, globSync } from '@stacksjs/storage'
 import { FileMigrationProvider, Migrator } from 'kysely'
 import { generateMysqlMigration, generatePostgresMigration, generateSqliteMigration, resetMysqlDatabase, resetPostgresDatabase, resetSqliteDatabase } from './drivers'
 import { createPasswordResetsTable } from './drivers/defaults/passwords'
-import { createCategorizableModelsTable, createCategorizableTable, createcommentablesTable, createCommentUpvoteMigration, createPasskeyMigration, createPostgresCategorizableTable, createPostgresCommenteableTable, createPostgresCommentUpvoteMigration, createPostgresPasskeyMigration, createPostgresTaggableTable, createTaggableTable } from './drivers/defaults/traits'
+import { createCategorizableModelsTable, createCategorizableTable, createCommentablesTable, createCommentUpvoteMigration, createPasskeyMigration, createPostgresCategorizableTable, createPostgresCommenteableTable, createPostgresCommentUpvoteMigration, createPostgresPasskeyMigration, createPostgresTaggableTable, createTaggableTable } from './drivers/defaults/traits'
 import { db } from './utils'
 
 function getDriver(): string {
@@ -102,7 +102,7 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
     else {
       // SQLite and MySQL use the same table creation functions
       await createCategorizableTable()
-      await createcommentablesTable()
+      await createCommentablesTable()
       await createTaggableTable()
       await createPasswordResetsTable()
       await createPasskeyMigration()

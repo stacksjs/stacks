@@ -1234,7 +1234,7 @@ export async function generateKyselyTypes(): Promise<void> {
   // Add trait-based tables
   text += '  migrations: MigrationsTable\n'
   text += '  passkeys: PasskeysTable\n'
-  text += '  commentables: commentablesTable\n'
+  text += '  commentables: CommentablesTable\n'
   text += '  taggable: TaggableTable\n'
   text += '  comment_upvotes: CommenteableUpvotesTable\n'
   text += '  categorizable: CategorizableTable\n'

@@ -1,4 +1,4 @@
-import type { Customers } from '../../types'
+import type { Customers } from '../types'
 import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent customers array using VueUse's useStorage

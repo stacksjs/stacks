@@ -1,4 +1,4 @@
-import type { commentablesTable } from '@stacksjs/orm'
+import type { CommentablesTable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 
@@ -21,7 +21,7 @@ interface CommentUpdate {
  * @param data The updated comment data
  * @returns The updated comment record
  */
-export async function update(id: number, data: CommentUpdate): Promise<commentablesTable | undefined> {
+export async function update(id: number, data: CommentUpdate): Promise<CommentablesTable | undefined> {
   try {
     const commentData = {
       title: data.title,

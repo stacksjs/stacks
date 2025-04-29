@@ -1,4 +1,4 @@
-import type { TaxRates } from '../../types'
+import type { TaxRates } from '../types'
 import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent tax rates array using VueUse's useStorage

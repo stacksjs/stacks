@@ -203,7 +203,7 @@ export interface Database {
   errors: ErrorsTable
   migrations: MigrationsTable
   passkeys: PasskeysTable
-  commentables: commentablesTable
+  commentables: CommentablesTable
   taggable: TaggableTable
   comment_upvotes: CommenteableUpvotesTable
   categorizable: CategorizableTable
