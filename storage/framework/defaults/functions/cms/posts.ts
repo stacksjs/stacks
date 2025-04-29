@@ -32,7 +32,11 @@ async function createPost(post: Posts) {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(post),
+    body: JSON.stringify({
+      ...post,
+      author_name: post.author_name,
+      author_email: post.author_email,
+    }),
   })
 
   if (error.value) {
@@ -53,7 +57,11 @@ async function updatePost(post: Posts) {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(post),
+    body: JSON.stringify({
+      ...post,
+      author_name: post.author_name,
+      author_email: post.author_email,
+    }),
   })
 
   if (error.value) {

@@ -14,7 +14,6 @@ interface CustomAttributes {
 interface RequestDataPost {
   id: number
   title: string
-  category: string
   poster: string
   body: string
   views: number
@@ -28,7 +27,6 @@ interface RequestDataPost {
 export class PostRequest extends Request<RequestDataPost> implements PostRequestType {
   public id = 1
   public title = ''
-  public category = ''
   public poster = ''
   public body = ''
   public views = 0

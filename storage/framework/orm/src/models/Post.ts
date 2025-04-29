@@ -12,7 +12,6 @@ export interface PostsTable {
   id: Generated<number>
   author_id: number
   title: string
-  category: string
   poster?: string
   body: string
   views?: number
@@ -53,7 +52,7 @@ export type PostUpdate = Updateable<PostWrite>
 
 export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
-  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'category', 'poster', 'body', 'views', 'published_at', 'status', 'uuid', 'user_id', 'author_id']
+  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'poster', 'body', 'views', 'published_at', 'status', 'uuid', 'user_id', 'author_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
   protected attributes = {} as PostJsonResponse
   protected originalAttributes = {} as PostJsonResponse
@@ -198,10 +197,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return this.attributes.title
   }
 
-  get category(): string {
-    return this.attributes.category
-  }
-
   get poster(): string | undefined {
     return this.attributes.poster
   }
@@ -236,10 +231,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
   set title(value: string) {
     this.attributes.title = value
-  }
-
-  set category(value: string) {
-    this.attributes.category = value
   }
 
   set poster(value: string) {
@@ -806,14 +797,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance
   }
 
-  static whereCategory(value: string): PostModel {
-    const instance = new PostModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('category', '=', value)
-
-    return instance
-  }
-
   static wherePoster(value: string): PostModel {
     const instance = new PostModel(undefined)
 
@@ -985,7 +968,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
       id: this.id,
       title: this.title,
-      category: this.category,
       poster: this.poster,
       body: this.body,
       views: this.views,
@@ -1066,13 +1048,6 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereTitle(value: string): Promise<PostModel[]> {
   const query = DB.instance.selectFrom('posts').where('title', '=', value)
-  const results: PostJsonResponse = await query.execute()
-
-  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
-}
-
-export async function whereCategory(value: string): Promise<PostModel[]> {
-  const query = DB.instance.selectFrom('posts').where('category', '=', value)
   const results: PostJsonResponse = await query.execute()
 
   return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
