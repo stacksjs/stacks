@@ -42,17 +42,6 @@ export async function store(data: CategoryData): Promise<CategorizableTable> {
       if (!category)
         throw new Error('Failed to create category')
 
-      // Insert into categorizable_models pivot table
-      const pivotData = {
-        category_id: category.id!, // We know this exists because we checked category exists
-        categorizable_type: data.categorizable_type,
-      }
-
-      await trx
-        .insertInto('categorizable_models')
-        .values(pivotData)
-        .execute()
-
       return category
     })
 
@@ -93,6 +82,53 @@ export async function storeCategorizableModel(data: CategorizableModelData): Pro
   catch (error) {
     if (error instanceof Error)
       throw new TypeError(`Failed to create categorizable model relationship: ${error.message}`)
+
+    throw error
+  }
+}
+
+/**
+ * Create multiple categories and their pivot table entries in a single transaction
+ *
+ * @param data Array of category data to create
+ * @returns Array of created category records
+ */
+export async function bulkStore(data: CategoryData[]): Promise<CategorizableTable[]> {
+  try {
+    // Start a transaction to ensure all inserts succeed or fail together
+    const results = await db.transaction().execute(async (trx) => {
+      const categories: CategorizableTable[] = []
+
+      for (const item of data) {
+        const categoryData = {
+          name: item.name,
+          slug: slugify(item.name),
+          description: item.description,
+          categorizable_type: item.categorizable_type,
+          is_active: item.is_active ?? true,
+        }
+
+        // Insert into categorizable table
+        const category = await trx
+          .insertInto('categorizable')
+          .values(categoryData)
+          .returningAll()
+          .executeTakeFirst()
+
+        if (!category)
+          throw new Error(`Failed to create category: ${item.name}`)
+
+        categories.push(category)
+      }
+
+      return categories
+    })
+
+    return results
+  }
+  catch (error) {
+    if (error instanceof Error)
+      throw new TypeError(`Failed to create categories: ${error.message}`)
 
     throw error
   }

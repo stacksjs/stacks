@@ -1,6 +1,6 @@
 import type { PostRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-import { authors, posts } from '@stacksjs/cms'
+import { authors, posts, postCategories } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -10,13 +10,14 @@ export default new Action({
   async handle(request: PostRequestType) {
     await request.validate()
 
-    const postCategoryData = {
-      name: request.get('category'),
-      description: request.get('description'),
-      categorizable_type: request.get('categorizable_type'),
-    }
+    const categories = JSON.parse(request.get('categories')) as { name: string; description: string }[]
+    
+    const categoryData: { name: string; description: string; categorizable_type: string }[] = categories.map((category) => ({
+      ...category,
+      categorizable_type: 'posts',
+    }))
 
-    const postCategories = await postCategories.store()
+    await postCategories.bulkStore(categoryData)
 
     const author = await authors.findOrCreate({
       name: request.get('author_name'),

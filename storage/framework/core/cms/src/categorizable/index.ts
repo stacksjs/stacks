@@ -13,6 +13,7 @@ export {
 
 export {
   store,
+  bulkStore,
   storeCategorizableModel,
 } from './store'
 
