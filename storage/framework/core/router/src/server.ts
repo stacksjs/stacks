@@ -14,6 +14,7 @@ import { route, staticRoute } from '.'
 import { middlewares } from './middleware'
 
 import { request as RequestParam } from './request'
+import { traitInterfaces } from '@stacksjs/orm'
 
 // const limiter = new RateLimiter({
 //   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -383,6 +384,7 @@ function noCache(response: Response): Response {
 async function applyToAllRequests(operation: 'addBodies' | 'addParam' | 'addHeaders' | 'addQuery', data: any): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
+  // Process model files
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
     const modelName = getModelName(model, modelFile)
@@ -392,6 +394,23 @@ async function applyToAllRequests(operation: 'addBodies' | 'addParam' | 'addHead
 
     if (requestInstance) {
       requestInstance[operation](data)
+    }
+  }
+
+  // Process trait interfaces
+  for (const trait of traitInterfaces) {
+    const requestPath = path.frameworkPath(`requests/${trait.name}Request.ts`)
+    try {
+      const requestImport = await import(requestPath)
+      const requestInstance = requestImport.request
+
+      if (requestInstance) {
+        requestInstance[operation](data)
+      }
+    }
+    catch (error) {
+      // Skip if request file doesn't exist
+      continue
     }
   }
 
