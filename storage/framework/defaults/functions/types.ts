@@ -9,11 +9,6 @@ export interface Customers {
   status: string | string[]
   avatar?: string
   uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
 }
 
 export interface Coupons {
@@ -34,11 +29,6 @@ export interface Coupons {
   applicable_products?: string
   applicable_categories?: string
   uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
 }
 
 export interface GiftCards {
@@ -60,11 +50,6 @@ export interface GiftCards {
   last_used_date?: number
   template_id?: string
   uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
 }
 
 export interface Orders {
@@ -83,11 +68,6 @@ export interface Orders {
   estimated_delivery_time?: string
   applied_coupon_id?: string
   uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
 }
 
 export interface Posts {
@@ -104,11 +84,6 @@ export interface Posts {
   published_at: number
   status: string | string[]
   uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
 }
 
 export interface Payments {
@@ -128,11 +103,6 @@ export interface Payments {
   refund_amount?: number
   notes?: string
   uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
 }
 
 export interface TaxRates {
@@ -145,11 +115,6 @@ export interface TaxRates {
   status?: string | string[]
   is_default?: boolean
   uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
 }
 
 export interface Categories {
@@ -161,11 +126,6 @@ export interface Categories {
   parent_category_id?: string
   display_order: number
   uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
 }
 export interface Units {
   id: number
@@ -176,8 +136,6 @@ export interface Units {
   description?: string
   is_default?: boolean
   uuid?: string
-  created_at?: string
-  updated_at?: string
 }
 
 export interface ProductItems {
@@ -195,11 +153,6 @@ export interface ProductItems {
   sku: string
   custom_options?: string
   uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
 }
 
 export interface Reviews {
@@ -217,11 +170,6 @@ export interface Reviews {
   purchase_date?: string
   images?: string
   uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
 }
 
 export interface Drivers {
@@ -234,9 +182,6 @@ export interface Drivers {
   status?: string | string[]
   uuid?: string
 
-  created_at?: string
-
-  updated_at?: string
 
 }
 export interface DeliveryRoutes {
@@ -249,9 +194,6 @@ export interface DeliveryRoutes {
   last_active?: Date | string
   uuid?: string
 
-  created_at?: string
-
-  updated_at?: string
 
 }
 
@@ -266,9 +208,6 @@ export interface DigitalDeliveries {
   status?: string | string[]
   uuid?: string
 
-  created_at?: string
-
-  updated_at?: string
 
 }
 
@@ -280,11 +219,6 @@ export interface ShippingMethods {
   free_shipping?: number
   status: string | string[]
   uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
 }
 
 export interface ShippingRates {
@@ -295,10 +229,6 @@ export interface ShippingRates {
   weight_to: number
   rate: number
   uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
 }
 
 export interface ShippingZones {
@@ -310,11 +240,6 @@ export interface ShippingZones {
   postal_codes?: string
   status: string | string[]
   uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
 }
 
 export interface ProductVariants {
@@ -326,9 +251,24 @@ export interface ProductVariants {
   options?: string
   status: string | string[]
   uuid?: string
+}
 
-  created_at?: string
+export interface Tags {
+  id: number
+  name: string
+  slug: string
+  description: string
+  is_active: boolean
+  taggable_id: number
+  taggable_type: string
+}
 
-  updated_at?: string
-
+export interface Categorizable {
+  id: number
+  name: string
+  slug: string
+  description: string
+  is_active: boolean
+  categorizable_id: number
+  categorizable_type: string
 }
