@@ -75,12 +75,10 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   }
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
-    if (attributes === undefined || attributes === null) {
-      await validateField('Release', this.all())
-    }
-    else {
+    if (attributes === undefined || attributes === null)
+      throw new Error('Attributes are required')
+    else
       await customValidate(attributes, this.all())
-    }
   }
 
   public has(element: string): boolean {

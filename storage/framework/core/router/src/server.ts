@@ -380,25 +380,7 @@ function noCache(response: Response): Response {
   return response
 }
 
-async function addRouteQuery(url: URL): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
-
-  for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default
-    const modelName = getModelName(model, modelFile)
-    const requestPath = path.frameworkPath(`requests/${modelName}Request.ts`)
-    const requestImport = await import(requestPath)
-    const requestInstance = requestImport.request
-
-    if (requestInstance) {
-      requestInstance.addQuery(url)
-    }
-  }
-
-  RequestParam.addQuery(url)
-}
-
-async function applyToAllRequests(operation: 'addBodies' | 'addParam' | 'addHeaders', data: any): Promise<void> {
+async function applyToAllRequests(operation: 'addBodies' | 'addParam' | 'addHeaders' | 'addQuery', data: any): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
   for (const modelFile of modelFiles) {
@@ -414,6 +396,10 @@ async function applyToAllRequests(operation: 'addBodies' | 'addParam' | 'addHead
   }
 
   RequestParam[operation](data)
+}
+
+async function addRouteQuery(url: URL): Promise<void> {
+  await applyToAllRequests('addQuery', url)
 }
 
 async function addBody(params: any): Promise<void> {
