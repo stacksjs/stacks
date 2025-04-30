@@ -1,15 +1,26 @@
 import { Action } from '@stacksjs/actions'
 import { categorizable } from '@stacksjs/cms'
+import { CategorizableRequestType } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 
 export default new Action({
-  name: 'CategorizableUpdateAction',
-  description: 'Updates an existing categorizable',
+  name: 'Category Update',
+  description: 'Category Update ORM Action',
+  method: 'PATCH',
+  async handle(request: CategorizableRequestType) {
+    await request.validate()
 
-  async handle({ id, name, description, categorizableType }) {
-    return await categorizable.update(id, {
-      name,
-      description,
-      categorizable_type: categorizableType,
-    })
+    const id = request.getParam('id')
+    const data = {
+      id,
+      name: request.get('name'),
+      description: request.get('description'),
+      categorizable_id: parseInt(request.get('categorizable_id')),
+      categorizable_type: request.get('categorizable_type'),
+    }
+
+    const model = await categorizable.update(data)
+
+    return response.json(model)
   },
 }) 

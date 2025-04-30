@@ -1,13 +1,13 @@
 import { Action } from '@stacksjs/actions'
-import { categorizable } from '@stacksjs/cms'
+import { tags } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
 
 export default new Action({
-  name: 'Category Index',
-  description: 'Category Index ORM Action',
+  name: 'Tag Index',
+  description: 'Tag Index ORM Action',
   method: 'GET',
   async handle() {
-    const results = await categorizable.fetchAll()
+    const results = await tags.fetchTags()
 
     return response.json(results)
   },

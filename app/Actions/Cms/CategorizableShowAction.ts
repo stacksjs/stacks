@@ -1,11 +1,17 @@
 import { Action } from '@stacksjs/actions'
 import { categorizable } from '@stacksjs/cms'
+import { CategorizableRequestType } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 
 export default new Action({
-  name: 'CategorizableShowAction',
-  description: 'Fetches a specific categorizable by ID',
+  name: 'Category Show',
+  description: 'Category Show ORM Action',
+  method: 'GET',
+  async handle(request: CategorizableRequestType) {
+    const id = request.getParam('id')
 
-  async handle({ id }) {
-    return await categorizable.fetchById(id)
+    const model = await categorizable.fetchById(id)
+
+    return response.json(model)
   },
 }) 
