@@ -231,18 +231,18 @@ route.group({ prefix: '/cms' }, async () => {
   route.delete('/posts/{id}', 'Actions/Cms/PostDestroyOrmAction')
 
   // Post Categories
-  route.get('/categories', 'Actions/Cms/CategoryIndexOrmAction')
-  route.post('/categories', 'Actions/Cms/CategoryStoreOrmAction')
-  route.get('/categories/{id}', 'Actions/Cms/CategoryShowOrmAction')
-  route.patch('/categories/{id}', 'Actions/Cms/CategoryUpdateOrmAction')
-  route.delete('/categories/{id}', 'Actions/Cms/CategoryDestroyOrmAction')
+  route.get('/categories', 'Actions/Cms/CategorizableIndexAction')
+  route.post('/categories', 'Actions/Cms/CategorizableStoreAction')
+  route.get('/categories/{id}', 'Actions/Cms/CategorizableShowAction')
+  route.patch('/categories/{id}', 'Actions/Cms/CategorizableUpdateAction')
+  route.delete('/categories/{id}', 'Actions/Cms/CategorizableDestroyAction')
 
   // Post Tags
-  route.get('/tags', 'Actions/Cms/TagIndexOrmAction')
-  route.post('/tags', 'Actions/Cms/TagStoreOrmAction')
-  route.get('/tags/{id}', 'Actions/Cms/TagShowOrmAction')
-  route.patch('/tags/{id}', 'Actions/Cms/TagUpdateOrmAction')
-  route.delete('/tags/{id}', 'Actions/Cms/TagDestroyOrmAction')
+  route.get('/tags', 'Actions/Cms/TaggableIndexAction')
+  route.post('/tags', 'Actions/Cms/TaggableStoreAction')
+  route.get('/tags/{id}', 'Actions/Cms/TaggableShowAction')
+  route.patch('/tags/{id}', 'Actions/Cms/TaggableUpdateAction')
+  route.delete('/tags/{id}', 'Actions/Cms/TaggableDestroyAction')
 })
 
 route.group({ prefix: '/queues' }, async () => {

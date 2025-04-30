@@ -13,7 +13,6 @@ export default new Action({
     const data = {
       name: request.get('name'),
       description: request.get('description'),
-      categorizable_id: parseInt(request.get('categorizable_id')),
       categorizable_type: request.get('categorizable_type'),
     }
 

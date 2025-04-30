@@ -15,7 +15,6 @@ export default new Action({
       id,
       name: request.get('name'),
       description: request.get('description'),
-      taggable_id: parseInt(request.get('taggable_id')),
       taggable_type: request.get('taggable_type'),
     }
 
