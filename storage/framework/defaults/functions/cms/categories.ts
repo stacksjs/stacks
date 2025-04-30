@@ -36,10 +36,9 @@ async function createCategory(category: Categorizable) {
       ...category,
       name: category.name,
       description: category.description,
-      image_url: category.image_url,
       is_active: category.is_active,
-      parent_category_id: category.parent_category_id,
-      display_order: category.display_order,
+      categorizable_id: category.categorizable_id,
+      categorizable_type: category.categorizable_type,
     }),
   })
 

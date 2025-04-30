@@ -30,8 +30,8 @@ export default cms
 
 export {
   authors,
+  postCategories as categorizable,
   comments,
-  postCategories,
   posts,
   tags,
 }
