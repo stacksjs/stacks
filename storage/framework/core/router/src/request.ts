@@ -67,7 +67,7 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   }
 
   public get<T = string>(element: string, defaultValue?: T): T {
-    return this.query[typeof element] || defaultValue
+    return this.query[element] || defaultValue
   }
 
   public all(): T {

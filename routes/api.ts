@@ -231,7 +231,7 @@ route.group({ prefix: '/cms' }, async () => {
   route.delete('/posts/{id}', 'Actions/Cms/PostDestroyOrmAction')
 
   // Post Categories
-  // route.get('/categories', 'Actions/Cms/CategorizableIndexAction')
+  route.get('/categories', 'Actions/Cms/CategorizableIndexAction')
   route.post('/categories', 'Actions/Cms/CategorizableStoreAction')
   route.get('/categories/{id}', 'Actions/Cms/CategorizableShowAction')
   route.patch('/categories/{id}', 'Actions/Cms/CategorizableUpdateAction')
