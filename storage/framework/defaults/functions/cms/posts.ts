@@ -26,7 +26,7 @@ async function fetchPosts() {
   }
 }
 
-async function createPost(post: Posts) {
+async function createPost(post: Partial<Posts>) {
   const { error, data } = useFetch<Posts>(`${baseURL}/cms/posts`, {
     method: 'POST',
     headers: {
@@ -53,7 +53,7 @@ async function createPost(post: Posts) {
   return null
 }
 
-async function updatePost(post: Posts) {
+async function updatePost(post: Partial<Posts>) {
   const { error, data } = useFetch<Posts>(`${baseURL}/cms/posts/${post.id}`, {
     method: 'PATCH',
     headers: {

@@ -26,21 +26,13 @@ async function fetchTags() {
   }
 }
 
-async function createTag(tag: Tags) {
+async function createTag(tag: Partial<Tags>) {
   const { error, data } = useFetch<Tags>(`${baseURL}/cms/tags`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      ...tag,
-      name: tag.name,
-      slug: tag.slug,
-      description: tag.description,
-      is_active: tag.is_active,
-      taggable_id: tag.taggable_id,
-      taggable_type: tag.taggable_type,
-    }),
+    body: JSON.stringify(tag),
   })
 
   if (error.value) {
@@ -55,19 +47,13 @@ async function createTag(tag: Tags) {
   return null
 }
 
-async function updateTag(id: number, tag: Tags) {
+async function updateTag(id: number, tag: Partial<Tags>) {
   const { error, data } = useFetch<Tags>(`${baseURL}/cms/tags/${id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      ...tag,
-      name: tag.name,
-      slug: tag.slug,
-      description: tag.description,
-      is_active: tag.is_active,
-    }),
+    body: JSON.stringify(tag),
   })
 
   if (error.value) {

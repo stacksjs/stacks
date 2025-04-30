@@ -26,7 +26,7 @@ async function fetchCategories() {
   }
 }
 
-async function createCategory(category: Categorizable) {
+async function createCategory(category: Partial<Categorizable>) {
   const { error, data } = useFetch<Categorizable>(`${baseURL}/cms/categories`, {
     method: 'POST',
     headers: {
@@ -54,7 +54,7 @@ async function createCategory(category: Categorizable) {
   return null
 }
 
-async function updateCategory(id: number, category: Categorizable) {
+async function updateCategory(id: number, category: Partial<Categorizable>) {
   const { error, data } = useFetch<Categorizable>(`${baseURL}/cms/categories/${id}`, {
     method: 'PATCH',
     headers: {
