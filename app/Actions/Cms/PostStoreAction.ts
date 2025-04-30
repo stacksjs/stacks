@@ -10,14 +10,7 @@ export default new Action({
   async handle(request: PostRequestType) {
     await request.validate()
 
-    const categories = JSON.parse(request.get('categories')) as { name: string; description: string }[]
-    
-    const categoryData: { name: string; description: string; categorizable_type: string }[] = categories.map((category) => ({
-      ...category,
-      categorizable_type: 'posts',
-    }))
-
-    await postCategories.bulkStore(categoryData)
+    const categoryIds = request.get('category_ids')
 
     const author = await authors.findOrCreate({
       name: request.get('author_name'),

@@ -13,7 +13,6 @@ export async function store(data: NewPost): Promise<PostJsonResponse> {
     const postData = {
       author_id: data.author_id,
       title: data.title,
-      category: data.category,
       poster: data.poster,
       body: data.body,
       views: data.views || 0,
@@ -31,18 +30,6 @@ export async function store(data: NewPost): Promise<PostJsonResponse> {
 
     if (!result)
       throw new Error('Failed to create post')
-
-    // Handle tags if they exist in the data
-    // if (data.tags && Array.isArray(data.tags)) {
-    //   for (const tag of data.tags) {
-    //     await storeTag({
-    //       name: tag,
-    //       taggable_id: result.id,
-    //       taggable_type: 'posts',
-    //       is_active: true,
-    //     })
-    //   }
-    // }
 
     return result
   }

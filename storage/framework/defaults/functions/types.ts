@@ -92,6 +92,7 @@ export interface Orders {
 
 export interface Posts {
   id: number
+  category_ids: number[]
   author_name: string
   author_email: string
   title: string
