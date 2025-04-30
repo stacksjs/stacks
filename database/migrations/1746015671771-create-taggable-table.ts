@@ -9,7 +9,6 @@ export async function up(db: Database<any>) {
     .addColumn('slug', 'varchar(255)', col => col.notNull().unique())
     .addColumn('description', 'text')
     .addColumn('is_active', 'boolean', col => col.defaultTo(true))
-    .addColumn('taggable_id', 'integer', col => col.notNull())
     .addColumn('taggable_type', 'varchar(255)', col => col.notNull())
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')

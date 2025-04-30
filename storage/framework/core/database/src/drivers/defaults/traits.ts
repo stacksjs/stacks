@@ -91,7 +91,6 @@ export async function createTaggableTable(): Promise<void> {
   migrationContent += `    .addColumn('slug', 'varchar(255)', col => col.notNull().unique())\n`
   migrationContent += `    .addColumn('description', 'text')\n`
   migrationContent += `    .addColumn('is_active', 'boolean', col => col.defaultTo(true))\n`
-  migrationContent += `    .addColumn('taggable_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('taggable_type', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .addColumn('updated_at', 'timestamp')\n`

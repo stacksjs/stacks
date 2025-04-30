@@ -12,8 +12,8 @@ export {
 } from './fetch'
 
 export {
-  store,
   bulkStore,
+  store,
   storeCategorizableModel,
 } from './store'
 

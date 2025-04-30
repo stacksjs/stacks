@@ -182,7 +182,6 @@ export interface Drivers {
   status?: string | string[]
   uuid?: string
 
-
 }
 export interface DeliveryRoutes {
   id: number
@@ -193,7 +192,6 @@ export interface DeliveryRoutes {
   total_distance: number
   last_active?: Date | string
   uuid?: string
-
 
 }
 
@@ -207,7 +205,6 @@ export interface DigitalDeliveries {
   automatic_delivery?: boolean
   status?: string | string[]
   uuid?: string
-
 
 }
 

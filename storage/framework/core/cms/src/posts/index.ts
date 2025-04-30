@@ -14,8 +14,8 @@ export {
 } from './fetch'
 
 export {
-  store,
   attach,
+  store,
 } from './store'
 
 export {

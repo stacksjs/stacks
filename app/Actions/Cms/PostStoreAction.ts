@@ -32,7 +32,7 @@ export default new Action({
 
     await posts.attach(model.id, 'categorizable_models', categoryIds)
     await posts.attach(model.id, 'taggable', tagIds)
-    
+
     return response.json(model)
   },
 })

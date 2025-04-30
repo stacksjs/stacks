@@ -43,7 +43,7 @@ export async function store(data: NewPost): Promise<PostJsonResponse> {
 
 /**
  * Attach related records to a post through a pivot table
- * 
+ *
  * @param postId The ID of the post to attach records to
  * @param tableName The name of the pivot table (e.g., 'categorizable_models', 'taggable')
  * @param ids Array of IDs to attach
@@ -52,7 +52,7 @@ export async function store(data: NewPost): Promise<PostJsonResponse> {
 export async function attach(
   postId: number,
   tableName: 'categorizable_models' | 'taggable',
-  ids: number[]
+  ids: number[],
 ): Promise<void> {
   try {
     // Get the foreign key names based on the table name
@@ -83,7 +83,7 @@ export async function attach(
 
 /**
  * Detach related records from a post through a pivot table
- * 
+ *
  * @param postId The ID of the post to detach records from
  * @param tableName The name of the pivot table (e.g., 'categorizable_models', 'taggable')
  * @param ids Optional array of IDs to detach. If not provided, all related records will be detached
@@ -92,7 +92,7 @@ export async function attach(
 export async function detach(
   postId: number,
   tableName: 'categorizable_models' | 'taggable',
-  ids?: number[]
+  ids?: number[],
 ): Promise<void> {
   try {
     // Get the foreign key names based on the table name
@@ -100,7 +100,7 @@ export async function detach(
     const postTypeField = tableName === 'categorizable_models' ? 'categorizable_type' : 'taggable_type'
 
     // Build the delete query
-      await db
+    await db
       .deleteFrom(tableName)
       .where(postForeignKey, '=', postId)
       .where(postTypeField, '=', 'posts')
@@ -118,7 +118,7 @@ export async function detach(
 /**
  * Synchronize related records for a post through a pivot table
  * This will detach relationships not in the new set and attach only new relationships
- * 
+ *
  * @param postId The ID of the post to sync records for
  * @param tableName The name of the pivot table (e.g., 'categorizable_models', 'taggable')
  * @param ids Array of IDs to sync
@@ -127,7 +127,7 @@ export async function detach(
 export async function sync(
   postId: number,
   tableName: 'categorizable_models' | 'taggable',
-  ids: number[]
+  ids: number[],
 ): Promise<void> {
   try {
     // Get the foreign key names based on the table name
@@ -143,10 +143,10 @@ export async function sync(
       .execute()
 
     const existingIds = existingRelations.map((rel: { id: number }) => rel.id)
-    
+
     // Find IDs to remove (in existing but not in new set)
     const idsToRemove = existingIds.filter((id: number) => !ids.includes(id))
-    
+
     // Find IDs to add (in new set but not in existing)
     const idsToAdd = ids.filter(id => !existingIds.includes(id))
 

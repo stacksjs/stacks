@@ -1,6 +1,6 @@
+import type { CategorizableRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { categorizable } from '@stacksjs/cms'
-import { CategorizableRequestType } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -14,4 +14,4 @@ export default new Action({
 
     return response.json(model)
   },
-}) 
+})

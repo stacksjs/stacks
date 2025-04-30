@@ -211,8 +211,10 @@ interface RequestDataCategorizableModels {
   category_id: number
   categorizable_id: number
   categorizable_type: string
-}
+  created_at: string
+  updated_at: string | null
 
+}
 export interface CategorizableModelsRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
   get: <T = string>(element: string, defaultValue?: T) => T

@@ -121,7 +121,6 @@ describe('Post Module', () => {
 
       const post = await store(postData)
       expect(post).toBeDefined()
-      const postId = Number(post?.id)
 
       // Create a category and associate it with the post
       const category = await db
@@ -172,7 +171,6 @@ describe('Post Module', () => {
 
       const post = await store(postData)
       expect(post).toBeDefined()
-      const postId = Number(post?.id)
 
       // Create multiple categories
       const categoryData = [
@@ -245,7 +243,6 @@ describe('Post Module', () => {
 
       const post = await store(postData)
       expect(post).toBeDefined()
-      const postId = Number(post?.id)
 
       // Create a tag and associate it with the post
       const tag = await db
@@ -254,7 +251,6 @@ describe('Post Module', () => {
           name: 'JavaScript',
           description: 'JavaScript related content',
           is_active: true,
-          taggable_id: postId,
           taggable_type: 'posts',
           slug: 'javascript',
         })
@@ -263,7 +259,6 @@ describe('Post Module', () => {
 
       expect(tag).toBeDefined()
       expect(tag?.name).toBe('JavaScript')
-      expect(tag?.taggable_id).toBe(postId)
       expect(tag?.taggable_type).toBe('posts')
       expect(tag?.slug).toBe('javascript')
     })
@@ -287,7 +282,6 @@ describe('Post Module', () => {
 
       const post = await store(postData)
       expect(post).toBeDefined()
-      const postId = Number(post?.id)
 
       // Create multiple tags
       const tagData = [
@@ -305,7 +299,6 @@ describe('Post Module', () => {
               name: data.name,
               description: data.description,
               is_active: true,
-              taggable_id: postId,
               taggable_type: 'posts',
               slug: data.slug,
             })
@@ -313,7 +306,6 @@ describe('Post Module', () => {
             .executeTakeFirst()
 
           expect(tag).toBeDefined()
-          expect(tag?.taggable_id).toBe(postId)
           expect(tag?.taggable_type).toBe('posts')
           return tag
         }),
@@ -325,12 +317,10 @@ describe('Post Module', () => {
       const postTags = await db
         .selectFrom('taggable')
         .selectAll()
-        .where('taggable_id', '=', postId)
         .where('taggable_type', '=', 'posts')
         .execute()
 
       expect(postTags).toHaveLength(3)
-      expect(postTags.every(tag => tag.taggable_id === postId)).toBe(true)
       expect(postTags.every(tag => tag.taggable_type === 'posts')).toBe(true)
 
       // Verify tag names
@@ -530,81 +520,5 @@ describe('Post Module', () => {
         expect((error as Error).message).toContain(`Post with ID ${nonExistentId} not found`)
       }
     })
-
-    // it('should delete associated tags when a post is deleted', async () => {
-    //   // Create a post
-    //   const author = await findOrCreateAuthor({
-    //     name: 'Test Author',
-    //     email: 'test.author@example.com',
-    //   })
-    //
-    //   const postData = {
-    //     author_id: author.id,
-    //     title: 'Post to Delete with Tags',
-    //     category: 'Technology',
-    //     body: 'This is a test post body with more than 10 characters.',
-    //     views: 0,
-    //     published_at: Date.now(),
-    //     status: 'draft'
-    //   }
-    //
-    //   const post = await store(postData)
-    //   const postId = post?.id !== undefined ? Number(post.id) : undefined
-    //
-    //   expect(postId).toBeDefined()
-    //   if (!postId) {
-    //     throw new Error('Failed to create test post')
-    //   }
-    //
-    //   // Create some tags for the post
-    //   await db
-    //     .insertInto('taggable')
-    //     .values([
-    //       {
-    //         name: 'Tag 1',
-    //         description: 'First tag',
-    //         is_active: true,
-    //         taggable_id: postId,
-    //         taggable_type: 'posts',
-    //         slug: 'tag-1'
-    //       },
-    //       {
-    //         name: 'Tag 2',
-    //         description: 'Second tag',
-    //         is_active: true,
-    //         taggable_id: postId,
-    //         taggable_type: 'posts',
-    //         slug: 'tag-2'
-    //       }
-    //     ])
-    //     .execute()
-    //
-    //   // Verify tags exist
-    //   let tags = await db
-    //     .selectFrom('taggable')
-    //     .selectAll()
-    //     .where('taggable_id', '=', postId)
-    //     .where('taggable_type', '=', 'posts')
-    //     .execute()
-    //
-    //   expect(tags).toHaveLength(2)
-    //
-    //   // Delete the post
-    //   await destroy(postId)
-    //
-    //   // Verify post is deleted
-    //   const deletedPost = await fetchById(postId)
-    //   expect(deletedPost).toBeUndefined()
-    //
-    //   // Verify tags are deleted
-    //   tags = await db
-    //     .selectFrom('taggable')
-    //     .selectAll()
-    //     .where('taggable_id', '=', postId)
-    //     .where('taggable_type', '=', 'posts')
-    //     .execute()
-    //
-    //   expect(tags).toHaveLength(0)
-    // })
   })
 })
