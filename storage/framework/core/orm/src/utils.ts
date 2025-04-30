@@ -653,6 +653,195 @@ export async function writeModelRequest(): Promise<void> {
   let importTypesString = ``
   let typeString = `import { Request } from '../core/router/src/request'\nimport type { VineType, CustomAttributes } from '@stacksjs/types'\n\n`
 
+  // Generate trait request types first
+  const traitInterfaces = [
+    {
+      name: 'Migrations',
+      fields: {
+        name: 'string',
+        timestamp: 'string',
+      },
+    },
+    {
+      name: 'PasswordResets',
+      fields: {
+        email: 'string',
+        token: 'string',
+        created_at: 'string',
+      },
+    },
+    {
+      name: 'Passkeys',
+      fields: {
+        id: 'number',
+        cred_public_key: 'string',
+        user_id: 'number',
+        webauthn_user_id: 'string',
+        counter: 'number',
+        credential_type: 'string',
+        device_type: 'string',
+        backup_eligible: 'boolean',
+        backup_status: 'boolean',
+        transports: 'string',
+        created_at: 'string',
+        updated_at: 'string',
+        last_used_at: 'string',
+      },
+    },
+    {
+      name: 'Commentables',
+      fields: {
+        id: 'number',
+        title: 'string',
+        body: 'string',
+        status: 'string',
+        approved_at: 'number | null',
+        rejected_at: 'number | null',
+        commentables_id: 'number',
+        commentables_type: 'string',
+        user_id: 'number | null',
+        created_at: 'string',
+        updated_at: 'string | null',
+      },
+    },
+    {
+      name: 'CommentableUpvotes',
+      fields: {
+        id: 'number',
+        user_id: 'number',
+        upvoteable_id: 'number',
+        upvoteable_type: 'string',
+        created_at: 'string',
+      },
+    },
+    {
+      name: 'Categorizable',
+      fields: {
+        id: 'number',
+        name: 'string',
+        slug: 'string',
+        description: 'string',
+        is_active: 'boolean',
+        categorizable_type: 'string',
+        created_at: 'string',
+        updated_at: 'string',
+      },
+    },
+    {
+      name: 'Taggable',
+      fields: {
+        id: 'number',
+        name: 'string',
+        slug: 'string',
+        description: 'string',
+        is_active: 'boolean',
+        taggable_type: 'string',
+        created_at: 'string',
+        updated_at: 'string',
+      },
+    },
+    {
+      name: 'TaggableModels',
+      fields: {
+        id: 'number',
+        tag_id: 'number',
+        taggable_id: 'number',
+        taggable_type: 'string',
+        created_at: 'string',
+        updated_at: 'string | null',
+      },
+    },
+    {
+      name: 'CategorizableModels',
+      fields: {
+        id: 'number',
+        category_id: 'number',
+        categorizable_id: 'number',
+        categorizable_type: 'string',
+        created_at: 'string',
+        updated_at: 'string | null',
+      },
+    },
+  ]
+
+  // Generate trait request files
+  for (const trait of traitInterfaces) {
+    let fieldString = ''
+    let fieldStringInt = ''
+    let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField, customValidate, type schema } from '@stacksjs/validation'\n`
+
+    // Add fields to the interface
+    for (const [field, type] of Object.entries(trait.fields)) {
+      fieldString += ` ${field}: ${type}\n     `
+      let defaultValue = `''`
+
+      if (type === 'boolean')
+        defaultValue = 'false'
+      if (type === 'number')
+        defaultValue = '0'
+      if (type === 'number | null')
+        defaultValue = 'null'
+      if (type === 'string | null')
+        defaultValue = 'null'
+
+      fieldStringInt += `public ${field} = ${defaultValue}\n`
+    }
+
+    const fieldStringType = `get: <T = string>(element: string, defaultValue?: T) => T`
+
+    const requestFile = Bun.file(path.frameworkPath(`requests/${trait.name}Request.ts`))
+
+    importTypes = `${trait.name}RequestType`
+    importTypesString += `${importTypes}`
+
+    if (trait !== traitInterfaces[traitInterfaces.length - 1])
+      importTypesString += ` | `
+
+    fileString += `import type { ${importTypes} } from '../types/requests'\n\n`
+    fileString += `interface ValidationField {
+      rule: ReturnType<typeof schema.string>
+      message: Record<string, string>
+    }\n\n`
+    fileString += `interface CustomAttributes {
+      [key: string]: ValidationField
+    }\n`
+
+    const types = `export interface ${trait.name}RequestType extends Request {
+      validate(attributes?: CustomAttributes): Promise<void>
+      ${fieldStringType}
+      all(): RequestData${trait.name}
+      ${fieldString}
+    }\n\n`
+
+    typeString += `interface RequestData${trait.name} {
+      ${fieldString}
+    }\n`
+
+    fileString += `interface RequestData${trait.name} {
+      ${fieldString}
+    }\n`
+
+    typeString += types
+
+    fileString += `export class ${trait.name}Request extends Request<RequestData${trait.name}> implements ${trait.name}RequestType {
+      ${fieldStringInt}
+      public async validate(attributes?: CustomAttributes): Promise<void> {
+        if (attributes === undefined || attributes === null) {
+          await validateField('${trait.name}', this.all())
+        } else {
+          await customValidate(attributes, this.all())
+        }
+      }
+    }
+
+    export const ${camelCase(trait.name)}Request = new ${trait.name}Request()
+    `
+
+    const writer = requestFile.writer()
+    writer.write(fileString)
+  }
+
+  // Generate model request files
   for (let i = 0; i < modelFiles.length; i++) {
     let fieldStringType = ``
     let fieldString = ``
@@ -776,7 +965,6 @@ export async function writeModelRequest(): Promise<void> {
         } else {
           await customValidate(attributes, this.all())
         }
-
       }
     }
 
@@ -784,7 +972,6 @@ export async function writeModelRequest(): Promise<void> {
     `
 
     const writer = requestFile.writer()
-
     writer.write(fileString)
   }
 

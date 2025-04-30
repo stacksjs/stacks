@@ -85,8 +85,7 @@ export async function serverResponse(req: Request, body: string): Promise<Respon
   const foundRoute: Route | undefined = routesList
     .find((route: Route) => {
       const pattern = new RegExp(`^${route.uri.replace(/\{(\w+)\}/g, '(\\w+)')}$`)
-
-      return pattern.test(url.pathname)
+      return pattern.test(url.pathname) && route.method === req.method
     })
 
   log.info(`Found Route: ${JSON.stringify(foundRoute)}`)
