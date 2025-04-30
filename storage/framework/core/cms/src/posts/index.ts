@@ -15,6 +15,7 @@ export {
 
 export {
   store,
+  attach,
 } from './store'
 
 export {

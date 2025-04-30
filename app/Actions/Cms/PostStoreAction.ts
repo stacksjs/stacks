@@ -1,6 +1,6 @@
 import type { PostRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-import { authors, posts, postCategories } from '@stacksjs/cms'
+import { authors, posts } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -10,7 +10,7 @@ export default new Action({
   async handle(request: PostRequestType) {
     await request.validate()
 
-    const categoryIds = request.get('category_ids')
+    const categoryIds = request.get('category_ids') as number[]
 
     const author = await authors.findOrCreate({
       name: request.get('author_name'),
@@ -28,6 +28,8 @@ export default new Action({
     }
 
     const model = await posts.store(data)
+
+    await posts.attach(model.id, 'categorizable_models', categoryIds)
 
     return response.json(model)
   },
