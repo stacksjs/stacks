@@ -134,7 +134,6 @@ interface RequestDataCategorizable {
   slug: string
   description: string
   is_active: boolean
-  categorizable_id: number
   categorizable_type: string
   created_at: string
   updated_at: string
@@ -149,7 +148,6 @@ export interface CategorizableRequestType extends Request {
   slug: string
   description: string
   is_active: boolean
-  categorizable_id: number
   categorizable_type: string
   created_at: string
   updated_at: string
@@ -162,7 +160,6 @@ interface RequestDataTaggable {
   slug: string
   description: string
   is_active: boolean
-  taggable_id: number
   taggable_type: string
   created_at: string
   updated_at: string
@@ -177,7 +174,6 @@ export interface TaggableRequestType extends Request {
   slug: string
   description: string
   is_active: boolean
-  taggable_id: number
   taggable_type: string
   created_at: string
   updated_at: string

@@ -109,6 +109,7 @@ function generateCategorizableModelsTableInterface(): string {
     id?: number
     category_id: number
     categorizable_type: string
+    categorizable_id: number
     created_at?: string
     updated_at?: string
   }`
@@ -209,7 +210,6 @@ export async function generateTraitRequestTypes(): Promise<string> {
         slug: 'string',
         description: 'string',
         is_active: 'boolean',
-        categorizable_id: 'number',
         categorizable_type: 'string',
         created_at: 'string',
         updated_at: 'string',
@@ -223,7 +223,6 @@ export async function generateTraitRequestTypes(): Promise<string> {
         slug: 'string',
         description: 'string',
         is_active: 'boolean',
-        taggable_id: 'number',
         taggable_type: 'string',
         created_at: 'string',
         updated_at: 'string',
