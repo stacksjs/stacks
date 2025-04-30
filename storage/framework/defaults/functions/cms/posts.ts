@@ -37,6 +37,7 @@ async function createPost(post: Posts) {
       author_name: post.author_name,
       author_email: post.author_email,
       category_ids: post.category_ids,
+      tag_ids: post.tag_ids,
     }),
   })
 

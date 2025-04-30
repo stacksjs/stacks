@@ -11,6 +11,7 @@ export default new Action({
     await request.validate()
 
     const categoryIds = request.get('category_ids') as number[]
+    const tagIds = request.get('tag_ids') as number[]
 
     const author = await authors.findOrCreate({
       name: request.get('author_name'),
@@ -30,7 +31,8 @@ export default new Action({
     const model = await posts.store(data)
 
     await posts.attach(model.id, 'categorizable_models', categoryIds)
-
+    await posts.attach(model.id, 'taggable', tagIds)
+    
     return response.json(model)
   },
 })
