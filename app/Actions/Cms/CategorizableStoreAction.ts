@@ -16,7 +16,6 @@ export default new Action({
       categorizable_type: request.get('categorizable_type'),
     }
 
-    console.log(data)
     const model = await categorizable.store(data)
 
     return response.json(model)

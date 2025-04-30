@@ -398,58 +398,34 @@ async function addRouteQuery(url: URL): Promise<void> {
   RequestParam.addQuery(url)
 }
 
-async function addBody(params: any): Promise<void> {
+async function applyToAllRequests(operation: 'addBodies' | 'addParam' | 'addHeaders', data: any): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
   for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default
+    const model = (await import(modelFile)).default as Model
     const modelName = getModelName(model, modelFile)
     const requestPath = path.frameworkPath(`requests/${modelName}Request.ts`)
     const requestImport = await import(requestPath)
     const requestInstance = requestImport.request
 
     if (requestInstance) {
-      requestInstance.addBodies(JSON.parse(params))
+      requestInstance[operation](data)
     }
   }
 
-  RequestParam.addBodies(JSON.parse(params))
+  RequestParam[operation](data)
+}
+
+async function addBody(params: any): Promise<void> {
+  await applyToAllRequests('addBodies', JSON.parse(params))
 }
 
 async function addRouteParam(param: RouteParam): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
-
-  for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default as Model
-    const modelName = getModelName(model, modelFile)
-    const requestPath = path.frameworkPath(`requests/${modelName}Request.ts`)
-    const requestImport = await import(requestPath)
-    const requestInstance = requestImport.request
-
-    if (requestInstance) {
-      requestInstance.addParam(param)
-    }
-  }
-
-  RequestParam.addParam(param)
+  await applyToAllRequests('addParam', param)
 }
 
 async function addHeaders(headers: Headers): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
-
-  for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default as Model
-    const modelName = getModelName(model, modelFile)
-    const requestPath = path.frameworkPath(`requests/${modelName}Request.ts`)
-    const requestImport = await import(requestPath)
-    const requestInstance = requestImport.request
-
-    if (requestInstance) {
-      requestInstance.addHeaders(headers)
-    }
-  }
-
-  RequestParam.addHeaders(headers)
+  await applyToAllRequests('addHeaders', headers)
 }
 
 async function executeMiddleware(route: Route): Promise<any> {
