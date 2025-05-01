@@ -10,6 +10,7 @@ export async function up(db: Database<any>) {
     .addColumn('template', 'text', col => col.notNull())
     .addColumn('views', 'numeric', col => col.defaultTo(0))
     .addColumn('conversions', 'numeric', col => col.defaultTo(0))
+    .addColumn('published_at', 'numeric')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()

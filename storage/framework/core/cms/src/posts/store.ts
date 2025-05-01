@@ -71,7 +71,6 @@ export async function attach(
     }))
 
     for (const data of pivotData) {
-      console.log(data)
       await db
         .insertInto(tableName)
         .values(data)

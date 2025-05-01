@@ -188,10 +188,10 @@ export interface Attributes {
   exp_month: number
   exp_year: number
   views: number
+  published_at: number
   conversions: number
   poster: string
   body: string
-  published_at: number
   status_code: number
   duration_ms: number
   memory_usage: number

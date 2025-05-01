@@ -1446,6 +1446,7 @@ interface RequestDataPage {
   title: string
   template: string
   views: number
+  published_at: number
   conversions: number
   created_at?: string
   updated_at?: string
@@ -1458,6 +1459,7 @@ export interface PageRequestType extends Request {
   title: string
   template: string
   views: number
+  published_at: number
   conversions: number
   created_at?: string
   updated_at?: string

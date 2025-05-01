@@ -14,6 +14,7 @@ export interface PagesTable {
   title: string
   template: string
   views?: number
+  published_at?: number
   conversions?: number
   uuid?: string
 
@@ -50,7 +51,7 @@ export type PageUpdate = Updateable<PageWrite>
 
 export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> {
   private readonly hidden: Array<keyof PageJsonResponse> = []
-  private readonly fillable: Array<keyof PageJsonResponse> = ['title', 'template', 'views', 'conversions', 'uuid']
+  private readonly fillable: Array<keyof PageJsonResponse> = ['title', 'template', 'views', 'published_at', 'conversions', 'uuid']
   private readonly guarded: Array<keyof PageJsonResponse> = []
   protected attributes = {} as PageJsonResponse
   protected originalAttributes = {} as PageJsonResponse
@@ -203,6 +204,10 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
     return this.attributes.views
   }
 
+  get published_at(): number | undefined {
+    return this.attributes.published_at
+  }
+
   get conversions(): number | undefined {
     return this.attributes.conversions
   }
@@ -229,6 +234,10 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
 
   set views(value: number) {
     this.attributes.views = value
+  }
+
+  set published_at(value: number) {
+    this.attributes.published_at = value
   }
 
   set conversions(value: number) {
@@ -795,6 +804,14 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
     return instance
   }
 
+  static wherePublishedAt(value: string): PageModel {
+    const instance = new PageModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('published_at', '=', value)
+
+    return instance
+  }
+
   static whereConversions(value: string): PageModel {
     const instance = new PageModel(undefined)
 
@@ -855,6 +872,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
       title: this.title,
       template: this.template,
       views: this.views,
+      published_at: this.published_at,
       conversions: this.conversions,
 
       created_at: this.created_at,
@@ -945,6 +963,13 @@ export async function whereTemplate(value: string): Promise<PageModel[]> {
 
 export async function whereViews(value: number): Promise<PageModel[]> {
   const query = DB.instance.selectFrom('pages').where('views', '=', value)
+  const results: PageJsonResponse = await query.execute()
+
+  return results.map((modelItem: PageJsonResponse) => new PageModel(modelItem))
+}
+
+export async function wherePublishedAt(value: number): Promise<PageModel[]> {
+  const query = DB.instance.selectFrom('pages').where('published_at', '=', value)
   const results: PageJsonResponse = await query.execute()
 
   return results.map((modelItem: PageJsonResponse) => new PageModel(modelItem))

@@ -70,6 +70,19 @@ export default {
       factory: faker => faker.number.int({ min: 0, max: 1000 }),
     },
 
+    publishedAt: {
+      required: false,
+      order: 6,
+      fillable: true,
+      validation: {
+        rule: schema.number().min(0),
+        message: {
+          min: 'Published timestamp cannot be negative',
+        },
+      },
+      factory: faker => faker.date.past().getTime(),
+    },
+
     conversions: {
       required: false,
       order: 5,
