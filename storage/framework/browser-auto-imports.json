@@ -450,6 +450,26 @@
     "RetryOptions": true,
     "Fetch": true,
     "Slot": true,
-    "Slots": true
+    "Slots": true,
+    "Categories": true,
+    "Categorizable": true,
+    "Coupons": true,
+    "Customers": true,
+    "DeliveryRoutes": true,
+    "DigitalDeliveries": true,
+    "Drivers": true,
+    "GiftCards": true,
+    "Orders": true,
+    "Payments": true,
+    "Posts": true,
+    "ProductItems": true,
+    "ProductVariants": true,
+    "Reviews": true,
+    "ShippingMethods": true,
+    "ShippingRates": true,
+    "ShippingZones": true,
+    "Tags": true,
+    "TaxRates": true,
+    "Units": true
   }
 }

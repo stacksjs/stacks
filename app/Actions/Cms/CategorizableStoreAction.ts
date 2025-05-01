@@ -10,7 +10,7 @@ export default new Action({
   method: 'POST',
   async handle(request: CategorizableRequestType) {
     await request.validate({
-      name: { 
+      name: {
         rule: schema.string(),
         message: {
           name: 'Name is required',
@@ -22,7 +22,7 @@ export default new Action({
           description: 'Description is required',
         },
       },
-      
+
     })
     const data = {
       name: request.get('name'),

@@ -224,10 +224,10 @@ route.group({ prefix: '/commerce' }, async () => {
 })
 
 route.group({ prefix: '/cms' }, async () => {
-  route.get('/posts', 'Actions/Cms/PostIndexOrmAction')
-  route.post('/posts', 'Actions/Cms/PostStoreOrmAction')
-  route.get('/posts/{id}', 'Actions/Cms/PostShowOrmAction')
-  route.patch('/posts/{id}', 'Actions/Cms/PostUpdateOrmAction')
+  route.get('/posts', 'Actions/Cms/PostIndexAction')
+  route.post('/posts', 'Actions/Cms/PostStoreAction')
+  route.get('/posts/{id}', 'Actions/Cms/PostShowAction')
+  route.patch('/posts/{id}', 'Actions/Cms/PostUpdateAction')
   route.delete('/posts/{id}', 'Actions/Cms/PostDestroyOrmAction')
 
   // Post Categories

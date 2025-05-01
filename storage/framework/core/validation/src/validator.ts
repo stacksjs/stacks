@@ -2,6 +2,7 @@ import type { Model, VineType } from '@stacksjs/types'
 import type { SchemaTypes } from '@vinejs/vine/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
+import { globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
 import { reportError, schema, SimpleMessagesProvider, VineError } from './'
 
@@ -26,7 +27,16 @@ export function isObjectNotEmpty(obj: object | undefined): boolean {
 }
 
 export async function validateField(modelFile: string, params: RequestData): Promise<any> {
-  const model = (await import(/* @vite-ignore */ path.userModelsPath(`${modelFile}.ts`))).default as Model
+  console.log('dddd')
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+  const modelPath = modelFiles.find(file => file.endsWith(`${modelFile}.ts`))
+
+  console.log(modelPath)
+
+  if (!modelPath)
+    throw new HttpError(500, `Model ${modelFile} not found`)
+
+  const model = (await import(modelPath)).default as Model
   const attributes = model.attributes
 
   const ruleObject: Record<string, SchemaTypes> = {}

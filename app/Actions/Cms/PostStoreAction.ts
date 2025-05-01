@@ -7,6 +7,7 @@ export default new Action({
   name: 'Post Store',
   description: 'Post Store ORM Action',
   method: 'POST',
+  requestFile: 'PostRequest',
   async handle(request: PostRequestType) {
     await request.validate()
 

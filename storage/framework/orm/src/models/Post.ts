@@ -15,7 +15,7 @@ export interface PostsTable {
   poster?: string
   body: string
   views?: number
-  published_at: number
+  published_at?: number
   status: string | string[]
   uuid?: string
 
@@ -209,7 +209,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return this.attributes.views
   }
 
-  get published_at(): number {
+  get published_at(): number | undefined {
     return this.attributes.published_at
   }
 

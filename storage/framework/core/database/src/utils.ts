@@ -67,8 +67,6 @@ export function getDialect(): MysqlDialect | PostgresDialect | BunWorkerDialect 
   const driver = getDriver()
   const database = getDatabaseConfig()
 
-  log.debug(`Using database driver: ${driver}`)
-
   if (driver === 'sqlite') {
     const defaultName = appEnv !== 'testing' ? 'database/stacks.sqlite' : 'database/stacks_testing.sqlite'
     const sqliteDbName = database.connections?.sqlite?.database ?? defaultName

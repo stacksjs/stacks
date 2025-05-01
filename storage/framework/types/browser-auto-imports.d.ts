@@ -434,6 +434,9 @@ declare global {
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
+  export type { Customers, Coupons, GiftCards, Orders, Posts, Payments, TaxRates, Categories, Units, ProductItems, Reviews, Drivers, DeliveryRoutes, DigitalDeliveries, ShippingMethods, ShippingRates, ShippingZones, ProductVariants, Tags, Categorizable } from '../defaults/functions/types'
+  import('../defaults/functions/types')
+  // @ts-ignore
   export type { SingletonPromiseReturn, ControlledPromise } from '../core/browser/src/utils/promise'
   import('../core/browser/src/utils/promise')
   // @ts-ignore

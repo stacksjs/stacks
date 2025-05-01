@@ -351,7 +351,6 @@ export class Router implements RouterInterface {
 
     this.logError(error)
 
-    
     // Return structured error response
     if (error.status === 422) {
       return { status: 422, body: JSON.parse(error.message), stack: stackTrace }

@@ -4,18 +4,17 @@ import type { Model, Options, Route, RouteParam, ServeOptions } from '@stacksjs/
 import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { getModelName } from '@stacksjs/orm'
+import { getModelName, traitInterfaces } from '@stacksjs/orm'
 import { extname, path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
+import { camelCase } from '@stacksjs/strings'
 import { isNumber } from '@stacksjs/validation'
+
 // import { RateLimiter } from 'ts-rate-limiter'
 import { route, staticRoute } from '.'
 
 import { middlewares } from './middleware'
-
 import { request as RequestParam } from './request'
-import { traitInterfaces } from '@stacksjs/orm'
-import { camelCase } from '@stacksjs/strings'
 
 export async function serve(options: ServeOptions = {}): Promise<void> {
   const hostname = options.host || 'localhost'
@@ -291,7 +290,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
         status: 403,
       })
     }
-   
+
     if (foundCallback.status === 422) {
       const { status, ...rest } = await foundCallback
 

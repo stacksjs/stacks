@@ -1,7 +1,7 @@
-import { HttpError } from '@stacksjs/error-handling'
 import type { AuthToken, CustomAttributes, NumericField, RequestData, RequestInstance, RouteParam, RouteParams } from '@stacksjs/types'
+import { HttpError } from '@stacksjs/error-handling'
 
-import { customValidate, validateField } from '@stacksjs/validation'
+import { customValidate } from '@stacksjs/validation'
 
 const numericFields = new Set<NumericField>([
   'id',

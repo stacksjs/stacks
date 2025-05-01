@@ -86,7 +86,7 @@ export default {
     },
 
     publishedAt: {
-      required: true,
+      required: false,
       order: 8,
       fillable: true,
       validation: {
