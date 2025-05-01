@@ -43,6 +43,7 @@ export default {
   },
 
   hasMany: ['Post'],
+  belongsTo: ['User'],
 
   attributes: {
     name: {

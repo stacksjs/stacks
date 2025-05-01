@@ -11,8 +11,8 @@ export default new Action({
   async handle(request: PostRequestType) {
     await request.validate()
 
-    const categoryIds = request.get('category_ids') as number[]
-    const tagIds = request.get('tag_ids') as number[]
+    const categoryIds = JSON.parse(request.get('category_ids')) as number[]
+    const tagIds = JSON.parse(request.get('tag_ids')) as number[]
 
     const author = await authors.findOrCreate({
       name: request.get('author_name'),
