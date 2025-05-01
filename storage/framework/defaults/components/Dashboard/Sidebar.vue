@@ -71,6 +71,7 @@ const sections = useLocalStorage<Sections>('sidebar-sections', {
 const expandedItems = useLocalStorage<Record<string, boolean>>('sidebar-expanded-items', {
   '/cloud': false,
   '#queue': false,
+  '#queries': false,
   '#commerce': false,
   '#commerce-products': false,
   '#commerce-analytics': false,
@@ -202,6 +203,16 @@ const sectionContent: Record<string, SectionContent> = {
         children: [
           { to: '/queue', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
           { to: '/jobs', icon: 'i-hugeicons-briefcase-01', text: 'Jobs' }
+        ]
+      },
+      {
+        to: '#queries',
+        icon: 'i-hugeicons-search-area',
+        text: 'Queries',
+        children: [
+          { to: '/queries', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
+          { to: '/queries/history', icon: 'i-hugeicons-search-list-01', text: 'History' },
+          { to: '/queries/slow', icon: 'i-hugeicons-snail', text: 'Slow Queries' }
         ]
       },
       {
