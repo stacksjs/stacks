@@ -14,7 +14,6 @@ interface AuthorData {
  * @returns The found or created author record
  */
 export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse> {
-
   try {
     // First, try to find an existing author by email or name
     const existingAuthor = await db
@@ -26,8 +25,6 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
       .selectAll()
       .executeTakeFirst()
 
-    console.log('author', existingAuthor)
-
     // If author exists, return it
     if (existingAuthor)
       return existingAuthor
@@ -38,8 +35,6 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
       .where('email', '=', data.email)
       .selectAll()
       .executeTakeFirst()
-
-    console.log('user', user)
 
     if (!user) {
       // Create a new user if one doesn't exist
@@ -82,11 +77,9 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
     if (!result)
       throw new Error('Failed to create author')
 
-
     return result
   }
   catch (error) {
-
     if (error instanceof Error)
       throw new TypeError(`Failed to find or create author: ${error.message}`)
 

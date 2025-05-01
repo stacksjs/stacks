@@ -60,19 +60,19 @@ export async function attach(
     const postTypeField = tableName === 'categorizable_models' ? 'categorizable_type' : 'taggable_type'
 
     // Prepare the data for insertion
-    // const pivotData = ids.map(() => ({
-    //   [postForeignKey]: postId,
-    //   [postTypeField]: 'posts',
-    //   created_at: formatDate(new Date()),
-    //   updated_at: formatDate(new Date()),
-    // }))
+    const pivotData = ids.map(() => ({
+      [postForeignKey]: postId,
+      [postTypeField]: 'posts',
+      created_at: formatDate(new Date()),
+      updated_at: formatDate(new Date()),
+    }))
 
-    console.log(postId, tableName, ids)
+    console.log(pivotData)
     // Insert the records into the pivot table
-    // await db
-    //   .insertInto(tableName)
-    //   .values(pivotData)
-    //   .execute()
+    await db
+      .insertInto(tableName)
+      .values(pivotData)
+      .execute()
   }
   catch (error) {
     if (error instanceof Error)

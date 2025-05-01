@@ -6,6 +6,16 @@ route.post('users', 'UserStoreOrmAction')
 
 route.get('users/{id}', 'UserShowOrmAction')
 
+route.get('pages', 'PageIndexOrmAction')
+
+route.post('pages', 'PageStoreOrmAction')
+
+route.get('pages/{id}', 'PageShowOrmAction')
+
+route.patch('pages/{id}', 'PageUpdateOrmAction')
+
+route.delete('pages/{id}', 'PageDestroyOrmAction')
+
 route.get('authors', 'AuthorIndexOrmAction')
 
 route.post('authors', 'AuthorStoreOrmAction')

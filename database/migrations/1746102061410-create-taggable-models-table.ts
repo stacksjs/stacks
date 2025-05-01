@@ -30,5 +30,4 @@ export async function up(db: Database<any>) {
     .columns(['tag_id', 'taggable_id', 'taggable_type'])
     .unique()
     .execute()
-
 }

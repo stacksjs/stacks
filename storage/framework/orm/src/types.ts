@@ -20,6 +20,7 @@ import type { LoyaltyRewardsTable } from '../src/models/LoyaltyReward'
 import type { ManufacturersTable } from '../src/models/Manufacturer'
 import type { OrdersTable } from '../src/models/Order'
 import type { OrderItemsTable } from '../src/models/OrderItem'
+import type { PagesTable } from '../src/models/Page'
 import type { PaymentsTable } from '../src/models/Payment'
 import type { PaymentMethodsTable } from '../src/models/PaymentMethod'
 import type { PaymentProductsTable } from '../src/models/PaymentProduct'
@@ -190,6 +191,7 @@ export interface Database {
   cart_items: CartItemsTable
   failed_jobs: FailedJobsTable
   payment_methods: PaymentMethodsTable
+  pages: PagesTable
   authors: AuthorsTable
   posts: PostsTable
   payment_transactions: PaymentTransactionsTable

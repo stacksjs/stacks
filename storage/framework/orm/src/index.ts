@@ -42,6 +42,8 @@ export { type NewOrder, default as Order, type OrderJsonResponse, type OrderUpda
 
 export { type NewOrderItem, default as OrderItem, type OrderItemJsonResponse, type OrderItemUpdate } from './models/OrderItem'
 
+export { type NewPage, default as Page, type PageJsonResponse, type PageUpdate } from './models/Page'
+
 export { type NewPayment, default as Payment, type PaymentJsonResponse, type PaymentUpdate } from './models/Payment'
 
 export { type NewPaymentMethod, default as PaymentMethod, type PaymentMethodJsonResponse, type PaymentMethodUpdate } from './models/PaymentMethod'

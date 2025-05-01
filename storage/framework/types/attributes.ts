@@ -187,9 +187,10 @@ export interface Attributes {
   brand: string
   exp_month: number
   exp_year: number
+  views: number
+  conversions: number
   poster: string
   body: string
-  views: number
   published_at: number
   status_code: number
   duration_ms: number

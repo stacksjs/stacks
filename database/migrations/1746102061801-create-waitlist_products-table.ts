@@ -17,12 +17,10 @@ export async function up(db: Database<any>) {
     .addColumn('notified_at', 'numeric')
     .addColumn('purchased_at', 'numeric')
     .addColumn('cancelled_at', 'numeric')
-    .addColumn('customer_id', 'integer', (col) =>
-        col.references('customers.id').onDelete('cascade')
-      ) 
-    .addColumn('product_id', 'integer', (col) =>
-        col.references('products.id').onDelete('cascade')
-      ) 
+    .addColumn('customer_id', 'integer', col =>
+      col.references('customers.id').onDelete('cascade'))
+    .addColumn('product_id', 'integer', col =>
+      col.references('products.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()
