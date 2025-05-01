@@ -32,7 +32,7 @@ export default new Action({
     const model = await posts.store(data)
 
     await posts.attach(model.id, 'categorizable_models', categoryIds)
-    await posts.attach(model.id, 'taggable', tagIds)
+    await posts.attach(model.id, 'taggable_models', tagIds)
 
     return response.json(model)
   },

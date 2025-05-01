@@ -51,7 +51,7 @@ export async function store(data: NewPost): Promise<PostJsonResponse> {
  */
 export async function attach(
   postId: number,
-  tableName: 'categorizable_models' | 'taggable',
+  tableName: 'categorizable_models' | 'taggable_models',
   ids: number[],
 ): Promise<void> {
   try {
@@ -59,9 +59,11 @@ export async function attach(
     const postForeignKey = tableName === 'categorizable_models' ? 'categorizable_id' : 'taggable_id'
     const postTypeField = tableName === 'categorizable_models' ? 'categorizable_type' : 'taggable_type'
 
+    const tablePrimary = tableName === 'categorizable_models' ? 'category_id' : 'tag_id'
+
     // Prepare the data for insertion
     const pivotData = ids.map((id: number) => ({
-      category_id: id,
+      [tablePrimary]: id,
       [postForeignKey]: postId,
       [postTypeField]: 'posts',
       created_at: formatDate(new Date()),
