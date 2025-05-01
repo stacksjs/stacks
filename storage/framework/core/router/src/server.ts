@@ -17,24 +17,6 @@ import { request as RequestParam } from './request'
 import { traitInterfaces } from '@stacksjs/orm'
 import { camelCase } from '@stacksjs/strings'
 
-// const limiter = new RateLimiter({
-//   windowMs: 15 * 60 * 1000, // 15 minutes
-//   maxRequests: 100,
-//   algorithm: 'sliding-window',
-//   handler: (req: Request, result: RateLimitResult) => {
-//     return new Response(JSON.stringify({
-//       error: 'Too many requests',
-//       retryAfter: Math.ceil(result.remaining / 1000),
-//     }), {
-//       status: 429,
-//       headers: {
-//         'Content-Type': 'application/json',
-//         'Retry-After': Math.ceil(result.remaining / 1000).toString(),
-//       },
-//     })
-//   },
-// })
-
 export async function serve(options: ServeOptions = {}): Promise<void> {
   const hostname = options.host || 'localhost'
   const port = options.port || 3000

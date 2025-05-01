@@ -9,7 +9,7 @@ import { formatDate } from '@stacksjs/orm'
  * @param data The post data to update
  * @returns The updated post record
  */
-export async function update(id: number, data: PostUpdate): Promise<PostJsonResponse> {
+export async function update(id: number, data: Partial<PostUpdate>): Promise<PostJsonResponse> {
   try {
     const updateData = {
       ...data,

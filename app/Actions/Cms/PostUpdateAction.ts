@@ -9,7 +9,15 @@ export default new Action({
   method: 'PATCH',
   async handle(request: PostRequestType) {
     const id = request.getParam('id')
-    const model = await posts.update(id, request)
+    
+    const data = {
+      title: request.get('title'),
+      body: request.get('body'),
+      status: request.get('status'),
+      poster: request.get('poster'),
+    }
+    
+    const model = await posts.update(id, data)
 
     return response.json(model)
   },
