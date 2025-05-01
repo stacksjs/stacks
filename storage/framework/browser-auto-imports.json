@@ -470,6 +470,7 @@
     "ShippingZones": true,
     "Tags": true,
     "TaxRates": true,
-    "Units": true
+    "Units": true,
+    "Pages": true
   }
 }

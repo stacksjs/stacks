@@ -107,6 +107,7 @@ declare module 'vue-router/auto-routes' {
     '/notifications/sms': RouteRecordInfo<'/notifications/sms', '/notifications/sms', Record<never, never>, Record<never, never>>,
     '/packages/': RouteRecordInfo<'/packages/', '/packages', Record<never, never>, Record<never, never>>,
     '/queries/': RouteRecordInfo<'/queries/', '/queries', Record<never, never>, Record<never, never>>,
+    '/queries/[id]': RouteRecordInfo<'/queries/[id]', '/queries/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     '/queries/history': RouteRecordInfo<'/queries/history', '/queries/history', Record<never, never>, Record<never, never>>,
     '/queries/slow': RouteRecordInfo<'/queries/slow', '/queries/slow', Record<never, never>, Record<never, never>>,
     '/queue/': RouteRecordInfo<'/queue/', '/queue', Record<never, never>, Record<never, never>>,
