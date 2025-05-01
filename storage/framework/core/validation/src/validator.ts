@@ -27,11 +27,8 @@ export function isObjectNotEmpty(obj: object | undefined): boolean {
 }
 
 export async function validateField(modelFile: string, params: RequestData): Promise<any> {
-  console.log('dddd')
   const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
   const modelPath = modelFiles.find(file => file.endsWith(`${modelFile}.ts`))
-
-  console.log(modelPath)
 
   if (!modelPath)
     throw new HttpError(500, `Model ${modelFile} not found`)
@@ -44,6 +41,10 @@ export async function validateField(modelFile: string, params: RequestData): Pro
 
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
+      // Skip validation if the attribute has a default value or is required
+      if (attributes[key]?.default !== undefined || attributes[key]?.required === false)
+        continue
+
       ruleObject[snakeCase(key)] = attributes[key]?.validation?.rule
       const validatorMessages = attributes[key]?.validation?.message
 

@@ -392,7 +392,7 @@ async function applyToAllRequests(operation: 'addBodies' | 'addParam' | 'addHead
       }
     }
     catch (error) {
-      // Skip if request file doesn't exist
+      log.error(`Error importing trait interface: ${error}`)
       continue
     }
   }

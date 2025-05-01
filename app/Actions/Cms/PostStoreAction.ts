@@ -1,6 +1,6 @@
 import type { PostRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-import { authors, posts } from '@stacksjs/cms'
+import { authors } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -9,7 +9,7 @@ export default new Action({
   method: 'POST',
   requestFile: 'PostRequest',
   async handle(request: PostRequestType) {
-    await request.validate()
+    // await request.validate()
 
     const categoryIds = request.get('category_ids') as number[]
     const tagIds = request.get('tag_ids') as number[]
@@ -19,20 +19,20 @@ export default new Action({
       email: request.get('author_email'),
     })
 
-    const data = {
-      author_id: author.id,
-      title: request.get('title'),
-      body: request.get('body'),
-      status: request.get('status'),
-      poster: request.get('poster'),
-      views: 0,
-      published_at: Date.now(),
-    }
+    // const data = {
+    //   author_id: author.id,
+    //   title: request.get('title'),
+    //   body: request.get('body'),
+    //   status: request.get('status'),
+    //   poster: request.get('poster'),
+    //   views: 0,
+    //   published_at: Date.now(),
+    // }
 
-    const model = await posts.store(data)
+    // const model = await posts.store(data)
 
-    await posts.attach(model.id, 'categorizable_models', categoryIds)
-    await posts.attach(model.id, 'taggable', tagIds)
+    // await posts.attach(model.id, 'categorizable_models', categoryIds)
+    // await posts.attach(model.id, 'taggable', tagIds)
 
     return response.json(model)
   },
