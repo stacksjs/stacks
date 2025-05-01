@@ -165,7 +165,7 @@ const timeRange = ref('Last 30 days')
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Sample posts data
-const posts = ref([
+const posts: Ref<Posts[]> = ref([
   {
     id: 1,
     title: '10 Tips for Better Code Quality',
@@ -179,7 +179,7 @@ const posts = ref([
     published: '2023-12-01',
     status: 'Published',
     featured: true,
-    ogImage: 'https://picsum.photos/seed/1/280/160'
+    poster: 'https://picsum.photos/seed/1/280/160'
   },
   {
     id: 2,
@@ -194,7 +194,7 @@ const posts = ref([
     published: '2023-11-28',
     status: 'Published',
     featured: true,
-    ogImage: 'https://picsum.photos/seed/2/280/160'
+    poster: 'https://picsum.photos/seed/2/280/160'
   },
   {
     id: 3,
@@ -209,7 +209,7 @@ const posts = ref([
     published: '2023-11-25',
     status: 'Published',
     featured: false,
-    ogImage: 'https://picsum.photos/seed/3/280/160'
+    poster: 'https://picsum.photos/seed/3/280/160'
   },
   {
     id: 4,
@@ -224,7 +224,7 @@ const posts = ref([
     published: '2023-11-20',
     status: 'Published',
     featured: false,
-    ogImage: 'https://picsum.photos/seed/4/280/160'
+    poster: 'https://picsum.photos/seed/4/280/160'
   },
   {
     id: 5,
@@ -239,7 +239,7 @@ const posts = ref([
     published: '2023-11-15',
     status: 'Published',
     featured: false,
-    ogImage: 'https://picsum.photos/seed/5/280/160'
+    poster: 'https://picsum.photos/seed/5/280/160'
   },
   {
     id: 6,
@@ -254,7 +254,7 @@ const posts = ref([
     published: '',
     status: 'Draft',
     featured: false,
-    ogImage: 'https://picsum.photos/seed/6/280/160'
+    poster: 'https://picsum.photos/seed/6/280/160'
   },
   {
     id: 7,
@@ -269,7 +269,7 @@ const posts = ref([
     published: '',
     status: 'Draft',
     featured: false,
-    ogImage: 'https://picsum.photos/seed/7/280/160'
+    poster: 'https://picsum.photos/seed/7/280/160'
   },
   {
     id: 8,
@@ -284,7 +284,7 @@ const posts = ref([
     published: '',
     status: 'Draft',
     featured: false,
-    ogImage: 'https://picsum.photos/seed/8/280/160'
+    poster: 'https://picsum.photos/seed/8/280/160'
   },
   {
     id: 9,
@@ -299,7 +299,7 @@ const posts = ref([
     published: '2023-11-10',
     status: 'Published',
     featured: false,
-    ogImage: 'https://picsum.photos/seed/9/280/160'
+    poster: 'https://picsum.photos/seed/9/280/160'
   },
   {
     id: 10,
@@ -314,7 +314,7 @@ const posts = ref([
     published: '2023-11-05',
     status: 'Published',
     featured: false,
-    ogImage: 'https://picsum.photos/seed/10/280/160'
+    poster: 'https://picsum.photos/seed/10/280/160'
   }
 ])
 
@@ -354,7 +354,7 @@ const newPost = ref({
   tags: '',
   content: '',
   status: 'Draft',
-  ogImage: 'https://picsum.photos/seed/new/280/160'
+  poster: 'https://picsum.photos/seed/new/280/160'
 })
 
 // Get all unique tags from posts
@@ -385,7 +385,7 @@ function closeNewPostModal() {
     tags: '',
     content: '',
     status: 'Draft',
-    ogImage: 'https://picsum.photos/seed/new/280/160'
+    poster: 'https://picsum.photos/seed/new/280/160'
   }
 }
 
@@ -401,12 +401,10 @@ function createNewPost() {
     category: newPost.value.category,
     tags: tagsArray,
     author: 'Current User', // In a real app, this would be the current user
-    views: 0,
-    comments: 0,
     published: newPost.value.status === 'Published' ? new Date().toISOString().split('T')[0] : '',
     status: newPost.value.status,
     featured: false,
-    ogImage: newPost.value.ogImage
+    poster: newPost.value.poster
   } as {
     id: number;
     title: string;
@@ -415,12 +413,10 @@ function createNewPost() {
     category: string;
     tags: string[];
     author: string;
-    views: number;
-    comments: number;
     published: string;
     status: string;
     featured: boolean;
-    ogImage: string;
+    poster: string;
   }
 
   posts.value.unshift(post)
@@ -952,7 +948,7 @@ const blogStats = computed(() => {
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
                         <div class="h-16 w-28 bg-gray-100 dark:bg-gray-700 rounded overflow-hidden">
                           <img
-                            :src="post.ogImage"
+                            :src="post.poster"
                             :alt="`OG image for ${post.title}`"
                             class="h-full w-full object-cover"
                           />
@@ -1181,7 +1177,7 @@ const blogStats = computed(() => {
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">OG Image</label>
                     <div class="mt-1 flex items-center space-x-4">
                       <div class="h-24 w-40 bg-gray-100 dark:bg-gray-700 rounded overflow-hidden">
-                        <img :src="newPost.ogImage" alt="OG Image Preview" class="h-full w-full object-cover" />
+                        <img :src="newPost.poster" alt="OG Image Preview" class="h-full w-full object-cover" />
                       </div>
                       <button
                         type="button"

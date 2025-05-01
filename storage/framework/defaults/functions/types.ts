@@ -72,18 +72,25 @@ export interface Orders {
 
 export interface Posts {
   id: number
-  category_ids: number[]
-  tag_ids: number[]
-  author_name: string
-  author_email: string
   title: string
-  category: string
+  categories?: string[]
+  slug?: string
+  tag_ids?: number[]
+  author_name?: string
+  author_email?: string
+  category?: string
   poster?: string
-  body: string
+  comments?: number
+  tags: string[]
+  body?: string
   views?: number
-  published_at: number
-  status: string | string[]
+  published_at?: number
+  status?: string | string[]
   uuid?: string
+  excerpt: string
+  author: string
+  published?: string
+  featured?: boolean
 }
 
 export interface Payments {
