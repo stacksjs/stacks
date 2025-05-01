@@ -231,6 +231,27 @@ const refreshData = () => {
 watch([timeRange, selectedConnection, thresholdMs], () => {
   refreshData()
 })
+
+// Add functions for copying to clipboard
+const copyToClipboard = (text: string) => {
+  navigator.clipboard.writeText(text).catch(err => {
+    console.error('Could not copy text: ', err)
+  })
+}
+
+const copiedQuery = ref<string | null>(null)
+
+const copyQuery = (queryId: string, queryText: string) => {
+  copyToClipboard(queryText)
+  copiedQuery.value = queryId
+
+  // Reset copied state after 2 seconds
+  setTimeout(() => {
+    if (copiedQuery.value === queryId) {
+      copiedQuery.value = null
+    }
+  }, 2000)
+}
 </script>
 
 <template>
@@ -400,7 +421,17 @@ watch([timeRange, selectedConnection, thresholdMs], () => {
                     <!-- Query details column -->
                     <div class="md:col-span-2">
                       <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Full Query</h4>
-                      <pre class="mt-1 text-xs font-mono bg-gray-800 text-gray-100 p-3 rounded-md overflow-x-auto">{{ query.query }}</pre>
+                      <div class="relative">
+                        <pre class="mt-1 text-xs font-mono bg-gray-800 text-gray-100 p-3 rounded-md overflow-x-auto sql-highlight">{{ query.query }}</pre>
+                        <button
+                          @click="copyQuery(query.id, query.query)"
+                          class="absolute top-2 right-2 p-1.5 rounded-md bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white"
+                          :class="{ 'bg-green-700 hover:bg-green-600': copiedQuery === query.id }"
+                        >
+                          <div v-if="copiedQuery === query.id" class="i-hugeicons-checkmark h-4 w-4"></div>
+                          <div v-else class="i-hugeicons-copy-01 h-4 w-4"></div>
+                        </button>
+                      </div>
 
                       <h4 class="text-sm font-medium text-gray-900 dark:text-white mt-4 mb-2">Bindings</h4>
                       <div class="mt-1 bg-gray-100 dark:bg-blue-gray-700 p-3 rounded-md">

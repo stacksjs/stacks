@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
 import {
@@ -159,6 +159,7 @@ const recentQueries = ref<QueryRecord[]>([
 
 const timeRange = ref<'hour' | 'day' | 'week'>('hour')
 const selectedConnection = ref<string>('all')
+const selectedType = ref<string>('all')
 const isLoading = ref(false)
 
 // Chart options
@@ -293,7 +294,7 @@ const refreshData = () => {
 }
 
 // Watch for time range or connection changes
-watch([timeRange, selectedConnection], () => {
+watch([timeRange, selectedConnection, selectedType], () => {
   refreshData()
 })
 
@@ -309,6 +310,42 @@ const formatQuery = (query: string): string => {
 const formatDuration = (duration: number): string => {
   return duration.toFixed(2) + ' ms'
 }
+
+// Add a function to determine query type
+const getQueryType = (query: string): 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'OTHER' => {
+  const upperQuery = query.trim().toUpperCase()
+  if (upperQuery.startsWith('SELECT')) return 'SELECT'
+  if (upperQuery.startsWith('INSERT')) return 'INSERT'
+  if (upperQuery.startsWith('UPDATE')) return 'UPDATE'
+  if (upperQuery.startsWith('DELETE')) return 'DELETE'
+  return 'OTHER'
+}
+
+// Add styles for query type badges
+const queryTypeBadges: Record<string, string> = {
+  SELECT: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 ring-blue-700/10 dark:ring-blue-400/30',
+  INSERT: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 ring-green-700/10 dark:ring-green-400/30',
+  UPDATE: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 ring-amber-700/10 dark:ring-amber-400/30',
+  DELETE: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 ring-red-700/10 dark:ring-red-400/30',
+  OTHER: 'bg-gray-50 dark:bg-gray-900/20 text-gray-700 dark:text-gray-300 ring-gray-700/10 dark:ring-gray-400/30'
+}
+
+// Add filteredQueries computed property
+const filteredQueries = computed(() => {
+  let filtered = [...recentQueries.value]
+
+  // Filter by connection
+  if (selectedConnection.value !== 'all') {
+    filtered = filtered.filter(query => query.connection === selectedConnection.value)
+  }
+
+  // Filter by query type
+  if (selectedType.value !== 'all') {
+    filtered = filtered.filter(query => getQueryType(query.query) === selectedType.value)
+  }
+
+  return filtered
+})
 </script>
 
 <template>
@@ -361,6 +398,21 @@ const formatDuration = (duration: number): string => {
             <option value="postgres">PostgreSQL</option>
             <option value="sqlite">SQLite</option>
             <option value="mongodb">MongoDB</option>
+          </select>
+        </div>
+        <div>
+          <select
+            id="type"
+            name="type"
+            class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
+            v-model="selectedType"
+          >
+            <option value="all">All types</option>
+            <option value="SELECT">SELECT</option>
+            <option value="INSERT">INSERT</option>
+            <option value="UPDATE">UPDATE</option>
+            <option value="DELETE">DELETE</option>
+            <option value="OTHER">OTHER</option>
           </select>
         </div>
       </div>
@@ -454,13 +506,21 @@ const formatDuration = (duration: number): string => {
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white dark:divide-blue-gray-700 dark:bg-blue-gray-900">
-              <tr v-for="query in recentQueries" :key="query.id">
+              <tr v-for="query in filteredQueries" :key="query.id">
                 <td class="py-4 pl-4 pr-3 text-sm sm:pl-6">
-                  <div class="font-medium text-gray-900 dark:text-white">
-                    {{ formatQuery(query.query) }}
+                  <div class="flex items-center gap-2 mb-1">
+                    <span
+                      class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
+                      :class="queryTypeBadges[getQueryType(query.query)]"
+                    >
+                      {{ getQueryType(query.query) }}
+                    </span>
+                    <div class="font-medium text-gray-900 dark:text-white font-mono text-xs">
+                      {{ formatQuery(query.query) }}
+                    </div>
                   </div>
                   <div class="hidden text-gray-500 dark:text-gray-400 xl:block">
-                    <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium" v-for="tag in query.tags" :key="tag">
+                    <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium mr-1" v-for="tag in query.tags" :key="tag">
                       {{ tag }}
                     </span>
                   </div>
@@ -498,3 +558,37 @@ const formatDuration = (duration: number): string => {
     </main>
   </div>
 </template>
+
+<style>
+/* Simple SQL syntax highlighting */
+.sql-highlight {
+  color: #f8f8f2;
+}
+
+.sql-highlight .keyword {
+  color: #ff79c6;
+}
+
+.sql-highlight .function {
+  color: #50fa7b;
+}
+
+.sql-highlight .number {
+  color: #bd93f9;
+}
+
+.sql-highlight .string {
+  color: #f1fa8c;
+}
+
+.sql-highlight .comment {
+  color: #6272a4;
+}
+
+/* Make monospace font more readable */
+.font-mono {
+  font-family: 'JetBrains Mono', Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-size: 0.85em;
+  line-height: 1.5;
+}
+</style>

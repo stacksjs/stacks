@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 
 useHead({
@@ -238,8 +238,28 @@ const queryHistory = ref<QueryRecord[]>([
 const timeRange = ref<'day' | 'week' | 'month'>('day')
 const selectedConnection = ref<string>('all')
 const selectedStatus = ref<string>('all')
+const selectedType = ref<string>('all')
 const isLoading = ref(false)
 const searchQuery = ref('')
+
+// Add a function to determine query type
+const getQueryType = (query: string): 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'OTHER' => {
+  const upperQuery = query.trim().toUpperCase()
+  if (upperQuery.startsWith('SELECT')) return 'SELECT'
+  if (upperQuery.startsWith('INSERT')) return 'INSERT'
+  if (upperQuery.startsWith('UPDATE')) return 'UPDATE'
+  if (upperQuery.startsWith('DELETE')) return 'DELETE'
+  return 'OTHER'
+}
+
+// Add styles for query type badges
+const queryTypeBadges: Record<string, string> = {
+  SELECT: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 ring-blue-700/10 dark:ring-blue-400/30',
+  INSERT: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 ring-green-700/10 dark:ring-green-400/30',
+  UPDATE: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 ring-amber-700/10 dark:ring-amber-400/30',
+  DELETE: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 ring-red-700/10 dark:ring-red-400/30',
+  OTHER: 'bg-gray-50 dark:bg-gray-900/20 text-gray-700 dark:text-gray-300 ring-gray-700/10 dark:ring-gray-400/30'
+}
 
 // Filter functions
 const filteredQueries = computed(() => {
@@ -253,6 +273,11 @@ const filteredQueries = computed(() => {
   // Filter by status
   if (selectedStatus.value !== 'all') {
     filtered = filtered.filter(query => query.status === selectedStatus.value)
+  }
+
+  // Filter by query type
+  if (selectedType.value !== 'all') {
+    filtered = filtered.filter(query => getQueryType(query.query) === selectedType.value)
   }
 
   // Filter by search query
@@ -300,7 +325,7 @@ const refreshData = () => {
 }
 
 // Watch for changes and refresh
-watch([timeRange, selectedConnection, selectedStatus], () => {
+watch([timeRange, selectedConnection, selectedStatus, selectedType], () => {
   refreshData()
 })
 </script>
@@ -370,6 +395,21 @@ watch([timeRange, selectedConnection, selectedStatus], () => {
             <option value="failed">Failed</option>
           </select>
         </div>
+        <div>
+          <select
+            id="type"
+            name="type"
+            class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
+            v-model="selectedType"
+          >
+            <option value="all">All types</option>
+            <option value="SELECT">SELECT</option>
+            <option value="INSERT">INSERT</option>
+            <option value="UPDATE">UPDATE</option>
+            <option value="DELETE">DELETE</option>
+            <option value="OTHER">OTHER</option>
+          </select>
+        </div>
         <div class="relative w-full sm:w-auto">
           <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
@@ -421,8 +461,19 @@ watch([timeRange, selectedConnection, selectedStatus], () => {
               <tbody class="divide-y divide-gray-200 bg-white dark:divide-blue-gray-700 dark:bg-blue-gray-900">
                 <tr v-for="query in filteredQueries" :key="query.id">
                   <td class="py-4 pl-4 pr-3 text-sm sm:pl-6">
-                    <div class="font-medium text-gray-900 dark:text-white font-mono text-xs">
-                      {{ formatQuery(query.query) }}
+                    <div class="flex items-center gap-2 mb-1">
+                      <span
+                        class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
+                        :class="queryTypeBadges[getQueryType(query.query)]"
+                      >
+                        {{ getQueryType(query.query) }}
+                      </span>
+                      <div
+                        class="font-medium text-gray-900 dark:text-white font-mono text-xs overflow-hidden text-ellipsis"
+                        :title="query.query"
+                      >
+                        {{ formatQuery(query.query) }}
+                      </div>
                     </div>
                     <div class="hidden text-gray-500 dark:text-gray-400 xl:block mt-1">
                       <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium mr-1" v-for="tag in query.tags" :key="tag">
