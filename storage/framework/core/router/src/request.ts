@@ -1,3 +1,4 @@
+import { HttpError } from '@stacksjs/error-handling'
 import type { AuthToken, CustomAttributes, NumericField, RequestData, RequestInstance, RouteParam, RouteParams } from '@stacksjs/types'
 
 import { customValidate, validateField } from '@stacksjs/validation'
@@ -76,7 +77,7 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null)
-      throw new Error('Attributes are required')
+      throw new HttpError(422, 'Attributes are required')
     else
       await customValidate(attributes, this.all())
   }

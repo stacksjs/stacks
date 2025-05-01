@@ -78,7 +78,7 @@ export async function findRequestInstance(requestInstance: string): Promise<Mode
 
   const reqInstance = await import(filePath)
 
-  return reqInstance.request
+  return reqInstance[camelCase(requestInstance)]
 }
 
 export async function extractDefaultRequest(): Promise<RequestInstance> {

@@ -15,6 +15,7 @@ import { middlewares } from './middleware'
 
 import { request as RequestParam } from './request'
 import { traitInterfaces } from '@stacksjs/orm'
+import { camelCase } from '@stacksjs/strings'
 
 // const limiter = new RateLimiter({
 //   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -308,12 +309,13 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
         status: 403,
       })
     }
-
+   
     if (foundCallback.status === 422) {
       const { status, ...rest } = await foundCallback
 
-      const { errors } = rest
-      return new Response(JSON.stringify(errors), {
+      const { body } = rest
+
+      return new Response(JSON.stringify(body), {
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
@@ -390,7 +392,7 @@ async function applyToAllRequests(operation: 'addBodies' | 'addParam' | 'addHead
     const modelName = getModelName(model, modelFile)
     const requestPath = path.frameworkPath(`requests/${modelName}Request.ts`)
     const requestImport = await import(requestPath)
-    const requestInstance = requestImport.request
+    const requestInstance = requestImport[`${camelCase(modelName)}Request`]
 
     if (requestInstance) {
       requestInstance[operation](data)
@@ -402,7 +404,7 @@ async function applyToAllRequests(operation: 'addBodies' | 'addParam' | 'addHead
     const requestPath = path.frameworkPath(`requests/${trait.name}Request.ts`)
     try {
       const requestImport = await import(requestPath)
-      const requestInstance = requestImport.request
+      const requestInstance = requestImport[`${camelCase(trait.name)}Request`]
 
       if (requestInstance) {
         requestInstance[operation](data)
