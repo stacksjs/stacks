@@ -39,6 +39,21 @@ export interface DatabaseOptions {
 
   migrations: string
   migrationLocks: string
+
+  // Query logging configuration
+  queryLogging?: {
+    enabled: boolean
+    slowThreshold: number // in milliseconds
+    retention: number // in days
+    pruneFrequency: number // in hours
+    excludedQueries?: string[] // patterns to exclude
+    analysis?: {
+      enabled: boolean
+      analyzeAll: boolean // analyze all queries, not just slow ones
+      explainPlan: boolean // collect EXPLAIN plans
+      suggestions: boolean // generate optimization suggestions
+    }
+  }
 }
 
 export type DatabaseConfig = Partial<DatabaseOptions>

@@ -22,8 +22,7 @@ export default {
       secret: env.AWS_SECRET_ACCESS_KEY || '',
       region: env.AWS_DEFAULT_REGION || 'us-east-1',
       prefix: env.DB_DATABASE || 'stacks',
-      endpoint: 'http://localhost',
-      port: env.DB_PORT || 8000,
+      endpoint: env.DB_PORT ? `http://localhost:${env.DB_PORT}` : 'http://localhost:8000',
     },
 
     mysql: {
@@ -47,4 +46,64 @@ export default {
 
   migrations: 'migrations',
   migrationLocks: 'migration_locks',
+
+  /**
+   * Query Logging Configuration
+   *
+   * This section configures the database query monitoring system.
+   */
+  queryLogging: {
+    /**
+     * Enable query logging to database
+     */
+    enabled: env.DB_QUERY_LOGGING_ENABLED === 'true' || true,
+
+    /**
+     * The threshold in milliseconds to mark a query as slow
+     */
+    slowThreshold: Number(env.DB_QUERY_LOGGING_SLOW_THRESHOLD || 100),
+
+    /**
+     * How many days to keep query logs
+     */
+    retention: Number(env.DB_QUERY_LOGGING_RETENTION_DAYS || 7),
+
+    /**
+     * How often to run the pruning job in hours
+     */
+    pruneFrequency: Number(env.DB_QUERY_LOGGING_PRUNE_FREQUENCY || 24),
+
+    /**
+     * Patterns to exclude from logging
+     */
+    excludedQueries: [
+      // Don't log the query_logs table itself to avoid recursion
+      'query_logs',
+    ],
+
+    /**
+     * Query analysis configuration
+     */
+    analysis: {
+      /**
+       * Enable detailed query analysis
+       */
+      enabled: env.DB_QUERY_LOGGING_ANALYSIS_ENABLED === 'true' || true,
+
+      /**
+       * Analyze all queries, not just slow ones
+       */
+      analyzeAll: env.DB_QUERY_LOGGING_ANALYZE_ALL === 'true' || false,
+
+      /**
+       * Collect EXPLAIN plans for SELECT queries
+       */
+      explainPlan: env.DB_QUERY_LOGGING_EXPLAIN_PLAN === 'true' || true,
+
+      /**
+       * Generate optimization suggestions
+       */
+      suggestions: env.DB_QUERY_LOGGING_SUGGESTIONS === 'true' || true,
+    },
+  },
 } satisfies DatabaseConfig

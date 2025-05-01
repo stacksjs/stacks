@@ -256,3 +256,99 @@ route.post('/password/reset', 'Actions/Password/PasswordResetAction')
 // route.action('Dashboard/GetProjects')
 // route.action('Dashboard/Settings/UpdateAiConfig')
 // route.job('/example-two') // equivalent to `route.get('/example-two', 'ExampleTwoJob')`
+
+// Query Dashboard routes
+route.get('/queries/stats', async (req, res) => {
+  try {
+    const stats = await import('../app/Actions/Queries/QueryController').then(module => module.default.getStats())
+    res.json(stats)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+route.get('/queries/recent', async (req, res) => {
+  try {
+    const { page, perPage, connection, type, status, search } = req.query
+    const queries = await import('../app/Actions/Queries/QueryController').then(module =>
+      module.default.getRecentQueries({
+        page: Number(page) || 1,
+        perPage: Number(perPage) || 10,
+        connection: connection?.toString() || 'all',
+        type: type?.toString() || 'all',
+        status: status?.toString() || 'all',
+        search: search?.toString() || '',
+      })
+    )
+    res.json(queries)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+route.get('/queries/slow', async (req, res) => {
+  try {
+    const { page, perPage, threshold, connection, search } = req.query
+    const queries = await import('../app/Actions/Queries/QueryController').then(module =>
+      module.default.getSlowQueries({
+        page: Number(page) || 1,
+        perPage: Number(perPage) || 10,
+        threshold: threshold ? Number(threshold) : null,
+        connection: connection?.toString() || 'all',
+        search: search?.toString() || '',
+      })
+    )
+    res.json(queries)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+route.get('/queries/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const query = await import('../app/Actions/Queries/QueryController').then(module =>
+      module.default.getQuery(id)
+    )
+    res.json(query)
+  } catch (error) {
+    res.status(404).json({ error: error.message })
+  }
+})
+
+route.get('/queries/timeline', async (req, res) => {
+  try {
+    const { timeframe, type } = req.query
+    const timeline = await import('../app/Actions/Queries/QueryController').then(module =>
+      module.default.getQueryTimeline({
+        timeframe: timeframe?.toString() || 'day',
+        type: type?.toString() || 'all',
+      })
+    )
+    res.json(timeline)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+route.get('/queries/frequent', async (req, res) => {
+  try {
+    const queries = await import('../app/Actions/Queries/QueryController').then(module =>
+      module.default.getFrequentQueries()
+    )
+    res.json(queries)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+route.post('/queries/prune', async (req, res) => {
+  try {
+    const result = await import('../app/Actions/Queries/QueryController').then(module =>
+      module.default.pruneQueryLogs()
+    )
+    res.json(result)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})

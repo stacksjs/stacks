@@ -7,6 +7,7 @@ import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
 import { BunWorkerDialect } from 'kysely-bun-worker'
 import { createPool } from 'mysql2'
 import { Pool } from 'pg'
+import { logQuery } from './query-logger'
 
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
@@ -113,9 +114,7 @@ export const db: Kysely<Database> = new Kysely<Database>({
   dialect: getDialect(),
 
   log(event) {
-    if (!config.database.logging)
-      return
-
+    // Always log errors
     if (event.level === 'error') {
       log.error('Query failed : ', {
         durationMs: event.queryDurationMillis,
@@ -123,11 +122,21 @@ export const db: Kysely<Database> = new Kysely<Database>({
         sql: event.query.sql,
       })
     }
-    else {
-      log.info('Query executed : ', {
-        durationMs: event.queryDurationMillis,
-        sql: event.query.sql,
-      })
+
+    // Log to console if logging is enabled
+    if (config.database.logging) {
+      if (event.level === 'query') {
+        log.info('Query executed : ', {
+          durationMs: event.queryDurationMillis,
+          sql: event.query.sql,
+        })
+      }
     }
+
+    // Store query in the database regardless of console logging setting
+    // if query logging to database is enabled
+    logQuery(event).catch(err => {
+      log.debug('Failed to log query to database:', err)
+    })
   },
 })
