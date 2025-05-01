@@ -6,7 +6,6 @@ interface TagData {
   name: string
   description?: string
   is_active?: boolean
-  taggable_id: number
   taggable_type: string
 }
 
