@@ -1445,6 +1445,7 @@ interface RequestDataAuthor {
   id: number
   name: string
   email: string
+  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -1455,6 +1456,7 @@ export interface AuthorRequestType extends Request {
   id: number
   name: string
   email: string
+  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -1467,7 +1469,6 @@ interface RequestDataPost {
   views: number
   published_at: number
   status: string[] | string
-  user_id: number
   author_id: number
   created_at?: string
   updated_at?: string
@@ -1483,7 +1484,6 @@ export interface PostRequestType extends Request {
   views: number
   published_at: number
   status: string[] | string
-  user_id: number
   author_id: number
   created_at?: string
   updated_at?: string

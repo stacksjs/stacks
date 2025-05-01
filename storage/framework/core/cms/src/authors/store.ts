@@ -14,11 +14,11 @@ interface AuthorData {
  * @returns The found or created author record
  */
 export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse> {
-  // const trx = await db.startTransaction().execute()
+  const trx = await db.startTransaction().execute()
 
   try {
     // First, try to find an existing author by email or name
-    const existingAuthor = await db
+    const existingAuthor = await trx
       .selectFrom('authors')
       .where(eb => eb.or([
         eb('email', '=', data.email),
@@ -32,7 +32,7 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
       return existingAuthor
 
     // Look up or create the associated user
-    let user = await db
+    let user = await trx
       .selectFrom('users')
       .where('email', '=', data.email)
       .selectAll()
@@ -40,7 +40,7 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
 
     if (!user) {
       // Create a new user if one doesn't exist
-      const result = await db
+      const result = await trx
         .insertInto('users')
         .values({
           email: data.email,
@@ -70,7 +70,7 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
       updated_at: formatDate(new Date()),
     }
 
-    const result = await db
+    const result = await trx
       .insertInto('authors')
       .values(authorData)
       .returningAll()
@@ -79,12 +79,12 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
     if (!result)
       throw new Error('Failed to create author')
 
-    // await trx.commit().execute()
+    await trx.commit().execute()
 
     return result
   }
   catch (error) {
-    // await trx.rollback().execute()
+    await trx.rollback().execute()
 
     if (error instanceof Error)
       throw new TypeError(`Failed to find or create author: ${error.message}`)

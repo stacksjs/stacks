@@ -2,12 +2,12 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { Stripe } from '@stacksjs/payments'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import type { AuthorModel } from './Author'
 import type { CustomerModel } from './Customer'
 import type { DeploymentModel } from './Deployment'
 import type { DriverModel } from './Driver'
 import type { PaymentMethodModel, PaymentMethodsTable } from './PaymentMethod'
 import type { PaymentTransactionModel, PaymentTransactionsTable } from './PaymentTransaction'
-import type { PostModel } from './Post'
 import type { SubscriberModel } from './Subscriber'
 import type { SubscriptionModel } from './Subscription'
 
@@ -210,6 +210,10 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return this.attributes.driver
   }
 
+  get author(): AuthorModel | undefined {
+    return this.attributes.author
+  }
+
   get deployments(): DeploymentModel[] | [] {
     return this.attributes.deployments
   }
@@ -220,10 +224,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
   get payment_methods(): PaymentMethodModel[] | [] {
     return this.attributes.payment_methods
-  }
-
-  get posts(): PostModel[] | [] {
-    return this.attributes.posts
   }
 
   get payment_transactions(): PaymentTransactionModel[] | [] {
@@ -1201,7 +1201,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       deployments: this.deployments,
       subscriptions: this.subscriptions,
       payment_methods: this.payment_methods,
-      posts: this.posts,
       payment_transactions: this.payment_transactions,
       customers: this.customers,
       ...this.customColumns,

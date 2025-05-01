@@ -42,7 +42,6 @@ export default {
     observe: true,
   },
 
-  belongsTo: ['User'],
   hasMany: ['Post'],
 
   attributes: {

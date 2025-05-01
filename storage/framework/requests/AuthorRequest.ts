@@ -15,6 +15,7 @@ interface RequestDataAuthor {
   id: number
   name: string
   email: string
+  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -22,6 +23,7 @@ export class AuthorRequest extends Request<RequestDataAuthor> implements AuthorR
   public id = 1
   public name = ''
   public email = ''
+  public user_id = 0
   public created_at = ''
   public updated_at = ''
   public uuid = ''

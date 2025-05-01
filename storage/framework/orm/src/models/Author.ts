@@ -1,7 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { PostModel } from './Post'
-import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -12,7 +11,6 @@ import { BaseOrm } from '../utils/base'
 
 export interface AuthorsTable {
   id: Generated<number>
-  user_id: number
   name: string
   email: string
   uuid?: string
@@ -50,7 +48,7 @@ export type AuthorUpdate = Updateable<AuthorWrite>
 
 export class AuthorModel extends BaseOrm<AuthorModel, AuthorsTable, AuthorJsonResponse> {
   private readonly hidden: Array<keyof AuthorJsonResponse> = []
-  private readonly fillable: Array<keyof AuthorJsonResponse> = ['name', 'email', 'uuid', 'two_factor_secret', 'public_key']
+  private readonly fillable: Array<keyof AuthorJsonResponse> = ['name', 'email', 'uuid', 'two_factor_secret', 'public_key', 'user_id']
   private readonly guarded: Array<keyof AuthorJsonResponse> = []
   protected attributes = {} as AuthorJsonResponse
   protected originalAttributes = {} as AuthorJsonResponse
@@ -177,14 +175,6 @@ export class AuthorModel extends BaseOrm<AuthorModel, AuthorsTable, AuthorJsonRe
 
   get posts(): PostModel[] | [] {
     return this.attributes.posts
-  }
-
-  get user_id(): number {
-    return this.attributes.user_id
-  }
-
-  get user(): UserModel | undefined {
-    return this.attributes.user
   }
 
   get id(): number {
@@ -813,20 +803,6 @@ export class AuthorModel extends BaseOrm<AuthorModel, AuthorsTable, AuthorJsonRe
     return instance.applyWhereIn<V>(column, values)
   }
 
-  async userBelong(): Promise<UserModel> {
-    if (this.user_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const model = await User
-      .where('id', '=', this.user_id)
-      .first()
-
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
-
-    return model
-  }
-
   toSearchableObject(): Partial<AuthorJsonResponse> {
     return {
       id: this.id,
@@ -861,8 +837,6 @@ export class AuthorModel extends BaseOrm<AuthorModel, AuthorsTable, AuthorJsonRe
       updated_at: this.updated_at,
 
       posts: this.posts,
-      user_id: this.user_id,
-      user: this.user,
       ...this.customColumns,
     }
 
