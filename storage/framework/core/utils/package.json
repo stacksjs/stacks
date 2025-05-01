@@ -74,7 +74,7 @@
     "magic-regexp": "^0.10.0",
     "markdown-table": "^3.0.4",
     "perfect-debounce": "^1.0.0",
-    "pretty-bytes": "^6.1.1",
+    "pretty-bytes": "^7.0.0",
     "resize-observer-polyfill": "^1.5.1",
     "vue-starport": "^0.4.0",
     "vue3-ace-editor": "^2.2.4",
