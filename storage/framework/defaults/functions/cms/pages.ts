@@ -1,14 +1,14 @@
-import type { Page } from '../types'
+import type { Pages } from '../types'
 import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent pages array using VueUse's useStorage
-const pages = useStorage<Page[]>('pages', [])
+const pages = useStorage<Pages[]>('pages', [])
 
 const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all pages
 async function fetchPages() {
-  const { error, data } = useFetch<Page[]>(`${baseURL}/cms/pages`)
+  const { error, data } = useFetch<Pages[]>(`${baseURL}/cms/pages`)
 
   if (error.value) {
     console.error('Error fetching pages:', error.value)
@@ -26,8 +26,8 @@ async function fetchPages() {
   }
 }
 
-async function createPage(page: Partial<Page>) {
-  const { error, data } = useFetch<Page>(`${baseURL}/cms/pages`, {
+async function createPage(page: Partial<Pages>) {
+  const { error, data } = useFetch<Pages>(`${baseURL}/cms/pages`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -53,8 +53,8 @@ async function createPage(page: Partial<Page>) {
   return null
 }
 
-async function updatePage(page: Partial<Page>) {
-  const { error, data } = useFetch<Page>(`${baseURL}/cms/pages/${page.id}`, {
+async function updatePage(page: Partial<Pages>) {
+    const { error, data } = useFetch<Pages>(`${baseURL}/cms/pages/${page.id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',

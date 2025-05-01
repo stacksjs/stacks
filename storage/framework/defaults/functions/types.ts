@@ -269,3 +269,16 @@ export interface Categorizable {
   categorizable_id: number
   categorizable_type: string
 }
+
+export interface Pages {
+  id: number
+  title: string
+  template: string
+  views: number
+  conversions: number
+  author_id: number
+  author_name: string
+  author_email: string
+  status: string | string[]
+  uuid?: string
+}
