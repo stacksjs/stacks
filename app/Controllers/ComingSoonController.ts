@@ -1,5 +1,5 @@
 import type { Request, ResponseData } from '@stacksjs/types'
-
+import { log } from '@stacksjs/logging'
 /**
  * Base Controller class providing Laravel-like functionality
  */
@@ -73,7 +73,9 @@ class Controller {
    */
   protected validate(request: Request, rules: Record<string, any>): Promise<void> {
     try {
-      // const result = request.validate(rules)
+      const result = request.validate(rules)
+
+      log.info('Validation result:', result)
       // Always return a Promise
       return Promise.resolve()
     }

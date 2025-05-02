@@ -30,11 +30,11 @@ export function parseQuery(sql: string): { normalized: string, type: string, tab
     result.tables = extractTables(sql, result.type)
 
     // Normalize query
-    result.normalized = normalizeQuery(sql, result.type)
+    result.normalized = normalizeQuery(sql)
 
     return result
   }
-  catch (error) {
+  catch {
     // In case of error, just return the original query
     return {
       normalized: sql,
@@ -52,45 +52,52 @@ function extractTables(sql: string, type: string): string[] {
   const lowerSql = sql.toLowerCase()
 
   try {
+    let fromMatch: RegExpMatchArray | null = null
+    let joinMatch: RegExpMatchArray | null = null
+    let intoMatch: RegExpMatchArray | null = null
+    let updateMatch: RegExpMatchArray | null = null
+    let deleteFromMatch: RegExpMatchArray | null = null
+    const joinRegex = /join\s+([\w.]+)/gi
+
     switch (type) {
       case 'SELECT':
         // Look for FROM and JOIN clauses
-        const fromMatch = lowerSql.match(/from\s+([\w.]+)/i)
+        fromMatch = lowerSql.match(/from\s+([\w.]+)/i)
         if (fromMatch && fromMatch[1])
           tables.push(fromMatch[1].replace(/`/g, '').split('.').pop()!)
 
         // Find all JOIN statements
-        const joinRegex = /join\s+([\w.]+)/gi
-        let joinMatch
-        while ((joinMatch = joinRegex.exec(lowerSql)) !== null) {
+        joinMatch = joinRegex.exec(lowerSql)
+        while (joinMatch !== null) {
           if (joinMatch[1])
             tables.push(joinMatch[1].replace(/`/g, '').split('.').pop()!)
+          joinMatch = joinRegex.exec(lowerSql)
         }
         break
 
       case 'INSERT':
         // Look for INTO clause
-        const intoMatch = lowerSql.match(/into\s+([\w.]+)/i)
+        intoMatch = lowerSql.match(/into\s+([\w.]+)/i)
         if (intoMatch && intoMatch[1])
           tables.push(intoMatch[1].replace(/`/g, '').split('.').pop()!)
         break
 
       case 'UPDATE':
         // Usually the table name follows UPDATE
-        const updateMatch = lowerSql.match(/update\s+([\w.]+)/i)
+        updateMatch = lowerSql.match(/update\s+([\w.]+)/i)
         if (updateMatch && updateMatch[1])
           tables.push(updateMatch[1].replace(/`/g, '').split('.').pop()!)
         break
 
       case 'DELETE':
         // Look for FROM clause after DELETE
-        const deleteFromMatch = lowerSql.match(/from\s+([\w.]+)/i)
+        deleteFromMatch = lowerSql.match(/from\s+([\w.]+)/i)
         if (deleteFromMatch && deleteFromMatch[1])
           tables.push(deleteFromMatch[1].replace(/`/g, '').split('.').pop()!)
         break
     }
   }
-  catch (error) {
+  catch {
     // Just return whatever we've got so far
   }
 
@@ -101,7 +108,7 @@ function extractTables(sql: string, type: string): string[] {
 /**
  * Normalize a SQL query by replacing literal values with placeholders
  */
-function normalizeQuery(sql: string, type: string): string {
+function normalizeQuery(sql: string): string {
   try {
     let normalizedSql = sql
 
@@ -124,7 +131,7 @@ function normalizeQuery(sql: string, type: string): string {
 
     return normalizedSql
   }
-  catch (error) {
+  catch {
     // In case of an error, return the original
     return sql
   }

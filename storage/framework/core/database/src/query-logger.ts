@@ -1,4 +1,5 @@
 import type { LogEvent } from 'kysely'
+import { memoryUsage } from 'node:process'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { parseQuery } from './query-parser'
@@ -58,7 +59,7 @@ export async function logQuery(event: LogEvent): Promise<void> {
     // Log slow or failed queries to the application log
     if (status !== 'completed') {
       const logMethod = status === 'failed' ? 'error' : 'warn'
-      
+
       log[logMethod](`Query ${status}:`, {
         query: logRecord.query,
         duration: logRecord.duration,
@@ -140,7 +141,7 @@ async function createQueryLogRecord(
     bindings,
     trace,
     ...caller,
-    memory_usage: require('process').memoryUsage().heapUsed / 1024 / 1024, // in MB
+    memory_usage: memoryUsage().heapUsed / 1024 / 1024, // in MB
   }
 }
 
@@ -150,7 +151,7 @@ async function createQueryLogRecord(
 function extractTraceInfo() {
   try {
     // Get the current stack trace
-    const stack = new Error().stack || ''
+    const stack = new Error('Stack trace capture').stack || ''
 
     // Get the caller information (skipping this file's functions)
     const stackLines = stack.split('\n').slice(1)
@@ -240,6 +241,7 @@ async function enhanceWithQueryAnalysis(logRecord: QueryLogRecord): Promise<void
  * Note: This is a simplified implementation
  */
 async function getExplainPlan(query: string): Promise<any> {
+  log.info('Getting explain plan for query:', query)
   try {
     // This should be implemented based on the specific database driver
     // For demonstration, we'll return a mock result

@@ -7,6 +7,7 @@ import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
 import { BunWorkerDialect } from 'kysely-bun-worker'
 import { createPool } from 'mysql2'
 import { Pool } from 'pg'
+import { logQuery } from './query-logger'
 
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
@@ -133,8 +134,11 @@ export const db: Kysely<Database> = new Kysely<Database>({
     }
     // Store query in the database regardless of console logging setting
     // if query logging to database is enabled
-    // logQuery(event).catch(err => {
-    //   log.debug('Failed to log query to database:', err)
-    // })
+
+    setTimeout(() => {
+      logQuery(event).catch((err) => {
+        log.debug('Failed to log query to database:', err)
+      })
+    }, 1000 * 60)
   },
 })
