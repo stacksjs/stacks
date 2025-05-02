@@ -1,7 +1,8 @@
-import { log } from '@stacksjs/logging'
-import { db as kysely } from './utils'
+import type { LogEvent } from 'kysely'
 import { config } from '@stacksjs/config'
+import { log } from '@stacksjs/logging'
 import { parseQuery } from './query-parser'
+import { db as kysely } from './utils'
 
 interface QueryLogRecord {
   query: string
@@ -28,13 +29,10 @@ interface QueryLogRecord {
   optimization_suggestions?: string
 }
 
-// Configure thresholds from config or use defaults
-const SLOW_QUERY_THRESHOLD = config.database?.queryLogging?.slowThreshold || 100 // in ms
-
 /**
  * Process an executed query and store it in the database
  */
-export async function logQuery(event: any): Promise<void> {
+export async function logQuery(event: LogEvent): Promise<void> {
   try {
     // Skip if database logging is disabled
     if (!config.database?.queryLogging?.enabled)
@@ -64,10 +62,11 @@ export async function logQuery(event: any): Promise<void> {
         query: logRecord.query,
         duration: logRecord.duration,
         connection: logRecord.connection,
-        ...(error && { error })
+        ...(error && { error }),
       })
     }
-  } catch (err) {
+  }
+  catch (err) {
     // Log error but don't throw - this is a background operation
     log.error('Failed to log query:', err)
   }
@@ -86,7 +85,8 @@ function extractQueryInfo(event: any) {
   if (event.query?.parameters) {
     try {
       bindings = JSON.stringify(event.query.parameters)
-    } catch {
+    }
+    catch {
       bindings = '[]'
     }
   }
@@ -98,10 +98,12 @@ function extractQueryInfo(event: any) {
  * Determine the status of a query based on duration and error
  */
 function determineQueryStatus(durationMs: number, error?: any): 'completed' | 'failed' | 'slow' {
+  const slowThreshold = config.database?.queryLogging?.slowThreshold || 100 // in ms
+
   if (error)
     return 'failed'
 
-  if (durationMs > SLOW_QUERY_THRESHOLD)
+  if (durationMs > slowThreshold)
     return 'slow'
 
   return 'completed'
@@ -115,7 +117,7 @@ async function createQueryLogRecord(
   durationMs: number,
   status: 'completed' | 'failed' | 'slow',
   error?: any,
-  bindings?: string
+  bindings?: string,
 ): Promise<QueryLogRecord> {
   // Get the current database connection
   const connection = config.database.default || 'unknown'
@@ -172,7 +174,7 @@ function extractTraceInfo() {
         caller = {
           ...caller,
           file: fileMatch[1],
-          line: parseInt(fileMatch[2], 10),
+          line: Number.parseInt(fileMatch[2], 10),
         }
       }
     }
@@ -181,7 +183,8 @@ function extractTraceInfo() {
       trace: stack,
       caller,
     }
-  } catch {
+  }
+  catch {
     return { trace: '', caller: {} }
   }
 }
@@ -207,7 +210,7 @@ async function enhanceWithQueryAnalysis(logRecord: QueryLogRecord): Promise<void
         // Generate optimization suggestions
         if (config.database?.queryLogging?.analysis?.suggestions) {
           logRecord.optimization_suggestions = JSON.stringify(
-            generateOptimizationSuggestions(explainResult, logRecord)
+            generateOptimizationSuggestions(explainResult, logRecord),
           )
         }
       }
@@ -225,8 +228,8 @@ async function enhanceWithQueryAnalysis(logRecord: QueryLogRecord): Promise<void
       tags.push(...tables.map(table => `table:${table}`))
     }
     logRecord.tags = JSON.stringify(tags)
-
-  } catch (error) {
+  }
+  catch (error) {
     log.debug('Error during query analysis:', error)
   }
 }
@@ -242,14 +245,15 @@ async function getExplainPlan(query: string): Promise<any> {
     return {
       plan: 'MOCK EXPLAIN PLAN',
       indexesUsed: ['primary_key'],
-      missingIndexes: []
+      missingIndexes: [],
     }
 
     // In a real implementation, you would:
     // 1. Run EXPLAIN on the query
     // 2. Parse the output to identify indexes used
     // 3. Identify potential missing indexes
-  } catch (error) {
+  }
+  catch (error) {
     log.debug('Error getting explain plan:', error)
     return null
   }
@@ -290,7 +294,8 @@ function generateOptimizationSuggestions(explainResult: any, logRecord: QueryLog
 async function storeQueryLog(logRecord: QueryLogRecord): Promise<void> {
   try {
     await kysely.insertInto('query_logs').values(logRecord).execute()
-  } catch (error) {
+  }
+  catch (error) {
     log.error('Failed to store query log:', error)
   }
 }

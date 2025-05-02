@@ -1,5 +1,4 @@
-import type { Request } from '@stacksjs/types'
-import type { ResponseData } from '@stacksjs/types'
+import type { Request, ResponseData } from '@stacksjs/types'
 
 /**
  * Base Controller class providing Laravel-like functionality
@@ -12,7 +11,7 @@ class Controller {
     return {
       status,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     }
   }
 
@@ -37,7 +36,7 @@ class Controller {
     return {
       status: 204,
       headers: {},
-      body: ''
+      body: '',
     }
   }
 
@@ -77,7 +76,8 @@ class Controller {
       const result = request.validate(rules)
       // Always return a Promise
       return Promise.resolve()
-    } catch (error) {
+    }
+    catch (error) {
       return Promise.reject(error)
     }
   }
@@ -86,4 +86,3 @@ class Controller {
 export default class extends Controller {
   // Your controller methods go here
 }
-

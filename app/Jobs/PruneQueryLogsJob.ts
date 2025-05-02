@@ -1,5 +1,5 @@
-import { log } from '@stacksjs/logging'
 import { config } from '@stacksjs/config'
+import { log } from '@stacksjs/logging'
 import QueryController from '../Actions/Queries/QueryController'
 
 export default class PruneQueryLogsJob {
@@ -9,7 +9,7 @@ export default class PruneQueryLogsJob {
   public static config = {
     // Run the job based on the configured frequency, defaulting to daily
     schedule: config.database?.queryLogging?.pruneFrequency
-      ? `0 */${config.database.queryLogging.pruneFrequency} * * *`  // Every X hours
+      ? `0 */${config.database.queryLogging.pruneFrequency} * * *` // Every X hours
       : '0 0 * * *', // Daily at midnight
 
     // Prevent overlapping job executions
@@ -42,7 +42,8 @@ export default class PruneQueryLogsJob {
       log.info(`Successfully pruned ${result.pruned} query logs older than ${result.retentionDays} days`)
 
       return result
-    } catch (error) {
+    }
+    catch (error) {
       log.error('Failed to prune query logs:', error)
       throw error
     }

@@ -54,7 +54,7 @@ async function createPage(page: Partial<Pages>) {
 }
 
 async function updatePage(page: Partial<Pages>) {
-    const { error, data } = useFetch<Pages>(`${baseURL}/cms/pages/${page.id}`, {
+  const { error, data } = useFetch<Pages>(`${baseURL}/cms/pages/${page.id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',

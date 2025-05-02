@@ -1,5 +1,5 @@
 import type { Database } from '@stacksjs/orm'
-import type { RawBuilder } from 'kysely'
+import type { LogEvent, RawBuilder } from 'kysely'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
@@ -7,7 +7,6 @@ import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
 import { BunWorkerDialect } from 'kysely-bun-worker'
 import { createPool } from 'mysql2'
 import { Pool } from 'pg'
-import { logQuery } from './query-logger'
 
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
@@ -113,7 +112,7 @@ export const dbNow: RawBuilder<any> = sql`now()`
 export const db: Kysely<Database> = new Kysely<Database>({
   dialect: getDialect(),
 
-  log(event) {
+  log(event: LogEvent) {
     // Always log errors
     if (event.level === 'error') {
       log.error('Query failed : ', {
@@ -132,11 +131,10 @@ export const db: Kysely<Database> = new Kysely<Database>({
         })
       }
     }
-
     // Store query in the database regardless of console logging setting
     // if query logging to database is enabled
-    logQuery(event).catch(err => {
-      log.debug('Failed to log query to database:', err)
-    })
+    // logQuery(event).catch(err => {
+    //   log.debug('Failed to log query to database:', err)
+    // })
   },
 })

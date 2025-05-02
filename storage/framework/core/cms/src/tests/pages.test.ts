@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { db } from '@stacksjs/database'
 import { refreshDatabase } from '@stacksjs/testing'
 import { findOrCreate as findOrCreateAuthor } from '../authors/store'
 import { destroy } from '../pages/destroy'

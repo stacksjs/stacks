@@ -5,11 +5,11 @@ export {
 
 export {
   fetchAll,
-  fetchById,
-  fetchPublishedAfter,
   fetchByAuthor,
+  fetchById,
   fetchByMinConversions,
   fetchByMinViews,
+  fetchPublishedAfter,
 } from './fetch'
 
 export {

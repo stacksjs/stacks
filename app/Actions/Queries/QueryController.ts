@@ -1,5 +1,5 @@
-import { db } from '@stacksjs/database'
 import { config } from '@stacksjs/config'
+import { db } from '@stacksjs/database'
 
 export default class QueryController {
   /**
@@ -48,8 +48,7 @@ export default class QueryController {
           db.fn.count('id').as('count'),
         ])
         .where('status', '=', 'slow')
-        .where('executed_at', '>=',
-          db.raw('datetime("now", "-1 day")')
+        .where('executed_at', '>=', db.raw('datetime("now", "-1 day")'),
         )
         .groupBy(db.raw('strftime("%Y-%m-%d %H:00:00", executed_at)'))
         .orderBy('hour')
@@ -66,7 +65,8 @@ export default class QueryController {
           slowThreshold: config.database?.queryLogging?.slowThreshold || 100,
         },
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to fetch query statistics: ${error.message}`)
     }
   }
@@ -80,7 +80,7 @@ export default class QueryController {
     connection = 'all',
     type = 'all',
     status = 'all',
-    search = ''
+    search = '',
   }) {
     try {
       let query = db
@@ -140,7 +140,8 @@ export default class QueryController {
           last_page: Math.ceil(total / perPage),
         },
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to fetch recent queries: ${error.message}`)
     }
   }
@@ -153,7 +154,7 @@ export default class QueryController {
     perPage = 10,
     threshold = null,
     connection = 'all',
-    search = ''
+    search = '',
   }) {
     try {
       const slowThreshold = threshold || config.database?.queryLogging?.slowThreshold || 100
@@ -214,7 +215,8 @@ export default class QueryController {
           threshold: slowThreshold,
         },
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to fetch slow queries: ${error.message}`)
     }
   }
@@ -245,7 +247,8 @@ export default class QueryController {
           ? JSON.parse(query.optimization_suggestions)
           : [],
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to fetch query: ${error.message}`)
     }
   }
@@ -285,8 +288,7 @@ export default class QueryController {
           db.fn.count('id').as('count'),
           db.fn.avg('duration').as('avg_duration'),
         ])
-        .where('executed_at', '>=',
-          db.raw(`datetime("now", "${timeConstraint}")`)
+        .where('executed_at', '>=', db.raw(`datetime("now", "${timeConstraint}")`),
         )
         .groupBy('time_interval')
         .orderBy('time_interval')
@@ -304,7 +306,8 @@ export default class QueryController {
           type,
         },
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to fetch query timeline: ${error.message}`)
     }
   }
@@ -328,7 +331,8 @@ export default class QueryController {
         .execute()
 
       return results
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to fetch frequent queries: ${error.message}`)
     }
   }
@@ -342,8 +346,7 @@ export default class QueryController {
 
       const result = await db
         .deleteFrom('query_logs')
-        .where('executed_at', '<',
-          db.raw(`datetime("now", "-${retentionDays} day")`)
+        .where('executed_at', '<', db.raw(`datetime("now", "-${retentionDays} day")`),
         )
         .executeTakeFirst()
 
@@ -351,7 +354,8 @@ export default class QueryController {
         pruned: result.numDeletedRows,
         retentionDays,
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to prune query logs: ${error.message}`)
     }
   }

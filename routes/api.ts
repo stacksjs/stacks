@@ -262,7 +262,8 @@ route.get('/queries/stats', async (req, res) => {
   try {
     const stats = await import('../app/Actions/Queries/QueryController').then(module => module.default.getStats())
     res.json(stats)
-  } catch (error) {
+  }
+  catch (error) {
     res.status(500).json({ error: error.message })
   }
 })
@@ -278,10 +279,11 @@ route.get('/queries/recent', async (req, res) => {
         type: type?.toString() || 'all',
         status: status?.toString() || 'all',
         search: search?.toString() || '',
-      })
+      }),
     )
     res.json(queries)
-  } catch (error) {
+  }
+  catch (error) {
     res.status(500).json({ error: error.message })
   }
 })
@@ -296,10 +298,11 @@ route.get('/queries/slow', async (req, res) => {
         threshold: threshold ? Number(threshold) : null,
         connection: connection?.toString() || 'all',
         search: search?.toString() || '',
-      })
+      }),
     )
     res.json(queries)
-  } catch (error) {
+  }
+  catch (error) {
     res.status(500).json({ error: error.message })
   }
 })
@@ -308,10 +311,11 @@ route.get('/queries/:id', async (req, res) => {
   try {
     const { id } = req.params
     const query = await import('../app/Actions/Queries/QueryController').then(module =>
-      module.default.getQuery(id)
+      module.default.getQuery(id),
     )
     res.json(query)
-  } catch (error) {
+  }
+  catch (error) {
     res.status(404).json({ error: error.message })
   }
 })
@@ -323,10 +327,11 @@ route.get('/queries/timeline', async (req, res) => {
       module.default.getQueryTimeline({
         timeframe: timeframe?.toString() || 'day',
         type: type?.toString() || 'all',
-      })
+      }),
     )
     res.json(timeline)
-  } catch (error) {
+  }
+  catch (error) {
     res.status(500).json({ error: error.message })
   }
 })
@@ -334,10 +339,11 @@ route.get('/queries/timeline', async (req, res) => {
 route.get('/queries/frequent', async (req, res) => {
   try {
     const queries = await import('../app/Actions/Queries/QueryController').then(module =>
-      module.default.getFrequentQueries()
+      module.default.getFrequentQueries(),
     )
     res.json(queries)
-  } catch (error) {
+  }
+  catch (error) {
     res.status(500).json({ error: error.message })
   }
 })
@@ -345,10 +351,11 @@ route.get('/queries/frequent', async (req, res) => {
 route.post('/queries/prune', async (req, res) => {
   try {
     const result = await import('../app/Actions/Queries/QueryController').then(module =>
-      module.default.pruneQueryLogs()
+      module.default.pruneQueryLogs(),
     )
     res.json(result)
-  } catch (error) {
+  }
+  catch (error) {
     res.status(500).json({ error: error.message })
   }
 })
