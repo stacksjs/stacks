@@ -4,12 +4,13 @@ import { useFetch, useStorage } from '@vueuse/core'
 // Create a persistent posts array using VueUse's useStorage
 const posts = useStorage<Posts[]>('posts', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all posts
 async function fetchPosts() {
-  const { error, data } = useFetch<Posts[]>(`${baseURL}/cms/posts`)
+  const { error, data } = await useFetch(`${baseURL}/cms/posts`).get().json()
 
+  const postsJson = data.value as Posts[]
   if (error.value) {
     console.error('Error fetching posts:', error.value)
     return []
@@ -17,7 +18,7 @@ async function fetchPosts() {
 
   // Ensure data is an array before assigning
   if (Array.isArray(data.value)) {
-    posts.value = data.value
+    posts.value = postsJson
     return data.value
   }
   else {
@@ -27,64 +28,58 @@ async function fetchPosts() {
 }
 
 async function createPost(post: Partial<StorePost>) {
-  const { error, data } = useFetch<Posts>(`${baseURL}/cms/posts`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+  const { error, data } = await useFetch(`${baseURL}/cms/posts`)
+    .post(JSON.stringify({
       ...post,
       author_name: post.author_name,
       author_email: post.author_email,
       category_ids: post.category_ids,
       tag_ids: post.tag_ids,
-    }),
-  })
+    }))
+    .json()
 
   if (error.value) {
     console.error('Error creating post:', error.value)
     return null
   }
 
-  if (data.value) {
-    posts.value.push(data.value)
-    return data.value
+  const newPost = data.value as Posts
+  if (newPost) {
+    posts.value.push(newPost)
+    return newPost
   }
   return null
 }
 
-async function updatePost(post: Partial<Posts>) {
-  const { error, data } = useFetch<Posts>(`${baseURL}/cms/posts/${post.id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+async function updatePost(id: number, post: Partial<Posts>) {
+  const { error, data } = await useFetch(`${baseURL}/cms/posts/${id}`)
+    .patch(JSON.stringify({
       ...post,
       author_name: post.author_name,
       author_email: post.author_email,
-    }),
-  })
+    }))
+    .json()
 
   if (error.value) {
     console.error('Error updating post:', error.value)
     return null
   }
 
-  if (data.value) {
-    const index = posts.value.findIndex(p => p.id === post.id)
+  const updatedPost = data.value as Posts
+  if (updatedPost) {
+    const index = posts.value.findIndex(p => p.id === id)
     if (index !== -1) {
-      posts.value[index] = data.value
+      posts.value[index] = updatedPost
     }
-    return data.value
+    return updatedPost
   }
   return null
 }
 
 async function deletePost(id: number) {
-  const { error } = useFetch(`${baseURL}/cms/posts/${id}`, {
-    method: 'DELETE',
-  })
+  const { error } = await useFetch(`${baseURL}/cms/posts/${id}`)
+    .delete()
+    .json()
 
   if (error.value) {
     console.error('Error deleting post:', error.value)

@@ -4,12 +4,13 @@ import { useFetch, useStorage } from '@vueuse/core'
 // Create a persistent pages array using VueUse's useStorage
 const pages = useStorage<Pages[]>('pages', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all pages
 async function fetchPages() {
-  const { error, data } = useFetch<Pages[]>(`${baseURL}/cms/pages`)
+  const { error, data } = await useFetch(`${baseURL}/cms/pages`).get().json()
 
+  const pagesJson = data.value as Pages[]
   if (error.value) {
     console.error('Error fetching pages:', error.value)
     return []
@@ -17,7 +18,7 @@ async function fetchPages() {
 
   // Ensure data is an array before assigning
   if (Array.isArray(data.value)) {
-    pages.value = data.value
+    pages.value = pagesJson
     return data.value
   }
   else {
@@ -27,66 +28,60 @@ async function fetchPages() {
 }
 
 async function createPage(page: Partial<Pages>) {
-  const { error, data } = useFetch<Pages>(`${baseURL}/cms/pages`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+  const { error, data } = await useFetch(`${baseURL}/cms/pages`)
+    .post(JSON.stringify({
       ...page,
       title: page.title,
       template: page.template,
       views: page.views || 0,
       conversions: page.conversions || 0,
-    }),
-  })
+    }))
+    .json()
 
   if (error.value) {
     console.error('Error creating page:', error.value)
     return null
   }
 
-  if (data.value) {
-    pages.value.push(data.value)
-    return data.value
+  const newPage = data.value as Pages
+  if (newPage) {
+    pages.value.push(newPage)
+    return newPage
   }
   return null
 }
 
-async function updatePage(page: Partial<Pages>) {
-  const { error, data } = useFetch<Pages>(`${baseURL}/cms/pages/${page.id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+async function updatePage(id: number, page: Partial<Pages>) {
+  const { error, data } = await useFetch(`${baseURL}/cms/pages/${id}`)
+    .patch(JSON.stringify({
       ...page,
       title: page.title,
       template: page.template,
       views: page.views,
       conversions: page.conversions,
-    }),
-  })
+    }))
+    .json()
 
   if (error.value) {
     console.error('Error updating page:', error.value)
     return null
   }
 
-  if (data.value) {
-    const index = pages.value.findIndex(p => p.id === page.id)
+  const updatedPage = data.value as Pages
+  if (updatedPage) {
+    const index = pages.value.findIndex(p => p.id === id)
     if (index !== -1) {
-      pages.value[index] = data.value
+      pages.value[index] = updatedPage
     }
-    return data.value
+    return updatedPage
   }
   return null
 }
 
 async function deletePage(id: number) {
-  const { error } = useFetch(`${baseURL}/cms/pages/${id}`, {
-    method: 'DELETE',
-  })
+  const { error } = await useFetch(`${baseURL}/cms/pages/${id}`)
+    .delete()
+    .json()
 
   if (error.value) {
     console.error('Error deleting page:', error.value)
