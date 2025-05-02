@@ -726,3 +726,124 @@ export async function createPostgresCategorizableModelsTable(): Promise<void> {
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
+
+export async function createQueryLogsTable(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('query_logs')
+
+  if (hasBeenMigrated)
+    return
+
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createTable('query_logs')\n`
+  migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
+  migrationContent += `    .addColumn('query', 'text', col => col.notNull())\n`
+  migrationContent += `    .addColumn('normalized_query', 'text')\n`
+  migrationContent += `    .addColumn('duration', 'integer')\n`
+  migrationContent += `    .addColumn('connection', 'varchar(255)')\n`
+  migrationContent += `    .addColumn('status', 'varchar(50)')\n`
+  migrationContent += `    .addColumn('executed_at', 'timestamp', col => col.notNull())\n`
+  migrationContent += `    .addColumn('model', 'varchar(255)')\n`
+  migrationContent += `    .addColumn('method', 'varchar(255)')\n`
+  migrationContent += `    .addColumn('rows_affected', 'integer')\n`
+  migrationContent += `    .addColumn('optimization_suggestions', 'json')\n`
+  migrationContent += `    .addColumn('affected_tables', 'json')\n`
+  migrationContent += `    .addColumn('indexes_used', 'json')\n`
+  migrationContent += `    .addColumn('missing_indexes', 'json')\n`
+  migrationContent += `    .addColumn('tags', 'json')\n`
+  migrationContent += `    .addColumn('bindings', 'json')\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_query_logs_executed_at')\n`
+  migrationContent += `    .on('query_logs')\n`
+  migrationContent += `    .column('executed_at')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_query_logs_status')\n`
+  migrationContent += `    .on('query_logs')\n`
+  migrationContent += `    .column('status')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_query_logs_duration')\n`
+  migrationContent += `    .on('query_logs')\n`
+  migrationContent += `    .column('duration')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `}\n`
+
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-create-query-logs-table.ts`
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  Bun.write(migrationFilePath, migrationContent)
+
+  log.success(`Created migration: ${italic(migrationFileName)}`)
+}
+
+// PostgreSQL version
+export async function createPostgresQueryLogsTable(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('query_logs')
+
+  if (hasBeenMigrated)
+    return
+
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createTable('query_logs')\n`
+  migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
+  migrationContent += `    .addColumn('query', 'text', col => col.notNull())\n`
+  migrationContent += `    .addColumn('normalized_query', 'text')\n`
+  migrationContent += `    .addColumn('duration', 'integer')\n`
+  migrationContent += `    .addColumn('connection', 'varchar(255)')\n`
+  migrationContent += `    .addColumn('status', 'varchar(50)')\n`
+  migrationContent += `    .addColumn('executed_at', 'timestamp with time zone', col => col.notNull())\n`
+  migrationContent += `    .addColumn('model', 'varchar(255)')\n`
+  migrationContent += `    .addColumn('method', 'varchar(255)')\n`
+  migrationContent += `    .addColumn('rows_affected', 'integer')\n`
+  migrationContent += `    .addColumn('optimization_suggestions', 'jsonb')\n`
+  migrationContent += `    .addColumn('affected_tables', 'jsonb')\n`
+  migrationContent += `    .addColumn('indexes_used', 'jsonb')\n`
+  migrationContent += `    .addColumn('missing_indexes', 'jsonb')\n`
+  migrationContent += `    .addColumn('tags', 'jsonb')\n`
+  migrationContent += `    .addColumn('bindings', 'jsonb')\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp with time zone')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_query_logs_executed_at')\n`
+  migrationContent += `    .on('query_logs')\n`
+  migrationContent += `    .column('executed_at')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_query_logs_status')\n`
+  migrationContent += `    .on('query_logs')\n`
+  migrationContent += `    .column('status')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_query_logs_duration')\n`
+  migrationContent += `    .on('query_logs')\n`
+  migrationContent += `    .column('duration')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `}\n`
+
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-create-query-logs-table.ts`
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  Bun.write(migrationFilePath, migrationContent)
+
+  log.success(`Created migration: ${italic(migrationFileName)}`)
+}
