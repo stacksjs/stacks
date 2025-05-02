@@ -44,7 +44,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.799.0",
     "@aws-sdk/lib-dynamodb": "^3.799.0",
-    "dynamodb-toolbox": "^2.2.0"
+    "dynamodb-toolbox": "^2.2.1"
   },
   "optionalDependencies": {
     "mysql2": "^3.14.1"

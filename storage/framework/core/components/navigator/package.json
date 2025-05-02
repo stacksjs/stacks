@@ -37,7 +37,7 @@
     "vue": "^3.5.13"
   },
   "devDependencies": {
-    "@iconify-json/hugeicons": "^1.2.4",
+    "@iconify-json/hugeicons": "^1.2.5",
     "@microsoft/api-extractor": "^7.52.7",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
