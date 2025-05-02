@@ -6,7 +6,7 @@ type ActionPath = string
 // need to refactor before, after, view to be a part of some other type
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'before' | 'after' | 'view'
 
-export type RouteCallback = (params?: Record<string, any>) => any | string | object
+export type RouteCallback = ((params?: Record<string, any>) => any | string | object) | ((req: any, res: any) => Promise<void>)
 
 export interface RequestData {
   [key: string]: any

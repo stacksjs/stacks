@@ -120,22 +120,27 @@ function generateQueryLogsTableInterface(): string {
   export interface QueryLogsTable {
     id?: number
     query: string
-    normalized_query?: string
-    duration?: number
-    connection?: string
-    status?: string
+    normalized_query: string
+    duration: number
+    connection: string
+    status: 'completed' | 'failed' | 'slow'
+    error?: string
     executed_at?: string
+    bindings?: string
+    trace?: string
     model?: string
     method?: string
+    file?: string
+    line?: number
+    memory_usage?: number
     rows_affected?: number
-    optimization_suggestions?: string
+    transaction_id?: string
+    tags?: string
     affected_tables?: string
     indexes_used?: string
     missing_indexes?: string
-    tags?: string
-    bindings?: string
-    created_at?: string
-    updated_at?: string
+    explain_plan?: string
+    optimization_suggestions?: string
   }`
 }
 

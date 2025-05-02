@@ -152,12 +152,14 @@ export default class QueryController {
   static async getSlowQueries({
     page = 1,
     perPage = 10,
-    threshold = null,
+    threshold = 0,
     connection = 'all',
     search = '',
   }) {
     try {
-      const slowThreshold = threshold || config.database?.queryLogging?.slowThreshold || 100
+      let slowThreshold = threshold
+      if (slowThreshold < 0)
+        slowThreshold = config.database?.queryLogging?.slowThreshold || 100
 
       let query = db
         .selectFrom('query_logs')

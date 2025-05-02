@@ -1,4 +1,6 @@
 import { route } from '@stacksjs/router'
+import type { Request } from '@stacksjs/router'
+import type { Response } from '@stacksjs/types'
 
 /**
  * This file is the entry point for your application's API routes.
@@ -65,6 +67,8 @@ route.group({ prefix: '/commerce' }, async () => {
   route.get('/product-categories', 'Actions/Commerce/CategoryIndexOrmAction')
   route.post('/product-categories', 'Actions/Commerce/CategoryStoreOrmAction')
   route.get('/product-categories/{id}', 'Actions/Commerce/CategoryShowOrmAction')
+  route.patch('/product-categories/{id}', 'Actions/Commerce/CategoryUpdateOrmAction')
+  route.delete('/product-categories/{id}', 'Actions/Commerce/CategoryDestroyOrmAction')
 
   // Payments
   route.get('/payments', 'Actions/Commerce/PaymentIndexOrmAction')
@@ -258,17 +262,18 @@ route.post('/password/reset', 'Actions/Password/PasswordResetAction')
 // route.job('/example-two') // equivalent to `route.get('/example-two', 'ExampleTwoJob')`
 
 // Query Dashboard routes
-route.get('/queries/stats', async (req, res) => {
+route.get('/queries/stats', async (req: Request, res: Response) => {
   try {
     const stats = await import('../app/Actions/Queries/QueryController').then(module => module.default.getStats())
     res.json(stats)
   }
-  catch (error) {
-    res.status(500).json({ error: error.message })
+  catch (error: unknown) {
+    const err = error as Error
+    res.status(500).json({ error: err.message })
   }
 })
 
-route.get('/queries/recent', async (req, res) => {
+route.get('/queries/recent', async (req: Request, res: Response) => {
   try {
     const { page, perPage, connection, type, status, search } = req.query
     const queries = await import('../app/Actions/Queries/QueryController').then(module =>
@@ -283,31 +288,33 @@ route.get('/queries/recent', async (req, res) => {
     )
     res.json(queries)
   }
-  catch (error) {
-    res.status(500).json({ error: error.message })
+  catch (error: unknown) {
+    const err = error as Error
+    res.status(500).json({ error: err.message })
   }
 })
 
-route.get('/queries/slow', async (req, res) => {
+route.get('/queries/slow', async (req: Request, res: Response) => {
   try {
     const { page, perPage, threshold, connection, search } = req.query
     const queries = await import('../app/Actions/Queries/QueryController').then(module =>
       module.default.getSlowQueries({
         page: Number(page) || 1,
         perPage: Number(perPage) || 10,
-        threshold: threshold ? Number(threshold) : null,
+        threshold: threshold ? Number(threshold) : undefined,
         connection: connection?.toString() || 'all',
         search: search?.toString() || '',
       }),
     )
     res.json(queries)
   }
-  catch (error) {
-    res.status(500).json({ error: error.message })
+  catch (error: unknown) {
+    const err = error as Error
+    res.status(500).json({ error: err.message })
   }
 })
 
-route.get('/queries/:id', async (req, res) => {
+route.get('/queries/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const query = await import('../app/Actions/Queries/QueryController').then(module =>
@@ -315,12 +322,13 @@ route.get('/queries/:id', async (req, res) => {
     )
     res.json(query)
   }
-  catch (error) {
-    res.status(404).json({ error: error.message })
+  catch (error: unknown) {
+    const err = error as Error
+    res.status(404).json({ error: err.message })
   }
 })
 
-route.get('/queries/timeline', async (req, res) => {
+route.get('/queries/timeline', async (req: Request, res: Response) => {
   try {
     const { timeframe, type } = req.query
     const timeline = await import('../app/Actions/Queries/QueryController').then(module =>
@@ -331,31 +339,34 @@ route.get('/queries/timeline', async (req, res) => {
     )
     res.json(timeline)
   }
-  catch (error) {
-    res.status(500).json({ error: error.message })
+  catch (error: unknown) {
+    const err = error as Error
+    res.status(500).json({ error: err.message })
   }
 })
 
-route.get('/queries/frequent', async (req, res) => {
+route.get('/queries/frequent', async (req: Request, res: Response) => {
   try {
     const queries = await import('../app/Actions/Queries/QueryController').then(module =>
       module.default.getFrequentQueries(),
     )
     res.json(queries)
   }
-  catch (error) {
-    res.status(500).json({ error: error.message })
+  catch (error: unknown) {
+    const err = error as Error
+    res.status(500).json({ error: err.message })
   }
 })
 
-route.post('/queries/prune', async (req, res) => {
+route.post('/queries/prune', async (req: Request, res: Response) => {
   try {
     const result = await import('../app/Actions/Queries/QueryController').then(module =>
       module.default.pruneQueryLogs(),
     )
     res.json(result)
   }
-  catch (error) {
-    res.status(500).json({ error: error.message })
+  catch (error: unknown) {
+    const err = error as Error
+    res.status(500).json({ error: err.message })
   }
 })
