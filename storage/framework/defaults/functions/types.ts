@@ -70,6 +70,8 @@ export interface Orders {
   uuid?: string
 }
 
+export type StorePost = Omit<Posts, 'id' | 'uuid' | 'created_at' | 'updated_at' | 'views' | 'comments' | 'published' | 'featured'>
+
 export interface Posts {
   id: number
   title: string
@@ -80,10 +82,11 @@ export interface Posts {
   author_email?: string
   category?: string
   poster?: string
-  comments?: number
+  comments: number
   tags: string[]
   body?: string
-  views?: number
+  views: number
+  category_ids?: number[]
   published_at?: number
   status?: string | string[]
   uuid?: string

@@ -13,7 +13,8 @@ export interface PostsTable {
   author_id: number
   title: string
   poster?: string
-  body: string
+  content: string
+  excerpt?: string
   views?: number
   published_at?: number
   status: string | string[]
@@ -52,7 +53,7 @@ export type PostUpdate = Updateable<PostWrite>
 
 export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
-  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'poster', 'body', 'views', 'published_at', 'status', 'uuid', 'author_id']
+  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'poster', 'content', 'excerpt', 'views', 'published_at', 'status', 'uuid', 'author_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
   protected attributes = {} as PostJsonResponse
   protected originalAttributes = {} as PostJsonResponse
@@ -201,8 +202,12 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return this.attributes.poster
   }
 
-  get body(): string {
-    return this.attributes.body
+  get content(): string {
+    return this.attributes.content
+  }
+
+  get excerpt(): string | undefined {
+    return this.attributes.excerpt
   }
 
   get views(): number | undefined {
@@ -237,8 +242,12 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     this.attributes.poster = value
   }
 
-  set body(value: string) {
-    this.attributes.body = value
+  set content(value: string) {
+    this.attributes.content = value
+  }
+
+  set excerpt(value: string) {
+    this.attributes.excerpt = value
   }
 
   set views(value: number) {
@@ -805,10 +814,18 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance
   }
 
-  static whereBody(value: string): PostModel {
+  static whereContent(value: string): PostModel {
     const instance = new PostModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('body', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('content', '=', value)
+
+    return instance
+  }
+
+  static whereExcerpt(value: string): PostModel {
+    const instance = new PostModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('excerpt', '=', value)
 
     return instance
   }
@@ -969,7 +986,8 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       id: this.id,
       title: this.title,
       poster: this.poster,
-      body: this.body,
+      content: this.content,
+      excerpt: this.excerpt,
       views: this.views,
       published_at: this.published_at,
       status: this.status,
@@ -1060,8 +1078,15 @@ export async function wherePoster(value: string): Promise<PostModel[]> {
   return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
 }
 
-export async function whereBody(value: string): Promise<PostModel[]> {
-  const query = DB.instance.selectFrom('posts').where('body', '=', value)
+export async function whereContent(value: string): Promise<PostModel[]> {
+  const query = DB.instance.selectFrom('posts').where('content', '=', value)
+  const results: PostJsonResponse = await query.execute()
+
+  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+}
+
+export async function whereExcerpt(value: string): Promise<PostModel[]> {
+  const query = DB.instance.selectFrom('posts').where('excerpt', '=', value)
   const results: PostJsonResponse = await query.execute()
 
   return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))

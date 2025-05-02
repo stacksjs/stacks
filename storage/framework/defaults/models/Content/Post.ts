@@ -12,7 +12,7 @@ export default {
     useTimestamps: true,
     useSearch: {
       displayable: ['id', 'title', 'author', 'category', 'views', 'status', 'poster'],
-      searchable: ['title', 'author', 'category', 'body'],
+      searchable: ['title', 'author', 'category', 'body', 'excerpt'],
       sortable: ['published_at', 'views', 'comments'],
       filterable: ['category', 'status'],
     },
@@ -58,7 +58,7 @@ export default {
       factory: faker => faker.image.url(),
     },
 
-    body: {
+    content: {
       required: true,
       order: 5,
       fillable: true,
@@ -71,9 +71,23 @@ export default {
       factory: faker => faker.lorem.paragraphs(3),
     },
 
-    views: {
+    excerpt: {
       required: false,
       order: 6,
+      fillable: true,
+      validation: {
+        rule: schema.string().minLength(10).maxLength(500),
+        message: {
+          minLength: 'Excerpt must have a minimum of 10 characters',
+          maxLength: 'Excerpt must have a maximum of 500 characters',
+        },
+      },
+      factory: faker => faker.lorem.paragraph(),
+    },
+
+    views: {
+      required: false,
+      order: 7,
       fillable: true,
       default: 0,
       validation: {

@@ -135,10 +135,10 @@ export const db: Kysely<Database> = new Kysely<Database>({
     // Store query in the database regardless of console logging setting
     // if query logging to database is enabled
 
-    setTimeout(() => {
-      logQuery(event).catch((err) => {
-        log.debug('Failed to log query to database:', err)
-      })
-    }, 1000 * 10)
+    // setTimeout(() => {
+    //   logQuery(event).catch((err) => {
+    //     log.debug('Failed to log query to database:', err)
+    //   })
+    // }, 1000 * 10)
   },
 })

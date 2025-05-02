@@ -203,6 +203,7 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   }
 
   if (isString(foundCallback)) {
+    
     return new Response(foundCallback, {
       headers: {
         'Content-Type': 'application/json',
@@ -334,6 +335,8 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     const { body, status } = await foundCallback
 
     const output = isString(body) ? body : JSON.stringify(body)
+
+    console.log('output', output)
 
     return new Response(output, {
       headers: {

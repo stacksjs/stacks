@@ -191,7 +191,7 @@ export interface Attributes {
   published_at: number
   conversions: number
   poster: string
-  body: string
+  excerpt: string
   status_code: number
   duration_ms: number
   memory_usage: number

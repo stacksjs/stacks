@@ -4,12 +4,13 @@ import { useFetch, useStorage } from '@vueuse/core'
 // Create a persistent categories array using VueUse's useStorage
 const categories = useStorage<Categorizable[]>('categories', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = 'http://localhost:3008'
 
-// Basic fetch function to get all cate gories
+// Basic fetch function to get all categories
 async function fetchCategories() {
-  const { error, data } = useFetch<Categorizable[]>(`${baseURL}/cms/categories`)
+  const { error, data } = await useFetch(`${baseURL}/cms/categories`).get().json()
 
+  const categoryJson = data.value as Categorizable[]
   if (error.value) {
     console.error('Error fetching categories:', error.value)
     return []
@@ -17,7 +18,7 @@ async function fetchCategories() {
 
   // Ensure data is an array before assigning
   if (Array.isArray(data.value)) {
-    categories.value = data.value
+    categories.value = categoryJson
     return data.value
   }
   else {
@@ -27,66 +28,60 @@ async function fetchCategories() {
 }
 
 async function createCategory(category: Partial<Categorizable>) {
-  const { error, data } = useFetch<Categorizable>(`${baseURL}/cms/categories`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+  const { error, data } = await useFetch(`${baseURL}/cms/categories`)
+    .post(JSON.stringify({
       ...category,
       name: category.name,
       description: category.description,
       is_active: category.is_active,
       categorizable_id: category.categorizable_id,
       categorizable_type: category.categorizable_type,
-    }),
-  })
+    }))
+    .json()
 
   if (error.value) {
     console.error('Error creating category:', error.value)
     return null
   }
 
-  if (data.value) {
-    categories.value.push(data.value)
-    return data.value
+  const newCategory = data.value as Categorizable
+  if (newCategory) {
+    categories.value.push(newCategory)
+    return newCategory
   }
   return null
 }
 
 async function updateCategory(id: number, category: Partial<Categorizable>) {
-  const { error, data } = useFetch<Categorizable>(`${baseURL}/cms/categories/${id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+  const { error, data } = await useFetch(`${baseURL}/cms/categories/${id}`)
+    .patch(JSON.stringify({
       ...category,
       name: category.name,
       description: category.description,
       is_active: category.is_active,
-    }),
-  })
+    }))
+    .json()
 
   if (error.value) {
     console.error('Error updating category:', error.value)
     return null
   }
 
-  if (data.value) {
+  const updatedCategory = data.value as Categorizable
+  if (updatedCategory) {
     const index = categories.value.findIndex(c => c.id === id)
     if (index !== -1) {
-      categories.value[index] = data.value
+      categories.value[index] = updatedCategory
     }
-    return data.value
+    return updatedCategory
   }
   return null
 }
 
 async function deleteCategory(id: number) {
-  const { error } = useFetch(`${baseURL}/cms/categories/${id}`, {
-    method: 'DELETE',
-  })
+  const { error } = await useFetch(`${baseURL}/cms/categories/${id}`)
+    .delete()
+    .json()
 
   if (error.value) {
     console.error('Error deleting category:', error.value)

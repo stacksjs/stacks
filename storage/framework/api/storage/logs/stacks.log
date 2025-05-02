@@ -1,0 +1,6 @@
+[2025-05-02T13:09:54.999Z] ERROR: Query failed : 
+Context: {
+  "durationMs": 3.263249999999971,
+  "error": {},
+  "sql": "insert into \"query_logs\" (\"query\", \"normalized_query\", \"duration\", \"connection\", \"status\", \"executed_at\", \"bindings\", \"trace\", \"method\", \"file\", \"line\", \"memory_usage\") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+}

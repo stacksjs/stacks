@@ -1,4 +1,4 @@
-import type { Posts } from '../types'
+import type { Posts, StorePost } from '../types'
 import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent posts array using VueUse's useStorage
@@ -26,7 +26,7 @@ async function fetchPosts() {
   }
 }
 
-async function createPost(post: Partial<Posts>) {
+async function createPost(post: Partial<StorePost>) {
   const { error, data } = useFetch<Posts>(`${baseURL}/cms/posts`, {
     method: 'POST',
     headers: {

@@ -1,6 +1,6 @@
-import { route } from '@stacksjs/router'
 import type { Request } from '@stacksjs/router'
 import type { Response } from '@stacksjs/types'
+import { route } from '@stacksjs/router'
 
 /**
  * This file is the entry point for your application's API routes.

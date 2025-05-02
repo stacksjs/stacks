@@ -2,6 +2,13 @@
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar, Doughnut } from 'vue-chartjs'
+import type { StorePost } from '../../../../functions/types'
+import { usePosts } from '../../../../functions/cms/posts'
+import { useCategories } from '../../../../functions/cms/categories'
+
+const postsModule = usePosts()
+const categoriesModule = useCategories()
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -319,14 +326,7 @@ const posts: Ref<Posts[]> = ref([
 ])
 
 // Categories for filtering
-const categories = [
-  { id: 1, name: 'All Categories' },
-  { id: 2, name: 'Technology' },
-  { id: 3, name: 'Tutorials' },
-  { id: 4, name: 'Reviews' },
-  { id: 5, name: 'News' },
-  { id: 6, name: 'Opinion' }
-]
+const categories = ref<Categorizable[]>([])
 
 // Statuses for filtering
 const statuses = [
@@ -371,8 +371,17 @@ const allTags = computed(() => {
   return Array.from(tagsSet)
 })
 
+onMounted(async () => {
+  await fetchCategories()
+})
+
 function openNewPostModal() {
   showNewPostModal.value = true
+}
+
+async function fetchCategories() {
+  const allCategories = await categoriesModule.fetchCategories()
+  categories.value = allCategories
 }
 
 function closeNewPostModal() {
@@ -389,7 +398,7 @@ function closeNewPostModal() {
   }
 }
 
-function createNewPost() {
+async function createNewPost() {
   // In a real app, this would send data to the server
   const tagsArray = newPost.value.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
 
@@ -400,26 +409,17 @@ function createNewPost() {
     slug: newPost.value.title.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, '-'),
     category: newPost.value.category,
     tags: tagsArray,
+    content: newPost.value.content,
     author: 'Current User', // In a real app, this would be the current user
     published: newPost.value.status === 'Published' ? new Date().toISOString().split('T')[0] : '',
     status: newPost.value.status,
     featured: false,
     poster: newPost.value.poster
-  } as {
-    id: number;
-    title: string;
-    excerpt: string;
-    slug: string;
-    category: string;
-    tags: string[];
-    author: string;
-    published: string;
-    status: string;
-    featured: boolean;
-    poster: string;
-  }
+  } as StorePost
 
-  posts.value.unshift(post)
+  await postsModule.createPost(post)
+  
+  // posts.value.unshift(post)
   closeNewPostModal()
 }
 

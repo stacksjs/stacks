@@ -1489,7 +1489,8 @@ interface RequestDataPost {
   id: number
   title: string
   poster: string
-  body: string
+  content: string
+  excerpt: string
   views: number
   published_at: number
   status: string[] | string
@@ -1504,7 +1505,8 @@ export interface PostRequestType extends Request {
   id: number
   title: string
   poster: string
-  body: string
+  content: string
+  excerpt: string
   views: number
   published_at: number
   status: string[] | string
