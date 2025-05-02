@@ -52,6 +52,6 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/whois": "workspace:*",
-    "aws-cdk-lib": "^2.193.0"
+    "aws-cdk-lib": "^2.194.0"
   }
 }
