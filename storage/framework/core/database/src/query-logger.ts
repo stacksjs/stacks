@@ -58,6 +58,7 @@ export async function logQuery(event: LogEvent): Promise<void> {
     // Log slow or failed queries to the application log
     if (status !== 'completed') {
       const logMethod = status === 'failed' ? 'error' : 'warn'
+      
       log[logMethod](`Query ${status}:`, {
         query: logRecord.query,
         duration: logRecord.duration,
@@ -139,7 +140,7 @@ async function createQueryLogRecord(
     bindings,
     trace,
     ...caller,
-    memory_usage: process.memoryUsage().heapUsed / 1024 / 1024, // in MB
+    memory_usage: require('process').memoryUsage().heapUsed / 1024 / 1024, // in MB
   }
 }
 

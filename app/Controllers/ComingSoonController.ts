@@ -73,7 +73,7 @@ class Controller {
    */
   protected validate(request: Request, rules: Record<string, any>): Promise<void> {
     try {
-      const result = request.validate(rules)
+      // const result = request.validate(rules)
       // Always return a Promise
       return Promise.resolve()
     }
