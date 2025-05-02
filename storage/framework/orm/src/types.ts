@@ -148,6 +148,27 @@ export interface CategorizableModelsTable {
   created_at?: string
   updated_at?: string
 }
+
+export interface QueryLogsTable {
+  id?: number
+  query: string
+  normalized_query?: string
+  duration?: number
+  connection?: string
+  status?: string
+  executed_at?: string
+  model?: string
+  method?: string
+  rows_affected?: number
+  optimization_suggestions?: string
+  affected_tables?: string
+  indexes_used?: string
+  missing_indexes?: string
+  tags?: string
+  bindings?: string
+  created_at?: string
+  updated_at?: string
+}
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
@@ -209,4 +230,5 @@ export interface Database {
   categorizable_models: CategorizableModelsTable
   taggable_models: TaggableModelsTable
   password_resets: PasswordResetsTable
+  query_logs: QueryLogsTable
 }

@@ -1354,6 +1354,21 @@ export async function deleteExistingOrmRoute(): Promise<void> {
   await fs.writeFile(ormRoute, '')
 }
 
+export function generateTraitBasedTables(): string {
+  let text = ''
+  text += '  migrations: MigrationsTable\n'
+  text += '  passkeys: PasskeysTable\n'
+  text += '  commentables: CommentablesTable\n'
+  text += '  taggable: TaggableTable\n'
+  text += '  comment_upvotes: CommenteableUpvotesTable\n'
+  text += '  categorizable: CategorizableTable\n'
+  text += '  categorizable_models: CategorizableModelsTable\n'
+  text += '  taggable_models: TaggableModelsTable\n'
+  text += '  password_resets: PasswordResetsTable\n'
+  text += '  query_logs: QueryLogsTable\n'
+  return text
+}
+
 export async function generateKyselyTypes(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('**/*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
@@ -1419,15 +1434,7 @@ export async function generateKyselyTypes(): Promise<void> {
   }
 
   // Add trait-based tables
-  text += '  migrations: MigrationsTable\n'
-  text += '  passkeys: PasskeysTable\n'
-  text += '  commentables: CommentablesTable\n'
-  text += '  taggable: TaggableTable\n'
-  text += '  comment_upvotes: CommenteableUpvotesTable\n'
-  text += '  categorizable: CategorizableTable\n'
-  text += '  categorizable_models: CategorizableModelsTable\n'
-  text += '  taggable_models: TaggableModelsTable\n'
-  text += '  password_resets: PasswordResetsTable\n'
+  text += generateTraitBasedTables()
   text += '}\n'
 
   const file = Bun.file(path.frameworkPath('orm/src/types.ts'))
