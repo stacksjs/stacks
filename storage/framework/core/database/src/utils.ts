@@ -139,6 +139,6 @@ export const db: Kysely<Database> = new Kysely<Database>({
       logQuery(event).catch((err) => {
         log.debug('Failed to log query to database:', err)
       })
-    }, 1000 * 60)
+    }, 1000 * 10)
   },
 })
