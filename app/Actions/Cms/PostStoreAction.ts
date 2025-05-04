@@ -22,7 +22,7 @@ export default new Action({
     const data = {
       author_id: author.id,
       title: request.get('title'),
-      body: request.get('body'),
+      content: request.get('content'),
       status: request.get('status'),
       poster: request.get('poster'),
       views: 0,

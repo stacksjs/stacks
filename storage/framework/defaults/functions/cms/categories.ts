@@ -7,7 +7,7 @@ const categories = useStorage<Categorizable[]>('categories', [])
 const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all categories
-async function fetchCategories() {
+async function fetchCategories(): Promise<Categorizable[]> {
   const { error, data } = await useFetch(`${baseURL}/cms/categories`).get().json()
 
   const categoryJson = data.value as Categorizable[]
@@ -17,12 +17,12 @@ async function fetchCategories() {
   }
 
   // Ensure data is an array before assigning
-  if (Array.isArray(data.value)) {
+  if (Array.isArray(categoryJson)) {
     categories.value = categoryJson
-    return data.value
+    return categoryJson
   }
   else {
-    console.error('Expected array of categories but received:', typeof data.value)
+    console.error('Expected array of categories but received:', typeof categoryJson)
     return []
   }
 }
