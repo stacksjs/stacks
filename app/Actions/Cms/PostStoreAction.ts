@@ -11,8 +11,6 @@ export default new Action({
   method: 'POST',
   requestFile: 'PostRequest',
   async handle(request: PostRequestType) {
-    return request.all()
-    
     await request.validate()
 
     const categoryName = request.get('category')

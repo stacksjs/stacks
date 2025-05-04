@@ -2,13 +2,11 @@ import type { Model, Options, Route, RouteParam, ServeOptions } from '@stacksjs/
 // import type { RateLimitResult } from 'ts-rate-limiter'
 
 import process from 'node:process'
-import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { getModelName, traitInterfaces } from '@stacksjs/orm'
-import { extname, path } from '@stacksjs/path'
+import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { camelCase } from '@stacksjs/strings'
-import { isNumber } from '@stacksjs/validation'
 
 // import { RateLimiter } from 'ts-rate-limiter'
 import { route, staticRoute } from '.'
@@ -133,9 +131,7 @@ function extractDynamicSegments(routePattern: string, path: string): RouteParam 
   return dynamicSegments
 }
 
-type CallbackWithStatus = Route['callback'] & { status: number }
-
-async function execute(foundRoute: Route, req: Request, { statusCode }: Options) {
+async function execute(foundRoute: Route, req: Request, _options: Options) {
   const foundCallback = await route.resolveCallback(foundRoute.callback)
 
   const middlewarePayload = await executeMiddleware(foundRoute)
@@ -165,44 +161,18 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     })
   }
 
-  const { status, body } = foundCallback
+  // foundCallback is now a ResponseData object from response.ts
+  const { status, headers, body } = foundCallback
 
-  // Special handling for 500 errors to show error page
-  if (status === 500) {
-    const file = Bun.file(path.corePath('error-handling/src/views/500.html'))
-    return file.text().then((htmlContent) => {
-      const modifiedHtml = htmlContent
-        .replace('{{ERROR_MESSAGE}}', String(body))
-        .replace('{{STACK_TRACE}}', foundCallback.stack || '')
-
-      return new Response(modifiedHtml, {
-        headers: {
-          'Content-Type': 'text/html',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-        status: 500,
-      })
-    })
-  }
-
-  // All other responses as JSON
-  return new Response(JSON.stringify(body), {
+  // Return the response with the exact body from response.ts
+  return new Response(body, {
     headers: {
-      'Content-Type': 'application/json',
+      ...headers,
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': '*',
     },
     status,
   })
-}
-
-function noCache(response: Response): Response {
-  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
-  response.headers.set('Pragma', 'no-cache')
-  response.headers.set('Expires', '0')
-
-  return response
 }
 
 async function applyToAllRequests(operation: 'addBodies' | 'addParam' | 'addHeaders' | 'addQuery', data: any): Promise<void> {
@@ -305,13 +275,4 @@ function isString(val: unknown): val is string {
 
 function isObjectNotEmpty(obj: object): boolean {
   return Object.keys(obj).length > 0
-}
-
-// eslint-disable-next-line ts/no-unsafe-function-type
-function isFunction(val: unknown): val is Function {
-  return typeof val === 'function'
-}
-
-function isObject(val: unknown): val is object {
-  return typeof val === 'object'
 }

@@ -1,13 +1,13 @@
 import type { Action } from '@stacksjs/actions'
-import type { ErrorResponse, Job, RedirectCode, RequestInstance, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
-import { db } from '@stacksjs/database'
+import type { Job, RedirectCode, RequestInstance, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
-import { customValidate, isObjectNotEmpty } from '@stacksjs/validation'
+import { customValidate, isObject, isObjectNotEmpty } from '@stacksjs/validation'
 import { staticRoute } from './'
+import { response } from './response'
 import { extractDefaultRequest, findRequestInstance } from './utils'
 
 type ActionPath = string
@@ -314,13 +314,6 @@ export class Router implements RouterInterface {
     const newPath = actionModule.default.path ?? originalPath
     this.updatePathIfNeeded(newPath, originalPath)
 
-    // we need to make sure the validation happens here
-    // to do so, we need to:
-    // find the ./app/Models/* file
-    // then check via a regex which model attributes validations to utilize by checking what's in between t
-    // then validate
-    // if succeeds, run the handle
-    // if fails, return validation error
     let requestInstance: RequestInstance
 
     if (actionModule.default.requestFile) {
@@ -336,55 +329,29 @@ export class Router implements RouterInterface {
 
       const successResponse = await actionModule.default.handle(requestInstance)
 
-      return { status: 200, body: successResponse }
+      // Check if response is already formatted
+      if (
+        isObject(successResponse)
+        && 'status' in successResponse
+        && 'headers' in successResponse
+        && 'body' in successResponse
+      ) {
+        return successResponse
+      }
+
+      // If not formatted, format it as success
+      return response.success(successResponse)
     }
     catch (error: any) {
-      const errorResponse = await this.handleErrors(error)
+      // Use the response helper for errors
+      if (error.status === 422)
+        return response.json(JSON.parse(error.message), 422)
 
-      return errorResponse // or handle it as needed
+      if (!error.status)
+        return response.error(error.message)
+
+      return response.error(error.message, error.status)
     }
-  }
-
-  private async handleErrors(error: ErrorResponse): Promise<{ status: number, body: string, stack: string }> {
-    // Capture and log the stack trace if available
-    const stackTrace = error.stack || 'No stack trace available'
-
-    this.storeError(error)
-
-    this.logError(error)
-
-    // Return structured error response
-    if (error.status === 422) {
-      return { status: 422, body: JSON.parse(error.message), stack: stackTrace }
-    }
-
-    if (!error.status) {
-      return { status: 500, body: error.message, stack: stackTrace }
-    }
-
-    return { status: error.status, body: error.message, stack: stackTrace }
-  }
-
-  private async storeError(error: ErrorResponse): Promise<void> {
-    // Capture and log the stack trace if available
-    const stackTrace = error.stack || 'No stack trace available'
-
-    await db
-      .insertInto('errors')
-      .values({
-        type: error.name || 'Unknown Error', // Use error name or default to 'Unknown Error'
-        message: error.message || 'No message available',
-        stack: stackTrace || 'Unknown Stack', // Use stackTrace or null if not available
-        status: typeof error.status === 'number' ? error.status : 500, // Ensure status is a number, default to 500
-      })
-      .execute()
-  }
-
-  private async logError(error: ErrorResponse): Promise<void> {
-    // Capture and log the stack trace if available
-    const stackTrace = error.stack || 'No stack trace available'
-
-    log.debug(stackTrace)
   }
 
   private normalizePath(path: string): string {

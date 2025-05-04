@@ -4,3 +4,9 @@ Context: {
   "error": {},
   "sql": "insert into \"query_logs\" (\"query\", \"normalized_query\", \"duration\", \"connection\", \"status\", \"executed_at\", \"bindings\", \"trace\", \"method\", \"file\", \"line\", \"memory_usage\") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 }
+[2025-05-04T14:03:47.729Z] ERROR: Query failed : 
+Context: {
+  "durationMs": 0.49095800000031886,
+  "error": {},
+  "sql": "insert into \"posts\" (\"author_id\", \"title\", \"poster\", \"views\", \"published_at\", \"status\", \"created_at\", \"updated_at\") values (?, ?, ?, ?, ?, ?, ?, ?) returning *"
+}
