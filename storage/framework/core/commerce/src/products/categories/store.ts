@@ -1,6 +1,16 @@
-import type { CategoryJsonResponse, NewCategory } from '@stacksjs/orm'
-import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { slug } from '@stacksjs/strings'
+
+export interface CategorizableTable {
+  id: number
+  name: string
+  slug: string
+  description?: string
+  is_active: boolean
+  categorizable_type: string
+  created_at?: string
+  updated_at?: string
+}
 
 /**
  * Create a new category
@@ -8,17 +18,17 @@ import { db } from '@stacksjs/database'
  * @param data The category data to store
  * @returns The newly created category record
  */
-export async function store(data: NewCategory): Promise<CategoryJsonResponse> {
+export async function store(data: CategorizableTable): Promise<CategorizableTable> {
   try {
     const categoryData = {
-      ...data,
-      uuid: randomUUIDv7(),
-      is_active: data.is_active ?? true,
-      display_order: data.display_order ?? 0,
+      name: data.name,
+      slug: data.slug,
+      is_active: data.is_active,
+      categorizable_type: data.categorizable_type,
     }
 
     const result = await db
-      .insertInto('categories')
+      .insertInto('categorizable')
       .values(categoryData)
       .returningAll()
       .executeTakeFirst()
@@ -39,4 +49,27 @@ export async function store(data: NewCategory): Promise<CategoryJsonResponse> {
 
     throw error
   }
+}
+
+export async function findOrCreateByName(data: Omit<CategorizableTable, 'id' | 'slug'>): Promise<CategorizableTable> {
+  if (!data.name)
+    throw new Error('Name is required')
+
+  const existingCategory = await db
+    .selectFrom('categorizable')
+    .selectAll()
+    .where('name', '=', data.name)
+    .executeTakeFirst()
+
+  if (existingCategory)
+    return existingCategory
+
+  const categoryData: CategorizableTable = {
+    name: data.name,
+    slug: slug(data.name),
+    is_active: data.is_active ?? true,
+    categorizable_type: data.categorizable_type ?? 'default',
+  }
+
+  return await store(categoryData)
 }

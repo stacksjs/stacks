@@ -23,6 +23,7 @@ export {
 
 // Export all functions from store.ts
 export {
+  findOrCreateByName,
   store,
 } from './store'
 

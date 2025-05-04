@@ -73,7 +73,7 @@ export interface PasswordResetsTable {
 }
 
 export interface PasskeysTable {
-  id?: number
+  id: number
   cred_public_key: string
   user_id: number
   webauthn_user_id: string
@@ -89,7 +89,7 @@ export interface PasskeysTable {
 }
 
 export interface CommentablesTable {
-  id?: number
+  id: number
   title: string
   body: string
   status: string
@@ -103,7 +103,7 @@ export interface CommentablesTable {
 }
 
 export interface CommentableUpvotesTable {
-  id?: number
+  id: number
   user_id: number
   upvoteable_id: number
   upvoteable_type: string
@@ -111,7 +111,7 @@ export interface CommentableUpvotesTable {
 }
 
 export interface CategorizableTable {
-  id?: number
+  id: number
   name: string
   slug: string
   description?: string
@@ -122,7 +122,7 @@ export interface CategorizableTable {
 }
 
 export interface TaggableTable {
-  id?: number
+  id: number
   name: string
   slug: string
   description?: string
@@ -133,7 +133,7 @@ export interface TaggableTable {
 }
 
 export interface TaggableModelsTable {
-  id?: number
+  id: number
   tag_id: number
   taggable_type: string
   created_at?: string
@@ -141,7 +141,7 @@ export interface TaggableModelsTable {
 }
 
 export interface CategorizableModelsTable {
-  id?: number
+  id: number
   category_id: number
   categorizable_type: string
   categorizable_id: number
@@ -150,7 +150,7 @@ export interface CategorizableModelsTable {
 }
 
 export interface QueryLogsTable {
-  id?: number
+  id: number
   query: string
   normalized_query: string
   duration: number

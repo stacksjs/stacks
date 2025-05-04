@@ -2,6 +2,7 @@ import type { PostRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { authors, posts } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
+import { categories } from 'commerce/src/products'
 import { findOrCreateMany } from '../../../storage/framework/core/cms/src/tags/store'
 
 export default new Action({
@@ -12,12 +13,17 @@ export default new Action({
   async handle(request: PostRequestType) {
     await request.validate()
 
-    const categoryIds = JSON.parse(request.get('category_ids')) as number[]
-    const tagNames = JSON.parse(request.get('tag_names')) as string[]
+    const categoryName = request.get('category')
+    const tagNames = JSON.parse(request.get('tags')) as string[]
+
+    const category = await categories.findOrCreateByName({
+      name: categoryName,
+      categorizable_type: 'posts',
+    })
 
     const author = await authors.findOrCreate({
-      name: request.get('author_name'),
-      email: request.get('author_email'),
+      name: 'Current User',
+      email: 'current@user.com',
     })
 
     // Process tags using the dedicated tag management function
@@ -26,6 +32,8 @@ export default new Action({
     const data = {
       author_id: author.id,
       title: request.get('title'),
+      excerpt: request.get('excerpt'),
+      slug: request.get('slug'),
       content: request.get('content'),
       status: request.get('status'),
       poster: request.get('poster'),
@@ -35,7 +43,7 @@ export default new Action({
 
     const model = await posts.store(data)
 
-    await posts.attach(model.id, 'categorizable_models', categoryIds)
+    await posts.attach(model.id, 'categorizable_models', [category.id])
     await posts.attach(model.id, 'taggable_models', tagIds)
 
     return response.json(model)

@@ -27,15 +27,9 @@ async function fetchPosts() {
   }
 }
 
-async function createPost(post: Partial<StorePost>) {
+async function createPost(post: Partial<StorePost>): Promise<Posts | null> {
   const { error, data } = await useFetch(`${baseURL}/cms/posts`)
-    .post(JSON.stringify({
-      ...post,
-      author_name: post.author_name,
-      author_email: post.author_email,
-      category_ids: post.category_ids,
-      tag_ids: post.tag_ids,
-    }))
+    .post(JSON.stringify(post))
     .json()
 
   if (error.value) {
@@ -45,7 +39,7 @@ async function createPost(post: Partial<StorePost>) {
 
   const newPost = data.value as Posts
   if (newPost) {
-    posts.value.push(newPost)
+    posts.value.unshift(newPost)
     return newPost
   }
   return null
