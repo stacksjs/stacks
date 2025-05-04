@@ -55,7 +55,7 @@
     "@aws-sdk/client-iam": "^3.799.0",
     "@aws-sdk/client-lambda": "^3.799.0",
     "@aws-sdk/client-route-53-domains": "^3.799.0",
-    "@aws-sdk/client-s3": "^3.800.0",
+    "@aws-sdk/client-s3": "^3.802.0",
     "@aws-sdk/client-ses": "^3.799.0",
     "@aws-sdk/client-sesv2": "^3.800.0",
     "@aws-sdk/client-ssm": "^3.799.0",
