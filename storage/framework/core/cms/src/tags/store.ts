@@ -10,6 +10,53 @@ interface TagData {
 }
 
 /**
+ * Find or create multiple tags by their names
+ *
+ * @param names Array of tag names to process
+ * @param taggableType The type of model these tags belong to
+ * @returns Array of tag IDs
+ */
+export async function findOrCreateMany(names: string[], taggableType: string): Promise<number[]> {
+  const tagIds: number[] = []
+
+  for (const name of names) {
+    const tag = await findOrCreate({ name, taggable_type: taggableType })
+    tagIds.push(tag.id!)
+  }
+
+  return tagIds
+}
+
+/**
+ * Find or create a single tag
+ *
+ * @param data The tag data
+ * @returns The found or created tag
+ */
+export async function findOrCreate(data: TagData): Promise<TaggableTable> {
+  try {
+    // Try to find existing tag
+    const existingTag = await db
+      .selectFrom('taggable')
+      .selectAll()
+      .where('name', '=', data.name)
+      .executeTakeFirst()
+
+    if (existingTag)
+      return existingTag
+
+    // If not found, create new tag
+    return await store(data)
+  }
+  catch (error) {
+    if (error instanceof Error) {
+      throw new TypeError(`Failed to find or create tag: ${error.message}`)
+    }
+    throw error
+  }
+}
+
+/**
  * Create a new tag
  *
  * @param data The tag data to store
@@ -25,7 +72,6 @@ export async function store(data: TagData): Promise<TaggableTable> {
       description: data.description,
       is_active: data.is_active ?? true,
       created_at: now.toDateString(),
-      taggable_id: data.taggable_id,
       taggable_type: data.taggable_type,
     }
 

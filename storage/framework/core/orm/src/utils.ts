@@ -1360,7 +1360,7 @@ export function generateTraitBasedTables(): string {
   text += '  passkeys: PasskeysTable\n'
   text += '  commentables: CommentablesTable\n'
   text += '  taggable: TaggableTable\n'
-  text += '  comment_upvotes: CommenteableUpvotesTable\n'
+  text += '  comment_upvotes: CommentableUpvotesTable\n'
   text += '  categorizable: CategorizableTable\n'
   text += '  categorizable_models: CategorizableModelsTable\n'
   text += '  taggable_models: TaggableModelsTable\n'

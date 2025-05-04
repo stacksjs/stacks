@@ -203,7 +203,6 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
   }
 
   if (isString(foundCallback)) {
-    
     return new Response(foundCallback, {
       headers: {
         'Content-Type': 'application/json',

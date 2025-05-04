@@ -7,7 +7,6 @@ import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
 import { BunWorkerDialect } from 'kysely-bun-worker'
 import { createPool } from 'mysql2'
 import { Pool } from 'pg'
-import { logQuery } from './query-logger'
 
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded

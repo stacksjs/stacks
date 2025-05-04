@@ -230,7 +230,7 @@ export interface Database {
   passkeys: PasskeysTable
   commentables: CommentablesTable
   taggable: TaggableTable
-  comment_upvotes: CommenteableUpvotesTable
+  comment_upvotes: CommentableUpvotesTable
   categorizable: CategorizableTable
   categorizable_models: CategorizableModelsTable
   taggable_models: TaggableModelsTable
