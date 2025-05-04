@@ -136,18 +136,16 @@ function extractDynamicSegments(routePattern: string, path: string): RouteParam 
 type CallbackWithStatus = Route['callback'] & { status: number }
 
 async function execute(foundRoute: Route, req: Request, { statusCode }: Options) {
-  const foundCallback: CallbackWithStatus = await route.resolveCallback(foundRoute.callback)
+  const foundCallback = await route.resolveCallback(foundRoute.callback)
 
   const middlewarePayload = await executeMiddleware(foundRoute)
-
   if (
     middlewarePayload !== null
     && typeof middlewarePayload === 'object'
     && Object.keys(middlewarePayload).length > 0
   ) {
     const { status, message } = middlewarePayload
-
-    return new Response(`<html><body><h1>${message}</h1<pre></pre></body></html>`, {
+    return new Response(`<html><body><h1>${message}</h1></body></html>`, {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -157,18 +155,8 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     })
   }
 
-  if (!statusCode)
-    statusCode = 200
-
-  if (foundRoute?.method === 'GET' && (statusCode === 301 || statusCode === 302)) {
-    const callback = String(foundCallback)
-    const response = Response.redirect(callback, statusCode)
-
-    return noCache(response)
-  }
-
   if (foundRoute?.method !== req.method) {
-    return new Response('<html><body><h1>Method not allowed!</h1<pre></pre></body></html>', {
+    return new Response('<html><body><h1>Method not allowed!</h1></body></html>', {
       status: 405,
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -177,184 +165,35 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     })
   }
 
-  // Check if it's a path to an HTML file
-  if (isString(foundCallback) && extname(foundCallback) === '.html') {
-    try {
-      const fileContent = Bun.file(foundCallback)
+  const { status, body } = foundCallback
 
-      return new Response(fileContent, {
+  // Special handling for 500 errors to show error page
+  if (status === 500) {
+    const file = Bun.file(path.corePath('error-handling/src/views/500.html'))
+    return file.text().then((htmlContent) => {
+      const modifiedHtml = htmlContent
+        .replace('{{ERROR_MESSAGE}}', String(body))
+        .replace('{{STACK_TRACE}}', foundCallback.stack || '')
+
+      return new Response(modifiedHtml, {
         headers: {
           'Content-Type': 'text/html',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Headers': '*',
         },
-      })
-    }
-    catch (error) {
-      handleError('Error reading the HTML file', error)
-      return new Response('Error reading the HTML file', {
         status: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
       })
-    }
-  }
-
-  if (isString(foundCallback)) {
-    return new Response(foundCallback, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-      },
-      status: 200,
     })
   }
 
-  if (isNumber(foundCallback)) {
-    return new Response(String(foundCallback), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-      },
-      status: 200,
-    })
-  }
-
-  if (foundCallback === undefined || foundCallback === null) {
-    return new Response('', {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-      },
-      status: 204,
-    })
-  }
-
-  if (isFunction(foundCallback)) {
-    const result = foundCallback()
-
-    return new Response(JSON.stringify(result), {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-      },
-    })
-  }
-
-  if (isObject(foundCallback) && foundCallback.status) {
-    if (foundCallback.status === 401) {
-      const { body } = await foundCallback
-
-      const { error } = JSON.parse(body)
-
-      return new Response(error, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-        status: 401,
-      })
-    }
-
-    if (foundCallback.status === 404) {
-      const { body } = await foundCallback
-
-      return new Response(body, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-        status: 404,
-      })
-    }
-
-    if (foundCallback.status === 403) {
-      const { body } = await foundCallback
-
-      const { error } = JSON.parse(body)
-
-      return new Response(`<html><body><h1>${error}</h1<pre></pre></body></html>`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-        status: 403,
-      })
-    }
-
-    if (foundCallback.status === 422) {
-      const { status, ...rest } = await foundCallback
-
-      const { body } = rest
-
-      return new Response(JSON.stringify(body), {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-        status: 422,
-      })
-    }
-
-    if (foundCallback.status === 500) {
-      const { status, ...rest } = await foundCallback
-
-      const { errors, stack } = rest
-
-      const file = Bun.file(path.corePath('error-handling/src/views/500.html'))
-
-      return file.text().then((htmlContent) => {
-        // Replace the placeholder with the actual error message
-        const modifiedHtml = htmlContent.replace('{{ERROR_MESSAGE}}', errors)
-          .replace('{{STACK_TRACE}}', stack)
-
-        return new Response(modifiedHtml, {
-          headers: {
-            'Content-Type': 'text/html',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Headers': '*',
-          },
-          status: 500,
-        })
-      })
-    }
-  }
-
-  if (isObject(foundCallback)) {
-    const { body, status } = await foundCallback
-
-    const output = isString(body) ? body : JSON.stringify(body)
-
-    console.log('output', output)
-
-    return new Response(output, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-      },
-      status: status || 200,
-    })
-  }
-
-  // If no known type matched, return a generic error.
-  return new Response('Unknown callback type.', {
+  // All other responses as JSON
+  return new Response(JSON.stringify(body), {
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': '*',
     },
-    status: 500,
+    status,
   })
 }
 

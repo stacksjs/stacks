@@ -334,7 +334,9 @@ export class Router implements RouterInterface {
       if (isObjectNotEmpty(actionModule.default.validations) && requestInstance)
         await customValidate(actionModule.default.validations, requestInstance.all())
 
-      return await actionModule.default.handle(requestInstance)
+      const successResponse = await actionModule.default.handle(requestInstance)
+
+      return { status: 200, body: successResponse }
     }
     catch (error: any) {
       const errorResponse = await this.handleErrors(error)
@@ -372,7 +374,7 @@ export class Router implements RouterInterface {
       .values({
         type: error.name || 'Unknown Error', // Use error name or default to 'Unknown Error'
         message: error.message || 'No message available',
-        stack: stackTrace || 'Unkown Stack', // Use stackTrace or null if not available
+        stack: stackTrace || 'Unknown Stack', // Use stackTrace or null if not available
         status: typeof error.status === 'number' ? error.status : 500, // Ensure status is a number, default to 500
       })
       .execute()

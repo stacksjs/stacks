@@ -125,5 +125,19 @@ export default {
       },
       factory: faker => faker.helpers.arrayElement(['published', 'draft', 'archived']),
     },
+
+    featured: {
+      required: false,
+      order: 10,
+      fillable: true,
+      default: false,
+      validation: {
+        rule: schema.boolean(),
+        message: {
+          boolean: 'Featured must be a boolean value',
+        },
+      },
+      factory: faker => faker.datatype.boolean(),
+    },
   },
 } satisfies Model

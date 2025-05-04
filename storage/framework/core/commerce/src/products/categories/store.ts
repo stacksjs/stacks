@@ -18,7 +18,7 @@ export interface CategorizableTable {
  * @param data The category data to store
  * @returns The newly created category record
  */
-export async function store(data: CategorizableTable): Promise<CategorizableTable> {
+export async function store(data: Omit<CategorizableTable, 'id' | 'created_at' | 'updated_at'>): Promise<CategorizableTable> {
   try {
     const categoryData = {
       name: data.name,
@@ -36,7 +36,7 @@ export async function store(data: CategorizableTable): Promise<CategorizableTabl
     if (!result)
       throw new Error('Failed to create category')
 
-    return result
+    return result as CategorizableTable
   }
   catch (error) {
     if (error instanceof Error) {
@@ -51,7 +51,7 @@ export async function store(data: CategorizableTable): Promise<CategorizableTabl
   }
 }
 
-export async function findOrCreateByName(data: Omit<CategorizableTable, 'id' | 'slug'>): Promise<CategorizableTable> {
+export async function findOrCreateByName(data: Partial<CategorizableTable>): Promise<CategorizableTable> {
   if (!data.name)
     throw new Error('Name is required')
 
@@ -62,9 +62,9 @@ export async function findOrCreateByName(data: Omit<CategorizableTable, 'id' | '
     .executeTakeFirst()
 
   if (existingCategory)
-    return existingCategory
+    return existingCategory as CategorizableTable
 
-  const categoryData: CategorizableTable = {
+  const categoryData = {
     name: data.name,
     slug: slug(data.name),
     is_active: data.is_active ?? true,
