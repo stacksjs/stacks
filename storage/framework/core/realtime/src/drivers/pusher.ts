@@ -1,4 +1,4 @@
-import type { RealtimeDriver } from '../types'
+import type { RealtimeDriver, ChannelType } from '../types'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import Pusher from 'pusher'
@@ -45,7 +45,6 @@ export class PusherDriver implements RealtimeDriver {
       throw new Error('Pusher not initialized. Call connect() first.')
     }
 
-    this.pusher.trigger(channel, 'message', callback)
     this.channels.set(channel, callback)
     log.info(`Subscribed to channel: ${channel}`)
   }
@@ -66,6 +65,22 @@ export class PusherDriver implements RealtimeDriver {
 
     this.pusher.trigger(channel, 'message', data)
     log.info(`Published to channel: ${channel}`)
+  }
+
+  broadcast(channel: string, event: string, data?: any, type: ChannelType = 'public'): void {
+    if (!this.pusher) {
+      throw new Error('Pusher not initialized. Call connect() first.')
+    }
+
+    const channelName = type === 'public' ? channel : `${type}-${channel}`
+
+    this.pusher.trigger(channelName, event, {
+      event,
+      channel: channelName,
+      data,
+    })
+
+    log.info(`Broadcasted event "${event}" to ${type} channel: ${channel}`)
   }
 
   isConnected(): boolean {

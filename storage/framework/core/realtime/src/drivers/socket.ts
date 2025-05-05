@@ -1,4 +1,4 @@
-import type { RealtimeDriver } from '../types'
+import type { RealtimeDriver, ChannelType } from '../types'
 import { log } from '@stacksjs/logging'
 import { Server } from 'socket.io'
 
@@ -26,6 +26,13 @@ export class SocketDriver implements RealtimeDriver {
 
       socket.on('disconnect', () => {
         log.info('Client disconnected:', socket.id)
+      })
+
+      socket.on('subscribe', (channel: string, auth: any) => {
+        if (channel.startsWith('private-') || channel.startsWith('presence-')) {
+          socket.join(channel)
+          log.info(`Client ${socket.id} joined ${channel}`)
+        }
       })
     })
 
@@ -64,6 +71,30 @@ export class SocketDriver implements RealtimeDriver {
     }
 
     this.io.emit(channel, data)
+  }
+
+  broadcast(channel: string, event: string, data?: any, type: ChannelType = 'public'): void {
+    if (!this.io) {
+      throw new Error('Socket.IO server not initialized. Call connect() first.')
+    }
+
+    const channelName = type === 'public' ? channel : `${type}-${channel}`
+    
+    if (type !== 'public') {
+      const room = this.io.sockets.adapter.rooms.get(channelName)
+      if (!room) {
+        log.warn(`No clients connected to ${type} channel: ${channel}`)
+        return
+      }
+    }
+
+    this.io.to(channelName).emit(event, {
+      event,
+      channel: channelName,
+      data,
+    })
+
+    log.info(`Broadcasted event "${event}" to ${type} channel: ${channel}`)
   }
 
   isConnected(): boolean {
