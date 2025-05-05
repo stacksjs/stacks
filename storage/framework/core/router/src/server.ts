@@ -14,7 +14,7 @@ import { config } from '@stacksjs/config'
 import { route, staticRoute } from '.'
 import { middlewares } from './middleware'
 import { request as RequestParam } from './request'
-import { BunSocket } from '@stacksjs/realtime'
+import { BunSocket, handleWebSocketRequest, setBunSocket } from '@stacksjs/realtime'
 
 export async function serve(options: ServeOptions = {}): Promise<void> {
   const hostname = options.host || 'localhost'
@@ -29,8 +29,10 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
     ? new BunSocket() 
     : null
 
-  if (bunSocket)
+  if (bunSocket) {
     await bunSocket.connect()
+    setBunSocket(bunSocket)
+  }
 
   const server = Bun.serve({
     static: staticFiles,
@@ -41,17 +43,12 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
     async fetch(req: Request, server) {
       const url = new URL(req.url)
       
-      // Handle WebSocket upgrade for the realtime endpoint
-      if (url.pathname === '/realtime' && bunSocket) {
-        const success = server.upgrade(req)
-        return success
-          ? undefined
-          : new Response('WebSocket upgrade failed', { status: 400 })
-      }
+      // Handle WebSocket connections at /ws endpoint
+      if (url.pathname === '/ws')
+        return handleWebSocketRequest(req, server)
 
       // Handle regular HTTP requests with body parsing
       const reqBody = await req.text()
-      
       return serverResponse(req, reqBody)
     },
 

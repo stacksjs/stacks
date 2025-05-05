@@ -4,6 +4,7 @@ import { RealtimeFactory } from './factory'
 
 export * from './drivers'
 export * from './types'
+export * from './ws'
 
 class Realtime {
   private driver: RealtimeDriver
