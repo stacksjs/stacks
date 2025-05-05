@@ -130,14 +130,13 @@ export default {
       required: false,
       order: 10,
       fillable: true,
-      default: false,
       validation: {
-        rule: schema.boolean(),
+        rule: schema.number(),
         message: {
-          boolean: 'Featured must be a boolean value',
+          number: 'Featured must be a number value',
         },
       },
-      factory: faker => faker.datatype.boolean(),
+      factory: faker => faker.number.int({ min: 0, max: 1 }),
     },
   },
 } satisfies Model

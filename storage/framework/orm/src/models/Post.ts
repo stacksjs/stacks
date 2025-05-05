@@ -18,6 +18,7 @@ export interface PostsTable {
   views?: number
   published_at?: number
   status: string | string[]
+  is_featured?: number
   uuid?: string
 
   created_at?: string
@@ -53,7 +54,7 @@ export type PostUpdate = Updateable<PostWrite>
 
 export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
-  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'poster', 'content', 'excerpt', 'views', 'published_at', 'status', 'uuid', 'author_id']
+  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'poster', 'content', 'excerpt', 'views', 'published_at', 'status', 'is_featured', 'uuid', 'author_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
   protected attributes = {} as PostJsonResponse
   protected originalAttributes = {} as PostJsonResponse
@@ -222,6 +223,10 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return this.attributes.status
   }
 
+  get is_featured(): number | undefined {
+    return this.attributes.is_featured
+  }
+
   get created_at(): string | undefined {
     return this.attributes.created_at
   }
@@ -260,6 +265,10 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
   set status(value: string | string[]) {
     this.attributes.status = value
+  }
+
+  set is_featured(value: number) {
+    this.attributes.is_featured = value
   }
 
   set updated_at(value: string) {
@@ -854,6 +863,14 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance
   }
 
+  static whereIsFeatured(value: string): PostModel {
+    const instance = new PostModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('is_featured', '=', value)
+
+    return instance
+  }
+
   static whereIn<V = number>(column: keyof PostsTable, values: V[]): PostModel {
     const instance = new PostModel(undefined)
 
@@ -991,6 +1008,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       views: this.views,
       published_at: this.published_at,
       status: this.status,
+      is_featured: this.is_featured,
 
       created_at: this.created_at,
 
@@ -1108,6 +1126,13 @@ export async function wherePublishedAt(value: number): Promise<PostModel[]> {
 
 export async function whereStatus(value: string | string[]): Promise<PostModel[]> {
   const query = DB.instance.selectFrom('posts').where('status', '=', value)
+  const results: PostJsonResponse = await query.execute()
+
+  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+}
+
+export async function whereIsFeatured(value: number): Promise<PostModel[]> {
+  const query = DB.instance.selectFrom('posts').where('is_featured', '=', value)
   const results: PostJsonResponse = await query.execute()
 
   return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))

@@ -1494,6 +1494,7 @@ interface RequestDataPost {
   views: number
   published_at: number
   status: string[] | string
+  is_featured: number
   author_id: number
   created_at?: string
   updated_at?: string
@@ -1510,6 +1511,7 @@ export interface PostRequestType extends Request {
   views: number
   published_at: number
   status: string[] | string
+  is_featured: number
   author_id: number
   created_at?: string
   updated_at?: string

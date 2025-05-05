@@ -20,6 +20,7 @@ interface RequestDataPost {
   views: number
   published_at: number
   status: string[] | string
+  is_featured: number
   author_id: number
   created_at?: string
   updated_at?: string
@@ -33,6 +34,7 @@ export class PostRequest extends Request<RequestDataPost> implements PostRequest
   public views = 0
   public published_at = 0
   public status = []
+  public is_featured = 0
   public author_id = 0
   public created_at = ''
   public updated_at = ''

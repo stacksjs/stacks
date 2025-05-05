@@ -1,7 +1,7 @@
 import type { NewPost, PostJsonResponse } from '@stacksjs/orm'
+import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
-import { randomUUIDv7 } from 'bun'
 
 /**
  * Create a new post
