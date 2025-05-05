@@ -1,13 +1,11 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { Stripe } from '@stacksjs/payments'
-import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import type { AuthorModel } from './Author'
 import type { CustomerModel } from './Customer'
 import type { DeploymentModel } from './Deployment'
 import type { DriverModel } from './Driver'
-import type { PaymentMethodModel, PaymentMethodsTable } from './PaymentMethod'
-import type { PaymentTransactionModel, PaymentTransactionsTable } from './PaymentTransaction'
+import type { PaymentMethodModel } from './PaymentMethod'
+import type { PaymentTransactionModel } from './PaymentTransaction'
 import type { SubscriberModel } from './Subscriber'
 import type { SubscriptionModel } from './Subscription'
 
@@ -20,7 +18,6 @@ import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
 import { DB } from '@stacksjs/orm'
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, manageTransaction } from '@stacksjs/payments'
 
 import { BaseOrm } from '../utils/base'
 
@@ -31,7 +28,6 @@ export interface UsersTable {
   job_title: string
   password: string
   public_passkey?: string
-  stripe_id?: string
   uuid?: string
 
   created_at?: string
@@ -67,7 +63,7 @@ export type UserUpdate = Updateable<UserWrite>
 
 export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> {
   private readonly hidden: Array<keyof UserJsonResponse> = ['password']
-  private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key', 'team_id']
+  private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'job_title', 'password', 'uuid', 'two_factor_secret', 'public_key', 'team_id']
   private readonly guarded: Array<keyof UserJsonResponse> = []
   protected attributes = {} as UserJsonResponse
   protected originalAttributes = {} as UserJsonResponse
@@ -238,10 +234,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return this.attributes.id
   }
 
-  get stripe_id(): string | undefined {
-    return this.attributes.stripe_id
-  }
-
   get uuid(): string | undefined {
     return this.attributes.uuid
   }
@@ -272,10 +264,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
   get updated_at(): string | undefined {
     return this.attributes.updated_at
-  }
-
-  set stripe_id(value: string) {
-    this.attributes.stripe_id = value
   }
 
   set uuid(value: string) {
@@ -928,249 +916,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     }
   }
 
-  async createStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
-    const customer = await manageCustomer.createStripeCustomer(this, options)
-
-    return customer
-  }
-
-  async updateStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
-    const customer = await manageCustomer.updateStripeCustomer(this, options)
-
-    return customer
-  }
-
-  async storeTransaction(productId: number): Promise<PaymentTransactionsTable | undefined> {
-    const transaction = await manageTransaction.store(this, productId)
-
-    return transaction
-  }
-
-  async deleteStripeUser(): Promise<Stripe.Response<Stripe.DeletedCustomer>> {
-    const deletedCustomer = await manageCustomer.deleteStripeUser(this)
-    return deletedCustomer
-  }
-
-  async createOrGetStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
-    const customer = await manageCustomer.createOrGetStripeUser(this, options)
-    return customer
-  }
-
-  async retrieveStripeUser(): Promise<Stripe.Response<Stripe.Customer> | undefined> {
-    const customer = await manageCustomer.retrieveStripeUser(this)
-    return customer
-  }
-
-  async defaultPaymentMethod(): Promise<PaymentMethodModel | undefined> {
-    const defaultPaymentMethod = await managePaymentMethod.retrieveDefaultPaymentMethod(this)
-
-    return defaultPaymentMethod
-  }
-
-  async setDefaultPaymentMethod(pmId: number): Promise<Stripe.Response<Stripe.Customer>> {
-    const updatedCustomer = await managePaymentMethod.setDefaultPaymentMethod(this, pmId)
-
-    return updatedCustomer
-  }
-
-  async setUserDefaultPaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.Customer>> {
-    const updatedCustomer = await managePaymentMethod.setUserDefaultPayment(this, paymentMethodId)
-
-    return updatedCustomer
-  }
-
-  async updateDefaultPaymentMethod(paymentMethodId: number): Promise<Stripe.Response<Stripe.Customer>> {
-    const updatedCustomer = this.setDefaultPaymentMethod(paymentMethodId)
-
-    return updatedCustomer
-  }
-
-  async asStripeUser(): Promise<Stripe.Response<Stripe.Customer> | undefined> {
-    return await this.retrieveStripeUser()
-  }
-
-  async createOrUpdateStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
-    const customer = await manageCustomer.createOrUpdateStripeUser(this, options)
-    return customer
-  }
-
-  stripeId(): string {
-    return manageCustomer.stripeId(this)
-  }
-
-  hasStripeId(): boolean {
-    return manageCustomer.hasStripeId(this)
-  }
-
-  async addPaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
-    const paymentMethod = await managePaymentMethod.addPaymentMethod(this, paymentMethodId)
-
-    return paymentMethod
-  }
-
-  async updatePaymentMethod(paymentMethodId: string, params?: Stripe.PaymentMethodUpdateParams): Promise<Stripe.Response<Stripe.PaymentMethod>> {
-    const updatedPaymentMethod = await managePaymentMethod.updatePaymentMethod(this, paymentMethodId, params)
-
-    return updatedPaymentMethod
-  }
-
-  async deletePaymentMethod(paymentMethodId: number): Promise<Stripe.Response<Stripe.PaymentMethod>> {
-    const deletedPaymentMethod = await managePaymentMethod.deletePaymentMethod(this, paymentMethodId)
-    return deletedPaymentMethod
-  }
-
-  async retrievePaymentMethod(paymentMethod: number): Promise<PaymentMethodsTable | undefined> {
-    const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, paymentMethod)
-
-    return defaultPaymentMethod
-  }
-
-  async paymentIntent(options: Stripe.PaymentIntentCreateParams): Promise<Stripe.Response<Stripe.PaymentIntent>> {
-    if (!this.hasStripeId()) {
-      throw new HttpError(404, 'Customer does not exist in Stripe')
-    }
-
-    const defaultOptions: Stripe.PaymentIntentCreateParams = {
-      customer: this.stripeId(),
-      currency: 'usd',
-      amount: options.amount,
-    }
-
-    const mergedOptions = { ...defaultOptions, ...options }
-
-    return await manageCharge.createPayment(this, mergedOptions.amount, mergedOptions)
-  }
-
-  async syncStripeCustomerDetails(options: StripeCustomerOptions): Promise<Stripe.Response<Stripe.Customer>> {
-    const customer = await manageCustomer.syncStripeCustomerDetails(this, options)
-
-    return customer
-  }
-
-  async subscriptionHistory(): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
-    return manageInvoice.list(this)
-  }
-
-  async transactionHistory(): Promise<PaymentTransactionsTable[]> {
-    return manageTransaction.list(this)
-  }
-
-  async stripeSubscriptions(): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
-    return manageInvoice.list(this)
-  }
-
-  async activeSubscription() {
-    const subscription = await DB.instance.selectFrom('subscriptions')
-      .where('user_id', '=', this.id)
-      .where('provider_status', '=', 'active')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (subscription) {
-      const providerSubscription = await manageSubscription.retrieve(this, subscription?.provider_id || '')
-
-      return { subscription, providerSubscription }
-    }
-
-    return undefined
-  }
-
-  async isIncomplete(type: string): Promise<boolean> {
-    return await manageSubscription.isIncomplete(this, type)
-  }
-
-  async paymentMethods(cardType?: string): Promise<PaymentMethodsTable[]> {
-    return await managePaymentMethod.listPaymentMethods(this, cardType)
-  }
-
-  async newSubscriptionInvoice(
-    type: string,
-    lookupKey: string,
-        options: Partial<Stripe.SubscriptionCreateParams> = {},
-  ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-    return await this.newSubscription(type, lookupKey, { ...options, days_until_due: 15, collection_method: 'send_invoice' })
-  }
-
-  async newSubscription(
-    type: string,
-    lookupKey: string,
-        options: Partial<Stripe.SubscriptionCreateParams> = {},
-  ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-    const subscription = await manageSubscription.create(this, type, lookupKey, options)
-
-    const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
-    const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
-
-    return { subscription, paymentIntent }
-  }
-
-  async updateSubscription(
-    type: string,
-    lookupKey: string,
-        options: Partial<Stripe.SubscriptionUpdateParams> = {},
-  ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-    const subscription = await manageSubscription.update(this, type, lookupKey, options)
-
-    const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
-    const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
-
-    return { subscription, paymentIntent }
-  }
-
-  async cancelSubscription(
-    providerId: string,
-        options: Partial<Stripe.SubscriptionCreateParams> = {},
-  ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
-    const subscription = await manageSubscription.cancel(providerId, options)
-
-    return { subscription }
-  }
-
-  async createSetupIntent(
-        options: Stripe.SetupIntentCreateParams = {},
-  ): Promise<Stripe.Response<Stripe.SetupIntent>> {
-    const defaultOptions: Partial<Stripe.SetupIntentCreateParams> = {
-      metadata: options.metadata,
-    }
-
-    // Merge any additional provided options
-    const mergedOptions = { ...defaultOptions, ...options }
-
-    // Call Stripe to create the SetupIntent
-    return await manageSetupIntent.create(this, mergedOptions)
-  }
-
-  async checkout(
-    priceIds: CheckoutLineItem[],
-        options: CheckoutOptions = {},
-  ): Promise<Stripe.Response<Stripe.Checkout.Session>> {
-    const newOptions: Partial<Stripe.Checkout.SessionCreateParams> = {}
-
-    if (options.enableTax) {
-      newOptions.automatic_tax = { enabled: true }
-      delete options.enableTax
-    }
-
-    if (options.allowPromotions) {
-      newOptions.allow_promotion_codes = true
-      delete options.allowPromotions
-    }
-
-    const defaultOptions: Partial<Stripe.Checkout.SessionCreateParams> = {
-      mode: 'payment',
-      customer: await this.createOrGetStripeUser({}).then(customer => customer.id),
-      line_items: priceIds.map((item: CheckoutLineItem) => ({
-        price: item.priceId,
-        quantity: item.quantity || 1,
-      })),
-
-    }
-
-    const mergedOptions = { ...defaultOptions, ...newOptions, ...options }
-
-    return await manageCheckout.create(this, mergedOptions)
-  }
-
   static distinct(column: keyof UserJsonResponse): UserModel {
     const instance = new UserModel(undefined)
 
@@ -1205,7 +950,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       customers: this.customers,
       ...this.customColumns,
       public_passkey: this.public_passkey,
-      stripe_id: this.stripe_id,
     }
 
     return output

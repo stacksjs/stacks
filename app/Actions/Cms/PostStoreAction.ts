@@ -14,7 +14,7 @@ export default new Action({
     await request.validate()
 
     const categoryName = request.get('category')
-    const tagNames = JSON.parse(request.get('tags')) as string[]
+    const tagNames = request.get('tags') as string[]
 
     const category = await categories.findOrCreateByName({
       name: categoryName,

@@ -68,7 +68,29 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   }
 
   public get<T = string>(element: string, defaultValue?: T): T {
-    return this.query[element] || defaultValue
+    const value = this.query[element]
+
+    console.log('Value:', value)
+    console.log('Type of value:', typeof value)
+
+    if (!value)
+      return defaultValue as T
+
+    // If the value is already the expected type, return it
+    if (typeof value === typeof defaultValue)
+      return value as T
+
+    // Try to parse string values that might be JSON
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value) as T
+      }
+      catch {
+        return value as T
+      }
+    }
+
+    return value as T
   }
 
   public all(): T {

@@ -10,7 +10,6 @@ export async function up(db: Database<any>) {
     .addColumn('name', 'text', col => col.notNull())
     .addColumn('password', 'text', col => col.notNull())
     .addColumn('job_title', 'text', col => col.notNull())
-    .addColumn('stripe_id', 'varchar(255)')
     .addColumn('team_id', 'integer', col =>
       col.references('teams.id').onDelete('cascade'))
     .addColumn('public_passkey', 'text')

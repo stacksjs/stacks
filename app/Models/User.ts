@@ -46,8 +46,6 @@ export default {
     },
 
     observe: true,
-
-    billable: true,
   },
 
   hasOne: ['Subscriber', 'Driver', 'Author'],
