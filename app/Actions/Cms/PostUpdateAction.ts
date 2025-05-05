@@ -1,18 +1,19 @@
 import type { PostRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { posts } from '@stacksjs/cms'
+import { formatDate } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { categories } from 'commerce/src/products'
 import { findOrCreateMany } from '../../../storage/framework/core/cms/src/tags/store'
-import { formatDate } from '@stacksjs/orm'
 
 export default new Action({
   name: 'Post Update',
   description: 'Post Update ORM Action',
   method: 'PATCH',
+  requestFile: 'PostRequest',
   async handle(request: PostRequestType) {
     await request.validate()
-    
+
     const id = request.getParam('id')
     const categoryName = request.get('category')
     const tagNames = request.get('tags') as string[]
@@ -23,13 +24,13 @@ export default new Action({
         name: categoryName,
         categorizable_type: 'posts',
       })
-      await posts.attach(id, 'categorizable_models', [category.id])
+      await posts.sync(id, 'categorizable_models', [category.id])
     }
 
     // Update tags if provided
     if (tagNames) {
       const tagIds = await findOrCreateMany(tagNames, 'posts')
-      await posts.attach(id, 'taggable_models', tagIds)
+      await posts.sync(id, 'taggable_models', tagIds)
     }
 
     const data = {

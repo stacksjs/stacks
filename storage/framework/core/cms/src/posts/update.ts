@@ -1,6 +1,5 @@
 import type { PostJsonResponse, PostUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
 
 /**
  * Update a post
@@ -11,7 +10,6 @@ import { formatDate } from '@stacksjs/orm'
  */
 export async function update(id: number, data: Partial<PostUpdate>): Promise<PostJsonResponse> {
   try {
-
     const result = await db
       .updateTable('posts')
       .set(data)

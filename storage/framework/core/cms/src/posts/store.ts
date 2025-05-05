@@ -101,7 +101,7 @@ export async function attach(
  */
 export async function detach(
   postId: number,
-  tableName: 'categorizable_models' | 'taggable',
+  tableName: 'categorizable_models' | 'taggable_models',
   ids?: number[],
 ): Promise<void> {
   try {
@@ -136,7 +136,7 @@ export async function detach(
  */
 export async function sync(
   postId: number,
-  tableName: 'categorizable_models' | 'taggable',
+  tableName: 'categorizable_models' | 'taggable_models',
   ids: number[],
 ): Promise<void> {
   try {

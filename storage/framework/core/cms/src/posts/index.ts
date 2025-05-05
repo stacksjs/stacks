@@ -15,7 +15,9 @@ export {
 
 export {
   attach,
+  detach,
   store,
+  sync,
 } from './store'
 
 export {
