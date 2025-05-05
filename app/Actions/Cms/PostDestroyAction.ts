@@ -1,8 +1,8 @@
 import type { PostRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { Post } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { posts } from '@stacksjs/cms'
 
 export default new Action({
   name: 'Post Destroy',
@@ -11,10 +11,8 @@ export default new Action({
   async handle(request: PostRequestType) {
     const id = request.getParam('id')
 
-    const model = await Post.findOrFail(id)
+    await posts.destroy(id)
 
-    await model?.delete()
-
-    return response.json({ message: 'Model deleted!' })
+    return response.json({ message: 'Post deleted!' })
   },
 })

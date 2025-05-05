@@ -16,6 +16,13 @@ export async function destroy(id: number): Promise<boolean> {
       throw new Error(`Post with ID ${id} not found`)
     }
 
+    // Delete related categorizable_models entries first
+    await db
+      .deleteFrom('categorizable_models')
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', 'posts')
+      .execute()
+
     // Delete the post
     const result = await db
       .deleteFrom('posts')
@@ -44,6 +51,13 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
     return 0
 
   try {
+    // Delete related categorizable_models entries first
+    await db
+      .deleteFrom('categorizable_models')
+      .where('categorizable_id', 'in', ids)
+      .where('categorizable_type', '=', 'posts')
+      .execute()
+
     // Delete all posts in the array
     const result = await db
       .deleteFrom('posts')

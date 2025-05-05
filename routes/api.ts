@@ -232,7 +232,7 @@ route.group({ prefix: '/cms' }, async () => {
   route.post('/posts', 'Actions/Cms/PostStoreAction')
   route.get('/posts/{id}', 'Actions/Cms/PostShowAction')
   route.patch('/posts/{id}', 'Actions/Cms/PostUpdateAction')
-  route.delete('/posts/{id}', 'Actions/Cms/PostDestroyOrmAction')
+  route.delete('/posts/{id}', 'Actions/Cms/PostDestroyAction')
 
   // Post Categories
   route.get('/categories', 'Actions/Cms/CategorizableIndexAction')
