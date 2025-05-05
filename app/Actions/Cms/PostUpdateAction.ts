@@ -2,19 +2,43 @@ import type { PostRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { posts } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
+import { categories } from 'commerce/src/products'
+import { findOrCreateMany } from '../../../storage/framework/core/cms/src/tags/store'
+import { formatDate } from '@stacksjs/orm'
 
 export default new Action({
   name: 'Post Update',
   description: 'Post Update ORM Action',
   method: 'PATCH',
   async handle(request: PostRequestType) {
+    await request.validate()
+    
     const id = request.getParam('id')
+    const categoryName = request.get('category')
+    const tagNames = request.get('tags') as string[]
+
+    // Update or create category if provided
+    if (categoryName) {
+      const category = await categories.findOrCreateByName({
+        name: categoryName,
+        categorizable_type: 'posts',
+      })
+      await posts.attach(id, 'categorizable_models', [category.id])
+    }
+
+    // Update tags if provided
+    if (tagNames) {
+      const tagIds = await findOrCreateMany(tagNames, 'posts')
+      await posts.attach(id, 'taggable_models', tagIds)
+    }
 
     const data = {
       title: request.get('title'),
-      body: request.get('body'),
+      excerpt: request.get('excerpt'),
+      content: request.get('content'),
       status: request.get('status'),
       poster: request.get('poster'),
+      updated_at: formatDate(new Date()),
     }
 
     const model = await posts.update(id, data)

@@ -11,14 +11,10 @@ import { formatDate } from '@stacksjs/orm'
  */
 export async function update(id: number, data: Partial<PostUpdate>): Promise<PostJsonResponse> {
   try {
-    const updateData = {
-      ...data,
-      updated_at: formatDate(new Date()),
-    }
 
     const result = await db
       .updateTable('posts')
-      .set(updateData)
+      .set(data)
       .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
