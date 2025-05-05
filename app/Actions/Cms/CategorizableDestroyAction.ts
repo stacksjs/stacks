@@ -10,8 +10,8 @@ export default new Action({
   async handle(request: CategorizableRequestType) {
     const id = request.getParam('id')
 
-    const model = await categorizable.destroy(id)
+    await categorizable.destroy(id)
 
-    return response.json(model)
+    return response.json({ message: 'Category deleted successfully' })
   },
 })

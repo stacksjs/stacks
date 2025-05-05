@@ -242,11 +242,11 @@ route.group({ prefix: '/cms' }, async () => {
   route.delete('/categorizables/{id}', 'Actions/Cms/CategorizableDestroyAction')
 
   // Post Tags
-  route.get('/tags', 'Actions/Cms/TaggableIndexAction')
-  route.post('/tags', 'Actions/Cms/TaggableStoreAction')
-  route.get('/tags/{id}', 'Actions/Cms/TaggableShowAction')
-  route.patch('/tags/{id}', 'Actions/Cms/TaggableUpdateAction')
-  route.delete('/tags/{id}', 'Actions/Cms/TaggableDestroyAction')
+  route.get('/taggables', 'Actions/Cms/TaggableIndexAction')
+  route.post('/taggables', 'Actions/Cms/TaggableStoreAction')
+  route.get('/taggables/{id}', 'Actions/Cms/TaggableShowAction')
+  route.patch('/taggables/{id}', 'Actions/Cms/TaggableUpdateAction')
+  route.delete('/taggables/{id}', 'Actions/Cms/TaggableDestroyAction')
 })
 
 route.group({ prefix: '/queues' }, async () => {

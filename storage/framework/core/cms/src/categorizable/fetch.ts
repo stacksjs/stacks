@@ -9,6 +9,7 @@ export async function fetchById(id: number): Promise<CategorizableTable | undefi
   return await db
     .selectFrom('categorizable')
     .where('id', '=', id)
+    .where('is_active', '=', true)
     .selectAll()
     .executeTakeFirst()
 }
@@ -27,6 +28,7 @@ export async function fetchByName(name: string): Promise<CategorizableTable[]> {
   return await db
     .selectFrom('categorizable')
     .where('name', '=', name)
+    .where('is_active', '=', true)
     .selectAll()
     .execute()
 }
@@ -38,6 +40,7 @@ export async function fetchBySlug(slug: string): Promise<CategorizableTable | un
   return await db
     .selectFrom('categorizable')
     .where('slug', '=', slug)
+    .where('is_active', '=', true)
     .selectAll()
     .executeTakeFirst()
 }
@@ -49,6 +52,7 @@ export async function fetchWithPosts(id: number): Promise<CategorizableTable | u
   return await db
     .selectFrom('categorizable')
     .where('id', '=', id)
+    .where('is_active', '=', true)
     .selectAll()
     .executeTakeFirst()
 }
@@ -64,7 +68,6 @@ export async function fetchWithPosts(id: number): Promise<CategorizableTable | u
  */
 export async function firstOrCreate(
   name: string,
-  categorizableId: number,
   categorizableType: string,
   description?: string,
 ): Promise<CategorizableTable> {

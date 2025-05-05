@@ -28,7 +28,6 @@ export default new Action({
       name: request.get('name'),
       description: request.get('description'),
       taggable_type: request.get('taggable_type'),
-
     }
 
     const model = await tags.store(data)

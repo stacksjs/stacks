@@ -1,6 +1,7 @@
 import type { TaggableTable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { slugify } from 'ts-slug'
+import { findOrCreate } from './store'
 
 /**
  * Fetch a tag by its ID
@@ -12,8 +13,9 @@ export async function fetchTagById(id: number): Promise<TaggableTable> {
   try {
     const result = await db
       .selectFrom('taggable')
-      .selectAll()
       .where('id', '=', id)
+      .where('is_active', '=', true)
+      .selectAll()
       .executeTakeFirst()
 
     if (!result) {
@@ -40,6 +42,7 @@ export async function fetchTags(): Promise<TaggableTable[]> {
   try {
     return await db
       .selectFrom('taggable')
+      .where('is_active', '=', true)
       .selectAll()
       .execute()
   }
@@ -56,52 +59,21 @@ export async function fetchTags(): Promise<TaggableTable[]> {
  * Find a tag by name or create it if it doesn't exist
  *
  * @param name The name of the tag to find or create
- * @param taggableId ID of the taggable entity
  * @param taggableType Type of the taggable entity
  * @param description Optional description for the tag
  * @returns The existing or newly created tag
  */
 export async function firstOrCreate(
   name: string,
-  taggableId: number,
   taggableType: string,
   description?: string,
 ): Promise<TaggableTable> {
   try {
-    // First try to find the tag by name
-    const existingTag = await db
-      .selectFrom('taggable')
-      .selectAll()
-      .where('name', '=', name)
-      .executeTakeFirst()
-
-    if (existingTag) {
-      return existingTag
-    }
-
-    // If tag doesn't exist, create it
-    const now = new Date()
-    const tagData = {
+    return await findOrCreate({
       name,
-      slug: slugify(name),
-      description,
-      is_active: true,
-      created_at: now.toDateString(),
-      taggable_id: taggableId,
       taggable_type: taggableType,
-    }
-
-    const result = await db
-      .insertInto('taggable')
-      .values(tagData)
-      .returningAll()
-      .executeTakeFirst()
-
-    if (!result) {
-      throw new Error('Failed to create tag')
-    }
-
-    return result
+      description,
+    })
   }
   catch (error) {
     if (error instanceof Error) {
