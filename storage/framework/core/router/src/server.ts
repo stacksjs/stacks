@@ -1,4 +1,5 @@
 import type { Model, Options, Route, RouteParam, ServeOptions } from '@stacksjs/types'
+import type { WebSocketHandler } from 'bun'
 // import type { RateLimitResult } from 'ts-rate-limiter'
 
 import process from 'node:process'
@@ -27,23 +28,42 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
   const bunSocket = config.broadcasting?.driver === 'bun' 
     ? new BunSocket() 
     : null
-    
+
   if (bunSocket)
     await bunSocket.connect()
 
-  Bun.serve({
+  const server = Bun.serve({
     static: staticFiles,
     hostname,
     port,
     development,
-    websocket: bunSocket?.getWebSocketConfig(),
 
-    async fetch(req: Request) {
+    async fetch(req: Request, server) {
+      const url = new URL(req.url)
+      
+      // Handle WebSocket upgrade for the realtime endpoint
+      if (url.pathname === '/realtime' && bunSocket) {
+        const success = server.upgrade(req)
+        return success
+          ? undefined
+          : new Response('WebSocket upgrade failed', { status: 400 })
+      }
+
+      // Handle regular HTTP requests with body parsing
       const reqBody = await req.text()
-
-      return await serverResponse(req, reqBody)
+      
+      return serverResponse(req, reqBody)
     },
+
+    websocket: bunSocket?.getWebSocketConfig() as WebSocketHandler<any>,
   })
+
+  if (bunSocket) {
+    bunSocket.setServer(server)
+    log.info('WebSocket server initialized')
+  }
+
+  log.info(`Server running at http://${hostname}:${port}`)
 }
 
 export async function serverResponse(req: Request, body: string): Promise<Response> {

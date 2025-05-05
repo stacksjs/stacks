@@ -1,19 +1,10 @@
-import type { RealtimeDriver } from '../types'
+import type { RealtimeDriver, ChannelType } from '../types'
 import { log } from '@stacksjs/logging'
 import type { Server, ServerWebSocket } from 'bun'
 
-export interface WebSocketConfig {
-  message: (ws: ServerWebSocket, message: string | ArrayBuffer | Uint8Array) => void
-  open: (ws: ServerWebSocket) => void
-  close: (ws: ServerWebSocket, code: number, reason: string) => void
-  error: (ws: ServerWebSocket, error: Error) => void
-  drain: (ws: ServerWebSocket) => void
-  maxPayloadLength: number
-  idleTimeout: number
-  backpressureLimit: number
-  closeOnBackpressureLimit: boolean
-  sendPings: boolean
-  publishToSelf: boolean
+interface WebSocketData {
+  clientId: string
+  subscriptions: Set<string>
 }
 
 export class BunSocket implements RealtimeDriver {
@@ -23,19 +14,19 @@ export class BunSocket implements RealtimeDriver {
 
   constructor() {}
 
-  async connect(): Promise<void> {
-    if (this.server) {
-      return
-    }
+  setServer(server: Server): void {
+    this.server = server
+    this.isConnectedState = true
+  }
 
+  async connect(): Promise<void> {
+    // Connection is handled by Bun.serve
     this.isConnectedState = true
   }
 
   async disconnect(): Promise<void> {
-    if (this.server) {
-      this.server = null
-      this.isConnectedState = false
-    }
+    this.isConnectedState = false
+    this.subscribers.clear()
   }
 
   subscribe(channel: string, callback: (data: any) => void): void {
@@ -57,48 +48,85 @@ export class BunSocket implements RealtimeDriver {
     this.server.publish(channel, JSON.stringify(data))
   }
 
+  broadcast(channel: string, event: string, data?: any, type: ChannelType = 'public'): void {
+    if (!this.server) {
+      throw new Error('WebSocket server not initialized.')
+    }
+
+    const channelName = type === 'public' ? channel : `${type}-${channel}`
+    
+    this.server.publish(channelName, JSON.stringify({
+      event,
+      channel: channelName,
+      data,
+    }))
+
+    log.info(`Broadcasted event "${event}" to ${type} channel: ${channel}`)
+  }
+
   isConnected(): boolean {
     return this.isConnectedState
   }
 
-  getWebSocketConfig(): WebSocketConfig {
+  getWebSocketConfig(): {
+    open: (ws: ServerWebSocket<WebSocketData>) => void
+    message: (ws: ServerWebSocket<WebSocketData>, message: string | ArrayBuffer | Uint8Array) => void
+    close: (ws: ServerWebSocket<WebSocketData>) => void
+    drain: (ws: ServerWebSocket<WebSocketData>) => void
+  } {
     return {
-      message: (ws: ServerWebSocket, message: string | ArrayBuffer | Uint8Array): void => {
+      open: (ws: ServerWebSocket<WebSocketData>): void => {
+        ws.data = {
+          clientId: Math.random().toString(36).slice(2),
+          subscriptions: new Set(),
+        }
+        log.info('Client connected:', ws.data.clientId)
+      },
+
+      message: (ws: ServerWebSocket<WebSocketData>, message: string | ArrayBuffer | Uint8Array): void => {
         try {
           const data = typeof message === 'string' ? JSON.parse(message) : message
-          const channel = data.channel
-          const subscribers = this.subscribers.get(channel)
           
-          if (subscribers) {
-            subscribers.forEach(callback => callback(data))
+          if (data.type === 'subscribe') {
+            this.handleSubscription(ws, data.channel, data.auth)
+          } else {
+            // Handle regular messages
+            const subscribers = this.subscribers.get(data.channel)
+            if (subscribers) {
+              subscribers.forEach(callback => callback(data))
+            }
           }
         } catch (error) {
           log.error('Error processing WebSocket message:', error)
         }
       },
 
-      open: (ws: ServerWebSocket): void => {
-        log.info('Client connected:', ws.remoteAddress)
+      close: (ws: ServerWebSocket<WebSocketData>): void => {
+        // Unsubscribe from all channels
+        ws.data.subscriptions.forEach(channel => {
+          ws.unsubscribe(channel)
+        })
+        log.info('Client disconnected:', ws.data.clientId)
       },
 
-      close: (ws: ServerWebSocket, code: number, reason: string): void => {
-        log.info('Client disconnected:', ws.remoteAddress, code, reason)
+      drain: (ws: ServerWebSocket<WebSocketData>): void => {
+        log.info('WebSocket drain:', ws.data.clientId)
       },
+    }
+  }
 
-      error: (ws: ServerWebSocket, error: Error): void => {
-        log.error('WebSocket error:', error)
-      },
-
-      drain: (ws: ServerWebSocket): void => {
-        log.info('WebSocket drain:', ws.remoteAddress)
-      },
-
-      maxPayloadLength: 16 * 1024 * 1024, // 16 MB
-      idleTimeout: 120, // 120 seconds
-      backpressureLimit: 1024 * 1024, // 1 MB
-      closeOnBackpressureLimit: false,
-      sendPings: true,
-      publishToSelf: false,
+  private handleSubscription(ws: ServerWebSocket<WebSocketData>, channel: string, auth?: any): void {
+    if (channel.startsWith('private-') || channel.startsWith('presence-')) {
+      // Here you would implement your authentication logic
+      // For now, we'll just allow all subscriptions
+      ws.subscribe(channel)
+      ws.data.subscriptions.add(channel)
+      log.info(`Client ${ws.data.clientId} joined ${channel}`)
+    } else {
+      // Public channels don't need authentication
+      ws.subscribe(channel)
+      ws.data.subscriptions.add(channel)
+      log.info(`Client ${ws.data.clientId} joined ${channel}`)
     }
   }
 }
