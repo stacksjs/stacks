@@ -126,7 +126,7 @@ export default {
       factory: faker => faker.helpers.arrayElement(['published', 'draft', 'archived']),
     },
 
-    featured: {
+    isFeatured: {
       required: false,
       order: 10,
       fillable: true,

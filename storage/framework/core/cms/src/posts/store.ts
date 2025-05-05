@@ -1,7 +1,8 @@
 import type { NewPost, PostJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUIDv7 } from 'bun'
+
 /**
  * Create a new post
  *
@@ -12,7 +13,7 @@ export async function store(data: NewPost): Promise<PostJsonResponse> {
   try {
     const postData = {
       author_id: data.author_id,
-      uuid: uuidv4(),
+      uuid: randomUUIDv7(),
       title: data.title,
       poster: data.poster,
       content: data.content,
