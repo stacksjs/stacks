@@ -23,15 +23,15 @@ export default new Action({
         },
       },
     })
+
     const id = request.getParam('id')
+
     const data = {
-      id,
       name: request.get('name'),
       description: request.get('description'),
-      categorizable_type: request.get('categorizable_type'),
     }
 
-    const model = await categorizable.update(data)
+    const model = await categorizable.update(id, data)
 
     return response.json(model)
   },

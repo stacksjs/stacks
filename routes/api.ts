@@ -235,11 +235,11 @@ route.group({ prefix: '/cms' }, async () => {
   route.delete('/posts/{id}', 'Actions/Cms/PostDestroyAction')
 
   // Post Categories
-  route.get('/categories', 'Actions/Cms/CategorizableIndexAction')
-  route.post('/categories', 'Actions/Cms/CategorizableStoreAction')
-  route.get('/categories/{id}', 'Actions/Cms/CategorizableShowAction')
-  route.patch('/categories/{id}', 'Actions/Cms/CategorizableUpdateAction')
-  route.delete('/categories/{id}', 'Actions/Cms/CategorizableDestroyAction')
+  route.get('/categorizables', 'Actions/Cms/CategorizableIndexAction')
+  route.post('/categorizables', 'Actions/Cms/CategorizableStoreAction')
+  route.get('/categorizables/{id}', 'Actions/Cms/CategorizableShowAction')
+  route.patch('/categorizables/{id}', 'Actions/Cms/CategorizableUpdateAction')
+  route.delete('/categorizables/{id}', 'Actions/Cms/CategorizableDestroyAction')
 
   // Post Tags
   route.get('/tags', 'Actions/Cms/TaggableIndexAction')

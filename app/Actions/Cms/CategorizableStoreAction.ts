@@ -23,6 +23,12 @@ export default new Action({
         },
       },
 
+      categorizable_type: {
+        rule: schema.string(),
+        message: {
+          categorizable_type: 'Categorizable type is required',
+        },
+      },
     })
     const data = {
       name: request.get('name'),
