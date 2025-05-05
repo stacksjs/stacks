@@ -2,7 +2,7 @@ export interface BroadcastingOptions {
   /**
    * The default broadcasting driver to use
    */
-  driver: 'socket' | 'pusher'
+  driver: 'socket' | 'pusher' | 'bun'
 
   /**
    * Configuration for the Socket.IO driver

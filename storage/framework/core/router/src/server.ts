@@ -7,12 +7,13 @@ import { getModelName, traitInterfaces } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { camelCase } from '@stacksjs/strings'
+import { config } from '@stacksjs/config'
 
 // import { RateLimiter } from 'ts-rate-limiter'
 import { route, staticRoute } from '.'
-
 import { middlewares } from './middleware'
 import { request as RequestParam } from './request'
+import { BunSocket } from '@stacksjs/realtime'
 
 export async function serve(options: ServeOptions = {}): Promise<void> {
   const hostname = options.host || 'localhost'
@@ -23,11 +24,19 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
   if (options.timezone)
     process.env.TZ = options.timezone
 
+  const bunSocket = config.broadcasting?.driver === 'bun' 
+    ? new BunSocket() 
+    : null
+    
+  if (bunSocket)
+    await bunSocket.connect()
+
   Bun.serve({
     static: staticFiles,
     hostname,
     port,
     development,
+    websocket: bunSocket?.getWebSocketConfig(),
 
     async fetch(req: Request) {
       const reqBody = await req.text()

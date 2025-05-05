@@ -2,6 +2,7 @@ import type { BroadcastingConfig } from '@stacksjs/types'
 import type { DriverType, RealtimeDriver } from './types'
 import { PusherDriver } from './drivers/pusher'
 import { SocketDriver } from './drivers/socket'
+import { BunSocket } from './drivers/bun'
 
 export class RealtimeFactory {
   private static instance: RealtimeFactory
@@ -24,6 +25,9 @@ export class RealtimeFactory {
           break
         case 'pusher':
           this.drivers.set(type, new PusherDriver())
+          break
+        case 'bun':
+          this.drivers.set(type, new BunSocket())
           break
         // Add more cases for other drivers here
         default:
