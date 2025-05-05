@@ -43,9 +43,13 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
     async fetch(req: Request, server) {
       const url = new URL(req.url)
       
-      // Handle WebSocket connections at /ws endpoint
-      if (url.pathname === '/ws')
+      // Only handle /ws for native WebSocket connections when using Bun driver
+      if (url.pathname === '/ws' && config.broadcasting?.driver === 'bun')
         return handleWebSocketRequest(req, server)
+
+      // Socket.IO and Pusher will handle their own paths
+      // Socket.IO typically uses /socket.io
+      // Pusher connects directly to Pusher's servers
 
       // Handle regular HTTP requests with body parsing
       const reqBody = await req.text()
