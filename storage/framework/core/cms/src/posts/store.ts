@@ -3,6 +3,10 @@ import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 
+export const POST_STATUS_DRAFT = 'Draft'
+export const POST_STATUS_PUBLISHED = 'Published'
+export const POST_STATUS_ARCHIVED = 'Archived'
+
 /**
  * Create a new post
  *
@@ -18,11 +22,10 @@ export async function store(data: NewPost): Promise<PostJsonResponse> {
       poster: data.poster,
       content: data.content,
       excerpt: data.excerpt,
+      is_featured: data.is_featured ? Date.now() : undefined,
       views: data.views || 0,
       published_at: data.published_at || Date.now(),
-      status: data.status || 'draft',
-      created_at: formatDate(new Date()),
-      updated_at: formatDate(new Date()),
+      status: data.status || POST_STATUS_DRAFT,
     }
 
     const result = await db

@@ -64,14 +64,11 @@ export async function findOrCreate(data: TagData): Promise<TaggableTable> {
  */
 export async function store(data: TagData): Promise<TaggableTable> {
   try {
-    const now = new Date()
-
     const tagData = {
       name: data.name,
       slug: slugify(data.name),
       description: data.description,
       is_active: data.is_active ?? true,
-      created_at: now.toDateString(),
       taggable_type: data.taggable_type,
     }
 

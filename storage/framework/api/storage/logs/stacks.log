@@ -10,3 +10,15 @@ Context: {
   "error": {},
   "sql": "insert into \"posts\" (\"author_id\", \"title\", \"poster\", \"views\", \"published_at\", \"status\", \"created_at\", \"updated_at\") values (?, ?, ?, ?, ?, ?, ?, ?) returning *"
 }
+[2025-05-05T09:33:48.685Z] ERROR: Query failed : 
+Context: {
+  "durationMs": 0.4108750000004875,
+  "error": {},
+  "sql": "insert into \"taggable\" (\"name\", \"slug\", \"is_active\", \"created_at\", \"taggable_type\") values (?, ?, ?, ?, ?) returning *"
+}
+[2025-05-05T09:35:28.762Z] ERROR: Query failed : 
+Context: {
+  "durationMs": 0.38658399999985704,
+  "error": {},
+  "sql": "insert into \"taggable\" (\"name\", \"slug\", \"is_active\", \"created_at\", \"taggable_type\") values (?, ?, ?, ?, ?) returning *"
+}
