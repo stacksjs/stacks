@@ -1,6 +1,6 @@
 import type { TaggableTable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
-import { slugify } from 'ts-slug'
+import { uniqueSlug } from '@stacksjs/slug'
 
 interface UpdateTagData {
   id: number
@@ -22,7 +22,7 @@ export async function update(data: UpdateTagData): Promise<TaggableTable> {
   try {
     // Only include fields that are provided
     if (data.name !== undefined) {
-      data.slug = slugify(data.name)
+      data.slug = await uniqueSlug(data.name)
     }
 
     const result = await db
