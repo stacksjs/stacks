@@ -539,8 +539,14 @@ export async function writeModelNames(): Promise<void> {
 
 export async function writeTableNames(): Promise<void> {
   const models = globSync([path.userModelsPath('**/*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+  const traitTables = getTraitTables()
 
   let fileString = `export type TableNames = `
+
+  // Add trait tables first, only once
+  for (const trait of traitTables) {
+    fileString += `'${trait}' | `
+  }
 
   for (let i = 0; i < models.length; i++) {
     const modelPath = models[i] as string
@@ -548,16 +554,9 @@ export async function writeTableNames(): Promise<void> {
     const tableName = getTableName(model, modelPath)
 
     const pivotTables = await getPivotTables(model, modelPath)
-    const traitTables = await getTraitTables()
 
     for (const pivot of pivotTables) {
-      fileString += `'${pivot.table}'`
-      fileString += ' | '
-    }
-
-    for (const trait of traitTables) {
-      fileString += `'${trait}'`
-      fileString += ' | '
+      fileString += `'${pivot.table}' | `
     }
 
     fileString += `'${tableName}'`
@@ -1255,7 +1254,7 @@ export function generateTraitBasedTables(): string {
   text += '  passkeys: PasskeysTable\n'
   text += '  commentables: CommentablesTable\n'
   text += '  taggables: TaggableTable\n'
-  text += '  comment_upvotes: CommentableUpvotesTable\n'
+  text += '  commentable_upvotes: CommentableUpvotesTable\n'
   text += '  categorizables: CategorizableTable\n'
   text += '  categorizable_models: CategorizableModelsTable\n'
   text += '  taggable_models: TaggableModelsTable\n'

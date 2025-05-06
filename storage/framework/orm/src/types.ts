@@ -229,9 +229,9 @@ export interface Database {
   migrations: MigrationsTable
   passkeys: PasskeysTable
   commentables: CommentablesTable
-  taggable: TaggableTable
-  comment_upvotes: CommentableUpvotesTable
-  categorizable: CategorizableTable
+  taggables: TaggableTable
+  commentable_upvotes: CommentableUpvotesTable
+  categorizables: CategorizableTable
   categorizable_models: CategorizableModelsTable
   taggable_models: TaggableModelsTable
   password_resets: PasswordResetsTable

@@ -1,7 +1,6 @@
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
-import { fs } from '@stacksjs/storage'
 import { hasMigrationBeenCreated } from '../index'
 
 export function getTraitTables(): string[] {

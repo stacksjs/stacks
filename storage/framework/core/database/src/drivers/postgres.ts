@@ -10,12 +10,12 @@ import { snakeCase } from '@stacksjs/strings'
 import {
   arrangeColumns,
   checkPivotMigration,
+  deleteFrameworkModels,
+  deleteMigrationFiles,
   getLastMigrationFields,
   hasTableBeenMigrated,
   mapFieldTypeToColumnType,
   pluckChanges,
-  deleteFrameworkModels,
-  deleteMigrationFiles
 } from '.'
 
 import { createPostgresCategorizableTable, createPostgresCommenteableTable, createPostgresPasskeyMigration, dropCommonTables } from './defaults/traits'
