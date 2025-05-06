@@ -59,3 +59,24 @@ export interface BroadcastingOptions {
 }
 
 export type BroadcastingConfig = Partial<BroadcastingOptions>
+
+/**
+ * Configuration for a broadcast event
+ */
+export interface BroadcastEvent {
+  /**
+   * The channel to broadcast on
+   */
+  channel?: string
+
+  /**
+   * The event name to broadcast
+   */
+  event?: string
+
+  /**
+   * Handle the broadcast event.
+   * This method is called before the event is broadcast.
+   */
+  handle?: (data?: any) => Promise<void>
+}
