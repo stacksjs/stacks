@@ -31,7 +31,7 @@ export default new Action({
       description: request.get('description'),
     }
 
-    const model = await tags.update(data)
+    const model = await tags.update(id, data)
 
     return response.json(model)
   },

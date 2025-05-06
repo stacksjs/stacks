@@ -15,20 +15,23 @@ interface UpdateTagData {
 /**
  * Update a tag
  *
+ * @param id The tag id
  * @param data The tag data to update
  * @returns The updated tag record
  */
-export async function update(data: UpdateTagData): Promise<TaggableTable> {
+export async function update(id: number, data: UpdateTagData): Promise<TaggableTable> {
   try {
     // Only include fields that are provided
     if (data.name !== undefined) {
-      data.slug = await uniqueSlug(data.name)
+      data.slug = await uniqueSlug(data.name, { table: 'taggable', column: 'slug' })
     }
+
+    console.log(data)
 
     const result = await db
       .updateTable('taggable')
       .set(data)
-      .where('id', '=', data.id)
+      .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
 
