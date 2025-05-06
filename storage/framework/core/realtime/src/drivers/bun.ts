@@ -117,7 +117,7 @@ export class BunSocket implements RealtimeDriver {
     }
   }
 
-  private handleSubscription(ws: ServerWebSocket<WebSocketData>, channel: string, auth?: any): void {
+  private handleSubscription(ws: ServerWebSocket<WebSocketData>, channel: string): void {
     if (channel.startsWith('private-') || channel.startsWith('presence-')) {
       // Here you would implement your authentication logic
       // For now, we'll just allow all subscriptions

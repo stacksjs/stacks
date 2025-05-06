@@ -26,8 +26,6 @@ export async function update(id: number, data: UpdateTagData): Promise<TaggableT
       data.slug = await uniqueSlug(data.name, { table: 'taggables', column: 'slug' })
     }
 
-    console.log(data)
-
     const result = await db
       .updateTable('taggables')
       .set(data)

@@ -1,5 +1,6 @@
 export * from './custom'
 export * from './drivers'
+export * from './drivers/defaults'
 export * from './migrations'
 export * from './schema'
 export * from './seeder'

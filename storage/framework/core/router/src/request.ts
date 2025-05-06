@@ -69,8 +69,8 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   public get<T = string>(element: string, defaultValue?: T): T {
     const value = this.query[element]
 
-    console.log('Value:', value)
-    console.log('Type of value:', typeof value)
+    // console.log('Value:', value)
+    // console.log('Type of value:', typeof value)
 
     if (!value)
       return defaultValue as T

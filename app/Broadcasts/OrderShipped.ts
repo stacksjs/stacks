@@ -1,4 +1,5 @@
-import type { BroadcastEvent } from '@stacksjs/types'
+import type { BroadcastConfig } from '@stacksjs/types'
+import { log } from '@stacksjs/logging'
 
 interface OrderData {
   orderId: string
@@ -41,9 +42,9 @@ export default {
     // - Send notifications to other services
 
     // The data will be broadcast after this handler completes
-    console.log(`Order ${data.orderId} has been shipped to ${data.userId}`)
+    log.info(`Order ${data.orderId} has been shipped to ${data.userId}`)
   },
-} satisfies BroadcastEvent
+} satisfies BroadcastConfig
 
 // Usage example:
 /*

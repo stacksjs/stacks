@@ -14,15 +14,15 @@ import type {
 } from '@stacksjs/types'
 import { generator, parser, traverse } from '@stacksjs/build'
 import { italic, log } from '@stacksjs/cli'
+import { getTraitTables } from '@stacksjs/database'
 import { handleError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { camelCase, kebabCase, plural, singular, slugify, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
-
 import { globSync } from 'tinyglobby'
 import { generateModelString } from './generate'
-import { generateTraitRequestTypes, generateTraitTableInterfaces } from './generated/table-traits'
+import { generateTraitRequestTypes, generateTraitTableInterfaces, traitInterfaces } from './generated/table-traits'
 
 type ModelPath = string
 
@@ -548,9 +548,15 @@ export async function writeTableNames(): Promise<void> {
     const tableName = getTableName(model, modelPath)
 
     const pivotTables = await getPivotTables(model, modelPath)
+    const traitTables = await getTraitTables()
 
     for (const pivot of pivotTables) {
       fileString += `'${pivot.table}'`
+      fileString += ' | '
+    }
+
+    for (const trait of traitTables) {
+      fileString += `'${trait}'`
       fileString += ' | '
     }
 
@@ -652,117 +658,6 @@ export async function writeModelRequest(): Promise<void> {
   let importTypes = ``
   let importTypesString = ``
   let typeString = `import { Request } from '../core/router/src/request'\nimport type { VineType, CustomAttributes } from '@stacksjs/types'\n\n`
-
-  // Generate trait request types first
-  const traitInterfaces = [
-    {
-      name: 'Migrations',
-      fields: {
-        name: 'string',
-        timestamp: 'string',
-      },
-    },
-    {
-      name: 'PasswordResets',
-      fields: {
-        email: 'string',
-        token: 'string',
-        created_at: 'string',
-      },
-    },
-    {
-      name: 'Passkeys',
-      fields: {
-        id: 'number',
-        cred_public_key: 'string',
-        user_id: 'number',
-        webauthn_user_id: 'string',
-        counter: 'number',
-        credential_type: 'string',
-        device_type: 'string',
-        backup_eligible: 'boolean',
-        backup_status: 'boolean',
-        transports: 'string',
-        created_at: 'string',
-        updated_at: 'string',
-        last_used_at: 'string',
-      },
-    },
-    {
-      name: 'Commentables',
-      fields: {
-        id: 'number',
-        title: 'string',
-        body: 'string',
-        status: 'string',
-        approved_at: 'number | null',
-        rejected_at: 'number | null',
-        commentables_id: 'number',
-        commentables_type: 'string',
-        user_id: 'number | null',
-        created_at: 'string',
-        updated_at: 'string | null',
-      },
-    },
-    {
-      name: 'CommentableUpvotes',
-      fields: {
-        id: 'number',
-        user_id: 'number',
-        upvoteable_id: 'number',
-        upvoteable_type: 'string',
-        created_at: 'string',
-      },
-    },
-    {
-      name: 'Categorizable',
-      fields: {
-        id: 'number',
-        name: 'string',
-        slug: 'string',
-        description: 'string',
-        is_active: 'boolean',
-        categorizable_type: 'string',
-        created_at: 'string',
-        updated_at: 'string',
-      },
-    },
-    {
-      name: 'Taggable',
-      fields: {
-        id: 'number',
-        name: 'string',
-        slug: 'string',
-        description: 'string',
-        is_active: 'boolean',
-        taggable_type: 'string',
-        created_at: 'string',
-        updated_at: 'string',
-      },
-    },
-    {
-      name: 'TaggableModels',
-      fields: {
-        id: 'number',
-        tag_id: 'number',
-        taggable_id: 'number',
-        taggable_type: 'string',
-        created_at: 'string',
-        updated_at: 'string | null',
-      },
-    },
-    {
-      name: 'CategorizableModels',
-      fields: {
-        id: 'number',
-        category_id: 'number',
-        categorizable_id: 'number',
-        categorizable_type: 'string',
-        created_at: 'string',
-        updated_at: 'string | null',
-      },
-    },
-  ]
 
   // Generate trait request files
   for (const trait of traitInterfaces) {

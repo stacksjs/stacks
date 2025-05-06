@@ -28,7 +28,7 @@ export class SocketDriver implements RealtimeDriver {
         log.info('Client disconnected:', socket.id)
       })
 
-      socket.on('subscribe', (channel: string, auth: any) => {
+      socket.on('subscribe', (channel: string) => {
         if (channel.startsWith('private-') || channel.startsWith('presence-')) {
           socket.join(channel)
           log.info(`Client ${socket.id} joined ${channel}`)

@@ -4,13 +4,16 @@ import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { hasMigrationBeenCreated } from '../index'
 
-export function getTraitTables(): Promise<string[]> {
+export function getTraitTables(): string[] {
   return [
     'taggables',
     'categorizables',
     'commentables',
     'commentable_upvotes',
-    'commentable_upvotes',
+    'passkeys',
+    'password_resets',
+    'query_logs',
+    'migrations',
   ]
 }
 
@@ -451,34 +454,6 @@ export async function dropCommonTables(): Promise<void> {
   await db.schema.dropTable('commentables').ifExists().execute()
   await db.schema.dropTable('categories_models').ifExists().execute()
   await db.schema.dropTable('activities').ifExists().execute()
-}
-
-export async function deleteFrameworkModels(): Promise<void> {
-  const modelFiles = await fs.readdir(path.frameworkPath('models'))
-
-  if (modelFiles.length) {
-    for (const file of modelFiles) {
-      if (file.endsWith('.ts')) {
-        const modelPath = path.frameworkPath(`models/${file}`)
-        if (fs.existsSync(modelPath))
-          await Bun.$`rm ${modelPath}`
-      }
-    }
-  }
-}
-
-export async function deleteMigrationFiles(): Promise<void> {
-  const files = await fs.readdir(path.userMigrationsPath())
-
-  if (files.length) {
-    for (const file of files) {
-      if (file.endsWith('.ts')) {
-        const migrationPath = path.userMigrationsPath(`${file}`)
-        if (fs.existsSync(migrationPath))
-          await Bun.$`rm ${migrationPath}`
-      }
-    }
-  }
 }
 
 export async function createCommentUpvoteMigration(): Promise<void> {

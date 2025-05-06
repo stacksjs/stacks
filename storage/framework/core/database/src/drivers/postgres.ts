@@ -14,9 +14,11 @@ import {
   hasTableBeenMigrated,
   mapFieldTypeToColumnType,
   pluckChanges,
+  deleteFrameworkModels,
+  deleteMigrationFiles
 } from '.'
 
-import { createPostgresCategorizableTable, createPostgresCommenteableTable, createPostgresPasskeyMigration, deleteFrameworkModels, deleteMigrationFiles, dropCommonTables } from './defaults/traits'
+import { createPostgresCategorizableTable, createPostgresCommenteableTable, createPostgresPasskeyMigration, dropCommonTables } from './defaults/traits'
 
 export async function dropPostgresTables(): Promise<void> {
   const tables = await fetchPostgresTables()
