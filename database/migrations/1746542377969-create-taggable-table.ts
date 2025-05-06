@@ -3,7 +3,7 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .createTable('taggable')
+    .createTable('taggables')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('name', 'varchar(255)', col => col.notNull())
     .addColumn('slug', 'varchar(255)', col => col.notNull().unique())
@@ -16,13 +16,13 @@ export async function up(db: Database<any>) {
 
   await db.schema
     .createIndex('idx_taggable_slug')
-    .on('taggable')
+    .on('taggables')
     .column('slug')
     .execute()
 
   await db.schema
     .createIndex('idx_taggable_polymorphic')
-    .on('taggable')
+    .on('taggables')
     .columns(['taggable_id', 'taggable_type'])
     .execute()
 }

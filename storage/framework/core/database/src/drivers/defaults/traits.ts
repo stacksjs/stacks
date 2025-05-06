@@ -4,6 +4,16 @@ import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { hasMigrationBeenCreated } from '../index'
 
+export function getTraitTables(): Promise<string[]> {
+  return [
+    'taggables',
+    'categorizables',
+    'commentables',
+    'commentable_upvotes',
+    'commentable_upvotes',
+  ]
+}
+
 // SQLite/MySQL version
 export async function createPasskeyMigration(): Promise<void> {
   const hasBeenMigrated = await hasMigrationBeenCreated('users')
@@ -85,7 +95,7 @@ export async function createTaggableTable(): Promise<void> {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('taggable')\n`
+  migrationContent += `    .createTable('taggables')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
   migrationContent += `    .addColumn('name', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('slug', 'varchar(255)', col => col.notNull().unique())\n`
@@ -98,13 +108,13 @@ export async function createTaggableTable(): Promise<void> {
 
   migrationContent += `  await db.schema\n`
   migrationContent += `    .createIndex('idx_taggable_slug')\n`
-  migrationContent += `    .on('taggable')\n`
+  migrationContent += `    .on('taggables')\n`
   migrationContent += `    .column('slug')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
   migrationContent += `    .createIndex('idx_taggable_polymorphic')\n`
-  migrationContent += `    .on('taggable')\n`
+  migrationContent += `    .on('taggables')\n`
   migrationContent += `    .columns(['taggable_id', 'taggable_type'])\n`
   migrationContent += `    .execute()\n\n`
 
@@ -129,34 +139,33 @@ export async function createPostgresTaggableTable(): Promise<void> {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('taggable')\n`
+  migrationContent += `    .createTable('taggables')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
   migrationContent += `    .addColumn('name', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('slug', 'varchar(255)', col => col.notNull().unique())\n`
   migrationContent += `    .addColumn('description', 'text')\n`
   migrationContent += `    .addColumn('is_active', 'boolean', col => col.defaultTo(true))\n`
-  migrationContent += `    .addColumn('taggable_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('taggable_type', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_taggable_slug')\n`
-  migrationContent += `    .on('taggable')\n`
+  migrationContent += `    .createIndex('idx_taggables_slug')\n`
+  migrationContent += `    .on('taggables')\n`
   migrationContent += `    .column('slug')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_taggable_polymorphic')\n`
-  migrationContent += `    .on('taggable')\n`
-  migrationContent += `    .columns(['taggable_id', 'taggable_type'])\n`
+  migrationContent += `    .createIndex('idx_taggables_polymorphic')\n`
+  migrationContent += `    .on('taggables')\n`
+  migrationContent += `    .columns(['taggable_type'])\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-taggable-table.ts`
+  const migrationFileName = `${timestamp}-create-taggables-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
@@ -173,7 +182,7 @@ export async function createCategorizableTable(): Promise<void> {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('categorizable')\n`
+  migrationContent += `    .createTable('categorizables')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
   migrationContent += `    .addColumn('name', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('slug', 'varchar(255)', col => col.notNull().unique())\n`
@@ -186,39 +195,39 @@ export async function createCategorizableTable(): Promise<void> {
 
   // Add indexes with more descriptive names
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('categorizable_id_index')\n`
-  migrationContent += `    .on('categorizable')\n`
+  migrationContent += `    .createIndex('categorizables_id_index')\n`
+  migrationContent += `    .on('categorizables')\n`
   migrationContent += `    .column('id')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('categorizable_slug_index')\n`
-  migrationContent += `    .on('categorizable')\n`
+  migrationContent += `    .createIndex('categorizables_slug_index')\n`
+  migrationContent += `    .on('categorizables')\n`
   migrationContent += `    .column('slug')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('categorizable_polymorphic_index')\n`
-  migrationContent += `    .on('categorizable')\n`
+  migrationContent += `    .createIndex('categorizables_polymorphic_index')\n`
+  migrationContent += `    .on('categorizables')\n`
   migrationContent += `    .columns(['categorizable_type'])\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('categorizable_order_index')\n`
-  migrationContent += `    .on('categorizable')\n`
+  migrationContent += `    .createIndex('categorizables_order_index')\n`
+  migrationContent += `    .on('categorizables')\n`
   migrationContent += `    .column('order')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('categorizable_is_active_index')\n`
-  migrationContent += `    .on('categorizable')\n`
+  migrationContent += `    .createIndex('categorizables_is_active_index')\n`
+  migrationContent += `    .on('categorizables')\n`
   migrationContent += `    .column('is_active')\n`
   migrationContent += `    .execute()\n`
 
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-categorizable-table.ts`
+  const migrationFileName = `${timestamp}-create-categorizables-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
@@ -239,7 +248,7 @@ export async function createPostgresCategorizableTable(): Promise<void> {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('categorizable')\n`
+  migrationContent += `    .createTable('categorizables')\n`
   migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
   migrationContent += `    .addColumn('name', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('slug', 'varchar(255)', col => col.notNull().unique())\n`
@@ -252,33 +261,33 @@ export async function createPostgresCategorizableTable(): Promise<void> {
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_categorizable_slug')\n`
-  migrationContent += `    .on('categorizable')\n`
+  migrationContent += `    .createIndex('idx_categorizables_slug')\n`
+  migrationContent += `    .on('categorizables')\n`
   migrationContent += `    .column('slug')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_categorizable_polymorphic')\n`
-  migrationContent += `    .on('categorizable')\n`
+  migrationContent += `    .createIndex('idx_categorizables_polymorphic')\n`
+  migrationContent += `    .on('categorizables')\n`
   migrationContent += `    .columns(['categorizable_type'])\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_categorizable_order')\n`
-  migrationContent += `    .on('categorizable')\n`
+  migrationContent += `    .createIndex('idx_categorizables_order')\n`
+  migrationContent += `    .on('categorizables')\n`
   migrationContent += `    .column('order')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_categorizable_is_active')\n`
-  migrationContent += `    .on('categorizable')\n`
+  migrationContent += `    .createIndex('idx_categorizables_is_active')\n`
+  migrationContent += `    .on('categorizables')\n`
   migrationContent += `    .column('is_active')\n`
   migrationContent += `    .execute()\n`
 
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-categorizable-table.ts`
+  const migrationFileName = `${timestamp}-create-categorizables-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
@@ -434,9 +443,9 @@ export async function dropCommonTables(): Promise<void> {
   await db.schema.dropTable('passkeys').ifExists().execute()
   await db.schema.dropTable('password_resets').ifExists().execute()
   await db.schema.dropTable('query_logs').ifExists().execute()
-  await db.schema.dropTable('categorizable').ifExists().execute()
+  await db.schema.dropTable('categorizables').ifExists().execute()
   await db.schema.dropTable('commenteable_upvotes').ifExists().execute()
-  await db.schema.dropTable('taggable').ifExists().execute()
+  await db.schema.dropTable('taggables').ifExists().execute()
   await db.schema.dropTable('taggable_models').ifExists().execute()
   await db.schema.dropTable('categorizable_models').ifExists().execute()
   await db.schema.dropTable('commentables').ifExists().execute()

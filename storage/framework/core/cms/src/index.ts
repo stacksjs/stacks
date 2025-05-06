@@ -1,8 +1,8 @@
 import * as authors from './authors'
-import * as postCategories from './categorizable'
-import * as comments from './commentable'
+import * as postCategories from './categorizables'
+import * as comments from './commentables'
 import * as posts from './posts'
-import * as tags from './tags'
+import * as tags from './taggables'
 
 type PostsModule = typeof posts
 type PostCategoriesModule = typeof postCategories

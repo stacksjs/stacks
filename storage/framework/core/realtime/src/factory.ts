@@ -1,8 +1,8 @@
 import type { BroadcastingConfig } from '@stacksjs/types'
 import type { DriverType, RealtimeDriver } from './types'
+import { BunSocket } from './drivers/bun'
 import { PusherDriver } from './drivers/pusher'
 import { SocketDriver } from './drivers/socket'
-import { BunSocket } from './drivers/bun'
 
 export class RealtimeFactory {
   private static instance: RealtimeFactory

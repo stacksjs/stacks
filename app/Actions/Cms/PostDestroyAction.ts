@@ -1,8 +1,8 @@
 import type { PostRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { response } from '@stacksjs/router'
 import { posts } from '@stacksjs/cms'
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'Post Destroy',

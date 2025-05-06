@@ -24,7 +24,7 @@ export async function update(id: number, data: UpdateCategoryData): Promise<Cate
     }
 
     const result = await db
-      .updateTable('categorizable')
+      .updateTable('categorizables')
       .set(data)
       .where('id', '=', id)
       .returningAll()

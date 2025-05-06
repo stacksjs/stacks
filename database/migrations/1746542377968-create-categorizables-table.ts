@@ -3,7 +3,7 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .createTable('categorizable')
+    .createTable('categorizables')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('name', 'varchar(255)', col => col.notNull())
     .addColumn('slug', 'varchar(255)', col => col.notNull().unique())
@@ -15,32 +15,32 @@ export async function up(db: Database<any>) {
     .execute()
 
   await db.schema
-    .createIndex('categorizable_id_index')
-    .on('categorizable')
+    .createIndex('categorizables_id_index')
+    .on('categorizables')
     .column('id')
     .execute()
 
   await db.schema
-    .createIndex('categorizable_slug_index')
-    .on('categorizable')
+    .createIndex('categorizables_slug_index')
+    .on('categorizables')
     .column('slug')
     .execute()
 
   await db.schema
-    .createIndex('categorizable_polymorphic_index')
-    .on('categorizable')
+    .createIndex('categorizables_polymorphic_index')
+    .on('categorizables')
     .columns(['categorizable_type'])
     .execute()
 
   await db.schema
-    .createIndex('categorizable_order_index')
-    .on('categorizable')
+    .createIndex('categorizables_order_index')
+    .on('categorizables')
     .column('order')
     .execute()
 
   await db.schema
-    .createIndex('categorizable_is_active_index')
-    .on('categorizable')
+    .createIndex('categorizables_is_active_index')
+    .on('categorizables')
     .column('is_active')
     .execute()
 }

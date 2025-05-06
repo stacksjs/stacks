@@ -1,6 +1,5 @@
 import type { Server } from 'bun'
-import { config } from '@stacksjs/config'
-import { BunSocket } from './drivers/bun'
+import type { BunSocket } from './drivers/bun'
 
 let bunSocket: BunSocket | null = null
 
@@ -9,7 +8,7 @@ export function setBunSocket(socket: BunSocket | null): void {
 }
 
 export async function handleWebSocketRequest(req: Request, server: Server): Promise<Response | undefined> {
-  if (!bunSocket) 
+  if (!bunSocket)
     return new Response('WebSocket driver not initialized', { status: 500 })
 
   const success = server.upgrade(req)

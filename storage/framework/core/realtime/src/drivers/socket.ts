@@ -1,4 +1,4 @@
-import type { RealtimeDriver, ChannelType } from '../types'
+import type { ChannelType, RealtimeDriver } from '../types'
 import { log } from '@stacksjs/logging'
 import { Server } from 'socket.io'
 
@@ -79,7 +79,7 @@ export class SocketDriver implements RealtimeDriver {
     }
 
     const channelName = type === 'public' ? channel : `${type}-${channel}`
-    
+
     if (type !== 'public') {
       const room = this.io.sockets.adapter.rooms.get(channelName)
       if (!room) {

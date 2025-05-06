@@ -37,7 +37,7 @@ export async function findOrCreate(data: TagData): Promise<TaggableTable> {
   try {
     // Try to find existing tag
     const existingTag = await db
-      .selectFrom('taggable')
+      .selectFrom('taggables')
       .selectAll()
       .where('name', '=', data.name)
       .executeTakeFirst()
@@ -73,7 +73,7 @@ export async function store(data: TagData): Promise<TaggableTable> {
     }
 
     const result = await db
-      .insertInto('taggable')
+      .insertInto('taggables')
       .values(tagData)
       .returningAll()
       .executeTakeFirst()

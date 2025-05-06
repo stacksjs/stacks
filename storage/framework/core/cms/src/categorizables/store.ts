@@ -34,7 +34,7 @@ export async function store(data: CategoryData): Promise<CategorizableTable> {
     const result = await db.transaction().execute(async (trx) => {
       // Insert into categorizable table first
       const category = await trx
-        .insertInto('categorizable')
+        .insertInto('categorizables')
         .values(categoryData)
         .returningAll()
         .executeTakeFirst()
@@ -110,7 +110,7 @@ export async function bulkStore(data: CategoryData[]): Promise<CategorizableTabl
 
         // Insert into categorizable table
         const category = await trx
-          .insertInto('categorizable')
+          .insertInto('categorizables')
           .values(categoryData)
           .returningAll()
           .executeTakeFirst()

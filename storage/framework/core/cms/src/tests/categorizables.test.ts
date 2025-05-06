@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { destroy } from '../categorizable/destroy'
-import { fetchById } from '../categorizable/fetch'
-import { store } from '../categorizable/store'
-import { update } from '../categorizable/update'
+import { destroy } from '../categorizables/destroy'
+import { fetchById } from '../categorizables/fetch'
+import { store } from '../categorizables/store'
+import { update } from '../categorizables/update'
 
 beforeEach(async () => {
   await refreshDatabase()

@@ -23,13 +23,13 @@ export async function update(id: number, data: UpdateTagData): Promise<TaggableT
   try {
     // Only include fields that are provided
     if (data.name !== undefined) {
-      data.slug = await uniqueSlug(data.name, { table: 'taggable', column: 'slug' })
+      data.slug = await uniqueSlug(data.name, { table: 'taggables', column: 'slug' })
     }
 
     console.log(data)
 
     const result = await db
-      .updateTable('taggable')
+      .updateTable('taggables')
       .set(data)
       .where('id', '=', id)
       .returningAll()

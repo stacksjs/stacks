@@ -60,7 +60,6 @@ export interface BroadcastingOptions {
 
 export type BroadcastingConfig = Partial<BroadcastingOptions>
 
-
 export interface BroadcastOptions {
   /**
    * The channel to broadcast on
@@ -152,7 +151,7 @@ export interface BroadcastConfig {
   event?: string
   handle?: (data?: any) => Promise<void>
 }
-  
+
 export interface Broadcastable {
   broadcast: () => Promise<void>
   broadcastNow: () => Promise<void>
@@ -161,4 +160,3 @@ export interface Broadcastable {
   toPresence: () => this
   toPrivate: () => this
 }
-  

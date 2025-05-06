@@ -1,6 +1,5 @@
 import type { TaggableTable } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
-import { slugify } from 'ts-slug'
 import { findOrCreate } from './store'
 
 /**
@@ -12,7 +11,7 @@ import { findOrCreate } from './store'
 export async function fetchTagById(id: number): Promise<TaggableTable> {
   try {
     const result = await db
-      .selectFrom('taggable')
+      .selectFrom('taggables')
       .where('id', '=', id)
       .where('is_active', '=', true)
       .selectAll()
@@ -41,7 +40,7 @@ export async function fetchTagById(id: number): Promise<TaggableTable> {
 export async function fetchTags(): Promise<TaggableTable[]> {
   try {
     return await db
-      .selectFrom('taggable')
+      .selectFrom('taggables')
       .where('is_active', '=', true)
       .selectAll()
       .execute()
@@ -119,7 +118,7 @@ export async function countTaggedPosts(taggableType: string): Promise<number> {
 export async function countTotalTags(): Promise<number> {
   try {
     const result = await db
-      .selectFrom('taggable')
+      .selectFrom('taggables')
       .select(({ fn }) => [
         fn.count<number>('id').as('count'),
       ])
@@ -146,7 +145,7 @@ export async function findMostUsedTag(taggableType?: string): Promise<{ name: st
   try {
     let query = db
       .selectFrom('taggable_models')
-      .innerJoin('taggable', 'taggable.id', 'taggable_models.tag_id')
+      .innerJoin('taggables', 'taggable.id', 'taggable_models.tag_id')
       .select(({ fn }) => [
         'taggable.name',
         fn.count<number>('taggable_models.id').as('usage_count'),
@@ -187,7 +186,7 @@ export async function findLeastUsedTag(): Promise<{ name: string, count: number 
   try {
     const result = await db
       .selectFrom('taggable_models')
-      .innerJoin('taggable', 'taggable.id', 'taggable_models.tag_id')
+      .innerJoin('taggables', 'taggable.id', 'taggable_models.tag_id')
       .select(({ fn }) => [
         'taggable.name',
         fn.count<number>('taggable_models.id').as('usage_count'),
@@ -222,7 +221,7 @@ export async function findLeastUsedTag(): Promise<{ name: string, count: number 
 export async function fetchTagsWithPostCounts(): Promise<Array<{ name: string, postCount: number }>> {
   try {
     const result = await db
-      .selectFrom('taggable')
+      .selectFrom('taggables')
       .leftJoin('taggable_models', join => join
         .onRef('taggable.id', '=', 'taggable_models.tag_id')
         .on('taggable_models.taggable_type', '=', 'posts'))
@@ -257,7 +256,7 @@ export async function fetchTagsWithPostCounts(): Promise<Array<{ name: string, p
 export async function fetchTagDistribution(): Promise<Array<{ name: string, count: number, percentage: number }>> {
   try {
     const result = await db
-      .selectFrom('taggable')
+      .selectFrom('taggables')
       .leftJoin('taggable_models', join => join
         .onRef('taggable.id', '=', 'taggable_models.tag_id')
         .on('taggable_models.taggable_type', '=', 'posts'))

@@ -3,7 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { authors, posts } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
 import { categories } from 'commerce/src/products'
-import { findOrCreateMany } from '../../../storage/framework/core/cms/src/tags/store'
+import { findOrCreateMany } from '../../../storage/framework/core/cms/src/taggables/store'
 
 export default new Action({
   name: 'Post Store',

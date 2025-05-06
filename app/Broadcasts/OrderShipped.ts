@@ -39,7 +39,7 @@ export default {
     // - Log the shipping event
     // - Update order status in database
     // - Send notifications to other services
-    
+
     // The data will be broadcast after this handler completes
     console.log(`Order ${data.orderId} has been shipped to ${data.userId}`)
   },
@@ -70,4 +70,4 @@ await broadcast('OrderShipped', orderData)
   .onChannel('orders')
   .toPrivate()
   .broadcast()
-*/ 
+*/

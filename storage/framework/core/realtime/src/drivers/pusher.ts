@@ -1,4 +1,4 @@
-import type { RealtimeDriver, ChannelType } from '../types'
+import type { ChannelType, RealtimeDriver } from '../types'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import Pusher from 'pusher'

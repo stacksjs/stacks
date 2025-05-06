@@ -3,18 +3,18 @@ import type { WebSocketHandler } from 'bun'
 // import type { RateLimitResult } from 'ts-rate-limiter'
 
 import process from 'node:process'
+import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { getModelName, traitInterfaces } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
+import { BunSocket, handleWebSocketRequest, setBunSocket } from '@stacksjs/realtime'
 import { fs, globSync } from '@stacksjs/storage'
-import { camelCase } from '@stacksjs/strings'
-import { config } from '@stacksjs/config'
 
+import { camelCase } from '@stacksjs/strings'
 // import { RateLimiter } from 'ts-rate-limiter'
 import { route, staticRoute } from '.'
 import { middlewares } from './middleware'
 import { request as RequestParam } from './request'
-import { BunSocket, handleWebSocketRequest, setBunSocket } from '@stacksjs/realtime'
 
 export async function serve(options: ServeOptions = {}): Promise<void> {
   const hostname = options.host || 'localhost'
@@ -25,8 +25,8 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
   if (options.timezone)
     process.env.TZ = options.timezone
 
-  const bunSocket = config.broadcasting?.driver === 'bun' 
-    ? new BunSocket() 
+  const bunSocket = config.broadcasting?.driver === 'bun'
+    ? new BunSocket()
     : null
 
   if (bunSocket) {
@@ -42,7 +42,7 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
 
     async fetch(req: Request, server) {
       const url = new URL(req.url)
-      
+
       // Only handle /ws for native WebSocket connections when using Bun driver
       if (url.pathname === '/ws' && config.broadcasting?.driver === 'bun')
         return handleWebSocketRequest(req, server)

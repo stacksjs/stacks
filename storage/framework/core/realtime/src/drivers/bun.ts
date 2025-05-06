@@ -1,6 +1,6 @@
-import type { RealtimeDriver, ChannelType } from '../types'
-import { log } from '@stacksjs/logging'
 import type { Server, ServerWebSocket } from 'bun'
+import type { ChannelType, RealtimeDriver } from '../types'
+import { log } from '@stacksjs/logging'
 
 interface WebSocketData {
   clientId: string
@@ -54,7 +54,7 @@ export class BunSocket implements RealtimeDriver {
     }
 
     const channelName = type === 'public' ? channel : `${type}-${channel}`
-    
+
     this.server.publish(channelName, JSON.stringify({
       event,
       channel: channelName,
@@ -86,24 +86,26 @@ export class BunSocket implements RealtimeDriver {
       message: (ws: ServerWebSocket<WebSocketData>, message: string | ArrayBuffer | Uint8Array): void => {
         try {
           const data = typeof message === 'string' ? JSON.parse(message) : message
-          
+
           if (data.type === 'subscribe') {
             this.handleSubscription(ws, data.channel, data.auth)
-          } else {
+          }
+          else {
             // Handle regular messages
             const subscribers = this.subscribers.get(data.channel)
             if (subscribers) {
               subscribers.forEach(callback => callback(data))
             }
           }
-        } catch (error) {
+        }
+        catch (error) {
           log.error('Error processing WebSocket message:', error)
         }
       },
 
       close: (ws: ServerWebSocket<WebSocketData>): void => {
         // Unsubscribe from all channels
-        ws.data.subscriptions.forEach(channel => {
+        ws.data.subscriptions.forEach((channel) => {
           ws.unsubscribe(channel)
         })
         log.info('Client disconnected:', ws.data.clientId)
@@ -122,7 +124,8 @@ export class BunSocket implements RealtimeDriver {
       ws.subscribe(channel)
       ws.data.subscriptions.add(channel)
       log.info(`Client ${ws.data.clientId} joined ${channel}`)
-    } else {
+    }
+    else {
       // Public channels don't need authentication
       ws.subscribe(channel)
       ws.data.subscriptions.add(channel)

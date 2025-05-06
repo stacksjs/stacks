@@ -1,7 +1,6 @@
+import type { Broadcastable, BroadcastConfig } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 import { realtime } from '@stacksjs/realtime'
-import { Broadcastable, BroadcastConfig } from '@stacksjs/types'
-
 
 export async function runBroadcast(name: string, data?: any): Promise<void> {
   const broadcastModule = await import(`../../../Broadcasts/${name}.ts`)
@@ -28,7 +27,7 @@ export class Broadcast implements Broadcastable {
     protected data?: any,
   ) {}
 
-  async  broadcast(): Promise<void> {
+  async broadcast(): Promise<void> {
     try {
       if (!realtime.isConnected()) {
         await realtime.connect()
@@ -124,4 +123,4 @@ await broadcast('UserNotified')
   .toPrivate()
   .toOthers()
   .broadcast()
-*/ 
+*/

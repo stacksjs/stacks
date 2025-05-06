@@ -4,7 +4,7 @@ import { posts } from '@stacksjs/cms'
 import { formatDate } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { categories } from 'commerce/src/products'
-import { findOrCreateMany } from '../../../storage/framework/core/cms/src/tags/store'
+import { findOrCreateMany } from '../../../storage/framework/core/cms/src/taggables/store'
 
 export default new Action({
   name: 'Post Update',

@@ -18,7 +18,7 @@ export async function destroy(id: number): Promise<boolean> {
 
     // Delete the category
     const result = await db
-      .deleteFrom('categorizable')
+      .deleteFrom('categorizables')
       .where('id', '=', id)
       .executeTakeFirst()
 
@@ -46,7 +46,7 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
   try {
     // Delete all categories in the array
     const result = await db
-      .deleteFrom('categorizable')
+      .deleteFrom('categorizables')
       .where('id', 'in', ids)
       .executeTakeFirst()
 

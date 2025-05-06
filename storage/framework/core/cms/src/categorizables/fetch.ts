@@ -7,7 +7,7 @@ import { slugify } from 'ts-slug'
  */
 export async function fetchById(id: number): Promise<CategorizableTable | undefined> {
   return await db
-    .selectFrom('categorizable')
+    .selectFrom('categorizables')
     .where('id', '=', id)
     .where('is_active', '=', true)
     .selectAll()
@@ -18,7 +18,7 @@ export async function fetchById(id: number): Promise<CategorizableTable | undefi
  * Fetch all categories
  */
 export async function fetchAll(): Promise<CategorizableTable[]> {
-  return await db.selectFrom('categorizable').selectAll().execute()
+  return await db.selectFrom('categorizables').selectAll().execute()
 }
 
 /**
@@ -26,7 +26,7 @@ export async function fetchAll(): Promise<CategorizableTable[]> {
  */
 export async function fetchByName(name: string): Promise<CategorizableTable[]> {
   return await db
-    .selectFrom('categorizable')
+    .selectFrom('categorizables')
     .where('name', '=', name)
     .where('is_active', '=', true)
     .selectAll()
@@ -38,7 +38,7 @@ export async function fetchByName(name: string): Promise<CategorizableTable[]> {
  */
 export async function fetchBySlug(slug: string): Promise<CategorizableTable | undefined> {
   return await db
-    .selectFrom('categorizable')
+    .selectFrom('categorizables')
     .where('slug', '=', slug)
     .where('is_active', '=', true)
     .selectAll()
@@ -50,7 +50,7 @@ export async function fetchBySlug(slug: string): Promise<CategorizableTable | un
  */
 export async function fetchWithPosts(id: number): Promise<CategorizableTable | undefined> {
   return await db
-    .selectFrom('categorizable')
+    .selectFrom('categorizables')
     .where('id', '=', id)
     .where('is_active', '=', true)
     .selectAll()
@@ -74,7 +74,7 @@ export async function firstOrCreate(
   try {
     // First try to find the category by name
     const existingCategory = await db
-      .selectFrom('categorizable')
+      .selectFrom('categorizables')
       .selectAll()
       .where('name', '=', name)
       .executeTakeFirst()
@@ -95,7 +95,7 @@ export async function firstOrCreate(
     }
 
     const result = await db
-      .insertInto('categorizable')
+      .insertInto('categorizables')
       .values(categoryData)
       .returningAll()
       .executeTakeFirst()
