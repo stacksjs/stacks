@@ -1,20 +1,6 @@
 import { log } from '@stacksjs/cli'
 import { realtime } from '@stacksjs/realtime'
 
-interface BroadcastConfig {
-  channel?: string
-  event?: string
-  handle?: (data?: any) => Promise<void>
-}
-
-interface Broadcastable {
-  broadcast: () => Promise<void>
-  broadcastNow: () => Promise<void>
-  onChannel: (channel: string) => this
-  toOthers: () => this
-  toPresence: () => this
-  toPrivate: () => this
-}
 
 export async function runBroadcast(name: string, data?: any): Promise<void> {
   const broadcastModule = await import(`../../../Broadcasts/${name}.ts`)
