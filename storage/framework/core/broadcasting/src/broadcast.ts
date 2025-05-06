@@ -1,5 +1,6 @@
 import { log } from '@stacksjs/cli'
 import { realtime } from '@stacksjs/realtime'
+import { Broadcastable, BroadcastConfig } from '@stacksjs/types'
 
 
 export async function runBroadcast(name: string, data?: any): Promise<void> {
@@ -27,7 +28,7 @@ export class Broadcast implements Broadcastable {
     protected data?: any,
   ) {}
 
-  async broadcast(): Promise<void> {
+  async  broadcast(): Promise<void> {
     try {
       if (!realtime.isConnected()) {
         await realtime.connect()
