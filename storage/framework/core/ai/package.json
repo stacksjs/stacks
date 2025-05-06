@@ -42,8 +42,8 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.799.0",
-    "@aws-sdk/credential-providers": "^3.799.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.803.0",
+    "@aws-sdk/credential-providers": "^3.803.0",
     "@stacksjs/development": "workspace:*",
     "aws-sdk-client-mock": "^4.1.0"
   }
