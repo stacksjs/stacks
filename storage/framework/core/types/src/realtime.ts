@@ -147,9 +147,8 @@ export interface BroadcastingOptions {
   }
   
   export interface BroadcastConfig {
-    channel?: string
-    event?: string
-    handle?: (data?: any) => Promise<void>
+    event: string
+    handle?: (data?: any) => Promise<{ channel: string, type: 'public' | 'private' | 'presence' } | void>
   }
   
   export interface Broadcastable {

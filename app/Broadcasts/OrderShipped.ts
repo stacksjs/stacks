@@ -1,6 +1,5 @@
 import type { BroadcastConfig } from '@stacksjs/types'
-import { log } from '@stacksjs/logging'
-import { Realtime } from '@stacksjs/realtime'
+import { channel } from '@stacksjs/realtime'
 
 interface OrderData {
   orderId: string
@@ -20,40 +19,19 @@ interface OrderData {
   shippedAt?: string
 }
 
-const EVENT_NAME = 'OrderShipped'
-
 export default {
-  /**
-   * The channel the event should be broadcast on.
-   */
-  channel: 'orders',
-
   /**
    * The event name.
    */
-  event: EVENT_NAME,
+  event: 'OrderShipped',
 
   /**
    * Handle the broadcast event.
    * This method is called when the event is triggered.
-   * It handles the broadcasting logic and any additional actions.
    */
   async handle(data: OrderData): Promise<void> {
-    // Log the shipping event
-    log.info(`Order ${data.orderId} has been shipped to ${data.userId}`)
 
-    // Add shipping timestamp to the data
-    data.shippedAt = new Date().toISOString()
-
-    // Initialize realtime and broadcast
-    const realtime = new Realtime()
-    await realtime.connect()
-    realtime.broadcast(
-      `orders.${data.orderId}`,
-      EVENT_NAME,
-      data,
-      'private'
-    )
+    await channel(`orders.${data.orderId}`).private(this.event, data)
   },
 } satisfies BroadcastConfig
 
