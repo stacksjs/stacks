@@ -30,7 +30,6 @@ export default {
    * This method is called when the event is triggered.
    */
   async handle(data: OrderData): Promise<void> {
-
     await channel(`orders.${data.orderId}`).private(this.event, data)
   },
 } satisfies BroadcastOptions

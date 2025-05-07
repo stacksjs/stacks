@@ -1,5 +1,6 @@
 import type { Request, ResponseData } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
+import { response } from '@stacksjs/router'
 /**
  * Base Controller class providing Laravel-like functionality
  */
@@ -8,11 +9,7 @@ class Controller {
    * Create a JSON response
    */
   protected json(data: any, status: number = 200): ResponseData {
-    return {
-      status,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    }
+    return response.json(data, status)
   }
 
   /**

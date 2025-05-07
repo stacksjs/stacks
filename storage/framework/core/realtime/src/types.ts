@@ -12,12 +12,12 @@ export interface RealtimeDriver {
 }
 
 export interface Broadcastable {
-  broadcastEvent(): Promise<void>
-  broadcastEventNow(): Promise<void>
-  setChannel(channel: string): this
-  excludeCurrentUser(): this
-  setPresenceChannel(): this
-  setPrivateChannel(): this
+  broadcastEvent: () => Promise<void>
+  broadcastEventNow: () => Promise<void>
+  setChannel: (channel: string) => this
+  excludeCurrentUser: () => this
+  setPresenceChannel: () => this
+  setPrivateChannel: () => this
 }
 
 export interface BroadcastConfig {

@@ -26,4 +26,4 @@ export class Channel {
 
 export function channel(name: string): Channel {
   return new Channel(name)
-} 
+}

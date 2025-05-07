@@ -53,35 +53,36 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   private sanitizeString(input: string): string {
     // Remove any null bytes
     let sanitized = input.replace(/\0/g, '')
-    
+
     // Remove any HTML tags
     sanitized = sanitized.replace(/<[^>]*>/g, '')
-    
+
     // Remove any SQL injection patterns
     sanitized = sanitized.replace(/(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|EXEC|DECLARE)\b)/gi, '')
-    
+
     // Remove any potential command injection characters
     sanitized = sanitized.replace(/[;&|`$]/g, '')
-    
+
     // Remove any potential XSS patterns
     sanitized = sanitized.replace(/javascript:/gi, '')
     sanitized = sanitized.replace(/on\w+=/gi, '')
-    
+
     return sanitized.trim()
   }
 
   private sanitizeValue(value: any): any {
     if (typeof value === 'string')
       return this.sanitizeString(value)
-    
+
     if (Array.isArray(value))
       return value.map(item => this.sanitizeValue(item))
-    
-    if (value && typeof value === 'object')
+
+    if (value && typeof value === 'object') {
       return Object.fromEntries(
-        Object.entries(value).map(([k, v]) => [this.sanitizeString(k), this.sanitizeValue(v)])
+        Object.entries(value).map(([k, v]) => [this.sanitizeString(k), this.sanitizeValue(v)]),
       )
-    
+    }
+
     return value
   }
 

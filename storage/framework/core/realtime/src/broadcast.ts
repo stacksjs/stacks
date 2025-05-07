@@ -1,8 +1,8 @@
-import type { BroadcastConfig } from "@stacksjs/types"
-import { appPath } from "@stacksjs/path"
-import type { ChannelType, RealtimeDriver } from "./types"
-import { RealtimeFactory } from "./factory"
-import { config } from "@stacksjs/config"
+import type { BroadcastConfig } from '@stacksjs/types'
+import type { ChannelType, RealtimeDriver } from './types'
+import { config } from '@stacksjs/config'
+import { appPath } from '@stacksjs/path'
+import { RealtimeFactory } from './factory'
 
 export class Broadcast {
   private driver: RealtimeDriver

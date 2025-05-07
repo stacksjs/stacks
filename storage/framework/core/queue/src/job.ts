@@ -1,4 +1,4 @@
-import type { QueueOption, Dispatchable } from '@stacksjs/types'
+import type { Dispatchable, QueueOption } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { log } from '@stacksjs/cli'
