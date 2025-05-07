@@ -10,3 +10,18 @@ export interface RealtimeDriver {
   broadcast: (channel: string, event: string, data?: any, type?: ChannelType) => void
   isConnected: () => boolean
 }
+
+export interface Broadcastable {
+  broadcastEvent(): Promise<void>
+  broadcastEventNow(): Promise<void>
+  setChannel(channel: string): this
+  excludeCurrentUser(): this
+  setPresenceChannel(): this
+  setPrivateChannel(): this
+}
+
+export interface BroadcastConfig {
+  channel?: string
+  event?: string
+  handle?: (data: any) => Promise<void>
+}

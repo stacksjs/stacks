@@ -1,12 +1,17 @@
-import type { ChannelType, RealtimeDriver } from '../types'
+import type { Broadcastable, ChannelType, RealtimeDriver } from '../types'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import Pusher from 'pusher'
 
-export class PusherDriver implements RealtimeDriver {
+export class PusherDriver implements RealtimeDriver, Broadcastable {
   private pusher: Pusher | null = null
   private isConnectedState = false
   private channels: Map<string, any> = new Map()
+  private currentChannel: string = 'default'
+  private currentEvent: string = 'message'
+  private currentData: any
+  private channelType: ChannelType = 'public'
+  private shouldExcludeCurrentUser = false
 
   constructor() {
     if (!config.broadcasting.pusher?.appId || !config.broadcasting.pusher?.key || !config.broadcasting.pusher?.secret) {
@@ -85,5 +90,57 @@ export class PusherDriver implements RealtimeDriver {
 
   isConnected(): boolean {
     return this.isConnectedState
+  }
+
+  // Broadcastable interface implementation
+  async broadcastEvent(): Promise<void> {
+    if (!this.pusher) {
+      await this.connect()
+    }
+
+    const channelName = this.channelType === 'public' ? this.currentChannel : `${this.channelType}-${this.currentChannel}`
+
+    if (!this.pusher) {
+      throw new Error('Failed to connect to Pusher')
+    }
+
+    this.pusher.trigger(channelName, this.currentEvent, {
+      event: this.currentEvent,
+      channel: channelName,
+      data: this.currentData,
+    })
+
+    log.info(`Broadcasted event "${this.currentEvent}" to ${this.channelType} channel: ${this.currentChannel}`)
+  }
+
+  async broadcastEventNow(): Promise<void> {
+    await this.broadcastEvent()
+  }
+
+  setChannel(channel: string): this {
+    this.currentChannel = channel
+    return this
+  }
+
+  excludeCurrentUser(): this {
+    this.shouldExcludeCurrentUser = true
+    return this
+  }
+
+  setPresenceChannel(): this {
+    this.channelType = 'presence'
+    return this
+  }
+
+  setPrivateChannel(): this {
+    this.channelType = 'private'
+    return this
+  }
+
+  // Helper method to set event and data
+  setEvent(event: string, data?: any): this {
+    this.currentEvent = event
+    this.currentData = data
+    return this
   }
 }

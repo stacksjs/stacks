@@ -1,12 +1,13 @@
-import type { ChannelType, RealtimeDriver } from './types'
+import type { Broadcastable, BroadcastConfig, ChannelType, RealtimeDriver } from './types'
 import { config } from '@stacksjs/config'
+import { log } from '@stacksjs/cli'
 import { RealtimeFactory } from './factory'
 
 export * from './drivers'
 export * from './types'
 export * from './ws'
 
-class Realtime {
+export class Realtime {
   private driver: RealtimeDriver
 
   constructor() {
@@ -44,6 +45,3 @@ class Realtime {
     return this.driver.isConnected()
   }
 }
-
-// Export a singleton instance
-export const realtime: Realtime = new Realtime()

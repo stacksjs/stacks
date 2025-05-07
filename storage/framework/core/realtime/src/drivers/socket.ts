@@ -1,10 +1,15 @@
-import type { ChannelType, RealtimeDriver } from '../types'
+import type { Broadcastable, ChannelType, RealtimeDriver } from '../types'
 import { log } from '@stacksjs/logging'
 import { Server } from 'socket.io'
 
-export class SocketDriver implements RealtimeDriver {
+export class SocketDriver implements RealtimeDriver, Broadcastable {
   private io: Server | null = null
   private isConnectedState = false
+  private currentChannel: string = 'default'
+  private currentEvent: string = 'message'
+  private currentData: any
+  private channelType: ChannelType = 'public'
+  private shouldExcludeCurrentUser = false
 
   constructor(private options: { port?: number, host?: string } = {}) {}
 
@@ -99,5 +104,63 @@ export class SocketDriver implements RealtimeDriver {
 
   isConnected(): boolean {
     return this.isConnectedState
+  }
+
+  async broadcastEvent(): Promise<void> {
+    if (!this.io) {
+      await this.connect()
+    }
+
+    const channelName = this.channelType === 'public' ? this.currentChannel : `${this.channelType}-${this.currentChannel}`
+
+    if (!this.io) {
+      throw new Error('Failed to connect to Socket.IO server')
+    }
+
+    if (this.channelType !== 'public') {
+      const room = this.io.sockets.adapter.rooms.get(channelName)
+      if (!room) {
+        log.warn(`No clients connected to ${this.channelType} channel: ${this.currentChannel}`)
+        return
+      }
+    }
+
+    this.io.to(channelName).emit(this.currentEvent, {
+      event: this.currentEvent,
+      channel: channelName,
+      data: this.currentData,
+    })
+
+    log.info(`Broadcasted event "${this.currentEvent}" to ${this.channelType} channel: ${this.currentChannel}`)
+  }
+
+  async broadcastEventNow(): Promise<void> {
+    await this.broadcastEvent()
+  }
+
+  setChannel(channel: string): this {
+    this.currentChannel = channel
+    return this
+  }
+
+  excludeCurrentUser(): this {
+    this.shouldExcludeCurrentUser = true
+    return this
+  }
+
+  setPresenceChannel(): this {
+    this.channelType = 'presence'
+    return this
+  }
+
+  setPrivateChannel(): this {
+    this.channelType = 'private'
+    return this
+  }
+
+  setEvent(event: string, data?: any): this {
+    this.currentEvent = event
+    this.currentData = data
+    return this
   }
 }
