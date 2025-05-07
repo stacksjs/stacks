@@ -54,5 +54,5 @@ const orderData = {
 }
 
 // Trigger the broadcast
-await runBroadcast('OrderShipped', orderData)
+await bro('OrderShipped', orderData)
 */

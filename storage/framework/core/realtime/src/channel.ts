@@ -2,25 +2,25 @@ import { Broadcast } from './broadcast'
 
 export class Channel {
   private channel: string
-  private broadcast: Broadcast = new Broadcast()
+  private broadcastInstance: Broadcast = new Broadcast()
 
   constructor(channel: string) {
     this.channel = channel
   }
 
   async private(event: string, data?: any): Promise<void> {
-    await this.broadcast.connect()
-    this.broadcast.broadcast(this.channel, event, data, 'private')
+    await this.broadcastInstance.connect()
+    this.broadcastInstance.broadcast(this.channel, event, data, 'private')
   }
 
   async public(event: string, data?: any): Promise<void> {
-    await this.broadcast.connect()
-    this.broadcast.broadcast(this.channel, event, data, 'public')
+    await this.broadcastInstance.connect()
+    this.broadcastInstance.broadcast(this.channel, event, data, 'public')
   }
 
   async presence(event: string, data?: any): Promise<void> {
-    await this.broadcast.connect()
-    this.broadcast.broadcast(this.channel, event, data, 'presence')
+    await this.broadcastInstance.connect()
+    this.broadcastInstance.broadcast(this.channel, event, data, 'presence')
   }
 }
 

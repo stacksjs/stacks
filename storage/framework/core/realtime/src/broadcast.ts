@@ -54,3 +54,7 @@ export async function runBroadcast(name: string, payload?: any): Promise<void> {
 
   throw new Error(`Broadcast ${name} must define a handle function`)
 }
+
+export async function broadcast(name: string, payload?: any): Promise<void> {
+  await runBroadcast(name, payload)
+}
