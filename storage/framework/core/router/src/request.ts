@@ -51,7 +51,11 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   public headers: any = {}
 
   public addQuery(url: URL): void {
-    this.query = Object.fromEntries(url.searchParams) as unknown as T
+    const trimmedQuery: Record<string, string> = {}
+    for (const [key, value] of url.searchParams) {
+      trimmedQuery[key.trim()] = value
+    }
+    this.query = trimmedQuery as unknown as T
   }
 
   public addBodies(params: any): void {
@@ -69,9 +73,6 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   public get<T = string>(element: string, defaultValue?: T): T {
     const value = this.query[element]
 
-    // console.log('Value:', value)
-    // console.log('Type of value:', typeof value)
-
     if (!value)
       return defaultValue as T
 
@@ -81,11 +82,12 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
 
     // Try to parse string values that might be JSON
     if (typeof value === 'string') {
+      const trimmedValue = value.trim()
       try {
-        return JSON.parse(value) as T
+        return JSON.parse(trimmedValue) as T
       }
       catch {
-        return value as T
+        return trimmedValue as T
       }
     }
 
