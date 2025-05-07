@@ -1,4 +1,4 @@
-import type { QueueOption } from '@stacksjs/types'
+import type { QueueOption, Dispatchable } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { log } from '@stacksjs/cli'
@@ -10,15 +10,6 @@ const queueDriver = 'database'
 interface JobConfig {
   handle?: (payload?: any) => Promise<void>
   action?: string | (() => Promise<void>)
-}
-
-interface Dispatchable {
-  dispatch: () => Promise<void>
-  dispatchNow: () => Promise<void>
-  delay: (seconds: number) => this
-  afterResponse: () => this
-  chain: (jobs: Dispatchable[]) => this
-  onQueue: (queue: string) => this
 }
 
 export async function runJob(name: string, options: QueueOption = {}): Promise<void> {

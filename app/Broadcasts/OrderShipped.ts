@@ -1,4 +1,4 @@
-import type { BroadcastConfig } from '@stacksjs/types'
+import type { BroadcastOptions } from '@stacksjs/types'
 import { channel } from '@stacksjs/realtime'
 
 interface OrderData {
@@ -33,7 +33,7 @@ export default {
 
     await channel(`orders.${data.orderId}`).private(this.event, data)
   },
-} satisfies BroadcastConfig
+} satisfies BroadcastOptions
 
 // Usage example:
 /*
@@ -54,5 +54,5 @@ const orderData = {
 }
 
 // Trigger the broadcast
-await bro('OrderShipped', orderData)
+await broadcast('OrderShipped', order ata)
 */

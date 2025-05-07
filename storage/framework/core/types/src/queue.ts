@@ -1,6 +1,15 @@
 import type { JobOptions } from './cron-jobs'
 import type { DeepPartial } from './utils'
 
+export interface Dispatchable {
+  dispatch: () => Promise<void>
+  dispatchNow: () => Promise<void>
+  delay: (seconds: number) => this
+  afterResponse: () => this
+  chain: (jobs: Dispatchable[]) => this
+  onQueue: (queue: string) => this
+}
+
 export interface QueueOptions {
   default: 'sync' | 'database' | 'redis' | 'sqs'
   connections: {
@@ -42,6 +51,7 @@ export interface QueueOption extends JobOptions {
   afterResponse?: any
   context?: string
   maxTries?: number
+  chainedJobs?: Dispatchable[]
 }
 
 export type QueueConfig = DeepPartial<QueueOptions>
