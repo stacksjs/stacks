@@ -30,11 +30,7 @@ class Controller {
    * Return a no content response
    */
   protected noContent(): ResponseData {
-    return {
-      status: 204,
-      headers: {},
-      body: '',
-    }
+    return response.noContent()
   }
 
   /**
