@@ -1,37 +1,59 @@
 import type { BroadcastConfig } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
-import { broadcast } from '@stacksjs/realtime'
+import { Realtime } from '@stacksjs/realtime'
 
 interface OrderData {
   orderId: string
-  customerName: string
-  shippingAddress: string
-  items: Array<{
+  userId: string
+  products: Array<{
     id: string
     name: string
     quantity: number
   }>
+  totalAmount: number
+  shippingAddress: {
+    street: string
+    city: string
+    country: string
+    postalCode: string
+  }
   shippedAt?: string
 }
 
+const EVENT_NAME = 'OrderShipped'
+
 export default {
+  /**
+   * The channel the event should be broadcast on.
+   */
   channel: 'orders',
-  event: 'OrderShipped',
+
+  /**
+   * The event name.
+   */
+  event: EVENT_NAME,
+
   /**
    * Handle the broadcast event.
    * This method is called when the event is triggered.
    * It handles the broadcasting logic and any additional actions.
    */
   async handle(data: OrderData): Promise<void> {
-    log.info('Order shipped:', data)
-    // Add shipping timestamp
+    // Log the shipping event
+    log.info(`Order ${data.orderId} has been shipped to ${data.userId}`)
+
+    // Add shipping timestamp to the data
     data.shippedAt = new Date().toISOString()
 
-    // Broadcast the event to the order-specific private channel
-    await broadcast('OrderShipped', data)
-      .onChannel(`orders.${data.orderId}`)
-      .toPrivate()
-      .broadcast()
+    // Initialize realtime and broadcast
+    const realtime = new Realtime()
+    await realtime.connect()
+    realtime.broadcast(
+      `orders.${data.orderId}`,
+      EVENT_NAME,
+      data,
+      'private'
+    )
   },
 } satisfies BroadcastConfig
 
@@ -39,17 +61,20 @@ export default {
 /*
 const orderData = {
   orderId: '12345',
-  customerName: 'John Doe',
-  shippingAddress: '123 Main St, Anytown, USA',
-  items: [
+  userId: 'user_123',
+  products: [
     { id: 'prod_1', name: 'Widget', quantity: 2 },
     { id: 'prod_2', name: 'Gadget', quantity: 1 },
   ],
+  totalAmount: 99.99,
+  shippingAddress: {
+    street: '123 Main St',
+    city: 'Anytown',
+    country: 'USA',
+    postalCode: '12345',
+  },
 }
 
 // Trigger the broadcast
-await broadcast('OrderShipped', orderData)
-  .onChannel(`orders.${orderData.orderId}`)
-  .toPrivate()
-  .broadcast()
+await runBroadcast('OrderShipped', orderData)
 */

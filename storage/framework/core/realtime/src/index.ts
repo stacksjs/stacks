@@ -2,6 +2,7 @@ import type { Broadcastable, BroadcastConfig, ChannelType, RealtimeDriver } from
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/cli'
 import { RealtimeFactory } from './factory'
+import { appPath } from '@stacksjs/path'
 
 export * from './drivers'
 export * from './types'
@@ -44,4 +45,29 @@ export class Realtime {
   isConnected(): boolean {
     return this.driver.isConnected()
   }
+}
+
+export async function runBroadcast(name: string, payload?: any): Promise<void> {
+  const broadcastModule = await import(appPath(`Broadcasts/${name}.ts`))
+  const broadcast = broadcastModule.default as BroadcastConfig
+
+  if (broadcast.handle) {
+    await broadcast.handle(payload)
+    return
+  }
+
+  // If no handle, try to execute the module directly
+  if (typeof broadcastModule.default === 'function') {
+    await broadcastModule.default(payload)
+    return
+  }
+
+  // Try to execute the file itself if it exports a function
+  const possibleFunction = Object.values(broadcastModule).find(exp => typeof exp === 'function')
+  if (possibleFunction) {
+    await possibleFunction(payload)
+    return
+  }
+
+  throw new Error(`Broadcast ${name} must export a function or define a handle function`)
 }
