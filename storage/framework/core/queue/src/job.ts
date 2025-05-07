@@ -242,14 +242,15 @@ export function job(name: string, payload?: any): Queue {
 /*
 // 1. Using handle method
 export default {
-  async handle() {
+  async handle(payload) {
     // Job logic here
+    // payload contains the data passed when dispatching the job
   }
 }
 
 // 2. Using action string
 export default {
-  action: 'SendWelcomeEmail'
+  action: 'SendWelcomeEmail' // References an action in your actions directory
 }
 
 // 3. Using action function
@@ -262,21 +263,51 @@ export default {
 // 4. Direct function export
 export default async function(payload, context) {
   // Job logic here
+  // payload contains the data passed when dispatching the job
+  // context contains additional context passed via withContext()
 }
 
 // 5. Named export
 export async function processOrder(payload, context) {
   // Job logic here
+  // payload contains the data passed when dispatching the job
+  // context contains additional context passed via withContext()
 }
 
 // Usage examples:
-await job('SendWelcomeEmail', { user })
+
+// Basic job dispatch
+await job('SendWelcomeEmail', { user: { id: 1, email: 'user@example.com' } })
   .onQueue('emails')
   .dispatch()
 
-await job('ProcessOrder')
+// Job with retry configuration
+await job('ProcessOrder', { orderId: 123 })
   .withContext({ priority: 'high' })
   .tries(3)
-  .backoff([10, 30, 60])
+  .backoff([10, 30, 60]) // Retry after 10s, 30s, then 60s
   .dispatch()
+
+// Delayed job
+await job('SendReminder', { userId: 1 })
+  .delay(3600) // Delay by 1 hour
+  .dispatch()
+
+// Job that runs after response
+await job('CleanupTempFiles')
+  .afterResponse()
+  .dispatch()
+
+// Chained jobs
+const firstJob = job('ProcessPayment', { amount: 100 })
+const secondJob = job('SendReceipt', { email: 'user@example.com' })
+const thirdJob = job('UpdateInventory', { productId: 456 })
+
+await firstJob
+  .chain([secondJob, thirdJob])
+  .dispatch()
+
+// Immediate execution
+await job('ProcessOrder', { orderId: 123 })
+  .dispatchNow()
 */
