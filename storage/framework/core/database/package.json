@@ -42,8 +42,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.803.0",
-    "@aws-sdk/lib-dynamodb": "^3.803.0",
+    "@aws-sdk/client-dynamodb": "^3.804.0",
+    "@aws-sdk/lib-dynamodb": "^3.804.0",
     "dynamodb-toolbox": "^2.2.1"
   },
   "optionalDependencies": {
