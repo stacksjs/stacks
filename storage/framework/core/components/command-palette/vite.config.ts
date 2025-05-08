@@ -60,7 +60,6 @@ export default defineConfig(({ mode }) => {
           {
             format: 'es',
             entryFileNames: `index.js`,
-            preserveModules: false,
           },
         ],
       },

@@ -57,7 +57,6 @@ export default defineConfig(({ mode }) => {
           {
             format: 'es',
             entryFileNames: `stacks-notification.js`,
-            preserveModules: false,
           },
         ],
       },

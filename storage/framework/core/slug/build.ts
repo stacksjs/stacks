@@ -11,6 +11,7 @@ const result = await Bun.build({
   format: 'esm',
   // sourcemap: 'linked',
   minify: true,
+  external: [ '@stacksjs/database', '@stacksjs/types'],
   plugins: [
     dts({
       root: './src',
