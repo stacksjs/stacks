@@ -5,14 +5,14 @@ const { startTime } = await intro({
   dir: import.meta.dir,
 })
 
+// TODO: ensure browser support works
 const result = await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
   format: 'esm',
-  target: 'node',
   // sourcemap: 'linked',
   minify: true,
-  external: ['@stacksjs/cli', '@stacksjs/path'],
+  external: ['@stacksjs/cli', '@stacksjs/path', '@stacksjs/types', '@stacksjs/validation'],
   plugins: [
     dts({
       root: './src',
