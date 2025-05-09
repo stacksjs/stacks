@@ -2,6 +2,61 @@
 
 The Tags module in the CMS package provides a comprehensive set of functions to manage and interact with your content tags. This guide will walk you through the various operations you can perform with tags.
 
+## Making Models Taggable
+
+The tags functionality is implemented as a trait that can be added to any model. To make your model taggable, add the `taggable` trait to your model definition:
+
+```ts
+export default {
+  name: 'Post',
+  table: 'posts',
+  
+  traits: {
+    taggable: true,  // Enable tags for this model
+    // ... other traits
+  },
+
+  // ... rest of model definition
+} satisfies Model
+```
+
+When you add the `taggable` trait to a model:
+
+1. The model automatically gets the ability to have tags
+2. The appropriate database relationships are set up
+3. All tag-related functionality becomes available for that model
+4. The model can be referenced in tags via `taggable_type`
+
+## Model Methods
+
+When you add the `taggable` trait to a model, it automatically gains several methods for working with tags. Here's how to use them:
+
+```ts
+// First, get your model instance
+const post = await Post.find(1)
+
+// Get all tags for this post
+const tags = await post.tags(id)
+
+// Get the tag count
+const count = await post.tagCount(id)
+
+// Add a new tag
+const newTag = await post.addTag(id, {
+  name: 'technology',
+  description: 'Tech-related content'
+})
+
+// Get tags by status
+const activeTags = await post.activeTags(id)
+const inactiveTags = await post.inactiveTags(id)
+
+// Remove a tag
+await post.removeTag(id, tagId)
+```
+
+These methods make it easy to work with tags directly from your model instances, providing a more intuitive and object-oriented way to manage tags.
+
 ## Getting Started
 
 First, import the tags functionality from the CMS package:
