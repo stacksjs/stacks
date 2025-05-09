@@ -21,10 +21,39 @@ export default {
 ```
 
 When you add the `commentables` trait to a model:
+
 1. The model automatically gets the ability to have comments
 2. The appropriate database relationships are set up
 3. All comment-related functionality becomes available for that model
 4. The model can be referenced in comments via `commentables_type`
+
+## Model Methods
+
+When you add the `commentables` trait to a model, it automatically gains several methods for working with comments. Here's how to use them:
+
+```ts
+// First, get your model instance
+const post = await Post.find(1)
+
+// Get all comments for this post
+const comments = await post.comments()
+
+// Get the comment count
+const count = await post.commentCount(id)
+
+// Add a new comment
+await post.addComment(id, {
+  title: 'Great Post!',
+  body: 'This was very informative...'
+})
+
+// Get comments by status
+const approved = await post.approvedComments(id)
+const pending = await post.pendingComments(id)
+const rejected = await post.rejectedComments(id)
+```
+
+These methods make it easy to work with comments directly from your model instances, providing a more intuitive and object-oriented way to manage comments.
 
 ## Getting Started
 
