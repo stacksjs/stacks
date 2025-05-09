@@ -34,7 +34,6 @@ async function createCategorizable(categorizable: Partial<Categorizables>) {
       name: categorizable.name,
       description: categorizable.description,
       is_active: categorizable.is_active,
-      categorizable_id: categorizable.categorizable_id,
       categorizable_type: categorizable.categorizable_type,
     }))
     .json()

@@ -281,6 +281,8 @@ export interface Categorizables {
   created_at: string
 }
 
+export type PostCategorizable = Omit<Categorizables, 'categorizable_type' | 'is_active'>
+
 export interface Pages {
   id: number
   title: string

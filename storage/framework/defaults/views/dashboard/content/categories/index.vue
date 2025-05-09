@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar, Doughnut } from 'vue-chartjs'
-import type { Categorizables } from '../../../../functions/types'
+import type { Categorizables, PostCategorizable } from '../../../../functions/types'
+import { useCategorizables } from '../../../../functions/cms/categorizables'
 
 import {
   Chart as ChartJS,
@@ -34,6 +35,8 @@ ChartJS.register(
 useHead({
   title: 'Dashboard - Blog Categories',
 })
+
+const categorizablesModule = useCategorizables()
 
 // Chart options
 const chartOptions = {
@@ -156,104 +159,7 @@ const timeRange = ref('Last 30 days')
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Sample categories data
-const categories = ref<Categorizables[]>([
-  {
-    id: 1,
-    name: 'Technology',
-    slug: 'technology',
-    description: 'Latest technology news, trends, and innovations',
-    postCount: 28,
-    createdAt: '2023-10-10',
-  },
-  {
-    id: 2,
-    name: 'Tutorials',
-    slug: 'tutorials',
-    description: 'Step-by-step guides and how-to articles',
-    postCount: 42,
-    createdAt: '2023-10-12',
-  },
-  {
-    id: 3,
-    name: 'Reviews',
-    slug: 'reviews',
-    description: 'Product and service reviews and comparisons',
-    postCount: 15,
-    createdAt: '2023-10-15',
-  },
-  {
-    id: 4,
-    name: 'News',
-    slug: 'news',
-    description: 'Latest industry news and updates',
-    postCount: 31,
-    createdAt: '2023-10-18',
-  },
-  {
-    id: 5,
-    name: 'Opinion',
-    slug: 'opinion',
-    description: 'Editorial content and opinion pieces',
-    postCount: 12,
-    createdAt: '2023-10-20',
-  },
-  {
-    id: 6,
-    name: 'Development',
-    slug: 'development',
-    description: 'Software development topics and trends',
-    postCount: 24,
-    createdAt: '2023-10-22',
-  },
-  {
-    id: 7,
-    name: 'Design',
-    slug: 'design',
-    description: 'UI/UX design principles and case studies',
-    postCount: 18,
-    created_at: '2023-10-25',
-  },
-  {
-    id: 8,
-    name: 'Security',
-    slug: 'security',
-    description: 'Cybersecurity news, tips, and best practices',
-    postCount: 14,
-    createdAt: '2023-10-28',
-  },
-  {
-    id: 9,
-    name: 'Mobile',
-    slug: 'mobile',
-    description: 'Mobile development and app reviews',
-    postCount: 20,
-    createdAt: '2023-11-01',
-  },
-  {
-    id: 10,
-    name: 'Cloud',
-    slug: 'cloud',
-    description: 'Cloud computing services and solutions',
-    postCount: 16,
-    createdAt: '2023-11-05',
-  },
-  {
-    id: 11,
-    name: 'AI',
-    slug: 'ai',
-    description: 'Artificial intelligence and machine learning',
-    postCount: 22,
-    createdAt: '2023-11-10',
-  },
-  {
-    id: 12,
-    name: 'DevOps',
-    slug: 'devops',
-    description: 'DevOps practices, tools, and culture',
-    postCount: 10,
-    createdAt: '2023-11-15',
-  }
-])
+const categories = ref<PostCategorizable[]>([])
 
 // Filter and sort options
 const searchQuery = ref('')
@@ -278,11 +184,11 @@ const showNewCategoryModal = ref(false)
 
 // Edit Category Modal
 const showEditModal = ref(false)
-const categoryToEdit = ref<Category | null>(null)
+const categoryToEdit = ref<PostCategorizable | null>(null)
 
 // Delete Confirmation Modal
 const showDeleteModal = ref(false)
-const categoryToDelete = ref<Category | null>(null)
+const categoryToDelete = ref<PostCategorizable | null>(null)
 const selectedCategoryIds = ref<number[]>([])
 const selectAll = ref(false)
 
@@ -301,7 +207,7 @@ const filteredCategories = computed(() => {
 
   // Apply sorting
   result.sort((a, b) => {
-    const sortField = sortBy.value as keyof Categorizables
+    const sortField = sortBy.value as keyof typeof a
     let aValue = a[sortField]
     let bValue = b[sortField]
 
@@ -380,10 +286,10 @@ const categoryStats = computed(() => {
     : '0.0'
 
   // Find newest category
-  let newestCategory = categories.value[0] || { name: 'None', createdAt: '' } as Category
+  let newestCategory = categories.value[0] || { name: 'None', created_at: '' } as Categorizables
 
   for (const category of categories.value) {
-    if (new Date(category.createdAt) > new Date(newestCategory.createdAt)) {
+    if (new Date(category.created_at) > new Date(newestCategory.created_at)) {
       newestCategory = category
     }
   }
@@ -413,7 +319,7 @@ function closeNewCategoryModal(): void {
   showNewCategoryModal.value = false
 }
 
-function createCategory(): void {
+async function createCategory(): Promise<void> {
   // Validate required fields
   if (!newCategory.value.name) return
 
@@ -426,21 +332,19 @@ function createCategory(): void {
       .replace(/\s+/g, '-')
   }
 
-  const newId = Math.max(...categories.value.map(c => c.id)) + 1
-
-  categories.value.push({
-    id: newId,
+  const category = {
     name: newCategory.value.name,
     slug: slug,
     description: newCategory.value.description,
-    postCount: 0,
-    createdAt: new Date().toISOString().split('T')[0]
-  })
+    is_active: true,
+    categorizable_type: 'post'
+  }
 
+  await categorizablesModule.createCategorizable(category)
   closeNewCategoryModal()
 }
 
-function openEditModal(category: Category): void {
+function openEditModal(category: PostCategorizable): void {
   categoryToEdit.value = { ...category }
   showEditModal.value = true
 }
@@ -472,7 +376,7 @@ function updateCategory(): void {
   closeEditModal()
 }
 
-function confirmDeleteCategory(category: Category): void {
+function confirmDeleteCategory(category: PostCategorizable): void {
   categoryToDelete.value = category
   selectedCategoryIds.value = []
   showDeleteModal.value = true
@@ -523,6 +427,15 @@ function toggleCategorySelection(categoryId: number): void {
 }
 
 const hasSelectedCategories = computed(() => selectedCategoryIds.value.length > 0)
+
+onMounted(async () => {
+  await fetchCategories()
+})
+
+async function fetchCategories() {
+  const allCategories = await categorizablesModule.fetchCategorizables()
+  categories.value = allCategories
+}
 </script>
 
 <template>
@@ -767,7 +680,7 @@ const hasSelectedCategories = computed(() => selectedCategoryIds.value.length > 
                     </td>
                     <td class="px-4 py-4 whitespace-nowrap">
                       <div class="text-sm text-gray-500 dark:text-gray-300">
-                        {{ category.createdAt }}
+                        {{ category.created_at }}
                       </div>
                     </td>
                     <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -1084,7 +997,7 @@ const hasSelectedCategories = computed(() => selectedCategoryIds.value.length > 
                 <div v-if="selectedCategoryIds.length > 1" class="mt-4 max-h-40 overflow-y-auto">
                   <ul class="space-y-2">
                     <li v-for="id in selectedCategoryIds" :key="id" class="text-sm text-gray-700 dark:text-gray-300">
-                      {{ categories.find((c: Category) => c.id === id)?.name }}
+                      {{ categories.find((c: PostCategorizable) => c.id === id)?.name }}
                     </li>
                   </ul>
                 </div>
