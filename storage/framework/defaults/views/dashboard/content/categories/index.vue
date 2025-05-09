@@ -323,21 +323,11 @@ async function createCategory(): Promise<void> {
   // Validate required fields
   if (!newCategory.value.name) return
 
-  // Generate slug if not provided
-  let slug = newCategory.value.slug
-  if (!slug) {
-    slug = newCategory.value.name
-      .toLowerCase()
-      .replace(/[^\w\s]/gi, '')
-      .replace(/\s+/g, '-')
-  }
-
   const category = {
     name: newCategory.value.name,
-    slug: slug,
     description: newCategory.value.description,
     is_active: true,
-    categorizable_type: 'post'
+    categorizable_type: 'posts'
   }
 
   await categorizablesModule.createCategorizable(category)

@@ -865,33 +865,65 @@ export class BaseOrm<T, C, J> {
   protected async loadRelations(_model: T): Promise<void> {}
 
   // Base implementations for categorizable trait
-  protected async baseCategories(): Promise<any[]> {
+  protected async getCategoryIds(id: number): Promise<number[]> {
+    const categoryLinks = await DB.instance
+      .selectFrom('categorizable_models')
+      .where('categorizable_id', '=', id)
+      .where('categorizable_type', '=', this.tableName)
+      .selectAll()
+      .execute()
+
+    return categoryLinks.map((link: { category_id: number }) => link.category_id)
+  }
+
+  protected async baseCategories(id: number): Promise<any[]> {
+    const categoryIds = await this.getCategoryIds(id)
+
+    if (categoryIds.length === 0)
+      return []
+
     return await DB.instance
       .selectFrom('categorizable')
-      .where('categorizable_type', '=', this.tableName)
+      .where('id', 'in', categoryIds)
       .selectAll()
       .execute()
   }
 
-  protected async baseCategoryCount(): Promise<number> {
-    const result = await DB.instance
-      .selectFrom('categorizable')
-      .select(sql`count(*) as count`)
-      .where('categorizable_type', '=', this.tableName)
-      .executeTakeFirst()
-
-    return Number(result?.count) || 0
+  protected async baseCategoryCount(id: number): Promise<number> {
+    const categoryIds = await this.getCategoryIds(id)
+    return categoryIds.length
   }
 
-  protected async baseAddCategory(category: { name: string, description?: string, parent_id?: number }): Promise<any> {
+  protected async baseAddCategory(id: number, category: { name: string, description?: string }): Promise<any> {
+    // First check if category exists or create it
+    let categoryRecord = await DB.instance
+      .selectFrom('categorizable')
+      .where('name', '=', category.name)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!categoryRecord) {
+      categoryRecord = await DB.instance
+        .insertInto('categorizable')
+        .values({
+          name: category.name,
+          description: category.description,
+          slug: category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date(),
+        })
+        .returningAll()
+        .executeTakeFirst()
+    }
+
+    // Then create the relationship
     return await DB.instance
-      .insertInto('categorizable')
+      .insertInto('categorizable_models')
       .values({
-        ...category,
+        categorizable_id: id,
         categorizable_type: this.tableName,
-        slug: category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        order: 0,
-        is_active: true,
+        category_id: categoryRecord.id,
         created_at: new Date(),
         updated_at: new Date(),
       })
