@@ -1,7 +1,7 @@
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 
-export interface commentables {
+export interface Commentable {
   id?: number
   title: string
   body: string
@@ -10,24 +10,24 @@ export interface commentables {
   rejected_at: number | null
   commentables_id: number
   commentables_type: string
-  reports_count: number
-  reported_at: number | null
-  upvotes_count: number
-  downvotes_count: number
+  reports_count?: number
+  reported_at?: number | null
+  upvotes_count?: number
+  downvotes_count?: number
   user_id: number | null
-  created_at: string
-  updated_at: string | null
+  created_at?: string
+  updated_at?: string | null
 }
 
 export type CommentStatus = 'approved' | 'pending' | 'spam'
 
 export async function fetchComments(options: {
-  status?: commentables['status']
+  status?: Commentable['status']
   commentables_id?: number
   commentables_type?: string
   limit?: number
   offset?: number
-} = {}): Promise<commentables[]> {
+} = {}): Promise<Commentable[]> {
   let query = db.selectFrom('commentables')
 
   if (options.status)
@@ -48,7 +48,7 @@ export async function fetchComments(options: {
   return query.selectAll().execute()
 }
 
-export async function fetchCommentById(id: number): Promise<commentables | undefined> {
+export async function fetchCommentById(id: number): Promise<Commentable | undefined> {
   return db
     .selectFrom('commentables')
     .where('id', '=', id)
@@ -59,8 +59,8 @@ export async function fetchCommentById(id: number): Promise<commentables | undef
 export async function fetchCommentsByCommentables(
   commentables_id: number,
   commentables_type: string,
-  options: { status?: commentables['status'], limit?: number, offset?: number } = {},
-): Promise<commentables[]> {
+  options: { status?: Commentable['status'], limit?: number, offset?: number } = {},
+): Promise<Commentable[]> {
   let query = db
     .selectFrom('commentables')
     .where('commentables_id', '=', commentables_id)
@@ -105,7 +105,7 @@ export async function fetchCommentCountByPeriod(days: number): Promise<number> {
   }
 }
 
-export async function fetchCommentsByStatus(status: CommentStatus, options: { limit?: number, offset?: number } = {}): Promise<commentables[]> {
+export async function fetchCommentsByStatus(status: CommentStatus, options: { limit?: number, offset?: number } = {}): Promise<Commentable[]> {
   try {
     let query = db
       .selectFrom('commentables')
@@ -291,7 +291,8 @@ export async function fetchMonthlyCommentCounts(dateRange: DateRange): Promise<L
 
     // Group results by year and month
     const monthlyCounts = new Map<string, number>()
-    results.forEach((row: { created_at: string, count: string | number | bigint }) => {
+    results.forEach((row: { created_at: string | undefined, count: string | number | bigint }) => {
+      if (!row.created_at) return
       const date = new Date(row.created_at)
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
       monthlyCounts.set(key, (monthlyCounts.get(key) || 0) + Number(row.count))

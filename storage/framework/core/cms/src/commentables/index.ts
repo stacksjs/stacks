@@ -7,6 +7,13 @@ export {
   fetchCommentById,
   fetchComments,
   fetchCommentsByCommentables,
+  fetchCommentsByStatus,
+  fetchCommentCountByPeriod,
+  calculateApprovalRate,
+  fetchPostsWithMostComments,
+  fetchCommentCountBarGraph,
+  fetchStatusDistributionDonut,
+  fetchMonthlyCommentCounts,
 } from './fetch'
 
 export {

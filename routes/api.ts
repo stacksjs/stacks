@@ -234,6 +234,13 @@ route.group({ prefix: '/cms' }, async () => {
   route.patch('/posts/{id}', 'Actions/Cms/PostUpdateAction')
   route.delete('/posts/{id}', 'Actions/Cms/PostDestroyAction')
 
+  // Pages
+  route.get('/pages', 'Actions/Cms/PageIndexAction')
+  route.post('/pages', 'Actions/Cms/PageStoreAction')
+  route.get('/pages/{id}', 'Actions/Cms/PageShowAction')
+  route.patch('/pages/{id}', 'Actions/Cms/PageUpdateAction')
+  route.delete('/pages/{id}', 'Actions/Cms/PageDestroyAction')
+
   // Post Categories
   route.get('/categorizables', 'Actions/Cms/CategorizableIndexAction')
   route.post('/categorizables', 'Actions/Cms/CategorizableStoreAction')
