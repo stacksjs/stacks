@@ -246,4 +246,55 @@ await posts.sync(postId, 'categorizable_models', [category.id])
 const postsInCategory = await posts.fetchByCategory('Technology')
 ```
 
+## API Endpoints
+
+The Categories module provides RESTful API endpoints for managing categories. All endpoints are prefixed with `/cms`.
+
+```
+GET    /cms/categorizables              # List all categories
+POST   /cms/categorizables              # Create a new category
+GET    /cms/categorizables/{id}         # Get a specific category
+PATCH  /cms/categorizables/{id}         # Update a category
+DELETE /cms/categorizables/{id}         # Delete a category
+```
+
+### Example Usage
+
+```ts
+// List all categories
+const response = await fetch('/cms/categorizables')
+const categories = await response.json()
+
+// Create a new category
+const response = await fetch('/cms/categorizables', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'Technology',
+    description: 'Tech-related content'
+  }),
+})
+const newCategory = await response.json()
+
+// Update a category
+const response = await fetch('/cms/categorizables/1', {
+  method: 'PATCH',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'Tech',
+    description: 'Updated description'
+  }),
+})
+const updatedCategory = await response.json()
+
+// Delete a category
+await fetch('/cms/categorizables/1', {
+  method: 'DELETE',
+})
+```
+
 This documentation covers both basic and advanced operations available in the Categories module. The system is designed to be type-safe and provides robust error handling out of the box.

@@ -115,4 +115,81 @@ await posts.sync(postId, {
 })
 ```
 
+## API Endpoints
+
+The Posts module provides RESTful API endpoints for managing posts. All endpoints are prefixed with `/cms`.
+
+```
+GET    /cms/posts              # List all posts
+POST   /cms/posts              # Create a new post
+GET    /cms/posts/{id}         # Get a specific post
+PATCH  /cms/posts/{id}         # Update a post
+DELETE /cms/posts/{id}         # Delete a post
+```
+
+### Example Usage
+
+```ts
+// List all posts
+const response = await fetch('/cms/posts')
+const posts = await response.json()
+
+// Create a new post
+const response = await fetch('/cms/posts', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    title: 'My New Post',
+    content: 'Post content...',
+    excerpt: 'Post excerpt...',
+    status: 'draft',
+    // ... other post attributes
+  }),
+})
+const newPost = await response.json()
+
+// Get a specific post
+const response = await fetch('/cms/posts/1')
+const post = await response.json()
+
+// Update a post
+const response = await fetch('/cms/posts/1', {
+  method: 'PATCH',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    title: 'Updated Title',
+    content: 'Updated content...',
+    status: 'published'
+  }),
+})
+const updatedPost = await response.json()
+
+// Delete a post
+await fetch('/cms/posts/1', {
+  method: 'DELETE',
+})
+```
+
+### Response Format
+
+A successful response includes the post data with all its attributes:
+
+```json
+{
+  "id": 1,
+  "title": "My Post",
+  "content": "Post content...",
+  "excerpt": "Post excerpt...",
+  "status": "published",
+  "views": 0,
+  "author_id": 1,
+  "created_at": "2024-01-01T00:00:00.000Z",
+  "updated_at": "2024-01-01T00:00:00.000Z"
+}
+```
+
 This documentation covers the basic operations available in the Posts module. Each function is type-safe and returns properly typed responses, making it easy to work with in TypeScript environments.

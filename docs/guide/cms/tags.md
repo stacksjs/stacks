@@ -201,3 +201,54 @@ interface Taggables {
 ```
 
 This documentation covers both basic and advanced operations available in the Tags module. The system is designed to be type-safe and provides robust error handling out of the box.
+
+## API Endpoints
+
+The Tags module provides RESTful API endpoints for managing tags. All endpoints are prefixed with `/cms`.
+
+```
+GET    /cms/taggables              # List all tags
+POST   /cms/taggables              # Create a new tag
+GET    /cms/taggables/{id}         # Get a specific tag
+PATCH  /cms/taggables/{id}         # Update a tag
+DELETE /cms/taggables/{id}         # Delete a tag
+```
+
+### Example Usage
+
+```ts
+// List all tags
+const response = await fetch('/cms/taggables')
+const tags = await response.json()
+
+// Create a new tag
+const response = await fetch('/cms/taggables', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'technology',
+    description: 'Tech-related content'
+  }),
+})
+const newTag = await response.json()
+
+// Update a tag
+const response = await fetch('/cms/taggables/1', {
+  method: 'PATCH',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'tech',
+    description: 'Updated description'
+  }),
+})
+const updatedTag = await response.json()
+
+// Delete a tag
+await fetch('/cms/taggables/1', {
+  method: 'DELETE',
+})
+```
