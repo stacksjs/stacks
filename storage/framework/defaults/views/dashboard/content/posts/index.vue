@@ -4,10 +4,10 @@ import { useHead } from '@vueuse/head'
 import { Line, Bar, Doughnut } from 'vue-chartjs'
 import type { StorePost } from '../../../../functions/types'
 import { usePosts } from '../../../../functions/cms/posts'
-import { useCategories } from '../../../../functions/cms/categories'
+import { useCategorizables } from '../../../../functions/cms/categorizables'
 
 const postsModule = usePosts()
-const categoriesModule = useCategories()
+const categorizablesModule = useCategorizables()
 
 import {
   Chart as ChartJS,
@@ -380,7 +380,7 @@ function openNewPostModal() {
 }
 
 async function fetchCategories() {
-  const allCategories = await categoriesModule.fetchCategories()
+  const allCategories = await categorizablesModule.fetchCategorizables()
   categories.value = allCategories
 }
 

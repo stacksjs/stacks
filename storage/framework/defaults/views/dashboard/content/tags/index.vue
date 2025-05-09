@@ -1,412 +1,311 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar, Doughnut } from 'vue-chartjs'
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement } from 'chart.js'
+import type { Taggables } from '../../../../functions/types'
+import { useTaggables } from '../../../../functions/cms/taggables'
 
-// Register ChartJS components
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement)
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+)
 
 useHead({
   title: 'Dashboard - Blog Tags',
 })
 
+const taggablesModule = useTaggables()
+
 // Chart options
-const lineChartOptions = {
+const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
   scales: {
     y: {
       beginAtZero: true,
-      ticks: {
-        precision: 0
-      }
-    }
+      grid: {
+        display: true,
+        color: 'rgba(0, 0, 0, 0.05)',
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+    },
   },
-  plugins: {
-    legend: {
-      position: 'top' as const,
-    }
-  }
 }
 
-const barChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      beginAtZero: true,
-      ticks: {
-        precision: 0
-      }
-    }
-  },
-  plugins: {
-    legend: {
-      position: 'top' as const,
-    }
-  }
-}
-
+// Doughnut chart options (no scales)
 const doughnutChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      position: 'top' as const,
-    }
-  }
+      display: true,
+      position: 'bottom' as const,
+    },
+  },
 }
 
-// Time range selector
-const timeRanges = [
-  { label: 'Today', value: 'today' },
-  { label: 'Last 7 days', value: '7days' },
-  { label: 'Last 30 days', value: '30days' },
-  { label: 'Last 90 days', value: '90days' },
-  { label: 'Last year', value: 'year' },
-  { label: 'All time', value: 'all' }
-]
-const selectedTimeRange = ref('30days')
+// Generate monthly data for charts
+const monthlyChartData = computed(() => {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-// Sample tags data
-const tags = ref([
-  {
-    id: 1,
-    name: 'JavaScript',
-    slug: 'javascript',
-    description: 'All posts related to JavaScript programming language',
-    postCount: 24,
-    createdAt: '2023-10-15',
-  },
-  {
-    id: 2,
-    name: 'Vue',
-    slug: 'vue',
-    description: 'Vue.js framework tutorials and guides',
-    postCount: 18,
-    createdAt: '2023-10-15',
-  },
-  {
-    id: 3,
-    name: 'React',
-    slug: 'react',
-    description: 'React library tutorials and guides',
-    postCount: 15,
-    createdAt: '2023-10-20',
-  },
-  {
-    id: 4,
-    name: 'CSS',
-    slug: 'css',
-    description: 'CSS styling techniques and best practices',
-    postCount: 12,
-    createdAt: '2023-10-22',
-  },
-  {
-    id: 5,
-    name: 'TypeScript',
-    slug: 'typescript',
-    description: 'TypeScript language features and tips',
-    postCount: 10,
-    createdAt: '2023-10-25',
-  },
-  {
-    id: 6,
-    name: 'Web Development',
-    slug: 'web-development',
-    description: 'General web development topics',
-    postCount: 30,
-    createdAt: '2023-10-10',
-  },
-  {
-    id: 7,
-    name: 'Performance',
-    slug: 'performance',
-    description: 'Web performance optimization techniques',
-    postCount: 8,
-    createdAt: '2023-10-28',
-  },
-  {
-    id: 8,
-    name: 'Accessibility',
-    slug: 'accessibility',
-    description: 'Web accessibility guidelines and implementations',
-    postCount: 6,
-    createdAt: '2023-11-01',
-  },
-  {
-    id: 9,
-    name: 'Node.js',
-    slug: 'nodejs',
-    description: 'Node.js backend development',
-    postCount: 14,
-    createdAt: '2023-11-05',
-  },
-  {
-    id: 10,
-    name: 'API',
-    slug: 'api',
-    description: 'API design and implementation',
-    postCount: 9,
-    createdAt: '2023-11-10',
-  },
-  {
-    id: 11,
-    name: 'Best Practices',
-    slug: 'best-practices',
-    description: 'Coding best practices and standards',
-    postCount: 16,
-    createdAt: '2023-11-15',
-  },
-  {
-    id: 12,
-    name: 'Frontend',
-    slug: 'frontend',
-    description: 'Frontend development techniques',
-    postCount: 22,
-    createdAt: '2023-11-20',
+  // Sample data - in a real app, this would be calculated from actual tag data
+  const tagGrowthData = [5, 6, 7, 8, 8, 9, 10, 10, 11, 11, 12, 12]
+
+  // Tag growth chart data
+  const tagGrowthChartData = {
+    labels: months,
+    datasets: [
+      {
+        label: 'Tags',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        borderColor: 'rgba(59, 130, 246, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
+        fill: true,
+        tension: 0.4,
+        data: tagGrowthData,
+      },
+    ],
   }
-])
+
+  // Posts per tag chart data
+  const postCountData = tags.value.map(tag => tag.postCount)
+  const tagNames = tags.value.map(tag => tag.name)
+
+  const postsPerTagChartData = {
+    labels: tagNames,
+    datasets: [
+      {
+        label: 'Posts',
+        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1,
+        borderRadius: 4,
+        data: postCountData,
+      },
+    ],
+  }
+
+  // Tag distribution chart data
+  const backgroundColors = [
+    'rgba(59, 130, 246, 0.8)',
+    'rgba(16, 185, 129, 0.8)',
+    'rgba(245, 158, 11, 0.8)',
+    'rgba(239, 68, 68, 0.8)',
+    'rgba(139, 92, 246, 0.8)',
+    'rgba(236, 72, 153, 0.8)',
+    'rgba(75, 85, 99, 0.8)',
+    'rgba(14, 165, 233, 0.8)',
+    'rgba(168, 85, 247, 0.8)',
+    'rgba(249, 115, 22, 0.8)',
+    'rgba(234, 88, 12, 0.8)',
+    'rgba(217, 119, 6, 0.8)',
+  ]
+
+  const tagDistributionChartData = {
+    labels: tagNames,
+    datasets: [
+      {
+        data: postCountData,
+        backgroundColor: backgroundColors.slice(0, tagNames.length),
+        borderWidth: 0,
+      },
+    ],
+  }
+
+  return {
+    tagGrowthChartData,
+    postsPerTagChartData,
+    tagDistributionChartData,
+  }
+})
+
+// Time range selector
+const timeRange = ref('Last 30 days')
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
+
+// Tags data
+const tags = ref<Taggables[]>([])
 
 // Filter and sort options
 const searchQuery = ref('')
 const sortBy = ref('postCount')
 const sortOrder = ref('desc')
+const itemsPerPage = ref(10)
+const currentPage = ref(1)
 
 // New Tag Modal
-const showNewTagModal = ref(false)
-const newTag = ref({
+interface NewTagForm {
+  name: string
+  slug: string | undefined
+  description: string
+}
+
+const newTag = ref<NewTagForm>({
   name: '',
-  description: '',
+  slug: undefined,
+  description: ''
 })
+const showNewTagModal = ref(false)
 const newTagErrors = ref({
   name: '',
 })
 
 // Edit Tag Modal
-const showEditTagModal = ref(false)
-const editTag = ref<{
-  id: number;
-  name: string;
-  slug: string;
-  description: string;
-  postCount: number;
-  createdAt: string;
-} | null>(null)
+const showEditModal = ref(false)
+const tagToEdit = ref<Taggables | null>(null)
 const editTagErrors = ref({
   name: '',
 })
 
-function openNewTagModal() {
-  showNewTagModal.value = true
-  // Reset errors
-  newTagErrors.value = { name: '' }
-}
+// Delete Confirmation Modal
+const showDeleteModal = ref(false)
+const tagToDelete = ref<Taggables | null>(null)
+const selectedTagIds = ref<number[]>([])
+const selectAll = ref(false)
 
-function closeNewTagModal() {
-  showNewTagModal.value = false
-  // Reset form
-  newTag.value = {
-    name: '',
-    description: '',
-  }
-  // Reset errors
-  newTagErrors.value = { name: '' }
-}
-
-function validateNewTag(): boolean {
-  let isValid = true
-  newTagErrors.value = { name: '' }
-
-  if (!newTag.value.name.trim()) {
-    newTagErrors.value.name = 'Tag name is required'
-    isValid = false
-  }
-
-  return isValid
-}
-
-function createNewTag() {
-  // Validate form
-  if (!validateNewTag()) {
-    return
-  }
-
-  // In a real app, this would send data to the server
-  const tag = {
-    id: tags.value.length + 1,
-    name: newTag.value.name.trim(),
-    slug: newTag.value.name.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, '-'),
-    description: newTag.value.description.trim(),
-    postCount: 0,
-    createdAt: new Date().toISOString().split('T')[0],
-  } as typeof tags.value[0]
-
-  tags.value.unshift(tag)
-  closeNewTagModal()
-}
-
-function openEditTagModal(tag: typeof tags.value[0]) {
-  editTag.value = { ...tag }
-  showEditTagModal.value = true
-  // Reset errors
-  editTagErrors.value = { name: '' }
-}
-
-function closeEditTagModal() {
-  showEditTagModal.value = false
-  editTag.value = null
-  // Reset errors
-  editTagErrors.value = { name: '' }
-}
-
-function validateEditTag(): boolean {
-  let isValid = true
-  editTagErrors.value = { name: '' }
-
-  if (!editTag.value?.name.trim()) {
-    editTagErrors.value.name = 'Tag name is required'
-    isValid = false
-  }
-
-  return isValid
-}
-
-function updateTag() {
-  if (!editTag.value) return
-
-  // Validate form
-  if (!validateEditTag()) {
-    return
-  }
-
-  const index = tags.value.findIndex(tag => tag.id === editTag.value?.id)
-  if (index !== -1 && editTag.value) {
-    // Create a copy of the editing tag with all required properties
-    const updatedTag = {
-      id: editTag.value.id,
-      name: editTag.value.name.trim(),
-      slug: editTag.value.slug.trim() || editTag.value.name.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, '-'),
-      description: editTag.value.description.trim(),
-      postCount: editTag.value.postCount,
-      // Use a default value if createdAt is undefined
-      createdAt: editTag.value.createdAt || new Date().toISOString().split('T')[0]
-    } as typeof tags.value[0]
-
-    // Update the tag in the array
-    tags.value[index] = updatedTag
-  }
-
-  closeEditTagModal()
-}
-
-function deleteTag(id: number) {
-  const index = tags.value.findIndex(tag => tag.id === id)
-  if (index !== -1) {
-    tags.value.splice(index, 1)
-  }
-}
-
-// Computed filtered and sorted tags
+// Computed properties
 const filteredTags = computed(() => {
-  return tags.value
-    .filter(tag => {
-      // Apply search filter
-      return tag.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        tag.description.toLowerCase().includes(searchQuery.value.toLowerCase())
-    })
-    .sort((a, b) => {
-      // Apply sorting
-      let comparison = 0
-      if (sortBy.value === 'name') {
-        comparison = a.name.localeCompare(b.name)
-      } else if (sortBy.value === 'postCount') {
-        comparison = a.postCount - b.postCount
-      } else if (sortBy.value === 'createdAt') {
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      }
+  let result = [...tags.value]
 
-      return sortOrder.value === 'asc' ? comparison : -comparison
-    })
+  // Apply search filter
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    result = result.filter(tag =>
+      tag.name.toLowerCase().includes(query) ||
+      tag.description.toLowerCase().includes(query)
+    )
+  }
+
+  // Apply sorting
+  result.sort((a, b) => {
+    const sortField = sortBy.value as keyof typeof a
+    let aValue = a[sortField]
+    let bValue = b[sortField]
+
+    // Handle string comparison
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      aValue = aValue.toLowerCase()
+      bValue = bValue.toLowerCase()
+    }
+
+    if (sortOrder.value === 'asc') {
+      return aValue > bValue ? 1 : -1
+    } else {
+      return aValue < bValue ? 1 : -1
+    }
+  })
+
+  return result
 })
 
-// Monthly chart data
-const monthlyChartData = computed(() => {
-  // Generate sample data for tag growth over time
-  const tagGrowthData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    datasets: [
-      {
-        label: 'New Tags',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 2,
-        pointBackgroundColor: 'rgba(75, 192, 192, 1)',
-        data: [2, 3, 1, 4, 2, 5, 3, 2, 4, 6, 3, 2]
-      }
-    ]
-  }
+// Pagination
+const totalPages = computed(() => Math.ceil(filteredTags.value.length / itemsPerPage.value))
 
-  // Generate sample data for posts per tag
-  const postsPerTagData = {
-    labels: tags.value.slice(0, 8).map(tag => tag.name),
-    datasets: [
-      {
-        label: 'Posts',
-        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1,
-        data: tags.value.slice(0, 8).map(tag => tag.postCount)
-      }
-    ]
-  }
-
-  // Generate sample data for tag distribution
-  const tagColors = [
-    'rgba(255, 99, 132, 0.6)',
-    'rgba(54, 162, 235, 0.6)',
-    'rgba(255, 206, 86, 0.6)',
-    'rgba(75, 192, 192, 0.6)',
-    'rgba(153, 102, 255, 0.6)',
-    'rgba(255, 159, 64, 0.6)',
-    'rgba(199, 199, 199, 0.6)',
-    'rgba(83, 102, 255, 0.6)'
-  ]
-
-  const tagDistributionData = {
-    labels: tags.value.slice(0, 8).map(tag => tag.name),
-    datasets: [
-      {
-        backgroundColor: tagColors,
-        borderColor: tagColors.map(color => color.replace('0.6', '1')),
-        borderWidth: 1,
-        data: tags.value.slice(0, 8).map(tag => tag.postCount)
-      }
-    ]
-  }
-
-  return {
-    tagGrowthChartData: tagGrowthData,
-    postsPerTagChartData: postsPerTagData,
-    tagDistributionChartData: tagDistributionData
-  }
+const paginatedTags = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage.value
+  const endIndex = startIndex + itemsPerPage.value
+  return filteredTags.value.slice(startIndex, endIndex)
 })
 
-// Tag statistics
+const paginationRange = computed(() => {
+  const range: (number | string)[] = []
+  const maxVisiblePages = 5
+  const startPage = Math.max(1, currentPage.value - Math.floor(maxVisiblePages / 2))
+  const endPage = Math.min(totalPages.value, startPage + maxVisiblePages - 1)
+
+  if (startPage > 1) {
+    range.push(1)
+    if (startPage > 2) range.push('...')
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    range.push(i)
+  }
+
+  if (endPage < totalPages.value) {
+    if (endPage < totalPages.value - 1) range.push('...')
+    range.push(totalPages.value)
+  }
+
+  return range
+})
+
+// Computed tag statistics
 const tagStats = computed(() => {
+  // Total number of tags
   const totalTags = tags.value.length
-  const totalPosts = tags.value.reduce((sum, tag) => sum + tag.postCount, 0)
-  const mostUsedTag = [...tags.value].sort((a, b) => b.postCount - a.postCount)[0]
-  const leastUsedTag = [...tags.value].sort((a, b) => a.postCount - b.postCount)[0]
-  const avgPostsPerTag = totalPosts / totalTags
-  const topTagPercentage = mostUsedTag ? Math.round((mostUsedTag.postCount / totalPosts) * 100) : 0
 
-  // Find newest tag
-  let newestTag = tags.value[0] || { name: 'None', createdAt: '' }
+  // Total number of posts across all tags
+  const totalPosts = tags.value.reduce((sum, tag) => sum + (tag.postCount || 0), 0)
+
+  // Average posts per tag
+  const avgPostsPerTag = totalTags > 0
+    ? (totalPosts / totalTags).toFixed(1)
+    : '0.0'
+
+  // Find tag with most posts
+  let mostPopularTag = tags.value[0] || { name: 'None', postCount: 0 }
 
   for (const tag of tags.value) {
-    if (new Date(tag.createdAt) > new Date(newestTag.createdAt)) {
+    if ((tag.postCount || 0) > (mostPopularTag.postCount || 0)) {
+      mostPopularTag = tag
+    }
+  }
+
+  // Find tag with least posts
+  let leastPopularTag = tags.value[0] || { name: 'None', postCount: 0 }
+
+  for (const tag of tags.value) {
+    if ((tag.postCount || 0) < (leastPopularTag.postCount || 0)) {
+      leastPopularTag = tag
+    }
+  }
+
+  // Calculate percentage of posts in top tag
+  const topTagPercentage = totalPosts > 0
+    ? (((mostPopularTag.postCount || 0) / totalPosts) * 100).toFixed(1)
+    : '0.0'
+
+  // Find newest tag
+  let newestTag = tags.value[0] || { name: 'None', created_at: '' } as Taggables
+
+  for (const tag of tags.value) {
+    if (new Date(tag.created_at || '') > new Date(newestTag.created_at || '')) {
       newestTag = tag
     }
   }
@@ -414,73 +313,117 @@ const tagStats = computed(() => {
   return {
     totalTags,
     totalPosts,
-    mostUsedTag,
-    leastUsedTag,
-    avgPostsPerTag: avgPostsPerTag.toFixed(1),
+    avgPostsPerTag,
+    mostPopularTag,
+    leastPopularTag,
     topTagPercentage,
     newestTag
   }
 })
 
-// Pagination
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
-const totalPages = computed(() => Math.ceil(filteredTags.value.length / itemsPerPage.value))
-
-const paginatedTags = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredTags.value.slice(start, end)
-})
-
-function changePage(page: number): void {
-  currentPage.value = page
-}
-
-function previousPage(): void {
-  if (currentPage.value > 1) {
-    currentPage.value--
-  }
-}
-
-function nextPage(): void {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-  }
-}
-
-// Toggle sort order
-function toggleSort(column: string): void {
-  if (sortBy.value === column) {
+// Methods
+function toggleSort(field: string): void {
+  if (sortBy.value === field) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy.value = column
+    sortBy.value = field
     sortOrder.value = 'desc'
   }
 }
 
-// Format date
-function formatDate(dateString: string): string {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
+function openNewTagModal(): void {
+  newTag.value = {
+    name: '',
+    slug: undefined,
+    description: ''
+  }
+  showNewTagModal.value = true
 }
 
-// Bulk actions
-const selectedTagIds = ref<number[]>([])
-const selectAll = ref(false)
+function closeNewTagModal(): void {
+  showNewTagModal.value = false
+}
 
-// Delete confirmation
-const showDeleteModal = ref(false)
-const tagToDelete = ref<number | null>(null)
+async function createTag(): Promise<void> {
+  // Validate required fields
+  if (!newTag.value.name) return
+
+  const tag = {
+    name: newTag.value.name,
+    description: newTag.value.description,
+    is_active: true,
+  }
+
+  await taggablesModule.createTaggable(tag)
+  closeNewTagModal()
+}
+
+function openEditModal(tag: Taggables): void {
+  tagToEdit.value = { ...tag }
+  showEditModal.value = true
+}
+
+function closeEditModal(): void {
+  showEditModal.value = false
+}
+
+function updateTag(): void {
+  if (!tagToEdit.value) return
+
+  const index = tags.value.findIndex(t => t.id === tagToEdit.value!.id)
+  if (index !== -1) {
+    // Generate slug if not provided
+    let slug = tagToEdit.value.slug
+    if (!slug) {
+      slug = tagToEdit.value.name
+        .toLowerCase()
+        .replace(/[^\w\s]/gi, '')
+        .replace(/\s+/g, '-')
+    }
+
+    tags.value[index] = {
+      ...tagToEdit.value,
+      slug: slug
+    }
+  }
+
+  closeEditModal()
+}
+
+function confirmDeleteTag(tag: Taggables): void {
+  tagToDelete.value = tag
+  selectedTagIds.value = []
+  showDeleteModal.value = true
+}
+
+function confirmDeleteSelected(): void {
+  showDeleteModal.value = true
+}
+
+function closeDeleteModal(): void {
+  showDeleteModal.value = false
+  tagToDelete.value = null
+}
+
+function deleteSelectedTags(): void {
+  if (selectedTagIds.value.length > 1) {
+    // Delete multiple tags
+    tags.value = tags.value.filter(tag => !selectedTagIds.value.includes(tag.id))
+    selectedTagIds.value = []
+  } else if (tagToDelete.value) {
+    // Delete single tag
+    tags.value = tags.value.filter(tag => tag.id !== tagToDelete.value!.id)
+  }
+
+  closeDeleteModal()
+}
 
 function toggleSelectAll(): void {
   if (selectAll.value) {
+    // Select all tags on current page
     selectedTagIds.value = paginatedTags.value.map(tag => tag.id)
   } else {
+    // Deselect all
     selectedTagIds.value = []
   }
 }
@@ -497,84 +440,26 @@ function toggleTagSelection(tagId: number): void {
   selectAll.value = paginatedTags.value.every(tag => selectedTagIds.value.includes(tag.id))
 }
 
-function confirmDeleteTag(id: number): void {
-  tagToDelete.value = id
-  showDeleteModal.value = true
-}
-
-function confirmDeleteSelected(): void {
-  showDeleteModal.value = true
-}
-
-function closeDeleteModal() {
-  showDeleteModal.value = false
-  tagToDelete.value = null
-}
-
-function deleteSelectedTags(): void {
-  if (selectedTagIds.value.length > 1) {
-    // Delete all selected tags
-    selectedTagIds.value.forEach(id => {
-      const index = tags.value.findIndex(tag => tag.id === id)
-      if (index !== -1) {
-        tags.value.splice(index, 1)
-      }
-    })
-    selectedTagIds.value = []
-    selectAll.value = false
-  } else if (tagToDelete.value !== null) {
-    // Delete single tag
-    const index = tags.value.findIndex(tag => tag.id === tagToDelete.value)
-    if (index !== -1) {
-      tags.value.splice(index, 1)
-    }
-  }
-
-  showDeleteModal.value = false
-  tagToDelete.value = null
-}
-
 const hasSelectedTags = computed(() => selectedTagIds.value.length > 0)
 
-// Fix the paginationRange computed property to ensure it returns only numbers or strings
-const paginationRange = computed(() => {
-  const range: (number | string)[] = [];
-  const maxVisiblePages = 5;
+onMounted(async () => {
+  await fetchTags()
+})
 
-  if (totalPages.value <= maxVisiblePages) {
-    // If we have less pages than the max visible, show all pages
-    for (let i = 1; i <= totalPages.value; i++) {
-      range.push(i);
-    }
-  } else {
-    // Always show first page
-    range.push(1);
+async function fetchTags() {
+  const allTags = await taggablesModule.fetchTaggables()
+  tags.value = allTags
+}
 
-    // Calculate start and end of the visible range
-    let start = Math.max(2, currentPage.value - 1);
-    let end = Math.min(totalPages.value - 1, currentPage.value + 1);
-
-    // Adjust the range to always show 3 pages in the middle
-    if (start === 2) end = Math.min(4, totalPages.value - 1);
-    if (end === totalPages.value - 1) start = Math.max(2, totalPages.value - 3);
-
-    // Add ellipsis if needed before the visible range
-    if (start > 2) range.push('...');
-
-    // Add the visible range
-    for (let i = start; i <= end; i++) {
-      range.push(i);
-    }
-
-    // Add ellipsis if needed after the visible range
-    if (end < totalPages.value - 1) range.push('...');
-
-    // Always show last page
-    range.push(totalPages.value);
-  }
-
-  return range;
-});
+// Format date
+function formatDate(dateString: string): string {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
+}
 </script>
 
 <template>
@@ -602,10 +487,10 @@ const paginationRange = computed(() => {
     <div class="flex justify-end">
       <div class="relative inline-block w-full sm:w-auto">
         <select
-          v-model="selectedTimeRange"
+          v-model="timeRange"
           class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
         >
-          <option v-for="range in timeRanges" :key="range.value" :value="range.value">{{ range.label }}</option>
+          <option v-for="range in timeRanges" :key="range">{{ range }}</option>
         </select>
       </div>
     </div>
@@ -684,10 +569,10 @@ const paginationRange = computed(() => {
                 </dt>
                 <dd>
                   <div class="text-lg font-medium text-gray-900 dark:text-white">
-                    {{ tagStats.mostUsedTag ? tagStats.mostUsedTag.name : 'None' }}
+                    {{ tagStats.mostPopularTag ? tagStats.mostPopularTag.name : 'None' }}
                   </div>
                   <div class="mt-1 text-sm text-green-600 dark:text-green-400">
-                    <span v-if="tagStats.mostUsedTag">{{ tagStats.mostUsedTag.postCount }} posts ({{ tagStats.topTagPercentage }}%)</span>
+                    <span v-if="tagStats.mostPopularTag">{{ tagStats.mostPopularTag.postCount }} posts ({{ tagStats.topTagPercentage }}%)</span>
                   </div>
                 </dd>
               </dl>
@@ -712,10 +597,10 @@ const paginationRange = computed(() => {
                 </dt>
                 <dd>
                   <div class="text-lg font-medium text-gray-900 dark:text-white">
-                    {{ tagStats.leastUsedTag ? tagStats.leastUsedTag.name : 'None' }}
+                    {{ tagStats.leastPopularTag ? tagStats.leastPopularTag.name : 'None' }}
                   </div>
                   <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    <span v-if="tagStats.leastUsedTag">{{ tagStats.leastUsedTag.postCount }} posts</span>
+                    <span v-if="tagStats.leastPopularTag">{{ tagStats.leastPopularTag.postCount }} posts</span>
                   </div>
                 </dd>
               </dl>
@@ -732,7 +617,7 @@ const paginationRange = computed(() => {
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-base font-semibold text-gray-900 dark:text-white">Tag Growth</h3>
           <div class="mt-4" style="height: 250px;">
-            <Line :data="monthlyChartData.tagGrowthChartData" :options="lineChartOptions" />
+            <Line :data="monthlyChartData.tagGrowthChartData" :options="chartOptions" />
           </div>
         </div>
       </div>
@@ -742,7 +627,7 @@ const paginationRange = computed(() => {
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-base font-semibold text-gray-900 dark:text-white">Posts Per Tag</h3>
           <div class="mt-4" style="height: 250px;">
-            <Bar :data="monthlyChartData.postsPerTagChartData" :options="barChartOptions" />
+            <Bar :data="monthlyChartData.postsPerTagChartData" :options="chartOptions" />
           </div>
         </div>
       </div>
@@ -779,7 +664,7 @@ const paginationRange = computed(() => {
         >
           <option value="name">Sort by Name</option>
           <option value="postCount">Sort by Post Count</option>
-          <option value="createdAt">Sort by Created Date</option>
+          <option value="created_at">Sort by Created Date</option>
         </select>
 
         <select
@@ -855,10 +740,10 @@ const paginationRange = computed(() => {
                     </button>
                   </th>
                   <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                    <button @click="toggleSort('createdAt')" class="group inline-flex items-center">
+                    <button @click="toggleSort('created_at')" class="group inline-flex items-center">
                       Created
                       <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                        <div v-if="sortBy === 'createdAt'" :class="[
+                        <div v-if="sortBy === 'created_at'" :class="[
                           sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                           'h-4 w-4'
                         ]"></div>
@@ -904,18 +789,18 @@ const paginationRange = computed(() => {
                     </span>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                    {{ formatDate(tag.createdAt) }}
+                    {{ formatDate(tag.created_at) }}
                   </td>
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                     <div class="flex items-center justify-end space-x-2">
                       <button
-                        @click="openEditTagModal(tag)"
+                        @click="openEditModal(tag)"
                         class="text-gray-400 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                       >
                         <div class="i-hugeicons-edit-01 h-5 w-5"></div>
                       </button>
                       <button
-                        @click="confirmDeleteTag(tag.id)"
+                        @click="confirmDeleteTag(tag)"
                         class="text-gray-400 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                       >
                         <div class="i-hugeicons-waste h-5 w-5"></div>
@@ -1090,7 +975,7 @@ const paginationRange = computed(() => {
           <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
             <button
               type="button"
-              @click="createNewTag"
+              @click="createTag"
               class="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:col-start-2 sm:text-sm"
             >
               Create
@@ -1108,13 +993,13 @@ const paginationRange = computed(() => {
     </div>
 
     <!-- Edit Tag Modal -->
-    <div v-if="showEditTagModal" class="fixed inset-0 z-10 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div v-if="showEditModal" class="fixed inset-0 z-10 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
       <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75 transition-opacity" aria-hidden="true" @click="closeEditTagModal"></div>
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75 transition-opacity" aria-hidden="true" @click="closeEditModal"></div>
         <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
         <div class="inline-block transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-800 px-4 pt-5 pb-4 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 sm:align-middle">
           <div class="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
-            <button type="button" @click="closeEditTagModal" class="rounded-md bg-white dark:bg-blue-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            <button type="button" @click="closeEditModal" class="rounded-md bg-white dark:bg-blue-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
               <span class="sr-only">Close</span>
               <div class="i-hugeicons-cancel-01 h-6 w-6"></div>
             </button>
@@ -1125,7 +1010,7 @@ const paginationRange = computed(() => {
                 Edit Tag
               </h3>
               <div class="mt-4">
-                <div v-if="editTag" class="space-y-4">
+                <div v-if="tagToEdit" class="space-y-4">
                   <div>
                     <label for="edit-tag-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Name <span class="text-red-500">*</span>
@@ -1134,7 +1019,7 @@ const paginationRange = computed(() => {
                       <input
                         type="text"
                         id="edit-tag-name"
-                        v-model="editTag.name"
+                        v-model="tagToEdit.name"
                         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
                         :class="{ 'border-red-500 dark:border-red-500': editTagErrors.name }"
                         placeholder="Enter tag name"
@@ -1149,7 +1034,7 @@ const paginationRange = computed(() => {
                     <div class="mt-1">
                       <textarea
                         id="edit-tag-description"
-                        v-model="editTag.description"
+                        v-model="tagToEdit.description"
                         rows="3"
                         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
                         placeholder="Enter tag description"
@@ -1170,7 +1055,7 @@ const paginationRange = computed(() => {
             </button>
             <button
               type="button"
-              @click="closeEditTagModal"
+              @click="closeEditModal"
               class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-blue-gray-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-blue-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
             >
               Cancel
@@ -1223,7 +1108,7 @@ const paginationRange = computed(() => {
                 <!-- Show single tag name if only one is selected -->
                 <div v-else-if="tagToDelete" class="mt-4 text-center">
                   <div class="inline-flex items-center justify-center px-4 py-2 bg-red-50 dark:bg-red-900/20 rounded-md">
-                    <span class="text-sm font-medium text-red-800 dark:text-red-400">{{ tags.find(tag => tag.id === tagToDelete)?.name }}</span>
+                    <span class="text-sm font-medium text-red-800 dark:text-red-400">{{ tags.find(tag => tag.id === tagToDelete?.id)?.name }}</span>
                   </div>
                 </div>
               </div>

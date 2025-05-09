@@ -92,7 +92,7 @@ export interface Posts {
   uuid?: string
   excerpt: string
   author: string
-  published?: string
+  published: string
   featured?: boolean
 }
 
@@ -268,7 +268,12 @@ export interface Taggables {
   is_active: boolean
   taggable_id: number
   taggable_type: string
+  postCount: number
+  created_at: string
+  updated_at: string
 }
+
+export type PostTaggable = Omit<Taggables, 'taggable_id' | 'taggable_type' | 'is_active'>
 
 export interface Categorizables {
   id: number
