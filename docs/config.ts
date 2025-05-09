@@ -110,8 +110,6 @@ const sidebar = {
         { text: 'Models', link: '/basics/models' },
         { text: 'Views', link: '/basics/views' },
         { text: 'Actions', link: '/basics/actions' },
-        { text: 'CMS', link: '/basics/cms' },
-        { text: 'Commerce', link: '/basics/commerce' },
         { text: 'Commands', link: '/basics/commands' },
         { text: 'Jobs', link: '/basics/jobs' },
         { text: 'Components', link: '/basics/components' },

@@ -20,10 +20,6 @@ export default {
     useSeeder: {
       count: 10,
     },
-    useApi: {
-      uri: 'pages',
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
-    },
   },
 
   belongsTo: ['Author'],
