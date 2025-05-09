@@ -1,9 +1,9 @@
 import * as authors from './authors'
 import * as postCategories from './categorizables'
 import * as comments from './commentables'
+import * as pages from './pages'
 import * as posts from './posts'
 import * as tags from './taggables'
-import * as pages from './pages'
 
 type PostsModule = typeof posts
 type PostCategoriesModule = typeof postCategories
@@ -36,7 +36,7 @@ export {
   authors,
   postCategories as categorizable,
   comments,
+  pages,
   posts,
   tags,
-  pages,
 }

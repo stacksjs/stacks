@@ -292,7 +292,8 @@ export async function fetchMonthlyCommentCounts(dateRange: DateRange): Promise<L
     // Group results by year and month
     const monthlyCounts = new Map<string, number>()
     results.forEach((row: { created_at: string | undefined, count: string | number | bigint }) => {
-      if (!row.created_at) return
+      if (!row.created_at)
+        return
       const date = new Date(row.created_at)
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
       monthlyCounts.set(key, (monthlyCounts.get(key) || 0) + Number(row.count))

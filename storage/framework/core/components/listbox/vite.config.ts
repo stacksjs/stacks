@@ -52,7 +52,7 @@ export default defineConfig(({ mode }) => {
         output: [
           {
             format: 'es',
-            entryFileNames: `index.js`
+            entryFileNames: `index.js`,
           },
         ],
       },

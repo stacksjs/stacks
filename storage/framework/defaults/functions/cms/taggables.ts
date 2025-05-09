@@ -31,7 +31,7 @@ async function fetchTaggables(): Promise<Taggables[]> {
 async function createTaggable(taggable: Partial<Taggables>) {
   const taggableData = {
     ...taggable,
-    taggable_type: 'posts'
+    taggable_type: 'posts',
   }
 
   const { error, data } = await useFetch(`${baseURL}/cms/taggables`)

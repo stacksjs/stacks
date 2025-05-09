@@ -4,16 +4,16 @@ export {
 } from './destroy'
 
 export {
+  calculateApprovalRate,
   fetchCommentById,
+  fetchCommentCountBarGraph,
+  fetchCommentCountByPeriod,
   fetchComments,
   fetchCommentsByCommentables,
   fetchCommentsByStatus,
-  fetchCommentCountByPeriod,
-  calculateApprovalRate,
-  fetchPostsWithMostComments,
-  fetchCommentCountBarGraph,
-  fetchStatusDistributionDonut,
   fetchMonthlyCommentCounts,
+  fetchPostsWithMostComments,
+  fetchStatusDistributionDonut,
 } from './fetch'
 
 export {

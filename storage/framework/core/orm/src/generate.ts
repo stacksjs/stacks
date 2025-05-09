@@ -280,16 +280,8 @@ export async function generateModelString(
         return await this.baseInactiveCategories(id)
       }
 
-      async removeCategory(id: number, categoryId: number): Promise<void> {
-        await this.baseRemoveCategory(id, categoryId)
-      }
-
-      async parentCategories(id: number): Promise<CategorizableTable[]> {
-        return await this.baseParentCategories(id)
-      }
-
-      async childCategories(id: number, parentId: number): Promise<CategorizableTable[]> {
-        return await this.baseChildCategories(id, parentId)
+      async removeCategory(categoryId: number): Promise<void> {
+        await this.baseRemoveCategory(categoryId)
       }
     `
   }

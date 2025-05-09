@@ -931,19 +931,29 @@ export class BaseOrm<T, C, J> {
       .executeTakeFirst()
   }
 
-  protected async baseActiveCategories(): Promise<any[]> {
+  protected async baseActiveCategories(id: number): Promise<any[]> {
+    const categoryIds = await this.getCategoryIds(id)
+
+    if (categoryIds.length === 0)
+      return []
+
     return await DB.instance
       .selectFrom('categorizable')
-      .where('categorizable_type', '=', this.tableName)
+      .where('id', 'in', categoryIds)
       .where('is_active', '=', true)
       .selectAll()
       .execute()
   }
 
-  protected async baseInactiveCategories(): Promise<any[]> {
+  protected async baseInactiveCategories(id: number): Promise<any[]> {
+    const categoryIds = await this.getCategoryIds(id)
+
+    if (categoryIds.length === 0)
+      return []
+
     return await DB.instance
       .selectFrom('categorizable')
-      .where('categorizable_type', '=', this.tableName)
+      .where('id', 'in', categoryIds)
       .where('is_active', '=', false)
       .selectAll()
       .execute()
@@ -954,24 +964,6 @@ export class BaseOrm<T, C, J> {
       .deleteFrom('categorizable')
       .where('categorizable_type', '=', this.tableName)
       .where('id', '=', categoryId)
-      .execute()
-  }
-
-  protected async baseParentCategories(): Promise<any[]> {
-    return await DB.instance
-      .selectFrom('categorizable')
-      .where('categorizable_type', '=', this.tableName)
-      .where('parent_id', 'is', null)
-      .selectAll()
-      .execute()
-  }
-
-  protected async baseChildCategories(parentId: number): Promise<any[]> {
-    return await DB.instance
-      .selectFrom('categorizable')
-      .where('categorizable_type', '=', this.tableName)
-      .where('parent_id', '=', parentId)
-      .selectAll()
       .execute()
   }
 

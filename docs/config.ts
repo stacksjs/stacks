@@ -518,7 +518,7 @@ const sidebar = {
             { text: 'SEO', link: '/guide/cms/seo' },
           ],
         },
-        
+
         { text: 'CLI', link: '/packages/cli' },
         { text: 'Cloud', link: '/packages/cloud' },
         { text: 'Commerce', link: '/packages/commerce' },
