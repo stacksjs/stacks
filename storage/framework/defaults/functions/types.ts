@@ -260,7 +260,7 @@ export interface ProductVariants {
   uuid?: string
 }
 
-export interface Tags {
+export interface Taggables {
   id: number
   name: string
   slug: string
@@ -270,14 +270,15 @@ export interface Tags {
   taggable_type: string
 }
 
-export interface Categorizable {
+export interface Categorizables {
   id: number
   name: string
   slug: string
   description: string
   is_active: boolean
-  categorizable_id: number
+  postCount: number
   categorizable_type: string
+  created_at: string
 }
 
 export interface Pages {

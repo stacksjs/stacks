@@ -2,6 +2,8 @@
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar, Doughnut } from 'vue-chartjs'
+import type { Categorizables } from '../../../../functions/types'
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -153,18 +155,8 @@ const monthlyChartData = computed(() => {
 const timeRange = ref('Last 30 days')
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
-// Define category type
-interface Category {
-  id: number
-  name: string
-  slug: string
-  description: string
-  postCount: number
-  createdAt: string
-}
-
 // Sample categories data
-const categories = ref<Category[]>([
+const categories = ref<Categorizables[]>([
   {
     id: 1,
     name: 'Technology',
@@ -219,7 +211,7 @@ const categories = ref<Category[]>([
     slug: 'design',
     description: 'UI/UX design principles and case studies',
     postCount: 18,
-    createdAt: '2023-10-25',
+    created_at: '2023-10-25',
   },
   {
     id: 8,
@@ -309,7 +301,7 @@ const filteredCategories = computed(() => {
 
   // Apply sorting
   result.sort((a, b) => {
-    const sortField = sortBy.value as keyof Category
+    const sortField = sortBy.value as keyof Categorizables
     let aValue = a[sortField]
     let bValue = b[sortField]
 

@@ -328,40 +328,6 @@ const sidebar = {
         },
 
         {
-          text: 'Commerce',
-          collapsible: true,
-          collapsed: true,
-          items: [
-            { text: 'Customers', link: '/guide/commerce/customers' },
-            { text: 'Orders', link: '/guide/commerce/orders' },
-            { text: 'Coupons', link: '/guide/commerce/coupons' },
-            { text: 'Gift Cards', link: '/guide/commerce/gift-cards' },
-            { text: 'Printers', link: '/guide/commerce/printers' },
-            { text: 'Products', link: '/guide/commerce/products' },
-            { text: 'Taxes', link: '/guide/commerce/taxes' },
-            { text: 'Waitlist', link: '/guide/commerce/waitlist' },
-            { text: 'Payments', link: '/guide/commerce/payments' },
-          ],
-        },
-
-        {
-          text: 'CMS',
-          collapsible: true,
-          collapsed: true,
-          items: [
-            { text: 'Dashboard', link: '/guide/cms/dashboard' },
-            { text: 'Files', link: '/guide/cms/files' },
-            { text: 'Pages', link: '/guide/cms/pages' },
-            { text: 'Posts', link: '/guide/cms/posts' },
-            { text: 'Categories', link: '/guide/cms/categories' },
-            { text: 'Tags', link: '/guide/cms/tags' },
-            { text: 'Comments', link: '/guide/cms/comments' },
-            { text: 'Authors', link: '/guide/cms/authors' },
-            { text: 'SEO', link: '/guide/cms/seo' },
-          ],
-        },
-
-        {
           text: 'Cloud',
           collapsible: true,
           collapsed: true,
@@ -518,6 +484,41 @@ const sidebar = {
         { text: 'Buddy', link: '/packages/buddy' },
         { text: 'Build', link: '/packages/build' },
         { text: 'Cache', link: '/packages/cache' },
+
+        {
+          text: 'Commerce',
+          collapsible: true,
+          collapsed: true,
+          items: [
+            { text: 'Customers', link: '/guide/commerce/customers' },
+            { text: 'Orders', link: '/guide/commerce/orders' },
+            { text: 'Coupons', link: '/guide/commerce/coupons' },
+            { text: 'Gift Cards', link: '/guide/commerce/gift-cards' },
+            { text: 'Printers', link: '/guide/commerce/printers' },
+            { text: 'Products', link: '/guide/commerce/products' },
+            { text: 'Taxes', link: '/guide/commerce/taxes' },
+            { text: 'Waitlist', link: '/guide/commerce/waitlist' },
+            { text: 'Payments', link: '/guide/commerce/payments' },
+          ],
+        },
+
+        {
+          text: 'CMS',
+          collapsible: true,
+          collapsed: true,
+          items: [
+            { text: 'Dashboard', link: '/guide/cms/dashboard' },
+            { text: 'Files', link: '/guide/cms/files' },
+            { text: 'Pages', link: '/guide/cms/pages' },
+            { text: 'Posts', link: '/guide/cms/posts' },
+            { text: 'Categories', link: '/guide/cms/categories' },
+            { text: 'Tags', link: '/guide/cms/tags' },
+            { text: 'Comments', link: '/guide/cms/comments' },
+            { text: 'Authors', link: '/guide/cms/authors' },
+            { text: 'SEO', link: '/guide/cms/seo' },
+          ],
+        },
+        
         { text: 'CLI', link: '/packages/cli' },
         { text: 'Cloud', link: '/packages/cloud' },
         { text: 'Commerce', link: '/packages/commerce' },
