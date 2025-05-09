@@ -472,6 +472,10 @@
     "TaxRates": true,
     "Units": true,
     "Pages": true,
-    "StorePost": true
+    "StorePost": true,
+    "Categorizables": true,
+    "PostCategorizable": true,
+    "PostTaggable": true,
+    "Taggables": true
   }
 }
