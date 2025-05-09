@@ -43,7 +43,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@aws-sdk/client-route-53": "^3.804.0",
+    "@aws-sdk/client-route-53": "^3.806.0",
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/dnsx": "^0.2.2",
