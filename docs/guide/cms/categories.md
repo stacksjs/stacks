@@ -2,6 +2,67 @@
 
 The Categories module in the CMS package provides a comprehensive set of functions to manage and organize your content through categories. This guide will walk you through the various operations you can perform with categories.
 
+## Making Models Categorizable
+
+The categories functionality is implemented as a trait that can be added to any model. To make your model categorizable, add the `categorizable` trait to your model definition:
+
+```ts
+export default {
+  name: 'Post',
+  table: 'posts',
+  
+  traits: {
+    categorizable: true,  // Enable categories for this model
+    // ... other traits
+  },
+
+  // ... rest of model definition
+} satisfies Model
+```
+
+When you add the `categorizable` trait to a model:
+
+1. The model automatically gets the ability to have categories
+2. The appropriate database relationships are set up
+3. All category-related functionality becomes available for that model
+4. The model can be referenced in categories via `categorizable_type`
+
+## Model Methods
+
+When you add the `categorizable` trait to a model, it automatically gains several methods for working with categories. Here's how to use them:
+
+```ts
+// First, get your model instance
+const post = await Post.find(1)
+
+// Get all categories for this post
+const categories = await post.categories()
+
+// Get the category count
+const count = await post.categoryCount(id)
+
+// Add a new category
+const newCategory = await post.addCategory(id, {
+  name: 'Technology',
+  description: 'Tech-related content'
+})
+
+// Get categories by status
+const activeCategories = await post.activeCategories(id)
+const inactiveCategories = await post.inactiveCategories(id)
+
+// Remove a category
+await post.removeCategory(id, categoryId)
+
+// Set primary category
+await post.setPrimaryCategory(id, categoryId)
+
+// Get primary category
+const primaryCategory = await post.primaryCategory(id)
+```
+
+These methods make it easy to work with categories directly from your model instances, providing a more intuitive and object-oriented way to manage categories.
+
 ## Getting Started
 
 First, import the categories functionality from the CMS package:
