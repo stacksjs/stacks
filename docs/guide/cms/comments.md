@@ -2,6 +2,30 @@
 
 The Comments module in the CMS package provides a robust set of functions to manage and interact with comments across your content. This guide will walk you through the various operations you can perform with comments.
 
+## Making Models Commentable
+
+The comments functionality is implemented as a trait that can be added to any model. To make your model commentable, add the `commentables` trait to your model definition:
+
+```ts
+export default {
+  name: 'Post',
+  table: 'posts',
+  
+  traits: {
+    commentables: true,  // Enable comments for this model
+    // ... other traits
+  },
+
+  // ... rest of model definition
+} satisfies Model
+```
+
+When you add the `commentables` trait to a model:
+1. The model automatically gets the ability to have comments
+2. The appropriate database relationships are set up
+3. All comment-related functionality becomes available for that model
+4. The model can be referenced in comments via `commentables_type`
+
 ## Getting Started
 
 First, import the comments functionality from the CMS package:
