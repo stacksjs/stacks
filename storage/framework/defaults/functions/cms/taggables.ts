@@ -7,7 +7,7 @@ const taggables = useStorage<Taggables[]>('taggables', [])
 const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all tags
-async function fetchTaggables() {
+async function fetchTaggables(): Promise<Taggables[]> {
   const { error, data } = await useFetch(`${baseURL}/cms/taggables`).get().json()
 
   const taggablesJson = data.value as Taggables[]
@@ -19,7 +19,8 @@ async function fetchTaggables() {
   // Ensure data is an array before assigning
   if (Array.isArray(data.value)) {
     taggables.value = taggablesJson
-    return data.value
+
+    return taggablesJson
   }
   else {
     console.error('Expected array of taggables but received:', typeof data.value)
@@ -28,8 +29,13 @@ async function fetchTaggables() {
 }
 
 async function createTaggable(taggable: Partial<Taggables>) {
+  const taggableData = {
+    ...taggable,
+    taggable_type: 'posts'
+  }
+
   const { error, data } = await useFetch(`${baseURL}/cms/taggables`)
-    .post(JSON.stringify(taggable))
+    .post(JSON.stringify(taggableData))
     .json()
 
   if (error.value) {
