@@ -1,5 +1,4 @@
-import type { BroadcastConfig } from '@stacksjs/types'
-import type { ChannelType, RealtimeDriver } from './types'
+import type { BroadcastInstance, ChannelType, RealtimeDriver } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
 import { appPath } from '@stacksjs/path'
 import { RealtimeFactory } from './factory'
@@ -45,7 +44,7 @@ export class Broadcast {
 
 export async function runBroadcast(name: string, payload?: any): Promise<void> {
   const broadcastModule = await import(appPath(`Broadcasts/${name}.ts`))
-  const broadcast = broadcastModule.default as BroadcastConfig
+  const broadcast = broadcastModule.default as BroadcastInstance
 
   if (broadcast.handle) {
     await broadcast.handle(payload)
