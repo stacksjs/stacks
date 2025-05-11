@@ -2,6 +2,7 @@ import type { BroadcastInstance, ChannelType, RealtimeDriver } from '@stacksjs/t
 import { config } from '@stacksjs/config'
 import { appPath } from '@stacksjs/path'
 import { RealtimeFactory } from './factory'
+import { globSync } from 'tinyglobby'
 
 export class Broadcast {
   private driver: RealtimeDriver
@@ -43,7 +44,13 @@ export class Broadcast {
 }
 
 export async function runBroadcast(name: string, payload?: any): Promise<void> {
-  const broadcastModule = await import(appPath(`Broadcasts/${name}.ts`))
+  const broadcastFiles = globSync([appPath('Broadcasts/**/*.ts')], { absolute: true })
+  const broadcastFile = broadcastFiles.find(file => file.endsWith(`${name}.ts`))
+
+  if (!broadcastFile)
+    throw new Error(`Broadcast ${name} not found`)
+
+  const broadcastModule = await import(broadcastFile)
   const broadcast = broadcastModule.default as BroadcastInstance
 
   if (broadcast.handle) {
