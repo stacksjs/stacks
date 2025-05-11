@@ -1,4 +1,4 @@
-export interface BroadcastingOptions {
+export interface RealtimeOptions {
   /**
    * The default broadcasting driver to use
    */
@@ -58,9 +58,9 @@ export interface BroadcastingOptions {
   }
 }
 
-export type BroadcastingConfig = Partial<BroadcastingOptions>
+export type RealtimeConfig = Partial<RealtimeOptions>
 
-export interface BroadcastOptions {
+export interface RealtimeOptions {
   event: string
   handle?: (data?: any) => Promise<{ channel: string, type: 'public' | 'private' | 'presence' } | void>
 }

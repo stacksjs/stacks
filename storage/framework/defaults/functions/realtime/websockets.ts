@@ -1,10 +1,10 @@
 import type { Websockets, StoreWebsocket } from '../types'
 import { useFetch, useStorage } from '@vueuse/core'
 
+const baseURL = 'http://localhost:3008'
+
 // Create a persistent websockets array using VueUse's useStorage
 const websockets = useStorage<Websockets[]>('websockets', [])
-
-const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all websocket events
 async function fetchWebsockets() {

@@ -15,7 +15,7 @@ export class PusherDriver implements RealtimeDriver, Broadcastable {
   private shouldExcludeCurrentUser = false
 
   constructor() {
-    if (!config.broadcasting.pusher?.appId || !config.broadcasting.pusher?.key || !config.broadcasting.pusher?.secret) {
+    if (!config.realtime.pusher?.appId || !config.realtime.pusher?.key || !config.realtime.pusher?.secret) {
       throw new Error('Pusher driver requires appId, key, and secret in broadcasting configuration')
     }
   }
@@ -26,11 +26,11 @@ export class PusherDriver implements RealtimeDriver, Broadcastable {
     }
 
     this.pusher = new Pusher({
-      appId: config.broadcasting.pusher?.appId || '',
-      key: config.broadcasting.pusher?.key || '',
-      secret: config.broadcasting.pusher?.secret || '',
-      cluster: config.broadcasting.pusher?.cluster || 'mt1',
-      useTLS: config.broadcasting.pusher?.useTLS ?? true,
+      appId: config.realtime.pusher?.appId || '',
+      key: config.realtime.pusher?.key || '',
+      secret: config.realtime.pusher?.secret || '',
+      cluster: config.realtime.pusher?.cluster || 'mt1',
+      useTLS: config.realtime.pusher?.useTLS ?? true,
     })
 
     // Store connection event

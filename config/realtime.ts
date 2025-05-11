@@ -1,4 +1,4 @@
-import type { BroadcastingConfig } from '@stacksjs/types'
+import type { RealtimeConfig } from '@stacksjs/types'
 import { env } from '@stacksjs/env'
 
 /**
@@ -27,4 +27,4 @@ export default {
     cluster: env.PUSHER_APP_CLUSTER || 'mt1',
     useTLS: env.PUSHER_APP_USE_TLS || true,
   },
-} satisfies BroadcastingConfig
+} satisfies RealtimeConfig

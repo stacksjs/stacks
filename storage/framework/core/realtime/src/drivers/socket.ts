@@ -2,6 +2,7 @@ import type { Broadcastable, ChannelType, RealtimeDriver } from '@stacksjs/types
 import { log } from '@stacksjs/logging'
 import { Server } from 'socket.io'
 import { storeWebSocketEvent } from '../ws'
+import { config } from '@stacksjs/config'
 
 export class SocketDriver implements RealtimeDriver, Broadcastable {
   private io: Server | null = null
@@ -11,8 +12,10 @@ export class SocketDriver implements RealtimeDriver, Broadcastable {
   private currentData: any
   private channelType: ChannelType = 'public'
   private shouldExcludeCurrentUser = false
-
-  constructor(private options: { port?: number, host?: string } = {}) {}
+  private options = {
+    port: config.realtime?.socket?.port,
+    host: config.realtime?.socket?.host,
+  }
 
   async connect(): Promise<void> {
     if (this.io) {
