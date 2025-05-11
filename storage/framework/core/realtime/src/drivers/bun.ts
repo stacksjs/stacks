@@ -88,7 +88,7 @@ export class BunSocket implements RealtimeDriver {
           const data = typeof message === 'string' ? JSON.parse(message) : message
 
           if (data.type === 'subscribe') {
-            this.handleSubscription(ws, data.channel, data.auth)
+            this.handleSubscription(ws, data.channel)
           }
           else {
             // Handle regular messages

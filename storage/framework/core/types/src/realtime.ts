@@ -65,15 +65,6 @@ export interface BroadcastOptions {
   handle?: (data?: any) => Promise<{ channel: string, type: 'public' | 'private' | 'presence' } | void>
 }
 
-export interface Broadcastable {
-  broadcast: () => Promise<void>
-  broadcastNow: () => Promise<void>
-  onChannel: (channel: string) => this
-  toOthers: () => this
-  toPresence: () => this
-  toPrivate: () => this
-}
-
 export type DriverType = 'socket' | 'pusher' | 'bun' // Add more driver types as needed
 export type ChannelType = 'public' | 'private' | 'presence'
 

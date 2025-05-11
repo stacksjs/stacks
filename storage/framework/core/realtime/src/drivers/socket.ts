@@ -1,4 +1,4 @@
-import type { Broadcastable, ChannelType, RealtimeDriver } from '../types'
+import type { Broadcastable, ChannelType, RealtimeDriver } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
 import { Server } from 'socket.io'
 
@@ -93,11 +93,20 @@ export class SocketDriver implements RealtimeDriver, Broadcastable {
       }
     }
 
-    this.io.to(channelName).emit(event, {
-      event,
-      channel: channelName,
-      data,
-    })
+    if (this.shouldExcludeCurrentUser) {
+      this.io.to(channelName).emit(event, {
+        event,
+        channel: channelName,
+        data,
+      })
+    }
+    else {
+      this.io.emit(event, {
+        event,
+        channel: channelName,
+        data,
+      })
+    }
 
     log.info(`Broadcasted event "${event}" to ${type} channel: ${channel}`)
   }
