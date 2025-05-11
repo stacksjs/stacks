@@ -11,7 +11,7 @@ export interface WebsocketsTable {
   type: string
   socket: string
   details: string
-  time: Date | string
+  time: number
 
   created_at?: string
 
@@ -187,7 +187,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
     return this.attributes.details
   }
 
-  get time(): Date | string {
+  get time(): number {
     return this.attributes.time
   }
 
@@ -211,7 +211,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
     this.attributes.details = value
   }
 
-  set time(value: Date | string) {
+  set time(value: number) {
     this.attributes.time = value
   }
 
@@ -921,7 +921,7 @@ export async function whereDetails(value: string): Promise<WebsocketModel[]> {
   return results.map((modelItem: WebsocketJsonResponse) => new WebsocketModel(modelItem))
 }
 
-export async function whereTime(value: Date | string): Promise<WebsocketModel[]> {
+export async function whereTime(value: number): Promise<WebsocketModel[]> {
   const query = DB.instance.selectFrom('websockets').where('time', '=', value)
   const results: WebsocketJsonResponse = await query.execute()
 

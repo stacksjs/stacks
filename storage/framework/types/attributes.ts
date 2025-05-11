@@ -194,7 +194,7 @@ export interface Attributes {
   excerpt: string
   socket: string
   details: string
-  time: Date | string
+  time: number
   status_code: number
   duration_ms: number
   memory_usage: number

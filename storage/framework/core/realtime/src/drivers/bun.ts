@@ -1,6 +1,7 @@
+import type { ChannelType, RealtimeDriver } from '@stacksjs/types'
 import type { Server, ServerWebSocket } from 'bun'
-import type { ChannelType, RealtimeDriver } from '../types'
 import { log } from '@stacksjs/logging'
+import { Websocket } from '@stacksjs/orm'
 
 interface WebSocketData {
   clientId: string
@@ -103,11 +104,25 @@ export class BunSocket implements RealtimeDriver {
         }
       },
 
-      close: (ws: ServerWebSocket<WebSocketData>): void => {
+      close: async (ws: ServerWebSocket<WebSocketData>): Promise<void> => {
         // Unsubscribe from all channels
         ws.data.subscriptions.forEach((channel) => {
           ws.unsubscribe(channel)
         })
+
+        // Store disconnection event
+        try {
+          await Websocket.create({
+            type: 'disconnection',
+            socket: ws.data.clientId,
+            details: 'WebSocket connection closed',
+            time: new Date().toISOString(),
+          })
+        }
+        catch (error) {
+          log.error('Failed to store WebSocket disconnection event:', error)
+        }
+
         log.info('Client disconnected:', ws.data.clientId)
       },
 

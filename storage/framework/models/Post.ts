@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'title', 'author', 'category', 'views', 'status', 'poster'],
-      searchable: ['title', 'author', 'category', 'body', 'excerpt'],
+      displayable: ['id', 'title', 'author', 'views', 'status', 'poster'],
+      searchable: ['title', 'author', 'body', 'excerpt'],
       sortable: ['published_at', 'views', 'comments'],
-      filterable: ['category', 'status'],
+      filterable: ['status'],
     },
 
     useSeeder: {

@@ -1550,7 +1550,7 @@ interface RequestDataWebsocket {
   type: string
   socket: string
   details: string
-  time: date
+  time: number
   created_at?: string
   updated_at?: string
 }
@@ -1562,7 +1562,7 @@ export interface WebsocketRequestType extends Request {
   type: string
   socket: string
   details: string
-  time: date
+  time: number
   created_at?: string
   updated_at?: string
 }

@@ -16,7 +16,7 @@ interface RequestDataWebsocket {
   type: string
   socket: string
   details: string
-  time: date
+  time: number
   created_at?: string
   updated_at?: string
 }
@@ -25,7 +25,7 @@ export class WebsocketRequest extends Request<RequestDataWebsocket> implements W
   public type = ''
   public socket = ''
   public details = ''
-  public time = ''
+  public time = 0
   public created_at = ''
   public updated_at = ''
 
