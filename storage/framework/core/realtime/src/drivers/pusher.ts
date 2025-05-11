@@ -1,8 +1,8 @@
 import type { Broadcastable, ChannelType, RealtimeDriver } from '@stacksjs/types'
-import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import Pusher from 'pusher'
 import { storeWebSocketEvent } from '../ws'
+import { config } from '@stacksjs/config'
 
 export class PusherDriver implements RealtimeDriver, Broadcastable {
   private pusher: Pusher | null = null
@@ -14,13 +14,7 @@ export class PusherDriver implements RealtimeDriver, Broadcastable {
   private channelType: ChannelType = 'public'
   private shouldExcludeCurrentUser = false
 
-  constructor(private options: {
-    appId: string
-    key: string
-    secret: string
-    cluster: string
-    useTLS?: boolean
-  }) {
+  constructor() {
     if (!config.broadcasting.pusher?.appId || !config.broadcasting.pusher?.key || !config.broadcasting.pusher?.secret) {
       throw new Error('Pusher driver requires appId, key, and secret in broadcasting configuration')
     }
@@ -32,11 +26,11 @@ export class PusherDriver implements RealtimeDriver, Broadcastable {
     }
 
     this.pusher = new Pusher({
-      appId: this.options.appId,
-      key: this.options.key,
-      secret: this.options.secret,
-      cluster: this.options.cluster,
-      useTLS: this.options.useTLS ?? true,
+      appId: config.broadcasting.pusher?.appId || '',
+      key: config.broadcasting.pusher?.key || '',
+      secret: config.broadcasting.pusher?.secret || '',
+      cluster: config.broadcasting.pusher?.cluster || 'mt1',
+      useTLS: config.broadcasting.pusher?.useTLS ?? true,
     })
 
     // Store connection event
