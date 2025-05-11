@@ -1,6 +1,7 @@
 import type { Broadcastable, ChannelType, RealtimeDriver } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
 import { Server } from 'socket.io'
+import { storeWebSocketEvent } from '../ws'
 
 export class SocketDriver implements RealtimeDriver, Broadcastable {
   private io: Server | null = null
@@ -26,11 +27,17 @@ export class SocketDriver implements RealtimeDriver, Broadcastable {
       ...this.options,
     })
 
-    this.io.on('connection', (socket) => {
+    this.io.on('connection', async (socket) => {
       log.info('Client connected:', socket.id)
 
-      socket.on('disconnect', () => {
+      // Store connection event
+      await storeWebSocketEvent('success', socket.id, 'Socket.IO connection established')
+
+      socket.on('disconnect', async () => {
         log.info('Client disconnected:', socket.id)
+
+        // Store disconnection event
+        await storeWebSocketEvent('disconnection', socket.id, 'Socket.IO connection closed')
       })
 
       socket.on('subscribe', (channel: string) => {

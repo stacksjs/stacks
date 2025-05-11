@@ -2,6 +2,7 @@ import type { Broadcastable, ChannelType, RealtimeDriver } from '@stacksjs/types
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import Pusher from 'pusher'
+import { storeWebSocketEvent } from '../ws'
 
 export class PusherDriver implements RealtimeDriver, Broadcastable {
   private pusher: Pusher | null = null
@@ -13,7 +14,13 @@ export class PusherDriver implements RealtimeDriver, Broadcastable {
   private channelType: ChannelType = 'public'
   private shouldExcludeCurrentUser = false
 
-  constructor() {
+  constructor(private options: {
+    appId: string
+    key: string
+    secret: string
+    cluster: string
+    useTLS?: boolean
+  }) {
     if (!config.broadcasting.pusher?.appId || !config.broadcasting.pusher?.key || !config.broadcasting.pusher?.secret) {
       throw new Error('Pusher driver requires appId, key, and secret in broadcasting configuration')
     }
@@ -25,24 +32,32 @@ export class PusherDriver implements RealtimeDriver, Broadcastable {
     }
 
     this.pusher = new Pusher({
-      appId: config.broadcasting.pusher?.appId || '',
-      key: config.broadcasting.pusher?.key || '',
-      secret: config.broadcasting.pusher?.secret || '',
-      cluster: config.broadcasting.pusher?.cluster || 'mt1',
-      useTLS: config.broadcasting.pusher?.useTLS ?? true,
+      appId: this.options.appId,
+      key: this.options.key,
+      secret: this.options.secret,
+      cluster: this.options.cluster,
+      useTLS: this.options.useTLS ?? true,
     })
+
+    // Store connection event
+    await storeWebSocketEvent('success', 'pusher', 'Pusher connection established')
 
     this.isConnectedState = true
     log.info('Pusher connection established')
   }
 
   async disconnect(): Promise<void> {
-    if (this.pusher) {
-      this.channels.clear()
-      this.pusher = null
-      this.isConnectedState = false
-      log.info('Pusher connection closed')
+    if (!this.pusher) {
+      return
     }
+
+    // Store disconnection event
+    await storeWebSocketEvent('disconnection', 'pusher', 'Pusher connection closed')
+
+    this.channels.clear()
+    this.pusher = null
+    this.isConnectedState = false
+    log.info('Pusher connection closed')
   }
 
   subscribe(channel: string, callback: (data: any) => void): void {

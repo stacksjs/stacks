@@ -12,13 +12,13 @@ export function setBunSocket(socket: BunSocket | null): void {
 /**
  * Store WebSocket event in the database
  */
-async function storeWebSocketEvent(type: 'disconnection' | 'error' | 'success', socket: string, details: string): Promise<void> {
+export async function storeWebSocketEvent(type: 'disconnection' | 'error' | 'success', socket: string, details: string): Promise<void> {
   try {
     await Websocket.create({
       type,
       socket,
       details,
-      time: new Date().toISOString(),
+      time: new Date().getTime(),
     })
   }
   catch (error) {
