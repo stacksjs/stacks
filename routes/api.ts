@@ -260,6 +260,10 @@ route.group({ prefix: '/queues' }, async () => {
   route.get('/', 'Actions/Queue/FetchQueuesAction')
 })
 
+route.group({ prefix: '/realtime' }, async () => {
+  route.get('/websockets', 'Actions/Realtime/FetchWebsocketsAction')
+})
+
 route.post('/password/send-password-reset-email', 'Actions/Password/SendPasswordResetEmailAction')
 route.post('/password/reset', 'Actions/Password/PasswordResetAction')
 
