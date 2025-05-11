@@ -15,7 +15,7 @@ export default {
       searchable: ['title', 'author', 'body', 'excerpt'],
       sortable: ['published_at', 'views', 'comments'],
       filterable: ['status'],
-    },  
+    },
 
     useSeeder: {
       count: 20,

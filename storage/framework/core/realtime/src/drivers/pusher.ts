@@ -104,6 +104,12 @@ export class PusherDriver implements RealtimeDriver, Broadcastable {
       throw new Error('Failed to connect to Pusher')
     }
 
+    if (this.shouldExcludeCurrentUser) {
+      // In Pusher, we can't exclude the current user directly
+      // This is a limitation of Pusher's architecture
+      log.warn('Excluding current user is not supported in Pusher driver')
+    }
+
     this.pusher.trigger(channelName, this.currentEvent, {
       event: this.currentEvent,
       channel: channelName,
