@@ -8,6 +8,8 @@ import { log } from '@stacksjs/logging'
 import { getModelName, traitInterfaces } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { BunSocket, handleWebSocketRequest, setBunSocket } from '@stacksjs/realtime'
+import { SocketDriver } from '@stacksjs/realtime'
+import { PusherDriver } from '@stacksjs/realtime'
 import { fs, globSync } from '@stacksjs/storage'
 
 import { camelCase } from '@stacksjs/strings'
@@ -25,13 +27,25 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
   if (options.timezone)
     process.env.TZ = options.timezone
 
-  const bunSocket = config.broadcasting?.driver === 'bun'
-    ? new BunSocket()
-    : null
+  let driver = null
 
-  if (bunSocket) {
-    await bunSocket.connect()
-    setBunSocket(bunSocket)
+  // Initialize the appropriate driver based on configuration
+  switch (config.broadcasting?.driver) {
+    case 'bun':
+      driver = new BunSocket()
+      await driver.connect()
+      setBunSocket(driver)
+      break
+    case 'socket':
+      driver = new SocketDriver({ port: port + 1 }) // Use a different port for Socket.IO
+      await driver.connect()
+      break
+    case 'pusher':
+      driver = new PusherDriver()
+      await driver.connect()
+      break
+    default:
+      log.warn('No broadcasting driver configured')
   }
 
   const server = Bun.serve({
@@ -43,25 +57,42 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
     async fetch(req: Request, server) {
       const url = new URL(req.url)
 
-      // Only handle /ws for native WebSocket connections when using Bun driver
-      if (url.pathname === '/ws' && config.broadcasting?.driver === 'bun')
-        return handleWebSocketRequest(req, server)
-
-      // Socket.IO and Pusher will handle their own paths
-      // Socket.IO typically uses /socket.io
-      // Pusher connects directly to Pusher's servers
+      // Handle WebSocket connections based on the configured driver
+      if (url.pathname === '/ws') {
+        switch (config.broadcasting?.driver) {
+          case 'bun':
+            return handleWebSocketRequest(req, server)
+          case 'socket':
+            // Socket.IO handles its own WebSocket connections
+            return new Response('Socket.IO WebSocket endpoint', { status: 200 })
+          case 'pusher':
+            // Pusher connects directly to Pusher's servers
+            return new Response('Pusher WebSocket endpoint', { status: 200 })
+          default:
+            return new Response('No WebSocket driver configured', { status: 400 })
+        }
+      }
 
       // Handle regular HTTP requests with body parsing
       const reqBody = await req.text()
       return serverResponse(req, reqBody)
     },
 
-    websocket: bunSocket?.getWebSocketConfig() as WebSocketHandler<any>,
+    websocket: config.broadcasting?.driver === 'bun' 
+      ? (driver as BunSocket)?.getWebSocketConfig() as WebSocketHandler<any> 
+      : {
+          message() {},
+          open() {},
+          close() {},
+          drain() {},
+        },
   })
 
-  if (bunSocket) {
-    bunSocket.setServer(server)
-    log.info('WebSocket server initialized')
+  if (driver) {
+    if (config.broadcasting?.driver === 'bun') {
+      (driver as BunSocket).setServer(server)
+    }
+    log.info(`WebSocket server initialized with ${config.broadcasting?.driver} driver`)
   }
 
   log.info(`Server running at http://${hostname}:${port}`)
