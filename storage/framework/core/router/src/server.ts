@@ -28,14 +28,14 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
   let driver = null
 
   // Initialize the appropriate driver based on configuration
-  switch (config.broadcasting?.driver) {
+  switch (config.realtime?.driver) {
     case 'bun':
       driver = new BunSocket()
       await driver.connect()
       setBunSocket(driver)
       break
     case 'socket':
-      driver = new SocketDriver({ port: port + 1 }) // Use a different port for Socket.IO
+      driver = new SocketDriver() // Use a different port for Socket.IO
       await driver.connect()
       break
     case 'pusher':
@@ -43,7 +43,7 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
       await driver.connect()
       break
     default:
-      log.warn('No broadcasting driver configured')
+      log.warn('No realtime driver configured')
   }
 
   const server = Bun.serve({
@@ -57,7 +57,7 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
 
       // Handle WebSocket connections based on the configured driver
       if (url.pathname === '/ws') {
-        switch (config.broadcasting?.driver) {
+        switch (config.realtime?.driver) {
           case 'bun':
             return handleWebSocketRequest(req, server)
           case 'socket':
@@ -76,7 +76,7 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
       return serverResponse(req, reqBody)
     },
 
-    websocket: config.broadcasting?.driver === 'bun'
+    websocket: config.realtime?.driver === 'bun'
       ? (driver as BunSocket)?.getWebSocketConfig() as WebSocketHandler<any>
       : {
           message() {},
@@ -87,10 +87,10 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
   })
 
   if (driver) {
-    if (config.broadcasting?.driver === 'bun') {
+    if (config.realtime?.driver === 'bun') {
       (driver as BunSocket).setServer(server)
     }
-    log.info(`WebSocket server initialized with ${config.broadcasting?.driver} driver`)
+    log.info(`WebSocket server initialized with ${config.realtime?.driver} driver`)
   }
 
   log.info(`Server running at http://${hostname}:${port}`)

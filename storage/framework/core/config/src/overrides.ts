@@ -10,7 +10,6 @@ import type { StacksConfig } from '@stacksjs/types'
 import ai from '~/config/ai'
 import analytics from '~/config/analytics'
 import app from '~/config/app'
-import broadcasting from '~/config/broadcasting'
 import cache from '~/config/cache'
 import cli from '~/config/cli'
 import cloud from '~/config/cloud'
@@ -26,6 +25,7 @@ import notification from '~/config/notification'
 import payment from '~/config/payment'
 import ports from '~/config/ports'
 import queue from '~/config/queue'
+import realtime from '~/config/realtime'
 import saas from '~/config/saas'
 import searchEngine from '~/config/search-engine'
 import security from '~/config/security'
@@ -44,7 +44,7 @@ export const overrides: StacksConfig = {
   cloud,
   database,
   dns,
-  broadcasting,
+  realtime,
   // docs,
   email,
   errors,

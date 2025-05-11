@@ -1,6 +1,6 @@
 export interface RealtimeOptions {
   /**
-   * The default broadcasting driver to use
+   * The default realtime driver to use
    */
   driver: 'socket' | 'pusher' | 'bun'
 

@@ -1,8 +1,8 @@
 import type { Broadcastable, ChannelType, RealtimeDriver } from '@stacksjs/types'
+import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { Server } from 'socket.io'
 import { storeWebSocketEvent } from '../ws'
-import { config } from '@stacksjs/config'
 
 export class SocketDriver implements RealtimeDriver, Broadcastable {
   private io: Server | null = null

@@ -8,7 +8,7 @@ export class Broadcast {
   private driver: RealtimeDriver
 
   constructor() {
-    this.driver = RealtimeFactory.getInstance().getDriver(config.broadcasting.driver || 'socket')
+    this.driver = RealtimeFactory.getInstance().getDriver(config.realtime.driver || 'socket')
   }
 
   // Connect to the realtime service
