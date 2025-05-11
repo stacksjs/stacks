@@ -234,6 +234,7 @@
     "NewUser": true,
     "NewWaitlistProduct": true,
     "NewWaitlistRestaurant": true,
+    "NewWebsocket": true,
     "Order": true,
     "OrderItem": true,
     "OrderItemJsonResponse": true,
@@ -509,6 +510,15 @@
     "WaitlistRestaurantUpdate": true,
     "WaitlistRestaurantWrite": true,
     "WaitlistRestaurantsTable": true,
+    "Websocket": true,
+    "WebsocketJsonResponse": true,
+    "WebsocketModel": true,
+    "WebsocketRead": true,
+    "WebsocketRequest": true,
+    "WebsocketResponse": true,
+    "WebsocketUpdate": true,
+    "WebsocketWrite": true,
+    "WebsocketsTable": true,
     "accessTokenRequest": true,
     "authorRequest": true,
     "cartItemRequest": true,
@@ -567,6 +577,7 @@
     "transactionRequest": true,
     "userRequest": true,
     "waitlistProductRequest": true,
-    "waitlistRestaurantRequest": true
+    "waitlistRestaurantRequest": true,
+    "websocketRequest": true
   }
 }

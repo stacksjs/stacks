@@ -7,9 +7,7 @@ import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { getModelName, traitInterfaces } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
-import { BunSocket, handleWebSocketRequest, setBunSocket } from '@stacksjs/realtime'
-import { SocketDriver } from '@stacksjs/realtime'
-import { PusherDriver } from '@stacksjs/realtime'
+import { BunSocket, handleWebSocketRequest, PusherDriver, setBunSocket, SocketDriver } from '@stacksjs/realtime'
 import { fs, globSync } from '@stacksjs/storage'
 
 import { camelCase } from '@stacksjs/strings'
@@ -78,8 +76,8 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
       return serverResponse(req, reqBody)
     },
 
-    websocket: config.broadcasting?.driver === 'bun' 
-      ? (driver as BunSocket)?.getWebSocketConfig() as WebSocketHandler<any> 
+    websocket: config.broadcasting?.driver === 'bun'
+      ? (driver as BunSocket)?.getWebSocketConfig() as WebSocketHandler<any>
       : {
           message() {},
           open() {},

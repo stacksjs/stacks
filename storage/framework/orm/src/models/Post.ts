@@ -968,7 +968,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       id: this.id,
       title: this.title,
       author: this.author,
-      category: this.category,
       views: this.views,
       status: this.status,
       poster: this.poster,

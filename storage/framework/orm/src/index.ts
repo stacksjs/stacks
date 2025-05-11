@@ -97,3 +97,5 @@ export { type NewUser, default as User, type UserJsonResponse, type UserUpdate }
 export { type NewWaitlistProduct, default as WaitlistProduct, type WaitlistProductJsonResponse, type WaitlistProductUpdate } from './models/WaitlistProduct'
 
 export { type NewWaitlistRestaurant, default as WaitlistRestaurant, type WaitlistRestaurantJsonResponse, type WaitlistRestaurantUpdate } from './models/WaitlistRestaurant'
+
+export { type NewWebsocket, default as Websocket, type WebsocketJsonResponse, type WebsocketUpdate } from './models/Websocket'

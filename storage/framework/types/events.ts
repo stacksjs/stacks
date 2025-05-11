@@ -29,6 +29,7 @@ import type { TransactionModel } from '../orm/src/models/Transaction'
 import type { UserModel } from '../orm/src/models/User'
 import type { WaitlistProductModel } from '../orm/src/models/WaitlistProduct'
 import type { WaitlistRestaurantModel } from '../orm/src/models/WaitlistRestaurant'
+import type { WebsocketModel } from '../orm/src/models/Websocket'
 
 export interface ModelEvents {
 
@@ -125,5 +126,8 @@ export interface ModelEvents {
   'author:created': AuthorModel
   'author:updated': AuthorModel
   'author:deleted': AuthorModel
+  'websocket:created': WebsocketModel
+  'websocket:updated': WebsocketModel
+  'websocket:deleted': WebsocketModel
 
 }

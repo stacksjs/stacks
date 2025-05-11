@@ -106,14 +106,14 @@ describe('Realtime Drivers', () => {
     it('should handle broadcastable interface methods', async () => {
       await pusherDriver.connect()
       const testData = { message: 'test' }
-      
+
       pusherDriver
         .setChannel('test-channel')
         .setEvent('test-event', testData)
         .setPrivateChannel()
-      
+
       await pusherDriver.broadcastEvent()
-      
+
       expect(mockPusher.trigger).toHaveBeenCalledWith('private-test-channel', 'test-event', {
         event: 'test-event',
         channel: 'private-test-channel',
@@ -186,28 +186,28 @@ describe('Realtime Drivers', () => {
     it('should handle broadcastable interface methods', async () => {
       await socketDriver.connect()
       const testData = { message: 'test' }
-      
+
       socketDriver
         .setChannel('test-channel')
         .setEvent('test-event', testData)
         .setPrivateChannel()
-      
+
       await socketDriver.broadcastEvent()
-      
+
       expect(mockSocketServer.to).toHaveBeenCalledWith('private-test-channel')
     })
 
     it('should handle excluding current user', async () => {
       await socketDriver.connect()
       const testData = { message: 'test' }
-      
+
       socketDriver
         .setChannel('test-channel')
         .setEvent('test-event', testData)
         .excludeCurrentUser()
-      
+
       await socketDriver.broadcastEvent()
-      
+
       expect(mockSocketServer.to).toHaveBeenCalledWith('test-channel')
     })
   })

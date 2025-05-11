@@ -192,6 +192,9 @@ export interface Attributes {
   conversions: number
   poster: string
   excerpt: string
+  socket: string
+  details: string
+  time: Date | string
   status_code: number
   duration_ms: number
   memory_usage: number

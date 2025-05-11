@@ -48,6 +48,7 @@ import type { TransactionsTable } from '../src/models/Transaction'
 import type { UsersTable } from '../src/models/User'
 import type { WaitlistProductsTable } from '../src/models/WaitlistProduct'
 import type { WaitlistRestaurantsTable } from '../src/models/WaitlistRestaurant'
+import type { WebsocketsTable } from '../src/models/Websocket'
 
 export interface TeamsUsersTable {
   id?: number
@@ -221,6 +222,7 @@ export interface Database {
   authors: AuthorsTable
   posts: PostsTable
   payment_transactions: PaymentTransactionsTable
+  websockets: WebsocketsTable
   requests: RequestsTable
   jobs: JobsTable
   logs: LogsTable
