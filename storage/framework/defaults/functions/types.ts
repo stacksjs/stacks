@@ -300,3 +300,16 @@ export interface Pages {
   status: string | string[]
   uuid?: string
 }
+
+export interface Websockets {
+  id: number
+  type: string
+  socket: string
+  details: string
+  time: number
+  created_at?: string
+  updated_at?: string
+  uuid?: string
+}
+
+export type StoreWebsocket = Omit<Websockets, 'id' | 'uuid' | 'created_at' | 'updated_at'>

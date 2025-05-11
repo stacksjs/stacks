@@ -13,7 +13,6 @@ import {
   Legend,
   Filler,
 } from 'chart.js'
-import { useWebSocket } from '@vueuse/core'
 
 ChartJS.register(
   CategoryScale,
