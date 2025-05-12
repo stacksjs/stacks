@@ -45,6 +45,6 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "ofetch": "^1.4.1",
-    "openapi-typescript": "^7.7.1"
+    "openapi-typescript": "^7.8.0"
   }
 }
