@@ -1,10 +1,10 @@
 import type { Model, VineType } from '@stacksjs/types'
-import type { SchemaTypes } from '@vinejs/vine/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
-import { reportError, schema, SimpleMessagesProvider, VineError } from './'
+import { reportError, schema } from './'
+import type { Validator } from '@stacksjs/ts-validation'
 
 interface RequestData {
   [key: string]: any
@@ -36,7 +36,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
   const model = (await import(modelPath)).default as Model
   const attributes = model.attributes
 
-  const ruleObject: Record<string, SchemaTypes> = {}
+  const ruleObject: Record<string, Validator> = {}
   const messageObject: Record<string, string> = {}
 
   for (const key in attributes) {
@@ -57,11 +57,10 @@ export async function validateField(modelFile: string, params: RequestData): Pro
     }
   }
 
-  schema.messagesProvider = new SimpleMessagesProvider(messageObject)
+  // schema.messagesProvider = new SimpleMessagesProvider(messageObject)
 
   try {
-    const vineSchema = schema.object(ruleObject)
-    const validator = schema.compile(vineSchema)
+    const validator = schema.object().shape(ruleObject)
     await validator.validate(params)
   }
   catch (error: any) {
@@ -73,14 +72,14 @@ export async function validateField(modelFile: string, params: RequestData): Pro
 }
 
 export async function customValidate(attributes: CustomAttributes, params: RequestData): Promise<any> {
-  const ruleObject: Record<string, SchemaTypes> = {}
+  const ruleObject: Record<string, Validator> = {}
   const messageObject: Record<string, string> = {}
 
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
       const rule = attributes[key]?.rule
       if (rule)
-        ruleObject[key] = rule as SchemaTypes
+        ruleObject[key] = rule as Validator
 
       const validatorMessages = attributes[key]?.message
 
@@ -91,11 +90,11 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
     }
   }
 
-  schema.messagesProvider = new SimpleMessagesProvider(messageObject)
+  // schema.messagesProvider = new SimpleMessagesProvider(messageObject)
 
   try {
-    const vineSchema = schema.object(ruleObject)
-    const validator = schema.compile(vineSchema)
+    const validator = schema.object().shape(ruleObject)
+    
     await validator.validate(params)
   }
   catch (error: any) {
