@@ -44,6 +44,7 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@vinejs/vine": "^3.0.1"
+    "@vinejs/vine": "^3.0.1",
+    "@stacksjs/ts-validation": "^0.1.5"
   }
 }
