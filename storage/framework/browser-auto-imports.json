@@ -476,6 +476,8 @@
     "Categorizables": true,
     "PostCategorizable": true,
     "PostTaggable": true,
-    "Taggables": true
+    "Taggables": true,
+    "StoreWebsocket": true,
+    "Websockets": true
   }
 }

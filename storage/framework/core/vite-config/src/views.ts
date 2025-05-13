@@ -63,15 +63,15 @@ export const viewsConfig: ViteConfig = {
   },
 
   plugins: [
-    Local({
-      domain: env.APP_URL ?? 'stacks.localhost',
-      https: true, // Use default SSL config, pass TlsConfig options to customize
-      cleanup: {
-        hosts: true, // Clean up relating /etc/hosts entry
-        certs: false, // Clean up relating SSL certificates
-      },
-      verbose: false, // Enable detailed logging
-    }),
+    // Local({
+    //   domain: env.APP_URL ?? 'stacks.localhost',
+    //   https: true, // Use default SSL config, pass TlsConfig options to customize
+    //   cleanup: {
+    //     hosts: true, // Clean up relating /etc/hosts entry
+    //     certs: false, // Clean up relating SSL certificates
+    //   },
+    //   verbose: false, // Enable detailed logging
+    // }),
 
     uiEngine(),
 
