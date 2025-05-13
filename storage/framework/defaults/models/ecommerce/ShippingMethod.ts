@@ -36,7 +36,7 @@ export default {
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(100),
+        rule: schema.string().max(100),
         message: {
           maxLength: 'Name must have a maximum of 100 characters',
         },
@@ -49,7 +49,7 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(500),
+        rule: schema.string().max(500),
         message: {
           maxLength: 'Description must have a maximum of 500 characters',
         },

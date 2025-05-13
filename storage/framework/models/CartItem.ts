@@ -106,7 +106,7 @@ export default {
       order: 8,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
       },
       factory: faker => faker.commerce.productName(),
     },
@@ -116,7 +116,7 @@ export default {
       order: 9,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(100),
+        rule: schema.string().max(100),
       },
       factory: faker => faker.helpers.maybe(() => faker.string.alphanumeric(10), { probability: 0.8 }),
     },
@@ -126,7 +126,7 @@ export default {
       order: 10,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
       },
       factory: faker => faker.helpers.maybe(() => faker.image.url(), { probability: 0.7 }),
     },
@@ -136,7 +136,7 @@ export default {
       order: 11,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(500),
+        rule: schema.string().max(500),
       },
       factory: faker => faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.2 }),
     },

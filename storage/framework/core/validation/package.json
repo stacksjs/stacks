@@ -37,6 +37,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/ts-validation": "^0.1.8",
     "add": "^2.0.6",
     "validator": "^13.15.0"
   },
@@ -44,7 +45,6 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@vinejs/vine": "^3.0.1",
-    "@stacksjs/ts-validation": "^0.1.5"
+    "@vinejs/vine": "^3.0.1"
   }
 }

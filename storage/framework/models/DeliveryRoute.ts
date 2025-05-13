@@ -34,7 +34,7 @@ export default {
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
       },
       factory: faker => faker.person.fullName(),
     },
@@ -44,7 +44,7 @@ export default {
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
       },
       factory: faker => faker.vehicle.vehicle(),
     },

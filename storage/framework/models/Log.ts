@@ -62,9 +62,9 @@ export default {
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string().minLength(1).maxLength(1000),
+        rule: schema.string().min(1).max(1000),
         message: {
-          minLength: 'Message must not be empty',
+          min(: 'Message must not be empty',
           maxLength: 'Message must not exceed 1000 characters',
         },
       },
@@ -76,9 +76,9 @@ export default {
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string().minLength(1).maxLength(255),
+        rule: schema.string().min(1).max(255),
         message: {
-          minLength: 'Project name must not be empty',
+          min(: 'Project name must not be empty',
           maxLength: 'Project name must not exceed 255 characters',
         },
       },
@@ -90,7 +90,7 @@ export default {
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(5000),
+        rule: schema.string().max(5000),
         message: {
           maxLength: 'Stacktrace must not exceed 5000 characters',
         },
@@ -103,7 +103,7 @@ export default {
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
         message: {
           maxLength: 'File path must not exceed 255 characters',
         },

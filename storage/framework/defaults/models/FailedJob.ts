@@ -16,7 +16,7 @@ export default {
       required: true,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(100),
+        rule: schema.string().max(100),
         message: {
           maxLength: 'Connection must have a maximum of 100 characters',
           string: 'Connection must be a string',
@@ -29,7 +29,7 @@ export default {
       required: true,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
         message: {
           maxLength: 'Queue must have a maximum of 255 characters',
         },

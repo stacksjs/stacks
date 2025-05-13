@@ -34,7 +34,7 @@ export default {
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
         message: {
           maxLength: 'Method must have a maximum of 255 characters',
         },
@@ -47,7 +47,7 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
         message: {
           maxLength: 'Zone must have a maximum of 255 characters',
         },

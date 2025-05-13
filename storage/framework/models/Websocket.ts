@@ -34,10 +34,10 @@ export default {
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().minLength(1).maxLength(255),
+        rule: schema.string().min(1).max(255),
         message: {
-          minLength: 'Socket identifier must be provided',
-          maxLength: 'Socket identifier must not exceed 255 characters',
+          min: 'Socket identifier must be provided',
+          max: 'Socket identifier must not exceed 255 characters',
         },
       },
     },
@@ -47,10 +47,10 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().minLength(1).maxLength(1000),
+        rule: schema.string().min(1).max(1000),
         message: {
-          minLength: 'Details must be provided',
-          maxLength: 'Details must not exceed 1000 characters',
+          min: 'Details must be provided',
+          max: 'Details must not exceed 1000 characters',
         },
       },
     },

@@ -38,7 +38,7 @@ export default {
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(50),
+        rule: schema.string().max(50),
         message: {
           maxLength: 'Code must have a maximum of 50 characters',
         },
@@ -71,7 +71,7 @@ export default {
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(3),
+        rule: schema.string().max(3),
       },
       factory: faker => faker.helpers.arrayElement(['USD', 'EUR', 'GBP', 'CAD', 'AUD']),
     },

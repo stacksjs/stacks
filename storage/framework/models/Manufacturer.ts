@@ -37,7 +37,7 @@ export default {
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(100),
+        rule: schema.string().max(100),
         message: {
           maxLength: 'Manufacturer name must have a maximum of 100 characters',
         },
@@ -50,7 +50,7 @@ export default {
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(2000),
+        rule: schema.string().max(2000),
         message: {
           maxLength: 'Description must have a maximum of 2000 characters',
         },
@@ -63,7 +63,7 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(100),
+        rule: schema.string().max(100),
         message: {
           maxLength: 'Country must have a maximum of 100 characters',
         },

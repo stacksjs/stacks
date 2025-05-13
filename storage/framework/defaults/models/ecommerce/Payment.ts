@@ -81,7 +81,7 @@ export default {
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(3),
+        rule: schema.string().max(3),
       },
       factory: faker => faker.helpers.arrayElement(['USD', 'EUR', 'GBP', 'CAD', 'AUD']),
     },
@@ -101,7 +101,7 @@ export default {
       order: 9,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(4),
+        rule: schema.string().max(4),
       },
       factory: faker => faker.helpers.maybe(() => faker.finance.creditCardNumber('####'), { probability: 0.7 }),
     },

@@ -34,7 +34,7 @@ export default {
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
         message: {
           maxLength: 'Name must have a maximum of 255 characters',
         },
@@ -47,7 +47,7 @@ export default {
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().email().maxLength(255),
+        rule: schema.string().email().max(255),
         message: {
           maxLength: 'Email must have a maximum of 255 characters',
         },
@@ -60,7 +60,7 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(100),
+        rule: schema.string().max(100),
         message: {
           maxLength: 'Phone number must have a maximum of 100 characters',
         },

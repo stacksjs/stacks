@@ -35,7 +35,7 @@ export default {
       required: true,
       unique: true,
       validation: {
-        rule: schema.string().maxLength(512),
+        rule: schema.string().max(512),
         message: {
           string: 'token must be a string',
           required: 'token is required',
@@ -49,7 +49,7 @@ export default {
       fillable: true,
       required: true,
       validation: {
-        rule: schema.string().maxLength(512),
+        rule: schema.string().max(512),
         message: {
           string: 'plainTextToken must be a string',
           required: 'plainTextToken is required',

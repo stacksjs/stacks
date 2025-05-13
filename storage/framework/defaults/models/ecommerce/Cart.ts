@@ -111,7 +111,7 @@ export default {
       order: 8,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(3),
+        rule: schema.string().max(3),
       },
       factory: faker => faker.helpers.arrayElement(['USD', 'EUR', 'GBP', 'JPY', 'AUD']),
     },
@@ -121,7 +121,7 @@ export default {
       order: 9,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(1000),
+        rule: schema.string().max(1000),
       },
       factory: faker => faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.3 }),
     },

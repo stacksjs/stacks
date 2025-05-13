@@ -14,7 +14,7 @@ export default new Action({
 
   validations: {
     question: {
-      rule: schema.string().minLength(3).maxLength(255),
+      rule: schema.string().min(3).max(255),
       message: 'The question must be between 3 and 255 characters long.',
     },
   },

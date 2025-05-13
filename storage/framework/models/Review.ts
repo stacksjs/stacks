@@ -50,7 +50,7 @@ export default {
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(100),
+        rule: schema.string().max(100),
         message: {
           maxLength: 'Title must have a maximum of 100 characters',
         },
@@ -63,7 +63,7 @@ export default {
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(2000),
+        rule: schema.string().max(2000),
         message: {
           maxLength: 'Review content must have a maximum of 2000 characters',
         },

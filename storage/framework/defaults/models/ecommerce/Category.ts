@@ -36,7 +36,7 @@ export default {
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(50),
+        rule: schema.string().max(50),
         message: {
           maxLength: 'Name must have a maximum of 50 characters',
         },

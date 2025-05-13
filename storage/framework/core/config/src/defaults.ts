@@ -197,7 +197,7 @@ export const defaults: StacksOptions = {
       'activeUrl': 'The {{ field }} field must be a valid URL',
       'alpha': 'The {{ field }} field must contain only letters',
       'alphaNumeric': 'The {{ field }} field must contain only letters and numbers',
-      'minLength': 'The {{ field }} field must have at least {{ min }} characters',
+      'min(': 'The {{ field }} field must have at least {{ min }} characters',
       'maxLength': 'The {{ field }} field must not be greater than {{ max }} characters',
       'fixedLength': 'The {{ field }} field must be {{ size }} characters long',
       'confirmed': 'The {{ field }} field and {{ otherField }} field must be the same',
@@ -257,13 +257,13 @@ export const defaults: StacksOptions = {
 
       // record
       'record': 'The {{ field }} field must be an object',
-      'record.minLength': 'The {{ field }} field must have at least {{ min }} items',
+      'record.min(': 'The {{ field }} field must have at least {{ min }} items',
       'record.maxLength': 'The {{ field }} field must not have more than {{ max }} items',
       'record.fixedLength': 'The {{ field }} field must contain {{ size }} items',
 
       // array
       'array': 'The {{ field }} field must be an array',
-      'array.minLength': 'The {{ field }} field must have at least {{ min }} items',
+      'array.min(': 'The {{ field }} field must have at least {{ min }} items',
       'array.maxLength': 'The {{ field }} field must not have more than {{ max }} items',
       'array.fixedLength': 'The {{ field }} field must contain {{ size }} items',
       'notEmpty': 'The {{ field }} field must not be empty',

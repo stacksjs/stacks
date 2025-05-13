@@ -37,9 +37,9 @@ export default {
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().minLength(3).maxLength(255),
+        rule: schema.string().min(3).max(255),
         message: {
-          minLength: 'Title must have a minimum of 3 characters',
+          min(: 'Title must have a minimum of 3 characters',
           maxLength: 'Title must have a maximum of 255 characters',
         },
       },
@@ -63,9 +63,9 @@ export default {
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string().minLength(10),
+        rule: schema.string().min(10),
         message: {
-          minLength: 'Post body must have a minimum of 10 characters',
+          min(: 'Post body must have a minimum of 10 characters',
         },
       },
       factory: faker => faker.lorem.paragraphs(3),
@@ -76,9 +76,9 @@ export default {
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.string().minLength(10).maxLength(500),
+        rule: schema.string().min(10).max(500),
         message: {
-          minLength: 'Excerpt must have a minimum of 10 characters',
+          min(: 'Excerpt must have a minimum of 10 characters',
           maxLength: 'Excerpt must have a maximum of 500 characters',
         },
       },

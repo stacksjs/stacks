@@ -36,7 +36,7 @@ export default {
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(100),
+        rule: schema.string().max(100),
         message: {
           maxLength: 'Name must have a maximum of 100 characters',
         },
@@ -49,7 +49,7 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(1000),
+        rule: schema.string().max(1000),
         message: {
           maxLength: 'Countries must have a maximum of 1000 characters',
         },
@@ -66,7 +66,7 @@ export default {
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(500),
+        rule: schema.string().max(500),
         message: {
           maxLength: 'Regions must have a maximum of 500 characters',
         },
@@ -84,7 +84,7 @@ export default {
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(1000),
+        rule: schema.string().max(1000),
         message: {
           maxLength: 'Postal codes must have a maximum of 1000 characters',
         },

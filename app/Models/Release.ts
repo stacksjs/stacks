@@ -21,10 +21,10 @@ export default {
     name: {
       required: true,
       validation: {
-        rule: schema.string().minLength(3).maxLength(255),
+        rule: schema.string().min(3).max(255),
         message: {
-          minLength: 'Name must have a minimum of 3 characters',
-          maxLength: 'Name must have a maximum of 255 characters',
+          min: 'Name must have a minimum of 3 characters',
+          max: 'Name must have a maximum of 255 characters',
         },
       },
 
@@ -36,7 +36,7 @@ export default {
       fillable: true,
       unique: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
         message: {
           email: 'Version must be a valid version',
         },

@@ -37,7 +37,7 @@ export default {
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
         message: {
           maxLength: 'Name must have a maximum of 255 characters',
         },
@@ -50,7 +50,7 @@ export default {
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
         message: {
           maxLength: 'Phone number must have a maximum of 255 characters',
         },
@@ -63,7 +63,7 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
         message: {
           maxLength: 'Vehicle number must have a maximum of 255 characters',
         },
@@ -76,7 +76,7 @@ export default {
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
         message: {
           maxLength: 'License number must have a maximum of 255 characters',
         },

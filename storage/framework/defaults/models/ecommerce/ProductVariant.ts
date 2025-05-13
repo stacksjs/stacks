@@ -36,7 +36,7 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(100),
+        rule: schema.string().max(100),
         message: {
           maxLength: 'Variant name must have a maximum of 100 characters',
         },
@@ -49,7 +49,7 @@ export default {
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(50),
+        rule: schema.string().max(50),
         message: {
           maxLength: 'Type must have a maximum of 50 characters',
         },

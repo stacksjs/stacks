@@ -21,9 +21,9 @@ export default new Action({
       },
 
       password: {
-        rule: schema.string().minLength(6).maxLength(255),
+        rule: schema.string().min(6).max(255),
         message: {
-          minLength: 'Password must have a minimum of 6 characters',
+          min(: 'Password must have a minimum of 6 characters',
           maxLength: 'Password must have a maximum of 255 characters',
         },
       },

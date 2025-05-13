@@ -37,9 +37,9 @@ export default {
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().minLength(2).maxLength(255),
+        rule: schema.string().min(2).max(255),
         message: {
-          minLength: 'Name must have a minimum of 2 characters',
+          min(: 'Name must have a minimum of 2 characters',
           maxLength: 'Name must have a maximum of 255 characters',
         },
       },
@@ -65,9 +65,9 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().minLength(10).maxLength(20),
+        rule: schema.string().min(10).max(20),
         message: {
-          minLength: 'Phone number must have a minimum of 10 characters',
+          min(: 'Phone number must have a minimum of 10 characters',
           maxLength: 'Phone number must have a maximum of 20 characters',
         },
       },

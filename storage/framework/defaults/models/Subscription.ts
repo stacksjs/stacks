@@ -15,7 +15,7 @@ export default {
       required: true,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(512),
+        rule: schema.string().max(512),
         message: {
           string: 'type must be a string',
           required: 'type is required',
@@ -28,7 +28,7 @@ export default {
     plan: {
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(100),
+        rule: schema.string().max(100),
         message: {
           string: 'plan must be a string',
           required: 'plan is required',
@@ -43,7 +43,7 @@ export default {
       unique: true,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(512),
+        rule: schema.string().max(512),
         message: {
           string: 'provider_id must be a string',
           required: 'provider_id is required',
