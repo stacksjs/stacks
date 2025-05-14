@@ -1,10 +1,10 @@
-import type { Validator } from '@stacksjs/ts-validation'
+import type { ValidationInstance } from '@stacksjs/ts-validation'
 import type { Model, VineType } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
-import { reportError, schema } from './'
+import { schema } from './'
 
 interface RequestData {
   [key: string]: any
@@ -36,7 +36,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
   const model = (await import(modelPath)).default as Model
   const attributes = model.attributes
 
-  const ruleObject: Record<string, Validator> = {}
+  const ruleObject: Record<string, ValidationInstance> = {}
   const messageObject: Record<string, string> = {}
 
   for (const key in attributes) {
@@ -57,29 +57,24 @@ export async function validateField(modelFile: string, params: RequestData): Pro
     }
   }
 
-  // schema.messagesProvider = new SimpleMessagesProvider(messageObject)
-
   try {
     const validator = schema.object().shape(ruleObject)
     await validator.validate(params)
   }
   catch (error: any) {
-    if (error instanceof VineError.E_VALIDATION_ERROR)
-      reportError(error.messages)
-
     throw new HttpError(422, JSON.stringify(error.messages))
   }
 }
 
 export async function customValidate(attributes: CustomAttributes, params: RequestData): Promise<any> {
-  const ruleObject: Record<string, Validator> = {}
+  const ruleObject: Record<string, ValidationInstance> = {}
   const messageObject: Record<string, string> = {}
 
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
       const rule = attributes[key]?.rule
       if (rule)
-        ruleObject[key] = rule as Validator
+        ruleObject[key] = rule as ValidationInstance
 
       const validatorMessages = attributes[key]?.message
 
@@ -90,17 +85,12 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
     }
   }
 
-  // schema.messagesProvider = new SimpleMessagesProvider(messageObject)
-
   try {
     const validator = schema.object().shape(ruleObject)
 
     await validator.validate(params)
   }
   catch (error: any) {
-    if (error instanceof VineError.E_VALIDATION_ERROR)
-      reportError(error.messages)
-
     throw new HttpError(422, JSON.stringify(error.messages))
   }
 }
