@@ -13,7 +13,7 @@ interface CustomAttributes {
 }
 interface RequestDataWebsocket {
   id: number
-  type: string
+  type: string[] | string
   socket: string
   details: string
   time: number
@@ -22,7 +22,7 @@ interface RequestDataWebsocket {
 }
 export class WebsocketRequest extends Request<RequestDataWebsocket> implements WebsocketRequestType {
   public id = 1
-  public type = ''
+  public type = []
   public socket = ''
   public details = ''
   public time = 0

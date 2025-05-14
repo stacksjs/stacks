@@ -46,7 +46,7 @@ export default {
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string().nullable(),
+        rule: schema.string(),
       },
       factory: faker => faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.2 }),
     },

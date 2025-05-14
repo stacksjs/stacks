@@ -8,7 +8,7 @@ import { BaseOrm } from '../utils/base'
 
 export interface WebsocketsTable {
   id: Generated<number>
-  type: string
+  type: string | string[]
   socket: string
   details: string
   time: number
@@ -175,7 +175,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
     return this.attributes.id
   }
 
-  get type(): string {
+  get type(): string | string[] {
     return this.attributes.type
   }
 
@@ -199,7 +199,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
     return this.attributes.updated_at
   }
 
-  set type(value: string) {
+  set type(value: string | string[]) {
     this.attributes.type = value
   }
 
@@ -900,7 +900,7 @@ export async function remove(id: number): Promise<void> {
     .execute()
 }
 
-export async function whereType(value: string): Promise<WebsocketModel[]> {
+export async function whereType(value: string | string[]): Promise<WebsocketModel[]> {
   const query = DB.instance.selectFrom('websockets').where('type', '=', value)
   const results: WebsocketJsonResponse = await query.execute()
 

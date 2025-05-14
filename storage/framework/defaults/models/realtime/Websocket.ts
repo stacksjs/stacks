@@ -22,7 +22,7 @@ export default {
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().in(['disconnection', 'error', 'success']),
+        rule: schema.enum(['disconnection', 'error', 'success']),
         message: {
           in: 'Type must be one of: disconnection, error, success',
         },

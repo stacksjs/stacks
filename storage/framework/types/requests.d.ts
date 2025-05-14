@@ -1547,7 +1547,7 @@ export interface PaymentTransactionRequestType extends Request {
 
 interface RequestDataWebsocket {
   id: number
-  type: string
+  type: string[] | string
   socket: string
   details: string
   time: number
@@ -1559,7 +1559,7 @@ export interface WebsocketRequestType extends Request {
   get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataWebsocket
   id: number
-  type: string
+  type: string[] | string
   socket: string
   details: string
   time: number
