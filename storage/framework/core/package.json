@@ -323,7 +323,7 @@
     "@stacksjs/enums": "^0.70.23",
     "@stacksjs/env": "^0.70.23",
     "@stacksjs/error-handling": "^0.70.23",
-    "@stacksjs/eslint-config": "^4.10.2-beta.3",
+    "@stacksjs/eslint-config": "^4.14.0-beta.3",
     "@stacksjs/events": "^0.70.23",
     "@stacksjs/faker": "^0.70.23",
     "@stacksjs/git": "^0.70.23",
