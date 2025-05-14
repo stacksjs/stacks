@@ -1,6 +1,6 @@
 interface MessageObject {
   message: string
-  rule: string
+  value: string
   field: string
 }
 

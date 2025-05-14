@@ -4,7 +4,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
-import { schema } from './'
+import { reportError, schema } from './'
 
 interface RequestData {
   [key: string]: any
@@ -59,10 +59,18 @@ export async function validateField(modelFile: string, params: RequestData): Pro
 
   try {
     const validator = schema.object().shape(ruleObject)
-    await validator.validate(params)
+    const result = await validator.validate(params)
+
+    if (!result.valid) {
+      reportError(result.errors)
+      throw new HttpError(422, JSON.stringify(result.errors))
+    }
+
+    return result
   }
   catch (error: any) {
-    throw new HttpError(422, JSON.stringify(error.messages))
+    if (error instanceof HttpError)
+      throw error
   }
 }
 
@@ -87,10 +95,15 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
 
   try {
     const validator = schema.object().shape(ruleObject)
+    const result = await validator.validate(params)
 
-    await validator.validate(params)
+    if (!result.valid)
+      throw new HttpError(422, JSON.stringify(result.errors))
+
+    return result
   }
   catch (error: any) {
-    throw new HttpError(422, JSON.stringify(error.messages))
+    if (error instanceof HttpError)
+      throw error
   }
 }
