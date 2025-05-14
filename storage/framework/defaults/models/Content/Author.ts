@@ -53,8 +53,8 @@ export default {
       validation: {
         rule: schema.string().min(5).max(255),
         message: {
-          min(: 'Name must have a minimum of 3 characters',
-          maxLength: 'Name must have a maximum of 255 characters',
+          min: 'Name must have a minimum of 3 characters',
+          max: 'Name must have a maximum of 255 characters',
         },
       },
 

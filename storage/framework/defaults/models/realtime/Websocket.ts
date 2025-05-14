@@ -36,8 +36,8 @@ export default {
       validation: {
         rule: schema.string().min(1).max(255),
         message: {
-          min(: 'Socket identifier must be provided',
-          maxLength: 'Socket identifier must not exceed 255 characters',
+          min: 'Socket identifier must be provided',
+          max: 'Socket identifier must not exceed 255 characters',
         },
       },
     },
@@ -49,8 +49,8 @@ export default {
       validation: {
         rule: schema.string().min(1).max(1000),
         message: {
-          min(: 'Details must be provided',
-          maxLength: 'Details must not exceed 1000 characters',
+          min: 'Details must be provided',
+          max: 'Details must not exceed 1000 characters',
         },
       },
     },

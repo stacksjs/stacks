@@ -39,7 +39,7 @@ export default {
       validation: {
         rule: schema.string().max(255),
         message: {
-          maxLength: 'Name must have a maximum of 255 characters',
+          max: 'Name must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.person.fullName(),
@@ -52,7 +52,7 @@ export default {
       validation: {
         rule: schema.string().max(255),
         message: {
-          maxLength: 'Phone number must have a maximum of 255 characters',
+          max: 'Phone number must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.phone.number(),
@@ -65,7 +65,7 @@ export default {
       validation: {
         rule: schema.string().max(255),
         message: {
-          maxLength: 'Vehicle number must have a maximum of 255 characters',
+          max: 'Vehicle number must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.vehicle.vrm(),
@@ -78,7 +78,7 @@ export default {
       validation: {
         rule: schema.string().max(255),
         message: {
-          maxLength: 'License number must have a maximum of 255 characters',
+          max: 'License number must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.string.alphanumeric({ length: 10, casing: 'upper' }),

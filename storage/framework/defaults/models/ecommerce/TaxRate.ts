@@ -36,7 +36,7 @@ export default {
       validation: {
         rule: schema.string().max(255),
         message: {
-          maxLength: 'Name must have a maximum of 255 characters',
+          max: 'Name must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.commerce.productName(),
@@ -63,7 +63,7 @@ export default {
       validation: {
         rule: schema.string().max(100),
         message: {
-          maxLength: 'Type must have a maximum of 100 characters',
+          max: 'Type must have a maximum of 100 characters',
         },
       },
       factory: faker => faker.helpers.arrayElement(['VAT', 'GST', 'Sales Tax', 'Customs Duty']),
@@ -76,7 +76,7 @@ export default {
       validation: {
         rule: schema.string().max(100),
         message: {
-          maxLength: 'Country must have a maximum of 100 characters',
+          max: 'Country must have a maximum of 100 characters',
         },
       },
       factory: faker => faker.location.country(),

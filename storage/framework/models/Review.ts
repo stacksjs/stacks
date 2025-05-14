@@ -52,7 +52,7 @@ export default {
       validation: {
         rule: schema.string().max(100),
         message: {
-          maxLength: 'Title must have a maximum of 100 characters',
+          max: 'Title must have a maximum of 100 characters',
         },
       },
       factory: faker => faker.lorem.sentence({ min: 3, max: 8 }),
@@ -65,7 +65,7 @@ export default {
       validation: {
         rule: schema.string().max(2000),
         message: {
-          maxLength: 'Review content must have a maximum of 2000 characters',
+          max: 'Review content must have a maximum of 2000 characters',
         },
       },
       factory: faker => faker.lorem.paragraphs({ min: 1, max: 3 }),

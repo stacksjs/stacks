@@ -39,8 +39,8 @@ export default {
       validation: {
         rule: schema.string().min(3).max(255),
         message: {
-          min(: 'Title must have a minimum of 3 characters',
-          maxLength: 'Title must have a maximum of 255 characters',
+          min: 'Title must have a minimum of 3 characters',
+          max: 'Title must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.lorem.sentence(),
@@ -65,7 +65,7 @@ export default {
       validation: {
         rule: schema.string().min(10),
         message: {
-          min(: 'Post body must have a minimum of 10 characters',
+          min: 'Post body must have a minimum of 10 characters',
         },
       },
       factory: faker => faker.lorem.paragraphs(3),
@@ -78,8 +78,8 @@ export default {
       validation: {
         rule: schema.string().min(10).max(500),
         message: {
-          min(: 'Excerpt must have a minimum of 10 characters',
-          maxLength: 'Excerpt must have a maximum of 500 characters',
+          min: 'Excerpt must have a minimum of 10 characters',
+          max: 'Excerpt must have a maximum of 500 characters',
         },
       },
       factory: faker => faker.lorem.paragraph(),

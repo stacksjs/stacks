@@ -36,7 +36,7 @@ export default {
       validation: {
         rule: schema.string().max(255),
         message: {
-          maxLength: 'Name must have a maximum of 255 characters',
+          max: 'Name must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.person.fullName(),
@@ -49,7 +49,7 @@ export default {
       validation: {
         rule: schema.string().email().max(255),
         message: {
-          maxLength: 'Email must have a maximum of 255 characters',
+          max: 'Email must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.internet.email(),
@@ -62,7 +62,7 @@ export default {
       validation: {
         rule: schema.string().max(100).optional(),
         message: {
-          maxLength: 'Phone number must have a maximum of 100 characters',
+          max: 'Phone number must have a maximum of 100 characters',
         },
       },
       factory: faker => faker.phone.number(),
@@ -98,7 +98,7 @@ export default {
       validation: {
         rule: schema.string().max(100),
         message: {
-          maxLength: 'Source must have a maximum of 100 characters',
+          max: 'Source must have a maximum of 100 characters',
         },
       },
       factory: faker => faker.helpers.arrayElement(['website', 'social_media', 'in-store', 'email', 'app', 'referral', 'other']),

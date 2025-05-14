@@ -36,7 +36,7 @@ export default {
       validation: {
         rule: schema.string().max(255),
         message: {
-          maxLength: 'Method must have a maximum of 255 characters',
+          max: 'Method must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.commerce.productName(),
@@ -49,7 +49,7 @@ export default {
       validation: {
         rule: schema.string().max(255),
         message: {
-          maxLength: 'Zone must have a maximum of 255 characters',
+          max: 'Zone must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.location.country(),

@@ -39,7 +39,7 @@ export default {
       validation: {
         rule: schema.string().max(100),
         message: {
-          maxLength: 'Manufacturer name must have a maximum of 100 characters',
+          max: 'Manufacturer name must have a maximum of 100 characters',
         },
       },
       factory: faker => faker.company.name(),
@@ -52,7 +52,7 @@ export default {
       validation: {
         rule: schema.string().max(2000),
         message: {
-          maxLength: 'Description must have a maximum of 2000 characters',
+          max: 'Description must have a maximum of 2000 characters',
         },
       },
       factory: faker => `${faker.company.catchPhrase()}. ${faker.company.buzzPhrase()}`,
@@ -65,7 +65,7 @@ export default {
       validation: {
         rule: schema.string().max(100),
         message: {
-          maxLength: 'Country must have a maximum of 100 characters',
+          max: 'Country must have a maximum of 100 characters',
         },
       },
       factory: faker => faker.location.country(),

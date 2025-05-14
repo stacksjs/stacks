@@ -61,8 +61,8 @@ export default {
       validation: {
         rule: schema.string().min(5).max(255),
         message: {
-          min(: 'Name must have a minimum of 3 characters',
-          maxLength: 'Name must have a maximum of 255 characters',
+          min: 'Name must have a minimum of 3 characters',
+          max: 'Name must have a maximum of 255 characters',
         },
       },
 
@@ -91,8 +91,8 @@ export default {
       validation: {
         rule: schema.string().min(3).max(255),
         message: {
-          min(: 'Job title must have a minimum of 3 characters',
-          maxLength: 'Job title must have a maximum of 255 characters',
+          min: 'Job title must have a minimum of 3 characters',
+          max: 'Job title must have a maximum of 255 characters',
         },
       },
 
@@ -106,8 +106,8 @@ export default {
       validation: {
         rule: schema.string().min(6).max(255),
         message: {
-          min(: 'Password must have a minimum of 6 characters',
-          maxLength: 'Password must have a maximum of 255 characters',
+          min: 'Password must have a minimum of 6 characters',
+          max: 'Password must have a maximum of 255 characters',
         },
       },
 

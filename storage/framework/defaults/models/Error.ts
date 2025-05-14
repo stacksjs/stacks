@@ -18,7 +18,7 @@ export default {
       validation: {
         rule: schema.string().max(255),
         message: {
-          maxLength: 'type must have a maximum of 255 characters',
+          max: 'type must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.system.fileType(),

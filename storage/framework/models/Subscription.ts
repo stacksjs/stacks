@@ -19,7 +19,7 @@ export default {
         message: {
           string: 'type must be a string',
           required: 'type is required',
-          maxLength: 'type must have a maximum of 512 characters',
+          max: 'type must have a maximum of 512 characters',
         },
       },
       factory: faker => faker.lorem.lines(1),
@@ -32,7 +32,7 @@ export default {
         message: {
           string: 'plan must be a string',
           required: 'plan is required',
-          maxLength: 'plan must have a maximum of 100 characters',
+          max: 'plan must have a maximum of 100 characters',
         },
       },
       factory: faker => faker.helpers.arrayElement(['free', 'starter', 'pro', 'enterprise']),
@@ -47,7 +47,7 @@ export default {
         message: {
           string: 'provider_id must be a string',
           required: 'provider_id is required',
-          maxLength: 'provider_id must have a maximum of 512 characters',
+          max: 'provider_id must have a maximum of 512 characters',
         },
       },
       factory: faker => faker.string.alphanumeric(10),

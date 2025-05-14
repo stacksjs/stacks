@@ -18,7 +18,7 @@ export default {
       validation: {
         rule: schema.string().max(255),
         message: {
-          maxLength: 'Queue must have a maximum of 255 characters',
+          max: 'Queue must have a maximum of 255 characters',
         },
       },
       factory: () => 'default',

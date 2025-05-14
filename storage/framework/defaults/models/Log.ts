@@ -64,8 +64,8 @@ export default {
       validation: {
         rule: schema.string().min(1).max(1000),
         message: {
-          min(: 'Message must not be empty',
-          maxLength: 'Message must not exceed 1000 characters',
+          min: 'Message must not be empty',
+          max: 'Message must not exceed 1000 characters',
         },
       },
       factory: faker => faker.lorem.sentence(),
@@ -78,8 +78,8 @@ export default {
       validation: {
         rule: schema.string().min(1).max(255),
         message: {
-          min(: 'Project name must not be empty',
-          maxLength: 'Project name must not exceed 255 characters',
+          min: 'Project name must not be empty',
+          max: 'Project name must not exceed 255 characters',
         },
       },
       factory: faker => faker.company.name(),
@@ -92,7 +92,7 @@ export default {
       validation: {
         rule: schema.string().max(5000),
         message: {
-          maxLength: 'Stacktrace must not exceed 5000 characters',
+          max: 'Stacktrace must not exceed 5000 characters',
         },
       },
       factory: faker => faker.lorem.paragraphs(2),
@@ -105,7 +105,7 @@ export default {
       validation: {
         rule: schema.string().max(255),
         message: {
-          maxLength: 'File path must not exceed 255 characters',
+          max: 'File path must not exceed 255 characters',
         },
       },
       factory: faker => faker.system.filePath(),

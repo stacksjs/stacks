@@ -1,6 +1,5 @@
 import type { ViteConfig } from '@stacksjs/types'
 import { alias } from '@stacksjs/alias'
-import { env } from '@stacksjs/env'
 import { path as p } from '@stacksjs/path'
 import {
   autoImports,
@@ -15,7 +14,6 @@ import {
   stacks,
   uiEngine,
 } from '@stacksjs/vite-plugin'
-import Local from 'vite-plugin-local'
 import generateSitemap from 'vite-ssg-sitemap'
 
 // import { fonts } from './plugin/fonts'

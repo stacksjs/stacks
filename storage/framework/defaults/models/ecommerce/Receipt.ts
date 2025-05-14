@@ -36,7 +36,7 @@ export default {
       validation: {
         rule: schema.string().max(100),
         message: {
-          maxLength: 'Printer name must have a maximum of 100 characters',
+          max: 'Printer name must have a maximum of 100 characters',
         },
       },
       factory: faker => faker.company.name(),
@@ -49,7 +49,7 @@ export default {
       validation: {
         rule: schema.string().max(100),
         message: {
-          maxLength: 'Document name must have a maximum of 100 characters',
+          max: 'Document name must have a maximum of 100 characters',
         },
       },
       factory: faker => faker.system.fileName(),

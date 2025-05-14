@@ -19,8 +19,8 @@
   "keywords": ["tunnel", "local", "bun", "stacks"],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./*": {
       "import": "./dist/*"

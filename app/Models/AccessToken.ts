@@ -39,7 +39,7 @@ export default {
         message: {
           string: 'token must be a string',
           required: 'token is required',
-          maxLength: 'token must have a maximum of 512 characters',
+          max: 'token must have a maximum of 512 characters',
         },
       },
       factory: faker => faker.string.uuid(),
@@ -53,7 +53,7 @@ export default {
         message: {
           string: 'plainTextToken must be a string',
           required: 'plainTextToken is required',
-          maxLength: 'plainTextToken must have a maximum of 512 characters',
+          max: 'plainTextToken must have a maximum of 512 characters',
         },
       },
       factory: faker => faker.string.uuid(),
@@ -66,7 +66,7 @@ export default {
         rule: schema.enum(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']),
         message: {
           required: 'abilities is required',
-          maxLength: 'plainTextToken must have a maximum of 512 characters',
+          max: 'plainTextToken must have a maximum of 512 characters',
           string: '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',
         },
       },

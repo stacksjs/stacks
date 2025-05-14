@@ -36,7 +36,7 @@ export default {
       validation: {
         rule: schema.string().max(100),
         message: {
-          maxLength: 'Device name must have a maximum of 100 characters',
+          max: 'Device name must have a maximum of 100 characters',
         },
       },
       factory: faker => faker.company.name(),
@@ -49,7 +49,7 @@ export default {
       validation: {
         rule: schema.string().max(50),
         message: {
-          maxLength: 'MAC address must have a maximum of 50 characters',
+          max: 'MAC address must have a maximum of 50 characters',
         },
       },
       factory: faker => faker.internet.mac(),
@@ -62,7 +62,7 @@ export default {
       validation: {
         rule: schema.string().max(100),
         message: {
-          maxLength: 'Location must have a maximum of 100 characters',
+          max: 'Location must have a maximum of 100 characters',
         },
       },
       factory: faker => faker.location.streetAddress(),
@@ -75,7 +75,7 @@ export default {
       validation: {
         rule: schema.string().max(50),
         message: {
-          maxLength: 'Terminal must have a maximum of 50 characters',
+          max: 'Terminal must have a maximum of 50 characters',
         },
       },
       factory: faker => faker.string.alphanumeric(10),

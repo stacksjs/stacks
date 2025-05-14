@@ -38,7 +38,7 @@ export default {
       validation: {
         rule: schema.string().max(100),
         message: {
-          maxLength: 'Name must have a maximum of 100 characters',
+          max: 'Name must have a maximum of 100 characters',
         },
       },
       factory: faker => `${faker.location.country()} Zone`,
@@ -51,7 +51,7 @@ export default {
       validation: {
         rule: schema.string().max(1000),
         message: {
-          maxLength: 'Countries must have a maximum of 1000 characters',
+          max: 'Countries must have a maximum of 1000 characters',
         },
       },
       factory: (faker) => {
@@ -68,7 +68,7 @@ export default {
       validation: {
         rule: schema.string().max(500),
         message: {
-          maxLength: 'Regions must have a maximum of 500 characters',
+          max: 'Regions must have a maximum of 500 characters',
         },
       },
       factory: (faker) => {
@@ -86,7 +86,7 @@ export default {
       validation: {
         rule: schema.string().max(1000),
         message: {
-          maxLength: 'Postal codes must have a maximum of 1000 characters',
+          max: 'Postal codes must have a maximum of 1000 characters',
         },
       },
       factory: (faker) => {

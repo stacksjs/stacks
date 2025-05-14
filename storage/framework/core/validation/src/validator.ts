@@ -1,10 +1,10 @@
+import type { Validator } from '@stacksjs/ts-validation'
 import type { Model, VineType } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
 import { reportError, schema } from './'
-import type { Validator } from '@stacksjs/ts-validation'
 
 interface RequestData {
   [key: string]: any
@@ -94,7 +94,7 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
 
   try {
     const validator = schema.object().shape(ruleObject)
-    
+
     await validator.validate(params)
   }
   catch (error: any) {

@@ -37,7 +37,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-validation": "^0.2.0",
+    "@stacksjs/ts-validation": "^0.2.2",
     "add": "^2.0.6",
     "validator": "^13.15.0"
   },

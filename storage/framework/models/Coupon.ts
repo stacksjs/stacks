@@ -40,7 +40,7 @@ export default {
       validation: {
         rule: schema.string().max(50),
         message: {
-          maxLength: 'Code must have a maximum of 50 characters',
+          max: 'Code must have a maximum of 50 characters',
         },
       },
       factory: faker => faker.string.alphanumeric(8).toUpperCase(),

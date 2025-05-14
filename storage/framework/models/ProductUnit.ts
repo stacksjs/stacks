@@ -38,7 +38,7 @@ export default {
       validation: {
         rule: schema.string().max(100),
         message: {
-          maxLength: 'Name must have a maximum of 100 characters',
+          max: 'Name must have a maximum of 100 characters',
         },
       },
       factory: (faker) => {
@@ -54,7 +54,7 @@ export default {
       validation: {
         rule: schema.string().max(10),
         message: {
-          maxLength: 'Abbreviation must have a maximum of 10 characters',
+          max: 'Abbreviation must have a maximum of 10 characters',
         },
       },
       factory: (faker) => {
@@ -86,7 +86,7 @@ export default {
       validation: {
         rule: schema.string().max(255),
         message: {
-          maxLength: 'Description must have a maximum of 255 characters',
+          max: 'Description must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.lorem.sentence(),

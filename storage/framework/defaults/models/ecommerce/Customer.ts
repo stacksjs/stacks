@@ -39,8 +39,8 @@ export default {
       validation: {
         rule: schema.string().min(2).max(255),
         message: {
-          min(: 'Name must have a minimum of 2 characters',
-          maxLength: 'Name must have a maximum of 255 characters',
+          min: 'Name must have a minimum of 2 characters',
+          max: 'Name must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.person.fullName(),
@@ -67,8 +67,8 @@ export default {
       validation: {
         rule: schema.string().min(10).max(20),
         message: {
-          min(: 'Phone number must have a minimum of 10 characters',
-          maxLength: 'Phone number must have a maximum of 20 characters',
+          min: 'Phone number must have a minimum of 10 characters',
+          max: 'Phone number must have a maximum of 20 characters',
         },
       },
       factory: faker => faker.phone.number(),

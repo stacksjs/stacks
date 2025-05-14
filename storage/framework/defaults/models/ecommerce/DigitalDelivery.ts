@@ -36,7 +36,7 @@ export default {
       validation: {
         rule: schema.string().max(255),
         message: {
-          maxLength: 'Name must have a maximum of 255 characters',
+          max: 'Name must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.commerce.productName(),

@@ -25,7 +25,7 @@ export default {
         message: {
           string: 'type must be a string',
           required: 'type is required',
-          maxLength: 'type must have a maximum of 512 characters',
+          max: 'type must have a maximum of 512 characters',
         },
       },
       factory: () => 'card',

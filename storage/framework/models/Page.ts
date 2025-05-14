@@ -32,8 +32,8 @@ export default {
       validation: {
         rule: schema.string().min(3).max(255),
         message: {
-          min(: 'Title must have a minimum of 3 characters',
-          maxLength: 'Title must have a maximum of 255 characters',
+          min: 'Title must have a minimum of 3 characters',
+          max: 'Title must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.lorem.sentence(),
@@ -46,7 +46,7 @@ export default {
       validation: {
         rule: schema.string().min(3),
         message: {
-          min(: 'Template must have a minimum of 3 characters',
+          min: 'Template must have a minimum of 3 characters',
         },
       },
       factory: faker => faker.helpers.arrayElement(['default', 'landing', 'blog', 'contact']),

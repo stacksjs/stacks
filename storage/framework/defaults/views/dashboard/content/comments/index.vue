@@ -390,7 +390,7 @@ function formatDate(dateString: string): string {
 }
 
 // Truncate text for display
-function truncateText(text: string, maxLength: number): string {
+function truncateText(text: string, max: number): string {
   if (text.length <= maxLength) return text
   return text.substring(0, maxLength) + '...'
 }
