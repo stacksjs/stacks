@@ -139,8 +139,8 @@ export async function getExecutedMigrations(): Promise<{ name: string }[]> {
 function findCharacterLength(validator: Validator): number {
   // Check for max length constraint
   const maxLengthRule = validator.rules.find(r => r.name === 'max')
-  if (maxLengthRule?.params?.length)
-    return maxLengthRule.params.length
+  if (maxLengthRule?.params?.max)
+    return maxLengthRule.params.max
 
   // Check for exact length constraint
   const lengthRule = validator.rules.find(r => r.name === 'length')
@@ -318,7 +318,7 @@ export function prepareNumberColumnType(validator: Validator, driver = 'mysql'):
     return min >= -2147483648 && max <= 2147483647 ? `'int'` : `'bigint'`
   }
 
-  return `'double'`
+  return `'float'` // Use float instead of double for decimal numbers
 }
 
 // Add new function for enum column types
