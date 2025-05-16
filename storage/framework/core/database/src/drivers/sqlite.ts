@@ -437,13 +437,14 @@ function reArrangeColumns(attributes: AttributesElements | undefined, tableName:
 }
 
 function generateIndexCreationSQL(tableName: string, indexName: string, columns: string[]): string {
-  const columnsStr = columns.map(col => `'${snakeCase(col)}'`).join(', ')
+  const columnsStr = columns.map(col => `\`${snakeCase(col)}\``).join(', ')
   return `  await db.schema.createIndex('${indexName}').on('${tableName}').columns([${columnsStr}]).execute()\n`
 }
+
 function generatePrimaryKeyIndexSQL(tableName: string): string {
   return `  await db.schema.createIndex('${tableName}_id_index').on('${tableName}').column('id').execute()\n`
 }
 
 function generateForeignKeyIndexSQL(tableName: string, foreignKey: string): string {
-  return `  await db.schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column('${foreignKey}').execute()\n\n`
+  return `  await db.schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column(\`${foreignKey}\`).execute()\n\n`
 }

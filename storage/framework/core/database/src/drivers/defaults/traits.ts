@@ -117,7 +117,7 @@ export async function createTaggableTable(): Promise<void> {
   migrationContent += `  await db.schema\n`
   migrationContent += `    .createIndex('idx_taggable_polymorphic')\n`
   migrationContent += `    .on('taggables')\n`
-  migrationContent += `    .columns(['taggable_id', 'taggable_type'])\n`
+  migrationContent += `    .columns(['taggable_type'])\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `}\n`
@@ -212,12 +212,6 @@ export async function createCategorizableTable(): Promise<void> {
   migrationContent += `    .createIndex('categorizables_polymorphic_index')\n`
   migrationContent += `    .on('categorizables')\n`
   migrationContent += `    .columns(['categorizable_type'])\n`
-  migrationContent += `    .execute()\n\n`
-
-  migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('categorizables_order_index')\n`
-  migrationContent += `    .on('categorizables')\n`
-  migrationContent += `    .column('order')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
@@ -343,8 +337,6 @@ export async function createCommentablesTable(options: {
   migrationContent += `  await db.schema.createIndex('idx_commenteable_status').on('commentables').column('status').execute()\n`
   migrationContent += `  await db.schema.createIndex('idx_commenteable_commentables').on('commentables').columns(['commentables_id', 'commentables_type']).execute()\n`
   migrationContent += `  await db.schema.createIndex('idx_commenteable_user').on('commentables').column('user_id').execute()\n`
-
-  migrationContent += `  await db.schema.createIndex('idx_commenteable_votes').on('commentables').columns(['downvotes_count']).execute()\n`
 
   migrationContent += `}\n`
 

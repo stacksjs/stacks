@@ -11,7 +11,7 @@ import { Pool } from 'pg'
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
 let appEnv = 'local'
-let dbDriver = 'sqlite'
+let dbDriver = 'mysql'
 let dbConfig = {
   connections: {
     sqlite: {
