@@ -497,13 +497,11 @@ const sidebar = {
             { text: 'Printers', link: '/guide/commerce/printers' },
             {
               text: 'Products',
-              link: '/packages/products',
               collapsible: true,
               collapsed: true,
               items: [
                 { text: 'Items', link: '/guide/commerce/products/items' },
                 { text: 'Categories', link: '/guide/commerce/products/categories' },
-                { text: 'Types', link: '/guide/commerce/products/types' },
                 { text: 'Variants', link: '/guide/commerce/products/variants' },
                 { text: 'Units', link: '/guide/commerce/products/units' },
                 { text: 'Manufacturers', link: '/guide/commerce/products/manufacturers' },
