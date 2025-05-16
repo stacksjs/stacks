@@ -177,7 +177,7 @@ async function createTableMigration(modelPath: string) {
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
     const fieldNameFormatted = snakeCase(fieldName)
- 
+
     const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule, 'sqlite')
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
@@ -203,10 +203,10 @@ async function createTableMigration(modelPath: string) {
   }
 
   if (twoFactorEnabled !== false && twoFactorEnabled)
-    migrationContent += `    .addColumn('two_factor_secret', 'varchar(255)')\n`
+    migrationContent += `    .addColumn('two_factor_secret', 'text')\n`
 
   if (useBillable)
-    migrationContent += `    .addColumn('stripe_id', 'varchar(255)')\n`
+    migrationContent += `    .addColumn('stripe_id', 'text')\n`
 
   if (useSoftDeletes)
     migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
@@ -336,7 +336,7 @@ async function createAlterTableMigration(modelPath: string) {
     const fieldNameFormatted = snakeCase(fieldValidation.key)
     migrationContent += `await sql\`
         ALTER TABLE ${tableName}
-        MODIFY COLUMN ${fieldNameFormatted} VARCHAR(${fieldValidation.max})
+        MODIFY COLUMN ${fieldNameFormatted} TEXT
       \`.execute(db)\n\n`
   }
 
@@ -426,7 +426,7 @@ function reArrangeColumns(attributes: AttributesElements | undefined, tableName:
     if (previousField) {
       migrationContent += `await sql\`
         ALTER TABLE ${tableName}
-        MODIFY COLUMN ${fieldNameFormatted} VARCHAR(255) NOT NULL AFTER ${snakeCase(previousField)};
+        MODIFY COLUMN ${fieldNameFormatted} TEXT NOT NULL AFTER ${snakeCase(previousField)};
       \`.execute(db)\n\n`
     }
 

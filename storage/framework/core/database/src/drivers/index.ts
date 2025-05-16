@@ -1,4 +1,4 @@
-import type { Attribute, AttributesElements, Model, VineType } from '@stacksjs/types'
+import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { handleError } from '@stacksjs/error-handling'
@@ -128,10 +128,6 @@ export async function getExecutedMigrations(): Promise<{ name: string }[]> {
   }
 }
 
-function hasFunction(rule: VineType, functionName: string): boolean {
-  return typeof rule[functionName] === 'function'
-}
-
 export function findCharacterLength(rules: Rule[]): { min: number, max: number } | undefined {
   const result: any = {}
 
@@ -195,7 +191,7 @@ export function prepareTextColumnType(validator: Validator, driver = 'mysql'): s
       return `'text'`
     if (maxLength <= 16777215)
       return `'mediumtext'`
-    
+
     return `'longtext'`
   }
 
@@ -393,7 +389,7 @@ export function prepareNumberColumnType(validator: Validator, driver = 'mysql'):
         return `'mediumint'`
       if (min >= -2147483648 && max <= 2147483647)
         return `'int'`
-      
+
       return `'bigint'`
     }
 

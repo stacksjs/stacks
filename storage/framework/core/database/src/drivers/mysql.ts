@@ -139,7 +139,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
 
   if (useUuid)
-    migrationContent += `    .addColumn('uuid', 'text')\n`
+    migrationContent += `    .addColumn('uuid', 'varchar(255)')\n`
 
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
@@ -184,7 +184,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
   }
 
   if (usePasskey)
-    migrationContent += `    .addColumn('public_passkey', 'text')\n`
+    migrationContent += `    .addColumn('public_passkey', 'varchar(255)')\n`
 
   // Append created_at and updated_at columns if useTimestamps is true
   if (useTimestamps) {

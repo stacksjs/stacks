@@ -8,16 +8,14 @@ export async function up(db: Database<any>) {
     .addColumn('uuid', 'text')
     .addColumn('name', 'text', col => col.notNull())
     .addColumn('email', 'text', col => col.unique().notNull())
-    .addColumn('user_id', 'integer', (col) =>
-        col.references('users.id').onDelete('cascade')
-      ) 
+    .addColumn('user_id', 'integer', col =>
+      col.references('users.id').onDelete('cascade'))
     .addColumn('public_passkey', 'text')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()
 
   await db.schema.createIndex('authors_user_id_index').on('authors').column('user_id').execute()
-
 
   await db.schema.createIndex('authors_email_name_index').on('authors').columns(['email', 'name']).execute()
   await db.schema.createIndex('authors_id_index').on('authors').column('id').execute()
