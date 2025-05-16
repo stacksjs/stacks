@@ -1,9 +1,8 @@
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
+import { db } from '@stacksjs/database'
 import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
-import { db } from '@stacksjs/database'
-import { handleError } from '@stacksjs/error-handling'
 import { fs, globSync } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'
 
@@ -131,7 +130,6 @@ export async function getExecutedMigrations(): Promise<{ name: string }[]> {
       return []
     }
 
-    handleError(error, { shouldExitProcess: false })
     return []
   }
 }
