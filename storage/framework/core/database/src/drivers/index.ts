@@ -1,7 +1,5 @@
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
-import { db } from '@stacksjs/database'
-import { handleError } from '@stacksjs/error-handling'
 import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
@@ -37,6 +35,7 @@ interface Validator {
   validate: () => any
   test: () => any
   formatMessage: () => any
+  allowedValues?: string[]
 }
 
 interface Rule {
@@ -119,20 +118,22 @@ export async function hasMigrationBeenCreated(tableName: string): Promise<boolea
 }
 
 export async function getExecutedMigrations(): Promise<{ name: string }[]> {
-  try {
-    return await db.selectFrom('migrations').select('name').execute()
-  }
+  // try {
+  //   return await db.selectFrom('migrations').select('name').execute()
+  // }
 
-  catch (error: any) {
-    if (error?.message.includes('no such table: migrations')) {
-      console.warn('Migrations table does not exist, returning empty list.')
+  // catch (error: any) {
+  //   if (error?.message.includes('no such table: migrations')) {
+  //     console.warn('Migrations table does not exist, returning empty list.')
 
-      return []
-    }
+  //     return []
+  //   }
 
-    handleError(error, { shouldExitProcess: false })
-    return []
-  }
+  //   handleError(error, { shouldExitProcess: false })
+  //   return []
+  // }
+
+  return []
 }
 
 function findCharacterLength(validator: Validator): number {
@@ -320,17 +321,24 @@ export function prepareNumberColumnType(validator: Validator, driver = 'mysql'):
   return `'double'`
 }
 
+// Add new function for enum column types
+export function prepareEnumColumnType(validator: Validator, driver = 'mysql'): string {
+  if (!validator.allowedValues)
+    throw new Error('Enum rule found but no allowedValues defined')
+
+  const enumStructure = validator.allowedValues.map(value => `'${value}'`).join(', ')
+
+  if (driver === 'sqlite')
+    return `'text'` // SQLite doesn't support ENUM, but we'll enforce values at app level
+
+  return `sql\`enum(${enumStructure})\`` // MySQL supports native ENUM
+}
+
 export function mapFieldTypeToColumnType(validator: Validator, driver = 'mysql'): string {
   // Check for enum type
   const enumRule = validator.rules.find(r => r.name === 'enum')
-  if (enumRule) {
-    if (driver === 'sqlite')
-      return `'text'`
-
-    const enumChoices = enumRule.test() as string[]
-    const enumStructure = enumChoices.map(value => `'${value}'`).join(', ')
-    return `sql\`enum(${enumStructure})\``
-  }
+  if (enumRule)
+    return prepareEnumColumnType(validator, driver)
 
   // Check for base types
   if (validator.rules.some(r => r.name === 'string'))
@@ -340,7 +348,7 @@ export function mapFieldTypeToColumnType(validator: Validator, driver = 'mysql')
     return prepareNumberColumnType(validator, driver)
 
   if (validator.rules.some(r => r.name === 'boolean'))
-    return driver === 'sqlite' ? `'integer'` : `'tinyint(1)'`
+    return `'boolean'` // Use boolean type for both MySQL and SQLite
 
   // Handle date types
   const dateType = validator.rules.find(r => ['date', 'datetime', 'time', 'timestamp'].includes(r.name))?.name
@@ -351,6 +359,8 @@ export function mapFieldTypeToColumnType(validator: Validator, driver = 'mysql')
   if (validator.rules.some(r => ['array', 'object'].includes(r.name)))
     return driver === 'sqlite' ? `'text'` : `'json'`
 
-  // Default fallback for unknown types
-  return `'text'`
+  if (driver === 'sqlite')
+    return `'text'`
+
+  return `'varchar(255)'`
 }
