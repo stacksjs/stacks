@@ -137,15 +137,10 @@ export async function getExecutedMigrations(): Promise<{ name: string }[]> {
 function findCharacterLength(validator: Validator): number {
   // Check for max length constraint
   const maxLengthRule = validator.rules.find(r => r.name === 'max')
+
   if (maxLengthRule?.params?.max)
-    return maxLengthRule.params.max
+    return maxLengthRule?.params.length || 255
 
-  // Check for exact length constraint
-  const lengthRule = validator.rules.find(r => r.name === 'length')
-  if (lengthRule?.params?.length)
-    return lengthRule.params.length
-
-  // Default to 255 if no length constraints found
   return 255
 }
 
