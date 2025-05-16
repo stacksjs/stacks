@@ -16,6 +16,29 @@ interface Range {
   max: number
 }
 
+interface Validator {
+  rules: Rule[]
+  isRequired: boolean
+  fieldName: string
+  min: () => any
+  max: () => any
+  length: () => any
+  email: () => any
+  url: () => any
+  matches: () => any
+  alphanumeric: () => any
+  alpha: () => any
+  numeric: () => any
+  custom: () => any
+  required: () => any
+  optional: () => any
+  field: () => any
+  addRule: () => any
+  validate: () => any
+  test: () => any
+  formatMessage: () => any
+}
+
 interface Rule {
   name: string
   test: () => any
@@ -109,33 +132,28 @@ function hasFunction(rule: VineType, functionName: string): boolean {
   return typeof rule[functionName] === 'function'
 }
 
-export function findCharacterLength(rule: VineType): { min: number, max: number } | undefined {
+export function findCharacterLength(rules: Rule[]): { min: number, max: number } | undefined {
   const result: any = {}
 
   // Find min and max length validations
-  const minLengthValidation = rule.validations.find((v: any) => v.options?.min !== undefined)
-  const maxLengthValidation = rule.validations.find((v: any) => v.options?.max !== undefined)
+  const minLengthValidation = rules.find(r => r.name === 'min' && r.test()?.min !== undefined)
+  const maxLengthValidation = rules.find(r => r.name === 'max' && r.test()?.max !== undefined)
 
   if (minLengthValidation === undefined || maxLengthValidation === undefined) {
     return undefined
   }
 
-  for (const key of ['min', 'max']) {
-    if (maxLengthValidation.options[key] === undefined && minLengthValidation.options[key] === undefined)
-      continue
+  const minTest = minLengthValidation.test() as { min: number }
+  const maxTest = maxLengthValidation.test() as { max: number }
 
-    result.max = maxLengthValidation.options[key]
-    result.min = minLengthValidation.options[key]
-  }
+  result.min = minTest.min
+  result.max = maxTest.max
 
-  // if (minLengthValidation.options[key] !== maxLengthValidation.options[key]) {
-  //   result[key] = maxLengthValidation.options[key];
-  // }
   return result
 }
 
-function getFormatSpecificType(validation: { rule: string }): string | null {
-  switch (validation.rule) {
+function getFormatSpecificType(rule: Rule): string | null {
+  switch (rule.name) {
     case 'email':
       return `'varchar(255)'`
     case 'url':
@@ -149,26 +167,24 @@ function getFormatSpecificType(validation: { rule: string }): string | null {
   }
 }
 
-export function prepareTextColumnType(rule: VineType, driver = 'mysql'): string {
+export function prepareTextColumnType(validator: Validator, driver = 'mysql'): string {
   // For SQLite, all text fields are just 'text'
   if (driver === 'sqlite')
     return `'text'`
 
   // First check for format-specific types
-  // We need to check all validations since a field can have multiple rules
-  // (e.g., both 'string' and 'email')
-  for (const validation of rule.validations || []) {
+  for (const rule of validator.rules) {
     // Skip the base 'string' type as we'll handle that with length checks
-    if (validation.rule === 'string')
+    if (rule.name === 'string')
       continue
 
-    const formatType = getFormatSpecificType(validation)
+    const formatType = getFormatSpecificType(rule)
     if (formatType)
       return formatType
   }
 
   // Then check for length-based types
-  const characterLength = findCharacterLength(rule)
+  const characterLength = findCharacterLength(validator.rules)
   if (characterLength?.max) {
     const maxLength = characterLength.max
 
@@ -179,7 +195,7 @@ export function prepareTextColumnType(rule: VineType, driver = 'mysql'): string 
       return `'text'`
     if (maxLength <= 16777215)
       return `'mediumtext'`
-
+    
     return `'longtext'`
   }
 
@@ -188,19 +204,19 @@ export function prepareTextColumnType(rule: VineType, driver = 'mysql'): string 
 }
 
 // Add new function for date/time column types
-export function prepareDateTimeColumnType(rule: VineType, driver = 'mysql'): string {
+export function prepareDateTimeColumnType(validator: Validator, driver = 'mysql'): string {
   if (driver === 'sqlite')
     return `'text'` // SQLite uses TEXT for dates
 
   // Try to determine specific date type
-  for (const validation of rule.validations || []) {
-    if (validation.rule === 'date')
+  for (const rule of validator.rules) {
+    if (rule.name === 'date')
       return `'date'`
-    if (validation.rule === 'datetime')
+    if (rule.name === 'datetime')
       return `'datetime'`
-    if (validation.rule === 'time')
+    if (rule.name === 'time')
       return `'time'`
-    if (validation.rule === 'timestamp')
+    if (rule.name === 'timestamp')
       return `'timestamp'`
   }
 
@@ -322,7 +338,7 @@ function getUpvoteTableName(model: Model, tableName: string): string | undefined
 }
 
 // Updated function for numeric column types compatible with Kysely
-export function prepareNumberColumnType(rule: VineType, driver = 'mysql'): string {
+export function prepareNumberColumnType(validator: Validator, driver = 'mysql'): string {
   // SQLite uses a single numeric type for all numbers
   if (driver === 'sqlite')
     return `'numeric'`
@@ -333,19 +349,20 @@ export function prepareNumberColumnType(rule: VineType, driver = 'mysql'): strin
   let isDecimal = false
 
   // Check validations for precision/scale
-  for (const validation of rule.validations || []) {
-    if (validation.options?.precision) {
-      precision = validation.options.precision
+  for (const rule of validator.rules) {
+    const testResult = rule.test()
+    if (testResult?.precision) {
+      precision = testResult.precision
       isDecimal = true
     }
-    if (validation.options?.scale) {
-      scale = validation.options.scale
+    if (testResult?.scale) {
+      scale = testResult.scale
       isDecimal = true
     }
   }
 
   // Check for integer-only constraint
-  const isInteger = rule.validations.some((v: any) => v.rule === 'integer')
+  const isInteger = validator.rules.some(rule => rule.name === 'integer')
 
   // Handle exact decimal values
   if (isDecimal) {
@@ -358,30 +375,26 @@ export function prepareNumberColumnType(rule: VineType, driver = 'mysql'): strin
     let min: number | undefined
     let max: number | undefined
 
-    for (const validation of rule.validations || []) {
-      if (validation.options?.min !== undefined)
-        min = validation.options.min
-      if (validation.options?.max !== undefined)
-        max = validation.options.max
+    for (const rule of validator.rules) {
+      const testResult = rule.test()
+      if (testResult?.min !== undefined)
+        min = testResult.min
+      if (testResult?.max !== undefined)
+        max = testResult.max
     }
 
     // If we have both bounds, choose an appropriate type
     if (min !== undefined && max !== undefined) {
-      if (min >= -128 && max <= 127) {
+      if (min >= -128 && max <= 127)
         return `'tinyint'`
-      }
-      else if (min >= -32768 && max <= 32767) {
+      if (min >= -32768 && max <= 32767)
         return `'smallint'`
-      }
-      else if (min >= -8388608 && max <= 8388607) {
+      if (min >= -8388608 && max <= 8388607)
         return `'mediumint'`
-      }
-      else if (min >= -2147483648 && max <= 2147483647) {
+      if (min >= -2147483648 && max <= 2147483647)
         return `'int'`
-      }
-      else {
-        return `'bigint'`
-      }
+      
+      return `'bigint'`
     }
 
     // Default int type
@@ -392,47 +405,42 @@ export function prepareNumberColumnType(rule: VineType, driver = 'mysql'): strin
   return `'double'`
 }
 
-export function mapFieldTypeToColumnType(rule: VineType, driver = 'mysql'): string {
-  if (hasFunction(rule, 'getChoices')) {
+export function mapFieldTypeToColumnType(validator: Validator, driver = 'mysql'): string {
+  // Check for enum type
+  const enumRule = validator.rules.find(r => r.name === 'enum')
+  if (enumRule) {
     if (driver === 'sqlite') {
       return `'text'`
     }
 
-    // Condition checker if an attribute is enum, could not think any conditions atm
-    const enumChoices = rule.getChoices() as string[]
-
-    // Convert each string value to its corresponding string structure
+    // Get enum choices from the test function
+    const enumChoices = enumRule.test() as string[]
     const enumStructure = enumChoices.map(value => `'${value}'`).join(', ')
-
-    // Construct the ENUM definition
-    const enumDefinition = `sql\`enum(${enumStructure})\``
-
-    return enumDefinition
+    return `sql\`enum(${enumStructure})\``
   }
 
-  // Check rules array for base type
-  const baseType = rule.validations?.find((v: { rule: string }) => ['string', 'number', 'boolean'].includes(v.rule))?.rule
-
-  if (baseType === 'string') {
-    return prepareTextColumnType(rule, driver)
+  // Check for base types
+  const baseType = validator.rules.find(r => r.name === 'string')
+  if (baseType) {
+    return prepareTextColumnType(validator, driver)
   }
 
-  if (baseType === 'number') {
-    return prepareNumberColumnType(rule, driver)
+  if (validator.rules.some(r => r.name === 'number')) {
+    return prepareNumberColumnType(validator, driver)
   }
 
-  if (baseType === 'boolean') {
+  if (validator.rules.some(r => r.name === 'boolean')) {
     return driver === 'sqlite' ? `'integer'` : `'tinyint(1)'`
   }
 
   // Handle date types
-  const dateType = rule.validations?.find((v: { rule: string }) => ['date', 'datetime', 'time', 'timestamp'].includes(v.rule))?.rule
+  const dateType = validator.rules.find(r => ['date', 'datetime', 'time', 'timestamp'].includes(r.name))?.name
   if (dateType) {
-    return prepareDateTimeColumnType(rule, driver)
+    return prepareDateTimeColumnType(validator, driver)
   }
 
   // Handle array/object types
-  if (rule.validations?.some((v: { rule: string }) => ['array', 'object'].includes(v.rule))) {
+  if (validator.rules.some(r => ['array', 'object'].includes(r.name))) {
     return driver === 'sqlite' ? `'text'` : `'json'`
   }
 
