@@ -2,6 +2,8 @@ import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
+import { db } from '@stacksjs/database'
+import { handleError } from '@stacksjs/error-handling'
 import { fs, globSync } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'
 
@@ -118,22 +120,20 @@ export async function hasMigrationBeenCreated(tableName: string): Promise<boolea
 }
 
 export async function getExecutedMigrations(): Promise<{ name: string }[]> {
-  // try {
-  //   return await db.selectFrom('migrations').select('name').execute()
-  // }
+  try {
+    return await db.selectFrom('migrations').select('name').execute()
+  }
 
-  // catch (error: any) {
-  //   if (error?.message.includes('no such table: migrations')) {
-  //     console.warn('Migrations table does not exist, returning empty list.')
+  catch (error: any) {
+    if (error?.message.includes('no such table: migrations')) {
+      console.warn('Migrations table does not exist, returning empty list.')
 
-  //     return []
-  //   }
+      return []
+    }
 
-  //   handleError(error, { shouldExitProcess: false })
-  //   return []
-  // }
-
-  return []
+    handleError(error, { shouldExitProcess: false })
+    return []
+  }
 }
 
 function findCharacterLength(validator: Validator): number {
@@ -315,7 +315,7 @@ export function prepareNumberColumnType(validator: Validator, driver = 'mysql'):
     const min = minRule?.params?.min ?? -2147483648
     const max = maxRule?.params?.max ?? 2147483647
 
-    return min >= -2147483648 && max <= 2147483647 ? `'int'` : `'bigint'`
+    return min >= -2147483648 && max <= 2147483647 ? `'integer'` : `'bigint'`
   }
 
   return `'integer'` // Use decimal for precise decimal numbers
