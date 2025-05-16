@@ -43,6 +43,13 @@ interface Rule {
   name: string
   test: () => any
   message: string
+  params?: {
+    length?: number
+    min?: number
+    max?: number
+    precision?: number
+    scale?: number
+  }
 }
 
 export async function deleteMigrationFiles(): Promise<void> {
@@ -128,75 +135,40 @@ export async function getExecutedMigrations(): Promise<{ name: string }[]> {
   }
 }
 
-export function findCharacterLength(rules: Rule[]): { min: number, max: number } | undefined {
-  const result: any = {}
+function findCharacterLength(validator: Validator): number {
+  // Check for max length constraint
+  const maxLengthRule = validator.rules.find(r => r.name === 'max')
+  if (maxLengthRule?.params?.length)
+    return maxLengthRule.params.length
 
-  // Find min and max length validations
-  const minLengthValidation = rules.find(r => r.name === 'min' && r.test()?.min !== undefined)
-  const maxLengthValidation = rules.find(r => r.name === 'max' && r.test()?.max !== undefined)
+  // Check for exact length constraint
+  const lengthRule = validator.rules.find(r => r.name === 'length')
+  if (lengthRule?.params?.length)
+    return lengthRule.params.length
 
-  if (minLengthValidation === undefined || maxLengthValidation === undefined) {
-    return undefined
-  }
-
-  const minTest = minLengthValidation.test() as { min: number }
-  const maxTest = maxLengthValidation.test() as { max: number }
-
-  result.min = minTest.min
-  result.max = maxTest.max
-
-  return result
-}
-
-function getFormatSpecificType(rule: Rule): string | null {
-  switch (rule.name) {
-    case 'email':
-      return `'varchar(255)'`
-    case 'url':
-      return `'varchar(2048)'`
-    case 'uuid':
-      return `'char(36)'`
-    case 'ip':
-      return `'varchar(45)'` // IPv6 can be up to 45 chars
-    default:
-      return null
-  }
+  // Default to 255 if no length constraints found
+  return 255
 }
 
 export function prepareTextColumnType(validator: Validator, driver = 'mysql'): string {
-  // For SQLite, all text fields are just 'text'
+  // SQLite uses TEXT for all string types
   if (driver === 'sqlite')
     return `'text'`
 
-  // First check for format-specific types
-  for (const rule of validator.rules) {
-    // Skip the base 'string' type as we'll handle that with length checks
-    if (rule.name === 'string')
-      continue
+  // Check for format-specific types first
+  const formatType = validator.rules.find(r => ['email', 'url', 'uuid'].includes(r.name))?.name
+  if (formatType)
+    return `'varchar(255)'`
 
-    const formatType = getFormatSpecificType(rule)
-    if (formatType)
-      return formatType
-  }
-
-  // Then check for length-based types
-  const characterLength = findCharacterLength(validator.rules)
-  if (characterLength?.max) {
-    const maxLength = characterLength.max
-
-    // Choose appropriate MySQL type based on length
-    if (maxLength <= 255)
-      return `'varchar(${maxLength})'`
-    if (maxLength <= 65535)
-      return `'text'`
-    if (maxLength <= 16777215)
-      return `'mediumtext'`
-
-    return `'longtext'`
-  }
-
-  // Default to varchar(255)
-  return `'varchar(255)'`
+  // Get length and choose appropriate MySQL type
+  const maxLength = findCharacterLength(validator)
+  if (maxLength <= 255)
+    return `'varchar(${maxLength})'`
+  if (maxLength <= 65535)
+    return `'text'`
+  if (maxLength <= 16777215)
+    return `'mediumtext'`
+  return `'longtext'`
 }
 
 // Add new function for date/time column types
@@ -257,9 +229,7 @@ export function arrangeColumns(attributes: AttributesElements | undefined): Arra
   const entries = Object.entries(attributes)
 
   // Sort the entries based on the 'order' property
-
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  entries.sort(([keyA, valueA], [keyB, valueB]) => {
+  entries.sort(([_keyA, valueA], [_keyB, valueB]) => {
     const orderA = valueA.order ?? Number.POSITIVE_INFINITY
     const orderB = valueB.order ?? Number.POSITIVE_INFINITY
     return orderA - orderB
@@ -294,10 +264,9 @@ export function findDifferingKeys(obj1: any, obj2: any): { key: string, max: num
 
       if (lastCharacterLength !== undefined && latestCharacterLength !== undefined) {
         if (
-          lastCharacterLength.max !== latestCharacterLength.max
-          || lastCharacterLength.min !== latestCharacterLength.min
+          lastCharacterLength !== latestCharacterLength
         ) {
-          differingKeys.push({ key, max: latestCharacterLength.max, min: latestCharacterLength.min })
+          differingKeys.push({ key, max: latestCharacterLength, min: latestCharacterLength })
         }
       }
     }
@@ -333,71 +302,21 @@ function getUpvoteTableName(model: Model, tableName: string): string | undefined
     : undefined
 }
 
-// Updated function for numeric column types compatible with Kysely
 export function prepareNumberColumnType(validator: Validator, driver = 'mysql'): string {
-  // SQLite uses a single numeric type for all numbers
+  // SQLite uses integer for all numbers
   if (driver === 'sqlite')
-    return `'numeric'`
+    return `'integer'`
 
-  // Check for decimal validation
-  let precision = 10
-  let scale = 2
-  let isDecimal = false
+  // Check for integer types
+  if (validator.rules.some(r => r.name === 'integer')) {
+    const minRule = validator.rules.find(r => r.name === 'min')
+    const maxRule = validator.rules.find(r => r.name === 'max')
+    const min = minRule?.params?.min ?? -2147483648
+    const max = maxRule?.params?.max ?? 2147483647
 
-  // Check validations for precision/scale
-  for (const rule of validator.rules) {
-    const testResult = rule.test()
-    if (testResult?.precision) {
-      precision = testResult.precision
-      isDecimal = true
-    }
-    if (testResult?.scale) {
-      scale = testResult.scale
-      isDecimal = true
-    }
+    return min >= -2147483648 && max <= 2147483647 ? `'int'` : `'bigint'`
   }
 
-  // Check for integer-only constraint
-  const isInteger = validator.rules.some(rule => rule.name === 'integer')
-
-  // Handle exact decimal values
-  if (isDecimal) {
-    return `'decimal(${precision},${scale})'`
-  }
-
-  // Handle integers with different storage requirements
-  if (isInteger) {
-    // Look for min/max values to determine appropriate integer type
-    let min: number | undefined
-    let max: number | undefined
-
-    for (const rule of validator.rules) {
-      const testResult = rule.test()
-      if (testResult?.min !== undefined)
-        min = testResult.min
-      if (testResult?.max !== undefined)
-        max = testResult.max
-    }
-
-    // If we have both bounds, choose an appropriate type
-    if (min !== undefined && max !== undefined) {
-      if (min >= -128 && max <= 127)
-        return `'tinyint'`
-      if (min >= -32768 && max <= 32767)
-        return `'smallint'`
-      if (min >= -8388608 && max <= 8388607)
-        return `'mediumint'`
-      if (min >= -2147483648 && max <= 2147483647)
-        return `'int'`
-
-      return `'bigint'`
-    }
-
-    // Default int type
-    return `'int'`
-  }
-
-  // For floating point numbers, use double for better compatibility
   return `'double'`
 }
 
@@ -405,40 +324,32 @@ export function mapFieldTypeToColumnType(validator: Validator, driver = 'mysql')
   // Check for enum type
   const enumRule = validator.rules.find(r => r.name === 'enum')
   if (enumRule) {
-    if (driver === 'sqlite') {
+    if (driver === 'sqlite')
       return `'text'`
-    }
 
-    // Get enum choices from the test function
     const enumChoices = enumRule.test() as string[]
     const enumStructure = enumChoices.map(value => `'${value}'`).join(', ')
     return `sql\`enum(${enumStructure})\``
   }
 
   // Check for base types
-  const baseType = validator.rules.find(r => r.name === 'string')
-  if (baseType) {
+  if (validator.rules.some(r => r.name === 'string'))
     return prepareTextColumnType(validator, driver)
-  }
 
-  if (validator.rules.some(r => r.name === 'number')) {
+  if (validator.rules.some(r => r.name === 'number'))
     return prepareNumberColumnType(validator, driver)
-  }
 
-  if (validator.rules.some(r => r.name === 'boolean')) {
+  if (validator.rules.some(r => r.name === 'boolean'))
     return driver === 'sqlite' ? `'integer'` : `'tinyint(1)'`
-  }
 
   // Handle date types
   const dateType = validator.rules.find(r => ['date', 'datetime', 'time', 'timestamp'].includes(r.name))?.name
-  if (dateType) {
+  if (dateType)
     return prepareDateTimeColumnType(validator, driver)
-  }
 
   // Handle array/object types
-  if (validator.rules.some(r => ['array', 'object'].includes(r.name))) {
+  if (validator.rules.some(r => ['array', 'object'].includes(r.name)))
     return driver === 'sqlite' ? `'text'` : `'json'`
-  }
 
   // Default fallback for unknown types
   return `'text'`
