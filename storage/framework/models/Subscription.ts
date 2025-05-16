@@ -43,7 +43,7 @@ export default {
       unique: true,
       fillable: true,
       validation: {
-        rule: schema.string().max(512),
+        rule: schema.string().max(255),
         message: {
           string: 'provider_id must be a string',
           required: 'provider_id is required',

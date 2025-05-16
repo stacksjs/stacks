@@ -44,7 +44,7 @@ interface Rule {
   test: () => any
   message: string
   params?: {
-    length?: number
+    length: number
     min?: number
     max?: number
     precision?: number
@@ -138,10 +138,7 @@ function findCharacterLength(validator: Validator): number {
   // Check for max length constraint
   const maxLengthRule = validator.rules.find(r => r.name === 'max')
 
-  if (maxLengthRule?.params?.max)
-    return maxLengthRule?.params.length || 255
-
-  return 255
+  return maxLengthRule?.params?.length || 255
 }
 
 export function prepareTextColumnType(validator: Validator, driver = 'mysql'): string {

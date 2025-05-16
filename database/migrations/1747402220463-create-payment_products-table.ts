@@ -3,16 +3,18 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .createTable('payment_transactions')
+    .createTable('payment_products')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'varchar(255)')
-    .addColumn('name', 'varchar(255)', col => col.notNull())
-    .addColumn('description', 'varchar(255)')
-    .addColumn('amount', 'integer', col => col.notNull())
-    .addColumn('type', 'varchar(255)', col => col.notNull())
+    .addColumn('name', 'text', col => col.notNull())
+    .addColumn('description', 'integer')
+    .addColumn('key', 'integer', col => col.notNull())
+    .addColumn('unit_price', 'integer')
+    .addColumn('status', 'varchar(255)')
+    .addColumn('image', 'varchar(255)')
     .addColumn('provider_id', 'varchar(255)')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
     .execute()
-  await db.schema.createIndex('payment_transactions_id_index').on('payment_transactions').column('id').execute()
+  await db.schema.createIndex('payment_products_id_index').on('payment_products').column('id').execute()
 }

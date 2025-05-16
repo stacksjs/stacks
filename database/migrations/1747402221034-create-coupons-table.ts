@@ -6,7 +6,7 @@ export async function up(db: Database<any>) {
     .createTable('coupons')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'varchar(255)')
-    .addColumn('code', 'varchar(255)', col => col.unique().notNull())
+    .addColumn('code', 'varchar(50)', col => col.unique().notNull())
     .addColumn('description', 'varchar(255)')
     .addColumn('discount_type', 'varchar(255)', col => col.notNull())
     .addColumn('discount_value', 'integer', col => col.notNull())

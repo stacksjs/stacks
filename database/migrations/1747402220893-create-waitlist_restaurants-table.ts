@@ -8,7 +8,7 @@ export async function up(db: Database<any>) {
     .addColumn('uuid', 'varchar(255)')
     .addColumn('name', 'varchar(255)', col => col.notNull())
     .addColumn('email', 'varchar(255)', col => col.notNull())
-    .addColumn('phone', 'varchar(255)')
+    .addColumn('phone', 'varchar(100)')
     .addColumn('party_size', 'integer', col => col.notNull())
     .addColumn('check_in_time', 'integer', col => col.notNull())
     .addColumn('table_preference', sql`enum('indoor', 'bar', 'booth', 'no_preference')`, col => col.notNull())

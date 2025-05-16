@@ -5,7 +5,7 @@ export async function up(db: Database<any>) {
   await db.schema
     .createTable('failed_jobs')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
-    .addColumn('connection', 'varchar(255)', col => col.notNull())
+    .addColumn('connection', 'varchar(100)', col => col.notNull())
     .addColumn('queue', 'varchar(255)', col => col.notNull())
     .addColumn('payload', 'varchar(255)', col => col.notNull())
     .addColumn('exception', 'varchar(255)', col => col.notNull())

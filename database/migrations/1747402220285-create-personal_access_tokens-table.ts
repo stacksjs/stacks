@@ -7,7 +7,7 @@ export async function up(db: Database<any>) {
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('name', 'varchar(255)', col => col.notNull())
     .addColumn('token', 'varchar(255)', col => col.unique().notNull())
-    .addColumn('plain_text_token', 'varchar(255)', col => col.notNull())
+    .addColumn('plain_text_token', 'text', col => col.notNull())
     .addColumn('abilities', sql`enum('read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin')`, col => col.notNull())
     .addColumn('last_used_at', 'date')
     .addColumn('expires_at', 'date')

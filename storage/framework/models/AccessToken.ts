@@ -35,7 +35,7 @@ export default {
       required: true,
       unique: true,
       validation: {
-        rule: schema.string().max(512),
+        rule: schema.string().max(255),
         message: {
           string: 'token must be a string',
           required: 'token is required',
