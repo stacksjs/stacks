@@ -318,7 +318,7 @@ export function prepareNumberColumnType(validator: Validator, driver = 'mysql'):
     return min >= -2147483648 && max <= 2147483647 ? `'int'` : `'bigint'`
   }
 
-  return `'float'` // Use float instead of double for decimal numbers
+  return `'integer'` // Use decimal for precise decimal numbers
 }
 
 // Add new function for enum column types
