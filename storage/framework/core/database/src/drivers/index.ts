@@ -16,6 +16,12 @@ interface Range {
   max: number
 }
 
+interface Rule {
+  name: string
+  test: () => any
+  message: string
+}
+
 export async function deleteMigrationFiles(): Promise<void> {
   const files = await fs.readdir(path.userMigrationsPath())
 
@@ -128,54 +134,57 @@ export function findCharacterLength(rule: VineType): { min: number, max: number 
   return result
 }
 
-// Use existing prepareTextColumnType function
+function getFormatSpecificType(validation: { rule: string }): string | null {
+  switch (validation.rule) {
+    case 'email':
+      return `'varchar(255)'`
+    case 'url':
+      return `'varchar(2048)'`
+    case 'uuid':
+      return `'char(36)'`
+    case 'ip':
+      return `'varchar(45)'` // IPv6 can be up to 45 chars
+    default:
+      return null
+  }
+}
+
 export function prepareTextColumnType(rule: VineType, driver = 'mysql'): string {
   // For SQLite, all text fields are just 'text'
   if (driver === 'sqlite')
     return `'text'`
 
-  let columnType = 'varchar(255)' // Default
+  // First check for format-specific types
+  // We need to check all validations since a field can have multiple rules
+  // (e.g., both 'string' and 'email')
+  for (const validation of rule.validations || []) {
+    // Skip the base 'string' type as we'll handle that with length checks
+    if (validation.rule === 'string')
+      continue
 
-  // Find min and max length validations using your existing function
+    const formatType = getFormatSpecificType(validation)
+    if (formatType)
+      return formatType
+  }
+
+  // Then check for length-based types
   const characterLength = findCharacterLength(rule)
-
-  // If there's a max length validation, adjust the column type accordingly
-  if (characterLength && characterLength.max) {
+  if (characterLength?.max) {
     const maxLength = characterLength.max
 
     // Choose appropriate MySQL type based on length
-    if (maxLength <= 255) {
-      columnType = `varchar(${maxLength})`
-    }
-    else if (maxLength <= 65535) {
-      columnType = 'text'
-    }
-    else if (maxLength <= 16777215) {
-      columnType = 'mediumtext'
-    }
-    else {
-      columnType = 'longtext'
-    }
-  }
-  else {
-    // Check for specific string formats if they exist in validations
-    for (const validation of rule.validations || []) {
-      if (validation.rule === 'email') {
-        return `'varchar(255)'`
-      }
-      else if (validation.rule === 'url') {
-        return `'varchar(2048)'`
-      }
-      else if (validation.rule === 'uuid') {
-        return `'char(36)'`
-      }
-      else if (validation.rule === 'ip') {
-        return `'varchar(45)'` // IPv6 can be up to 45 chars
-      }
-    }
+    if (maxLength <= 255)
+      return `'varchar(${maxLength})'`
+    if (maxLength <= 65535)
+      return `'text'`
+    if (maxLength <= 16777215)
+      return `'mediumtext'`
+
+    return `'longtext'`
   }
 
-  return `'${columnType}'`
+  // Default to varchar(255)
+  return `'varchar(255)'`
 }
 
 // Add new function for date/time column types
@@ -401,50 +410,32 @@ export function mapFieldTypeToColumnType(rule: VineType, driver = 'mysql'): stri
     return enumDefinition
   }
 
-  // Use existing schema_name check to determine main type
-  const schemaName = rule[Symbol.for('schema_name')] || ''
+  // Check rules array for base type
+  const baseType = rule.validations?.find((v: { rule: string }) => ['string', 'number', 'boolean'].includes(v.rule))?.rule
 
-  if (schemaName.includes('string')) {
+  if (baseType === 'string') {
     return prepareTextColumnType(rule, driver)
   }
 
-  if (schemaName.includes('number')) {
+  if (baseType === 'number') {
     return prepareNumberColumnType(rule, driver)
   }
 
-  if (schemaName.includes('boolean')) {
+  if (baseType === 'boolean') {
     return driver === 'sqlite' ? `'integer'` : `'tinyint(1)'`
   }
 
-  if (schemaName.includes('date')) {
+  // Handle date types
+  const dateType = rule.validations?.find((v: { rule: string }) => ['date', 'datetime', 'time', 'timestamp'].includes(v.rule))?.rule
+  if (dateType) {
     return prepareDateTimeColumnType(rule, driver)
   }
 
-  if (schemaName.includes('array') || schemaName.includes('object')) {
+  // Handle array/object types
+  if (rule.validations?.some((v: { rule: string }) => ['array', 'object'].includes(v.rule))) {
     return driver === 'sqlite' ? `'text'` : `'json'`
   }
 
-  // Fallback for other types - UPDATED to avoid using 'float'
-  switch (rule) {
-    case 'integer':
-      return `'int'`
-    case 'boolean':
-      return driver === 'sqlite' ? `'integer'` : `'tinyint(1)'`
-    case 'date':
-      return `'date'`
-    case 'datetime':
-      return driver === 'sqlite' ? `'text'` : `'datetime'`
-    case 'timestamp':
-      return `'timestamp'`
-    case 'float':
-      return `'double'`
-    case 'decimal':
-      return `'decimal(10,2)'`
-    case 'uuid':
-      return driver === 'sqlite' ? `'text'` : `'char(36)'`
-    case 'binary':
-      return driver === 'sqlite' ? `'blob'` : `'longblob'`
-    default:
-      return `'text'` // Fallback for unknown types
-  }
+  // Default fallback for unknown types
+  return `'text'`
 }

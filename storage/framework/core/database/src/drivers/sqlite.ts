@@ -177,6 +177,8 @@ async function createTableMigration(modelPath: string) {
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
     const fieldNameFormatted = snakeCase(fieldName)
+    if (tableName === 'orders')
+      console.log(fieldOptions.validation?.rule)
     const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule, 'sqlite')
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
