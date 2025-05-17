@@ -28,7 +28,7 @@
   "icon": "logo.png",
   "files": ["LICENSE.md", "logo.png"],
   "engines": {
-    "vscode": "^1.100.0"
+    "vscode": "^1.100.2"
   },
   "scripts": {
     "package": "bunx --bun vsce package",
@@ -57,6 +57,6 @@
     "vue.volar"
   ],
   "devDependencies": {
-    "@vscode/vsce": "^3.3.2"
+    "@vscode/vsce": "^3.4.0"
   }
 }

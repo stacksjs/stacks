@@ -57,10 +57,10 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@types/js-yaml": "^4.0.9",
-    "@vueuse/core": "^13.1.0",
+    "@vueuse/core": "^13.2.0",
     "@vueuse/head": "^2.0.0",
-    "@vueuse/math": "^13.1.0",
-    "@vueuse/shared": "^13.1.0",
+    "@vueuse/math": "^13.2.0",
+    "@vueuse/shared": "^13.2.0",
     "ace-builds": "^1.41.0",
     "bun-plugin-dotenvx": "^0.6.3",
     "bun-plugin-yml": "^0.3.1",
@@ -79,6 +79,6 @@
     "resize-observer-polyfill": "^1.5.1",
     "vue-starport": "^0.4.0",
     "vue3-ace-editor": "^2.2.4",
-    "yaml": "^2.7.1"
+    "yaml": "^2.8.0"
   }
 }

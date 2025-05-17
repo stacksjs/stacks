@@ -38,7 +38,7 @@
     "@stacksjs/database": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/pg": "^8.15.1",
+    "@types/pg": "^8.15.2",
     "kysely": "^0.28.2",
     "kysely-bun-worker": "^0.7.0",
     "mysql2": "^3.14.1",
