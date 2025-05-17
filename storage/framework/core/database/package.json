@@ -43,8 +43,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.808.0",
-    "@aws-sdk/lib-dynamodb": "^3.808.0",
+    "@aws-sdk/client-dynamodb": "^3.812.0",
+    "@aws-sdk/lib-dynamodb": "^3.812.0",
     "dynamodb-toolbox": "^2.2.2"
   },
   "optionalDependencies": {
@@ -61,7 +61,7 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@types/tar": "^6.1.13",
-    "debug": "^4.4.0",
+    "debug": "^4.4.1",
     "dynamodb-tooling": "^0.3.2",
     "kysely-bun-worker": "^0.7.0",
     "mkdirp": "^3.0.1",
