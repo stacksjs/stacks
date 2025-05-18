@@ -1,4 +1,4 @@
-// Main ecommerce module index file
+// Main commerce module index file
 import * as coupons from './coupons'
 import * as customers from './customers'
 import * as devices from './devices'
@@ -25,7 +25,7 @@ type WaitlistsModule = typeof waitlists
 type DevicesModule = typeof devices
 type ReceiptsModule = typeof receipts
 
-export interface EcommerceNamespace {
+export interface CommerceNamespace {
   coupons: CouponsModule
   customers: CustomersModule
   giftCards: GiftCardsModule
@@ -40,7 +40,7 @@ export interface EcommerceNamespace {
   receipts: ReceiptsModule
 }
 
-export const ecommerce: EcommerceNamespace = {
+export const commerce: CommerceNamespace = {
   coupons,
   customers,
   devices,
@@ -55,7 +55,7 @@ export const ecommerce: EcommerceNamespace = {
   waitlists,
 }
 
-export default ecommerce
+export default commerce
 
 export {
   coupons,

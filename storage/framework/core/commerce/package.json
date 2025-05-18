@@ -2,21 +2,21 @@
   "name": "@stacksjs/commerce",
   "type": "module",
   "version": "0.70.23",
-  "description": "Stacks ecommerce utilities.",
+  "description": "Stacks commerce utilities.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/ecommerce#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/commerce#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/ecommerce"
+    "directory": "./storage/framework/core/commerce"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["ecommerce", "utilities", "functions", "bun", "stacks"],
+  "keywords": ["commerce", "utilities", "functions", "bun", "stacks"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

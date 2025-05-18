@@ -1,4 +1,4 @@
-# Stacks Ecommerce
+# Stacks Commerce
 
 wip
 
@@ -21,7 +21,7 @@ bun install -d @stacksjs/commerce
 Now, you can use it in your project:
 
 ```js
-import * as ecommerce from '@stacksjs/commerce'
+import * as commerce from '@stacksjs/commerce'
 
 // wip
 ```
