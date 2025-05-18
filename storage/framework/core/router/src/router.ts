@@ -300,30 +300,44 @@ export class Router implements RouterInterface {
     // Remove trailing .ts if present
     modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath
 
-    let actionModule = null
-
-    if (modulePath.includes('storage/framework/orm'))
-      actionModule = await import(modulePath)
-    else if (modulePath.includes('Actions'))
-      actionModule = await import(p.projectPath(`app/${modulePath}.ts`))
-    else if (modulePath.includes('OrmAction'))
-      actionModule = await import(p.storagePath(`/framework/actions/src/${modulePath}.ts`))
-    else actionModule = await import(importPathFunction(modulePath))
-
-    // Use custom path from action module if available
-    const newPath = actionModule.default.path ?? originalPath
-    this.updatePathIfNeeded(newPath, originalPath)
-
-    let requestInstance: RequestInstance
-
-    if (actionModule.default.requestFile) {
-      requestInstance = await findRequestInstance(actionModule.default.requestFile)
-    }
-    else {
-      requestInstance = await extractDefaultRequest()
-    }
+    let requestInstance: RequestInstance = await extractDefaultRequest()
 
     try {
+      // Handle controller-based routing
+      if (modulePath.includes('Controller')) {
+        const [controllerPath, methodName = 'index'] = modulePath.split('@')
+        const controller = await import(importPathFunction(controllerPath))
+        const instance = new controller.default()
+        
+        if (typeof instance[methodName] !== 'function')
+          throw new Error(`Method ${methodName} not found in controller ${controllerPath}`)
+
+        // Use custom path from controller if available
+        const newPath = controller.default.path ?? originalPath
+        this.updatePathIfNeeded(newPath, originalPath)
+        
+        const result = await instance[methodName](requestInstance)
+        return response.success(result)
+      }
+      
+      // Handle action-based routing
+      let actionModule = null
+      if (modulePath.includes('storage/framework/orm'))
+        actionModule = await import(modulePath)
+      else if (modulePath.includes('Actions'))
+        actionModule = await import(p.projectPath(`app/${modulePath}.ts`))
+      else if (modulePath.includes('OrmAction'))
+        actionModule = await import(p.storagePath(`/framework/actions/src/${modulePath}.ts`))
+      else 
+        actionModule = await import(importPathFunction(modulePath))
+
+      // Use custom path from action module if available
+      const newPath = actionModule.default.path ?? originalPath
+      this.updatePathIfNeeded(newPath, originalPath)
+
+      if (actionModule.default.requestFile)
+        requestInstance = await findRequestInstance(actionModule.default.requestFile)
+
       if (isObjectNotEmpty(actionModule.default.validations) && requestInstance)
         await customValidate(actionModule.default.validations, requestInstance.all())
 
