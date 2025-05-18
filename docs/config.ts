@@ -127,7 +127,7 @@ const sidebar = {
       items: [
         { text: 'Welcome', link: '/bootcamp/intro' },
         {
-          text: 'Let’s Build',
+          text: 'Let\'s Build',
           collapsible: true,
           collapsed: true,
           items: [
@@ -490,37 +490,46 @@ const sidebar = {
           collapsible: true,
           collapsed: true,
           items: [
-            { text: 'Customers', link: '/guide/commerce/customers' },
-            { text: 'Orders', link: '/guide/commerce/orders' },
             { text: 'Coupons', link: '/guide/commerce/coupons' },
-            { text: 'Gift Cards', link: '/guide/commerce/gift-cards' },
-            { text: 'Printers', link: '/guide/commerce/printers' },
-            {
-              text: 'Products',
-              collapsible: true,
-              collapsed: true,
-              items: [
-                { text: 'Items', link: '/guide/commerce/products/items' },
-                { text: 'Categories', link: '/guide/commerce/products/categories' },
-                { text: 'Variants', link: '/guide/commerce/products/variants' },
-                { text: 'Units', link: '/guide/commerce/products/units' },
-                { text: 'Manufacturers', link: '/guide/commerce/products/manufacturers' },
-                { text: 'Reviews', link: '/guide/commerce/products/reviews' },
-              ],
-            },
+            { text: 'Customers', link: '/guide/commerce/customers' },
             {
               text: 'Deliveries',
               collapsible: true,
               collapsed: true,
               items: [
-                { text: 'Shipping Methods', link: '/guide/commerce/deliveries/shipping-methods' },
-                { text: 'Shipping Zones', link: '/guide/commerce/deliveries/shipping-zones' },
-                { text: 'Shipping Rates', link: '/guide/commerce/deliveries/shipping-rates' },
-                { text: 'Digital Deliveries', link: '/guide/commerce/deliveries/digital-deliveries' },
-                { text: 'License Keys', link: '/guide/commerce/deliveries/license-keys' },
                 { text: 'Delivery Routes', link: '/guide/commerce/deliveries/delivery-routes' },
+                { text: 'Digital Deliveries', link: '/guide/commerce/deliveries/digital-deliveries' },
                 { text: 'Drivers', link: '/guide/commerce/deliveries/drivers' },
-              ],
+                { text: 'License Keys', link: '/guide/commerce/deliveries/license-keys' },
+                { text: 'Shipping Methods', link: '/guide/commerce/deliveries/shipping-methods' },
+                { text: 'Shipping Rates', link: '/guide/commerce/deliveries/shipping-rates' },
+                { text: 'Shipping Zones', link: '/guide/commerce/deliveries/shipping-zones' }
+              ]
+            },
+            { text: 'Gift Cards', link: '/guide/commerce/gift-cards' },
+            { text: 'Orders', link: '/guide/commerce/orders' },
+            { text: 'Payments', link: '/guide/commerce/payments' },
+            {
+              text: 'Printers',
+              collapsible: true,
+              collapsed: true,
+              items: [
+                { text: 'Devices', link: '/guide/commerce/printers/devices' },
+                { text: 'Receipts', link: '/guide/commerce/printers/receipts' }
+              ]
+            },
+            {
+              text: 'Products',
+              collapsible: true,
+              collapsed: true,
+              items: [
+                { text: 'Categories', link: '/guide/commerce/products/categories' },
+                { text: 'Items', link: '/guide/commerce/products/items' },
+                { text: 'Manufacturers', link: '/guide/commerce/products/manufacturers' },
+                { text: 'Reviews', link: '/guide/commerce/products/reviews' },
+                { text: 'Units', link: '/guide/commerce/products/units' },
+                { text: 'Variants', link: '/guide/commerce/products/variants' }
+              ]
             },
             { text: 'Taxes', link: '/guide/commerce/taxes' },
             {
@@ -529,10 +538,9 @@ const sidebar = {
               collapsed: true,
               items: [
                 { text: 'Products', link: '/guide/commerce/waitlists/products' },
-                { text: 'Restaurants', link: '/guide/commerce/waitlists/restaurants' },
-              ],
-            },
-            { text: 'Payments', link: '/guide/commerce/payments' },
+                { text: 'Restaurants', link: '/guide/commerce/waitlists/restaurants' }
+              ]
+            }
           ],
         },
 
