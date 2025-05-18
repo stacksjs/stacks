@@ -7,7 +7,7 @@ The Product Categories module in the Commerce package provides a robust set of f
 First, import the product categories functionality from the Commerce package:
 
 ```ts
-import { categories } from '@stacksjs/commerce'
+import { products } from '@stacksjs/commerce'
 ```
 
 ## Fetching Categories
@@ -17,65 +17,65 @@ The Commerce package provides several methods to fetch categories:
 ### Fetch All Categories
 
 ```ts
-const allCategories = await categories.fetchAll()
+const allCategories = await products.categories.fetchAll()
 ```
 
 ### Fetch a Single Category
 
 ```ts
-const category = await categories.fetchById(1) // Replace 1 with the actual category ID
+const category = await products.categories.fetchById(1) // Replace 1 with the actual category ID
 ```
 
 ### Fetch by Name
 
 ```ts
-const category = await categories.fetchByName('Electronics')
+const category = await products.categories.fetchByName('Electronics')
 ```
 
 ### Fetch Active Categories
 
 ```ts
-const activeCategories = await categories.fetchActive()
+const activeCategories = await products.categories.fetchActive()
 ```
 
 ### Fetch Root Categories
 
 ```ts
-const rootCategories = await categories.fetchRootCategories()
+const rootCategories = await products.categories.fetchRootCategories()
 ```
 
 ### Fetch Child Categories
 
 ```ts
-const childCategories = await categories.fetchChildCategories('1') // Replace 1 with the parent category ID
+const childCategories = await products.categories.fetchChildCategories('1') // Replace 1 with the parent category ID
 ```
 
 ### Fetch by Display Order
 
 ```ts
 // Fetch categories in ascending order
-const categories = await categories.fetchByDisplayOrder(true)
+const categories = await products.categories.fetchByDisplayOrder(true)
 
 // Fetch categories in descending order
-const categories = await categories.fetchByDisplayOrder(false)
+const categories = await products.categories.fetchByDisplayOrder(false)
 ```
 
 ### Fetch Category Tree
 
 ```ts
-const categoryTree = await categories.fetchCategoryTree()
+const categoryTree = await products.categories.fetchCategoryTree()
 ```
 
 ### Fetch Category Statistics
 
 ```ts
-const stats = await categories.fetchStats()
+const stats = await products.categories.fetchStats()
 ```
 
 ### Compare Category Growth
 
 ```ts
-const growth = await categories.compareCategoryGrowth(30) // Compare last 30 days
+const growth = await products.categories.compareCategoryGrowth(30) // Compare last 30 days
 ```
 
 ## Managing Categories
@@ -83,7 +83,7 @@ const growth = await categories.compareCategoryGrowth(30) // Compare last 30 day
 ### Store a New Category
 
 ```ts
-const newCategory = await categories.store({
+const newCategory = await products.categories.store({
   name: 'Electronics',
   description: 'Electronic devices and accessories',
   image_url: 'https://example.com/electronics.jpg',
@@ -96,7 +96,7 @@ const newCategory = await categories.store({
 ### Find or Create a Category
 
 ```ts
-const category = await categories.findOrCreateByName({
+const category = await products.categories.findOrCreateByName({
   name: 'Electronics',
   description: 'Electronic devices and accessories',
   is_active: true,
@@ -106,7 +106,7 @@ const category = await categories.findOrCreateByName({
 ### Update a Category
 
 ```ts
-const updatedCategory = await categories.update(1, {
+const updatedCategory = await products.categories.update(1, {
   name: 'Electronics',
   description: 'Updated description',
   image_url: 'https://example.com/new-image.jpg',
@@ -118,23 +118,23 @@ const updatedCategory = await categories.update(1, {
 ### Update Display Order
 
 ```ts
-const updatedCategory = await categories.updateDisplayOrder(1, 3) // Set display order to 3
+const updatedCategory = await products.categories.updateDisplayOrder(1, 3) // Set display order to 3
 ```
 
 ### Update Active Status
 
 ```ts
-const updatedCategory = await categories.updateActiveStatus(1, false) // Deactivate category
+const updatedCategory = await products.categories.updateActiveStatus(1, false) // Deactivate category
 ```
 
 ### Update Parent Category
 
 ```ts
 // Move to a new parent
-const updatedCategory = await categories.updateParent(1, '2') // Move category 1 under parent 2
+const updatedCategory = await products.categories.updateParent(1, '2') // Move category 1 under parent 2
 
 // Make it a root category
-const updatedCategory = await categories.updateParent(1, null)
+const updatedCategory = await products.categories.updateParent(1, null)
 ```
 
 ### Delete Categories
@@ -152,17 +152,17 @@ await categories.bulkRemove([1, 2, 3]) // Array of category IDs to delete
 ### Remove Child Categories
 
 ```ts
-const removedCount = await categories.removeChildCategories('1') // Remove all children of category 1
+const removedCount = await products.categories.removeChildCategories('1') // Remove all children of category 1
 ```
 
 ### Deactivate Categories
 
 ```ts
 // Deactivate a single category
-const success = await categories.deactivate(1)
+const success = await products.categories.deactivate(1)
 
 // Deactivate all child categories
-const deactivatedCount = await categories.deactivateChildCategories('1')
+const deactivatedCount = await products.categories.deactivateChildCategories('1')
 ```
 
 ## API Endpoints

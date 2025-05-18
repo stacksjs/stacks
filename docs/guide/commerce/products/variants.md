@@ -7,7 +7,7 @@ The Product Variants module in the Commerce package provides a robust set of fun
 First, import the product variants functionality from the Commerce package:
 
 ```ts
-import { variants } from '@stacksjs/commerce'
+import { products } from '@stacksjs/commerce'
 ```
 
 ## Fetching Variants
@@ -17,13 +17,13 @@ The Commerce package provides several methods to fetch variants:
 ### Fetch All Variants
 
 ```ts
-const allVariants = await variants.fetchAll()
+const allVariants = await products.variants.fetchAll()
 ```
 
 ### Fetch a Single Variant
 
 ```ts
-const variant = await variants.fetchById(1) // Replace 1 with the actual variant ID
+const variant = await products.variants.fetchById(1) // Replace 1 with the actual variant ID
 ```
 
 ## Managing Variants
@@ -31,7 +31,7 @@ const variant = await variants.fetchById(1) // Replace 1 with the actual variant
 ### Store a New Variant
 
 ```ts
-const newVariant = await variants.store({
+const newVariant = await products.variants.store({
   product_id: 1,
   sku: 'TSHIRT-S-RED',
   title: 'T-Shirt - Small - Red',
@@ -49,7 +49,7 @@ const newVariant = await variants.store({
 ### Store Multiple Variants
 
 ```ts
-const newVariants = await variants.bulkStore([
+const newVariants = await products.variants.bulkStore([
   {
     product_id: 1,
     sku: 'TSHIRT-S-RED',
@@ -70,7 +70,7 @@ const newVariants = await variants.bulkStore([
 ### Update a Variant
 
 ```ts
-const updatedVariant = await variants.update(1, {
+const updatedVariant = await products.variants.update(1, {
   price: 34.99,
   inventory_quantity: 50,
   status: 'active',
@@ -80,7 +80,7 @@ const updatedVariant = await variants.update(1, {
 ### Update Multiple Variants
 
 ```ts
-const updatedVariants = await variants.bulkUpdate([
+const updatedVariants = await products.variants.bulkUpdate([
   {
     id: 1,
     price: 34.99,
@@ -97,19 +97,19 @@ const updatedVariants = await variants.bulkUpdate([
 ### Update Variant Status
 
 ```ts
-const success = await variants.updateStatus(1, 'active') // Set status to active
+const success = await products.variants.updateStatus(1, 'active') // Set status to active
 ```
 
 ### Delete Variants
 
 Single variant deletion:
 ```ts
-await variants.destroy(1) // Replace 1 with the variant ID to delete
+await products.variants.destroy(1) // Replace 1 with the variant ID to delete
 ```
 
 Bulk deletion:
 ```ts
-await variants.bulkDestroy([1, 2, 3]) // Array of variant IDs to delete
+await products.variants.bulkDestroy([1, 2, 3]) // Array of variant IDs to delete
 ```
 
 ## Variant Options Management

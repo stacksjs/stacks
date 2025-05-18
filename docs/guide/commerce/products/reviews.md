@@ -7,7 +7,7 @@ The Reviews module in the Commerce package provides a robust set of functions to
 First, import the reviews functionality from the Commerce package:
 
 ```ts
-import { reviews } from '@stacksjs/commerce'
+import { products } from '@stacksjs/commerce'
 ```
 
 ## Fetching Reviews
@@ -17,37 +17,37 @@ The Commerce package provides several methods to fetch reviews:
 ### Fetch All Reviews
 
 ```ts
-const allReviews = await reviews.fetchAll()
+const allReviews = await products.reviews.fetchAll()
 ```
 
 ### Fetch a Single Review
 
 ```ts
-const review = await reviews.fetchById(1) // Replace 1 with the actual review ID
+const review = await products.reviews.fetchById(1) // Replace 1 with the actual review ID
 ```
 
 ### Fetch Reviews by Product
 
 ```ts
-const productReviews = await reviews.fetchByProductId(1) // Replace 1 with the product ID
+const productReviews = await products.reviews.fetchByProductId(1) // Replace 1 with the product ID
 ```
 
 ### Fetch Reviews by User
 
 ```ts
-const userReviews = await reviews.fetchByUserId(1) // Replace 1 with the user ID
+const userReviews = await products.reviews.fetchByUserId(1) // Replace 1 with the user ID
 ```
 
 ### Fetch Approved Reviews for a Product
 
 ```ts
-const approvedReviews = await reviews.fetchApprovedByProductId(1) // Replace 1 with the product ID
+const approvedReviews = await products.reviews.fetchApprovedByProductId(1) // Replace 1 with the product ID
 ```
 
 ### Fetch Most Helpful Reviews for a Product
 
 ```ts
-const helpfulReviews = await reviews.fetchMostHelpfulByProductId(1) // Replace 1 with the product ID
+const helpfulReviews = await products.reviews.fetchMostHelpfulByProductId(1) // Replace 1 with the product ID
 ```
 
 ## Managing Reviews
@@ -55,7 +55,7 @@ const helpfulReviews = await reviews.fetchMostHelpfulByProductId(1) // Replace 1
 ### Store a New Review
 
 ```ts
-const newReview = await reviews.store({
+const newReview = await products.reviews.store({
   product_id: 1,
   customer_id: 1,
   rating: 5,
@@ -73,7 +73,7 @@ const newReview = await reviews.store({
 ### Update a Review
 
 ```ts
-const updatedReview = await reviews.update(1, {
+const updatedReview = await products.reviews.update(1, {
   rating: 4,
   content: 'Updated review content',
   is_approved: true,
@@ -84,22 +84,22 @@ const updatedReview = await reviews.update(1, {
 
 ```ts
 // Increment helpful votes
-const updatedReview = await reviews.updateVotes(1, 'helpful', true)
+const updatedReview = await products.reviews.updateVotes(1, 'helpful', true)
 
 // Decrement unhelpful votes
-const updatedReview = await reviews.updateVotes(1, 'unhelpful', false)
+const updatedReview = await products.reviews.updateVotes(1, 'unhelpful', false)
 ```
 
 ### Delete Reviews
 
 Single review deletion:
 ```ts
-await reviews.destroy(1) // Replace 1 with the review ID to delete
+await products.reviews.destroy(1) // Replace 1 with the review ID to delete
 ```
 
 Bulk deletion:
 ```ts
-await reviews.bulkDestroy([1, 2, 3]) // Array of review IDs to delete
+await products.reviews.bulkDestroy([1, 2, 3]) // Array of review IDs to delete
 ```
 
 ## API Endpoints

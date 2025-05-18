@@ -7,7 +7,7 @@ The Product Items module in the Commerce package provides a robust set of functi
 First, import the product items functionality from the Commerce package:
 
 ```ts
-import { productItems } from '@stacksjs/commerce'
+import { products } from '@stacksjs/commerce'
 ```
 
 ## Fetching Product Items
@@ -17,13 +17,13 @@ The Commerce package provides several methods to fetch product items:
 ### Fetch All Product Items
 
 ```ts
-const allItems = await productItems.fetchAll()
+const allItems = await products.items.fetchAll()
 ```
 
 ### Fetch a Single Product Item
 
 ```ts
-const item = await productItems.fetchById(1) // Replace 1 with the actual product item ID
+const item = await products.items.fetchById(1) // Replace 1 with the actual product item ID
 ```
 
 ## Managing Product Items
@@ -31,7 +31,7 @@ const item = await productItems.fetchById(1) // Replace 1 with the actual produc
 ### Store a New Product Item
 
 ```ts
-const newItem = await productItems.store({
+const newItem = await products.items.store({
   product_id: 1,
   sku: 'SKU123',
   price: 99.99,
@@ -44,7 +44,7 @@ const newItem = await productItems.store({
 ### Store Multiple Product Items
 
 ```ts
-const newItems = await productItems.bulkStore([
+const newItems = await products.items.bulkStore([
   {
     product_id: 1,
     sku: 'SKU123',
@@ -65,7 +65,7 @@ const newItems = await productItems.bulkStore([
 ### Update a Product Item
 
 ```ts
-const updatedItem = await productItems.update(1, {
+const updatedItem = await products.items.update(1, {
   price: 129.99,
   inventory_count: 75,
 })
@@ -74,7 +74,7 @@ const updatedItem = await productItems.update(1, {
 ### Update Multiple Product Items
 
 ```ts
-const updatedItems = await productItems.bulkUpdate([
+const updatedItems = await products.items.bulkUpdate([
   {
     id: 1,
     price: 129.99,
@@ -91,25 +91,27 @@ const updatedItems = await productItems.bulkUpdate([
 ### Update Product Item Availability
 
 ```ts
-const updatedItem = await productItems.updateAvailability(1, false) // Set to unavailable
+const updatedItem = await products.items.updateAvailability(1, false) // Set to unavailable
 ```
 
 ### Update Product Item Inventory
 
 ```ts
-const updatedItem = await productItems.updateInventory(1, 50) // Update inventory count to 50
+const updatedItem = await products.items.updateInventory(1, 50) // Update inventory count to 50
 ```
 
 ### Delete Product Items
 
 Single product item deletion:
+
 ```ts
-await productItems.destroy(1) // Replace 1 with the product item ID to delete
+await products.items.destroy(1) // Replace 1 with the product item ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
-await productItems.bulkDestroy([1, 2, 3]) // Array of product item IDs to delete
+await products.items.bulkDestroy([1, 2, 3]) // Array of product item IDs to delete
 ```
 
 ## API Endpoints

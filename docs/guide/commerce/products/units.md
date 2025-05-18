@@ -7,7 +7,7 @@ The Product Units module in the Commerce package provides a robust set of functi
 First, import the product units functionality from the Commerce package:
 
 ```ts
-import { productUnits } from '@stacksjs/commerce'
+import { products } from '@stacksjs/commerce'
 ```
 
 ## Fetching Product Units
@@ -17,29 +17,29 @@ The Commerce package provides several methods to fetch product units:
 ### Fetch All Product Units
 
 ```ts
-const allUnits = await productUnits.fetchAll()
+const allUnits = await products.units.fetchAll()
 ```
 
 ### Fetch a Single Product Unit
 
 ```ts
-const unit = await productUnits.fetchById(1) // Replace 1 with the actual unit ID
+const unit = await products.units.fetchById(1) // Replace 1 with the actual unit ID
 ```
 
 ### Get Default Unit for a Type
 
 ```ts
-const defaultUnit = await productUnits.getDefaultUnit('weight') // Get default unit for weight type
+const defaultUnit = await products.units.getDefaultUnit('weight') // Get default unit for weight type
 ```
 
 ### Format Unit Options
 
 ```ts
 // Get all unit options
-const allOptions = await productUnits.formatUnitOptions()
+const allOptions = await products.units.formatUnitOptions()
 
 // Get unit options for a specific type
-const weightOptions = await productUnits.formatUnitOptions('weight')
+const weightOptions = await products.units.formatUnitOptions('weight')
 ```
 
 ## Managing Product Units
@@ -47,7 +47,7 @@ const weightOptions = await productUnits.formatUnitOptions('weight')
 ### Store a New Product Unit
 
 ```ts
-const newUnit = await productUnits.store({
+const newUnit = await products.units.store({
   name: 'Kilogram',
   abbreviation: 'kg',
   type: 'weight',
@@ -59,7 +59,7 @@ const newUnit = await productUnits.store({
 ### Store Multiple Product Units
 
 ```ts
-const newUnits = await productUnits.bulkStore([
+const newUnits = await products.units.bulkStore([
   {
     name: 'Kilogram',
     abbreviation: 'kg',
@@ -78,7 +78,7 @@ const newUnits = await productUnits.bulkStore([
 ### Update a Product Unit
 
 ```ts
-const updatedUnit = await productUnits.update(1, {
+const updatedUnit = await products.units.update(1, {
   name: 'Kilogram',
   abbreviation: 'kg',
   is_default: true,
@@ -88,7 +88,7 @@ const updatedUnit = await productUnits.update(1, {
 ### Update Multiple Product Units
 
 ```ts
-const updatedUnits = await productUnits.bulkUpdate([
+const updatedUnits = await products.units.bulkUpdate([
   {
     id: 1,
     name: 'Kilogram',
@@ -107,19 +107,19 @@ const updatedUnits = await productUnits.bulkUpdate([
 ### Update Default Status
 
 ```ts
-const success = await productUnits.updateDefaultStatus(1, true) // Set as default unit
+const success = await products.units.updateDefaultStatus(1, true) // Set as default unit
 ```
 
 ### Delete Product Units
 
 Single unit deletion:
 ```ts
-await productUnits.destroy(1) // Replace 1 with the unit ID to delete
+await products.units.destroy(1) // Replace 1 with the unit ID to delete
 ```
 
 Bulk deletion:
 ```ts
-await productUnits.bulkDestroy([1, 2, 3]) // Array of unit IDs to delete
+await products.units.bulkDestroy([1, 2, 3]) // Array of unit IDs to delete
 ```
 
 ## API Endpoints

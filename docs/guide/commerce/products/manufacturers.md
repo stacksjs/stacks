@@ -7,7 +7,7 @@ The Manufacturers module in the Commerce package provides a robust set of functi
 First, import the manufacturers functionality from the Commerce package:
 
 ```ts
-import { manufacturers } from '@stacksjs/commerce'
+import { products } from '@stacksjs/commerce'
 ```
 
 ## Fetching Manufacturers
@@ -17,31 +17,31 @@ The Commerce package provides several methods to fetch manufacturers:
 ### Fetch All Manufacturers
 
 ```ts
-const allManufacturers = await manufacturers.fetchAll()
+const allManufacturers = await products.manufacturers.fetchAll()
 ```
 
 ### Fetch a Single Manufacturer
 
 ```ts
-const manufacturer = await manufacturers.fetchById(1) // Replace 1 with the actual manufacturer ID
+const manufacturer = await products.manufacturers.fetchById(1) // Replace 1 with the actual manufacturer ID
 ```
 
 ### Fetch by UUID
 
 ```ts
-const manufacturer = await manufacturers.fetchByUuid('550e8400-e29b-41d4-a716-446655440000')
+const manufacturer = await products.manufacturers.fetchByUuid('550e8400-e29b-41d4-a716-446655440000')
 ```
 
 ### Fetch Featured Manufacturers
 
 ```ts
-const featuredManufacturers = await manufacturers.fetchFeatured(10) // Get 10 featured manufacturers
+const featuredManufacturers = await products.manufacturers.fetchFeatured(10) // Get 10 featured manufacturers
 ```
 
 ### Fetch Manufacturers by Country
 
 ```ts
-const manufacturers = await manufacturers.fetchByCountry('USA', {
+const manufacturers = await products.manufacturers.fetchByCountry('USA', {
   page: 1,
   limit: 10,
 })
@@ -50,7 +50,7 @@ const manufacturers = await manufacturers.fetchByCountry('USA', {
 ### Fetch Manufacturers with Product Count
 
 ```ts
-const manufacturers = await manufacturers.fetchWithProductCount({
+const manufacturers = await products.manufacturers.fetchWithProductCount({
   country: 'USA',
   featured: true,
 })
@@ -61,7 +61,7 @@ const manufacturers = await manufacturers.fetchWithProductCount({
 ### Store a New Manufacturer
 
 ```ts
-const newManufacturer = await manufacturers.store({
+const newManufacturer = await products.manufacturers.store({
   manufacturer: 'Example Corp',
   description: 'Leading manufacturer of quality products',
   country: 'USA',
@@ -73,7 +73,7 @@ const newManufacturer = await manufacturers.store({
 ### Store Multiple Manufacturers
 
 ```ts
-const newManufacturers = await manufacturers.bulkStore([
+const newManufacturers = await products.manufacturers.bulkStore([
   {
     manufacturer: 'Example Corp',
     description: 'Leading manufacturer of quality products',
@@ -92,7 +92,7 @@ const newManufacturers = await manufacturers.bulkStore([
 ### Update a Manufacturer
 
 ```ts
-const updatedManufacturer = await manufacturers.update(1, {
+const updatedManufacturer = await products.manufacturers.update(1, {
   description: 'Updated description',
   featured: true,
 })
@@ -101,7 +101,7 @@ const updatedManufacturer = await manufacturers.update(1, {
 ### Update by UUID
 
 ```ts
-const updatedManufacturer = await manufacturers.updateByUuid('550e8400-e29b-41d4-a716-446655440000', {
+const updatedManufacturer = await products.manufacturers.updateByUuid('550e8400-e29b-41d4-a716-446655440000', {
   description: 'Updated description',
   featured: true,
 })
@@ -110,19 +110,19 @@ const updatedManufacturer = await manufacturers.updateByUuid('550e8400-e29b-41d4
 ### Update Featured Status
 
 ```ts
-const updatedManufacturer = await manufacturers.updateFeaturedStatus(1, true) // Set as featured
+const updatedManufacturer = await products.manufacturers.updateFeaturedStatus(1, true) // Set as featured
 ```
 
 ### Delete Manufacturers
 
 Single manufacturer deletion:
 ```ts
-await manufacturers.destroy(1) // Replace 1 with the manufacturer ID to delete
+await products.manufacturers.destroy(1) // Replace 1 with the manufacturer ID to delete
 ```
 
 Bulk deletion:
 ```ts
-await manufacturers.bulkDestroy([1, 2, 3]) // Array of manufacturer IDs to delete
+await products.manufacturers.bulkDestroy([1, 2, 3]) // Array of manufacturer IDs to delete
 ```
 
 ## API Endpoints
