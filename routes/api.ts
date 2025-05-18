@@ -1,5 +1,5 @@
-import type { Request } from '@stacksjs/router'
-import type { Response } from '@stacksjs/types'
+import type { Request, } from '@stacksjs/router'
+import { Response } from '@stacksjs/router'
 import { route } from '@stacksjs/router'
 
 /**
@@ -280,7 +280,7 @@ route.get('/queries/stats', async (req: Request, res: Response) => {
   }
   catch (error: unknown) {
     const err = error as Error
-    res.status(500).json({ error: err.message })
+    res.error(err.message)
   }
 })
 
@@ -301,7 +301,7 @@ route.get('/queries/recent', async (req: Request, res: Response) => {
   }
   catch (error: unknown) {
     const err = error as Error
-    res.status(500).json({ error: err.message })
+    res.error(err.message)
   }
 })
 
@@ -321,7 +321,7 @@ route.get('/queries/slow', async (req: Request, res: Response) => {
   }
   catch (error: unknown) {
     const err = error as Error
-    res.status(500).json({ error: err.message })
+    res.error(err.message)
   }
 })
 
@@ -329,13 +329,13 @@ route.get('/queries/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const query = await import('../app/Actions/Queries/QueryController').then(module =>
-      module.default.getQuery(id),
+      module.default.getQuery(Number(id)),
     )
     res.json(query)
   }
   catch (error: unknown) {
     const err = error as Error
-    res.status(404).json({ error: err.message })
+    res.notFound(err.message)
   }
 })
 
@@ -352,7 +352,7 @@ route.get('/queries/timeline', async (req: Request, res: Response) => {
   }
   catch (error: unknown) {
     const err = error as Error
-    res.status(500).json({ error: err.message })
+    res.error(err.message)
   }
 })
 
@@ -365,7 +365,7 @@ route.get('/queries/frequent', async (req: Request, res: Response) => {
   }
   catch (error: unknown) {
     const err = error as Error
-    res.status(500).json({ error: err.message })
+    res.error(err.message)
   }
 })
 
@@ -378,6 +378,6 @@ route.post('/queries/prune', async (req: Request, res: Response) => {
   }
   catch (error: unknown) {
     const err = error as Error
-    res.status(500).json({ error: err.message })
+    res.error(err.message)
   }
 })

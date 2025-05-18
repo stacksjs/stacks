@@ -6,7 +6,7 @@ interface ResponseData {
   body: string
 }
 
-class Response implements ResponseInstance {
+export class Response implements ResponseInstance {
   public json(data: any, statusCode: number = 200): ResponseData {
     return {
       status: statusCode,
