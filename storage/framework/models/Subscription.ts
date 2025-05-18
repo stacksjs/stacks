@@ -115,30 +115,30 @@ export default {
     trialEndsAt: {
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.timestamp(),
         message: {
-          string: 'trial_ends_at must be a string',
+          timestamp: 'trial_ends_at must be a valid timestamp',
         },
       },
-      factory: faker => faker.date.future().toString(),
+      factory: faker => faker.date.future().getTime(),
     },
 
     endsAt: {
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.timestamp(),
         message: {
-          string: 'ends_at must be a string',
+          timestamp: 'ends_at must be a valid timestamp',
         },
       },
-      factory: faker => faker.date.future().toString(),
+      factory: faker => faker.date.future().getTime(),
     },
 
     lastUsedAt: {
       validation: {
-        rule: schema.string(),
+        rule: schema.timestamp(),
         message: {
-          string: 'last_used_at must be a string',
+          timestamp: 'last_used_at must be a valid timestamp',
         },
       },
       fillable: true,

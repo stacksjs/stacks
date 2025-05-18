@@ -1375,7 +1375,7 @@
       "name": "@stacksjs/validation",
       "version": "0.70.23",
       "dependencies": {
-        "@stacksjs/ts-validation": "^0.2.3",
+        "@stacksjs/ts-validation": "^0.2.4",
         "add": "^2.0.6",
         "validator": "^13.15.0",
       },
@@ -2741,7 +2741,7 @@
 
     "@stacksjs/transition": ["@stacksjs/transition@workspace:storage/framework/core/components/transition"],
 
-    "@stacksjs/ts-validation": ["@stacksjs/ts-validation@0.2.3", "", { "dependencies": { "dompurify": "^3.2.5" } }, "sha512-1RLcs46lg+gcMnwFlG/Ajm7Vs7XYRpk8H9lodLpk7pBOklNdEk3JCUMFS1ZuirtEZUcWo/XxfTcthaXs0GJgqA=="],
+    "@stacksjs/ts-validation": ["@stacksjs/ts-validation@0.2.4", "", { "dependencies": { "dompurify": "^3.2.5" } }, "sha512-VlQgq56KD1I3FtPTX+3S5YpiExvLYL7cPnSpamc9I7yWc3wjjGBwAg0XIv1p1pJ+etGA8QF9efLktKwcAT1Qgg=="],
 
     "@stacksjs/tunnel": ["@stacksjs/tunnel@workspace:storage/framework/core/tunnel"],
 

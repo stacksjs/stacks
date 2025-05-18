@@ -145,6 +145,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
     const fieldNameFormatted = snakeCase(fieldName)
+
     const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 

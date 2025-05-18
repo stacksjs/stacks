@@ -62,9 +62,12 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.timestamp(),
+        message: {
+          timestamp: 'Expiry date must be a valid timestamp',
+        },
       },
-      factory: faker => faker.date.future().toISOString(),
+      factory: faker => faker.date.future().getTime(),
     },
 
     status: {

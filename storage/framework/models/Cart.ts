@@ -97,13 +97,9 @@ export default {
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.timestamp(),
       },
-      factory: (faker) => {
-        const now = new Date()
-        const futureDate = new Date(now.getTime() + faker.number.int({ min: 1, max: 30 }) * 24 * 60 * 60 * 1000)
-        return futureDate.toISOString()
-      },
+      factory: faker => faker.date.past().getTime(),
     },
 
     currency: {

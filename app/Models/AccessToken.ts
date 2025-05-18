@@ -78,20 +78,20 @@ export default {
     lastUsedAt: {
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.timestamp(),
         message: {
-          date: 'lastUsedAt must be a valid date',
+          timestamp: 'lastUsedAt must be a valid timestamp',
         },
       },
-      factory: faker => faker.date.recent().toDateString(),
+      factory: faker => faker.date.recent().getTime(),
     },
 
     expiresAt: {
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.timestamp(),
         message: {
-          date: 'expiresAt must be a valid date',
+          timestamp: 'expiresAt must be a valid timestamp',
         },
       },
       factory: faker => faker.date.future().toDateString(),
@@ -100,9 +100,9 @@ export default {
     revokedAt: {
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.timestamp(),
         message: {
-          date: 'revokedAt must be a valid date',
+          timestamp: 'revokedAt must be a valid timestamp',
         },
       },
       factory: faker => faker.date.future().toDateString(),

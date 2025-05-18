@@ -352,5 +352,5 @@ export function mapFieldTypeToColumnType(validator: Validator, driver = 'mysql')
   if (driver === 'sqlite')
     return `'text'`
 
-  return `'varchar(255)'`
+  return driver === 'mysql' ? `'varchar(255)'` : `'text'`
 }

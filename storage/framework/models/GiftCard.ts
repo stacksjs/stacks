@@ -162,14 +162,12 @@ export default {
       order: 13,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.timestamp(),
+        message: {
+          timestamp: 'Expiry date must be a valid timestamp',
+        },
       },
-      factory: (faker) => {
-        const now = new Date()
-        const yearOffset = faker.number.int({ min: 1, max: 3 })
-        const futureDate = new Date(now.setFullYear(now.getFullYear() + yearOffset))
-        return futureDate.getTime()
-      },
+      factory: faker => faker.date.future().getTime(),
     },
 
     lastUsedDate: {
@@ -177,9 +175,12 @@ export default {
       order: 14,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.timestamp(),
+        message: {
+          timestamp: 'Last used date must be a valid timestamp',
+        },
       },
-      factory: faker => faker.helpers.maybe(() => faker.date.recent().getTime(), { probability: 0.3 }),
+      factory: faker => faker.date.future().getTime(),
     },
 
     templateId: {
