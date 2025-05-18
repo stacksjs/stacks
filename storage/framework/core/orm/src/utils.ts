@@ -1341,11 +1341,18 @@ export async function generateKyselyTypes(): Promise<void> {
 }
 
 export function mapEntity(attribute: ModelElement): string | undefined {
-  const entity = attribute.fieldArray?.entity === 'enum' ? 'string | string[]' : attribute.fieldArray?.entity
+  const entity = attribute.fieldArray?.entity
 
-  const mapEntity = entity === 'date' ? 'Date | string' : entity
-
-  return mapEntity
+  switch (entity) {
+    case 'enum':
+      return 'string | string[]'
+    case 'date':
+      return 'Date | string'
+    case 'timestamp':
+      return 'number'
+    default:
+      return entity
+  }
 }
 
 export async function generateModelFiles(modelStringFile?: string): Promise<void> {

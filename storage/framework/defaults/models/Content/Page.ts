@@ -71,9 +71,9 @@ export default {
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.number().min(0),
+        rule: schema.timestamp(),
         message: {
-          min: 'Published timestamp cannot be negative',
+          timestamp: 'Published timestamp must be a valid timestamp',
         },
       },
       factory: faker => faker.date.past().getTime(),
