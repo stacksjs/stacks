@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { mail } from '@stacksjs/email'
-import { makeHash } from '@stacksjs/security'
+import { makeHash, verifyHash } from '@stacksjs/security'
 
 export interface PasswordResetActions {
   sendEmail: () => Promise<void>
@@ -17,16 +17,17 @@ export function passwordResets(email: string): PasswordResetActions {
 
   async function createResetToken(): Promise<string> {
     const token = generateResetToken()
+    const hashedToken = await makeHash(token, { algorithm: 'bcrypt' })
 
     await db
       .insertInto('password_resets')
       .values({
         email,
-        token,
+        token: hashedToken,
       })
       .executeTakeFirst()
 
-    return token
+    return token // Return unhashed token for email
   }
 
   async function sendEmail(): Promise<void> {
@@ -43,26 +44,68 @@ export function passwordResets(email: string): PasswordResetActions {
   async function verifyToken(token: string): Promise<boolean> {
     const result = await db
       .selectFrom('password_resets')
-      .where('token', '=', token)
+      .where('email', '=', email)
       .selectAll()
       .executeTakeFirst()
 
-    return result !== undefined
+    if (!result)
+      return false
+
+    // Check if token is expired (60 minutes)
+    const createdAt = new Date(result.created_at as string)
+    const now = new Date()
+    const diffInMinutes = (now.getTime() - createdAt.getTime()) / (1000 * 60)
+
+    if (diffInMinutes > 60) {
+      // Delete expired token
+      await db
+        .deleteFrom('password_resets')
+        .where('email', '=', email)
+        .execute()
+      
+      return false
+    }
+
+    // Verify the hashed token
+    const hashedToken = result.token
+    return await verifyHash(token, hashedToken, 'bcrypt')
   }
 
   async function resetPassword(token: string, newPassword: string): Promise<boolean> {
     const trx = await db.startTransaction().execute()
 
     try {
+      // First verify the token
       const resetRecord = await trx
         .selectFrom('password_resets')
-        .where('token', '=', token)
         .where('email', '=', email)
         .selectAll()
         .executeTakeFirst()
 
       if (!resetRecord)
         return false
+
+      // Verify the hashed token
+      const hashedToken = resetRecord.token
+      const isValid = await verifyHash(token, hashedToken, 'bcrypt')
+
+      if (!isValid)
+        return false
+
+      // Check token expiration
+      const createdAt = new Date(resetRecord.created_at as string)
+      const now = new Date()
+      const diffInMinutes = (now.getTime() - createdAt.getTime()) / (1000 * 60)
+
+      if (diffInMinutes > 60) {
+        // Delete expired token
+        await trx
+          .deleteFrom('password_resets')
+          .where('email', '=', email)
+          .execute()
+        
+        return false
+      }
 
       // Update the user's password
       const user = await db
@@ -86,7 +129,6 @@ export function passwordResets(email: string): PasswordResetActions {
       // Delete the used reset token
       await db
         .deleteFrom('password_resets')
-        .where('token', '=', token)
         .where('email', '=', email)
         .execute()
 
