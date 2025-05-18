@@ -21,6 +21,8 @@ route.post('/verify-registration', 'Actions/Auth/VerifyRegistrationAction')
 route.get('/generate-authentication-options', 'Actions/Auth/GenerateAuthenticationAction')
 route.post('/verify-authentication', 'Actions/Auth/VerifyAuthenticationAction')
 
+route.get('/coming-soon', 'Controllers/ComingSoonController@index')
+
 // route.email('/welcome')
 route.health() // adds a GET `/health` route
 route.get('/install', 'Actions/InstallAction')

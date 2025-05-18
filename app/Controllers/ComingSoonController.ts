@@ -4,6 +4,6 @@ import { Controller } from '@stacksjs/server'
  */
 export default class ComingSoonController extends Controller {
   protected index() {
-    return this.success('Coming Soon')
+    return this.success('Coming Soon v2')
   }
 }

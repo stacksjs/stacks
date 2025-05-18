@@ -79,7 +79,7 @@ const nav = [
 ]
 
 const sidebar = {
-  '/guide/': [
+  '/': [
     {
       text: 'Prologue',
       collapsible: true,
@@ -114,7 +114,7 @@ const sidebar = {
         { text: 'Jobs', link: '/basics/jobs' },
         { text: 'Components', link: '/basics/components' },
         { text: 'Functions', link: '/basics/functions' },
-        { text: 'Validation', link: '/basics/validation' },
+        { text: 'Validation', link: '/packages/validation' },
         { text: 'Error Handling', link: '/basics/error-handling' },
         { text: 'Logging', link: '/basics/logging' },
       ],
