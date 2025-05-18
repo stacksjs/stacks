@@ -15,7 +15,7 @@ interface RequestDataLicenseKey {
   id: number
   key: string
   template: string[] | string
-  expiry_date: date
+  expiry_date: timestamp
   status: string[] | string
   customer_id: number
   product_id: number

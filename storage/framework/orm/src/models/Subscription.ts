@@ -19,9 +19,9 @@ export interface SubscriptionsTable {
   provider_type: string
   provider_price_id?: string
   quantity?: number
-  trial_ends_at?: string
-  ends_at?: string
-  last_used_at?: string
+  trial_ends_at?: number
+  ends_at?: number
+  last_used_at?: number
   uuid?: string
 
   created_at?: string
@@ -230,15 +230,15 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return this.attributes.quantity
   }
 
-  get trial_ends_at(): string | undefined {
+  get trial_ends_at(): number | undefined {
     return this.attributes.trial_ends_at
   }
 
-  get ends_at(): string | undefined {
+  get ends_at(): number | undefined {
     return this.attributes.ends_at
   }
 
-  get last_used_at(): string | undefined {
+  get last_used_at(): number | undefined {
     return this.attributes.last_used_at
   }
 
@@ -286,15 +286,15 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     this.attributes.quantity = value
   }
 
-  set trial_ends_at(value: string) {
+  set trial_ends_at(value: number) {
     this.attributes.trial_ends_at = value
   }
 
-  set ends_at(value: string) {
+  set ends_at(value: number) {
     this.attributes.ends_at = value
   }
 
-  set last_used_at(value: string) {
+  set last_used_at(value: number) {
     this.attributes.last_used_at = value
   }
 
@@ -1100,21 +1100,21 @@ export async function whereQuantity(value: number): Promise<SubscriptionModel[]>
   return results.map((modelItem: SubscriptionJsonResponse) => new SubscriptionModel(modelItem))
 }
 
-export async function whereTrialEndsAt(value: string): Promise<SubscriptionModel[]> {
+export async function whereTrialEndsAt(value: number): Promise<SubscriptionModel[]> {
   const query = DB.instance.selectFrom('subscriptions').where('trial_ends_at', '=', value)
   const results: SubscriptionJsonResponse = await query.execute()
 
   return results.map((modelItem: SubscriptionJsonResponse) => new SubscriptionModel(modelItem))
 }
 
-export async function whereEndsAt(value: string): Promise<SubscriptionModel[]> {
+export async function whereEndsAt(value: number): Promise<SubscriptionModel[]> {
   const query = DB.instance.selectFrom('subscriptions').where('ends_at', '=', value)
   const results: SubscriptionJsonResponse = await query.execute()
 
   return results.map((modelItem: SubscriptionJsonResponse) => new SubscriptionModel(modelItem))
 }
 
-export async function whereLastUsedAt(value: string): Promise<SubscriptionModel[]> {
+export async function whereLastUsedAt(value: number): Promise<SubscriptionModel[]> {
   const query = DB.instance.selectFrom('subscriptions').where('last_used_at', '=', value)
   const results: SubscriptionJsonResponse = await query.execute()
 

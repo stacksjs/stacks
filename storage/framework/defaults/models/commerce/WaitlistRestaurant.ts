@@ -86,7 +86,7 @@ export default {
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.timestamp(),
       },
       factory: faker => faker.date.future().getTime(),
     },
@@ -151,14 +151,14 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.number.int({ min: 1, max: 50 }), { probability: 0.7 }),
     },
 
-    seated_at: {
+    seatedAt: {
       required: false,
       order: 11,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.timestamp(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.date.past().getTime(), { probability: 0.7 }),
+      factory: faker => faker.date.future().getTime(),
     },
 
     noShowAt: {
@@ -166,9 +166,9 @@ export default {
       order: 12,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.timestamp(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.date.past().getTime(), { probability: 0.7 }),
+      factory: faker => faker.date.future().getTime(),
     },
 
     cancelledAt: {
@@ -176,9 +176,9 @@ export default {
       order: 13,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.timestamp(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.date.past().getTime(), { probability: 0.7 }),
+      factory: faker => faker.date.future().getTime(),
     },
   },
 

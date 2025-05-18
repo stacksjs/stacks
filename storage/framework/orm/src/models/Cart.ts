@@ -22,7 +22,7 @@ export interface CartsTable {
   tax_amount?: number
   discount_amount?: number
   total?: number
-  expires_at: string
+  expires_at: number
   currency?: string
   notes?: string
   applied_coupon_id?: string
@@ -238,7 +238,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
     return this.attributes.total
   }
 
-  get expires_at(): string {
+  get expires_at(): number {
     return this.attributes.expires_at
   }
 
@@ -290,7 +290,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
     this.attributes.total = value
   }
 
-  set expires_at(value: string) {
+  set expires_at(value: number) {
     this.attributes.expires_at = value
   }
 
@@ -1138,7 +1138,7 @@ export async function whereTotal(value: number): Promise<CartModel[]> {
   return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
 }
 
-export async function whereExpiresAt(value: string): Promise<CartModel[]> {
+export async function whereExpiresAt(value: number): Promise<CartModel[]> {
   const query = DB.instance.selectFrom('carts').where('expires_at', '=', value)
   const results: CartJsonResponse = await query.execute()
 

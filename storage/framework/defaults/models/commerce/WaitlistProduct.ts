@@ -60,7 +60,7 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().max(100).optional(),
+        rule: schema.string().max(100),
         message: {
           max: 'Phone number must have a maximum of 100 characters',
         },
@@ -109,7 +109,7 @@ export default {
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.string().optional(),
+        rule: schema.string(),
       },
       factory: faker => faker.lorem.paragraph(),
     },
@@ -130,27 +130,27 @@ export default {
       order: 9,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.timestamp(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.date.future().getTime(), { probability: 0.7 }),
+      factory: faker => faker.date.future().getTime(),
     },
     purchasedAt: {
       required: false,
       order: 10,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.timestamp(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.date.future().getTime(), { probability: 0.7 }),
+      factory: faker => faker.date.future().getTime(),
     },
     cancelledAt: {
       required: false,
       order: 11,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.timestamp(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.date.past().getTime(), { probability: 0.7 }),
+      factory: faker => faker.date.future().getTime(),
     },
   },
 

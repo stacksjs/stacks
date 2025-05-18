@@ -307,23 +307,24 @@ export class Router implements RouterInterface {
       if (modulePath.includes('Controller')) {
         const [controllerPath, methodName = 'index'] = modulePath.split('@')
         const controller = await import(importPathFunction(controllerPath))
+        // eslint-disable-next-line new-cap
         const instance = new controller.default()
-        
+
         if (typeof instance[methodName] !== 'function')
           throw new Error(`Method ${methodName} not found in controller ${controllerPath}`)
 
         // Use custom path from controller if available
         const newPath = controller.default.path ?? originalPath
         this.updatePathIfNeeded(newPath, originalPath)
-        
+
         const result = await instance[methodName](requestInstance)
 
         // Use the same response format checking for controllers
         if (
-          isObject(result) 
-          && 'status' in result 
+          isObject(result)
+          && 'status' in result
           && typeof result.status === 'number'
-          && 'headers' in result 
+          && 'headers' in result
           && isObject(result.headers)
           && 'body' in result
         ) {
@@ -338,7 +339,7 @@ export class Router implements RouterInterface {
         // For other types (string, number, etc), use response.success
         return response.success(result)
       }
-      
+
       // Handle action-based routing
       let actionModule = null
       if (modulePath.includes('storage/framework/orm'))
@@ -347,7 +348,7 @@ export class Router implements RouterInterface {
         actionModule = await import(p.projectPath(`app/${modulePath}.ts`))
       else if (modulePath.includes('OrmAction'))
         actionModule = await import(p.storagePath(`/framework/actions/src/${modulePath}.ts`))
-      else 
+      else
         actionModule = await import(importPathFunction(modulePath))
 
       // Use custom path from action module if available
@@ -364,10 +365,10 @@ export class Router implements RouterInterface {
 
       // Check if result is already a properly formatted response
       if (
-        isObject(result) 
-        && 'status' in result 
+        isObject(result)
+        && 'status' in result
         && typeof result.status === 'number'
-        && 'headers' in result 
+        && 'headers' in result
         && isObject(result.headers)
         && 'body' in result
       ) {

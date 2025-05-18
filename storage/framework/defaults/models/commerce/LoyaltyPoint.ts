@@ -89,9 +89,9 @@ export default {
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.timestamp(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.date.future().toISOString(), { probability: 0.7 }),
+      factory: faker => faker.date.future().getTime(),
     },
 
     isUsed: {

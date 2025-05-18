@@ -18,7 +18,7 @@ interface RequestDataLoyaltyPoint {
   source: string
   source_reference_id: string
   description: string
-  expiry_date: string
+  expiry_date: timestamp
   is_used: boolean
   created_at?: string
   updated_at?: string

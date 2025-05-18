@@ -21,9 +21,9 @@ interface RequestDataSubscription {
   provider_type: string
   provider_price_id: string
   quantity: number
-  trial_ends_at: string
-  ends_at: string
-  last_used_at: string
+  trial_ends_at: timestamp
+  ends_at: timestamp
+  last_used_at: timestamp
   user_id: number
   created_at?: string
   updated_at?: string

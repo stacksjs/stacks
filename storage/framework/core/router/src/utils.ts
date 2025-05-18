@@ -4,7 +4,6 @@ import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { camelCase } from '@stacksjs/strings'
 import { route } from './router'
-import { path as p } from '@stacksjs/path'
 
 export async function listRoutes(): Promise<Ok<string, any>> {
   const routeLists = await route.getRoutes()
@@ -87,26 +86,4 @@ export async function extractDefaultRequest(): Promise<RequestInstance> {
   const requestInstance = await import(requestPath)
 
   return requestInstance.request
-}
-
-export async function resolveHandler(handlerPath: string, request: RequestInstance): Promise<any> {
-  // If it's an action (contains 'Action' in the path)
-  if (handlerPath.includes('Action')) {
-    const action = await import(p.projectPath(`app/${handlerPath}.ts`))
-    return action.default.handle(request)
-  }
-
-  // If it's a controller (contains 'Controller' in the path)
-  if (handlerPath.includes('Controller')) {
-    const [controllerPath, methodName = 'index'] = handlerPath.split('@')
-    const controller = await import(p.projectPath(`app/${controllerPath}.ts`))
-    const instance = new controller.default()
-    
-    if (typeof instance[methodName] !== 'function')
-      throw new Error(`Method ${methodName} not found in controller ${controllerPath}`)
-      
-    return instance[methodName](request)
-  }
-
-  throw new Error('Invalid handler path. Must be either an Action or Controller')
 }

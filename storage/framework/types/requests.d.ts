@@ -413,34 +413,6 @@ export interface UserRequestType extends Request {
   updated_at?: string
 }
 
-interface RequestDataPaymentProduct {
-  id: number
-  name: string
-  description: number
-  key: number
-  unit_price: number
-  status: string
-  image: string
-  provider_id: string
-  created_at?: string
-  updated_at?: string
-}
-export interface PaymentProductRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => Promise<void>
-  get: <T = string>(element: string, defaultValue?: T) => T
-  all: () => RequestDataPaymentProduct
-  id: number
-  name: string
-  description: number
-  key: number
-  unit_price: number
-  status: string
-  image: string
-  provider_id: string
-  created_at?: string
-  updated_at?: string
-}
-
 interface RequestDataPrintDevice {
   id: number
   name: string
@@ -573,9 +545,9 @@ interface RequestDataWaitlistProduct {
   source: string
   notes: string
   status: string[] | string
-  notified_at: number
-  purchased_at: number
-  cancelled_at: number
+  notified_at: timestamp
+  purchased_at: timestamp
+  cancelled_at: timestamp
   customer_id: number
   product_id: number
   created_at?: string
@@ -594,9 +566,9 @@ export interface WaitlistProductRequestType extends Request {
   source: string
   notes: string
   status: string[] | string
-  notified_at: number
-  purchased_at: number
-  cancelled_at: number
+  notified_at: timestamp
+  purchased_at: timestamp
+  cancelled_at: timestamp
   customer_id: number
   product_id: number
   created_at?: string
@@ -829,7 +801,7 @@ interface RequestDataLicenseKey {
   id: number
   key: string
   template: string[] | string
-  expiry_date: date
+  expiry_date: timestamp
   status: string[] | string
   customer_id: number
   product_id: number
@@ -844,7 +816,7 @@ export interface LicenseKeyRequestType extends Request {
   id: number
   key: string
   template: string[] | string
-  expiry_date: date
+  expiry_date: timestamp
   status: string[] | string
   customer_id: number
   product_id: number
@@ -859,15 +831,15 @@ interface RequestDataWaitlistRestaurant {
   email: string
   phone: string
   party_size: number
-  check_in_time: number
+  check_in_time: timestamp
   table_preference: string[] | string
   status: string[] | string
   quoted_wait_time: number
   actual_wait_time: number
   queue_position: number
-  seated_at: number
-  no_show_at: number
-  cancelled_at: number
+  seated_at: timestamp
+  no_show_at: timestamp
+  cancelled_at: timestamp
   customer_id: number
   created_at?: string
   updated_at?: string
@@ -881,15 +853,15 @@ export interface WaitlistRestaurantRequestType extends Request {
   email: string
   phone: string
   party_size: number
-  check_in_time: number
+  check_in_time: timestamp
   table_preference: string[] | string
   status: string[] | string
   quoted_wait_time: number
   actual_wait_time: number
   queue_position: number
-  seated_at: number
-  no_show_at: number
-  cancelled_at: number
+  seated_at: timestamp
+  no_show_at: timestamp
+  cancelled_at: timestamp
   customer_id: number
   created_at?: string
   updated_at?: string
@@ -973,8 +945,8 @@ interface RequestDataGiftCard {
   is_digital: boolean
   is_reloadable: boolean
   is_active: boolean
-  expiry_date: number
-  last_used_date: number
+  expiry_date: timestamp
+  last_used_date: timestamp
   template_id: string
   customer_id: number
   created_at?: string
@@ -997,8 +969,8 @@ export interface GiftCardRequestType extends Request {
   is_digital: boolean
   is_reloadable: boolean
   is_active: boolean
-  expiry_date: number
-  last_used_date: number
+  expiry_date: timestamp
+  last_used_date: timestamp
   template_id: string
   customer_id: number
   created_at?: string
@@ -1154,7 +1126,7 @@ interface RequestDataLoyaltyPoint {
   source: string
   source_reference_id: string
   description: string
-  expiry_date: string
+  expiry_date: timestamp
   is_used: boolean
   created_at?: string
   updated_at?: string
@@ -1169,7 +1141,7 @@ export interface LoyaltyPointRequestType extends Request {
   source: string
   source_reference_id: string
   description: string
-  expiry_date: string
+  expiry_date: timestamp
   is_used: boolean
   created_at?: string
   updated_at?: string
@@ -1295,7 +1267,7 @@ interface RequestDataCart {
   tax_amount: number
   discount_amount: number
   total: number
-  expires_at: string
+  expires_at: timestamp
   currency: string
   notes: string
   applied_coupon_id: string
@@ -1313,7 +1285,7 @@ export interface CartRequestType extends Request {
   tax_amount: number
   discount_amount: number
   total: number
-  expires_at: string
+  expires_at: timestamp
   currency: string
   notes: string
   applied_coupon_id: string
@@ -1387,6 +1359,34 @@ export interface CartItemRequestType extends Request {
   updated_at?: string
 }
 
+interface RequestDataPaymentProduct {
+  id: number
+  name: string
+  description: number
+  key: number
+  unit_price: number
+  status: string
+  image: string
+  provider_id: string
+  created_at?: string
+  updated_at?: string
+}
+export interface PaymentProductRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => Promise<void>
+  get: <T = string>(element: string, defaultValue?: T) => T
+  all: () => RequestDataPaymentProduct
+  id: number
+  name: string
+  description: number
+  key: number
+  unit_price: number
+  status: string
+  image: string
+  provider_id: string
+  created_at?: string
+  updated_at?: string
+}
+
 interface RequestDataFailedJob {
   id: number
   connection: string
@@ -1446,7 +1446,7 @@ interface RequestDataPage {
   title: string
   template: string
   views: number
-  published_at: number
+  published_at: timestamp
   conversions: number
   created_at?: string
   updated_at?: string
@@ -1459,7 +1459,7 @@ export interface PageRequestType extends Request {
   title: string
   template: string
   views: number
-  published_at: number
+  published_at: timestamp
   conversions: number
   created_at?: string
   updated_at?: string
@@ -1492,7 +1492,7 @@ interface RequestDataPost {
   content: string
   excerpt: string
   views: number
-  published_at: number
+  published_at: timestamp
   status: string[] | string
   is_featured: number
   author_id: number
@@ -1509,7 +1509,7 @@ export interface PostRequestType extends Request {
   content: string
   excerpt: string
   views: number
-  published_at: number
+  published_at: timestamp
   status: string[] | string
   is_featured: number
   author_id: number
@@ -1661,9 +1661,9 @@ interface RequestDataSubscription {
   provider_type: string
   provider_price_id: string
   quantity: number
-  trial_ends_at: string
-  ends_at: string
-  last_used_at: string
+  trial_ends_at: timestamp
+  ends_at: timestamp
+  last_used_at: timestamp
   user_id: number
   created_at?: string
   updated_at?: string
@@ -1681,9 +1681,9 @@ export interface SubscriptionRequestType extends Request {
   provider_type: string
   provider_price_id: string
   quantity: number
-  trial_ends_at: string
-  ends_at: string
-  last_used_at: string
+  trial_ends_at: timestamp
+  ends_at: timestamp
+  last_used_at: timestamp
   user_id: number
   created_at?: string
   updated_at?: string
@@ -1713,4 +1713,4 @@ export interface ErrorRequestType extends Request {
   updated_at?: string
 }
 
-export type ModelRequest = MigrationsRequestType | PasswordResetsRequestType | PasskeysRequestType | CommentablesRequestType | CommentableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestTypeProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PaymentProductRequestType | PrintDeviceRequestType | CategoryRequestType | PaymentRequestType | DriverRequestType | WaitlistProductRequestType | DigitalDeliveryRequestType | ManufacturerRequestType | OrderItemRequestType | ShippingZoneRequestType | CustomerRequestType | ProductRequestType | ReceiptRequestType | ProductVariantRequestType | LicenseKeyRequestType | WaitlistRestaurantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TaxRateRequestType | TransactionRequestType | LoyaltyPointRequestType | ProductItemRequestType | LoyaltyRewardRequestType | ShippingMethodRequestType | ShippingRateRequestType | CartRequestType | DeliveryRouteRequestType | CartItemRequestType | FailedJobRequestType | PaymentMethodRequestType | PageRequestType | AuthorRequestType | PostRequestType | PaymentTransactionRequestType | WebsocketRequestType | RequestRequestType | JobRequestType | LogRequestType | SubscriptionRequestType | ErrorRequestType
+export type ModelRequest = MigrationsRequestType | PasswordResetsRequestType | PasskeysRequestType | CommentablesRequestType | CommentableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestTypeProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PrintDeviceRequestType | CategoryRequestType | PaymentRequestType | DriverRequestType | WaitlistProductRequestType | DigitalDeliveryRequestType | ManufacturerRequestType | OrderItemRequestType | ShippingZoneRequestType | CustomerRequestType | ProductRequestType | ReceiptRequestType | ProductVariantRequestType | LicenseKeyRequestType | WaitlistRestaurantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TaxRateRequestType | TransactionRequestType | LoyaltyPointRequestType | ProductItemRequestType | LoyaltyRewardRequestType | ShippingMethodRequestType | ShippingRateRequestType | CartRequestType | DeliveryRouteRequestType | CartItemRequestType | PaymentProductRequestType | FailedJobRequestType | PaymentMethodRequestType | PageRequestType | AuthorRequestType | PostRequestType | PaymentTransactionRequestType | WebsocketRequestType | RequestRequestType | JobRequestType | LogRequestType | SubscriptionRequestType | ErrorRequestType

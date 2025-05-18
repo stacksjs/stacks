@@ -62,7 +62,7 @@ export function passwordResets(email: string): PasswordResetActions {
         .deleteFrom('password_resets')
         .where('email', '=', email)
         .execute()
-      
+
       return false
     }
 
@@ -103,7 +103,7 @@ export function passwordResets(email: string): PasswordResetActions {
           .deleteFrom('password_resets')
           .where('email', '=', email)
           .execute()
-        
+
         return false
       }
 

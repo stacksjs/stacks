@@ -185,7 +185,6 @@ export interface Database {
   deployments: DeploymentsTable
   releases: ReleasesTable
   users: UsersTable
-  payment_products: PaymentProductsTable
   print_devices: PrintDevicesTable
   categories: CategoriesTable
   payments: PaymentsTable
@@ -216,6 +215,7 @@ export interface Database {
   carts: CartsTable
   delivery_routes: DeliveryRoutesTable
   cart_items: CartItemsTable
+  payment_products: PaymentProductsTable
   failed_jobs: FailedJobsTable
   payment_methods: PaymentMethodsTable
   pages: PagesTable

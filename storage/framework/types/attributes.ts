@@ -27,10 +27,6 @@ export interface Attributes {
   version: string
   job_title: string
   password: string
-  key: number
-  unit_price: number
-  image: string
-  provider_id: string
   mac_address: string
   location: string
   terminal: string
@@ -89,8 +85,9 @@ export interface Attributes {
   variant: string
   type: string
   options: string
+  key: string
   template: string | string[]
-  expiry_date: Date | string
+  expiry_date: number
   party_size: number
   check_in_time: number
   table_preference: string | string[]
@@ -173,11 +170,14 @@ export interface Attributes {
   delivery_time: number
   total_distance: number
   last_active: Date | string
+  unit_price: number
   total_price: number
   tax_rate: number
   product_name: string
   product_sku: string
   product_image: string
+  image: string
+  provider_id: string
   connection: string
   queue: string
   payload: string
@@ -211,8 +211,8 @@ export interface Attributes {
   provider_status: string
   provider_type: string
   provider_price_id: string
-  trial_ends_at: string
-  ends_at: string
+  trial_ends_at: number
+  ends_at: number
   stack: string
   additional_info: string
 }

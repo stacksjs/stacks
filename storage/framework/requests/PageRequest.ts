@@ -16,7 +16,7 @@ interface RequestDataPage {
   title: string
   template: string
   views: number
-  published_at: number
+  published_at: timestamp
   conversions: number
   created_at?: string
   updated_at?: string
@@ -26,7 +26,7 @@ export class PageRequest extends Request<RequestDataPage> implements PageRequest
   public title = ''
   public template = ''
   public views = 0
-  public published_at = 0
+  public published_at = ''
   public conversions = 0
   public created_at = ''
   public updated_at = ''

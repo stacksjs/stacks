@@ -503,8 +503,8 @@ const sidebar = {
                 { text: 'License Keys', link: '/guide/commerce/deliveries/license-keys' },
                 { text: 'Shipping Methods', link: '/guide/commerce/deliveries/shipping-methods' },
                 { text: 'Shipping Rates', link: '/guide/commerce/deliveries/shipping-rates' },
-                { text: 'Shipping Zones', link: '/guide/commerce/deliveries/shipping-zones' }
-              ]
+                { text: 'Shipping Zones', link: '/guide/commerce/deliveries/shipping-zones' },
+              ],
             },
             { text: 'Gift Cards', link: '/guide/commerce/gift-cards' },
             { text: 'Orders', link: '/guide/commerce/orders' },
@@ -515,8 +515,8 @@ const sidebar = {
               collapsed: true,
               items: [
                 { text: 'Devices', link: '/guide/commerce/printers/devices' },
-                { text: 'Receipts', link: '/guide/commerce/printers/receipts' }
-              ]
+                { text: 'Receipts', link: '/guide/commerce/printers/receipts' },
+              ],
             },
             {
               text: 'Products',
@@ -528,8 +528,8 @@ const sidebar = {
                 { text: 'Manufacturers', link: '/guide/commerce/products/manufacturers' },
                 { text: 'Reviews', link: '/guide/commerce/products/reviews' },
                 { text: 'Units', link: '/guide/commerce/products/units' },
-                { text: 'Variants', link: '/guide/commerce/products/variants' }
-              ]
+                { text: 'Variants', link: '/guide/commerce/products/variants' },
+              ],
             },
             { text: 'Taxes', link: '/guide/commerce/taxes' },
             {
@@ -538,9 +538,9 @@ const sidebar = {
               collapsed: true,
               items: [
                 { text: 'Products', link: '/guide/commerce/waitlists/products' },
-                { text: 'Restaurants', link: '/guide/commerce/waitlists/restaurants' }
-              ]
-            }
+                { text: 'Restaurants', link: '/guide/commerce/waitlists/restaurants' },
+              ],
+            },
           ],
         },
 

@@ -19,7 +19,7 @@ interface RequestDataCart {
   tax_amount: number
   discount_amount: number
   total: number
-  expires_at: string
+  expires_at: timestamp
   currency: string
   notes: string
   applied_coupon_id: string
