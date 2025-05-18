@@ -523,7 +523,15 @@ const sidebar = {
               ],
             },
             { text: 'Taxes', link: '/guide/commerce/taxes' },
-            { text: 'Waitlist', link: '/guide/commerce/waitlist' },
+            {
+              text: 'Waitlists',
+              collapsible: true,
+              collapsed: true,
+              items: [
+                { text: 'Products', link: '/guide/commerce/waitlists/products' },
+                { text: 'Restaurants', link: '/guide/commerce/waitlists/restaurants' },
+              ],
+            },
             { text: 'Payments', link: '/guide/commerce/payments' },
           ],
         },
