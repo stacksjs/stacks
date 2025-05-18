@@ -317,6 +317,25 @@ export class Router implements RouterInterface {
         this.updatePathIfNeeded(newPath, originalPath)
         
         const result = await instance[methodName](requestInstance)
+
+        // Use the same response format checking for controllers
+        if (
+          isObject(result) 
+          && 'status' in result 
+          && typeof result.status === 'number'
+          && 'headers' in result 
+          && isObject(result.headers)
+          && 'body' in result
+        ) {
+          return result
+        }
+
+        // If it's a JSON-like object, use response.json
+        if (isObject(result)) {
+          return response.json(result)
+        }
+
+        // For other types (string, number, etc), use response.success
         return response.success(result)
       }
       
@@ -341,20 +360,27 @@ export class Router implements RouterInterface {
       if (isObjectNotEmpty(actionModule.default.validations) && requestInstance)
         await customValidate(actionModule.default.validations, requestInstance.all())
 
-      const successResponse = await actionModule.default.handle(requestInstance)
+      const result = await actionModule.default.handle(requestInstance)
 
-      // Check if response is already formatted
+      // Check if result is already a properly formatted response
       if (
-        isObject(successResponse)
-        && 'status' in successResponse
-        && 'headers' in successResponse
-        && 'body' in successResponse
+        isObject(result) 
+        && 'status' in result 
+        && typeof result.status === 'number'
+        && 'headers' in result 
+        && isObject(result.headers)
+        && 'body' in result
       ) {
-        return successResponse
+        return result
       }
 
-      // If not formatted, format it as success
-      return response.success(successResponse)
+      // If it's a JSON-like object, use response.json
+      if (isObject(result)) {
+        return response.json(result)
+      }
+
+      // For other types (string, number, etc), use response.success
+      return response.success(result)
     }
     catch (error: any) {
       // Use the response helper for errors

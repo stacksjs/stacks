@@ -4,7 +4,7 @@ import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { camelCase } from '@stacksjs/strings'
 import { route } from './router'
-import { path as p} from '@stacksjs/path'
+import { path as p } from '@stacksjs/path'
 
 export async function listRoutes(): Promise<Ok<string, any>> {
   const routeLists = await route.getRoutes()
