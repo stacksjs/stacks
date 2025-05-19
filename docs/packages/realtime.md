@@ -21,91 +21,70 @@ pnpm add @stacksjs/realtime
 ## Basic Usage
 
 ```typescript
-import { realtime } from '@stacksjs/realtime'
+import { broadcast, channel } from '@stacksjs/realtime'
 
-// Basic broadcasting
-await realtime
-  .setChannel('notifications')
-  .setEvent('new-message', { message: 'Hello!' })
-  .broadcastEvent()
+// Broadcasting an event
+const orderData = {
+  orderId: '12345',
+  userId: 'user_123',
+  products: [
+    { id: 'prod_1', name: 'Widget', quantity: 2 },
+    { id: 'prod_2', name: 'Gadget', quantity: 1 },
+  ],
+  totalAmount: 99.99,
+  shippingAddress: {
+    street: '123 Main St',
+    city: 'Anytown',
+    country: 'USA',
+    postalCode: '12345',
+  },
+}
 
-// Broadcasting to private channels
-await realtime
-  .setChannel('user-123')
-  .setPrivateChannel()
-  .setEvent('status-update', { status: 'online' })
-  .broadcastEvent()
-
-// Broadcasting to presence channels
-await realtime
-  .setChannel('chat-room')
-  .setPresenceChannel()
-  .setEvent('user-joined', { user: 'John' })
-  .broadcastEvent()
+// Trigger the broadcast
+await broadcast('OrderShipped', orderData)
 ```
 
-## Available Drivers
+## Creating Broadcast Events
 
-The package supports multiple realtime drivers:
-
-### Pusher Driver
+Create a broadcast event by defining a handler in your broadcasts directory:
 
 ```typescript
-import { PusherDriver } from '@stacksjs/realtime'
+// app/Broadcasts/OrderShipped.ts
+import type { RealtimeOptions } from '@stacksjs/types'
+import { channel } from '@stacksjs/realtime'
 
-const pusher = new PusherDriver()
-await pusher.connect()
+interface OrderData {
+  orderId: string
+  userId: string
+  products: Array<{
+    id: string
+    name: string
+    quantity: number
+  }>
+  totalAmount: number
+  shippingAddress: {
+    street: string
+    city: string
+    country: string
+    postalCode: string
+  }
+  shippedAt?: string
+}
 
-// Subscribe to a channel
-pusher.subscribe('notifications', (data) => {
-  console.log('Received:', data)
-})
+export default {
+  /**
+   * The event name.
+   */
+  event: 'OrderShipped',
 
-// Publish to a channel
-pusher.publish('notifications', { message: 'Hello!' })
-
-// Broadcast to a specific channel type
-pusher.broadcast('notifications', 'new-message', { message: 'Hello!' }, 'public')
-```
-
-### Socket.IO Driver
-
-```typescript
-import { SocketDriver } from '@stacksjs/realtime'
-
-const socket = new SocketDriver()
-await socket.connect()
-
-// Subscribe to a channel
-socket.subscribe('notifications', (data) => {
-  console.log('Received:', data)
-})
-
-// Publish to a channel
-socket.publish('notifications', { message: 'Hello!' })
-
-// Broadcast to a specific channel type
-socket.broadcast('notifications', 'new-message', { message: 'Hello!' }, 'private')
-```
-
-### Bun WebSocket Driver
-
-```typescript
-import { BunSocket } from '@stacksjs/realtime'
-
-const bunSocket = new BunSocket()
-await bunSocket.connect()
-
-// Subscribe to a channel
-bunSocket.subscribe('notifications', (data) => {
-  console.log('Received:', data)
-})
-
-// Publish to a channel
-bunSocket.publish('notifications', { message: 'Hello!' })
-
-// Broadcast to a specific channel type
-bunSocket.broadcast('notifications', 'new-message', { message: 'Hello!' }, 'presence')
+  /**
+   * Handle the broadcast event.
+   * This method is called when the event is triggered.
+   */
+  async handle(data: OrderData): Promise<void> {
+    await channel(`orders.${data.orderId}`).private(this.event, data)
+  },
+} satisfies RealtimeOptions
 ```
 
 ## Channel Types
@@ -115,18 +94,18 @@ The package supports three types of channels:
 1. **Public Channels**
    - Accessible to all clients
    - No authentication required
-   - Example: `notifications`
+   - Example: `channel('notifications').public(event, data)`
 
 2. **Private Channels**
    - Require authentication
    - Prefixed with `private-`
-   - Example: `private-user-123`
+   - Example: `channel('user-123').private(event, data)`
 
 3. **Presence Channels**
    - Require authentication
    - Support user presence features
    - Prefixed with `presence-`
-   - Example: `presence-chat-room`
+   - Example: `channel('chat-room').presence(event, data)`
 
 ## Broadcasting Methods
 
@@ -134,78 +113,40 @@ The package supports three types of channels:
 
 ```typescript
 // Broadcast to a public channel
-await realtime
-  .setChannel('notifications')
-  .setEvent('new-message', { message: 'Hello!' })
-  .broadcastEvent()
+await channel('notifications').public('new-message', { message: 'Hello!' })
 
-// Broadcast immediately
-await realtime
-  .setChannel('notifications')
-  .setEvent('new-message', { message: 'Hello!' })
-  .broadcastEventNow()
+// Broadcast to a private channel
+await channel('user-123').private('status-update', { status: 'online' })
+
+// Broadcast to a presence channel
+await channel('chat-room').presence('user-joined', { user: 'John' })
 ```
 
-### Channel-Specific Broadcasting
+### Broadcasting with Events
 
 ```typescript
-// Private channel broadcasting
-await realtime
-  .setChannel('user-123')
-  .setPrivateChannel()
-  .setEvent('status-update', { status: 'online' })
-  .broadcastEvent()
-
-// Presence channel broadcasting
-await realtime
-  .setChannel('chat-room')
-  .setPresenceChannel()
-  .setEvent('user-joined', { user: 'John' })
-  .broadcastEvent()
-```
-
-### Excluding Current User
-
-```typescript
-// Broadcast to all users except the sender
-await realtime
-  .setChannel('notifications')
-  .setEvent('new-message', { message: 'Hello!' })
-  .excludeCurrentUser()
-  .broadcastEvent()
-```
-
-## Connection Management
-
-```typescript
-// Check connection status
-const isConnected = realtime.isConnected()
-
-// Disconnect
-await realtime.disconnect()
-```
-
-## Error Handling
-
-The package includes built-in error handling and logging:
-
-```typescript
-// Connection errors are automatically logged
-try {
-  await realtime.connect()
-} catch (error) {
-  console.error('Connection failed:', error)
+// Define your event data interface
+interface MessageData {
+  content: string
+  sender: string
+  timestamp: string
 }
 
-// Broadcasting errors
-try {
-  await realtime
-    .setChannel('notifications')
-    .setEvent('new-message', { message: 'Hello!' })
-    .broadcastEvent()
-} catch (error) {
-  console.error('Broadcasting failed:', error)
-}
+// Create a broadcast event
+// app/Broadcasts/NewMessage.ts
+export default {
+  event: 'NewMessage',
+  async handle(data: MessageData): Promise<void> {
+    await channel(`chat.${data.sender}`).private(this.event, data)
+  },
+} satisfies RealtimeOptions
+
+// Trigger the broadcast
+await broadcast('NewMessage', {
+  content: 'Hello!',
+  sender: 'user_123',
+  timestamp: new Date().toISOString(),
+})
 ```
 
 ## Configuration
@@ -238,25 +179,25 @@ export default {
 
 1. **Channel Naming**
    - Use descriptive names for channels
-   - Follow the naming convention: `{type}-{name}`
-   - Example: `private-user-123`, `presence-chat-room`
+   - Follow the naming convention: `{type}.{identifier}`
+   - Example: `orders.12345`, `chat.user_123`
 
 2. **Event Naming**
-   - Use kebab-case for event names
+   - Use PascalCase for event names
    - Be specific and descriptive
-   - Example: `user-status-updated`, `new-message-received`
+   - Example: `OrderShipped`, `MessageReceived`
 
-3. **Error Handling**
-   - Always implement error handling for connections and broadcasts
-   - Log errors appropriately
-   - Implement reconnection logic for production
+3. **Type Safety**
+   - Define interfaces for your event data
+   - Use TypeScript to ensure type safety
+   - Export types for reuse across your application
 
 4. **Security**
    - Use private channels for sensitive data
    - Implement proper authentication for private and presence channels
    - Validate data before broadcasting
 
-5. **Performance**
-   - Use appropriate channel types for different use cases
-   - Implement rate limiting for broadcasts
-   - Monitor connection status and implement reconnection logic
+5. **Organization**
+   - Keep broadcast events in a dedicated directory
+   - Group related events together
+   - Use consistent naming conventions

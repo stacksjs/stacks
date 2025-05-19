@@ -53,5 +53,5 @@ const orderData = {
 }
 
 // Trigger the broadcast
-await broadcast('OrderShipped', order ata)
+await broadcast('OrderShipped', orderData)
 */
