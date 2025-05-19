@@ -1,4 +1,4 @@
-export interface RealtimeConf {
+export interface RealtimeOptions {
   /**
    * The default realtime driver to use
    */
@@ -58,9 +58,9 @@ export interface RealtimeConf {
   }
 }
 
-export type RealtimeConfig = Partial<RealtimeConf>
+export type RealtimeConfig = Partial<RealtimeOptions>
 
-export interface RealtimeOptions {
+export interface RealtimeInstance {
   event: string
   handle?: (data?: any) => Promise<{ channel: string, type: 'public' | 'private' | 'presence' } | void>
 }
