@@ -1,7 +1,9 @@
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
+import { Controller } from '@stacksjs/server'
+import { sql } from 'kysely'
 
-export default class QueryController {
+export default class QueryController extends Controller {
   /**
    * Get query statistics for the dashboard
    */
@@ -17,10 +19,10 @@ export default class QueryController {
       const queryTypeStats = await db
         .selectFrom('query_logs')
         .select([
-          db.raw('json_extract(tags, "$[0]") as type'),
+          sql`json_extract(tags, "$[0]")`.as('type'),
           db.fn.count('id').as('count'),
         ])
-        .groupBy(db.raw('json_extract(tags, "$[0]")'))
+        .groupBy(sql`json_extract(tags, "$[0]")`)
         .execute()
 
       // Get counts by status
@@ -34,23 +36,22 @@ export default class QueryController {
       const durationStats = await db
         .selectFrom('query_logs')
         .select([
-          db.raw('json_extract(tags, "$[0]") as type'),
+          sql`json_extract(tags, "$[0]")`.as('type'),
           db.fn.avg('duration').as('avg_duration'),
         ])
-        .groupBy(db.raw('json_extract(tags, "$[0]")'))
+        .groupBy(sql`json_extract(tags, "$[0]")`)
         .execute()
 
       // Get count of slow queries over time (last 24 hours)
       const slowQueriesTimeline = await db
         .selectFrom('query_logs')
         .select([
-          db.raw('strftime("%Y-%m-%d %H:00:00", executed_at) as hour'),
+          sql`strftime("%Y-%m-%d %H:00:00", executed_at)`.as('hour'),
           db.fn.count('id').as('count'),
         ])
         .where('status', '=', 'slow')
-        .where('executed_at', '>=', db.raw('datetime("now", "-1 day")'),
-        )
-        .groupBy(db.raw('strftime("%Y-%m-%d %H:00:00", executed_at)'))
+        .where('executed_at', '>=', sql`datetime("now", "-1 day")` as any)
+        .groupBy(sql`strftime("%Y-%m-%d %H:00:00", executed_at)`)
         .orderBy('hour')
         .execute()
 
@@ -66,8 +67,9 @@ export default class QueryController {
         },
       }
     }
-    catch (error) {
-      throw new Error(`Failed to fetch query statistics: ${error.message}`)
+    catch (error: unknown) {
+      const err = error as Error
+      throw new Error(`Failed to fetch query statistics: ${err.message}`)
     }
   }
 
@@ -105,7 +107,7 @@ export default class QueryController {
         query = query.where('connection', '=', connection)
 
       if (status !== 'all')
-        query = query.where('status', '=', status)
+        query = query.where('status', '=', status as any)
 
       if (type !== 'all')
         query = query.where('tags', 'like', `%"${type}"%`)
@@ -120,7 +122,7 @@ export default class QueryController {
       }
 
       // Get total count for pagination
-      const countQuery = query.clone().select(db.fn.count('id').as('count'))
+      const countQuery = query.$call(q => q.select(db.fn.count('id').as('count')))
       const totalResult = await countQuery.executeTakeFirstOrThrow()
       const total = Number(totalResult.count)
 
@@ -141,8 +143,9 @@ export default class QueryController {
         },
       }
     }
-    catch (error) {
-      throw new Error(`Failed to fetch recent queries: ${error.message}`)
+    catch (error: unknown) {
+      const err = error as Error
+      throw new Error(`Failed to fetch recent queries: ${err.message}`)
     }
   }
 
@@ -182,7 +185,6 @@ export default class QueryController {
         .where('duration', '>=', slowThreshold)
         .orderBy('duration', 'desc')
 
-      // Apply filters
       if (connection !== 'all')
         query = query.where('connection', '=', connection)
 
@@ -195,16 +197,13 @@ export default class QueryController {
         ]))
       }
 
-      // Get total count for pagination
-      const countQuery = query.clone().select(db.fn.count('id').as('count'))
+      const countQuery = query.$call(q => q.select(db.fn.count('id').as('count')))
       const totalResult = await countQuery.executeTakeFirstOrThrow()
       const total = Number(totalResult.count)
 
-      // Apply pagination
       const offset = (page - 1) * perPage
       query = query.limit(perPage).offset(offset)
 
-      // Execute paginated query
       const results = await query.execute()
 
       return {
@@ -218,15 +217,16 @@ export default class QueryController {
         },
       }
     }
-    catch (error) {
-      throw new Error(`Failed to fetch slow queries: ${error.message}`)
+    catch (error: unknown) {
+      const err = error as Error
+      throw new Error(`Failed to fetch slow queries: ${err.message}`)
     }
   }
 
   /**
    * Get a single query by ID
    */
-  static async getQuery(id: string | number) {
+  static async getQuery(id: number) {
     try {
       const query = await db
         .selectFrom('query_logs')
@@ -250,7 +250,7 @@ export default class QueryController {
           : [],
       }
     }
-    catch (error) {
+    catch (error: any) {
       throw new Error(`Failed to fetch query: ${error.message}`)
     }
   }
@@ -286,12 +286,11 @@ export default class QueryController {
       let query = db
         .selectFrom('query_logs')
         .select([
-          db.raw(`strftime("${interval}", executed_at) as time_interval`),
+          sql`strftime("${interval}", executed_at)`.as('time_interval'),
           db.fn.count('id').as('count'),
           db.fn.avg('duration').as('avg_duration'),
         ])
-        .where('executed_at', '>=', db.raw(`datetime("now", "${timeConstraint}")`),
-        )
+        .where('executed_at', '>=', sql`datetime("now", "${timeConstraint}")` as any)
         .groupBy('time_interval')
         .orderBy('time_interval')
 
@@ -309,15 +308,21 @@ export default class QueryController {
         },
       }
     }
-    catch (error) {
-      throw new Error(`Failed to fetch query timeline: ${error.message}`)
+    catch (error: unknown) {
+      const err = error as Error
+      throw new Error(`Failed to fetch query timeline: ${err.message}`)
     }
   }
 
   /**
    * Get the most frequently run normalized queries
    */
-  static async getFrequentQueries() {
+  static async getFrequentQueries(): Promise<Array<{
+    normalized_query: string
+    count: string | number | bigint
+    avg_duration: string | number
+    max_duration: number | undefined
+  }>> {
     try {
       const results = await db
         .selectFrom('query_logs')
@@ -334,8 +339,9 @@ export default class QueryController {
 
       return results
     }
-    catch (error) {
-      throw new Error(`Failed to fetch frequent queries: ${error.message}`)
+    catch (error: unknown) {
+      const err = error as Error
+      throw new Error(`Failed to fetch frequent queries: ${err.message}`)
     }
   }
 
@@ -348,8 +354,7 @@ export default class QueryController {
 
       const result = await db
         .deleteFrom('query_logs')
-        .where('executed_at', '<', db.raw(`datetime("now", "-${retentionDays} day")`),
-        )
+        .where('executed_at', '<', sql`datetime("now", "-${retentionDays} day")` as any)
         .executeTakeFirst()
 
       return {
@@ -357,8 +362,9 @@ export default class QueryController {
         retentionDays,
       }
     }
-    catch (error) {
-      throw new Error(`Failed to prune query logs: ${error.message}`)
+    catch (error: unknown) {
+      const err = error as Error
+      throw new Error(`Failed to prune query logs: ${err.message}`)
     }
   }
 }

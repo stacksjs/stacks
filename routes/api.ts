@@ -1,4 +1,4 @@
-import type { Request, Response, route } from '@stacksjs/router'
+import { route } from '@stacksjs/router'
 
 /**
  * This file is the entry point for your application's API routes.
@@ -273,111 +273,12 @@ route.post('/password/reset', 'Actions/Password/PasswordResetAction')
 // route.job('/example-two') // equivalent to `route.get('/example-two', 'ExampleTwoJob')`
 
 // Query Dashboard routes
-route.get('/queries/stats', async (req: Request, res: Response) => {
-  try {
-    const stats = await import('../app/Actions/Queries/QueryController').then(module => module.default.getStats())
-    res.json(stats)
-  }
-  catch (error: unknown) {
-    const err = error as Error
-    res.error(err.message)
-  }
-})
-
-route.get('/queries/recent', async (req: Request, res: Response) => {
-  try {
-    const { page, perPage, connection, type, status, search } = req.query
-    const queries = await import('../app/Actions/Queries/QueryController').then(module =>
-      module.default.getRecentQueries({
-        page: Number(page) || 1,
-        perPage: Number(perPage) || 10,
-        connection: connection?.toString() || 'all',
-        type: type?.toString() || 'all',
-        status: status?.toString() || 'all',
-        search: search?.toString() || '',
-      }),
-    )
-    res.json(queries)
-  }
-  catch (error: unknown) {
-    const err = error as Error
-    res.error(err.message)
-  }
-})
-
-route.get('/queries/slow', async (req: Request, res: Response) => {
-  try {
-    const { page, perPage, threshold, connection, search } = req.query
-    const queries = await import('../app/Actions/Queries/QueryController').then(module =>
-      module.default.getSlowQueries({
-        page: Number(page) || 1,
-        perPage: Number(perPage) || 10,
-        threshold: threshold ? Number(threshold) : undefined,
-        connection: connection?.toString() || 'all',
-        search: search?.toString() || '',
-      }),
-    )
-    res.json(queries)
-  }
-  catch (error: unknown) {
-    const err = error as Error
-    res.error(err.message)
-  }
-})
-
-route.get('/queries/:id', async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params
-    const query = await import('../app/Actions/Queries/QueryController').then(module =>
-      module.default.getQuery(Number(id)),
-    )
-    res.json(query)
-  }
-  catch (error: unknown) {
-    const err = error as Error
-    res.notFound(err.message)
-  }
-})
-
-route.get('/queries/timeline', async (req: Request, res: Response) => {
-  try {
-    const { timeframe, type } = req.query
-    const timeline = await import('../app/Actions/Queries/QueryController').then(module =>
-      module.default.getQueryTimeline({
-        timeframe: timeframe?.toString() || 'day',
-        type: type?.toString() || 'all',
-      }),
-    )
-    res.json(timeline)
-  }
-  catch (error: unknown) {
-    const err = error as Error
-    res.error(err.message)
-  }
-})
-
-route.get('/queries/frequent', async (req: Request, res: Response) => {
-  try {
-    const queries = await import('../app/Actions/Queries/QueryController').then(module =>
-      module.default.getFrequentQueries(),
-    )
-    res.json(queries)
-  }
-  catch (error: unknown) {
-    const err = error as Error
-    res.error(err.message)
-  }
-})
-
-route.post('/queries/prune', async (req: Request, res: Response) => {
-  try {
-    const result = await import('../app/Actions/Queries/QueryController').then(module =>
-      module.default.pruneQueryLogs(),
-    )
-    res.json(result)
-  }
-  catch (error: unknown) {
-    const err = error as Error
-    res.error(err.message)
-  }
+route.group({ prefix: '/queries' }, async () => {
+  route.get('/stats', 'Controllers/QueryController@getStats')
+  route.get('/recent', 'Controllers/QueryController@getRecentQueries')
+  route.get('/slow', 'Controllers/QueryController@getSlowQueries')
+  route.get('/:id', 'Controllers/QueryController@getQuery')
+  route.get('/timeline', 'Controllers/QueryController@getQueryTimeline')
+  route.get('/frequent', 'Controllers/QueryController@getFrequentQueries')
+  route.post('/prune', 'Controllers/QueryController@pruneQueryLogs')
 })
