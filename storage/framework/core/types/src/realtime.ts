@@ -1,4 +1,4 @@
-export interface RealtimeOptions {
+export interface RealtimeConf {
   /**
    * The default realtime driver to use
    */
@@ -58,7 +58,7 @@ export interface RealtimeOptions {
   }
 }
 
-export type RealtimeConfig = Partial<RealtimeOptions>
+export type RealtimeConfig = Partial<RealtimeConf>
 
 export interface RealtimeOptions {
   event: string

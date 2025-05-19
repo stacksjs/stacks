@@ -1,4 +1,4 @@
-import type { BroadcastOptions } from '@stacksjs/types'
+import type { RealtimeOptions } from '@stacksjs/types'
 import { channel } from '@stacksjs/realtime'
 
 interface OrderData {
@@ -32,7 +32,7 @@ export default {
   async handle(data: OrderData): Promise<void> {
     await channel(`orders.${data.orderId}`).private(this.event, data)
   },
-} satisfies BroadcastOptions
+} satisfies RealtimeOptions
 
 // Usage example:
 /*
