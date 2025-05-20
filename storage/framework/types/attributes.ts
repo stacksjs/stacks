@@ -4,18 +4,10 @@ export interface Attributes {
   url: string
   status: string
   email: string
-  token: string
-  plain_text_token: string
-  abilities: string | string[]
-  last_used_at: number
-  expires_at: number
-  revoked_at: number
-  ip_address: string
-  device_name: string
-  is_single_use: boolean
   client_id: number
   scopes: string
   revoked: boolean
+  expires_at: number
   secret: string
   provider: string
   redirect: string
@@ -35,6 +27,14 @@ export interface Attributes {
   version: string
   job_title: string
   password: string
+  token: string
+  plain_text_token: string
+  abilities: string | string[]
+  last_used_at: number
+  revoked_at: number
+  ip_address: string
+  device_name: string
+  is_single_use: boolean
   mac_address: string
   location: string
   terminal: string

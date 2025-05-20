@@ -180,7 +180,6 @@ export interface QueryLogsTable {
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
-  personal_access_tokens: PersonalAccessTokensTable
   oauth_access_tokens: OauthAccessTokensTable
   oauth_clients: OauthClientsTable
   teams_users: TeamsUsersTable
@@ -189,6 +188,7 @@ export interface Database {
   deployments: DeploymentsTable
   releases: ReleasesTable
   users: UsersTable
+  personal_access_tokens: PersonalAccessTokensTable
   print_devices: PrintDevicesTable
   categories: CategoriesTable
   payments: PaymentsTable

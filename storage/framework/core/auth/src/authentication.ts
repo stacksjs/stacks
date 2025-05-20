@@ -1,11 +1,10 @@
-import type { UserModel } from '../../../orm/src/models/User'
+import type { User } from '@stacksjs/orm'
 import type { AuthToken } from './token-manager'
 import { randomBytes } from 'node:crypto'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { request } from '@stacksjs/router'
 import { makeHash, verifyHash } from '@stacksjs/security'
-import User from '../../../orm/src/models/User'
 import { RateLimiter } from './rate-limiter'
 
 interface Credentials {
@@ -21,7 +20,7 @@ export class Authentication {
     tokenExpiry: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
   }
 
-  private static authUser: UserModel | null = null
+  private static authUser: User | null = null
 
   public static async attempt(credentials: Credentials): Promise<boolean> {
     const email = credentials[this.config.username]

@@ -10,7 +10,7 @@ export default {
 
   belongsToMany: ['User'],
 
-  hasMany: ['AccessToken'],
+  hasMany: ['PersonalAccessToken'],
 
   traits: {
     useTimestamps: true, // defaults to true

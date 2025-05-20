@@ -54,7 +54,7 @@ export type PersonalAccessTokenUpdate = Updateable<PersonalAccessTokenWrite>
 
 export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, PersonalAccessTokensTable, PersonalAccessTokenJsonResponse> {
   private readonly hidden: Array<keyof PersonalAccessTokenJsonResponse> = []
-  private readonly fillable: Array<keyof PersonalAccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'last_used_at', 'expires_at', 'revoked_at', 'ip_address', 'device_name', 'is_single_use', 'uuid']
+  private readonly fillable: Array<keyof PersonalAccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'last_used_at', 'expires_at', 'revoked_at', 'ip_address', 'device_name', 'is_single_use', 'uuid', 'team_id', 'user_id']
   private readonly guarded: Array<keyof PersonalAccessTokenJsonResponse> = []
   protected attributes = {} as PersonalAccessTokenJsonResponse
   protected originalAttributes = {} as PersonalAccessTokenJsonResponse
