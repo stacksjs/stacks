@@ -1437,7 +1437,7 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     await generateApiRoutes(modelFiles)
     log.success('Generated API Routes')
 
-    await writeModelOrmImports(modelFiles)
+    
 
     for (const modelFile of modelFiles) {
       if (modelStringFile && modelStringFile !== modelFile)
@@ -1461,6 +1461,10 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     log.info('Generating Query Builder types...')
     await generateKyselyTypes()
     log.success('Generated Query Builder types')
+
+    log.info('Writing Model Orm Imports...')
+    await writeModelOrmImports(modelFiles)
+    log.success('Wrote Model Orm Imports')
 
     // we need to lint:fix the auto-generated code, given there is a chance that
     // the codebase has lint issues unrelating to our auto-generated code, we

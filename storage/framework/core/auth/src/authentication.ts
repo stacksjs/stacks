@@ -1,5 +1,5 @@
-import type { User } from '@stacksjs/orm'
-import type { AuthToken } from './token-manager'
+import type { UserJsonResponse } from '@stacksjs/orm'
+import type { AuthToken } from './token'
 import { randomBytes } from 'node:crypto'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -20,7 +20,7 @@ export class Authentication {
     tokenExpiry: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
   }
 
-  private static authUser: User | null = null
+  private static authUser: UserJsonResponse | undefined = undefined
 
   public static async attempt(credentials: Credentials): Promise<boolean> {
     const email = credentials[this.config.username]
@@ -43,7 +43,7 @@ export class Authentication {
 
     if (hashCheck && user) {
       RateLimiter.resetAttempts(email)
-      this.authUser = new User(user)
+      this.authUser = user
       return true
     }
 
@@ -51,7 +51,7 @@ export class Authentication {
     return false
   }
 
-  public static async createToken(user: UserModel, name: string = 'auth-token'): Promise<AuthToken> {
+  public static async createToken(user: UserJsonResponse, name: string = 'auth-token'): Promise<AuthToken> {
     const token = randomBytes(40).toString('hex')
     const hashedToken = await makeHash(token, { algorithm: 'bcrypt' })
 
@@ -111,7 +111,7 @@ export class Authentication {
       .set({
         token: hashedNewToken,
         updated_at: new Date().toISOString(),
-        last_used_at: new Date().toISOString(),
+        last_used_at: new Date().getTime(),
       })
       .where('id', '=', accessToken.id)
       .execute()
@@ -144,7 +144,7 @@ export class Authentication {
     // Update last used timestamp
     await db.updateTable('personal_access_tokens')
       .set({
-        last_used_at: new Date().toISOString(),
+        last_used_at: new Date().getTime(),
       })
       .where('id', '=', accessToken.id)
       .execute()
@@ -152,7 +152,7 @@ export class Authentication {
     return true
   }
 
-  public static async getUserFromToken(token: string): Promise<UserModel | undefined> {
+  public static async getUserFromToken(token: string): Promise<UserJsonResponse | undefined> {
     const [tokenId] = token.split('|')
     if (!tokenId)
       return undefined
@@ -170,7 +170,7 @@ export class Authentication {
       .selectAll()
       .executeTakeFirst()
 
-    return user ? new User(user) : undefined
+    return user ? user : undefined
   }
 
   public static async revokeToken(token: string): Promise<void> {
@@ -188,6 +188,6 @@ export class Authentication {
     if (bearerToken)
       await this.revokeToken(bearerToken)
 
-    this.authUser = null
+    this.authUser = undefined
   }
 }
