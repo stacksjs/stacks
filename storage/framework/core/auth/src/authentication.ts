@@ -6,6 +6,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import { request } from '@stacksjs/router'
 import { makeHash, verifyHash } from '@stacksjs/security'
 import { RateLimiter } from './rate-limiter'
+import { auth } from '@stacksjs/config'
 
 interface Credentials {
   password: string | undefined
@@ -15,9 +16,9 @@ interface Credentials {
 
 export class Authentication {
   private static readonly config = {
-    username: 'email',
-    password: 'password',
-    tokenExpiry: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
+    username: auth.username,
+    password: auth.password,
+    tokenExpiry: auth.tokenExpiry,
   }
 
   private static authUser: UserJsonResponse | undefined = undefined
@@ -51,7 +52,7 @@ export class Authentication {
     return false
   }
 
-  public static async createToken(user: UserJsonResponse, name: string = 'auth-token'): Promise<AuthToken> {
+  public static async createToken(user: UserJsonResponse, name: string = auth.defaultTokenName): Promise<AuthToken> {
     const token = randomBytes(40).toString('hex')
     const hashedToken = await makeHash(token, { algorithm: 'bcrypt' })
 
@@ -61,7 +62,7 @@ export class Authentication {
         name,
         token: hashedToken,
         plain_text_token: token,
-        abilities: JSON.stringify(['*']), // All abilities by default
+        abilities: JSON.stringify(auth.defaultAbilities),
         last_used_at: new Date().getTime(),
         expires_at: new Date(Date.now() + this.config.tokenExpiry).getTime(),
       })
