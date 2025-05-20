@@ -69,7 +69,9 @@ export class Authentication {
     if (!result?.insertId)
       throw new HttpError(500, 'Failed to create access token')
 
-    return `${result.insertId}|${token}` as AuthToken
+    const insertId = result.insertId || Number(result.numInsertedOrUpdatedRows)
+
+    return `${insertId}|${token}` as AuthToken
   }
 
   public static async login(credentials: Credentials): Promise<{ token: AuthToken } | null> {
@@ -80,6 +82,7 @@ export class Authentication {
 
     // Create user token
     const token = await this.createToken(this.authUser, 'user-auth-token')
+    
     return { token }
   }
 
