@@ -37,13 +37,16 @@ export async function attempt(credentials: Credentials): Promise<boolean> {
   return false
 }
 
-export async function createAccessToken(user: UserModel, teamId?: number): Promise<AuthToken> {
+export async function createAccessToken(user: UserModel, teamId: number): Promise<AuthToken> {
   const token = randomBytes(40).toString('hex')
 
   const accessToken = await AccessToken.create({
     team_id: teamId,
+    user_id: user.id,
     token,
     name: 'auth-token',
+    plain_text_token: token,
+    abilities: ['read', 'write', 'admin'],
     expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days
   })
 
