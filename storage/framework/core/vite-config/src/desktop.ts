@@ -1,4 +1,4 @@
-import type { ViteConfig } from '@stacksjs/types'
+import type { UserConfig as ViteConfig } from 'vite'
 import conf from './views'
 
 export const desktopConfig: ViteConfig = conf

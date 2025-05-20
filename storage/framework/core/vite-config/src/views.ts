@@ -1,4 +1,4 @@
-import type { ViteConfig } from '@stacksjs/types'
+import type { UserConfig as ViteConfig } from 'vite'
 import { alias } from '@stacksjs/alias'
 import { path as p } from '@stacksjs/path'
 import {
