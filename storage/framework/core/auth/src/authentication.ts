@@ -15,16 +15,13 @@ interface Credentials {
 }
 
 export class Authentication {
-  private static readonly config = {
-    username: auth.username,
-    password: auth.password,
-    tokenExpiry: auth.tokenExpiry,
-  }
-
   private static authUser: UserJsonResponse | undefined = undefined
 
   public static async attempt(credentials: Credentials): Promise<boolean> {
-    const email = credentials[this.config.username]
+    const username = auth.username || 'email'
+    const password = auth.password || 'password'
+
+    const email = credentials[username]
 
     if (!email || typeof email !== 'string')
       return false
@@ -37,7 +34,7 @@ export class Authentication {
       .selectAll()
       .executeTakeFirst()
 
-    const authPass = credentials[this.config.password]
+    const authPass = credentials[password]
 
     if (typeof authPass === 'string' && user?.password)
       hashCheck = await verifyHash(authPass, user.password, 'bcrypt')
@@ -52,9 +49,10 @@ export class Authentication {
     return false
   }
 
-  public static async createToken(user: UserJsonResponse, name: string = auth.defaultTokenName): Promise<AuthToken> {
+  public static async createToken(user: UserJsonResponse, name: string = auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
     const token = randomBytes(40).toString('hex')
     const hashedToken = await makeHash(token, { algorithm: 'bcrypt' })
+    const tokenExpiry = auth.tokenExpiry || 30 * 24 * 60 * 60 * 1000
 
     const result = await db.insertInto('personal_access_tokens')
       .values({
@@ -64,7 +62,7 @@ export class Authentication {
         plain_text_token: token,
         abilities: JSON.stringify(auth.defaultAbilities),
         last_used_at: new Date().getTime(),
-        expires_at: new Date(Date.now() + this.config.tokenExpiry).getTime(),
+        expires_at: new Date(Date.now() + tokenExpiry).getTime(),
       })
       .executeTakeFirst()
 

@@ -19,6 +19,7 @@ export function getConfig(): StacksOptions {
 export const ai: StacksOptions['ai'] = config.ai
 export const analytics: StacksOptions['analytics'] = config.analytics
 export const app: StacksOptions['app'] = config.app
+export const auth: StacksOptions['auth'] = config.auth
 export const realtime: StacksOptions['realtime'] = config.realtime
 export const cache: StacksOptions['cache'] = config.cache
 export const cloud: StacksOptions['cloud'] = config.cloud
