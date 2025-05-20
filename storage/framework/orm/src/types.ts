@@ -18,6 +18,7 @@ import type { LoyaltyPointsTable } from '../src/models/LoyaltyPoint'
 import type { LoyaltyRewardsTable } from '../src/models/LoyaltyReward'
 import type { ManufacturersTable } from '../src/models/Manufacturer'
 import type { OauthAccessTokensTable } from '../src/models/OAuthAccessToken'
+import type { OauthClientsTable } from '../src/models/OAuthClient'
 import type { OrdersTable } from '../src/models/Order'
 import type { OrderItemsTable } from '../src/models/OrderItem'
 import type { PagesTable } from '../src/models/Page'
@@ -181,6 +182,7 @@ export interface Database {
   subscriber_emails: SubscriberEmailsTable
   personal_access_tokens: PersonalAccessTokensTable
   oauth_access_tokens: OauthAccessTokensTable
+  oauth_clients: OauthClientsTable
   teams_users: TeamsUsersTable
   teams: TeamsTable
   subscribers: SubscribersTable

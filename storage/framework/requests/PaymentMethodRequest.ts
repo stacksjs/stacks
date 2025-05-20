@@ -20,7 +20,6 @@ interface RequestDataPaymentMethod {
   exp_year: number
   is_default: boolean
   provider_id: string
-  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -33,7 +32,6 @@ export class PaymentMethodRequest extends Request<RequestDataPaymentMethod> impl
   public exp_year = 0
   public is_default = false
   public provider_id = ''
-  public user_id = 0
   public created_at = ''
   public updated_at = ''
   public uuid = ''

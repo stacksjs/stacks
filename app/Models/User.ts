@@ -49,7 +49,7 @@ export default {
   },
 
   hasOne: ['Subscriber', 'Driver', 'Author'],
-  hasMany: ['Deployment', 'Subscription', 'PaymentMethod', 'PaymentTransaction', 'Customer'],
+  hasMany: ['AccessToken', 'OAuthAccessToken'],
 
   belongsToMany: ['Team'],
 

@@ -16,6 +16,11 @@ export interface Attributes {
   client_id: number
   scopes: string
   revoked: boolean
+  secret: string
+  provider: string
+  redirect: string
+  personal_access_client: boolean
+  password_client: boolean
   company_name: string
   billing_email: string
   path: string

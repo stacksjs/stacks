@@ -18,7 +18,6 @@ interface RequestDataPaymentTransaction {
   amount: number
   type: string
   provider_id: string
-  user_id: number
   payment_method_id: number
   created_at?: string
   updated_at?: string
@@ -30,7 +29,6 @@ export class PaymentTransactionRequest extends Request<RequestDataPaymentTransac
   public amount = 0
   public type = ''
   public provider_id = ''
-  public user_id = 0
   public payment_method_id = 0
   public created_at = ''
   public updated_at = ''

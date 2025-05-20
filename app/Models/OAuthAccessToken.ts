@@ -6,7 +6,7 @@ export default {
   description: 'An OAuth 2.0 access token for third-party applications',
   table: 'oauth_access_tokens',
   primaryKey: 'id',
-  belongsTo: ['User'],
+  belongsTo: ['User', 'OAuthClient'],
   traits: {
     useTimestamps: true,
     useSeeder: {

@@ -296,6 +296,7 @@ interface RequestDataOAuthAccessToken {
   scopes: string
   revoked: boolean
   expires_at: timestamp
+  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -309,6 +310,35 @@ export interface OAuthAccessTokenRequestType extends Request {
   scopes: string
   revoked: boolean
   expires_at: timestamp
+  user_id: number
+  created_at?: string
+  updated_at?: string
+}
+
+interface RequestDataOAuthClient {
+  id: number
+  name: string
+  secret: string
+  provider: string
+  redirect: string
+  personal_access_client: boolean
+  password_client: boolean
+  revoked: boolean
+  created_at?: string
+  updated_at?: string
+}
+export interface OAuthClientRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => Promise<void>
+  get: <T = string>(element: string, defaultValue?: T) => T
+  all: () => RequestDataOAuthClient
+  id: number
+  name: string
+  secret: string
+  provider: string
+  redirect: string
+  personal_access_client: boolean
+  password_client: boolean
+  revoked: boolean
   created_at?: string
   updated_at?: string
 }
@@ -372,7 +402,6 @@ interface RequestDataDeployment {
   execution_time: number
   deploy_script: string
   terminal_output: string
-  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -388,7 +417,6 @@ export interface DeploymentRequestType extends Request {
   execution_time: number
   deploy_script: string
   terminal_output: string
-  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -704,7 +732,6 @@ interface RequestDataCustomer {
   last_order: string
   status: string[] | string
   avatar: string
-  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -720,7 +747,6 @@ export interface CustomerRequestType extends Request {
   last_order: string
   status: string[] | string
   avatar: string
-  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -1442,7 +1468,6 @@ interface RequestDataPaymentMethod {
   exp_year: number
   is_default: boolean
   provider_id: string
-  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -1458,7 +1483,6 @@ export interface PaymentMethodRequestType extends Request {
   exp_year: number
   is_default: boolean
   provider_id: string
-  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -1546,7 +1570,6 @@ interface RequestDataPaymentTransaction {
   amount: number
   type: string
   provider_id: string
-  user_id: number
   payment_method_id: number
   created_at?: string
   updated_at?: string
@@ -1561,7 +1584,6 @@ export interface PaymentTransactionRequestType extends Request {
   amount: number
   type: string
   provider_id: string
-  user_id: number
   payment_method_id: number
   created_at?: string
   updated_at?: string
@@ -1686,7 +1708,6 @@ interface RequestDataSubscription {
   trial_ends_at: timestamp
   ends_at: timestamp
   last_used_at: timestamp
-  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -1706,7 +1727,6 @@ export interface SubscriptionRequestType extends Request {
   trial_ends_at: timestamp
   ends_at: timestamp
   last_used_at: timestamp
-  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -1735,4 +1755,4 @@ export interface ErrorRequestType extends Request {
   updated_at?: string
 }
 
-export type ModelRequest = MigrationsRequestType | PasswordResetsRequestType | PasskeysRequestType | CommentablesRequestType | CommentableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestTypeProjectRequestType | SubscriberEmailRequestType | PersonalAccessTokenRequestType | OAuthAccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PrintDeviceRequestType | CategoryRequestType | PaymentRequestType | DriverRequestType | WaitlistProductRequestType | DigitalDeliveryRequestType | ManufacturerRequestType | OrderItemRequestType | ShippingZoneRequestType | CustomerRequestType | ProductRequestType | ReceiptRequestType | ProductVariantRequestType | LicenseKeyRequestType | WaitlistRestaurantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TaxRateRequestType | TransactionRequestType | LoyaltyPointRequestType | ProductItemRequestType | LoyaltyRewardRequestType | ShippingMethodRequestType | ShippingRateRequestType | CartRequestType | DeliveryRouteRequestType | CartItemRequestType | PaymentProductRequestType | FailedJobRequestType | PaymentMethodRequestType | PageRequestType | AuthorRequestType | PostRequestType | PaymentTransactionRequestType | WebsocketRequestType | RequestRequestType | JobRequestType | LogRequestType | SubscriptionRequestType | ErrorRequestType
+export type ModelRequest = MigrationsRequestType | PasswordResetsRequestType | PasskeysRequestType | CommentablesRequestType | CommentableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestTypeProjectRequestType | SubscriberEmailRequestType | PersonalAccessTokenRequestType | OAuthAccessTokenRequestType | OAuthClientRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PrintDeviceRequestType | CategoryRequestType | PaymentRequestType | DriverRequestType | WaitlistProductRequestType | DigitalDeliveryRequestType | ManufacturerRequestType | OrderItemRequestType | ShippingZoneRequestType | CustomerRequestType | ProductRequestType | ReceiptRequestType | ProductVariantRequestType | LicenseKeyRequestType | WaitlistRestaurantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TaxRateRequestType | TransactionRequestType | LoyaltyPointRequestType | ProductItemRequestType | LoyaltyRewardRequestType | ShippingMethodRequestType | ShippingRateRequestType | CartRequestType | DeliveryRouteRequestType | CartItemRequestType | PaymentProductRequestType | FailedJobRequestType | PaymentMethodRequestType | PageRequestType | AuthorRequestType | PostRequestType | PaymentTransactionRequestType | WebsocketRequestType | RequestRequestType | JobRequestType | LogRequestType | SubscriptionRequestType | ErrorRequestType

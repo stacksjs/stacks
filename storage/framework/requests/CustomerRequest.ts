@@ -20,7 +20,6 @@ interface RequestDataCustomer {
   last_order: string
   status: string[] | string
   avatar: string
-  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -33,7 +32,6 @@ export class CustomerRequest extends Request<RequestDataCustomer> implements Cus
   public last_order = ''
   public status = []
   public avatar = ''
-  public user_id = 0
   public created_at = ''
   public updated_at = ''
   public uuid = ''

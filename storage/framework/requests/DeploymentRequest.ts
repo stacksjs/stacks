@@ -20,7 +20,6 @@ interface RequestDataDeployment {
   execution_time: number
   deploy_script: string
   terminal_output: string
-  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -33,7 +32,6 @@ export class DeploymentRequest extends Request<RequestDataDeployment> implements
   public execution_time = 0
   public deploy_script = ''
   public terminal_output = ''
-  public user_id = 0
   public created_at = ''
   public updated_at = ''
   public uuid = ''

@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { OAuthClientModel } from './OAuthClient'
 import type { UserModel } from './User'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -10,6 +11,7 @@ import { BaseOrm } from '../utils/base'
 export interface OauthAccessTokensTable {
   id: Generated<number>
   user_id: number
+  o_auth_client_id: number
   client_id: number
   name?: string
   scopes?: string
@@ -49,7 +51,7 @@ export type OAuthAccessTokenUpdate = Updateable<OAuthAccessTokenWrite>
 
 export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthAccessTokensTable, OAuthAccessTokenJsonResponse> {
   private readonly hidden: Array<keyof OAuthAccessTokenJsonResponse> = []
-  private readonly fillable: Array<keyof OAuthAccessTokenJsonResponse> = ['client_id', 'name', 'scopes', 'revoked', 'expires_at', 'uuid']
+  private readonly fillable: Array<keyof OAuthAccessTokenJsonResponse> = ['client_id', 'name', 'scopes', 'revoked', 'expires_at', 'uuid', 'user_id']
   private readonly guarded: Array<keyof OAuthAccessTokenJsonResponse> = []
   protected attributes = {} as OAuthAccessTokenJsonResponse
   protected originalAttributes = {} as OAuthAccessTokenJsonResponse
@@ -180,6 +182,14 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
 
   get user(): UserModel | undefined {
     return this.attributes.user
+  }
+
+  get o_auth_client_id(): number {
+    return this.attributes.o_auth_client_id
+  }
+
+  get o_auth_client(): OAuthClientModel | undefined {
+    return this.attributes.o_auth_client
   }
 
   get id(): number {
@@ -826,6 +836,20 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     return model
   }
 
+  async oAuthClientBelong(): Promise<OAuthClientModel> {
+    if (this.o_auth_client_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const model = await OAuthClient
+      .where('id', '=', this.o_auth_client_id)
+      .first()
+
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
+
+    return model
+  }
+
   static distinct(column: keyof OAuthAccessTokenJsonResponse): OAuthAccessTokenModel {
     const instance = new OAuthAccessTokenModel(undefined)
 
@@ -854,6 +878,8 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
 
       user_id: this.user_id,
       user: this.user,
+      o_auth_client_id: this.o_auth_client_id,
+      o_auth_client: this.o_auth_client,
       ...this.customColumns,
     }
 
