@@ -12,16 +12,12 @@ export default {
   /**
    * The authentication guard to use for your application.
    */
-  default: 'web',
+  default: 'api',
 
   /**
    * The authentication guards available for your application.
    */
   guards: {
-    web: {
-      driver: 'session',
-      provider: 'users',
-    },
     api: {
       driver: 'token',
       provider: 'users',
