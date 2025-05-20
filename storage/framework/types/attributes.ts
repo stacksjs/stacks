@@ -7,12 +7,15 @@ export interface Attributes {
   token: string
   plain_text_token: string
   abilities: string | string[]
-  last_used_at: Date | string
-  expires_at: Date | string
-  revoked_at: Date | string
+  last_used_at: number
+  expires_at: number
+  revoked_at: number
   ip_address: string
   device_name: string
   is_single_use: boolean
+  client_id: number
+  scopes: string
+  revoked: boolean
   company_name: string
   billing_email: string
   path: string

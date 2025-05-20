@@ -1,6 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { TeamModel } from './Team'
 import type { UserModel } from './User'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -10,15 +9,14 @@ import { BaseOrm } from '../utils/base'
 
 export interface PersonalAccessTokensTable {
   id: Generated<number>
-  team_id: number
   user_id: number
   name: string
   token: string
   plain_text_token: string
   abilities: string | string[]
-  last_used_at?: Date | string
-  expires_at?: Date | string
-  revoked_at?: Date | string
+  last_used_at?: number
+  expires_at?: number
+  revoked_at?: number
   ip_address?: string
   device_name?: string
   is_single_use?: boolean
@@ -30,15 +28,15 @@ export interface PersonalAccessTokensTable {
 }
 
 // Type for reading model data (created_at is required)
-export type AccessTokenRead = PersonalAccessTokensTable
+export type PersonalAccessTokenRead = PersonalAccessTokensTable
 
 // Type for creating/updating model data (created_at is optional)
-export type AccessTokenWrite = Omit<PersonalAccessTokensTable, 'created_at'> & {
+export type PersonalAccessTokenWrite = Omit<PersonalAccessTokensTable, 'created_at'> & {
   created_at?: string
 }
 
-export interface AccessTokenResponse {
-  data: AccessTokenJsonResponse[]
+export interface PersonalAccessTokenResponse {
+  data: PersonalAccessTokenJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -47,19 +45,19 @@ export interface AccessTokenResponse {
   next_cursor: number | null
 }
 
-export interface AccessTokenJsonResponse extends Omit<Selectable<AccessTokenRead>, 'password'> {
+export interface PersonalAccessTokenJsonResponse extends Omit<Selectable<PersonalAccessTokenRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewAccessToken = Insertable<AccessTokenWrite>
-export type AccessTokenUpdate = Updateable<AccessTokenWrite>
+export type NewPersonalAccessToken = Insertable<PersonalAccessTokenWrite>
+export type PersonalAccessTokenUpdate = Updateable<PersonalAccessTokenWrite>
 
-export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTokensTable, AccessTokenJsonResponse> {
-  private readonly hidden: Array<keyof AccessTokenJsonResponse> = []
-  private readonly fillable: Array<keyof AccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'last_used_at', 'expires_at', 'revoked_at', 'ip_address', 'device_name', 'is_single_use', 'uuid', 'team_id']
-  private readonly guarded: Array<keyof AccessTokenJsonResponse> = []
-  protected attributes = {} as AccessTokenJsonResponse
-  protected originalAttributes = {} as AccessTokenJsonResponse
+export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, PersonalAccessTokensTable, PersonalAccessTokenJsonResponse> {
+  private readonly hidden: Array<keyof PersonalAccessTokenJsonResponse> = []
+  private readonly fillable: Array<keyof PersonalAccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'last_used_at', 'expires_at', 'revoked_at', 'ip_address', 'device_name', 'is_single_use', 'uuid']
+  private readonly guarded: Array<keyof PersonalAccessTokenJsonResponse> = []
+  protected attributes = {} as PersonalAccessTokenJsonResponse
+  protected originalAttributes = {} as PersonalAccessTokenJsonResponse
 
   protected selectFromQuery: any
   protected updateFromQuery: any
@@ -75,15 +73,15 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
    * See BaseOrm class for the full list of inherited methods.
    */
 
-  constructor(accessToken: AccessTokenJsonResponse | undefined) {
+  constructor(personalAccessToken: PersonalAccessTokenJsonResponse | undefined) {
     super('personal_access_tokens')
-    if (accessToken) {
-      this.attributes = { ...accessToken }
-      this.originalAttributes = { ...accessToken }
+    if (personalAccessToken) {
+      this.attributes = { ...personalAccessToken }
+      this.originalAttributes = { ...personalAccessToken }
 
-      Object.keys(accessToken).forEach((key) => {
+      Object.keys(personalAccessToken).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (accessToken as AccessTokenJsonResponse)[key]
+          this.customColumns[key] = (personalAccessToken as PersonalAccessTokenJsonResponse)[key]
         }
       })
     }
@@ -95,7 +93,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     this.hasSelect = false
   }
 
-  protected async loadRelations(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: PersonalAccessTokenJsonResponse | PersonalAccessTokenJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -106,14 +104,14 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('accessToken_id', 'in', modelIds)
+        .where('personalAccessToken_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: AccessTokenJsonResponse) => {
-          const records = relatedRecords.filter((record: { accessToken_id: number }) => {
-            return record.accessToken_id === model.id
+        models.map((model: PersonalAccessTokenJsonResponse) => {
+          const records = relatedRecords.filter((record: { personalAccessToken_id: number }) => {
+            return record.personalAccessToken_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -121,8 +119,8 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
         })
       }
       else {
-        const records = relatedRecords.filter((record: { accessToken_id: number }) => {
-          return record.accessToken_id === models.id
+        const records = relatedRecords.filter((record: { personalAccessToken_id: number }) => {
+          return record.personalAccessToken_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -130,17 +128,17 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     }
   }
 
-  static with(relations: string[]): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static with(relations: string[]): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyWith(relations)
   }
 
-  protected mapCustomGetters(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): void {
+  protected mapCustomGetters(models: PersonalAccessTokenJsonResponse | PersonalAccessTokenJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
-      data.map((model: AccessTokenJsonResponse) => {
+      data.map((model: PersonalAccessTokenJsonResponse) => {
         const customGetter = {
           default: () => {
           },
@@ -169,7 +167,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     }
   }
 
-  async mapCustomSetters(model: NewAccessToken | AccessTokenUpdate): Promise<void> {
+  async mapCustomSetters(model: NewPersonalAccessToken | PersonalAccessTokenUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -179,14 +177,6 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     for (const [key, fn] of Object.entries(customSetter)) {
       (model as any)[key] = await fn()
     }
-  }
-
-  get team_id(): number {
-    return this.attributes.team_id
-  }
-
-  get team(): TeamModel | undefined {
-    return this.attributes.team
   }
 
   get user_id(): number {
@@ -217,15 +207,15 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return this.attributes.abilities
   }
 
-  get last_used_at(): Date | string | undefined {
+  get last_used_at(): number | undefined {
     return this.attributes.last_used_at
   }
 
-  get expires_at(): Date | string | undefined {
+  get expires_at(): number | undefined {
     return this.attributes.expires_at
   }
 
-  get revoked_at(): Date | string | undefined {
+  get revoked_at(): number | undefined {
     return this.attributes.revoked_at
   }
 
@@ -265,15 +255,15 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     this.attributes.abilities = value
   }
 
-  set last_used_at(value: Date | string) {
+  set last_used_at(value: number) {
     this.attributes.last_used_at = value
   }
 
-  set expires_at(value: Date | string) {
+  set expires_at(value: number) {
     this.attributes.expires_at = value
   }
 
-  set revoked_at(value: Date | string) {
+  set revoked_at(value: number) {
     this.attributes.revoked_at = value
   }
 
@@ -293,14 +283,14 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     this.attributes.updated_at = value
   }
 
-  static select(params: (keyof AccessTokenJsonResponse)[] | RawBuilder<string> | string): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static select(params: (keyof PersonalAccessTokenJsonResponse)[] | RawBuilder<string> | string): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applySelect(params)
   }
 
-  // Method to find a AccessToken by ID
-  static async find(id: number): Promise<AccessTokenModel | undefined> {
+  // Method to find a PersonalAccessToken by ID
+  static async find(id: number): Promise<PersonalAccessTokenModel | undefined> {
     const query = DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
@@ -308,67 +298,67 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     if (!model)
       return undefined
 
-    const instance = new AccessTokenModel(undefined)
+    const instance = new PersonalAccessTokenModel(undefined)
     return instance.createInstance(model)
   }
 
-  static async first(): Promise<AccessTokenModel | undefined> {
-    const instance = new AccessTokenModel(undefined)
+  static async first(): Promise<PersonalAccessTokenModel | undefined> {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     const model = await instance.applyFirst()
 
-    const data = new AccessTokenModel(model)
+    const data = new PersonalAccessTokenModel(model)
 
     return data
   }
 
-  static async last(): Promise<AccessTokenModel | undefined> {
-    const instance = new AccessTokenModel(undefined)
+  static async last(): Promise<PersonalAccessTokenModel | undefined> {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     const model = await instance.applyLast()
 
     if (!model)
       return undefined
 
-    return new AccessTokenModel(model)
+    return new PersonalAccessTokenModel(model)
   }
 
-  static async firstOrFail(): Promise<AccessTokenModel | undefined> {
-    const instance = new AccessTokenModel(undefined)
+  static async firstOrFail(): Promise<PersonalAccessTokenModel | undefined> {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
-  static async all(): Promise<AccessTokenModel[]> {
-    const instance = new AccessTokenModel(undefined)
+  static async all(): Promise<PersonalAccessTokenModel[]> {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     const models = await DB.instance.selectFrom('personal_access_tokens').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: AccessTokenJsonResponse) => {
-      return new AccessTokenModel(model)
+    const data = await Promise.all(models.map(async (model: PersonalAccessTokenJsonResponse) => {
+      return new PersonalAccessTokenModel(model)
     }))
 
     return data
   }
 
-  static async findOrFail(id: number): Promise<AccessTokenModel | undefined> {
-    const instance = new AccessTokenModel(undefined)
+  static async findOrFail(id: number): Promise<PersonalAccessTokenModel | undefined> {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<AccessTokenModel[]> {
-    const instance = new AccessTokenModel(undefined)
+  static async findMany(ids: number[]): Promise<PersonalAccessTokenModel[]> {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: AccessTokenJsonResponse) => instance.parseResult(new AccessTokenModel(modelItem)))
+    return models.map((modelItem: PersonalAccessTokenJsonResponse) => instance.parseResult(new PersonalAccessTokenModel(modelItem)))
   }
 
-  static async latest(column: keyof PersonalAccessTokensTable = 'created_at'): Promise<AccessTokenModel | undefined> {
-    const instance = new AccessTokenModel(undefined)
+  static async latest(column: keyof PersonalAccessTokensTable = 'created_at'): Promise<PersonalAccessTokenModel | undefined> {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     const model = await instance.selectFromQuery
       .selectAll()
@@ -379,11 +369,11 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     if (!model)
       return undefined
 
-    return new AccessTokenModel(model)
+    return new PersonalAccessTokenModel(model)
   }
 
-  static async oldest(column: keyof PersonalAccessTokensTable = 'created_at'): Promise<AccessTokenModel | undefined> {
-    const instance = new AccessTokenModel(undefined)
+  static async oldest(column: keyof PersonalAccessTokensTable = 'created_at'): Promise<PersonalAccessTokenModel | undefined> {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     const model = await instance.selectFromQuery
       .selectAll()
@@ -394,172 +384,172 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     if (!model)
       return undefined
 
-    return new AccessTokenModel(model)
+    return new PersonalAccessTokenModel(model)
   }
 
-  static skip(count: number): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static skip(count: number): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applySkip(count)
   }
 
-  static take(count: number): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static take(count: number): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyTake(count)
   }
 
-  static where<V = string>(column: keyof PersonalAccessTokensTable, ...args: [V] | [Operator, V]): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static where<V = string>(column: keyof PersonalAccessTokensTable, ...args: [V] | [Operator, V]): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
 
-  static orWhere(...conditions: [string, any][]): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static orWhere(...conditions: [string, any][]): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
 
-  static whereNotIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereNotIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
 
-  static whereBetween<V = number>(column: keyof PersonalAccessTokensTable, range: [V, V]): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereBetween<V = number>(column: keyof PersonalAccessTokensTable, range: [V, V]): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
 
-  static whereRef(column: keyof PersonalAccessTokensTable, ...args: string[]): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereRef(column: keyof PersonalAccessTokensTable, ...args: string[]): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
 
-  static when(condition: boolean, callback: (query: AccessTokenModel) => AccessTokenModel): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static when(condition: boolean, callback: (query: PersonalAccessTokenModel) => PersonalAccessTokenModel): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
   }
 
-  static whereNull(column: keyof PersonalAccessTokensTable): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereNull(column: keyof PersonalAccessTokensTable): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyWhereNull(column)
   }
 
-  static whereNotNull(column: keyof PersonalAccessTokensTable): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereNotNull(column: keyof PersonalAccessTokensTable): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyWhereNotNull(column)
   }
 
-  static whereLike(column: keyof PersonalAccessTokensTable, value: string): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereLike(column: keyof PersonalAccessTokensTable, value: string): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
 
-  static orderBy(column: keyof PersonalAccessTokensTable, order: 'asc' | 'desc'): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static orderBy(column: keyof PersonalAccessTokensTable, order: 'asc' | 'desc'): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyOrderBy(column, order)
   }
 
-  static orderByAsc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static orderByAsc(column: keyof PersonalAccessTokensTable): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyOrderByAsc(column)
   }
 
-  static orderByDesc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static orderByDesc(column: keyof PersonalAccessTokensTable): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyOrderByDesc(column)
   }
 
-  static groupBy(column: keyof PersonalAccessTokensTable): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static groupBy(column: keyof PersonalAccessTokensTable): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyGroupBy(column)
   }
 
-  static having<V = string>(column: keyof PersonalAccessTokensTable, operator: Operator, value: V): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static having<V = string>(column: keyof PersonalAccessTokensTable, operator: Operator, value: V): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyHaving<V>(column, operator, value)
   }
 
-  static inRandomOrder(): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static inRandomOrder(): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyInRandomOrder()
   }
 
-  static whereColumn(first: keyof PersonalAccessTokensTable, operator: Operator, second: keyof PersonalAccessTokensTable): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereColumn(first: keyof PersonalAccessTokensTable, operator: Operator, second: keyof PersonalAccessTokensTable): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof PersonalAccessTokensTable): Promise<number> {
-    const instance = new AccessTokenModel(undefined)
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return await instance.applyMax(field)
   }
 
   static async min(field: keyof PersonalAccessTokensTable): Promise<number> {
-    const instance = new AccessTokenModel(undefined)
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return await instance.applyMin(field)
   }
 
   static async avg(field: keyof PersonalAccessTokensTable): Promise<number> {
-    const instance = new AccessTokenModel(undefined)
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return await instance.applyAvg(field)
   }
 
   static async sum(field: keyof PersonalAccessTokensTable): Promise<number> {
-    const instance = new AccessTokenModel(undefined)
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return await instance.applySum(field)
   }
 
   static async count(): Promise<number> {
-    const instance = new AccessTokenModel(undefined)
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyCount()
   }
 
-  static async get(): Promise<AccessTokenModel[]> {
-    const instance = new AccessTokenModel(undefined)
+  static async get(): Promise<PersonalAccessTokenModel[]> {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     const results = await instance.applyGet()
 
-    return results.map((item: AccessTokenJsonResponse) => instance.createInstance(item))
+    return results.map((item: PersonalAccessTokenJsonResponse) => instance.createInstance(item))
   }
 
-  static async pluck<K extends keyof AccessTokenModel>(field: K): Promise<AccessTokenModel[K][]> {
-    const instance = new AccessTokenModel(undefined)
+  static async pluck<K extends keyof PersonalAccessTokenModel>(field: K): Promise<PersonalAccessTokenModel[K][]> {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return await instance.applyPluck(field)
   }
 
-  static async chunk(size: number, callback: (models: AccessTokenModel[]) => Promise<void>): Promise<void> {
-    const instance = new AccessTokenModel(undefined)
+  static async chunk(size: number, callback: (models: PersonalAccessTokenModel[]) => Promise<void>): Promise<void> {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: AccessTokenJsonResponse) => instance.createInstance(item))
+      const modelInstances = models.map((item: PersonalAccessTokenJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: AccessTokenModel[]
+    data: PersonalAccessTokenModel[]
     paging: {
       total_records: number
       page: number
@@ -567,28 +557,28 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     }
     next_cursor: number | null
   }> {
-    const instance = new AccessTokenModel(undefined)
+    const instance = new PersonalAccessTokenModel(undefined)
 
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: AccessTokenJsonResponse) => instance.createInstance(item)),
+      data: result.data.map((item: PersonalAccessTokenJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
   }
 
   // Instance method for creating model instances
-  createInstance(data: AccessTokenJsonResponse): AccessTokenModel {
-    return new AccessTokenModel(data)
+  createInstance(data: PersonalAccessTokenJsonResponse): PersonalAccessTokenModel {
+    return new PersonalAccessTokenModel(data)
   }
 
-  async applyCreate(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
+  async applyCreate(newPersonalAccessToken: NewPersonalAccessToken): Promise<PersonalAccessTokenModel> {
     const filteredValues = Object.fromEntries(
-      Object.entries(newAccessToken).filter(([key]) =>
+      Object.entries(newPersonalAccessToken).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
-    ) as NewAccessToken
+    ) as NewPersonalAccessToken
 
     await this.mapCustomSetters(filteredValues)
 
@@ -602,24 +592,24 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
       .executeTakeFirst()
 
     if (!model) {
-      throw new HttpError(500, 'Failed to retrieve created AccessToken')
+      throw new HttpError(500, 'Failed to retrieve created PersonalAccessToken')
     }
 
     return this.createInstance(model)
   }
 
-  async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
-    return await this.applyCreate(newAccessToken)
+  async create(newPersonalAccessToken: NewPersonalAccessToken): Promise<PersonalAccessTokenModel> {
+    return await this.applyCreate(newPersonalAccessToken)
   }
 
-  static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
-    const instance = new AccessTokenModel(undefined)
-    return await instance.applyCreate(newAccessToken)
+  static async create(newPersonalAccessToken: NewPersonalAccessToken): Promise<PersonalAccessTokenModel> {
+    const instance = new PersonalAccessTokenModel(undefined)
+    return await instance.applyCreate(newPersonalAccessToken)
   }
 
-  static async firstOrCreate(search: Partial<PersonalAccessTokensTable>, values: NewAccessToken = {} as NewAccessToken): Promise<AccessTokenModel> {
+  static async firstOrCreate(search: Partial<PersonalAccessTokensTable>, values: NewPersonalAccessToken = {} as NewPersonalAccessToken): Promise<PersonalAccessTokenModel> {
     // First try to find a record matching the search criteria
-    const instance = new AccessTokenModel(undefined)
+    const instance = new PersonalAccessTokenModel(undefined)
 
     // Apply all search conditions
     for (const [key, value] of Object.entries(search)) {
@@ -634,13 +624,13 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     }
 
     // If no record exists, create a new one with combined search criteria and values
-    const createData = { ...search, ...values } as NewAccessToken
-    return await AccessTokenModel.create(createData)
+    const createData = { ...search, ...values } as NewPersonalAccessToken
+    return await PersonalAccessTokenModel.create(createData)
   }
 
-  static async updateOrCreate(search: Partial<PersonalAccessTokensTable>, values: NewAccessToken = {} as NewAccessToken): Promise<AccessTokenModel> {
+  static async updateOrCreate(search: Partial<PersonalAccessTokensTable>, values: NewPersonalAccessToken = {} as NewPersonalAccessToken): Promise<PersonalAccessTokenModel> {
     // First try to find a record matching the search criteria
-    const instance = new AccessTokenModel(undefined)
+    const instance = new PersonalAccessTokenModel(undefined)
 
     // Apply all search conditions
     for (const [key, value] of Object.entries(search)) {
@@ -653,7 +643,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     if (existingRecord) {
       // If record exists, update it with the new values
       const model = instance.createInstance(existingRecord)
-      const updatedModel = await model.update(values as AccessTokenUpdate)
+      const updatedModel = await model.update(values as PersonalAccessTokenUpdate)
 
       // Return the updated model instance
       if (updatedModel) {
@@ -666,16 +656,16 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     }
 
     // If no record exists, create a new one with combined search criteria and values
-    const createData = { ...search, ...values } as NewAccessToken
-    return await AccessTokenModel.create(createData)
+    const createData = { ...search, ...values } as NewPersonalAccessToken
+    return await PersonalAccessTokenModel.create(createData)
   }
 
-  async update(newAccessToken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
+  async update(newPersonalAccessToken: PersonalAccessTokenUpdate): Promise<PersonalAccessTokenModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(newAccessToken).filter(([key]) =>
+      Object.entries(newPersonalAccessToken).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
-    ) as AccessTokenUpdate
+    ) as PersonalAccessTokenUpdate
 
     await this.mapCustomSetters(filteredValues)
 
@@ -694,7 +684,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
         .executeTakeFirst()
 
       if (!model) {
-        throw new HttpError(500, 'Failed to retrieve updated AccessToken')
+        throw new HttpError(500, 'Failed to retrieve updated PersonalAccessToken')
       }
 
       return this.createInstance(model)
@@ -703,9 +693,9 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return undefined
   }
 
-  async forceUpdate(newAccessToken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
+  async forceUpdate(newPersonalAccessToken: PersonalAccessTokenUpdate): Promise<PersonalAccessTokenModel | undefined> {
     await DB.instance.updateTable('personal_access_tokens')
-      .set(newAccessToken)
+      .set(newPersonalAccessToken)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -717,7 +707,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
         .executeTakeFirst()
 
       if (!model) {
-        throw new HttpError(500, 'Failed to retrieve updated AccessToken')
+        throw new HttpError(500, 'Failed to retrieve updated PersonalAccessToken')
       }
 
       return this.createInstance(model)
@@ -726,12 +716,12 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return undefined
   }
 
-  async save(): Promise<AccessTokenModel> {
+  async save(): Promise<PersonalAccessTokenModel> {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
       await DB.instance.updateTable('personal_access_tokens')
-        .set(this.attributes as AccessTokenUpdate)
+        .set(this.attributes as PersonalAccessTokenUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
@@ -742,7 +732,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
         .executeTakeFirst()
 
       if (!model) {
-        throw new HttpError(500, 'Failed to retrieve updated AccessToken')
+        throw new HttpError(500, 'Failed to retrieve updated PersonalAccessToken')
       }
 
       return this.createInstance(model)
@@ -750,7 +740,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     else {
       // Create new record
       const result = await DB.instance.insertInto('personal_access_tokens')
-        .values(this.attributes as NewAccessToken)
+        .values(this.attributes as NewPersonalAccessToken)
         .executeTakeFirst()
 
       // Get the created data
@@ -760,22 +750,22 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
         .executeTakeFirst()
 
       if (!model) {
-        throw new HttpError(500, 'Failed to retrieve created AccessToken')
+        throw new HttpError(500, 'Failed to retrieve created PersonalAccessToken')
       }
 
       return this.createInstance(model)
     }
   }
 
-  static async createMany(newAccessToken: NewAccessToken[]): Promise<void> {
-    const instance = new AccessTokenModel(undefined)
+  static async createMany(newPersonalAccessToken: NewPersonalAccessToken[]): Promise<void> {
+    const instance = new PersonalAccessTokenModel(undefined)
 
-    const valuesFiltered = newAccessToken.map((newAccessToken: NewAccessToken) => {
+    const valuesFiltered = newPersonalAccessToken.map((newPersonalAccessToken: NewPersonalAccessToken) => {
       const filteredValues = Object.fromEntries(
-        Object.entries(newAccessToken).filter(([key]) =>
+        Object.entries(newPersonalAccessToken).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
-      ) as NewAccessToken
+      ) as NewPersonalAccessToken
 
       return filteredValues
     })
@@ -785,25 +775,25 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
       .executeTakeFirst()
   }
 
-  static async forceCreate(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
+  static async forceCreate(newPersonalAccessToken: NewPersonalAccessToken): Promise<PersonalAccessTokenModel> {
     const result = await DB.instance.insertInto('personal_access_tokens')
-      .values(newAccessToken)
+      .values(newPersonalAccessToken)
       .executeTakeFirst()
 
-    const instance = new AccessTokenModel(undefined)
+    const instance = new PersonalAccessTokenModel(undefined)
     const model = await DB.instance.selectFrom('personal_access_tokens')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
     if (!model) {
-      throw new HttpError(500, 'Failed to retrieve created AccessToken')
+      throw new HttpError(500, 'Failed to retrieve created PersonalAccessToken')
     }
 
     return instance.createInstance(model)
   }
 
-  // Method to remove a AccessToken
+  // Method to remove a PersonalAccessToken
   async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
@@ -821,104 +811,90 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
       .execute()
   }
 
-  static whereName(value: string): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereName(value: string): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
     return instance
   }
 
-  static whereToken(value: string): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereToken(value: string): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('token', '=', value)
 
     return instance
   }
 
-  static wherePlainTextToken(value: string): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static wherePlainTextToken(value: string): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('plain_text_token', '=', value)
 
     return instance
   }
 
-  static whereAbilities(value: string): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereAbilities(value: string): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('abilities', '=', value)
 
     return instance
   }
 
-  static whereLastUsedAt(value: string): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereLastUsedAt(value: string): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('last_used_at', '=', value)
 
     return instance
   }
 
-  static whereExpiresAt(value: string): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereExpiresAt(value: string): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('expires_at', '=', value)
 
     return instance
   }
 
-  static whereRevokedAt(value: string): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereRevokedAt(value: string): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('revoked_at', '=', value)
 
     return instance
   }
 
-  static whereIpAddress(value: string): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereIpAddress(value: string): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('ip_address', '=', value)
 
     return instance
   }
 
-  static whereDeviceName(value: string): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereDeviceName(value: string): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('device_name', '=', value)
 
     return instance
   }
 
-  static whereIsSingleUse(value: string): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereIsSingleUse(value: string): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('is_single_use', '=', value)
 
     return instance
   }
 
-  static whereIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static whereIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
-  }
-
-  async teamBelong(): Promise<TeamModel> {
-    if (this.team_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const model = await Team
-      .where('id', '=', this.team_id)
-      .first()
-
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
-
-    return model
   }
 
   async userBelong(): Promise<UserModel> {
@@ -935,19 +911,19 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return model
   }
 
-  static distinct(column: keyof AccessTokenJsonResponse): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static distinct(column: keyof PersonalAccessTokenJsonResponse): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyDistinct(column)
   }
 
-  static join(table: string, firstCol: string, secondCol: string): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+  static join(table: string, firstCol: string, secondCol: string): PersonalAccessTokenModel {
+    const instance = new PersonalAccessTokenModel(undefined)
 
     return instance.applyJoin(table, firstCol, secondCol)
   }
 
-  toJSON(): AccessTokenJsonResponse {
+  toJSON(): PersonalAccessTokenJsonResponse {
     const output = {
 
       id: this.id,
@@ -966,8 +942,6 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
 
       updated_at: this.updated_at,
 
-      team_id: this.team_id,
-      team: this.team,
       user_id: this.user_id,
       user: this.user,
       ...this.customColumns,
@@ -976,16 +950,16 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return output
   }
 
-  parseResult(model: AccessTokenModel): AccessTokenModel {
+  parseResult(model: PersonalAccessTokenModel): PersonalAccessTokenModel {
     for (const hiddenAttribute of this.hidden) {
-      delete model[hiddenAttribute as keyof AccessTokenModel]
+      delete model[hiddenAttribute as keyof PersonalAccessTokenModel]
     }
 
     return model
   }
 
   // Add a protected applyFind implementation
-  protected async applyFind(id: number): Promise<AccessTokenModel | undefined> {
+  protected async applyFind(id: number): Promise<PersonalAccessTokenModel | undefined> {
     const model = await DB.instance.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
@@ -1003,7 +977,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
   }
 }
 
-export async function find(id: number): Promise<AccessTokenModel | undefined> {
+export async function find(id: number): Promise<PersonalAccessTokenModel | undefined> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -1011,19 +985,19 @@ export async function find(id: number): Promise<AccessTokenModel | undefined> {
   if (!model)
     return undefined
 
-  const instance = new AccessTokenModel(undefined)
+  const instance = new PersonalAccessTokenModel(undefined)
   return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
-  const results = await AccessTokenModel.count()
+  const results = await PersonalAccessTokenModel.count()
 
   return results
 }
 
-export async function create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
-  const instance = new AccessTokenModel(undefined)
-  return await instance.applyCreate(newAccessToken)
+export async function create(newPersonalAccessToken: NewPersonalAccessToken): Promise<PersonalAccessTokenModel> {
+  const instance = new PersonalAccessTokenModel(undefined)
+  return await instance.applyCreate(newPersonalAccessToken)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
@@ -1036,76 +1010,76 @@ export async function remove(id: number): Promise<void> {
     .execute()
 }
 
-export async function whereName(value: string): Promise<AccessTokenModel[]> {
+export async function whereName(value: string): Promise<PersonalAccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('name', '=', value)
-  const results: AccessTokenJsonResponse = await query.execute()
+  const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
 }
 
-export async function whereToken(value: string): Promise<AccessTokenModel[]> {
+export async function whereToken(value: string): Promise<PersonalAccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('token', '=', value)
-  const results: AccessTokenJsonResponse = await query.execute()
+  const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
 }
 
-export async function wherePlainTextToken(value: string): Promise<AccessTokenModel[]> {
+export async function wherePlainTextToken(value: string): Promise<PersonalAccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('plain_text_token', '=', value)
-  const results: AccessTokenJsonResponse = await query.execute()
+  const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
 }
 
-export async function whereAbilities(value: string | string[]): Promise<AccessTokenModel[]> {
+export async function whereAbilities(value: string | string[]): Promise<PersonalAccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('abilities', '=', value)
-  const results: AccessTokenJsonResponse = await query.execute()
+  const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
 }
 
-export async function whereLastUsedAt(value: Date | string): Promise<AccessTokenModel[]> {
+export async function whereLastUsedAt(value: number): Promise<PersonalAccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('last_used_at', '=', value)
-  const results: AccessTokenJsonResponse = await query.execute()
+  const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
 }
 
-export async function whereExpiresAt(value: Date | string): Promise<AccessTokenModel[]> {
+export async function whereExpiresAt(value: number): Promise<PersonalAccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('expires_at', '=', value)
-  const results: AccessTokenJsonResponse = await query.execute()
+  const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
 }
 
-export async function whereRevokedAt(value: Date | string): Promise<AccessTokenModel[]> {
+export async function whereRevokedAt(value: number): Promise<PersonalAccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('revoked_at', '=', value)
-  const results: AccessTokenJsonResponse = await query.execute()
+  const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
 }
 
-export async function whereIpAddress(value: string): Promise<AccessTokenModel[]> {
+export async function whereIpAddress(value: string): Promise<PersonalAccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('ip_address', '=', value)
-  const results: AccessTokenJsonResponse = await query.execute()
+  const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
 }
 
-export async function whereDeviceName(value: string): Promise<AccessTokenModel[]> {
+export async function whereDeviceName(value: string): Promise<PersonalAccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('device_name', '=', value)
-  const results: AccessTokenJsonResponse = await query.execute()
+  const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
 }
 
-export async function whereIsSingleUse(value: boolean): Promise<AccessTokenModel[]> {
+export async function whereIsSingleUse(value: boolean): Promise<PersonalAccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('is_single_use', '=', value)
-  const results: AccessTokenJsonResponse = await query.execute()
+  const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
 }
 
-export const AccessToken = AccessTokenModel
+export const PersonalAccessToken = PersonalAccessTokenModel
 
-export default AccessToken
+export default PersonalAccessToken

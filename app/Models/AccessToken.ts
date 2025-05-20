@@ -3,12 +3,12 @@ import { collect } from '@stacksjs/collections'
 import { schema } from '@stacksjs/validation'
 
 export default {
-  name: 'AccessToken',
-  description: 'An access token for a user',
+  name: 'PersonalAccessToken',
+  description: 'A personal access token for direct user authentication',
   table: 'personal_access_tokens',
   primaryKey: 'id',
   autoIncrement: true,
-  belongsTo: ['Team', 'User'], // Added User relation
+  belongsTo: ['User'],
   traits: {
     useTimestamps: true,
     useSeeder: {
@@ -35,11 +35,11 @@ export default {
       required: true,
       unique: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().max(64),
         message: {
           string: 'token must be a string',
           required: 'token is required',
-          max: 'token must have a maximum of 512 characters',
+          max: 'token must have a maximum of 64 characters',
         },
       },
       factory: faker => faker.string.uuid(),
@@ -49,11 +49,11 @@ export default {
       fillable: true,
       required: true,
       validation: {
-        rule: schema.string().max(512),
+        rule: schema.string().max(64),
         message: {
           string: 'plainTextToken must be a string',
           required: 'plainTextToken is required',
-          max: 'plainTextToken must have a maximum of 512 characters',
+          max: 'plainTextToken must have a maximum of 64 characters',
         },
       },
       factory: faker => faker.string.uuid(),
@@ -66,7 +66,6 @@ export default {
         rule: schema.enum(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']),
         message: {
           required: 'abilities is required',
-          max: 'plainTextToken must have a maximum of 512 characters',
           string: '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',
         },
       },
@@ -74,7 +73,6 @@ export default {
         collect(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']).random().first(),
     },
 
-    // New columns
     lastUsedAt: {
       fillable: true,
       validation: {

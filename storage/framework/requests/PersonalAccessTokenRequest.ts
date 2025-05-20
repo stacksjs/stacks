@@ -1,5 +1,5 @@
 import type { schema } from '@stacksjs/validation'
-import type { AccessTokenRequestType } from '../types/requests'
+import type { PersonalAccessTokenRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -11,23 +11,22 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataAccessToken {
+interface RequestDataPersonalAccessToken {
   id: number
   name: string
   token: string
   plain_text_token: string
   abilities: string[] | string
-  last_used_at: date
-  expires_at: date
-  revoked_at: date
+  last_used_at: timestamp
+  expires_at: timestamp
+  revoked_at: timestamp
   ip_address: string
   device_name: string
   is_single_use: boolean
-  team_id: number
   created_at?: string
   updated_at?: string
 }
-export class AccessTokenRequest extends Request<RequestDataAccessToken> implements AccessTokenRequestType {
+export class PersonalAccessTokenRequest extends Request<RequestDataPersonalAccessToken> implements PersonalAccessTokenRequestType {
   public id = 1
   public name = ''
   public token = ''
@@ -39,13 +38,12 @@ export class AccessTokenRequest extends Request<RequestDataAccessToken> implemen
   public ip_address = ''
   public device_name = ''
   public is_single_use = false
-  public team_id = 0
   public created_at = ''
   public updated_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('AccessToken', this.all())
+      await validateField('PersonalAccessToken', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -53,4 +51,4 @@ export class AccessTokenRequest extends Request<RequestDataAccessToken> implemen
   }
 }
 
-export const accessTokenRequest = new AccessTokenRequest()
+export const personalAccessTokenRequest = new PersonalAccessTokenRequest()
