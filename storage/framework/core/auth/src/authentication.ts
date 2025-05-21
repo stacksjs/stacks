@@ -71,7 +71,7 @@ export class Authentication {
 
     const insertId = result.insertId || Number(result.numInsertedOrUpdatedRows)
 
-    return `${insertId}|${token}` as AuthToken
+    return `${insertId}:${token}` as AuthToken
   }
 
   public static async login(credentials: Credentials): Promise<{ token: AuthToken } | null> {
@@ -82,7 +82,7 @@ export class Authentication {
 
     // Create user token
     const token = await this.createToken(this.authUser, 'user-auth-token')
-    
+
     return { token }
   }
 
@@ -118,7 +118,7 @@ export class Authentication {
       .where('id', '=', accessToken.id)
       .execute()
 
-    return `${accessToken.id}|${newToken}` as AuthToken
+    return `${accessToken.id}:${newToken}` as AuthToken
   }
 
   public static async validateToken(token: string): Promise<boolean> {
