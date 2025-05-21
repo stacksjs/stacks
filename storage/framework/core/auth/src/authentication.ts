@@ -1,12 +1,12 @@
 import type { UserJsonResponse } from '@stacksjs/orm'
 import type { AuthToken } from './token'
 import { randomBytes } from 'node:crypto'
+import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { request } from '@stacksjs/router'
 import { makeHash, verifyHash } from '@stacksjs/security'
 import { RateLimiter } from './rate-limiter'
-import { config } from '@stacksjs/config'
 
 interface Credentials {
   password: string | undefined
@@ -18,7 +18,7 @@ export class Authentication {
   private static authUser: UserJsonResponse | undefined = undefined
 
   public static async attempt(credentials: Credentials): Promise<boolean> {
-    const username = config.auth.username|| 'email'
+    const username = config.auth.username || 'email'
     const password = config.auth.password || 'password'
 
     const email = credentials[username]
@@ -26,7 +26,7 @@ export class Authentication {
     if (!email || typeof email !== 'string')
       return false
 
-    RateLimiter.validateAttempt(email)
+    // RateLimiter.validateAttempt(email)
 
     let hashCheck = false
     const user = await db.selectFrom('users')
@@ -34,9 +34,9 @@ export class Authentication {
       .selectAll()
       .executeTakeFirst()
 
-    const authPass = credentials[password]
+    const authPass = credentials[password] || ''
 
-    if (typeof authPass === 'string' && user?.password)
+    if (user?.password)
       hashCheck = await verifyHash(authPass, user.password, 'bcrypt')
 
     if (hashCheck && user) {
@@ -172,7 +172,7 @@ export class Authentication {
       .selectAll()
       .executeTakeFirst()
 
-    return user ? user : undefined
+    return user || undefined
   }
 
   public static async revokeToken(token: string): Promise<void> {

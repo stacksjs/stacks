@@ -22,4 +22,4 @@ export interface AuthConfig {
   tokenRotation: number
   defaultAbilities: string[]
   defaultTokenName: string
-} 
+}

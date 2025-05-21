@@ -1,9 +1,7 @@
-import type { User } from '@stacksjs/orm'
 import { randomBytes } from 'node:crypto'
+import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { makeHash, verifyHash } from '@stacksjs/security'
-import { db } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
 
 export type AuthToken = `${number}:${string}`
 

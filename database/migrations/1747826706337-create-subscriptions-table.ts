@@ -6,7 +6,7 @@ export async function up(db: Database<any>) {
     .createTable('subscriptions')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'varchar(255)')
-    .addColumn('type', 'text', col => col.notNull())
+    .addColumn('type', 'varchar(512)', col => col.notNull())
     .addColumn('plan', 'varchar(100)')
     .addColumn('provider_id', 'varchar(255)', col => col.unique().notNull())
     .addColumn('provider_status', 'varchar(255)', col => col.notNull())

@@ -6,7 +6,7 @@ export async function up(db: Database<any>) {
     .createTable('payment_methods')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'varchar(255)')
-    .addColumn('type', 'text', col => col.notNull())
+    .addColumn('type', 'varchar(512)', col => col.notNull())
     .addColumn('last_four', 'integer', col => col.notNull())
     .addColumn('brand', 'varchar(50)', col => col.notNull())
     .addColumn('exp_month', 'integer', col => col.notNull())

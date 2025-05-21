@@ -8,7 +8,7 @@ export async function up(db: Database<any>) {
     .addColumn('uuid', 'varchar(255)')
     .addColumn('rating', 'integer', col => col.notNull())
     .addColumn('title', 'varchar(100)', col => col.notNull())
-    .addColumn('content', 'text', col => col.notNull())
+    .addColumn('content', 'varchar(2000)', col => col.notNull())
     .addColumn('is_verified_purchase', 'boolean')
     .addColumn('is_approved', 'boolean')
     .addColumn('is_featured', 'boolean')

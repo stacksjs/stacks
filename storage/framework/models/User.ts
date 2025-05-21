@@ -1,4 +1,5 @@
 import type { Attributes, Model } from '@stacksjs/types'
+import { makeHash } from '@stacksjs/security'
 // soon, these will be auto-imported
 import { schema } from '@stacksjs/validation'
 
@@ -49,7 +50,7 @@ export default {
   },
 
   hasOne: ['Subscriber', 'Driver', 'Author'],
-  hasMany: ['Deployment', 'Subscription', 'PaymentMethod', 'PaymentTransaction', 'Customer'],
+  hasMany: ['PersonalAccessToken', 'OAuthAccessToken'],
 
   belongsToMany: ['Team'],
 
@@ -121,7 +122,9 @@ export default {
   },
 
   set: {
-    password: (attributes: Attributes) => Bun.password.hash(String(attributes.password)),
+    password: async (attributes: Attributes) => {
+      return await makeHash(attributes.password, { algorithm: 'bcrypt' })
+    },
   },
   dashboard: {
     highlight: true,

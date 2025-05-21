@@ -35,11 +35,11 @@ export default {
       required: true,
       unique: true,
       validation: {
-        rule: schema.string().max(64),
+        rule: schema.string().max(512),
         message: {
           string: 'token must be a string',
           required: 'token is required',
-          max: 'token must have a maximum of 64 characters',
+          max: 'token must have a maximum of 512 characters',
         },
       },
       factory: faker => faker.string.uuid(),
@@ -49,11 +49,11 @@ export default {
       fillable: true,
       required: true,
       validation: {
-        rule: schema.string().max(64),
+        rule: schema.string().max(512),
         message: {
           string: 'plainTextToken must be a string',
           required: 'plainTextToken is required',
-          max: 'plainTextToken must have a maximum of 64 characters',
+          max: 'plainTextToken must have a maximum of 512 characters',
         },
       },
       factory: faker => faker.string.uuid(),

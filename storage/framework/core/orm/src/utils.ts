@@ -1437,8 +1437,6 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     await generateApiRoutes(modelFiles)
     log.success('Generated API Routes')
 
-    
-
     for (const modelFile of modelFiles) {
       if (modelStringFile && modelStringFile !== modelFile)
         continue

@@ -7,7 +7,7 @@ export async function up(db: Database<any>) {
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'varchar(255)')
     .addColumn('name', 'varchar(100)', col => col.notNull())
-    .addColumn('description', 'text')
+    .addColumn('description', 'varchar(500)')
     .addColumn('base_rate', 'integer', col => col.notNull())
     .addColumn('free_shipping', 'integer')
     .addColumn('status', sql`enum('active', 'inactive', 'draft')`, col => col.notNull())

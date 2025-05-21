@@ -32,13 +32,13 @@ export default new Action({
 
     if (result) {
       const user = await Authentication.getUserFromToken(result.token)
-      return { 
+      return {
         token: result.token,
         user: {
           id: user?.id,
           email: user?.email,
           name: user?.name,
-        }
+        },
       }
     }
 

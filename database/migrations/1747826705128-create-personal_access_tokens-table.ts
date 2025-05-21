@@ -5,10 +5,9 @@ export async function up(db: Database<any>) {
   await db.schema
     .createTable('personal_access_tokens')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
-    .addColumn('user_id', 'integer', col => col.notNull())
     .addColumn('name', 'varchar(255)', col => col.notNull())
-    .addColumn('token', 'varchar(64)', col => col.unique().notNull())
-    .addColumn('plain_text_token', 'varchar(64)', col => col.notNull())
+    .addColumn('token', 'varchar(512)', col => col.unique().notNull())
+    .addColumn('plain_text_token', 'varchar(512)', col => col.notNull())
     .addColumn('abilities', sql`enum('read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin')`, col => col.notNull())
     .addColumn('last_used_at', 'timestamp')
     .addColumn('expires_at', 'timestamp')

@@ -351,9 +351,8 @@ export class Router implements RouterInterface {
       else
         actionModule = await import(importPathFunction(modulePath))
 
-        
       // Use custom path from action module if available
-      const newPath = actionModule.default ?? originalPath
+      const newPath = actionModule.default.path ?? originalPath
       this.updatePathIfNeeded(newPath, originalPath)
 
       if (actionModule.default.requestFile)
@@ -362,7 +361,6 @@ export class Router implements RouterInterface {
       if (isObjectNotEmpty(actionModule.default.validations) && requestInstance)
         await customValidate(actionModule.default.validations, requestInstance.all())
 
-      console.log(actionModule.default.handle(requestInstance))
       const result = await actionModule.default.handle(requestInstance)
 
       // Check if result is already a properly formatted response
