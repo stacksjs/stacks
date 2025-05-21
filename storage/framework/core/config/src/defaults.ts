@@ -18,6 +18,18 @@ export const defaults: StacksOptions = {
     ],
   },
 
+  auth: {
+    username: 'email',
+    password: 'password',
+    defaultTokenName: 'auth-token',
+    tokenExpiry: 30 * 24 * 60 * 60 * 1000, // 30 days
+    defaultAbilities: ['*'],
+  },
+
+  realtime: {
+    driver: 'pusher',
+  },
+
   analytics: {
     driver: undefined,
   },

@@ -6,7 +6,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import { request } from '@stacksjs/router'
 import { makeHash, verifyHash } from '@stacksjs/security'
 import { RateLimiter } from './rate-limiter'
-import { auth } from '@stacksjs/config'
+import { config } from '@stacksjs/config'
 
 interface Credentials {
   password: string | undefined
@@ -18,8 +18,8 @@ export class Authentication {
   private static authUser: UserJsonResponse | undefined = undefined
 
   public static async attempt(credentials: Credentials): Promise<boolean> {
-    const username = auth.username || 'email'
-    const password = auth.password || 'password'
+    const username = config.auth.username|| 'email'
+    const password = config.auth.password || 'password'
 
     const email = credentials[username]
 
@@ -49,10 +49,10 @@ export class Authentication {
     return false
   }
 
-  public static async createToken(user: UserJsonResponse, name: string = auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
+  public static async createToken(user: UserJsonResponse, name: string = config.auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
     const token = randomBytes(40).toString('hex')
     const hashedToken = await makeHash(token, { algorithm: 'bcrypt' })
-    const tokenExpiry = auth.tokenExpiry || 30 * 24 * 60 * 60 * 1000
+    const tokenExpiry = config.auth.tokenExpiry || 30 * 24 * 60 * 60 * 1000
 
     const result = await db.insertInto('personal_access_tokens')
       .values({
@@ -60,7 +60,7 @@ export class Authentication {
         name,
         token: hashedToken,
         plain_text_token: token,
-        abilities: JSON.stringify(auth.defaultAbilities),
+        abilities: JSON.stringify(config.auth.defaultAbilities),
         last_used_at: new Date().getTime(),
         expires_at: new Date(Date.now() + tokenExpiry).getTime(),
       })
