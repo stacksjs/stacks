@@ -5,7 +5,6 @@ export interface Attributes {
   status: string
   email: string
   token: string
-  client_id: number
   scopes: string
   revoked: boolean
   expires_at: number

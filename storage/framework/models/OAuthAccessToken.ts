@@ -6,7 +6,16 @@ export default {
   description: 'An OAuth 2.0 access token for third-party applications',
   table: 'oauth_access_tokens',
   primaryKey: 'id',
-  belongsTo: ['User', 'OAuthClient'],
+  belongsTo: [
+    {
+      model: 'User',
+      foreignKey: 'user_id',
+    },
+    {
+      model: 'OAuthClient',
+      foreignKey: 'client_id',
+    },
+  ],
   traits: {
     useTimestamps: true,
     useSeeder: {
@@ -19,30 +28,17 @@ export default {
       fillable: true,
       required: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().max(512),
         message: {
           string: 'token must be a string',
           required: 'token is required',
         },
       },
     },
-
-    clientId: {
-      fillable: true,
-      required: true,
-      validation: {
-        rule: schema.number(),
-        message: {
-          number: 'clientId must be a number',
-          required: 'clientId is required',
-        },
-      },
-    },
-
     name: {
       fillable: true,
       validation: {
-        rule: schema.string().max(191),
+        rule: schema.string().max(512),
         message: {
           string: 'name must be a string',
           max: 'name must have a maximum of 191 characters',
@@ -53,7 +49,7 @@ export default {
     scopes: {
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().max(190),
         message: {
           string: 'scopes must be a string',
         },

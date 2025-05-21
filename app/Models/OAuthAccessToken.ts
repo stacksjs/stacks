@@ -2,7 +2,7 @@ import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
 export default {
-  name: 'OAuthAccessToken',
+  name: 'OauthAccessToken',
   description: 'An OAuth 2.0 access token for third-party applications',
   table: 'oauth_access_tokens',
   primaryKey: 'id',
@@ -10,12 +10,10 @@ export default {
     {
       model: 'User',
       foreignKey: 'user_id',
-      relationName: 'user',
     },
     {
       model: 'OAuthClient',
       foreignKey: 'client_id',
-      relationName: 'oauth_client',
     },
   ],
   traits: {
@@ -30,7 +28,7 @@ export default {
       fillable: true,
       required: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().max(512),
         message: {
           string: 'token must be a string',
           required: 'token is required',
@@ -40,7 +38,7 @@ export default {
     name: {
       fillable: true,
       validation: {
-        rule: schema.string().max(191),
+        rule: schema.string().max(512),
         message: {
           string: 'name must be a string',
           max: 'name must have a maximum of 191 characters',
@@ -51,7 +49,7 @@ export default {
     scopes: {
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().max(190),
         message: {
           string: 'scopes must be a string',
         },

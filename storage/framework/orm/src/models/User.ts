@@ -2,7 +2,7 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { AuthorModel } from './Author'
 import type { DriverModel } from './Driver'
-import type { OAuthAccessTokenModel } from './OAuthAccessToken'
+import type { OauthAccessTokenModel } from './OauthAccessToken'
 import type { PersonalAccessTokenModel } from './PersonalAccessToken'
 import type { SubscriberModel } from './Subscriber'
 import { randomUUIDv7 } from 'bun'
@@ -211,7 +211,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return this.attributes.personal_access_tokens
   }
 
-  get oauth_access_tokens(): OAuthAccessTokenModel[] | [] {
+  get oauth_access_tokens(): OauthAccessTokenModel[] | [] {
     return this.attributes.oauth_access_tokens
   }
 

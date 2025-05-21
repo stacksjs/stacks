@@ -36,7 +36,7 @@ export { default as LoyaltyReward, type LoyaltyRewardJsonResponse, type LoyaltyR
 
 export { default as Manufacturer, type ManufacturerJsonResponse, type ManufacturerUpdate, type NewManufacturer } from './models/Manufacturer'
 
-export { type NewOAuthAccessToken, default as OAuthAccessToken, type OAuthAccessTokenJsonResponse, type OAuthAccessTokenUpdate } from './models/OAuthAccessToken'
+export { type NewOauthAccessToken, default as OauthAccessToken, type OauthAccessTokenJsonResponse, type OauthAccessTokenUpdate } from './models/OauthAccessToken'
 
 export { type NewOAuthClient, default as OAuthClient, type OAuthClientJsonResponse, type OAuthClientUpdate } from './models/OAuthClient'
 

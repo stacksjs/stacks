@@ -13,7 +13,6 @@ export interface OauthAccessTokensTable {
   user_id: number
   o_auth_client_id: number
   token: string
-  client_id: number
   name?: string
   scopes?: string
   revoked: boolean
@@ -26,15 +25,15 @@ export interface OauthAccessTokensTable {
 }
 
 // Type for reading model data (created_at is required)
-export type OAuthAccessTokenRead = OauthAccessTokensTable
+export type OauthAccessTokenRead = OauthAccessTokensTable
 
 // Type for creating/updating model data (created_at is optional)
-export type OAuthAccessTokenWrite = Omit<OauthAccessTokensTable, 'created_at'> & {
+export type OauthAccessTokenWrite = Omit<OauthAccessTokensTable, 'created_at'> & {
   created_at?: string
 }
 
-export interface OAuthAccessTokenResponse {
-  data: OAuthAccessTokenJsonResponse[]
+export interface OauthAccessTokenResponse {
+  data: OauthAccessTokenJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -43,19 +42,19 @@ export interface OAuthAccessTokenResponse {
   next_cursor: number | null
 }
 
-export interface OAuthAccessTokenJsonResponse extends Omit<Selectable<OAuthAccessTokenRead>, 'password'> {
+export interface OauthAccessTokenJsonResponse extends Omit<Selectable<OauthAccessTokenRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewOAuthAccessToken = Insertable<OAuthAccessTokenWrite>
-export type OAuthAccessTokenUpdate = Updateable<OAuthAccessTokenWrite>
+export type NewOauthAccessToken = Insertable<OauthAccessTokenWrite>
+export type OauthAccessTokenUpdate = Updateable<OauthAccessTokenWrite>
 
-export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthAccessTokensTable, OAuthAccessTokenJsonResponse> {
-  private readonly hidden: Array<keyof OAuthAccessTokenJsonResponse> = []
-  private readonly fillable: Array<keyof OAuthAccessTokenJsonResponse> = ['token', 'client_id', 'name', 'scopes', 'revoked', 'expires_at', 'uuid', 'user_id']
-  private readonly guarded: Array<keyof OAuthAccessTokenJsonResponse> = []
-  protected attributes = {} as OAuthAccessTokenJsonResponse
-  protected originalAttributes = {} as OAuthAccessTokenJsonResponse
+export class OauthAccessTokenModel extends BaseOrm<OauthAccessTokenModel, OauthAccessTokensTable, OauthAccessTokenJsonResponse> {
+  private readonly hidden: Array<keyof OauthAccessTokenJsonResponse> = []
+  private readonly fillable: Array<keyof OauthAccessTokenJsonResponse> = ['token', 'name', 'scopes', 'revoked', 'expires_at', 'uuid', 'user_id']
+  private readonly guarded: Array<keyof OauthAccessTokenJsonResponse> = []
+  protected attributes = {} as OauthAccessTokenJsonResponse
+  protected originalAttributes = {} as OauthAccessTokenJsonResponse
 
   protected selectFromQuery: any
   protected updateFromQuery: any
@@ -71,15 +70,15 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
    * See BaseOrm class for the full list of inherited methods.
    */
 
-  constructor(oAuthAccessToken: OAuthAccessTokenJsonResponse | undefined) {
+  constructor(oauthAccessToken: OauthAccessTokenJsonResponse | undefined) {
     super('oauth_access_tokens')
-    if (oAuthAccessToken) {
-      this.attributes = { ...oAuthAccessToken }
-      this.originalAttributes = { ...oAuthAccessToken }
+    if (oauthAccessToken) {
+      this.attributes = { ...oauthAccessToken }
+      this.originalAttributes = { ...oauthAccessToken }
 
-      Object.keys(oAuthAccessToken).forEach((key) => {
+      Object.keys(oauthAccessToken).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (oAuthAccessToken as OAuthAccessTokenJsonResponse)[key]
+          this.customColumns[key] = (oauthAccessToken as OauthAccessTokenJsonResponse)[key]
         }
       })
     }
@@ -91,7 +90,7 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     this.hasSelect = false
   }
 
-  protected async loadRelations(models: OAuthAccessTokenJsonResponse | OAuthAccessTokenJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: OauthAccessTokenJsonResponse | OauthAccessTokenJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -102,14 +101,14 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('oAuthAccessToken_id', 'in', modelIds)
+        .where('oauthAccessToken_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: OAuthAccessTokenJsonResponse) => {
-          const records = relatedRecords.filter((record: { oAuthAccessToken_id: number }) => {
-            return record.oAuthAccessToken_id === model.id
+        models.map((model: OauthAccessTokenJsonResponse) => {
+          const records = relatedRecords.filter((record: { oauthAccessToken_id: number }) => {
+            return record.oauthAccessToken_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -117,8 +116,8 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
         })
       }
       else {
-        const records = relatedRecords.filter((record: { oAuthAccessToken_id: number }) => {
-          return record.oAuthAccessToken_id === models.id
+        const records = relatedRecords.filter((record: { oauthAccessToken_id: number }) => {
+          return record.oauthAccessToken_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -126,17 +125,17 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     }
   }
 
-  static with(relations: string[]): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static with(relations: string[]): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyWith(relations)
   }
 
-  protected mapCustomGetters(models: OAuthAccessTokenJsonResponse | OAuthAccessTokenJsonResponse[]): void {
+  protected mapCustomGetters(models: OauthAccessTokenJsonResponse | OauthAccessTokenJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
-      data.map((model: OAuthAccessTokenJsonResponse) => {
+      data.map((model: OauthAccessTokenJsonResponse) => {
         const customGetter = {
           default: () => {
           },
@@ -165,7 +164,7 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     }
   }
 
-  async mapCustomSetters(model: NewOAuthAccessToken | OAuthAccessTokenUpdate): Promise<void> {
+  async mapCustomSetters(model: NewOauthAccessToken | OauthAccessTokenUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -201,10 +200,6 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     return this.attributes.token
   }
 
-  get client_id(): number {
-    return this.attributes.client_id
-  }
-
   get name(): string | undefined {
     return this.attributes.name
   }
@@ -233,10 +228,6 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     this.attributes.token = value
   }
 
-  set client_id(value: number) {
-    this.attributes.client_id = value
-  }
-
   set name(value: string) {
     this.attributes.name = value
   }
@@ -257,14 +248,14 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     this.attributes.updated_at = value
   }
 
-  static select(params: (keyof OAuthAccessTokenJsonResponse)[] | RawBuilder<string> | string): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static select(params: (keyof OauthAccessTokenJsonResponse)[] | RawBuilder<string> | string): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applySelect(params)
   }
 
-  // Method to find a OAuthAccessToken by ID
-  static async find(id: number): Promise<OAuthAccessTokenModel | undefined> {
+  // Method to find a OauthAccessToken by ID
+  static async find(id: number): Promise<OauthAccessTokenModel | undefined> {
     const query = DB.instance.selectFrom('oauth_access_tokens').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
@@ -272,67 +263,67 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     if (!model)
       return undefined
 
-    const instance = new OAuthAccessTokenModel(undefined)
+    const instance = new OauthAccessTokenModel(undefined)
     return instance.createInstance(model)
   }
 
-  static async first(): Promise<OAuthAccessTokenModel | undefined> {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static async first(): Promise<OauthAccessTokenModel | undefined> {
+    const instance = new OauthAccessTokenModel(undefined)
 
     const model = await instance.applyFirst()
 
-    const data = new OAuthAccessTokenModel(model)
+    const data = new OauthAccessTokenModel(model)
 
     return data
   }
 
-  static async last(): Promise<OAuthAccessTokenModel | undefined> {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static async last(): Promise<OauthAccessTokenModel | undefined> {
+    const instance = new OauthAccessTokenModel(undefined)
 
     const model = await instance.applyLast()
 
     if (!model)
       return undefined
 
-    return new OAuthAccessTokenModel(model)
+    return new OauthAccessTokenModel(model)
   }
 
-  static async firstOrFail(): Promise<OAuthAccessTokenModel | undefined> {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static async firstOrFail(): Promise<OauthAccessTokenModel | undefined> {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
-  static async all(): Promise<OAuthAccessTokenModel[]> {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static async all(): Promise<OauthAccessTokenModel[]> {
+    const instance = new OauthAccessTokenModel(undefined)
 
     const models = await DB.instance.selectFrom('oauth_access_tokens').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: OAuthAccessTokenJsonResponse) => {
-      return new OAuthAccessTokenModel(model)
+    const data = await Promise.all(models.map(async (model: OauthAccessTokenJsonResponse) => {
+      return new OauthAccessTokenModel(model)
     }))
 
     return data
   }
 
-  static async findOrFail(id: number): Promise<OAuthAccessTokenModel | undefined> {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static async findOrFail(id: number): Promise<OauthAccessTokenModel | undefined> {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<OAuthAccessTokenModel[]> {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static async findMany(ids: number[]): Promise<OauthAccessTokenModel[]> {
+    const instance = new OauthAccessTokenModel(undefined)
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: OAuthAccessTokenJsonResponse) => instance.parseResult(new OAuthAccessTokenModel(modelItem)))
+    return models.map((modelItem: OauthAccessTokenJsonResponse) => instance.parseResult(new OauthAccessTokenModel(modelItem)))
   }
 
-  static async latest(column: keyof OauthAccessTokensTable = 'created_at'): Promise<OAuthAccessTokenModel | undefined> {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static async latest(column: keyof OauthAccessTokensTable = 'created_at'): Promise<OauthAccessTokenModel | undefined> {
+    const instance = new OauthAccessTokenModel(undefined)
 
     const model = await instance.selectFromQuery
       .selectAll()
@@ -343,11 +334,11 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     if (!model)
       return undefined
 
-    return new OAuthAccessTokenModel(model)
+    return new OauthAccessTokenModel(model)
   }
 
-  static async oldest(column: keyof OauthAccessTokensTable = 'created_at'): Promise<OAuthAccessTokenModel | undefined> {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static async oldest(column: keyof OauthAccessTokensTable = 'created_at'): Promise<OauthAccessTokenModel | undefined> {
+    const instance = new OauthAccessTokenModel(undefined)
 
     const model = await instance.selectFromQuery
       .selectAll()
@@ -358,172 +349,172 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     if (!model)
       return undefined
 
-    return new OAuthAccessTokenModel(model)
+    return new OauthAccessTokenModel(model)
   }
 
-  static skip(count: number): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static skip(count: number): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applySkip(count)
   }
 
-  static take(count: number): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static take(count: number): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyTake(count)
   }
 
-  static where<V = string>(column: keyof OauthAccessTokensTable, ...args: [V] | [Operator, V]): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static where<V = string>(column: keyof OauthAccessTokensTable, ...args: [V] | [Operator, V]): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
 
-  static orWhere(...conditions: [string, any][]): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static orWhere(...conditions: [string, any][]): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
 
-  static whereNotIn<V = number>(column: keyof OauthAccessTokensTable, values: V[]): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static whereNotIn<V = number>(column: keyof OauthAccessTokensTable, values: V[]): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
 
-  static whereBetween<V = number>(column: keyof OauthAccessTokensTable, range: [V, V]): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static whereBetween<V = number>(column: keyof OauthAccessTokensTable, range: [V, V]): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
 
-  static whereRef(column: keyof OauthAccessTokensTable, ...args: string[]): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static whereRef(column: keyof OauthAccessTokensTable, ...args: string[]): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
 
-  static when(condition: boolean, callback: (query: OAuthAccessTokenModel) => OAuthAccessTokenModel): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static when(condition: boolean, callback: (query: OauthAccessTokenModel) => OauthAccessTokenModel): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
   }
 
-  static whereNull(column: keyof OauthAccessTokensTable): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static whereNull(column: keyof OauthAccessTokensTable): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyWhereNull(column)
   }
 
-  static whereNotNull(column: keyof OauthAccessTokensTable): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static whereNotNull(column: keyof OauthAccessTokensTable): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyWhereNotNull(column)
   }
 
-  static whereLike(column: keyof OauthAccessTokensTable, value: string): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static whereLike(column: keyof OauthAccessTokensTable, value: string): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
 
-  static orderBy(column: keyof OauthAccessTokensTable, order: 'asc' | 'desc'): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static orderBy(column: keyof OauthAccessTokensTable, order: 'asc' | 'desc'): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyOrderBy(column, order)
   }
 
-  static orderByAsc(column: keyof OauthAccessTokensTable): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static orderByAsc(column: keyof OauthAccessTokensTable): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyOrderByAsc(column)
   }
 
-  static orderByDesc(column: keyof OauthAccessTokensTable): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static orderByDesc(column: keyof OauthAccessTokensTable): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyOrderByDesc(column)
   }
 
-  static groupBy(column: keyof OauthAccessTokensTable): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static groupBy(column: keyof OauthAccessTokensTable): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyGroupBy(column)
   }
 
-  static having<V = string>(column: keyof OauthAccessTokensTable, operator: Operator, value: V): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static having<V = string>(column: keyof OauthAccessTokensTable, operator: Operator, value: V): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyHaving<V>(column, operator, value)
   }
 
-  static inRandomOrder(): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static inRandomOrder(): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyInRandomOrder()
   }
 
-  static whereColumn(first: keyof OauthAccessTokensTable, operator: Operator, second: keyof OauthAccessTokensTable): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static whereColumn(first: keyof OauthAccessTokensTable, operator: Operator, second: keyof OauthAccessTokensTable): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof OauthAccessTokensTable): Promise<number> {
-    const instance = new OAuthAccessTokenModel(undefined)
+    const instance = new OauthAccessTokenModel(undefined)
 
     return await instance.applyMax(field)
   }
 
   static async min(field: keyof OauthAccessTokensTable): Promise<number> {
-    const instance = new OAuthAccessTokenModel(undefined)
+    const instance = new OauthAccessTokenModel(undefined)
 
     return await instance.applyMin(field)
   }
 
   static async avg(field: keyof OauthAccessTokensTable): Promise<number> {
-    const instance = new OAuthAccessTokenModel(undefined)
+    const instance = new OauthAccessTokenModel(undefined)
 
     return await instance.applyAvg(field)
   }
 
   static async sum(field: keyof OauthAccessTokensTable): Promise<number> {
-    const instance = new OAuthAccessTokenModel(undefined)
+    const instance = new OauthAccessTokenModel(undefined)
 
     return await instance.applySum(field)
   }
 
   static async count(): Promise<number> {
-    const instance = new OAuthAccessTokenModel(undefined)
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyCount()
   }
 
-  static async get(): Promise<OAuthAccessTokenModel[]> {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static async get(): Promise<OauthAccessTokenModel[]> {
+    const instance = new OauthAccessTokenModel(undefined)
 
     const results = await instance.applyGet()
 
-    return results.map((item: OAuthAccessTokenJsonResponse) => instance.createInstance(item))
+    return results.map((item: OauthAccessTokenJsonResponse) => instance.createInstance(item))
   }
 
-  static async pluck<K extends keyof OAuthAccessTokenModel>(field: K): Promise<OAuthAccessTokenModel[K][]> {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static async pluck<K extends keyof OauthAccessTokenModel>(field: K): Promise<OauthAccessTokenModel[K][]> {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return await instance.applyPluck(field)
   }
 
-  static async chunk(size: number, callback: (models: OAuthAccessTokenModel[]) => Promise<void>): Promise<void> {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static async chunk(size: number, callback: (models: OauthAccessTokenModel[]) => Promise<void>): Promise<void> {
+    const instance = new OauthAccessTokenModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: OAuthAccessTokenJsonResponse) => instance.createInstance(item))
+      const modelInstances = models.map((item: OauthAccessTokenJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: OAuthAccessTokenModel[]
+    data: OauthAccessTokenModel[]
     paging: {
       total_records: number
       page: number
@@ -531,28 +522,28 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     }
     next_cursor: number | null
   }> {
-    const instance = new OAuthAccessTokenModel(undefined)
+    const instance = new OauthAccessTokenModel(undefined)
 
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: OAuthAccessTokenJsonResponse) => instance.createInstance(item)),
+      data: result.data.map((item: OauthAccessTokenJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
   }
 
   // Instance method for creating model instances
-  createInstance(data: OAuthAccessTokenJsonResponse): OAuthAccessTokenModel {
-    return new OAuthAccessTokenModel(data)
+  createInstance(data: OauthAccessTokenJsonResponse): OauthAccessTokenModel {
+    return new OauthAccessTokenModel(data)
   }
 
-  async applyCreate(newOAuthAccessToken: NewOAuthAccessToken): Promise<OAuthAccessTokenModel> {
+  async applyCreate(newOauthAccessToken: NewOauthAccessToken): Promise<OauthAccessTokenModel> {
     const filteredValues = Object.fromEntries(
-      Object.entries(newOAuthAccessToken).filter(([key]) =>
+      Object.entries(newOauthAccessToken).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
-    ) as NewOAuthAccessToken
+    ) as NewOauthAccessToken
 
     await this.mapCustomSetters(filteredValues)
 
@@ -566,24 +557,24 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
       .executeTakeFirst()
 
     if (!model) {
-      throw new HttpError(500, 'Failed to retrieve created OAuthAccessToken')
+      throw new HttpError(500, 'Failed to retrieve created OauthAccessToken')
     }
 
     return this.createInstance(model)
   }
 
-  async create(newOAuthAccessToken: NewOAuthAccessToken): Promise<OAuthAccessTokenModel> {
-    return await this.applyCreate(newOAuthAccessToken)
+  async create(newOauthAccessToken: NewOauthAccessToken): Promise<OauthAccessTokenModel> {
+    return await this.applyCreate(newOauthAccessToken)
   }
 
-  static async create(newOAuthAccessToken: NewOAuthAccessToken): Promise<OAuthAccessTokenModel> {
-    const instance = new OAuthAccessTokenModel(undefined)
-    return await instance.applyCreate(newOAuthAccessToken)
+  static async create(newOauthAccessToken: NewOauthAccessToken): Promise<OauthAccessTokenModel> {
+    const instance = new OauthAccessTokenModel(undefined)
+    return await instance.applyCreate(newOauthAccessToken)
   }
 
-  static async firstOrCreate(search: Partial<OauthAccessTokensTable>, values: NewOAuthAccessToken = {} as NewOAuthAccessToken): Promise<OAuthAccessTokenModel> {
+  static async firstOrCreate(search: Partial<OauthAccessTokensTable>, values: NewOauthAccessToken = {} as NewOauthAccessToken): Promise<OauthAccessTokenModel> {
     // First try to find a record matching the search criteria
-    const instance = new OAuthAccessTokenModel(undefined)
+    const instance = new OauthAccessTokenModel(undefined)
 
     // Apply all search conditions
     for (const [key, value] of Object.entries(search)) {
@@ -598,13 +589,13 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     }
 
     // If no record exists, create a new one with combined search criteria and values
-    const createData = { ...search, ...values } as NewOAuthAccessToken
-    return await OAuthAccessTokenModel.create(createData)
+    const createData = { ...search, ...values } as NewOauthAccessToken
+    return await OauthAccessTokenModel.create(createData)
   }
 
-  static async updateOrCreate(search: Partial<OauthAccessTokensTable>, values: NewOAuthAccessToken = {} as NewOAuthAccessToken): Promise<OAuthAccessTokenModel> {
+  static async updateOrCreate(search: Partial<OauthAccessTokensTable>, values: NewOauthAccessToken = {} as NewOauthAccessToken): Promise<OauthAccessTokenModel> {
     // First try to find a record matching the search criteria
-    const instance = new OAuthAccessTokenModel(undefined)
+    const instance = new OauthAccessTokenModel(undefined)
 
     // Apply all search conditions
     for (const [key, value] of Object.entries(search)) {
@@ -617,7 +608,7 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     if (existingRecord) {
       // If record exists, update it with the new values
       const model = instance.createInstance(existingRecord)
-      const updatedModel = await model.update(values as OAuthAccessTokenUpdate)
+      const updatedModel = await model.update(values as OauthAccessTokenUpdate)
 
       // Return the updated model instance
       if (updatedModel) {
@@ -630,16 +621,16 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     }
 
     // If no record exists, create a new one with combined search criteria and values
-    const createData = { ...search, ...values } as NewOAuthAccessToken
-    return await OAuthAccessTokenModel.create(createData)
+    const createData = { ...search, ...values } as NewOauthAccessToken
+    return await OauthAccessTokenModel.create(createData)
   }
 
-  async update(newOAuthAccessToken: OAuthAccessTokenUpdate): Promise<OAuthAccessTokenModel | undefined> {
+  async update(newOauthAccessToken: OauthAccessTokenUpdate): Promise<OauthAccessTokenModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(newOAuthAccessToken).filter(([key]) =>
+      Object.entries(newOauthAccessToken).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
-    ) as OAuthAccessTokenUpdate
+    ) as OauthAccessTokenUpdate
 
     await this.mapCustomSetters(filteredValues)
 
@@ -658,7 +649,7 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
         .executeTakeFirst()
 
       if (!model) {
-        throw new HttpError(500, 'Failed to retrieve updated OAuthAccessToken')
+        throw new HttpError(500, 'Failed to retrieve updated OauthAccessToken')
       }
 
       return this.createInstance(model)
@@ -667,9 +658,9 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     return undefined
   }
 
-  async forceUpdate(newOAuthAccessToken: OAuthAccessTokenUpdate): Promise<OAuthAccessTokenModel | undefined> {
+  async forceUpdate(newOauthAccessToken: OauthAccessTokenUpdate): Promise<OauthAccessTokenModel | undefined> {
     await DB.instance.updateTable('oauth_access_tokens')
-      .set(newOAuthAccessToken)
+      .set(newOauthAccessToken)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -681,7 +672,7 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
         .executeTakeFirst()
 
       if (!model) {
-        throw new HttpError(500, 'Failed to retrieve updated OAuthAccessToken')
+        throw new HttpError(500, 'Failed to retrieve updated OauthAccessToken')
       }
 
       return this.createInstance(model)
@@ -690,12 +681,12 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     return undefined
   }
 
-  async save(): Promise<OAuthAccessTokenModel> {
+  async save(): Promise<OauthAccessTokenModel> {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
       await DB.instance.updateTable('oauth_access_tokens')
-        .set(this.attributes as OAuthAccessTokenUpdate)
+        .set(this.attributes as OauthAccessTokenUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
@@ -706,7 +697,7 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
         .executeTakeFirst()
 
       if (!model) {
-        throw new HttpError(500, 'Failed to retrieve updated OAuthAccessToken')
+        throw new HttpError(500, 'Failed to retrieve updated OauthAccessToken')
       }
 
       return this.createInstance(model)
@@ -714,7 +705,7 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     else {
       // Create new record
       const result = await DB.instance.insertInto('oauth_access_tokens')
-        .values(this.attributes as NewOAuthAccessToken)
+        .values(this.attributes as NewOauthAccessToken)
         .executeTakeFirst()
 
       // Get the created data
@@ -724,22 +715,22 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
         .executeTakeFirst()
 
       if (!model) {
-        throw new HttpError(500, 'Failed to retrieve created OAuthAccessToken')
+        throw new HttpError(500, 'Failed to retrieve created OauthAccessToken')
       }
 
       return this.createInstance(model)
     }
   }
 
-  static async createMany(newOAuthAccessToken: NewOAuthAccessToken[]): Promise<void> {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static async createMany(newOauthAccessToken: NewOauthAccessToken[]): Promise<void> {
+    const instance = new OauthAccessTokenModel(undefined)
 
-    const valuesFiltered = newOAuthAccessToken.map((newOAuthAccessToken: NewOAuthAccessToken) => {
+    const valuesFiltered = newOauthAccessToken.map((newOauthAccessToken: NewOauthAccessToken) => {
       const filteredValues = Object.fromEntries(
-        Object.entries(newOAuthAccessToken).filter(([key]) =>
+        Object.entries(newOauthAccessToken).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
-      ) as NewOAuthAccessToken
+      ) as NewOauthAccessToken
 
       return filteredValues
     })
@@ -749,25 +740,25 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
       .executeTakeFirst()
   }
 
-  static async forceCreate(newOAuthAccessToken: NewOAuthAccessToken): Promise<OAuthAccessTokenModel> {
+  static async forceCreate(newOauthAccessToken: NewOauthAccessToken): Promise<OauthAccessTokenModel> {
     const result = await DB.instance.insertInto('oauth_access_tokens')
-      .values(newOAuthAccessToken)
+      .values(newOauthAccessToken)
       .executeTakeFirst()
 
-    const instance = new OAuthAccessTokenModel(undefined)
+    const instance = new OauthAccessTokenModel(undefined)
     const model = await DB.instance.selectFrom('oauth_access_tokens')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
     if (!model) {
-      throw new HttpError(500, 'Failed to retrieve created OAuthAccessToken')
+      throw new HttpError(500, 'Failed to retrieve created OauthAccessToken')
     }
 
     return instance.createInstance(model)
   }
 
-  // Method to remove a OAuthAccessToken
+  // Method to remove a OauthAccessToken
   async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
@@ -785,56 +776,48 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
       .execute()
   }
 
-  static whereToken(value: string): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static whereToken(value: string): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('token', '=', value)
 
     return instance
   }
 
-  static whereClientId(value: string): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('client_id', '=', value)
-
-    return instance
-  }
-
-  static whereName(value: string): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static whereName(value: string): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
     return instance
   }
 
-  static whereScopes(value: string): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static whereScopes(value: string): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('scopes', '=', value)
 
     return instance
   }
 
-  static whereRevoked(value: string): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static whereRevoked(value: string): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('revoked', '=', value)
 
     return instance
   }
 
-  static whereExpiresAt(value: string): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static whereExpiresAt(value: string): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('expires_at', '=', value)
 
     return instance
   }
 
-  static whereIn<V = number>(column: keyof OauthAccessTokensTable, values: V[]): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static whereIn<V = number>(column: keyof OauthAccessTokensTable, values: V[]): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -867,24 +850,23 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     return model
   }
 
-  static distinct(column: keyof OAuthAccessTokenJsonResponse): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static distinct(column: keyof OauthAccessTokenJsonResponse): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyDistinct(column)
   }
 
-  static join(table: string, firstCol: string, secondCol: string): OAuthAccessTokenModel {
-    const instance = new OAuthAccessTokenModel(undefined)
+  static join(table: string, firstCol: string, secondCol: string): OauthAccessTokenModel {
+    const instance = new OauthAccessTokenModel(undefined)
 
     return instance.applyJoin(table, firstCol, secondCol)
   }
 
-  toJSON(): OAuthAccessTokenJsonResponse {
+  toJSON(): OauthAccessTokenJsonResponse {
     const output = {
 
       id: this.id,
       token: this.token,
-      client_id: this.client_id,
       name: this.name,
       scopes: this.scopes,
       revoked: this.revoked,
@@ -904,16 +886,16 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     return output
   }
 
-  parseResult(model: OAuthAccessTokenModel): OAuthAccessTokenModel {
+  parseResult(model: OauthAccessTokenModel): OauthAccessTokenModel {
     for (const hiddenAttribute of this.hidden) {
-      delete model[hiddenAttribute as keyof OAuthAccessTokenModel]
+      delete model[hiddenAttribute as keyof OauthAccessTokenModel]
     }
 
     return model
   }
 
   // Add a protected applyFind implementation
-  protected async applyFind(id: number): Promise<OAuthAccessTokenModel | undefined> {
+  protected async applyFind(id: number): Promise<OauthAccessTokenModel | undefined> {
     const model = await DB.instance.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
@@ -931,7 +913,7 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
   }
 }
 
-export async function find(id: number): Promise<OAuthAccessTokenModel | undefined> {
+export async function find(id: number): Promise<OauthAccessTokenModel | undefined> {
   const query = DB.instance.selectFrom('oauth_access_tokens').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -939,19 +921,19 @@ export async function find(id: number): Promise<OAuthAccessTokenModel | undefine
   if (!model)
     return undefined
 
-  const instance = new OAuthAccessTokenModel(undefined)
+  const instance = new OauthAccessTokenModel(undefined)
   return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
-  const results = await OAuthAccessTokenModel.count()
+  const results = await OauthAccessTokenModel.count()
 
   return results
 }
 
-export async function create(newOAuthAccessToken: NewOAuthAccessToken): Promise<OAuthAccessTokenModel> {
-  const instance = new OAuthAccessTokenModel(undefined)
-  return await instance.applyCreate(newOAuthAccessToken)
+export async function create(newOauthAccessToken: NewOauthAccessToken): Promise<OauthAccessTokenModel> {
+  const instance = new OauthAccessTokenModel(undefined)
+  return await instance.applyCreate(newOauthAccessToken)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
@@ -964,48 +946,41 @@ export async function remove(id: number): Promise<void> {
     .execute()
 }
 
-export async function whereToken(value: string): Promise<OAuthAccessTokenModel[]> {
+export async function whereToken(value: string): Promise<OauthAccessTokenModel[]> {
   const query = DB.instance.selectFrom('oauth_access_tokens').where('token', '=', value)
-  const results: OAuthAccessTokenJsonResponse = await query.execute()
+  const results: OauthAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: OAuthAccessTokenJsonResponse) => new OAuthAccessTokenModel(modelItem))
+  return results.map((modelItem: OauthAccessTokenJsonResponse) => new OauthAccessTokenModel(modelItem))
 }
 
-export async function whereClientId(value: number): Promise<OAuthAccessTokenModel[]> {
-  const query = DB.instance.selectFrom('oauth_access_tokens').where('client_id', '=', value)
-  const results: OAuthAccessTokenJsonResponse = await query.execute()
-
-  return results.map((modelItem: OAuthAccessTokenJsonResponse) => new OAuthAccessTokenModel(modelItem))
-}
-
-export async function whereName(value: string): Promise<OAuthAccessTokenModel[]> {
+export async function whereName(value: string): Promise<OauthAccessTokenModel[]> {
   const query = DB.instance.selectFrom('oauth_access_tokens').where('name', '=', value)
-  const results: OAuthAccessTokenJsonResponse = await query.execute()
+  const results: OauthAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: OAuthAccessTokenJsonResponse) => new OAuthAccessTokenModel(modelItem))
+  return results.map((modelItem: OauthAccessTokenJsonResponse) => new OauthAccessTokenModel(modelItem))
 }
 
-export async function whereScopes(value: string): Promise<OAuthAccessTokenModel[]> {
+export async function whereScopes(value: string): Promise<OauthAccessTokenModel[]> {
   const query = DB.instance.selectFrom('oauth_access_tokens').where('scopes', '=', value)
-  const results: OAuthAccessTokenJsonResponse = await query.execute()
+  const results: OauthAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: OAuthAccessTokenJsonResponse) => new OAuthAccessTokenModel(modelItem))
+  return results.map((modelItem: OauthAccessTokenJsonResponse) => new OauthAccessTokenModel(modelItem))
 }
 
-export async function whereRevoked(value: boolean): Promise<OAuthAccessTokenModel[]> {
+export async function whereRevoked(value: boolean): Promise<OauthAccessTokenModel[]> {
   const query = DB.instance.selectFrom('oauth_access_tokens').where('revoked', '=', value)
-  const results: OAuthAccessTokenJsonResponse = await query.execute()
+  const results: OauthAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: OAuthAccessTokenJsonResponse) => new OAuthAccessTokenModel(modelItem))
+  return results.map((modelItem: OauthAccessTokenJsonResponse) => new OauthAccessTokenModel(modelItem))
 }
 
-export async function whereExpiresAt(value: number): Promise<OAuthAccessTokenModel[]> {
+export async function whereExpiresAt(value: number): Promise<OauthAccessTokenModel[]> {
   const query = DB.instance.selectFrom('oauth_access_tokens').where('expires_at', '=', value)
-  const results: OAuthAccessTokenJsonResponse = await query.execute()
+  const results: OauthAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: OAuthAccessTokenJsonResponse) => new OAuthAccessTokenModel(modelItem))
+  return results.map((modelItem: OauthAccessTokenJsonResponse) => new OauthAccessTokenModel(modelItem))
 }
 
-export const OAuthAccessToken = OAuthAccessTokenModel
+export const OauthAccessToken = OauthAccessTokenModel
 
-export default OAuthAccessToken
+export default OauthAccessToken

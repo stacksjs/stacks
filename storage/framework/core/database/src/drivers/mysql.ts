@@ -113,14 +113,14 @@ async function createTableMigration(modelPath: string): Promise<void> {
   log.debug('createTableMigration modelPath:', modelPath)
 
   const model = (await import(modelPath)).default as Model
-  // const modelName = getModelName(model, modelPath)
+  const modelName = getModelName(model, modelPath)
   const tableName = getTableName(model, modelPath)
 
   const twoFactorEnabled
     = model.traits?.useAuth && typeof model.traits.useAuth !== 'boolean' ? model.traits.useAuth.useTwoFactor : false
 
   await createPivotTableMigration(model, modelPath)
-  const otherModelRelations = await fetchOtherModelRelations(modelPath)
+  const otherModelRelations = await fetchOtherModelRelations(modelName)
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
@@ -176,14 +176,6 @@ async function createTableMigration(modelPath: string): Promise<void> {
   if (useBillable)
     migrationContent += `    .addColumn('stripe_id', 'varchar(255)')\n`
 
-  if (otherModelRelations?.length) {
-    for (const modelRelation of otherModelRelations) {
-      if (!modelRelation.foreignKey)
-        continue
-
-      migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
-    }
-  }
 
   if (usePasskey)
     migrationContent += `    .addColumn('public_passkey', 'varchar(255)')\n`
@@ -205,6 +197,15 @@ async function createTableMigration(modelPath: string): Promise<void> {
     migrationContent += '\n'
     for (const index of model.indexes) {
       migrationContent += generateIndexCreationSQL(tableName, index.name, index.columns)
+    }
+  }
+
+  if (otherModelRelations?.length) {
+    for (const modelRelation of otherModelRelations) {
+      if (!modelRelation.foreignKey)
+        continue
+
+      migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
     }
   }
 
