@@ -257,6 +257,7 @@ export interface SubscriberEmailRequestType extends Request {
 
 interface RequestDataOAuthAccessToken {
   id: number
+  token: string
   client_id: number
   name: string
   scopes: string
@@ -271,6 +272,7 @@ export interface OAuthAccessTokenRequestType extends Request {
   get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataOAuthAccessToken
   id: number
+  token: string
   client_id: number
   name: string
   scopes: string

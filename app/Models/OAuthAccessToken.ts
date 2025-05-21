@@ -6,7 +6,18 @@ export default {
   description: 'An OAuth 2.0 access token for third-party applications',
   table: 'oauth_access_tokens',
   primaryKey: 'id',
-  belongsTo: ['User', 'OAuthClient'],
+  belongsTo: [
+    {
+      model: 'User',
+      foreignKey: 'user_id',
+      relationName: 'user',
+    },
+    {
+      model: 'OAuthClient',
+      foreignKey: 'client_id',
+      relationName: 'oauth_client',
+    },
+  ],
   traits: {
     useTimestamps: true,
     useSeeder: {
@@ -26,19 +37,6 @@ export default {
         },
       },
     },
-
-    clientId: {
-      fillable: true,
-      required: true,
-      validation: {
-        rule: schema.number(),
-        message: {
-          number: 'clientId must be a number',
-          required: 'clientId is required',
-        },
-      },
-    },
-
     name: {
       fillable: true,
       validation: {

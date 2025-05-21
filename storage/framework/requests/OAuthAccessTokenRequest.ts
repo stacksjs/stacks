@@ -13,6 +13,7 @@ interface CustomAttributes {
 }
 interface RequestDataOAuthAccessToken {
   id: number
+  token: string
   client_id: number
   name: string
   scopes: string
@@ -24,6 +25,7 @@ interface RequestDataOAuthAccessToken {
 }
 export class OAuthAccessTokenRequest extends Request<RequestDataOAuthAccessToken> implements OAuthAccessTokenRequestType {
   public id = 1
+  public token = ''
   public client_id = 0
   public name = ''
   public scopes = ''

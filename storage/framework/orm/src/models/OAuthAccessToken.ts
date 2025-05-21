@@ -12,6 +12,7 @@ export interface OauthAccessTokensTable {
   id: Generated<number>
   user_id: number
   o_auth_client_id: number
+  token: string
   client_id: number
   name?: string
   scopes?: string
@@ -51,7 +52,7 @@ export type OAuthAccessTokenUpdate = Updateable<OAuthAccessTokenWrite>
 
 export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthAccessTokensTable, OAuthAccessTokenJsonResponse> {
   private readonly hidden: Array<keyof OAuthAccessTokenJsonResponse> = []
-  private readonly fillable: Array<keyof OAuthAccessTokenJsonResponse> = ['client_id', 'name', 'scopes', 'revoked', 'expires_at', 'uuid', 'user_id']
+  private readonly fillable: Array<keyof OAuthAccessTokenJsonResponse> = ['token', 'client_id', 'name', 'scopes', 'revoked', 'expires_at', 'uuid', 'user_id']
   private readonly guarded: Array<keyof OAuthAccessTokenJsonResponse> = []
   protected attributes = {} as OAuthAccessTokenJsonResponse
   protected originalAttributes = {} as OAuthAccessTokenJsonResponse
@@ -196,6 +197,10 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     return this.attributes.id
   }
 
+  get token(): string {
+    return this.attributes.token
+  }
+
   get client_id(): number {
     return this.attributes.client_id
   }
@@ -222,6 +227,10 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
 
   get updated_at(): string | undefined {
     return this.attributes.updated_at
+  }
+
+  set token(value: string) {
+    this.attributes.token = value
   }
 
   set client_id(value: number) {
@@ -776,6 +785,14 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
       .execute()
   }
 
+  static whereToken(value: string): OAuthAccessTokenModel {
+    const instance = new OAuthAccessTokenModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('token', '=', value)
+
+    return instance
+  }
+
   static whereClientId(value: string): OAuthAccessTokenModel {
     const instance = new OAuthAccessTokenModel(undefined)
 
@@ -866,6 +883,7 @@ export class OAuthAccessTokenModel extends BaseOrm<OAuthAccessTokenModel, OauthA
     const output = {
 
       id: this.id,
+      token: this.token,
       client_id: this.client_id,
       name: this.name,
       scopes: this.scopes,
@@ -944,6 +962,13 @@ export async function remove(id: number): Promise<void> {
   await DB.instance.deleteFrom('oauth_access_tokens')
     .where('id', '=', id)
     .execute()
+}
+
+export async function whereToken(value: string): Promise<OAuthAccessTokenModel[]> {
+  const query = DB.instance.selectFrom('oauth_access_tokens').where('token', '=', value)
+  const results: OAuthAccessTokenJsonResponse = await query.execute()
+
+  return results.map((modelItem: OAuthAccessTokenJsonResponse) => new OAuthAccessTokenModel(modelItem))
 }
 
 export async function whereClientId(value: number): Promise<OAuthAccessTokenModel[]> {

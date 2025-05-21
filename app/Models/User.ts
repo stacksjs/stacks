@@ -50,7 +50,16 @@ export default {
   },
 
   hasOne: ['Subscriber', 'Driver', 'Author'],
-  hasMany: ['PersonalAccessToken', 'OAuthAccessToken'],
+  hasMany: [
+    {
+      model: 'PersonalAccessToken',
+      foreignKey: 'user_id',
+    },
+    {
+      model: 'OAuthAccessToken',
+      foreignKey: 'user_id',
+    },
+  ],
 
   belongsToMany: ['Team'],
 

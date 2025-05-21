@@ -4,6 +4,7 @@ export interface Attributes {
   url: string
   status: string
   email: string
+  token: string
   client_id: number
   scopes: string
   revoked: boolean
@@ -27,7 +28,6 @@ export interface Attributes {
   version: string
   job_title: string
   password: string
-  token: string
   plain_text_token: string
   abilities: string | string[]
   last_used_at: number
