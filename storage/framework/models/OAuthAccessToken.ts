@@ -2,7 +2,7 @@ import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
 export default {
-  name: 'OAuthAccessToken',
+  name: 'OauthAccessToken',
   description: 'An OAuth 2.0 access token for third-party applications',
   table: 'oauth_access_tokens',
   primaryKey: 'id',

@@ -23,6 +23,10 @@ export async function up(db: Database<any>) {
     .addColumn('template_id', 'varchar(255)')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
+    .addColumn('customer_id', 'integer', col =>
+      col.references('customers.id').onDelete('cascade'))
     .execute()
+  await db.schema.createIndex('gift_cards_customer_id_index').on('gift_cards').column('customer_id').execute()
+
   await db.schema.createIndex('gift_cards_id_index').on('gift_cards').column('id').execute()
 }

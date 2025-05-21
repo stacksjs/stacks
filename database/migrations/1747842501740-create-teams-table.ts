@@ -15,6 +15,10 @@ export async function up(db: Database<any>) {
     .addColumn('is_personal', 'boolean', col => col.notNull())
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
+    .addColumn('user_id', 'integer', col =>
+      col.references('users.id').onDelete('cascade'))
     .execute()
+  await db.schema.createIndex('teams_user_id_index').on('teams').column('user_id').execute()
+
   await db.schema.createIndex('teams_id_index').on('teams').column('id').execute()
 }

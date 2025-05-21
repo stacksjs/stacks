@@ -12,6 +12,10 @@ export async function up(db: Database<any>) {
     .addColumn('expires_at', 'timestamp')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
+    .addColumn('user_id', 'integer', col =>
+      col.references('users.id').onDelete('cascade'))
     .execute()
+  await db.schema.createIndex('oauth_access_tokens_user_id_index').on('oauth_access_tokens').column('user_id').execute()
+
   await db.schema.createIndex('oauth_access_tokens_id_index').on('oauth_access_tokens').column('id').execute()
 }

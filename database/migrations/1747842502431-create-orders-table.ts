@@ -19,6 +19,18 @@ export async function up(db: Database<any>) {
     .addColumn('applied_coupon_id', 'varchar(255)')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
+    .addColumn('customer_id', 'integer', col =>
+      col.references('customers.id').onDelete('cascade'))
+    .addColumn('gift_card_id', 'integer', col =>
+      col.references('gift_cards.id').onDelete('cascade'))
+    .addColumn('coupon_id', 'integer', col =>
+      col.references('coupons.id').onDelete('cascade'))
     .execute()
+  await db.schema.createIndex('orders_customer_id_index').on('orders').column('customer_id').execute()
+
+  await db.schema.createIndex('orders_gift_card_id_index').on('orders').column('gift_card_id').execute()
+
+  await db.schema.createIndex('orders_coupon_id_index').on('orders').column('coupon_id').execute()
+
   await db.schema.createIndex('orders_id_index').on('orders').column('id').execute()
 }

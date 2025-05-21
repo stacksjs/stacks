@@ -211,6 +211,9 @@ async function createTableMigration(modelPath: string) {
   if (useSoftDeletes)
     migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
 
+  if (usePasskey)
+    migrationContent += `    .addColumn('public_passkey', 'text')\n`
+
   if (otherModelRelations?.length) {
     for (const modelRelation of otherModelRelations) {
       if (!modelRelation.foreignKey)
@@ -221,9 +224,6 @@ async function createTableMigration(modelPath: string) {
       ) \n`
     }
   }
-
-  if (usePasskey)
-    migrationContent += `    .addColumn('public_passkey', 'text')\n`
 
   // Append created_at and updated_at columns if useTimestamps is true
   if (useTimestamps) {
@@ -241,6 +241,17 @@ async function createTableMigration(modelPath: string) {
         continue
 
       migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
+    }
+  }
+
+  if (otherModelRelations?.length) {
+    for (const modelRelation of otherModelRelations) {
+      if (!modelRelation.foreignKey)
+        continue
+
+      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
+        col.references('${modelRelation.relationTable}.id').onDelete('cascade')
+      ) \n`
     }
   }
 

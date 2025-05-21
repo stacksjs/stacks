@@ -176,7 +176,6 @@ async function createTableMigration(modelPath: string): Promise<void> {
   if (useBillable)
     migrationContent += `    .addColumn('stripe_id', 'varchar(255)')\n`
 
-
   if (usePasskey)
     migrationContent += `    .addColumn('public_passkey', 'varchar(255)')\n`
 
@@ -189,6 +188,17 @@ async function createTableMigration(modelPath: string): Promise<void> {
   // Append deleted_at column if useSoftDeletes is true
   if (useSoftDeletes)
     migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
+
+  if (otherModelRelations?.length) {
+    for (const modelRelation of otherModelRelations) {
+      if (!modelRelation.foreignKey)
+        continue
+
+      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
+        col.references('${modelRelation.relationTable}.id').onDelete('cascade')
+      ) \n`
+    }
+  }
 
   migrationContent += `    .execute()\n`
 

@@ -10,6 +10,10 @@ export async function up(db: Database<any>) {
     .addColumn('special_instructions', 'varchar(255)')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
+    .addColumn('order_id', 'integer', col =>
+      col.references('orders.id').onDelete('cascade'))
     .execute()
+  await db.schema.createIndex('order_items_order_id_index').on('order_items').column('order_id').execute()
+
   await db.schema.createIndex('order_items_id_index').on('order_items').column('id').execute()
 }

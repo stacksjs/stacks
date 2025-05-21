@@ -12,6 +12,18 @@ export async function up(db: Database<any>) {
     .addColumn('status', sql`enum('active', 'inactive', 'unassigned')`, col => col.defaultTo('unassigned'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
+    .addColumn('customer_id', 'integer', col =>
+      col.references('customers.id').onDelete('cascade'))
+    .addColumn('product_id', 'integer', col =>
+      col.references('products.id').onDelete('cascade'))
+    .addColumn('order_id', 'integer', col =>
+      col.references('orders.id').onDelete('cascade'))
     .execute()
+  await db.schema.createIndex('license_keys_customer_id_index').on('license_keys').column('customer_id').execute()
+
+  await db.schema.createIndex('license_keys_product_id_index').on('license_keys').column('product_id').execute()
+
+  await db.schema.createIndex('license_keys_order_id_index').on('license_keys').column('order_id').execute()
+
   await db.schema.createIndex('license_keys_id_index').on('license_keys').column('id').execute()
 }

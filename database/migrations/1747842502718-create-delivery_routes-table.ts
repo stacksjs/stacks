@@ -14,6 +14,10 @@ export async function up(db: Database<any>) {
     .addColumn('last_active', 'date')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
+    .addColumn('driver_id', 'integer', col =>
+      col.references('drivers.id').onDelete('cascade'))
     .execute()
+  await db.schema.createIndex('delivery_routes_driver_id_index').on('delivery_routes').column('driver_id').execute()
+
   await db.schema.createIndex('delivery_routes_id_index').on('delivery_routes').column('id').execute()
 }

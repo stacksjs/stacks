@@ -18,6 +18,14 @@ export async function up(db: Database<any>) {
     .addColumn('images', 'varchar(255)')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
+    .addColumn('customer_id', 'integer', col =>
+      col.references('customers.id').onDelete('cascade'))
+    .addColumn('product_id', 'integer', col =>
+      col.references('products.id').onDelete('cascade'))
     .execute()
+  await db.schema.createIndex('reviews_customer_id_index').on('reviews').column('customer_id').execute()
+
+  await db.schema.createIndex('reviews_product_id_index').on('reviews').column('product_id').execute()
+
   await db.schema.createIndex('reviews_id_index').on('reviews').column('id').execute()
 }

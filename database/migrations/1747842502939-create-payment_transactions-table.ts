@@ -13,6 +13,10 @@ export async function up(db: Database<any>) {
     .addColumn('provider_id', 'varchar(255)')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
+    .addColumn('payment_method_id', 'integer', col =>
+      col.references('payment_methods.id').onDelete('cascade'))
     .execute()
+  await db.schema.createIndex('payment_transactions_payment_method_id_index').on('payment_transactions').column('payment_method_id').execute()
+
   await db.schema.createIndex('payment_transactions_id_index').on('payment_transactions').column('id').execute()
 }

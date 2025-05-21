@@ -56,7 +56,7 @@ export default {
       foreignKey: 'user_id',
     },
     {
-      model: 'OAuthAccessToken',
+      model: 'OauthAccessToken',
       foreignKey: 'user_id',
     },
   ],
