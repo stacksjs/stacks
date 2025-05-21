@@ -1,24 +1,23 @@
 import { randomBytes } from 'node:crypto'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-import { makeHash, verifyHash } from '@stacksjs/security'
 
-export type AuthToken = `${number}:${string}`
+export type AuthToken = string
 
 export class TokenManager {
   static async createAccessToken(user: { id: number }): Promise<AuthToken> {
     const token = randomBytes(40).toString('hex')
-    const hashedToken = await makeHash(token, { algorithm: 'bcrypt' })
 
-    const result = await db.insertInto('personal_access_tokens')
+    const result = await db.insertInto('oauth_access_tokens')
       .values({
+        client_id: 1, // Fixed client ID
+        o_auth_client_id: 1, // Fixed OAuth client ID
         user_id: user.id,
-        token: hashedToken,
+        token,
         name: 'auth-token',
-        plain_text_token: token,
-        abilities: JSON.stringify(['read', 'write', 'admin']),
+        scopes: JSON.stringify(['read', 'write', 'admin']),
+        revoked: false,
         expires_at: sql`${new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString()}`,
-        last_used_at: sql`${new Date().toISOString()}`,
         created_at: sql`${new Date().toISOString()}`,
         updated_at: sql`${new Date().toISOString()}`,
       })
@@ -27,41 +26,33 @@ export class TokenManager {
     if (!result?.insertId)
       throw new HttpError(500, 'Failed to create access token')
 
-    return `${Number(result.insertId)}:${token}`
+    return token
   }
 
   static async validateToken(token: string): Promise<boolean> {
-    const parts = token.split(':')
-
-    if (parts.length !== 2)
-      return false
-
-    const [tokenId, plainToken] = parts
-
-    const accessToken = await db.selectFrom('personal_access_tokens')
-      .where('id', '=', Number(tokenId))
+    const accessToken = await db.selectFrom('oauth_access_tokens')
+      .where('token', '=', token)
       .selectAll()
       .executeTakeFirst()
 
     if (!accessToken)
       return false
 
-    // Verify the token hash
-    const isValid = await verifyHash(plainToken, accessToken.token, 'bcrypt')
-    if (!isValid)
-      return false
-
     // Check if token is expired
     if (accessToken.expires_at && new Date(accessToken.expires_at) < new Date()) {
       // Automatically delete expired tokens
-      await db.deleteFrom('personal_access_tokens')
+      await db.deleteFrom('oauth_access_tokens')
         .where('id', '=', accessToken.id)
         .execute()
       return false
     }
 
+    // Check if token is revoked
+    if (accessToken.revoked)
+      return false
+
     // Rotate token if it's been used for more than 24 hours
-    const lastUsed = accessToken.last_used_at ? new Date(accessToken.last_used_at) : new Date()
+    const lastUsed = accessToken.updated_at ? new Date(accessToken.updated_at) : new Date()
     const now = new Date()
     const hoursSinceLastUse = (now.getTime() - lastUsed.getTime()) / (1000 * 60 * 60)
 
@@ -70,9 +61,9 @@ export class TokenManager {
     }
     else {
       // Update last used timestamp
-      await db.updateTable('personal_access_tokens')
+      await db.updateTable('oauth_access_tokens')
         .set({
-          last_used_at: sql`${now.toISOString()}`,
+          updated_at: sql`${now.toISOString()}`,
         })
         .where('id', '=', accessToken.id)
         .execute()
@@ -82,52 +73,36 @@ export class TokenManager {
   }
 
   static async rotateToken(oldToken: string): Promise<AuthToken | null> {
-    const parts = oldToken.split(':')
-    if (parts.length !== 2)
-      return null
-
-    const [tokenId, plainToken] = parts
-    const accessToken = await db.selectFrom('personal_access_tokens')
-      .where('id', '=', Number(tokenId))
+    const accessToken = await db.selectFrom('oauth_access_tokens')
+      .where('token', '=', oldToken)
       .selectAll()
       .executeTakeFirst()
 
     if (!accessToken)
       return null
 
-    // Verify the old token
-    const isValid = await verifyHash(plainToken, accessToken.token, 'bcrypt')
-    if (!isValid)
-      return null
-
     // Generate new token
     const newToken = randomBytes(40).toString('hex')
-    const hashedNewToken = await makeHash(newToken, { algorithm: 'bcrypt' })
 
     // Update the token
-    await db.updateTable('personal_access_tokens')
+    await db.updateTable('oauth_access_tokens')
       .set({
-        token: hashedNewToken,
-        plain_text_token: newToken,
+        token: newToken,
         updated_at: sql`${new Date().toISOString()}`,
-        last_used_at: sql`${new Date().toISOString()}`,
       })
       .where('id', '=', accessToken.id)
       .execute()
 
-    return `${accessToken.id}:${newToken}`
+    return newToken
   }
 
   static async revokeToken(token: string): Promise<void> {
-    const parts = token.split(':')
-
-    if (parts.length !== 2)
-      return
-
-    const [tokenId] = parts
-
-    await db.deleteFrom('personal_access_tokens')
-      .where('id', '=', Number(tokenId))
+    await db.updateTable('oauth_access_tokens')
+      .set({
+        revoked: true,
+        updated_at: sql`${new Date().toISOString()}`,
+      })
+      .where('token', '=', token)
       .execute()
   }
 }

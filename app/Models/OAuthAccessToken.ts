@@ -15,6 +15,18 @@ export default {
   },
 
   attributes: {
+    token: {
+      fillable: true,
+      required: true,
+      validation: {
+        rule: schema.string(),
+        message: {
+          string: 'token must be a string',
+          required: 'token is required',
+        },
+      },
+    },
+
     clientId: {
       fillable: true,
       required: true,

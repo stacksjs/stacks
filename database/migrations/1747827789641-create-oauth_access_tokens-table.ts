@@ -5,6 +5,7 @@ export async function up(db: Database<any>) {
   await db.schema
     .createTable('oauth_access_tokens')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
+    .addColumn('token', 'varchar(255)', col => col.notNull())
     .addColumn('client_id', 'integer', col => col.notNull())
     .addColumn('name', 'varchar(191)')
     .addColumn('scopes', 'varchar(255)')
