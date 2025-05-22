@@ -76,6 +76,7 @@ async function main() {
   cmd.schedule(buddy)
   cmd.test(buddy)
   cmd.tinker(buddy)
+  cmd.token(buddy)
   cmd.version(buddy)
   cmd.prepublish(buddy)
   cmd.upgrade(buddy)

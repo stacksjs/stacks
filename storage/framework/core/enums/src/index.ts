@@ -60,6 +60,7 @@ export enum Action {
   Changelog = 'changelog',
   CheckPorts = 'check/ports',
   Clean = 'clean',
+  CreatePersonalAccessClient = 'auth/token',
   DevComponents = 'dev/components',
   DevDashboard = 'dev/dashboard',
   DevSystemTray = 'dev/system-tray',
