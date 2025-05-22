@@ -18,6 +18,8 @@ interface CustomAttributes {
 
 type NumericField = 'id' | 'age' | 'count' | 'quantity' | 'amount' | 'price' | 'total' | 'score' | 'rating' | 'duration' | 'size' | 'weight' | 'height' | 'width' | 'length' | 'distance' | 'speed' | 'temperature' | 'volume' | 'capacity' | 'density' | 'pressure' | 'force' | 'energy' | 'power' | 'frequency' | 'voltage' | 'current' | 'resistance' | 'time' | 'date' | 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' | 'millisecond' | 'microsecond' | 'nanosecond'
 
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS' | 'CONNECT' | 'TRACE'
+
 export interface RequestInstance {
   query: RequestData
   params: RouteParams
@@ -44,6 +46,7 @@ export interface RequestInstance {
   browser: () => string | null
   ip: () => string | null
   ipForRateLimit: () => string | null
+  getMethod: () => HttpMethod
 }
 
 export type Request = RequestInstance
