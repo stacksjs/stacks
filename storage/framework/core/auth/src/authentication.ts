@@ -8,6 +8,7 @@ import { request } from '@stacksjs/router'
 import { makeHash, verifyHash } from '@stacksjs/security'
 import { RateLimiter } from './rate-limiter'
 import { formatDate } from '@stacksjs/orm'
+
 interface Credentials {
   password: string | undefined
   email: string | undefined
@@ -16,6 +17,41 @@ interface Credentials {
 
 export class Authentication {
   private static authUser: UserJsonResponse | undefined = undefined
+
+  private static async checkOAuthClients(): Promise<void> {
+    const clientCount = await db.selectFrom('oauth_clients')
+      .select(db.fn.count('id').as('count'))
+      .executeTakeFirst()
+
+    if (!clientCount?.count || Number(clientCount.count) === 0)
+      throw new HttpError(500, 'No OAuth clients found. Please run `./buddy auth:token` to create a personal access client.')
+  }
+
+  private static async getPersonalAccessClient(): Promise<number> {
+    const client = await db.selectFrom('oauth_clients')
+      .where('personal_access_client', '=', true)
+      .select('id')
+      .executeTakeFirst()
+
+    if (!client)
+      throw new HttpError(500, 'No personal access client found. Please run `./buddy auth:token` to create a personal access client.')
+
+    return client.id
+  }
+
+  private static async validateClient(clientId: number, clientSecret: string): Promise<boolean> {
+    await this.checkOAuthClients()
+
+    const client = await db.selectFrom('oauth_clients')
+      .where('id', '=', clientId)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!client)
+      return false
+
+    return client.secret === clientSecret
+  }
 
   public static async attempt(credentials: Credentials): Promise<boolean> {
     const username = config.auth.username || 'email'
@@ -50,6 +86,9 @@ export class Authentication {
   }
 
   public static async createToken(user: UserJsonResponse, name: string = config.auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
+    await this.checkOAuthClients()
+    const clientId = await this.getPersonalAccessClient()
+
     const token = randomBytes(40).toString('hex')
     const hashedToken = await makeHash(token, { algorithm: 'bcrypt' })
     const tokenExpiry = config.auth.tokenExpiry || 30 * 24 * 60 * 60 * 1000
@@ -57,7 +96,7 @@ export class Authentication {
     const result = await db.insertInto('oauth_access_tokens')
       .values({
         user_id: user.id,
-        oauth_client_id: 1, // Using default client ID for system authentication
+        oauth_client_id: clientId,
         name,
         token: hashedToken,
         scopes: '[]',
@@ -72,6 +111,23 @@ export class Authentication {
     const insertId = result.insertId || Number(result.numInsertedOrUpdatedRows)
 
     return `${insertId}:${token}` as AuthToken
+  }
+
+  public static async requestToken(credentials: Credentials, clientId: number, clientSecret: string): Promise<{ token: AuthToken } | null> {
+    // First validate the client
+    const isValidClient = await this.validateClient(clientId, clientSecret)
+    if (!isValidClient)
+      throw new HttpError(401, 'Invalid client credentials')
+
+    // Then attempt to authenticate the user
+    const isValid = await this.attempt(credentials)
+    if (!isValid || !this.authUser)
+      return null
+
+    // Create user token
+    const token = await this.createToken(this.authUser, 'user-auth-token')
+
+    return { token }
   }
 
   public static async login(credentials: Credentials): Promise<{ token: AuthToken } | null> {
