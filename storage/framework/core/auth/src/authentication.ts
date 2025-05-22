@@ -57,7 +57,7 @@ export class Authentication {
     const result = await db.insertInto('oauth_access_tokens')
       .values({
         user_id: user.id,
-        o_auth_client_id: 1, // Using default client ID for system authentication
+        oauth_client_id: 1, // Using default client ID for system authentication
         name,
         token: hashedToken,
         scopes: '[]',

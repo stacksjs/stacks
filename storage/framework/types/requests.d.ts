@@ -434,7 +434,7 @@ interface RequestDataPersonalAccessToken {
   name: string
   token: string
   plain_text_token: string
-  abilities: string[] | string
+  abilities: string
   last_used_at: timestamp
   expires_at: timestamp
   revoked_at: timestamp
@@ -454,7 +454,7 @@ export interface PersonalAccessTokenRequestType extends Request {
   name: string
   token: string
   plain_text_token: string
-  abilities: string[] | string
+  abilities: string
   last_used_at: timestamp
   expires_at: timestamp
   revoked_at: timestamp

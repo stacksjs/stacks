@@ -1,6 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { OAuthClientModel } from './OAuthClient'
+import type { OauthClientModel } from './OauthClient'
 import type { UserModel } from './User'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -188,8 +188,8 @@ export class OauthAccessTokenModel extends BaseOrm<OauthAccessTokenModel, OauthA
     return this.attributes.o_auth_client_id
   }
 
-  get o_auth_client(): OAuthClientModel | undefined {
-    return this.attributes.o_auth_client
+  get oauth_client(): OauthClientModel | undefined {
+    return this.attributes.oauth_client
   }
 
   get id(): number {
@@ -836,11 +836,11 @@ export class OauthAccessTokenModel extends BaseOrm<OauthAccessTokenModel, OauthA
     return model
   }
 
-  async oAuthClientBelong(): Promise<OAuthClientModel> {
+  async oauthClientBelong(): Promise<OauthClientModel> {
     if (this.o_auth_client_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const model = await OAuthClient
+    const model = await OauthClient
       .where('id', '=', this.o_auth_client_id)
       .first()
 
@@ -879,7 +879,7 @@ export class OauthAccessTokenModel extends BaseOrm<OauthAccessTokenModel, OauthA
       user_id: this.user_id,
       user: this.user,
       o_auth_client_id: this.o_auth_client_id,
-      o_auth_client: this.o_auth_client,
+      oauth_client: this.oauth_client,
       ...this.customColumns,
     }
 

@@ -63,7 +63,7 @@ export default {
       fillable: true,
       required: true,
       validation: {
-        rule: schema.enum(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']),
+        rule: schema.string().max(255),
         message: {
           required: 'abilities is required',
           string: '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',

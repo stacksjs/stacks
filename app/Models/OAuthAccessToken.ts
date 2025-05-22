@@ -12,8 +12,8 @@ export default {
       foreignKey: 'user_id',
     },
     {
-      model: 'OAuthClient',
-      foreignKey: 'client_id',
+      model: 'OauthClient',
+      foreignKey: 'oauth_client_id',
     },
   ],
   traits: {

@@ -28,7 +28,7 @@ export interface Attributes {
   job_title: string
   password: string
   plain_text_token: string
-  abilities: string | string[]
+  abilities: string
   last_used_at: number
   revoked_at: number
   ip_address: string
