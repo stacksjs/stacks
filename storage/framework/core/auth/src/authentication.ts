@@ -54,14 +54,14 @@ export class Authentication {
     const hashedToken = await makeHash(token, { algorithm: 'bcrypt' })
     const tokenExpiry = config.auth.tokenExpiry || 30 * 24 * 60 * 60 * 1000
 
-    const result = await db.insertInto('personal_access_tokens')
+    const result = await db.insertInto('oauth_access_tokens')
       .values({
         user_id: user.id,
+        o_auth_client_id: 1, // Using default client ID for system authentication
         name,
         token: hashedToken,
-        plain_text_token: token,
-        abilities: JSON.stringify(config.auth.defaultAbilities),
-        last_used_at: new Date().getTime(),
+        scopes: '[]',
+        revoked: false,
         expires_at: new Date(Date.now() + tokenExpiry).getTime(),
       })
       .executeTakeFirst()
@@ -91,7 +91,7 @@ export class Authentication {
     if (!tokenId || !plainToken)
       return null
 
-    const accessToken = await db.selectFrom('personal_access_tokens')
+    const accessToken = await db.selectFrom('oauth_access_tokens')
       .where('id', '=', Number(tokenId))
       .selectAll()
       .executeTakeFirst()
@@ -109,11 +109,10 @@ export class Authentication {
     const hashedNewToken = await makeHash(newToken, { algorithm: 'bcrypt' })
 
     // Update the token
-    await db.updateTable('personal_access_tokens')
+    await db.updateTable('oauth_access_tokens')
       .set({
         token: hashedNewToken,
         updated_at: new Date().toISOString(),
-        last_used_at: new Date().getTime(),
       })
       .where('id', '=', accessToken.id)
       .execute()
@@ -126,7 +125,7 @@ export class Authentication {
     if (!tokenId || !plainToken)
       return false
 
-    const accessToken = await db.selectFrom('personal_access_tokens')
+    const accessToken = await db.selectFrom('oauth_access_tokens')
       .where('id', '=', Number(tokenId))
       .selectAll()
       .executeTakeFirst()
@@ -138,18 +137,14 @@ export class Authentication {
     if (accessToken.expires_at && new Date(accessToken.expires_at) < new Date())
       return false
 
+    // Check if token is revoked
+    if (accessToken.revoked)
+      return false
+
     // Verify the token
     const isValid = await verifyHash(plainToken, accessToken.token, 'bcrypt')
     if (!isValid)
       return false
-
-    // Update last used timestamp
-    await db.updateTable('personal_access_tokens')
-      .set({
-        last_used_at: new Date().getTime(),
-      })
-      .where('id', '=', accessToken.id)
-      .execute()
 
     return true
   }
@@ -159,7 +154,7 @@ export class Authentication {
     if (!tokenId)
       return undefined
 
-    const accessToken = await db.selectFrom('personal_access_tokens')
+    const accessToken = await db.selectFrom('oauth_access_tokens')
       .where('id', '=', Number(tokenId))
       .selectAll()
       .executeTakeFirst()
@@ -180,7 +175,11 @@ export class Authentication {
     if (!tokenId)
       return
 
-    await db.deleteFrom('personal_access_tokens')
+    await db.updateTable('oauth_access_tokens')
+      .set({
+        revoked: true,
+        updated_at: new Date().toISOString(),
+      })
       .where('id', '=', Number(tokenId))
       .execute()
   }
