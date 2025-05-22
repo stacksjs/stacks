@@ -2,12 +2,12 @@ import type { UserJsonResponse } from '@stacksjs/orm'
 import type { AuthToken } from './token'
 import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
-import { db, sql } from '@stacksjs/database'
+import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
+import { formatDate } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
 import { makeHash, verifyHash } from '@stacksjs/security'
 import { RateLimiter } from './rate-limiter'
-import { formatDate } from '@stacksjs/orm'
 
 interface Credentials {
   password: string | undefined

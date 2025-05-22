@@ -1,7 +1,7 @@
+import type { Ok } from '@stacksjs/error-handling'
 import { randomBytes } from 'node:crypto'
-import { db, sql } from '@stacksjs/database'
-import { HttpError, type Ok } from '@stacksjs/error-handling'
-import { ok } from '@stacksjs/error-handling'
+import { db } from '@stacksjs/database'
+import { HttpError, ok } from '@stacksjs/error-handling'
 
 export async function createPersonalAccessClient(userId: number): Promise<Ok<string, never>> {
   const secret = randomBytes(40).toString('hex')

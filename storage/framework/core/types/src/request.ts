@@ -1,4 +1,4 @@
-import type { RouteParam, VineType, AuthToken } from '@stacksjs/types'
+import type { AuthToken, RouteParam, VineType } from '@stacksjs/types'
 
 export type * from '../../../types/requests'
 interface RequestData {

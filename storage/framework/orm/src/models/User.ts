@@ -16,8 +16,6 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-import { makeHash } from '@stacksjs/security'
-
 export interface UsersTable {
   id: Generated<number>
   name: string

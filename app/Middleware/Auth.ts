@@ -1,8 +1,7 @@
-import { Middleware } from '@stacksjs/router'
+import type { RequestInstance } from '@stacksjs/types'
 import { Authentication } from '@stacksjs/auth'
 import { HttpError } from '@stacksjs/error-handling'
-import { RequestInstance } from '@stacksjs/types'
-
+import { Middleware } from '@stacksjs/router'
 
 export default new Middleware({
   name: 'Auth',
@@ -18,4 +17,4 @@ export default new Middleware({
     if (!isValid)
       throw new HttpError(401, 'Unauthorized. Invalid token.')
   },
-}) 
+})

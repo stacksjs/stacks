@@ -44,6 +44,7 @@ async function main() {
     }
   }
 
+  cmd.auth(buddy)
   cmd.build(buddy)
   cmd.changelog(buddy)
   cmd.clean(buddy)
@@ -76,7 +77,6 @@ async function main() {
   cmd.schedule(buddy)
   cmd.test(buddy)
   cmd.tinker(buddy)
-  cmd.token(buddy)
   cmd.version(buddy)
   cmd.prepublish(buddy)
   cmd.upgrade(buddy)

@@ -1,8 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { Authentication } from '@stacksjs/auth'
-import { schema } from '@stacksjs/validation'
 import { response } from '@stacksjs/router'
+import { schema } from '@stacksjs/validation'
 
 export default new Action({
   name: 'LoginAction',
