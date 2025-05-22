@@ -281,7 +281,7 @@ export interface OauthAccessTokenRequestType extends Request {
   updated_at?: string
 }
 
-interface RequestDataOAuthClient {
+interface RequestDataOauthClient {
   id: number
   name: string
   secret: string
@@ -293,10 +293,10 @@ interface RequestDataOAuthClient {
   created_at?: string
   updated_at?: string
 }
-export interface OAuthClientRequestType extends Request {
+export interface OauthClientRequestType extends Request {
   validate: (attributes?: CustomAttributes) => Promise<void>
   get: <T = string>(element: string, defaultValue?: T) => T
-  all: () => RequestDataOAuthClient
+  all: () => RequestDataOauthClient
   id: number
   name: string
   secret: string
@@ -1759,4 +1759,4 @@ export interface ErrorRequestType extends Request {
   updated_at?: string
 }
 
-export type ModelRequest = MigrationsRequestType | PasswordResetsRequestType | PasskeysRequestType | CommentablesRequestType | CommentableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestTypeProjectRequestType | SubscriberEmailRequestType | OauthAccessTokenRequestType | OAuthClientRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PersonalAccessTokenRequestType | PrintDeviceRequestType | CategoryRequestType | PaymentRequestType | DriverRequestType | WaitlistProductRequestType | DigitalDeliveryRequestType | ManufacturerRequestType | OrderItemRequestType | ShippingZoneRequestType | CustomerRequestType | ProductRequestType | ReceiptRequestType | ProductVariantRequestType | LicenseKeyRequestType | WaitlistRestaurantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TaxRateRequestType | TransactionRequestType | LoyaltyPointRequestType | ProductItemRequestType | LoyaltyRewardRequestType | ShippingMethodRequestType | ShippingRateRequestType | CartRequestType | DeliveryRouteRequestType | CartItemRequestType | PaymentProductRequestType | FailedJobRequestType | PaymentMethodRequestType | PageRequestType | AuthorRequestType | PostRequestType | PaymentTransactionRequestType | WebsocketRequestType | RequestRequestType | JobRequestType | LogRequestType | SubscriptionRequestType | ErrorRequestType
+export type ModelRequest = MigrationsRequestType | PasswordResetsRequestType | PasskeysRequestType | CommentablesRequestType | CommentableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestTypeProjectRequestType | SubscriberEmailRequestType | OauthAccessTokenRequestType | OauthClientRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PersonalAccessTokenRequestType | PrintDeviceRequestType | CategoryRequestType | PaymentRequestType | DriverRequestType | WaitlistProductRequestType | DigitalDeliveryRequestType | ManufacturerRequestType | OrderItemRequestType | ShippingZoneRequestType | CustomerRequestType | ProductRequestType | ReceiptRequestType | ProductVariantRequestType | LicenseKeyRequestType | WaitlistRestaurantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TaxRateRequestType | TransactionRequestType | LoyaltyPointRequestType | ProductItemRequestType | LoyaltyRewardRequestType | ShippingMethodRequestType | ShippingRateRequestType | CartRequestType | DeliveryRouteRequestType | CartItemRequestType | PaymentProductRequestType | FailedJobRequestType | PaymentMethodRequestType | PageRequestType | AuthorRequestType | PostRequestType | PaymentTransactionRequestType | WebsocketRequestType | RequestRequestType | JobRequestType | LogRequestType | SubscriptionRequestType | ErrorRequestType

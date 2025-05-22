@@ -38,7 +38,7 @@ export { default as Manufacturer, type ManufacturerJsonResponse, type Manufactur
 
 export { type NewOauthAccessToken, default as OauthAccessToken, type OauthAccessTokenJsonResponse, type OauthAccessTokenUpdate } from './models/OauthAccessToken'
 
-export { type NewOAuthClient, default as OAuthClient, type OAuthClientJsonResponse, type OAuthClientUpdate } from './models/OAuthClient'
+export { type NewOauthClient, default as OauthClient, type OauthClientJsonResponse, type OauthClientUpdate } from './models/OauthClient'
 
 export { type NewOrder, default as Order, type OrderJsonResponse, type OrderUpdate } from './models/Order'
 

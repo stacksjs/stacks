@@ -1,5 +1,5 @@
 import type { schema } from '@stacksjs/validation'
-import type { OAuthClientRequestType } from '../types/requests'
+import type { OauthClientRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -11,7 +11,7 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataOAuthClient {
+interface RequestDataOauthClient {
   id: number
   name: string
   secret: string
@@ -23,7 +23,7 @@ interface RequestDataOAuthClient {
   created_at?: string
   updated_at?: string
 }
-export class OAuthClientRequest extends Request<RequestDataOAuthClient> implements OAuthClientRequestType {
+export class OauthClientRequest extends Request<RequestDataOauthClient> implements OauthClientRequestType {
   public id = 1
   public name = ''
   public secret = ''
@@ -37,7 +37,7 @@ export class OAuthClientRequest extends Request<RequestDataOAuthClient> implemen
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('OAuthClient', this.all())
+      await validateField('OauthClient', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -45,4 +45,4 @@ export class OAuthClientRequest extends Request<RequestDataOAuthClient> implemen
   }
 }
 
-export const oAuthClientRequest = new OAuthClientRequest()
+export const oauthClientRequest = new OauthClientRequest()

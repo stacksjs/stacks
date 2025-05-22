@@ -10,8 +10,7 @@ export class TokenManager {
 
     const result = await db.insertInto('oauth_access_tokens')
       .values({
-        client_id: 1, // Fixed client ID
-        o_auth_client_id: 1, // Fixed OAuth client ID
+        oauth_client_id: 1, // Fixed OAuth client ID
         user_id: user.id,
         token,
         name: 'auth-token',

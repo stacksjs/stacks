@@ -11,7 +11,7 @@ import { BaseOrm } from '../utils/base'
 export interface OauthAccessTokensTable {
   id: Generated<number>
   user_id: number
-  o_auth_client_id: number
+  oauth_client_id: number
   token: string
   name?: string
   scopes?: string
@@ -184,8 +184,8 @@ export class OauthAccessTokenModel extends BaseOrm<OauthAccessTokenModel, OauthA
     return this.attributes.user
   }
 
-  get o_auth_client_id(): number {
-    return this.attributes.o_auth_client_id
+  get oauth_client_id(): number {
+    return this.attributes.oauth_client_id
   }
 
   get oauth_client(): OauthClientModel | undefined {
@@ -837,11 +837,11 @@ export class OauthAccessTokenModel extends BaseOrm<OauthAccessTokenModel, OauthA
   }
 
   async oauthClientBelong(): Promise<OauthClientModel> {
-    if (this.o_auth_client_id === undefined)
+    if (this.oauth_client_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
     const model = await OauthClient
-      .where('id', '=', this.o_auth_client_id)
+      .where('id', '=', this.oauth_client_id)
       .first()
 
     if (!model)
@@ -878,7 +878,7 @@ export class OauthAccessTokenModel extends BaseOrm<OauthAccessTokenModel, OauthA
 
       user_id: this.user_id,
       user: this.user,
-      o_auth_client_id: this.o_auth_client_id,
+      oauth_client_id: this.oauth_client_id,
       oauth_client: this.oauth_client,
       ...this.customColumns,
     }

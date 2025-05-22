@@ -2,12 +2,13 @@ import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
 export default {
-  name: 'OAuthClient',
+  name: 'OauthClient',
   description: 'An OAuth 2.0 client application',
   table: 'oauth_clients',
   primaryKey: 'id',
   autoIncrement: true,
   belongsTo: ['User'],
+  hasMany: ['OauthAccessToken'],
   traits: {
     useTimestamps: true,
     useSeeder: {
