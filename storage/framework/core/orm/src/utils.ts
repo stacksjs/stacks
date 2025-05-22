@@ -1349,7 +1349,9 @@ export function mapEntity(attribute: ModelElement): string | undefined {
     case 'date':
       return 'Date | string'
     case 'timestamp':
-      return 'number'
+      return 'Date | string'
+    case 'datetime':
+      return 'Date | string'
     default:
       return entity
   }

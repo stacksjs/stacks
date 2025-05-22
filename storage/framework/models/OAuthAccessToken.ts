@@ -72,9 +72,9 @@ export default {
     expiresAt: {
       fillable: true,
       validation: {
-        rule: schema.timestamp(),
+        rule: schema.date().datetime(),
         message: {
-          timestamp: 'expiresAt must be a valid timestamp',
+          date: 'expiresAt must be a valid date',
         },
       },
     },

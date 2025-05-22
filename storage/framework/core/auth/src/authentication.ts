@@ -2,7 +2,7 @@ import type { UserJsonResponse } from '@stacksjs/orm'
 import type { AuthToken } from './token'
 import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { request } from '@stacksjs/router'
 import { makeHash, verifyHash } from '@stacksjs/security'
@@ -62,7 +62,7 @@ export class Authentication {
         token: hashedToken,
         scopes: '[]',
         revoked: false,
-        expires_at: new Date(Date.now() + tokenExpiry).getTime(),
+        expires_at: sql`${new Date(Date.now() + tokenExpiry).toISOString()}`,
       })
       .executeTakeFirst()
 

@@ -146,6 +146,8 @@ async function createTableMigration(modelPath: string): Promise<void> {
     const fieldOptions = options as Attribute
     const fieldNameFormatted = snakeCase(fieldName)
 
+    if (modelName === 'OauthAccessToken')
+      console.log(fieldOptions.validation?.rule)
     const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
