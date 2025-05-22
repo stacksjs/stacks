@@ -170,6 +170,17 @@ async function createTableMigration(modelPath: string): Promise<void> {
     migrationContent += `)\n`
   }
 
+  if (otherModelRelations?.length) {
+    for (const modelRelation of otherModelRelations) {
+      if (!modelRelation.foreignKey)
+        continue
+
+      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
+        col.references('${modelRelation.relationTable}.id').onDelete('cascade')
+      ) \n`
+    }
+  }
+
   if (twoFactorEnabled !== false && twoFactorEnabled)
     migrationContent += `    .addColumn('two_factor_secret', 'varchar(255)')\n`
 
@@ -188,17 +199,6 @@ async function createTableMigration(modelPath: string): Promise<void> {
   // Append deleted_at column if useSoftDeletes is true
   if (useSoftDeletes)
     migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
-
-  if (otherModelRelations?.length) {
-    for (const modelRelation of otherModelRelations) {
-      if (!modelRelation.foreignKey)
-        continue
-
-      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
-        col.references('${modelRelation.relationTable}.id').onDelete('cascade')
-      ) \n`
-    }
-  }
 
   migrationContent += `    .execute()\n`
 

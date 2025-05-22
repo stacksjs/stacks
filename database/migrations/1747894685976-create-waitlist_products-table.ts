@@ -17,12 +17,12 @@ export async function up(db: Database<any>) {
     .addColumn('notified_at', 'timestamp')
     .addColumn('purchased_at', 'timestamp')
     .addColumn('cancelled_at', 'timestamp')
-    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
-    .addColumn('updated_at', 'timestamp')
     .addColumn('customer_id', 'integer', col =>
       col.references('customers.id').onDelete('cascade'))
     .addColumn('product_id', 'integer', col =>
       col.references('products.id').onDelete('cascade'))
+    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
+    .addColumn('updated_at', 'timestamp')
     .execute()
   await db.schema.createIndex('waitlist_products_customer_id_index').on('waitlist_products').column('customer_id').execute()
 

@@ -12,10 +12,10 @@ export async function up(db: Database<any>) {
     .addColumn('delivery_time', 'integer', col => col.notNull())
     .addColumn('total_distance', 'integer', col => col.notNull())
     .addColumn('last_active', 'date')
-    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
-    .addColumn('updated_at', 'timestamp')
     .addColumn('driver_id', 'integer', col =>
       col.references('drivers.id').onDelete('cascade'))
+    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
+    .addColumn('updated_at', 'timestamp')
     .execute()
   await db.schema.createIndex('delivery_routes_driver_id_index').on('delivery_routes').column('driver_id').execute()
 

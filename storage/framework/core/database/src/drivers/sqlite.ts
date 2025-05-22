@@ -202,6 +202,17 @@ async function createTableMigration(modelPath: string) {
     migrationContent += `)\n`
   }
 
+  if (otherModelRelations?.length) {
+    for (const modelRelation of otherModelRelations) {
+      if (!modelRelation.foreignKey)
+        continue
+
+      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
+        col.references('${modelRelation.relationTable}.id').onDelete('cascade')
+      ) \n`
+    }
+  }
+
   if (twoFactorEnabled !== false && twoFactorEnabled)
     migrationContent += `    .addColumn('two_factor_secret', 'text')\n`
 
@@ -241,17 +252,6 @@ async function createTableMigration(modelPath: string) {
         continue
 
       migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
-    }
-  }
-
-  if (otherModelRelations?.length) {
-    for (const modelRelation of otherModelRelations) {
-      if (!modelRelation.foreignKey)
-        continue
-
-      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
-        col.references('${modelRelation.relationTable}.id').onDelete('cascade')
-      ) \n`
     }
   }
 

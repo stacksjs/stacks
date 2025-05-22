@@ -15,12 +15,12 @@ export async function up(db: Database<any>) {
     .addColumn('preparation_time', 'integer', col => col.notNull())
     .addColumn('allergens', 'varchar(255)')
     .addColumn('nutritional_info', 'varchar(255)')
-    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
-    .addColumn('updated_at', 'timestamp')
     .addColumn('category_id', 'integer', col =>
       col.references('categories.id').onDelete('cascade'))
     .addColumn('manufacturer_id', 'integer', col =>
       col.references('manufacturers.id').onDelete('cascade'))
+    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
+    .addColumn('updated_at', 'timestamp')
     .execute()
   await db.schema.createIndex('products_category_id_index').on('products').column('category_id').execute()
 

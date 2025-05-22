@@ -8,11 +8,11 @@ export async function up(db: Database<any>) {
     .addColumn('uuid', 'varchar(255)')
     .addColumn('name', 'varchar(255)', col => col.notNull())
     .addColumn('email', 'varchar(255)', col => col.unique().notNull())
+    .addColumn('user_id', 'integer', col =>
+      col.references('users.id').onDelete('cascade'))
     .addColumn('public_passkey', 'varchar(255)')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
-    .addColumn('user_id', 'integer', col =>
-      col.references('users.id').onDelete('cascade'))
     .execute()
 
   await db.schema.createIndex('authors_email_name_index').on('authors').columns(['email', 'name']).execute()

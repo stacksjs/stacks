@@ -16,12 +16,12 @@ export async function up(db: Database<any>) {
     .addColumn('unhelpful_votes', 'integer', col => col.defaultTo(0))
     .addColumn('purchase_date', 'varchar(255)')
     .addColumn('images', 'varchar(255)')
-    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
-    .addColumn('updated_at', 'timestamp')
     .addColumn('customer_id', 'integer', col =>
       col.references('customers.id').onDelete('cascade'))
     .addColumn('product_id', 'integer', col =>
       col.references('products.id').onDelete('cascade'))
+    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
+    .addColumn('updated_at', 'timestamp')
     .execute()
   await db.schema.createIndex('reviews_customer_id_index').on('reviews').column('customer_id').execute()
 

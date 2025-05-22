@@ -11,10 +11,10 @@ export async function up(db: Database<any>) {
     .addColumn('vehicle_number', 'varchar(255)', col => col.notNull())
     .addColumn('license', 'varchar(255)', col => col.notNull())
     .addColumn('status', sql`enum('active', 'on_delivery', 'on_break')`, col => col.defaultTo('active'))
-    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
-    .addColumn('updated_at', 'timestamp')
     .addColumn('user_id', 'integer', col =>
       col.references('users.id').onDelete('cascade'))
+    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
+    .addColumn('updated_at', 'timestamp')
     .execute()
   await db.schema.createIndex('drivers_user_id_index').on('drivers').column('user_id').execute()
 
