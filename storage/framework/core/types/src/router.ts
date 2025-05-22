@@ -56,7 +56,7 @@ export interface MiddlewareOptions {
   name: string
   description?: string
   priority: number
-  handle: (request?: Request) => Promise<void> | void
+  handle: (request: Request) => Promise<void> | void
 }
 
 export type StatusCode = 200 | 201 | 202 | 204 | 301 | 302 | 304 | 400 | 401 | 403 | 404 | 500
