@@ -3,3 +3,5 @@ export * from './authenticator'
 export * from './passkey'
 
 export * from './password/reset'
+
+export * from './client'

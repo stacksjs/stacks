@@ -16,7 +16,6 @@ export async function createPersonalAccessClient(userId: number): Promise<Ok<str
       personal_access_client: true,
       password_client: false,
       revoked: false,
-      created_at: sql`${new Date().toISOString()}`,
     })
     .executeTakeFirst()
 
