@@ -14,7 +14,7 @@ export interface LoyaltyPointsTable {
   source: string
   source_reference_id?: string
   description?: string
-  expiry_date?: number
+  expiry_date?: Date | string
   is_used?: boolean
   uuid?: string
 
@@ -204,7 +204,7 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return this.attributes.description
   }
 
-  get expiry_date(): number | undefined {
+  get expiry_date(): Date | string | undefined {
     return this.attributes.expiry_date
   }
 
@@ -244,7 +244,7 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     this.attributes.description = value
   }
 
-  set expiry_date(value: number) {
+  set expiry_date(value: Date | string) {
     this.attributes.expiry_date = value
   }
 
@@ -1017,7 +1017,7 @@ export async function whereDescription(value: string): Promise<LoyaltyPointModel
   return results.map((modelItem: LoyaltyPointJsonResponse) => new LoyaltyPointModel(modelItem))
 }
 
-export async function whereExpiryDate(value: number): Promise<LoyaltyPointModel[]> {
+export async function whereExpiryDate(value: Date | string): Promise<LoyaltyPointModel[]> {
   const query = DB.instance.selectFrom('loyalty_points').where('expiry_date', '=', value)
   const results: LoyaltyPointJsonResponse = await query.execute()
 

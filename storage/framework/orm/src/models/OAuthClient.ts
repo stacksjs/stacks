@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { OauthAccessTokenModel } from './OauthAccessToken'
 import type { UserModel } from './User'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -174,6 +175,10 @@ export class OauthClientModel extends BaseOrm<OauthClientModel, OauthClientsTabl
     for (const [key, fn] of Object.entries(customSetter)) {
       (model as any)[key] = await fn()
     }
+  }
+
+  get oauth_access_tokens(): OauthAccessTokenModel[] | [] {
+    return this.attributes.oauth_access_tokens
   }
 
   get user_id(): number {
@@ -888,6 +893,7 @@ export class OauthClientModel extends BaseOrm<OauthClientModel, OauthClientsTabl
 
       updated_at: this.updated_at,
 
+      oauth_access_tokens: this.oauth_access_tokens,
       user_id: this.user_id,
       user: this.user,
       ...this.customColumns,

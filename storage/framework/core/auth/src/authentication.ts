@@ -7,7 +7,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import { request } from '@stacksjs/router'
 import { makeHash, verifyHash } from '@stacksjs/security'
 import { RateLimiter } from './rate-limiter'
-
+import { formatDate } from '@stacksjs/orm'
 interface Credentials {
   password: string | undefined
   email: string | undefined
@@ -62,7 +62,7 @@ export class Authentication {
         token: hashedToken,
         scopes: '[]',
         revoked: false,
-        expires_at: sql`${new Date(Date.now() + tokenExpiry).toISOString()}`,
+        expires_at: formatDate(new Date(Date.now() + tokenExpiry)),
       })
       .executeTakeFirst()
 
@@ -87,7 +87,7 @@ export class Authentication {
   }
 
   public static async rotateToken(oldToken: string): Promise<AuthToken | null> {
-    const [tokenId, plainToken] = oldToken.split('|')
+    const [tokenId, plainToken] = oldToken.split(':')
     if (!tokenId || !plainToken)
       return null
 
@@ -121,7 +121,7 @@ export class Authentication {
   }
 
   public static async validateToken(token: string): Promise<boolean> {
-    const [tokenId, plainToken] = token.split('|')
+    const [tokenId, plainToken] = token.split(':')
     if (!tokenId || !plainToken)
       return false
 
@@ -150,7 +150,7 @@ export class Authentication {
   }
 
   public static async getUserFromToken(token: string): Promise<UserJsonResponse | undefined> {
-    const [tokenId] = token.split('|')
+    const [tokenId] = token.split(':')
     if (!tokenId)
       return undefined
 
@@ -171,7 +171,7 @@ export class Authentication {
   }
 
   public static async revokeToken(token: string): Promise<void> {
-    const [tokenId] = token.split('|')
+    const [tokenId] = token.split(':')
     if (!tokenId)
       return
 

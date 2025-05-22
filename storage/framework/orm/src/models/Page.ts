@@ -14,7 +14,7 @@ export interface PagesTable {
   title: string
   template: string
   views?: number
-  published_at?: number
+  published_at?: Date | string
   conversions?: number
   uuid?: string
 
@@ -204,7 +204,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
     return this.attributes.views
   }
 
-  get published_at(): number | undefined {
+  get published_at(): Date | string | undefined {
     return this.attributes.published_at
   }
 
@@ -236,7 +236,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
     this.attributes.views = value
   }
 
-  set published_at(value: number) {
+  set published_at(value: Date | string) {
     this.attributes.published_at = value
   }
 
@@ -968,7 +968,7 @@ export async function whereViews(value: number): Promise<PageModel[]> {
   return results.map((modelItem: PageJsonResponse) => new PageModel(modelItem))
 }
 
-export async function wherePublishedAt(value: number): Promise<PageModel[]> {
+export async function wherePublishedAt(value: Date | string): Promise<PageModel[]> {
   const query = DB.instance.selectFrom('pages').where('published_at', '=', value)
   const results: PageJsonResponse = await query.execute()
 

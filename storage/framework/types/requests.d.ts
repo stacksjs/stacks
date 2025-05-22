@@ -261,7 +261,8 @@ interface RequestDataOauthAccessToken {
   name: string
   scopes: string
   revoked: boolean
-  expires_at: timestamp
+  expires_at: datetime
+  oauth_client_id: number
   user_id: number
   created_at?: string
   updated_at?: string
@@ -275,7 +276,8 @@ export interface OauthAccessTokenRequestType extends Request {
   name: string
   scopes: string
   revoked: boolean
-  expires_at: timestamp
+  expires_at: datetime
+  oauth_client_id: number
   user_id: number
   created_at?: string
   updated_at?: string

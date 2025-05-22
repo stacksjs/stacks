@@ -14,9 +14,9 @@ export interface PersonalAccessTokensTable {
   token: string
   plain_text_token: string
   abilities: string
-  last_used_at?: number
-  expires_at?: number
-  revoked_at?: number
+  last_used_at?: Date | string
+  expires_at?: Date | string
+  revoked_at?: Date | string
   ip_address?: string
   device_name?: string
   is_single_use?: boolean
@@ -207,15 +207,15 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
     return this.attributes.abilities
   }
 
-  get last_used_at(): number | undefined {
+  get last_used_at(): Date | string | undefined {
     return this.attributes.last_used_at
   }
 
-  get expires_at(): number | undefined {
+  get expires_at(): Date | string | undefined {
     return this.attributes.expires_at
   }
 
-  get revoked_at(): number | undefined {
+  get revoked_at(): Date | string | undefined {
     return this.attributes.revoked_at
   }
 
@@ -255,15 +255,15 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
     this.attributes.abilities = value
   }
 
-  set last_used_at(value: number) {
+  set last_used_at(value: Date | string) {
     this.attributes.last_used_at = value
   }
 
-  set expires_at(value: number) {
+  set expires_at(value: Date | string) {
     this.attributes.expires_at = value
   }
 
-  set revoked_at(value: number) {
+  set revoked_at(value: Date | string) {
     this.attributes.revoked_at = value
   }
 
@@ -1038,21 +1038,21 @@ export async function whereAbilities(value: string): Promise<PersonalAccessToken
   return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
 }
 
-export async function whereLastUsedAt(value: number): Promise<PersonalAccessTokenModel[]> {
+export async function whereLastUsedAt(value: Date | string): Promise<PersonalAccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('last_used_at', '=', value)
   const results: PersonalAccessTokenJsonResponse = await query.execute()
 
   return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
 }
 
-export async function whereExpiresAt(value: number): Promise<PersonalAccessTokenModel[]> {
+export async function whereExpiresAt(value: Date | string): Promise<PersonalAccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('expires_at', '=', value)
   const results: PersonalAccessTokenJsonResponse = await query.execute()
 
   return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
 }
 
-export async function whereRevokedAt(value: number): Promise<PersonalAccessTokenModel[]> {
+export async function whereRevokedAt(value: Date | string): Promise<PersonalAccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('revoked_at', '=', value)
   const results: PersonalAccessTokenJsonResponse = await query.execute()
 

@@ -17,7 +17,8 @@ interface RequestDataOauthAccessToken {
   name: string
   scopes: string
   revoked: boolean
-  expires_at: timestamp
+  expires_at: datetime
+  oauth_client_id: number
   user_id: number
   created_at?: string
   updated_at?: string
@@ -29,6 +30,7 @@ export class OauthAccessTokenRequest extends Request<RequestDataOauthAccessToken
   public scopes = ''
   public revoked = false
   public expires_at = ''
+  public oauth_client_id = 0
   public user_id = 0
   public created_at = ''
   public updated_at = ''

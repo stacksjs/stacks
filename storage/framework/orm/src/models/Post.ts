@@ -16,7 +16,7 @@ export interface PostsTable {
   content: string
   excerpt?: string
   views?: number
-  published_at?: number
+  published_at?: Date | string
   status: string | string[]
   is_featured?: number
   uuid?: string
@@ -215,7 +215,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return this.attributes.views
   }
 
-  get published_at(): number | undefined {
+  get published_at(): Date | string | undefined {
     return this.attributes.published_at
   }
 
@@ -259,7 +259,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     this.attributes.views = value
   }
 
-  set published_at(value: number) {
+  set published_at(value: Date | string) {
     this.attributes.published_at = value
   }
 
@@ -1108,7 +1108,7 @@ export async function whereViews(value: number): Promise<PostModel[]> {
   return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
 }
 
-export async function wherePublishedAt(value: number): Promise<PostModel[]> {
+export async function wherePublishedAt(value: Date | string): Promise<PostModel[]> {
   const query = DB.instance.selectFrom('posts').where('published_at', '=', value)
   const results: PostJsonResponse = await query.execute()
 

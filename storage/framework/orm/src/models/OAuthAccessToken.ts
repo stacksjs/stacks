@@ -16,7 +16,7 @@ export interface OauthAccessTokensTable {
   name?: string
   scopes?: string
   revoked: boolean
-  expires_at?: number
+  expires_at?: Date | string
 
   created_at?: string
 
@@ -51,7 +51,7 @@ export type OauthAccessTokenUpdate = Updateable<OauthAccessTokenWrite>
 
 export class OauthAccessTokenModel extends BaseOrm<OauthAccessTokenModel, OauthAccessTokensTable, OauthAccessTokenJsonResponse> {
   private readonly hidden: Array<keyof OauthAccessTokenJsonResponse> = []
-  private readonly fillable: Array<keyof OauthAccessTokenJsonResponse> = ['token', 'name', 'scopes', 'revoked', 'expires_at', 'uuid', 'user_id']
+  private readonly fillable: Array<keyof OauthAccessTokenJsonResponse> = ['token', 'name', 'scopes', 'revoked', 'expires_at', 'uuid', 'oauth_client_id', 'user_id']
   private readonly guarded: Array<keyof OauthAccessTokenJsonResponse> = []
   protected attributes = {} as OauthAccessTokenJsonResponse
   protected originalAttributes = {} as OauthAccessTokenJsonResponse
@@ -212,7 +212,7 @@ export class OauthAccessTokenModel extends BaseOrm<OauthAccessTokenModel, OauthA
     return this.attributes.revoked
   }
 
-  get expires_at(): number | undefined {
+  get expires_at(): Date | string | undefined {
     return this.attributes.expires_at
   }
 
@@ -240,7 +240,7 @@ export class OauthAccessTokenModel extends BaseOrm<OauthAccessTokenModel, OauthA
     this.attributes.revoked = value
   }
 
-  set expires_at(value: number) {
+  set expires_at(value: Date | string) {
     this.attributes.expires_at = value
   }
 
@@ -974,7 +974,7 @@ export async function whereRevoked(value: boolean): Promise<OauthAccessTokenMode
   return results.map((modelItem: OauthAccessTokenJsonResponse) => new OauthAccessTokenModel(modelItem))
 }
 
-export async function whereExpiresAt(value: number): Promise<OauthAccessTokenModel[]> {
+export async function whereExpiresAt(value: Date | string): Promise<OauthAccessTokenModel[]> {
   const query = DB.instance.selectFrom('oauth_access_tokens').where('expires_at', '=', value)
   const results: OauthAccessTokenJsonResponse = await query.execute()
 
