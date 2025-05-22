@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { Authentication } from '@stacksjs/auth'
 import { schema } from '@stacksjs/validation'
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'LoginAction',
@@ -32,16 +33,16 @@ export default new Action({
 
     if (result) {
       const user = await Authentication.getUserFromToken(result.token)
-      return {
+      return response.json({
         token: result.token,
         user: {
           id: user?.id,
           email: user?.email,
           name: user?.name,
         },
-      }
+      })
     }
 
-    return { message: 'Incorrect email or password', status: 401 }
+    return response.unauthorized('Incorrect email or password')
   },
 })

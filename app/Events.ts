@@ -1,5 +1,6 @@
 import type { Events } from '@stacksjs/types'
 
+
 /**
  * **Events Configuration**
  *
