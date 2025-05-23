@@ -242,6 +242,7 @@ export class Authentication {
 
   public static async logout(): Promise<void> {
     const bearerToken = request.bearerToken()
+
     if (bearerToken)
       await this.revokeToken(bearerToken)
 

@@ -14,6 +14,7 @@ import { dispatch } from '@stacksjs/events'
 
 import { DB } from '@stacksjs/orm'
 
+import { makeHash } from '@stacksjs/security'
 import { BaseOrm } from '../utils/base'
 
 export interface UsersTable {

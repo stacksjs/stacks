@@ -243,12 +243,12 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   }
 
   public getMethod(): HttpMethod {
-    const method = this.headers.get('x-http-method-override') || 
-                  this.headers.get('x-method-override') || 
-                  this.headers.get('x-requested-with') || 
-                  this.headers.get('method') || 
-                  'GET'
-    
+    const method = this.headers.get('x-http-method-override')
+      || this.headers.get('x-method-override')
+      || this.headers.get('x-requested-with')
+      || this.headers.get('method')
+      || 'GET'
+
     return method.toUpperCase() as HttpMethod
   }
 }

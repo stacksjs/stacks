@@ -13,7 +13,6 @@ import { fs, globSync } from '@stacksjs/storage'
 import { camelCase } from '@stacksjs/strings'
 // import { RateLimiter } from 'ts-rate-limiter'
 import { route, staticRoute } from '.'
-import { middlewares } from './middleware'
 import { request as RequestParam } from './request'
 
 export async function serve(options: ServeOptions = {}): Promise<void> {
@@ -289,7 +288,8 @@ async function addHeaders(headers: Headers): Promise<void> {
 async function executeMiddleware(route: Route): Promise<any> {
   const { middleware = null } = route
 
-  if (!middleware) return null
+  if (!middleware)
+    return null
 
   // Get middleware aliases from app/Middleware.ts
   const middlewareAliases = (await import(path.appPath('Middleware.ts'))).default
@@ -334,7 +334,8 @@ async function executeMiddleware(route: Route): Promise<any> {
 
   for (const middlewareName of middlewareList) {
     const result = await executeSingleMiddleware(middlewareName)
-    if (result) return result // Return early if middleware returns an error
+    if (result)
+      return result // Return early if middleware returns an error
   }
 
   return null
