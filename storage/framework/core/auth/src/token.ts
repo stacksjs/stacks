@@ -104,4 +104,29 @@ export class TokenManager {
       .where('token', '=', token)
       .execute()
   }
+
+  static async generateLongJWT(userId: number): Promise<string> {
+    // Generate a long random string for the token
+    const randomPart = randomBytes(64).toString('base64')
+
+    // Create JWT-like structure with header and payload
+    const header = {
+      alg: 'HS256',
+      typ: 'JWT',
+    }
+
+    const payload = {
+      sub: userId,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 30), // 30 days
+      jti: randomBytes(16).toString('hex'),
+    }
+
+    // Convert header and payload to base64
+    const encodedHeader = Buffer.from(JSON.stringify(header)).toString('base64')
+    const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64')
+
+    // Combine all parts to create a JWT-like token
+    return `${encodedHeader}.${encodedPayload}.${randomPart}`
+  }
 }

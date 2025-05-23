@@ -8,6 +8,7 @@ import { formatDate } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
 import { makeHash, verifyHash } from '@stacksjs/security'
 import { RateLimiter } from './rate-limiter'
+import { TokenManager } from './token'
 
 interface Credentials {
   password: string | undefined
@@ -86,31 +87,38 @@ export class Authentication {
   }
 
   public static async createToken(user: UserJsonResponse, name: string = config.auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
-    await this.checkOAuthClients()
-    const clientId = await this.getPersonalAccessClient()
+    // Check if there are any OAuth clients
+    const client = await db.selectFrom('oauth_clients')
+      .selectAll()
+      .executeTakeFirst()
 
-    const token = randomBytes(40).toString('hex')
+    if (!client)
+      throw new HttpError(500, 'No OAuth clients found. Please run `./buddy auth:token` to create a personal access client.')
+
+    // Generate a long JWT token
+    const token = await TokenManager.generateLongJWT(user.id)
+
+    // Hash the token for storage
     const hashedToken = await makeHash(token, { algorithm: 'bcrypt' })
-    const tokenExpiry = config.auth.tokenExpiry || 30 * 24 * 60 * 60 * 1000
 
-    const result = await db.insertInto('oauth_access_tokens')
+    // Set token expiry
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + 30) // 30 days from now
+
+    // Store the token in the database
+    await db.insertInto('oauth_access_tokens')
       .values({
         user_id: user.id,
-        oauth_client_id: clientId,
+        oauth_client_id: client.id,
         name,
         token: hashedToken,
         scopes: '[]',
         revoked: false,
-        expires_at: formatDate(new Date(Date.now() + tokenExpiry)),
+        expires_at: formatDate(expiresAt),
       })
-      .executeTakeFirst()
+      .execute()
 
-    if (!result?.insertId)
-      throw new HttpError(500, 'Failed to create access token')
-
-    const insertId = result.insertId || Number(result.numInsertedOrUpdatedRows)
-
-    return `${insertId}:${token}` as AuthToken
+    return token
   }
 
   public static async requestToken(credentials: Credentials, clientId: number, clientSecret: string): Promise<{ token: AuthToken } | null> {
@@ -168,7 +176,7 @@ export class Authentication {
     await db.updateTable('oauth_access_tokens')
       .set({
         token: hashedNewToken,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', accessToken.id)
       .execute()
@@ -177,12 +185,8 @@ export class Authentication {
   }
 
   public static async validateToken(token: string): Promise<boolean> {
-    const [tokenId, plainToken] = token.split(':')
-    if (!tokenId || !plainToken)
-      return false
-
     const accessToken = await db.selectFrom('oauth_access_tokens')
-      .where('id', '=', Number(tokenId))
+      .where('token', '=', await makeHash(token, { algorithm: 'bcrypt' }))
       .selectAll()
       .executeTakeFirst()
 
@@ -190,17 +194,35 @@ export class Authentication {
       return false
 
     // Check if token is expired
-    if (accessToken.expires_at && new Date(accessToken.expires_at) < new Date())
+    if (accessToken.expires_at && new Date(accessToken.expires_at) < new Date()) {
+      // Automatically delete expired tokens
+      await db.deleteFrom('oauth_access_tokens')
+        .where('id', '=', accessToken.id)
+        .execute()
       return false
+    }
 
     // Check if token is revoked
     if (accessToken.revoked)
       return false
 
-    // Verify the token
-    const isValid = await verifyHash(plainToken, accessToken.token, 'bcrypt')
-    if (!isValid)
-      return false
+    // Rotate token if it's been used for more than 24 hours
+    const lastUsed = accessToken.updated_at ? new Date(accessToken.updated_at) : new Date()
+    const now = new Date()
+    const hoursSinceLastUse = (now.getTime() - lastUsed.getTime()) / (1000 * 60 * 60)
+
+    if (hoursSinceLastUse >= 24) {
+      await this.rotateToken(token)
+    }
+    else {
+      // Update last used timestamp
+      await db.updateTable('oauth_access_tokens')
+        .set({
+          updated_at: formatDate(now),
+        })
+        .where('id', '=', accessToken.id)
+        .execute()
+    }
 
     return true
   }
