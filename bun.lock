@@ -774,7 +774,7 @@
       "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.816.0",
         "@aws-sdk/lib-dynamodb": "^3.816.0",
-        "dynamodb-toolbox": "^2.4.0",
+        "dynamodb-toolbox": "^2.4.1",
       },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
@@ -1312,7 +1312,7 @@
       "devDependencies": {
         "@headlessui/vue": "^1.7.23",
         "@iconify-json/hugeicons": "^1.2.5",
-        "@iconify/json": "^2.2.340",
+        "@iconify/json": "^2.2.341",
         "@julr/unocss-preset-forms": "^2.0.0",
         "@stacksjs/build": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -2167,7 +2167,7 @@
 
     "@iconify-json/simple-icons": ["@iconify-json/simple-icons@1.2.35", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-PAHZZn6P5ToHMhmEeeh/O96E/Ep4PctN44N64dWYbDasEvbVoN6x62m+Doz8au0SVS4/zYEMAsDO6TdO9ep84Q=="],
 
-    "@iconify/json": ["@iconify/json@2.2.340", "", { "dependencies": { "@iconify/types": "*", "pathe": "^1.1.2" } }, "sha512-pr5oueoKCYmLce5ukSrKihnLDW0CEuQVPIWtrlw8qgx5RBzSxg/aIsuv6Me35ZXrCkBUKxK8h1XLqCLlMB7L6g=="],
+    "@iconify/json": ["@iconify/json@2.2.341", "", { "dependencies": { "@iconify/types": "*", "pathe": "^1.1.2" } }, "sha512-IwH6m5hbVRtjBcmcI7xI6/H3VV3Tt0rqzWO4UxV1L82Cv32CsnvwpykLe9a2DgC06/gnrCmp3vgEzPsEHzndqg=="],
 
     "@iconify/types": ["@iconify/types@2.0.0", "", {}, "sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg=="],
 
@@ -3647,7 +3647,7 @@
 
     "duplexer": ["duplexer@0.1.2", "", {}, "sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg=="],
 
-    "dynamodb-toolbox": ["dynamodb-toolbox@2.4.0", "", { "dependencies": { "hotscript": "^1.0.13" }, "peerDependencies": { "@aws-sdk/client-dynamodb": "^3.0.0", "@aws-sdk/lib-dynamodb": "^3.0.0", "zod": "^3.0.0" } }, "sha512-dHipScxTujKXKh9sXil7xTtqszOO8eDnkcSBOr5+pC5W5kSa7E2Yq0rQ6AZ0KX2t/ckEYMeYYsclT25YO0rVrQ=="],
+    "dynamodb-toolbox": ["dynamodb-toolbox@2.4.1", "", { "dependencies": { "hotscript": "^1.0.13" }, "peerDependencies": { "@aws-sdk/client-dynamodb": "^3.0.0", "@aws-sdk/lib-dynamodb": "^3.0.0", "zod": "^3.0.0" } }, "sha512-+rK47NKiM/i8BGgjy3B/CuQCzVcxg9z98SR7Oz3GcYNaJNVD/tViFvtqLAsbhNZ+thtu4zPeQbiwmCnsU/kLdQ=="],
 
     "dynamodb-tooling": ["dynamodb-tooling@0.3.2", "", {}, "sha512-qjd0cOwoWJ2Ym+XrIOObHvADqxd72Og1HemfIs1Iw6dJ4rY7gcNpTfAOlRTlrUpYF52BB3mrIRAbl1VQrJPexw=="],
 
