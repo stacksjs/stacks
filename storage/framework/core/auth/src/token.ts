@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer'
 import { randomBytes } from 'node:crypto'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'

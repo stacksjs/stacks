@@ -1,6 +1,8 @@
+import type { AuthUser } from '@stacksjs/auth'
 import type { AuthToken, RouteParam, VineType } from '@stacksjs/types'
 
 export type * from '../../../types/requests'
+
 interface RequestData {
   [key: string]: any
 }
@@ -24,6 +26,7 @@ export interface RequestInstance {
   query: RequestData
   params: RouteParams
   headers: any
+  user: AuthUser
 
   addQuery: (url: URL) => void
   addBodies: (params: any) => void

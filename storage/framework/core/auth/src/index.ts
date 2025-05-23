@@ -5,3 +5,5 @@ export * from './client'
 export * from './passkey'
 
 export * from './password/reset'
+
+export * from './user'

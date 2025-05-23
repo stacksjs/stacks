@@ -1,12 +1,13 @@
-import type { UserJsonResponse, OauthClientJsonResponse } from '@stacksjs/orm'
+import type { OauthClientJsonResponse } from '@stacksjs/orm'
 import type { AuthToken } from './token'
+import type { AuthUser } from './user'
 import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
-import { makeHash, verifyHash, encrypt, decrypt } from '@stacksjs/security'
+import { decrypt, encrypt, makeHash, verifyHash } from '@stacksjs/security'
 import { RateLimiter } from './rate-limiter'
 import { TokenManager } from './token'
 
@@ -17,7 +18,7 @@ interface Credentials {
 }
 
 export class Authentication {
-  private static authUser: UserJsonResponse | undefined = undefined
+  private static authUser: AuthUser | undefined = undefined
   private static clientSecret: string | undefined = undefined
 
   private static async getClientSecret(): Promise<string> {
@@ -83,7 +84,7 @@ export class Authentication {
     return false
   }
 
-  public static async createToken(user: UserJsonResponse, name: string = config.auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
+  public static async createToken(user: AuthUser, name: string = config.auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
     const client = await this.getPersonalAccessClient()
     const clientSecret = await this.getClientSecret()
 
@@ -113,8 +114,8 @@ export class Authentication {
     // Encrypt the token ID using client secret
     const encryptedId = encrypt(result.insertId.toString(), clientSecret)
 
-    // Combine into final token format
-    return `${encryptedId}:${jwtToken}` as AuthToken
+    // Combine into final token format with JWT first
+    return `${jwtToken}:${encryptedId}` as AuthToken
   }
 
   public static async requestToken(credentials: Credentials, clientId: number, clientSecret: string): Promise<{ token: AuthToken } | null> {
@@ -138,8 +139,8 @@ export class Authentication {
   }
 
   public static async rotateToken(oldToken: string): Promise<AuthToken | null> {
-    const [tokenId, plainToken] = oldToken.split(':')
-    if (!tokenId || !plainToken)
+    const [jwtToken, tokenId] = oldToken.split(':')
+    if (!tokenId || !jwtToken)
       return null
 
     const clientSecret = await this.getClientSecret()
@@ -156,7 +157,7 @@ export class Authentication {
       return null
 
     // Verify the old token
-    const isValid = await verifyHash(plainToken, accessToken.token, 'bcrypt')
+    const isValid = await verifyHash(jwtToken, accessToken.token, 'bcrypt')
     if (!isValid)
       return null
 
@@ -175,12 +176,12 @@ export class Authentication {
 
     // Encrypt the new token ID
     const encryptedId = encrypt(accessToken.id.toString(), clientSecret)
-    return `${encryptedId}:${newToken}` as AuthToken
+    return `${newToken}:${encryptedId}` as AuthToken
   }
 
   public static async validateToken(token: string): Promise<boolean> {
-    const [tokenId, plainToken] = token.split(':')
-    if (!tokenId || !plainToken)
+    const [jwtToken, tokenId] = token.split(':')
+    if (!tokenId || !jwtToken)
       return false
 
     const clientSecret = await this.getClientSecret()
@@ -228,9 +229,9 @@ export class Authentication {
     return true
   }
 
-  public static async getUserFromToken(token: string): Promise<UserJsonResponse | undefined> {
-    const [tokenId, plainToken] = token.split(':')
-    if (!tokenId || !plainToken)
+  public static async getUserFromToken(token: string): Promise<AuthUser | undefined> {
+    const [jwtToken, tokenId] = token.split(':')
+    if (!tokenId || !jwtToken)
       return undefined
 
     const clientSecret = await this.getClientSecret()
@@ -243,7 +244,7 @@ export class Authentication {
       .selectAll()
       .executeTakeFirst()
 
-    if (!accessToken || accessToken.token !== plainToken)
+    if (!accessToken || accessToken.token !== jwtToken)
       return undefined
 
     if (accessToken.expires_at && new Date(accessToken.expires_at) < new Date()) {
@@ -270,8 +271,8 @@ export class Authentication {
   }
 
   public static async revokeToken(token: string): Promise<void> {
-    const [tokenId, plainToken] = token.split(':')
-    if (!tokenId || !plainToken)
+    const [jwtToken, tokenId] = token.split(':')
+    if (!tokenId || !jwtToken)
       return
 
     const clientSecret = await this.getClientSecret()

@@ -1,5 +1,5 @@
+import type { AuthUser } from '@stacksjs/auth'
 import type { AuthToken, CustomAttributes, HttpMethod, NumericField, RequestData, RequestInstance, RouteParam, RouteParams } from '@stacksjs/types'
-
 import { customValidate } from '@stacksjs/validation'
 
 const numericFields = new Set<NumericField>([
@@ -49,6 +49,7 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   public query: T = {} as T
   public params: RouteParams = {} as RouteParams
   public headers: any = {}
+  public user: AuthUser = {} as AuthUser
 
   private sanitizeString(input: string): string {
     // Remove any null bytes
