@@ -33,6 +33,7 @@ export default new Action({
 
     if (result) {
       const user = await Authentication.getUserFromToken(result.token)
+      
       return response.json({
         token: result.token,
         user: {

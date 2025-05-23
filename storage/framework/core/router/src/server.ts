@@ -340,11 +340,3 @@ async function executeMiddleware(route: Route): Promise<any> {
 
   return null
 }
-
-function isString(val: unknown): val is string {
-  return typeof val === 'string'
-}
-
-function isObjectNotEmpty(obj: object): boolean {
-  return Object.keys(obj).length > 0
-}
