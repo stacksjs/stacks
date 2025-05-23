@@ -3,6 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
+
 import { BaseOrm } from '../utils/base'
 
 export interface RequestsTable {

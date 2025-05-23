@@ -81,15 +81,13 @@ export async function generateModelString(
   modelName: string,
   model: Model,
   attributes: ModelElement[],
-  imports: string[] = []
+  imports: string[] = [],
 ): Promise<string> {
   const formattedTableName = pascalCase(tableName) // users -> Users
   const formattedModelName = camelCase(modelName) // User -> user
 
   // Start with the imports
-  let classString = imports.join('\n') + '\n\n'
-
-  console.log(classString)
+  const importsString = `${imports.join('\n')}\n\n`
 
   let instanceSoftDeleteStatements = ''
   let instanceSoftDeleteStatementsSelectFrom = ''
@@ -1018,6 +1016,7 @@ export async function generateModelString(
       ${relationImports}
       ${categorizableImports}
       ${commentablesImports}
+      ${importsString}
       ${taggableImports}
       export interface ${formattedTableName}Table {
         id: Generated<number>

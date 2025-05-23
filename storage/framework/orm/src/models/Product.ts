@@ -7,6 +7,7 @@ import type { ManufacturerModel } from './Manufacturer'
 import type { ProductUnitModel } from './ProductUnit'
 import type { ProductVariantModel } from './ProductVariant'
 import type { ReviewModel } from './Review'
+
 import type { WaitlistProductModel } from './WaitlistProduct'
 
 import { randomUUIDv7 } from 'bun'

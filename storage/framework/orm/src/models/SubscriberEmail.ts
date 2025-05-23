@@ -3,6 +3,8 @@ import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
+// soon, these will be auto-imported
+
 import { BaseOrm } from '../utils/base'
 
 export interface SubscriberEmailsTable {

@@ -6,6 +6,7 @@ import type { LicenseKeyModel } from './LicenseKey'
 import type { OrderItemModel } from './OrderItem'
 import type { PaymentModel } from './Payment'
 import { randomUUIDv7 } from 'bun'
+
 import { sql } from '@stacksjs/database'
 
 import { HttpError } from '@stacksjs/error-handling'

@@ -7,6 +7,7 @@ import type { PaymentModel } from './Payment'
 import type { ReviewModel } from './Review'
 import type { UserModel } from './User'
 import type { WaitlistProductModel } from './WaitlistProduct'
+
 import type { WaitlistRestaurantModel } from './WaitlistRestaurant'
 
 import { randomUUIDv7 } from 'bun'

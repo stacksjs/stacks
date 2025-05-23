@@ -4,6 +4,7 @@ import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
+
 import { BaseOrm } from '../utils/base'
 
 export interface WebsocketsTable {

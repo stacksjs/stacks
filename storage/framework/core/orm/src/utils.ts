@@ -1363,17 +1363,17 @@ export function extractImports(filePath: string): string[] {
     sourceType: 'module',
     plugins: ['typescript', 'classProperties', 'decorators-legacy'],
   })
-  
+
   const imports: string[] = []
-  
+
   traverse(ast, {
     ImportDeclaration(path) {
       // Convert the import node back to code
       const generated = generator(path.node, {}, content)
       imports.push(generated.code)
-    }
+    },
   })
-  
+
   return imports
 }
 
@@ -1469,7 +1469,7 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       const modelName = getModelName(model, modelFile)
       const file = Bun.file(path.frameworkPath(`orm/src/models/${modelName}.ts`))
       const fields = await extractFields(model, modelFile)
-      
+
       // Extract imports from the original model file
       const imports = extractImports(modelFile)
       const classString = await generateModelString(tableName, modelName, model, fields, imports)

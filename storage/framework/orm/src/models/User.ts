@@ -6,6 +6,7 @@ import type { OauthAccessTokenModel } from './OauthAccessToken'
 import type { PersonalAccessTokenModel } from './PersonalAccessToken'
 import type { SubscriberModel } from './Subscriber'
 import { randomUUIDv7 } from 'bun'
+
 import { sql } from '@stacksjs/database'
 
 import { HttpError } from '@stacksjs/error-handling'
@@ -15,6 +16,8 @@ import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
 
 import { makeHash } from '@stacksjs/security'
+// soon, these will be auto-imported
+// soon, these will be auto-imported
 import { BaseOrm } from '../utils/base'
 
 export interface UsersTable {
