@@ -1,9 +1,9 @@
-import { env } from '@stacksjs/env'
+import { config } from '@stacksjs/config'
 import aes from 'crypto-js/aes'
 import utf8 from 'crypto-js/enc-utf8'
 
-function encrypt(message: string): string {
-  const passphrase = env.APP_KEY
+function encrypt(message: string, customPassphrase?: string): string {
+  const passphrase = customPassphrase || config.app.key
 
   if (!passphrase)
     throw new Error('APP_KEY is not defined')
@@ -11,8 +11,8 @@ function encrypt(message: string): string {
   return aes.encrypt(message, passphrase).toString()
 }
 
-function decrypt(encrypted: string): string {
-  const passphrase = env.APP_KEY
+function decrypt(encrypted: string, customPassphrase?: string): string {
+  const passphrase = customPassphrase || config.app.key
 
   if (!passphrase)
     throw new Error('APP_KEY is not defined')
