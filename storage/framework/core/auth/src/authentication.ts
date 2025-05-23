@@ -234,7 +234,7 @@ export class Authentication {
     await db.updateTable('oauth_access_tokens')
       .set({
         revoked: true,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', Number(tokenId))
       .execute()
