@@ -186,6 +186,52 @@ const validator = v.date()
   .isAfter(new Date('2022-12-31'))
 ```
 
+### Datetime Validator
+
+```typescript
+const validator = v.datetime()
+  // Validates that the value is a valid Date object
+  // within MySQL DATETIME range (1000-01-01 to 9999-12-31)
+
+// Examples:
+validator.validate(new Date()) // valid
+validator.validate(new Date('999-12-31')) // invalid (before 1000-01-01)
+validator.validate(new Date('10000-01-01')) // invalid (after 9999-12-31)
+validator.validate('2023-01-01') // invalid (must be Date object)
+```
+
+### Timestamp Validator
+
+```typescript
+const validator = v.timestamp()
+  // Validates that the value is a valid timestamp
+  // within MySQL TIMESTAMP range (1970-01-01 to 2038-01-19)
+
+// Examples:
+validator.validate(Date.now()) // valid
+validator.validate('1672531200000') // valid (string timestamp)
+validator.validate(-1) // invalid (before 1970-01-01)
+validator.validate(2147483648) // invalid (after 2038-01-19)
+validator.validate('123456789') // invalid (too short)
+validator.validate('12345678901234') // invalid (too long)
+```
+
+### Unix Validator
+
+```typescript
+const validator = v.unix()
+  // Validates that the value is a valid Unix timestamp
+  // Must be a positive number or string with 10-13 digits
+
+// Examples:
+validator.validate(Math.floor(Date.now() / 1000)) // valid (10 digits)
+validator.validate(Date.now()) // valid (13 digits)
+validator.validate('1672531200') // valid (string timestamp)
+validator.validate(-1) // invalid (negative number)
+validator.validate('123456789') // invalid (too short)
+validator.validate('12345678901234') // invalid (too long)
+```
+
 ### Object Validator
 
 ```typescript

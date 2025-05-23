@@ -168,14 +168,14 @@ export function prepareDateTimeColumnType(validator: Validator, driver = 'mysql'
       return `'date'`
     if (rule.name === 'datetime')
       return `'datetime'`
-    if (rule.name === 'time')
-      return `'time'`
+    if (rule.name === 'unix')
+      return `'integer'`
     if (rule.name === 'timestamp')
       return `'timestamp'`
   }
 
   // Default to datetime
-  return `'datetime'`
+  return `'date'`
 }
 
 export function compareRanges(range1: Range, range2: Range): boolean {
@@ -336,7 +336,7 @@ export function mapFieldTypeToColumnType(validator: Validator, driver = 'mysql')
     return `'boolean'` // Use boolean type for both MySQL and SQLite
 
   // Handle date types
-  const dateType = validator.rules.find(r => ['date', 'datetime', 'time', 'timestamp'].includes(r.name))?.name
+  const dateType = validator.rules.find(r => ['date', 'datetime', 'unix', 'timestamp'].includes(r.name))?.name
   if (dateType)
     return prepareDateTimeColumnType(validator, driver)
 
