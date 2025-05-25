@@ -6,10 +6,11 @@ import Layouts from 'vite-plugin-vue-layouts'
 export function layouts(options?: LayoutOptions): Plugin {
   const plugin = Layouts({
     extensions: ['stx', 'vue'],
-    layoutsDirs: [p.layoutsPath(), p.frameworkPath('defaults/layouts')],
+    layoutsDirs: [p.resourcesPath('layouts')],
+    pagesDirs: [p.resourcesPath('views')],
     exclude: [p.layoutsPath('dashboard'), p.layoutsPath('mails')],
     ...options,
   })
 
-  return plugin
+  return plugin as unknown as Plugin
 }

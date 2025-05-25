@@ -15,7 +15,6 @@ export function router(options?: RouterOptions): Plugin {
     dts: p.frameworkPath('types/router.d.ts'),
     routesFolder: [
       p.resourcesPath('views'),
-      p.frameworkPath('defaults/views'),
     ],
     logs: config.app.debug || false,
     ...options,
