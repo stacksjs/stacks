@@ -7,3 +7,5 @@ export * from './passkey'
 export * from './password/reset'
 
 export * from './user'
+
+export * from './register'

@@ -93,21 +93,6 @@ export default {
 
       factory: faker => faker.internet.email(),
     },
-
-    jobTitle: {
-      required: true,
-      order: 5,
-      fillable: true,
-      validation: {
-        rule: schema.string().min(3).max(255),
-        message: {
-          min: 'Job title must have a minimum of 3 characters',
-          max: 'Job title must have a maximum of 255 characters',
-        },
-      },
-
-      factory: faker => faker.person.jobTitle(),
-    },
     password: {
       required: true,
       order: 3,
