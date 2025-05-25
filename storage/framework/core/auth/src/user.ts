@@ -4,48 +4,46 @@ import { Authentication } from './authentication'
 
 export type AuthUser = UserJsonResponse
 
-export class User {
-  private static currentUser: AuthUser | undefined = undefined
+let currentUser: AuthUser | undefined = undefined
 
-  public static async getCurrentUser(): Promise<AuthUser | undefined> {
-    if (this.currentUser)
-      return this.currentUser
+export async function getCurrentUser(): Promise<AuthUser | undefined> {
+  if (currentUser)
+    return currentUser
 
-    const token = request.bearerToken()
-    if (!token)
-      return undefined
+  const token = request.bearerToken()
+  if (!token)
+    return undefined
 
-    this.currentUser = await Authentication.getUserFromToken(token)
-    return this.currentUser
-  }
+  currentUser = await Authentication.getUserFromToken(token)
+  return currentUser
+}
 
-  public static async check(): Promise<boolean> {
-    return !!(await this.getCurrentUser())
-  }
+export async function check(): Promise<boolean> {
+  return !!(await getCurrentUser())
+}
 
-  public static async id(): Promise<number | undefined> {
-    return (await this.getCurrentUser())?.id
-  }
+export async function id(): Promise<number | undefined> {
+  return (await getCurrentUser())?.id
+}
 
-  public static async email(): Promise<string | undefined> {
-    return (await this.getCurrentUser())?.email
-  }
+export async function email(): Promise<string | undefined> {
+  return (await getCurrentUser())?.email
+}
 
-  public static async name(): Promise<string | undefined> {
-    return (await this.getCurrentUser())?.name
-  }
+export async function name(): Promise<string | undefined> {
+  return (await getCurrentUser())?.name
+}
 
-  public static async isAuthenticated(): Promise<boolean> {
-    return await this.check()
-  }
+export async function isAuthenticated(): Promise<boolean> {
+  return await check()
+}
 
-  public static async logout(): Promise<void> {
-    await Authentication.logout()
-    this.currentUser = undefined
-  }
+export async function logout(): Promise<void> {
+  await Authentication.logout()
+  currentUser = undefined
+}
 
-  public static async refresh(): Promise<void> {
-    this.currentUser = undefined
-    await this.getCurrentUser()
-  }
+export async function refresh(): Promise<void> {
+  currentUser = undefined
+  await getCurrentUser()
 }

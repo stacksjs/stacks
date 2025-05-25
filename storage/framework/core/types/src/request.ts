@@ -26,7 +26,6 @@ export interface RequestInstance {
   query: RequestData
   params: RouteParams
   headers: any
-  user: AuthUser
 
   addQuery: (url: URL) => void
   addBodies: (params: any) => void
@@ -50,6 +49,7 @@ export interface RequestInstance {
   ip: () => string | null
   ipForRateLimit: () => string | null
   getMethod: () => HttpMethod
+  user: () => Promise<AuthUser | undefined>
 }
 
 export type Request = RequestInstance
