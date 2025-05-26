@@ -5,7 +5,7 @@ import { unheadVueComposablesImports as VueHeadImports } from '@unhead/vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import { VueRouterAutoImports } from 'unplugin-vue-router'
 
-export function autoImports(options?: AutoImportsOptions): Plugin {
+export function autoImports(options?: AutoImportsOptions): Plugin | Plugin[] {
   return AutoImport({
     include: /\.(stx|vue|js|ts|mdx?|html)($|\?)/,
     imports: [
