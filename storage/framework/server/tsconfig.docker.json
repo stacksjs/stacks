@@ -23,7 +23,7 @@
     "types": [
       "vite/client",
       "vite-plugin-pwa/client",
-      "vite-plugin-vue-layouts/client",
+      "vite-plugin-layouts/client",
       "@intlify/unplugin-vue-i18n/messages"
     ],
     "allowImportingTsExtensions": true,

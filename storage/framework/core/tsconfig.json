@@ -30,7 +30,7 @@
       "unplugin-vue-router/client",
       // "vue/ref-macros",
       "vite-plugin-pwa/client",
-      "vite-plugin-vue-layouts/client",
+      "vite-plugin-layouts/client",
       "@intlify/unplugin-vue-i18n/messages",
       "@vite-pwa/vitepress",
       "vitepress"

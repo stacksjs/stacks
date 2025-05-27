@@ -34,7 +34,7 @@ const result = await Bun.build({
     'yaml',
     'vite',
     'vite-plugin-inspect',
-    'vite-plugin-vue-layouts',
+    'vite-plugin-layouts',
     'vite-ssg-sitemap',
     'vitepress',
     'vite-plugin-pwa',
