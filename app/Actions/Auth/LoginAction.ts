@@ -32,7 +32,7 @@ export default new Action({
     const result = await Authentication.login({ email, password })
 
     if (result) {
-      const user = await Authentication.getUserFromToken(result.token)
+      const user = await request.user()
 
       return response.json({
         token: result.token,
