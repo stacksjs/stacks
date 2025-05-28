@@ -931,7 +931,6 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
       amount: this.amount,
       status: this.status,
       payment_method: this.payment_method,
-      payment_details: this.payment_details,
       transaction_reference: this.transaction_reference,
       loyalty_points_earned: this.loyalty_points_earned,
       loyalty_points_redeemed: this.loyalty_points_redeemed,

@@ -894,7 +894,9 @@ export async function generateModelString(
       this.attributes.${snakeCase(attribute.field)} = value
     }\n\n`
 
-    jsonFields += `${snakeCase(attribute.field)}: this.${snakeCase(attribute.field)},\n   `
+    // Only add to jsonFields if the attribute is not hidden
+    if (!attribute.hidden)
+      jsonFields += `${snakeCase(attribute.field)}: this.${snakeCase(attribute.field)},\n   `
 
     whereStatements += `static where${pascalCase(attribute.field)}(value: string): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)

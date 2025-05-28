@@ -996,11 +996,15 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
     let defaultValue = null
     let uniqueValue = false
     let requiredValue = false
+    let hiddenValue = false
+    let fillableValue = false
 
     if (fieldExist) {
       defaultValue = fieldExist || null
       uniqueValue = fieldExist.unique || false
       requiredValue = fieldExist.required || false
+      hiddenValue = fieldExist.hidden || false
+      fillableValue = fieldExist.fillable || false
     }
 
     return {
@@ -1008,6 +1012,8 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
       default: defaultValue,
       unique: uniqueValue,
       required: requiredValue,
+      hidden: hiddenValue,
+      fillable: fillableValue,
       fieldArray: parseRule(rules[index] ?? ''),
     }
   }) as ModelElement[]

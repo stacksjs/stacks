@@ -907,7 +907,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       id: this.id,
       name: this.name,
       email: this.email,
-      password: this.password,
 
       created_at: this.created_at,
 

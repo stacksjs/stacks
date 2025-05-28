@@ -62,6 +62,8 @@ export interface ModelElement {
   default: string | number | boolean | Date | undefined | null
   unique: boolean
   required: boolean
+  fillable: boolean
+  hidden: boolean
   fieldArray: FieldArrayElement | null
 }
 
