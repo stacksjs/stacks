@@ -284,3 +284,5 @@ route.group({ prefix: '/queries' }, async () => {
   route.get('/frequent', 'Controllers/QueryController@getFrequentQueries')
   route.post('/prune', 'Controllers/QueryController@pruneQueryLogs')
 })
+
+route.get('/me', 'Actions/Auth/AuthUserAction')

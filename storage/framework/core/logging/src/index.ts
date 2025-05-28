@@ -35,7 +35,7 @@ export interface Log {
 
 export type ErrorMessage = string
 
-type ErrorOptions = {
+export type ErrorOptions = {
   shouldExit: boolean
   silent?: boolean
   message?: ErrorMessage
