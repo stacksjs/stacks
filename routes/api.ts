@@ -285,4 +285,4 @@ route.group({ prefix: '/queries' }, async () => {
   route.post('/prune', 'Controllers/QueryController@pruneQueryLogs')
 })
 
-route.get('/me', 'Actions/Auth/AuthUserAction')
+route.get('/me', 'Actions/Auth/AuthUserAction').middleware('auth')

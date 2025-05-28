@@ -318,10 +318,9 @@ async function executeMiddleware(route: Route): Promise<any> {
       if (!middlewareInstance?.handle)
         throw new Error(`Middleware "${middlewareName}" does not have a handle method`)
 
-      await middlewareInstance.handle()
+      await middlewareInstance.handle(RequestParam)
     }
     catch (error: any) {
-      log.error(`Error executing middleware "${middlewareName}": ${error.message}`)
       return {
         status: error.status || 500,
         message: error.message || 'Internal Server Error',
