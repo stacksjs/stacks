@@ -47,7 +47,7 @@
     "@aws-sdk/client-cloudfront": "^3.817.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.817.0",
     "@aws-sdk/client-dynamodb": "3.817.0",
-    "@aws-sdk/client-ec2": "^3.817.0",
+    "@aws-sdk/client-ec2": "^3.818.0",
     "@aws-sdk/client-efs": "^3.817.0",
     "@aws-sdk/client-iam": "^3.817.0",
     "@aws-sdk/client-lambda": "^3.817.0",
@@ -66,7 +66,7 @@
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "aws-cdk": "^3.0.0",
-    "aws-cdk-lib": "^2.198.0",
+    "aws-cdk-lib": "^2.199.0",
     "aws4fetch": "^1.0.20",
     "constructs": "^10.4.2"
   },
