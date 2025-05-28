@@ -266,7 +266,7 @@ export class Authentication {
 
     return await db.selectFrom('users')
       .where('id', '=', accessToken.user_id)
-      .selectAll()
+      .select(['id', 'name', 'email', 'created_at', 'updated_at', 'uuid', 'public_passkey'])
       .executeTakeFirst()
   }
 
