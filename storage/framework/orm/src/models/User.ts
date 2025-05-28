@@ -24,7 +24,6 @@ export interface UsersTable {
   id: Generated<number>
   name: string
   email: string
-  job_title: string
   password: string
   public_passkey?: string
   uuid?: string
@@ -62,7 +61,7 @@ export type UserUpdate = Updateable<UserWrite>
 
 export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> {
   private readonly hidden: Array<keyof UserJsonResponse> = ['password']
-  private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'job_title', 'password', 'uuid', 'two_factor_secret', 'public_key', 'team_id']
+  private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'password', 'uuid', 'two_factor_secret', 'public_key', 'team_id']
   private readonly guarded: Array<keyof UserJsonResponse> = []
   protected attributes = {} as UserJsonResponse
   protected originalAttributes = {} as UserJsonResponse
@@ -239,10 +238,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return this.attributes.email
   }
 
-  get job_title(): string {
-    return this.attributes.job_title
-  }
-
   get password(): string {
     return this.attributes.password
   }
@@ -269,10 +264,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
   set email(value: string) {
     this.attributes.email = value
-  }
-
-  set job_title(value: string) {
-    this.attributes.job_title = value
   }
 
   set password(value: string) {
@@ -855,14 +846,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return instance
   }
 
-  static whereJobTitle(value: string): UserModel {
-    const instance = new UserModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('job_title', '=', value)
-
-    return instance
-  }
-
   static wherePassword(value: string): UserModel {
     const instance = new UserModel(undefined)
 
@@ -899,7 +882,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
   toSearchableObject(): Partial<UserJsonResponse> {
     return {
       id: this.id,
-      job_title: this.job_title,
       name: this.name,
       email: this.email,
     }
@@ -925,7 +907,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       id: this.id,
       name: this.name,
       email: this.email,
-      job_title: this.job_title,
       password: this.password,
 
       created_at: this.created_at,
@@ -1010,13 +991,6 @@ export async function whereName(value: string): Promise<UserModel[]> {
 
 export async function whereEmail(value: string): Promise<UserModel[]> {
   const query = DB.instance.selectFrom('users').where('email', '=', value)
-  const results: UserJsonResponse = await query.execute()
-
-  return results.map((modelItem: UserJsonResponse) => new UserModel(modelItem))
-}
-
-export async function whereJobTitle(value: string): Promise<UserModel[]> {
-  const query = DB.instance.selectFrom('users').where('job_title', '=', value)
   const results: UserJsonResponse = await query.execute()
 
   return results.map((modelItem: UserJsonResponse) => new UserModel(modelItem))

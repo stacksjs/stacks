@@ -25,7 +25,6 @@ export interface Attributes {
   deploy_script: string
   terminal_output: string
   version: string
-  job_title: string
   password: string
   plain_text_token: string
   abilities: string

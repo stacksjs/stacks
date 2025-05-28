@@ -411,7 +411,6 @@ interface RequestDataUser {
   id: number
   name: string
   email: string
-  job_title: string
   password: string
   team_id: number
   created_at?: string
@@ -424,7 +423,6 @@ export interface UserRequestType extends Request {
   id: number
   name: string
   email: string
-  job_title: string
   password: string
   team_id: number
   created_at?: string

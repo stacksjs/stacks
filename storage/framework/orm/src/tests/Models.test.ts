@@ -12,7 +12,6 @@ describe('Models test', () => {
   it('should fetch a single record in models', async () => {
     const user = {
       name: 'Chris Breuer',
-      job_title: 'Open Sourceror',
       email: 'chris@stacksjs.org',
       password: '123456',
     }
@@ -27,7 +26,6 @@ describe('Models test', () => {
   it('should store records in models', async () => {
     const user = {
       name: 'Chris Breuer',
-      job_title: 'Open Sourceror',
       email: 'chris@stacksjs.org',
       password: '123456',
     }
@@ -40,7 +38,6 @@ describe('Models test', () => {
   it('should update records in models', async () => {
     const user = {
       name: 'Chris Breuer',
-      job_title: 'Open Sourceror',
       email: 'chris@stacksjs.org',
       password: '123456',
     }
@@ -49,15 +46,14 @@ describe('Models test', () => {
 
     expect(model?.email).toBe(user.email)
 
-    const updatedModel = await model.update({ job_title: 'Open Source Developer' })
+    const updatedModel = await model.update({ name: 'Open Source Developer' })
 
-    expect(updatedModel?.job_title).toBe('Open Source Developer')
+    expect(updatedModel?.name).toBe('Open Source Developer')
   })
 
   it('should delete records in models', async () => {
     const user = {
       name: 'Chris Breuer',
-      job_title: 'Open Sourceror',
       email: 'chris@stacksjs.org',
       password: '123456',
     }
@@ -76,7 +72,6 @@ describe('Models test', () => {
   it('should remove records in models', async () => {
     const user = {
       name: 'Chris Breuer',
-      job_title: 'Open Sourceror',
       email: 'chris@stacksjs.org',
       password: '123456',
     }
@@ -95,7 +90,6 @@ describe('Models test', () => {
   it('should fetch the first record in models', async () => {
     const user = {
       name: 'Chris Breuer',
-      job_title: 'Open Sourceror',
       email: 'chris@stacksjs.org',
       password: '123456',
     }
@@ -110,7 +104,6 @@ describe('Models test', () => {
   it('should fetch a record by ID in models', async () => {
     const user = {
       name: 'Chris Breuer',
-      job_title: 'Open Sourceror',
       email: 'chris@stacksjs.org',
       password: '123456',
     }
@@ -129,14 +122,12 @@ describe('Models test', () => {
   it('should fetch the last record in models', async () => {
     const user1 = {
       name: 'Chris Breuer',
-      job_title: 'Open Sourceror',
       email: 'chris@stacksjs.org',
       password: '123456',
     }
 
     const user2 = {
       name: 'John Doe',
-      job_title: 'Data Scientist',
       email: 'john@stacks.com',
       password: '789012',
     }
@@ -152,14 +143,12 @@ describe('Models test', () => {
   it('should fetch records ordered by a specific column in models', async () => {
     const user1 = {
       name: 'Chris Breuer',
-      job_title: 'Open Sourceror',
       email: 'chris@stacksjs.org',
       password: '123456',
     }
 
     const user2 = {
       name: 'John Doe',
-      job_title: 'Data Scientist',
       email: 'john@stacks.com',
       password: '789012',
     }
@@ -176,21 +165,18 @@ describe('Models test', () => {
   it('should fetch distinct records in models', async () => {
     const user1 = {
       name: 'Chris Breuer',
-      job_title: 'Open Sourceror',
       email: 'chris@stacksjs.org',
       password: '123456',
     }
 
     const user2 = {
       name: 'John Doe',
-      job_title: 'Data Scientist',
       email: 'john@stacks.com',
       password: '789012',
     }
 
     const user3 = {
       name: 'Jane Doe',
-      job_title: 'Data Scientist',
       email: 'jane@stacks.com',
       password: '101112',
     }
@@ -199,23 +185,21 @@ describe('Models test', () => {
     await User.create(user2)
     await User.create(user3)
 
-    const distinctModels = await User.distinct('job_title').get()
+    const distinctModels = await User.distinct('name').get()
 
-    expect(distinctModels.length).toBe(2)
-    expect(distinctModels.map((model: any) => model.job_title)).toEqual(['Open Sourceror', 'Data Scientist'])
+    expect(distinctModels.length).toBe(3)
+    expect(distinctModels.map((model: any) => model.name)).toEqual(['Chris Breuer', 'Jane Doe', 'John Doe'])
   })
 
   it('should fetch records ordered in ascending order in models', async () => {
     const user1 = {
       name: 'Chris Breuer',
-      job_title: 'Open Sourceror',
       email: 'chris@stacksjs.org',
       password: '123456',
     }
 
     const user2 = {
       name: 'John Doe',
-      job_title: 'Data Scientist',
       email: 'john@stacks.com',
       password: '789012',
     }
@@ -232,14 +216,12 @@ describe('Models test', () => {
   it('should fetch records ordered in descending order in models', async () => {
     const user1 = {
       name: 'Chris Breuer',
-      job_title: 'Open Sourceror',
       email: 'chris@stacksjs.org',
       password: '123456',
     }
 
     const user2 = {
       name: 'John Doe',
-      job_title: 'Data Scientist',
       email: 'john@stacks.com',
       password: '789012',
     }
@@ -256,14 +238,12 @@ describe('Models test', () => {
   it('should fetch records with where clause', async () => {
     const user1 = {
       name: 'Chris Breuer',
-      job_title: 'Open Sourceror',
       email: 'chris@stacksjs.org',
       password: '123456',
     }
 
     const user2 = {
       name: 'John Doe',
-      job_title: 'Data Scientist',
       email: 'john@stacks.com',
       password: '789012',
     }
@@ -271,7 +251,7 @@ describe('Models test', () => {
     await User.create(user1)
     await User.create(user2)
 
-    const results = await User.where('job_title', 'Data Scientist').get()
+    const results = await User.where('email', 'john@stacks.com').get()
 
     expect(results.length).toBe(1)
     expect(results[0]?.email).toBe(user2.email)
@@ -281,13 +261,11 @@ describe('Models test', () => {
     const testUser = [
       {
         name: 'Chris Breuer',
-        job_title: 'Developer',
         email: 'chris@stacksjs.org',
         password: '123456',
       },
       {
         name: 'John Doe',
-        job_title: 'Developer',
         email: 'john@stacks.com',
         password: '789012',
       },
@@ -296,12 +274,11 @@ describe('Models test', () => {
     await Promise.all(testUser.map(user => User.create(user)))
 
     const results = await User
-      .where('job_title', 'Developer')
+      .where('email', 'john@stacks.com')
       .where('name', 'John Doe')
       .get()
 
     expect(results[0]?.email).toBe(testUser[1]!.email)
-
     expect(results.length).toBe(1)
   })
 
@@ -309,19 +286,16 @@ describe('Models test', () => {
     const users = [
       {
         name: 'Chris Breuer',
-        job_title: 'Developer',
         email: 'chris@stacksjs.org',
         password: '123456',
       },
       {
         name: 'John Doe',
-        job_title: 'Designer',
         email: 'john@stacks.com',
         password: '789012',
       },
       {
         name: 'Jane Smith',
-        job_title: 'Manager',
         email: 'jane@stacks.com',
         password: '345678',
       },
@@ -330,18 +304,16 @@ describe('Models test', () => {
     await Promise.all(users.map(user => User.create(user)))
 
     const results = await User
-      .whereIn('job_title', ['Developer', 'Designer'])
+      .whereIn('email', ['chris@stacksjs.org', 'john@stacks.com'])
       .get()
 
     expect(results.length).toBe(2)
-    expect(results.map(r => r.job_title).sort()).toEqual(['Designer', 'Developer'])
+    expect(results.map(r => r.email).sort()).toEqual(['chris@stacksjs.org', 'john@stacks.com'])
   })
 
   it('should paginate with default options', async () => {
-  // Create 15 users for basic pagination test
     const users = Array.from({ length: 15 }, (_, i) => ({
       name: `User ${i + 1}`,
-      job_title: 'Developer',
       email: `user${i + 1}@stacks.com`,
       password: '123456',
     }))
@@ -358,10 +330,8 @@ describe('Models test', () => {
   })
 
   it('should handle last page with custom limit', async () => {
-  // Create 12 users to test partial page
     const users = Array.from({ length: 12 }, (_, i) => ({
       name: `User ${i + 1}`,
-      job_title: 'Developer',
       email: `user${i + 1}@stacks.com`,
       password: '123456',
     }))
@@ -378,10 +348,8 @@ describe('Models test', () => {
   })
 
   it('should handle last page with fewer records', async () => {
-  // Create 18 users
     const users = Array.from({ length: 18 }, (_, i) => ({
       name: `User ${i + 1}`,
-      job_title: 'Developer',
       email: `user${i + 1}@stacks.com`,
       password: '123456',
     }))
@@ -408,15 +376,12 @@ describe('Models test', () => {
   })
 
   it('should handle custom offset', async () => {
-    // Create 30 users sequentially to ensure order
     const users = Array.from({ length: 30 }, (_, i) => ({
       name: `User ${i + 1}`,
-      job_title: 'Developer',
       email: `user${i + 1}@stacks.com`,
       password: '123456',
     }))
 
-    // Insert sequentially instead of in parallel to maintain order
     for (const user of users) {
       await User.create(user)
     }
@@ -424,7 +389,6 @@ describe('Models test', () => {
     const result = await User.paginate({ limit: 10, offset: 5 })
 
     expect(result.data.length).toBe(10)
-    // Should be user 6, not user 1, due to offset of 5
     expect(result.data[0]!.name).toBe('User 1')
     expect(result.paging.total_records).toBe(30)
     expect(result.next_cursor).not.toBeNull()
@@ -433,7 +397,6 @@ describe('Models test', () => {
   it('should count total records', async () => {
     const users = Array.from({ length: 5 }, (_, i) => ({
       name: `User ${i}`,
-      job_title: 'Developer',
       email: `user${i}@stacks.com`,
       password: '123456',
     }))
@@ -449,13 +412,11 @@ describe('Models test', () => {
     const users = [
       {
         name: 'Chris Breuer',
-        job_title: 'Senior Developer',
         email: 'chris@stacksjs.org',
         password: '123456',
       },
       {
         name: 'John Doe',
-        job_title: 'Junior Developer',
         email: 'john@stacks.com',
         password: '789012',
       },
@@ -464,7 +425,7 @@ describe('Models test', () => {
     await Promise.all(users.map(user => User.create(user)))
 
     const results = await User
-      .whereLike('job_title', '%Developer%')
+      .whereLike('email', '%stacks%')
       .get()
 
     expect(results.length).toBe(2)
@@ -474,19 +435,16 @@ describe('Models test', () => {
     const users = [
       {
         name: 'Chris',
-        job_title: 'Developer',
         email: 'chris@test.com',
         password: '123456',
       },
       {
         name: 'John',
-        job_title: 'Designer',
         email: 'john@test.com',
         password: '123456',
       },
       {
         name: 'Jane',
-        job_title: 'Manager',
         email: 'jane@test.com',
         password: '123456',
       },
@@ -496,32 +454,29 @@ describe('Models test', () => {
 
     const results = await User
       .orWhere(
-        ['job_title', 'Developer'],
-        ['job_title', 'Designer'],
+        ['email', 'chris@test.com'],
+        ['email', 'john@test.com'],
       )
       .get()
 
     expect(results.length).toBe(2)
-    expect(results.map(r => r.job_title).sort()).toEqual(['Designer', 'Developer'])
+    expect(results.map(r => r.email).sort()).toEqual(['chris@test.com', 'john@test.com'])
   })
 
   it('should perform whereNotIn queries', async () => {
     const users = [
       {
         name: 'Chris Breuer',
-        job_title: 'Developer',
         email: 'chris@stacksjs.org',
         password: '123456',
       },
       {
         name: 'John Doe',
-        job_title: 'Designer',
         email: 'john@stacks.com',
         password: '789012',
       },
       {
         name: 'Jane Smith',
-        job_title: 'Manager',
         email: 'jane@stacks.com',
         password: '345678',
       },
@@ -530,20 +485,18 @@ describe('Models test', () => {
     await Promise.all(users.map(user => User.create(user)))
 
     const results = await User
-      .whereNotIn('job_title', ['Developer', 'Designer'])
+      .whereNotIn('email', ['chris@stacksjs.org', 'john@stacks.com'])
       .get()
 
     expect(results.length).toBe(1)
-    expect(results[0]?.job_title).toBe('Manager')
+    expect(results[0]?.email).toBe('jane@stacks.com')
   })
 
   it('should perform whereBetween queries', async () => {
     const users = Array.from({ length: 5 }, (_, i) => ({
       name: `User ${i}`,
-      job_title: 'Developer',
       email: `user${i}@stacks.com`,
       password: '123456',
-      age: 20 + i * 5,
     }))
 
     await Promise.all(users.map(user => User.create(user)))
@@ -559,19 +512,16 @@ describe('Models test', () => {
     const users = [
       {
         name: 'Chris Breuer',
-        job_title: 'Senior Developer',
         email: 'chris@stacksjs.org',
         password: '123456',
       },
       {
         name: 'John Doe',
-        job_title: 'Junior Developer',
         email: 'john@stacks.com',
         password: '789012',
       },
       {
         name: 'Jane Smith',
-        job_title: 'Senior Designer',
         email: 'jane@stacks.com',
         password: '345678',
       },
@@ -580,7 +530,7 @@ describe('Models test', () => {
     await Promise.all(users.map(user => User.create(user)))
 
     const results = await User
-      .whereLike('job_title', 'Junior%')
+      .whereLike('email', 'john%')
       .get()
 
     expect(results.length).toBe(1)
@@ -590,7 +540,6 @@ describe('Models test', () => {
   it('should perform aggregation functions (min, max, avg, sum)', async () => {
     const users = Array.from({ length: 5 }, (_, i) => ({
       name: `User ${i + 1}`,
-      job_title: 'Developer',
       email: `user${i + 1}@stacks.com`,
       password: '123456',
     }))
@@ -609,10 +558,8 @@ describe('Models test', () => {
   })
 
   it('should handle chunk processing of records', async () => {
-    // Create 25 users
     const users = Array.from({ length: 25 }, (_, i) => ({
       name: `User ${i + 1}`,
-      job_title: 'Developer',
       email: `user${i + 1}@stacks.com`,
       password: '123456',
     }))
@@ -636,13 +583,11 @@ describe('Models test', () => {
     const users = [
       {
         name: 'Chris Breuer',
-        job_title: 'Developer',
         email: 'chris@test.com',
         password: '123456',
       },
       {
         name: 'John Doe',
-        job_title: 'Designer',
         email: 'john@test.com',
         password: '123456',
       },
@@ -659,7 +604,6 @@ describe('Models test', () => {
   it('should handle firstOrCreate operation', async () => {
     const userData = {
       name: 'Chris Breuer',
-      job_title: 'Developer',
       email: 'chris@test.com',
       password: '123456',
     }
@@ -675,7 +619,6 @@ describe('Models test', () => {
       { email: 'chris@test.com' },
       {
         name: 'Different Name',
-        job_title: 'Different Job',
         email: 'chris@test.com',
         password: '789012',
       },
@@ -688,14 +631,12 @@ describe('Models test', () => {
   it('should handle updateOrCreate operation', async () => {
     const initialData = {
       name: 'Chris Breuer',
-      job_title: 'Developer',
       email: 'chris@test.com',
       password: '123456',
     }
 
     const updatedData = {
       name: 'Chris B',
-      job_title: 'Senior Developer',
       email: 'chris@test.com',
       password: '789012',
     }
@@ -715,16 +656,13 @@ describe('Models test', () => {
     // Retrieve the record directly to confirm it was updated
     const directCheck = await User.whereEmail('chris@test.com').first()
 
-    expect(updated.job_title).toBe('Senior Developer')
     expect(updated.name).toBe('Chris B')
-    expect(directCheck?.job_title).toBe('Senior Developer')
     expect(directCheck?.name).toBe('Chris B')
   })
 
   it('should handle model state tracking (isDirty, isClean, wasChanged)', async () => {
     const user = await User.create({
       name: 'Chris Breuer',
-      job_title: 'Developer',
       email: 'chris@test.com',
       password: '123456',
     })
@@ -734,18 +672,15 @@ describe('Models test', () => {
 
     user.name = 'Chris B'
     expect(user.isDirty('name')).toBe(true)
-    expect(user.isClean('job_title')).toBe(true)
+    expect(user.isClean('email')).toBe(true)
 
     await user.save()
-    // expect(user.wasChanged('name')).toBe(true)
-    // expect(user.wasChanged('job_title')).toBe(false)
   })
 
   it('should handle join operations', async () => {
     // First create a user
     const user = await User.create({
       name: 'Chris Breuer',
-      job_title: 'Developer',
       email: 'chris@test.com',
       password: '123456',
     })
@@ -766,21 +701,21 @@ describe('Models test', () => {
   })
 
   it('should handle groupBy and having operations', async () => {
-    // Create users with different job titles
+    // Create users with different names
     const users = [
-      { name: 'User 1', job_title: 'Developer', email: 'user1@test.com', password: '123456' },
-      { name: 'User 2', job_title: 'Developer', email: 'user2@test.com', password: '123456' },
-      { name: 'User 3', job_title: 'Designer', email: 'user3@test.com', password: '123456' },
+      { name: 'User 1', email: 'user1@test.com', password: '123456' },
+      { name: 'User 2', email: 'user2@test.com', password: '123456' },
+      { name: 'User 3', email: 'user3@test.com', password: '123456' },
     ]
 
     await Promise.all(users.map(user => User.create(user)))
 
     const results = await User
-      .groupBy('job_title')
+      .groupBy('name')
       .having('id', '>', 0)
       .get()
 
-    expect(results.length).toBe(2) // Should have two groups: Developer and Designer
+    expect(results.length).toBe(3) // Should have three groups
   })
 
   it('should handle fill and forceFill operations', async () => {
@@ -788,7 +723,6 @@ describe('Models test', () => {
 
     user.fill({
       name: 'Chris Breuer',
-      job_title: 'Developer',
       email: 'chris@test.com',
       password: '123456',
     })
@@ -807,7 +741,6 @@ describe('Models test', () => {
   it('should handle inRandomOrder query', async () => {
     const users = Array.from({ length: 10 }, (_, i) => ({
       name: `User ${i + 1}`,
-      job_title: 'Developer',
       email: `user${i + 1}@stacks.com`,
       password: '123456',
     }))
@@ -827,12 +760,10 @@ describe('Models test', () => {
     await User.create({
       name: 'User 1',
       email: 'user1@test.com',
-      job_title: 'Designer',
       password: '123456',
     })
     await User.create({
       name: 'User 2',
-      job_title: 'Developer',
       email: 'user2@test.com',
       password: '123456',
     })
@@ -844,7 +775,6 @@ describe('Models test', () => {
   it('should handle skip and take operations', async () => {
     const users = Array.from({ length: 5 }, (_, i) => ({
       name: `User ${i + 1}`,
-      job_title: 'Developer',
       email: `user${i + 1}@stacks.com`,
       password: '123456',
     }))
@@ -863,31 +793,28 @@ describe('Models test', () => {
   it('should handle whereColumn comparison', async () => {
     await User.create({
       name: 'Same Name',
-      job_title: 'Same Name',
       email: 'test1@test.com',
       password: '123456',
     })
     await User.create({
       name: 'Different',
-      job_title: 'Not Same',
       email: 'test2@test.com',
       password: '123456',
     })
 
-    const results = await User.whereColumn('name', '=', 'job_title').get()
-    expect(results.length).toBe(1)
-    expect(results[0]?.name).toBe('Same Name')
+    const results = await User.whereColumn('name', '=', 'email').get()
+    expect(results.length).toBe(0)
   })
 
   it('should handle when conditional queries', async () => {
     await Promise.all([
-      User.create({ name: 'User 1', job_title: 'Developer', email: 'user1@test.com', password: '123456' }),
-      User.create({ name: 'User 2', job_title: 'Designer', email: 'user2@test.com', password: '123456' }),
+      User.create({ name: 'User 1', email: 'user1@test.com', password: '123456' }),
+      User.create({ name: 'User 2', email: 'user2@test.com', password: '123456' }),
     ])
 
     const condition = true
     const results = await User
-      .when(condition, query => query.where('job_title', '=', 'Developer'))
+      .when(condition, query => query.where('email', '=', 'user1@test.com'))
       .get()
 
     expect(results.length).toBe(1)
@@ -897,7 +824,6 @@ describe('Models test', () => {
   it('should track original attributes and changes', async () => {
     const user = await User.create({
       name: 'Original Name',
-      job_title: 'Developer',
       email: 'test@test.com',
       password: '123456',
     })
@@ -912,8 +838,8 @@ describe('Models test', () => {
 
   it('should handle findMany operation', async () => {
     const createdUsers = await Promise.all([
-      User.create({ name: 'User 1', job_title: 'Developer', email: 'user1@test.com', password: '123456' }),
-      User.create({ name: 'User 2', job_title: 'Designer', email: 'user2@test.com', password: '123456' }),
+      User.create({ name: 'User 1', email: 'user1@test.com', password: '123456' }),
+      User.create({ name: 'User 2', email: 'user2@test.com', password: '123456' }),
     ])
 
     const ids = createdUsers.map(user => user.id) as number[]
@@ -926,7 +852,6 @@ describe('Models test', () => {
   it('should handle exists check', async () => {
     await User.create({
       name: 'Test User',
-      job_title: 'Developer',
       email: 'test@test.com',
       password: '123456',
     })
@@ -941,7 +866,6 @@ describe('Models test', () => {
   it('should handle latest and oldest queries', async () => {
     const users = Array.from({ length: 3 }, (_, i) => ({
       name: `User ${i + 1}`,
-      job_title: 'Developer',
       email: `user${i + 1}@test.com`,
       password: '123456',
     }))
@@ -961,7 +885,6 @@ describe('Models test', () => {
   it('should handle createMany operation', async () => {
     const usersToCreate = Array.from({ length: 3 }, (_, i) => ({
       name: `Batch User ${i + 1}`,
-      job_title: 'Developer',
       email: `batch${i + 1}@test.com`,
       password: '123456',
     }))
@@ -975,50 +898,46 @@ describe('Models test', () => {
 
   it('should handle dynamic query building using when() with multiple conditions', async () => {
     const users = [
-      { name: 'John', job_title: 'Senior Dev', email: 'john@test.com', password: '123' },
-      { name: 'Jane', job_title: 'Junior Dev', email: 'jane@test.com', password: '456' },
-      { name: 'Bob', job_title: 'Manager', email: 'bob@test.com', password: '789' },
+      { name: 'John', email: 'john@test.com', password: '123' },
+      { name: 'Jane', email: 'jane@test.com', password: '456' },
+      { name: 'Bob', email: 'bob@test.com', password: '789' },
     ]
 
     await Promise.all(users.map(user => User.create(user)))
 
     const filters = {
-      searchTerm: 'Dev',
-      isJunior: true,
+      searchTerm: 'test.com',
+      isJohn: true,
     }
 
     const results = await User
-      .when(filters.searchTerm !== '', query => query.where('job_title', 'like', `%${filters.searchTerm}%`))
-      .when(filters.isJunior, query => query.where('job_title', 'like', '%Junior%'))
+      .when(filters.searchTerm !== '', query => query.where('email', 'like', `%${filters.searchTerm}%`))
+      .when(filters.isJohn, query => query.where('name', '=', 'John'))
       .get()
 
     expect(results.length).toBe(1)
-    expect(results[0]?.name).toBe('Jane')
+    expect(results[0]?.name).toBe('John')
   })
 
   it('should handle whereRef for column comparisons', async () => {
     await User.create({
       name: 'John Smith',
-      job_title: 'John Smith',
       email: 'john@test.com',
       password: '123456',
     })
     await User.create({
       name: 'Jane Doe',
-      job_title: 'Developer',
       email: 'jane@test.com',
       password: '123456',
     })
 
-    const results = await User.whereRef('name', '=', 'job_title').get()
-    expect(results.length).toBe(1)
-    expect(results[0]?.name).toBe('John Smith')
+    const results = await User.whereRef('name', '=', 'email').get()
+    expect(results.length).toBe(0)
   })
 
   it('should load multiple relations using with()', async () => {
     const user = await User.create({
       name: 'John',
-      job_title: 'Developer',
       email: 'john@test.com',
       password: '123456',
     })
@@ -1038,29 +957,9 @@ describe('Models test', () => {
     expect(result?.subscriptions).toBeDefined()
   })
 
-  it('should handle whereRef for column comparisons', async () => {
-    await User.create({
-      name: 'John Smith',
-      job_title: 'John Smith',
-      email: 'john@test.com',
-      password: '123456',
-    })
-    await User.create({
-      name: 'Jane Doe',
-      job_title: 'Developer',
-      email: 'jane@test.com',
-      password: '123456',
-    })
-
-    const results = await User.whereRef('name', '=', 'job_title').get()
-    expect(results.length).toBe(1)
-    expect(results[0]?.name).toBe('John Smith')
-  })
-
   it('should combine where and whereNull conditions', async () => {
     await User.create({
       name: 'Jane',
-      job_title: 'Designer',
       email: 'jane@test.com',
       password: '123456',
     })
@@ -1073,7 +972,6 @@ describe('Models test', () => {
   it('should handle select with specific columns', async () => {
     await User.create({
       name: 'John',
-      job_title: 'Developer',
       email: 'john@test.com',
       password: '123456',
     })
@@ -1082,6 +980,6 @@ describe('Models test', () => {
 
     expect(results?.name).toBeDefined()
     expect(results?.email).toBeDefined()
-    expect(results?.job_title).toBeUndefined()
+    expect(results?.password).toBeUndefined()
   })
 })

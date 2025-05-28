@@ -43,7 +43,6 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
         .values({
           email: data.email,
           name: data.name,
-          job_title: 'Author',
           password: randomUUIDv7(),
           uuid: randomUUIDv7(),
           created_at: formatDate(new Date()),

@@ -1,7 +1,7 @@
 import type { AuthUser } from '@stacksjs/auth'
 import type { AuthToken, CustomAttributes, HttpMethod, NumericField, RequestData, RequestInstance, RouteParam, RouteParams } from '@stacksjs/types'
-import { customValidate } from '@stacksjs/validation'
 import { getCurrentUser } from '@stacksjs/auth'
+import { customValidate } from '@stacksjs/validation'
 
 const numericFields = new Set<NumericField>([
   'id',

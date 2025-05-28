@@ -4,6 +4,6 @@ import TableV2 from '../../../core/components/table/src/components/MainTable.vue
 
 <template>
   <Suspense>
-    <TableV2 columns="id, name, email, job_title" type="users" />
+    <TableV2 columns="id, name, email" type="users" />
   </Suspense>
 </template>

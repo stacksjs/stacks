@@ -12,7 +12,6 @@ export default new Action({
     const email = request.get('email')
     const password = request.get('password')
     const name = request.get('name')
-    const job_title = request.get('job_title')
 
     await request.validate({
       email: {
@@ -39,7 +38,7 @@ export default new Action({
       },
     })
 
-    const result = await register({ email, password, name, job_title })
+    const result = await register({ email, password, name })
 
     if (result) {
       const user = await Authentication.getUserFromToken(result.token)
@@ -50,7 +49,6 @@ export default new Action({
           id: user?.id,
           email: user?.email,
           name: user?.name,
-          job_title: user?.job_title,
         },
       })
     }

@@ -1,17 +1,11 @@
+import type { NewUser } from '@stacksjs/orm'
 import type { AuthToken } from './token'
-import { Authentication } from './authentication'
 import { db } from '@stacksjs/database'
 import { makeHash } from '@stacksjs/security'
+import { Authentication } from './authentication'
 
-interface RegisterCredentials {
-  email: string
-  password: string
-  name: string
-  job_title: string
-}
-
-export async function register(credentials: RegisterCredentials): Promise<{ token: AuthToken } | null> {
-  const { email, password, name, job_title } = credentials
+export async function register(credentials: NewUser): Promise<{ token: AuthToken } | null> {
+  const { email, password, name } = credentials
 
   // Check if user already exists
   const existingUser = await db.selectFrom('users')
@@ -25,18 +19,16 @@ export async function register(credentials: RegisterCredentials): Promise<{ toke
   // Hash the password
   const hashedPassword = await makeHash(password, { algorithm: 'bcrypt' })
 
-
   // Create the user
   const result = await db.insertInto('users')
     .values({
       email,
       password: hashedPassword,
       name,
-      job_title,
     })
     .executeTakeFirst()
 
-    const insertId = Number(result?.insertId) || Number(result?.numInsertedOrUpdatedRows)
+  const insertId = Number(result?.insertId) || Number(result?.numInsertedOrUpdatedRows)
 
   if (!result?.insertId)
     return null
