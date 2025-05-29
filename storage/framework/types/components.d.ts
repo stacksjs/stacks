@@ -86,7 +86,6 @@ declare module 'vue' {
     LoadingDetails: typeof import('./../defaults/components/Dashboard/Skeleton/LoadingDetails.vue')['default']
     Logo: typeof import('./../../../resources/components/Logo.vue')['default']
     MobileSidebar: typeof import('./../defaults/components/Dashboard/MobileSidebar.vue')['default']
-    MonacoEditor: typeof import('./../defaults/components/MonacoEditor.vue')['default']
     Navbar: typeof import('./../defaults/components/Dashboard/Navbar.vue')['default']
     NavLink: typeof import('./../defaults/components/Marketing/NavLink.vue')['default']
     NotificationCode: typeof import('./../defaults/components/Docs/Demo/NotificationCode.md')['default']
@@ -142,6 +141,5 @@ declare module 'vue' {
     ToggleDark: typeof import('./../defaults/components/Buttons/ToggleDark.vue')['default']
     Tooltip: typeof import('./../defaults/components/Dashboard/Tooltip.vue')['default']
     Transaction: typeof import('./../defaults/components/Dashboard/Transaction/index.vue')['default']
-    Usage: typeof import('./../defaults/components/Docs/demo/Usage.vue')['default']
   }
 }
