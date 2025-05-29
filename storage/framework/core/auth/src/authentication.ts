@@ -17,7 +17,7 @@ interface Credentials {
   [key: string]: string | undefined
 }
 
-export class Authentication {
+export class Auth {
   private static authUser: AuthUser | undefined = undefined
   private static clientSecret: string | undefined = undefined
 
