@@ -1,6 +1,6 @@
 import type { UserJsonResponse } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
-import { Authentication } from './authentication'
+import { Auth } from './authentication'
 
 export type AuthUser = UserJsonResponse
 
@@ -14,7 +14,7 @@ export async function getCurrentUser(): Promise<AuthUser | undefined> {
   if (!token)
     return undefined
 
-  currentUser = await Authentication.getUserFromToken(token)
+  currentUser = await Auth.getUserFromToken(token)
   return currentUser
 }
 
@@ -39,7 +39,7 @@ export async function isAuthenticated(): Promise<boolean> {
 }
 
 export async function logout(): Promise<void> {
-  await Authentication.logout()
+  await Auth.logout()
   currentUser = undefined
 }
 

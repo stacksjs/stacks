@@ -29,7 +29,7 @@ export default new Action({
       },
     })
 
-    const result = await Authentication.login({ email, password })
+    const result = await Auth.login({ email, password })
 
     if (result) {
       const user = await request.user()

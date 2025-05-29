@@ -2,7 +2,7 @@ import type { NewUser } from '@stacksjs/orm'
 import type { AuthToken } from './token'
 import { db } from '@stacksjs/database'
 import { makeHash } from '@stacksjs/security'
-import { Authentication } from './authentication'
+import { Auth } from './authentication'
 
 export async function register(credentials: NewUser): Promise<{ token: AuthToken } | null> {
   const { email, password, name } = credentials
@@ -43,5 +43,5 @@ export async function register(credentials: NewUser): Promise<{ token: AuthToken
     return null
 
   // Create and return the authentication token
-  return { token: await Authentication.createToken(user, 'user-auth-token') }
+  return { token: await Auth.createToken(user, 'user-auth-token') }
 }

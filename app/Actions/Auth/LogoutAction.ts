@@ -7,7 +7,7 @@ export default new Action({
   description: 'Logout from the application',
   method: 'POST',
   async handle() {
-    await Authentication.logout()
+    await Auth.logout()
 
     return response.json({
       message: 'Successfully logged out',
