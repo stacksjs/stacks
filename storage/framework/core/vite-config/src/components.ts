@@ -2,9 +2,10 @@ import type { UserConfig as ViteConfig } from 'vite'
 import type { ViteBuildOptions } from '.'
 import { alias } from '@stacksjs/alias'
 import { config as c } from '@stacksjs/config'
-import { libraryEntryPath, libsPath, projectPath, publicPath, resourcesPath } from '@stacksjs/path'
+import { libraryEntryPath, libsPath, path as p, projectPath, publicPath, resourcesPath } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
-import { autoImports, components, cssEngine, devtools, inspect, uiEngine } from '@stacksjs/vite-plugin'
+import { autoImports, components, devtools, inspect, uiEngine } from '@stacksjs/vite-plugin'
+import Unocss from 'unocss/vite'
 
 export const componentsConfig: ViteConfig = {
   root: libsPath('components/vue'),
@@ -31,7 +32,9 @@ export const componentsConfig: ViteConfig = {
   plugins: [
     uiEngine(),
     autoImports(),
-    cssEngine(),
+    Unocss({
+      configFile: p.uiPath('src/uno.config.ts'),
+    }),
     inspect(),
     components(),
     devtools(),

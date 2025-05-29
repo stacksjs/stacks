@@ -2,7 +2,8 @@ import type { UserConfig as ViteConfig } from 'vite'
 import { alias } from '@stacksjs/alias'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
-import { autoImports, components, cssEngine, i18n, layouts } from '@stacksjs/vite-plugin'
+import { autoImports, components, i18n, layouts } from '@stacksjs/vite-plugin'
+import Unocss from 'unocss/vite'
 import Vue from '@vitejs/plugin-vue'
 import VueRouter from 'unplugin-vue-router/vite'
 import generateSitemap from 'vite-ssg-sitemap'
@@ -50,7 +51,9 @@ export const dashboardConfig: ViteConfig = {
 
     autoImports(),
     components(),
-    cssEngine(),
+    Unocss({
+      configFile: p.uiPath('src/uno.config.ts'),
+    }),
     // markdown(),
     // pwa(),
     // devtools(),

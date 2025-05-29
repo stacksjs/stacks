@@ -80,7 +80,9 @@ export const viewsConfig: ViteConfig = {
     layouts(),
     autoImports(),
     components(),
-    cssEngine(),
+    Unocss({
+      configFile: p.uiPath('src/uno.config.ts'),
+    }),
     markdown(),
     pwa(),
     devtools(),
