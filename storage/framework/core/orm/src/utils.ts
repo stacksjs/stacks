@@ -106,15 +106,31 @@ async function loadModels(modelName: string, relationModel: string): Promise<{ m
   const coreModelPath = findCoreModel(`${modelName}.ts`)
   const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
 
+  // Check if any model paths exist
+  if (!modelRelationPath && !coreModelRelationPath)
+    throw new Error(`Model not found: ${relationModel}`)
+
+  if (!userModelPath && !coreModelPath)
+    throw new Error(`Model not found: ${modelName}`)
+
   let modelRelation: Model
-  if (fs.existsSync(modelRelationPath))
-    modelRelation = (await import(modelRelationPath)).default as Model
-  else
-    modelRelation = (await import(coreModelRelationPath)).default as Model
+  try {
+    if (fs.existsSync(modelRelationPath))
+      modelRelation = (await import(modelRelationPath)).default as Model
+    else
+      modelRelation = (await import(coreModelRelationPath)).default as Model
+  }
+  catch (error: any) {
+    throw new Error(`Failed to load model: ${relationModel}. Error: ${error?.message || 'Unknown error'}`)
+  }
 
   const modelPath = fs.existsSync(userModelPath) ? userModelPath : coreModelPath
 
-  return { modelRelation, modelPath, modelRelationPath: fs.existsSync(modelRelationPath) ? modelRelationPath : coreModelRelationPath }
+  return { 
+    modelRelation, 
+    modelPath, 
+    modelRelationPath: fs.existsSync(modelRelationPath) ? modelRelationPath : coreModelRelationPath 
+  }
 }
 
 async function processHasThrough(relationInstance: ModelNames | BaseHasOneThrough<ModelNames>, model: Model, modelName: string, relation: string) {
