@@ -1,7 +1,7 @@
 import type { Server } from 'bun'
 import type { BunSocket } from './drivers/bun'
+import { db } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
-import { Websocket } from '@stacksjs/orm'
 
 let bunSocket: BunSocket | null = null
 
@@ -14,7 +14,7 @@ export function setBunSocket(socket: BunSocket | null): void {
  */
 export async function storeWebSocketEvent(type: 'disconnection' | 'error' | 'success', socket: string, details: string): Promise<void> {
   try {
-    await Websocket.create({
+    await db.insertInto('websockets').values({
       type,
       socket,
       details,

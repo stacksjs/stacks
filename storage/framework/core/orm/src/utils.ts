@@ -126,10 +126,10 @@ async function loadModels(modelName: string, relationModel: string): Promise<{ m
 
   const modelPath = fs.existsSync(userModelPath) ? userModelPath : coreModelPath
 
-  return { 
-    modelRelation, 
-    modelPath, 
-    modelRelationPath: fs.existsSync(modelRelationPath) ? modelRelationPath : coreModelRelationPath 
+  return {
+    modelRelation,
+    modelPath,
+    modelRelationPath: fs.existsSync(modelRelationPath) ? modelRelationPath : coreModelRelationPath,
   }
 }
 

@@ -1,7 +1,7 @@
 import type { ChannelType, RealtimeDriver } from '@stacksjs/types'
 import type { Server, ServerWebSocket } from 'bun'
+import { db } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
-import { Websocket } from '@stacksjs/orm'
 
 interface WebSocketData {
   clientId: string
@@ -112,7 +112,7 @@ export class BunSocket implements RealtimeDriver {
 
         // Store disconnection event
         try {
-          await Websocket.create({
+          await db.insertInto('websockets').values({
             type: 'disconnection',
             socket: ws.data.clientId,
             details: 'WebSocket connection closed',

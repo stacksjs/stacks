@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Websocket } from '@stacksjs/orm'
+import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -7,7 +7,7 @@ export default new Action({
   description: 'Websockets Index ORM Action',
   method: 'GET',
   async handle() {
-    const results = await Websocket.all()
+    const results = await db.selectFrom('websockets').selectAll().execute()
 
     return response.json(results)
   },
