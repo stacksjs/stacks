@@ -100,10 +100,25 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
   return relationships
 }
 
+async function loadModels(modelName: string, relationModel: string): Promise<{ modelRelation: Model, modelPath: string, modelRelationPath: string }> {
+  const modelRelationPath = findUserModel(`${relationModel}.ts`)
+  const userModelPath = findUserModel(`${modelName}.ts`)
+  const coreModelPath = findCoreModel(`${modelName}.ts`)
+  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
+
+  let modelRelation: Model
+  if (fs.existsSync(modelRelationPath))
+    modelRelation = (await import(modelRelationPath)).default as Model
+  else
+    modelRelation = (await import(coreModelRelationPath)).default as Model
+
+  const modelPath = fs.existsSync(userModelPath) ? userModelPath : coreModelPath
+
+  return { modelRelation, modelPath, modelRelationPath: fs.existsSync(modelRelationPath) ? modelRelationPath : coreModelRelationPath }
+}
+
 async function processHasThrough(relationInstance: ModelNames | BaseHasOneThrough<ModelNames>, model: Model, modelName: string, relation: string) {
   let relationModel = ''
-  let modelRelation: Model
-  let modelPath: string
   let relationName = ''
   let throughModel = ''
   let throughForeignKey = ''
@@ -118,20 +133,7 @@ async function processHasThrough(relationInstance: ModelNames | BaseHasOneThroug
     throughForeignKey = relationInstance.throughForeignKey || ''
   }
 
-  const modelRelationPath = findUserModel(`${relationModel}.ts`)
-  const userModelPath = findUserModel(`${modelName}.ts`)
-  const coreModelPath = findCoreModel(`${modelName}.ts`)
-  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
-
-  if (fs.existsSync(modelRelationPath))
-    modelRelation = (await import(modelRelationPath)).default as Model
-  else
-    modelRelation = (await import(coreModelRelationPath)).default as Model
-
-  if (fs.existsSync(userModelPath))
-    modelPath = userModelPath
-  else
-    modelPath = coreModelPath
+  const { modelRelation, modelPath, modelRelationPath } = await loadModels(modelName, relationModel)
 
   const modelRelationTable = getTableName(modelRelation, modelRelationPath)
   const table = getTableName(model, modelPath)
@@ -159,8 +161,6 @@ async function processHasThrough(relationInstance: ModelNames | BaseHasOneThroug
 
 async function processBelongsToMany(relationInstance: ModelNames | BaseBelongsToMany<ModelNames>, model: Model, modelName: string, relation: string) {
   let relationModel = ''
-  let modelRelation: Model
-  let modelPath: string
   let pivotTable = ''
   let pivotForeign = ''
 
@@ -175,20 +175,7 @@ async function processBelongsToMany(relationInstance: ModelNames | BaseBelongsTo
     pivotForeign = relationInstance.firstForeignKey || `${formattedModelName}_id`
   }
 
-  const modelRelationPath = findUserModel(`${relationModel}.ts`)
-  const userModelPath = findUserModel(`${modelName}.ts`)
-  const coreModelPath = findCoreModel(`${modelName}.ts`)
-  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
-
-  if (fs.existsSync(modelRelationPath))
-    modelRelation = (await import(modelRelationPath)).default as Model
-  else
-    modelRelation = (await import(coreModelRelationPath)).default as Model
-
-  if (fs.existsSync(userModelPath))
-    modelPath = userModelPath
-  else
-    modelPath = coreModelPath
+  const { modelRelation, modelPath, modelRelationPath } = await loadModels(modelName, relationModel)
 
   const modelRelationTable = getTableName(modelRelation, modelRelationPath)
   const table = getTableName(model, modelPath)
@@ -219,41 +206,22 @@ async function processMorphOne(relationInstance: ModelNames | MorphOne<ModelName
   let typeColumn = ''
   let idColumn = ''
 
-  // Determine if it's a simple string or a configuration object
   if (isString(relationInstance)) {
     relationModel = relationInstance
-    // Convert model name to "able" format (e.g. "Post" -> "postable")
     morphName = `${snakeCase(modelName)}able`
   }
   else {
     relationModel = relationInstance.model
-    // Use provided morphName or generate default "-able" suffix
     morphName = relationInstance.morphName || `${snakeCase(modelName)}able`
     typeColumn = relationInstance.type || `${morphName}_type`
     idColumn = relationInstance.id || `${morphName}_id`
   }
 
-  // Load the related model
-  const modelRelationPath = findUserModel(`${relationModel}.ts`)
-  const userModelPath = findUserModel(`${modelName}.ts`)
-  const coreModelPath = findCoreModel(`${modelName}.ts`)
-  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
+  const { modelRelation, modelPath, modelRelationPath } = await loadModels(modelName, relationModel)
 
-  let modelRelation: Model
-  if (fs.existsSync(modelRelationPath)) {
-    modelRelation = (await import(modelRelationPath)).default as Model
-  }
-  else {
-    modelRelation = (await import(coreModelRelationPath)).default as Model
-  }
-
-  const modelPath = fs.existsSync(userModelPath) ? userModelPath : coreModelPath
-
-  // Get table names
   const modelRelationTable = getTableName(modelRelation, modelRelationPath)
   const table = getTableName(model, modelPath)
 
-  // Create relationship config
   const relationshipData: RelationConfig = {
     relationship: relation,
     model: relationModel,
@@ -275,8 +243,6 @@ async function processMorphOne(relationInstance: ModelNames | MorphOne<ModelName
 
 async function processHasOneAndMany(relationInstance: ModelNames | Relation<ModelNames>, model: Model, modelName: string, relation: string) {
   let relationModel = ''
-  let modelRelation: Model
-  let modelPath: string
   let relationName = ''
 
   if (isString(relationInstance)) {
@@ -287,20 +253,7 @@ async function processHasOneAndMany(relationInstance: ModelNames | Relation<Mode
     relationName = relationInstance.relationName || ''
   }
 
-  const modelRelationPath = findUserModel(`${relationModel}.ts`)
-  const userModelPath = findUserModel(`${modelName}.ts`)
-  const coreModelPath = findCoreModel(`${modelName}.ts`)
-  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
-
-  if (fs.existsSync(modelRelationPath))
-    modelRelation = (await import(modelRelationPath)).default as Model
-  else
-    modelRelation = (await import(coreModelRelationPath)).default as Model
-
-  if (fs.existsSync(userModelPath))
-    modelPath = userModelPath
-  else
-    modelPath = coreModelPath
+  const { modelRelation, modelPath, modelRelationPath } = await loadModels(modelName, relationModel)
 
   const modelRelationTable = getTableName(modelRelation, modelRelationPath)
   const table = getTableName(model, modelPath)
