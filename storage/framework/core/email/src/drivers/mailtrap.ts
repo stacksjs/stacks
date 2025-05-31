@@ -8,23 +8,31 @@ import { BaseEmailDriver } from './base'
 
 export class MailtrapDriver extends BaseEmailDriver {
   public name = 'mailtrap'
-  private host: string
-  private token: string
-  private inboxId?: number
+  private host: string | null = null
+  private token: string | null = null
+  private inboxId?: number | null = null
 
-  constructor() {
-    super()
-    this.host = config.services.mailtrap?.host ?? 'https://sandbox.api.mailtrap.io/api/send'
-    this.token = config.services.mailtrap?.token ?? ''
-    this.inboxId = config.services.mailtrap?.inboxId ? Number(config.services.mailtrap.inboxId) : undefined
+  private getConfig() {
+    if (!this.host || !this.token || !this.inboxId) {
+      this.host = config.services.mailtrap?.host ?? 'https://sandbox.api.mailtrap.io/api/send'
+      this.token = config.services.mailtrap?.token ?? ''
+      this.inboxId = config.services.mailtrap?.inboxId ? Number(config.services.mailtrap.inboxId) : undefined
+    }
+
+    return {
+      host: this.host,
+      token: this.token,
+      inboxId: this.inboxId,
+    }
   }
 
   public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
+    const { inboxId } = this.getConfig()
     const logContext = {
       provider: this.name,
       to: message.to,
       subject: message.subject,
-      inboxId: this.inboxId,
+      inboxId,
     }
 
     log.info('Sending email via Mailtrap...', logContext)
@@ -95,17 +103,19 @@ export class MailtrapDriver extends BaseEmailDriver {
   }
 
   private async sendWithRetry(payload: any, attempt = 1): Promise<any> {
-    if (!this.inboxId) {
+    const { host, token, inboxId } = this.getConfig()
+
+    if (!inboxId) {
       throw new Error('Mailtrap inbox ID is required but not provided. Please set MAILTRAP_INBOX_ID in your environment variables.')
     }
 
-    const endpoint = `${this.host}/${this.inboxId}`
+    const endpoint = `${host}/${inboxId}`
 
     try {
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.token}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),

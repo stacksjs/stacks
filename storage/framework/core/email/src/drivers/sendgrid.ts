@@ -8,11 +8,13 @@ import { BaseEmailDriver } from './base'
 
 export class SendGridDriver extends BaseEmailDriver {
   public name = 'sendgrid'
-  private apiKey: string
+  private apiKey: string | null = null
 
-  constructor() {
-    super()
-    this.apiKey = config.services.sendgrid?.apiKey ?? ''
+  private getApiKey(): string {
+    if (!this.apiKey) {
+      this.apiKey = config.services.sendgrid?.apiKey ?? ''
+    }
+    return this.apiKey
   }
 
   public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
@@ -128,7 +130,7 @@ export class SendGridDriver extends BaseEmailDriver {
       const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
+          'Authorization': `Bearer ${this.getApiKey()}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),

@@ -6,25 +6,37 @@ import { log } from '@stacksjs/logging'
 import { template } from '../template'
 import { BaseEmailDriver } from './base'
 
+interface MailgunResponse {
+  id: string
+  message: string
+}
+
 export class MailgunDriver extends BaseEmailDriver {
   public name = 'mailgun'
-  private apiKey: string
-  private domain: string
-  private endpoint: string
+  private apiKey: string | null = null
+  private domain: string | null = null
+  private endpoint: string | null = null
 
-  constructor() {
-    super()
-    this.apiKey = config.services.mailgun?.apiKey ?? ''
-    this.domain = config.services.mailgun?.domain ?? ''
-    this.endpoint = config.services.mailgun?.endpoint ?? 'api.mailgun.net'
+  private getConfig() {
+    if (!this.apiKey || !this.domain || !this.endpoint) {
+      this.apiKey = config.services.mailgun?.apiKey ?? ''
+      this.domain = config.services.mailgun?.domain ?? ''
+      this.endpoint = config.services.mailgun?.endpoint ?? 'api.mailgun.net'
+    }
+    return {
+      apiKey: this.apiKey,
+      domain: this.domain,
+      endpoint: this.endpoint,
+    }
   }
 
   public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
+    const { domain } = this.getConfig()
     const logContext = {
       provider: this.name,
       to: message.to,
       subject: message.subject,
-      domain: this.domain,
+      domain,
     }
 
     log.info('Sending email via Mailgun...', logContext)
@@ -118,9 +130,10 @@ export class MailgunDriver extends BaseEmailDriver {
       : Buffer.from(binary).toString('base64')
   }
 
-  private async sendWithRetry(formData: FormData, attempt = 1): Promise<any> {
-    const url = `https://${this.endpoint}/v3/${this.domain}/messages`
-    const auth = Buffer.from(`api:${this.apiKey}`).toString('base64')
+  private async sendWithRetry(formData: FormData, attempt = 1): Promise<MailgunResponse> {
+    const { apiKey, domain, endpoint } = this.getConfig()
+    const url = `https://${endpoint}/v3/${domain}/messages`
+    const auth = Buffer.from(`api:${apiKey}`).toString('base64')
 
     try {
       const response = await fetch(url, {
@@ -136,7 +149,7 @@ export class MailgunDriver extends BaseEmailDriver {
         throw new Error(`Mailgun API error: ${response.status} - ${JSON.stringify(errorData)}`)
       }
 
-      const data = await response.json()
+      const data = await response.json() as MailgunResponse
       log.info(`[${this.name}] Email sent successfully`, { attempt, messageId: data.id })
       return data
     }

@@ -7,20 +7,22 @@ import { BaseEmailDriver } from './base'
 
 export class SESDriver extends BaseEmailDriver {
   public name = 'ses'
-  private client: SES
+  private client: SES | null = null
 
-  constructor() {
-    super()
+  private getClient(): SES {
+    if (!this.client) {
+      const credentials = {
+        accessKeyId: config?.services?.ses?.credentials?.accessKeyId ?? '',
+        secretAccessKey: config?.services?.ses?.credentials?.secretAccessKey ?? '',
+      }
 
-    const credentials = {
-      accessKeyId: config.services.ses?.credentials?.accessKeyId ?? '',
-      secretAccessKey: config.services.ses?.credentials?.secretAccessKey ?? '',
+      this.client = new SES({
+        region: config?.services?.ses?.region || 'us-east-1',
+        credentials,
+      })
     }
 
-    this.client = new SES({
-      region: config.services.ses?.region || 'us-east-1',
-      credentials,
-    })
+    return this.client
   }
 
   public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
@@ -80,7 +82,7 @@ export class SESDriver extends BaseEmailDriver {
         },
       }
 
-      const response = await this.client.send(new SendEmailCommand(params))
+      const response = await this.getClient().send(new SendEmailCommand(params))
       return this.handleSuccess(message, response.MessageId)
     }
     catch (error) {
