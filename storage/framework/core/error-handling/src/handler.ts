@@ -5,7 +5,6 @@ import * as process from 'node:process'
 import { italic, stripAnsi } from '@stacksjs/cli'
 import * as path from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { isString } from '@stacksjs/validation'
 import fs from 'fs-extra'
 
 type ErrorMessage = string
@@ -72,9 +71,19 @@ export class ErrorHandler {
   }
 
   static writeErrorToConsole(err: string | Error | unknown): void {
-    console.error(err)
+    let errorString: string
 
-    const errorString = typeof err === 'string' ? err : err instanceof Error ? err.message : JSON.stringify(err)
+    if (err instanceof Error) {
+      errorString = err.message
+    }
+    else if (typeof err === 'string') {
+      errorString = err
+    }
+    else {
+      errorString = JSON.stringify(err)
+    }
+
+    console.error(errorString)
 
     if (
       errorString.includes('bunx --bun cdk destroy')
@@ -142,23 +151,16 @@ export function handleError(
     options = undefined
   }
 
+  // Get the error message from the error object first
+  const errMsg = err instanceof Error ? err.message : String(err)
+
   if (options && 'message' in options) {
-    // If options is provided with a message, use options.message as error message
-    errorMessage = options.message
+    // If options is provided with a message, put the context message first
+    errorMessage = `${errMsg}: ${options.message}`
   }
   else {
-    // If options is not provided or doesn't have a message, handle err based on its type
-    if (isString(err)) {
-      errorMessage = err
-    }
-    else if (err instanceof Error) {
-      // For Error objects, include both message and stack if available
-      errorMessage = err.stack || err.message
-    }
-    else {
-      // Stringify any other type of error
-      errorMessage = String(err)
-    }
+    // If options is not provided or doesn't have a message, use the error message
+    errorMessage = errMsg
   }
 
   // Build log message with context if available
@@ -169,5 +171,11 @@ export function handleError(
 
   writeToLogFile(logMessage)
 
-  return ErrorHandler.handle(err, options as ErrorOptions)
+  // Create a new Error with the combined message
+  const error = new Error(errorMessage)
+  if (err instanceof Error) {
+    Object.assign(error, err)
+  }
+
+  return ErrorHandler.handle(error, { ...options as ErrorOptions, message: errorMessage })
 }
