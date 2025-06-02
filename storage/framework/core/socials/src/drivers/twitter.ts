@@ -1,32 +1,24 @@
 import type { ProviderInterface, SocialUser, TwitterTokenResponse, TwitterUser } from '../types'
 import { config } from '@stacksjs/config'
-import { AbstractProvider, ConfigException } from '../types'
+import { AbstractProvider } from '../abstract'
+import { ConfigException } from '../exceptions'
 import { fetcher } from '@stacksjs/api'
 import { createHash, randomBytes } from 'crypto'
 
 export class TwitterProvider extends AbstractProvider implements ProviderInterface {
   protected baseUrl = 'https://twitter.com'
   protected apiUrl = 'https://api.twitter.com'
-  private clientId: string | null = null
-  private clientSecret: string | null = null
-  private redirectUrl: string | null = null
-  private scopes: string[] | null = null
   private codeVerifier: string | null = null
 
   private getConfig() {
-    if (!this.clientId || !this.clientSecret || !this.redirectUrl || !this.scopes) {
-      this.clientId = config.services.twitter?.clientId ?? ''
-      this.clientSecret = config.services.twitter?.clientSecret ?? ''
-      this.redirectUrl = config.services.twitter?.redirectUrl ?? ''
-      this.scopes = config.services.twitter?.scopes ?? ['users.read', 'tweet.read']
+    const providerConfig = {
+      clientId: config.services.twitter?.clientId ?? '',
+      clientSecret: config.services.twitter?.clientSecret ?? '',
+      redirectUrl: config.services.twitter?.redirectUrl ?? '',
+      scopes: config.services.twitter?.scopes ?? ['users.read', 'tweet.read'],
     }
-
-    return {
-      clientId: this.clientId,
-      clientSecret: this.clientSecret,
-      redirectUrl: this.redirectUrl,
-      scopes: this.scopes,
-    }
+    this.setScopes(providerConfig.scopes)
+    return providerConfig
   }
 
   /**
@@ -122,7 +114,7 @@ export class TwitterProvider extends AbstractProvider implements ProviderInterfa
       nickname: response.data.username,
       name: response.data.name,
       email: response.data.email ?? null,
-      avatar: response.data.profile_image_url,
+      avatar: response.data.profile_image_url ?? null,
       token,
       raw: response.data,
     }
@@ -142,5 +134,9 @@ export class TwitterProvider extends AbstractProvider implements ProviderInterfa
 
     if (!redirectUrl)
       throw new ConfigException('Twitter redirect URL not provided')
+  }
+
+  protected getTokenUrl(): string {
+    return `${this.apiUrl}/2/oauth2/token`
   }
 }

@@ -1,6 +1,7 @@
 import type { ProviderInterface, SocialUser } from '../types'
 import { config } from '@stacksjs/config'
-import { AbstractProvider, ConfigException } from '../types'
+import { AbstractProvider } from '../abstract'
+import { ConfigException } from '../exceptions'
 import { fetcher } from '@stacksjs/api'
 
 interface FacebookTokenResponse {
@@ -28,25 +29,16 @@ interface FacebookUser {
 export class FacebookProvider extends AbstractProvider implements ProviderInterface {
   protected baseUrl = 'https://www.facebook.com'
   protected apiUrl = 'https://graph.facebook.com'
-  private clientId: string | null = null
-  private clientSecret: string | null = null
-  private redirectUrl: string | null = null
-  private scopes: string[] | null = null
 
   private getConfig() {
-    if (!this.clientId || !this.clientSecret || !this.redirectUrl || !this.scopes) {
-      this.clientId = config.services.facebook?.clientId ?? ''
-      this.clientSecret = config.services.facebook?.clientSecret ?? ''
-      this.redirectUrl = config.services.facebook?.redirectUrl ?? ''
-      this.scopes = config.services.facebook?.scopes ?? ['email', 'public_profile']
+    const providerConfig = {
+      clientId: config.services.facebook?.clientId ?? '',
+      clientSecret: config.services.facebook?.clientSecret ?? '',
+      redirectUrl: config.services.facebook?.redirectUrl ?? '',
+      scopes: config.services.facebook?.scopes ?? ['email', 'public_profile'],
     }
-
-    return {
-      clientId: this.clientId,
-      clientSecret: this.clientSecret,
-      redirectUrl: this.redirectUrl,
-      scopes: this.scopes,
-    }
+    this.setScopes(providerConfig.scopes)
+    return providerConfig
   }
 
   /**
@@ -124,5 +116,9 @@ export class FacebookProvider extends AbstractProvider implements ProviderInterf
 
     if (!redirectUrl)
       throw new ConfigException('Facebook redirect URL not provided')
+  }
+
+  protected getTokenUrl(): string {
+    return `${this.apiUrl}/v18.0/oauth/access_token`
   }
 }

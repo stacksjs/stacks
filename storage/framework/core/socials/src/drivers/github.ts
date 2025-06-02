@@ -1,30 +1,22 @@
 import type { GitHubEmail, GitHubTokenResponse, GitHubUser, ProviderInterface, SocialUser } from '../types'
 import { config } from '@stacksjs/config'
-import { AbstractProvider, ConfigException } from '../types'
+import { AbstractProvider } from '../abstract'
+import { ConfigException } from '../exceptions'
 import { fetcher } from '@stacksjs/api'
 
 export class GitHubProvider extends AbstractProvider implements ProviderInterface {
   protected baseUrl = 'https://github.com'
   protected apiUrl = 'https://api.github.com'
-  private clientId: string | null = null
-  private clientSecret: string | null = null
-  private redirectUrl: string | null = null
-  private scopes: string[] | null = null
 
   private getConfig() {
-    if (!this.clientId || !this.clientSecret || !this.redirectUrl || !this.scopes) {
-      this.clientId = config.services.github?.clientId ?? ''
-      this.clientSecret = config.services.github?.clientSecret ?? ''
-      this.redirectUrl = config.services.github?.redirectUrl ?? ''
-      this.scopes = config.services.github?.scopes ?? ['read:user', 'user:email']
+    const providerConfig = {
+      clientId: config.services.github?.clientId ?? '',
+      clientSecret: config.services.github?.clientSecret ?? '',
+      redirectUrl: config.services.github?.redirectUrl ?? '',
+      scopes: config.services.github?.scopes ?? ['read:user', 'user:email'],
     }
-
-    return {
-      clientId: this.clientId,
-      clientSecret: this.clientSecret,
-      redirectUrl: this.redirectUrl,
-      scopes: this.scopes,
-    }
+    this.setScopes(providerConfig.scopes)
+    return providerConfig
   }
 
   /**
@@ -122,5 +114,9 @@ export class GitHubProvider extends AbstractProvider implements ProviderInterfac
 
     if (!redirectUrl)
       throw new ConfigException('GitHub redirect URL not provided')
+  }
+
+  protected getTokenUrl(): string {
+    return `${this.baseUrl}/login/oauth/access_token`
   }
 }
