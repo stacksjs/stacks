@@ -45,6 +45,10 @@ class Fetcher {
   private customHeaders: Record<string, string> = {}
   private attachments: FileAttachment[] = []
   private isMultipart: boolean = false
+  private digestAuth?: {
+    username: string
+    password: string
+  }
 
   withQueryParams(params: QueryParams): this {
     this.queryParams = params
@@ -53,6 +57,32 @@ class Fetcher {
 
   withHeaders(headers: Record<string, string>): this {
     this.customHeaders = { ...this.customHeaders, ...headers }
+    return this
+  }
+
+  accept(contentType: string): this {
+    this.defaultHeaders['Accept'] = contentType
+    return this
+  }
+
+  acceptJson(): this {
+    return this.accept('application/json')
+  }
+
+  withToken(token: string): this {
+    this.customHeaders['Authorization'] = `Bearer ${token}`
+    return this
+  }
+
+  withBasicAuth(username: string, password: string): this {
+    const credentials = btoa(`${username}:${password}`)
+    this.customHeaders['Authorization'] = `Basic ${credentials}`
+    return this
+  }
+
+  withDigestAuth(username: string, password: string): this {
+    // Store credentials for the digest auth flow
+    this.digestAuth = { username, password }
     return this
   }
 
@@ -73,13 +103,18 @@ class Fetcher {
     filename?: string,
     headers?: Record<string, string>,
   ): this {
+    // Convert content to Blob if it's a string
+    const blobContent = typeof content === 'string'
+      ? new Blob([content], { type: headers?.['Content-Type'] || 'text/plain' })
+      : content
+
     this.attachments.push({
       name,
-      content,
+      content: blobContent,
       filename,
       headers,
     })
-
+    
     this.isMultipart = true
     delete this.defaultHeaders['Content-Type'] // Let browser set the correct boundary
     return this
@@ -160,18 +195,90 @@ class Fetcher {
     this.isMultipart = false
     this.customHeaders = {}
     this.attachments = []
+    this.digestAuth = undefined
     this.defaultHeaders['Content-Type'] = 'application/json'
+  }
+
+  private async handleDigestAuth(
+    response: Response,
+    url: string,
+    method: string,
+    body?: BodyData
+  ): Promise<Response> {
+    if (response.status !== 401 || !this.digestAuth) return response
+    
+    const authHeader = response.headers.get('WWW-Authenticate')
+    if (!authHeader?.startsWith('Digest ')) return response
+
+    // Parse the digest challenge
+    const challenge = authHeader.substring(7).split(',').reduce((acc, part) => {
+      const [key, value] = part.trim().split('=')
+      acc[key] = value?.replace(/["']/g, '') // Remove quotes
+      return acc
+    }, {} as Record<string, string>)
+
+    // Generate digest response
+    const ha1 = await this.generateMD5(
+      `${this.digestAuth.username}:${challenge.realm}:${this.digestAuth.password}`
+    )
+    const ha2 = await this.generateMD5(`${method}:${url}`)
+    const nonceCount = '00000001'
+    const cnonce = await this.generateMD5(Date.now().toString()).then(hash => hash.substring(0, 8))
+    const response_value = await this.generateMD5(
+      `${ha1}:${challenge.nonce}:${nonceCount}:${cnonce}:${challenge.qop}:${ha2}`
+    )
+
+    const digestResponse = {
+      username: `"${this.digestAuth.username}"`,
+      realm: `"${challenge.realm}"`,
+      nonce: `"${challenge.nonce}"`,
+      uri: `"${url}"`,
+      algorithm: challenge.algorithm ? `"${challenge.algorithm}"` : undefined,
+      qop: `"${challenge.qop}"`,
+      nc: nonceCount,
+      cnonce: `"${cnonce}"`,
+      response: `"${response_value}"`,
+      opaque: challenge.opaque ? `"${challenge.opaque}"` : undefined
+    }
+
+    // Build the Authorization header
+    const authValue = Object.entries(digestResponse)
+      .filter(([_, value]) => value !== undefined)
+      .map(([key, value]) => `${key}=${value}`)
+      .join(', ')
+
+    this.customHeaders['Authorization'] = `Digest ${authValue}`
+
+    // Retry the request with digest credentials
+    return fetch(url, {
+      method,
+      headers: this.getHeaders(),
+      body: body ? this.formatBody(body) as any : undefined
+    })
+  }
+
+  private async generateMD5(str: string): Promise<string> {
+    const encoder = new TextEncoder()
+    const data = encoder.encode(str)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
   }
 
   private async request<T>(url: string, method: string, body?: BodyData): Promise<FetcherResponse<T>> {
     const urlWithParams = this.addQueryParams(url)
     const formattedBody = await this.formatBody(body)
 
-    const response = await fetch(urlWithParams, {
+    let response = await fetch(urlWithParams, {
       method,
       headers: this.getHeaders(),
       body: formattedBody as any,
     })
+
+    // Handle digest authentication if needed
+    if (this.digestAuth) {
+      response = await this.handleDigestAuth(response, urlWithParams, method, body)
+    }
 
     const data = await response.json() as T
     this.resetState() // Reset after use
