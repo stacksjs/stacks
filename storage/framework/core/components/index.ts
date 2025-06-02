@@ -1,1 +1,1 @@
-export * from '@stacksjs/notification'
+export * from '@stacksjs/dialog'
