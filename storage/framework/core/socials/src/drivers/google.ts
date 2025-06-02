@@ -1,6 +1,7 @@
 import type { ProviderInterface, SocialUser } from '../types'
 import { config } from '@stacksjs/config'
-import { AbstractProvider, ConfigException } from '../types'
+import { AbstractProvider } from '../abstract'
+import { ConfigException } from '../exceptions'
 import { fetcher } from '@stacksjs/api'
 
 interface GoogleTokenResponse {
@@ -25,28 +26,20 @@ interface GoogleUser {
 export class GoogleProvider extends AbstractProvider implements ProviderInterface {
   protected baseUrl = 'https://accounts.google.com'
   protected apiUrl = 'https://www.googleapis.com'
-  private clientId: string | null = null
-  private clientSecret: string | null = null
-  private redirectUrl: string | null = null
-  private scopes: string[] | null = null
 
   private getConfig() {
-    if (!this.clientId || !this.clientSecret || !this.redirectUrl || !this.scopes) {
-      this.clientId = config.services.google?.clientId ?? ''
-      this.clientSecret = config.services.google?.clientSecret ?? ''
-      this.redirectUrl = config.services.google?.redirectUrl ?? ''
-      this.scopes = config.services.google?.scopes ?? [
+    const providerConfig = {
+      clientId: config.services.google?.clientId ?? '',
+      clientSecret: config.services.google?.clientSecret ?? '',
+      redirectUrl: config.services.google?.redirectUrl ?? '',
+      scopes: config.services.google?.scopes ?? [
         'https://www.googleapis.com/auth/userinfo.profile',
         'https://www.googleapis.com/auth/userinfo.email',
       ]
     }
 
-    return {
-      clientId: this.clientId,
-      clientSecret: this.clientSecret,
-      redirectUrl: this.redirectUrl,
-      scopes: this.scopes,
-    }
+    this.setScopes(providerConfig.scopes)
+    return providerConfig
   }
 
   /**
@@ -127,5 +120,9 @@ export class GoogleProvider extends AbstractProvider implements ProviderInterfac
 
     if (!redirectUrl)
       throw new ConfigException('Google redirect URL not provided')
+  }
+
+  protected getTokenUrl(): string {
+    return `${this.baseUrl}/oauth2/v4/token`
   }
 }
