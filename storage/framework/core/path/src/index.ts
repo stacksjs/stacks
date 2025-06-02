@@ -1300,6 +1300,16 @@ export function validationPath(path?: string): string {
 }
 
 /**
+ * Returns the path to the `validation` directory within the core directory.
+ *
+ * @param path - The relative path to the file or directory within the validation directory.
+ * @returns The absolute path to the specified file or directory within the validation directory.
+ */
+export function socialsPath(path?: string): string {
+  return corePath(`socials/${path || ''}`)
+}
+
+/**
  * Returns the path to the `vite-config` directory within the core directory.
  *
  * @param path - The relative path to the file or directory within the vite-config directory.
@@ -1437,6 +1447,7 @@ export interface Path {
   stringsPath: (path?: string) => string
   shellPath: (path?: string) => string
   storesPath: (path?: string) => string
+  socialsPath: (path?: string) => string
   testingPath: (path?: string) => string
   testsPath: (path?: string) => string
   tinkerPath: (path?: string) => string
@@ -1567,6 +1578,7 @@ export const path: Path = {
   stacksPath,
   stringsPath,
   shellPath,
+  socialsPath,
   storesPath,
   testingPath,
   testsPath,
