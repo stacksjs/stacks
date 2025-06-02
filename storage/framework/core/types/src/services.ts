@@ -11,6 +11,34 @@ export interface ServicesOptions {
     region: string
   }
 
+  github?: {
+    clientId: string
+    clientSecret: string
+    redirectUrl: string
+    scopes?: string[]
+  }
+
+  google?: {
+    clientId: string
+    clientSecret: string
+    redirectUrl: string
+    scopes?: string[]
+  }
+
+  facebook?: {
+    clientId: string
+    clientSecret: string
+    redirectUrl: string
+    scopes?: string[]
+  }
+
+  twitter?: {
+    clientId: string
+    clientSecret: string
+    redirectUrl: string
+    scopes?: string[]
+  }
+
   godaddy?: {
     apiKey: string
     apiSecret: string
