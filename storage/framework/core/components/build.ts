@@ -1,40 +1,61 @@
-// import { log, runCommand } from '@stacksjs/cli'
-// import { path as p } from '@stacksjs/path'
-// import { exists, glob } from '@stacksjs/storage'
+import { log, runCommand } from '@stacksjs/cli'
+import { path as p } from '@stacksjs/path'
+import { exists, glob } from '@stacksjs/storage'
 
-// const dirs = await glob([p.resolve('./', '*')], { onlyDirectories: true, absolute: true })
-// dirs.sort((a, b) => a.localeCompare(b))
+// Only get immediate subdirectories of the current directory
+const dirs = await glob(['./*'], { 
+  onlyDirectories: true,
+  absolute: true,
+  deep: 1, // Only look one level deep
+})
+dirs.sort((a, b) => a.localeCompare(b))
 
-// const startTime = Date.now()
+console.log('Directories to build:', dirs)
 
-// for (const dir of dirs) {
-//   const distPath = p.resolve(dir, 'dist')
+const startTime = Date.now()
 
-//   // Check if the dist folder exists
-//   if (await exists(distPath)) {
-//     await runCommand('rm -rf dist', {
-//       cwd: dir, // Change this to 'dir' to correctly set the working directory
-//     })
-//   }
+for (const dir of dirs) {
+  // Skip the build if package.json doesn't exist
+  const packageJsonPath = p.resolve(dir, 'package.json')
+  if (!await exists(packageJsonPath)) {
+    console.log(`Skipping ${dir} - no package.json found`)
+    continue
+  }
 
-//   log.debug(`Cleaned dist folder`)
+  console.log(`Building ${dir}`)
+  const distPath = p.resolve(dir, 'dist')
 
-//   // Run the build command in each directory
-//   await runCommand('bun run build', {
-//     cwd: dir,
-//   })
+  // Check if the dist folder exists
+  if (await exists(distPath)) {
+    console.log(`Cleaning dist folder in ${dir}`)
+    await runCommand('rm -rf dist', {
+      cwd: dir,
+    })
+  }
 
-//   const tempPath = p.resolve(dir, 'temp')
+  // Run the build command in each directory
+  try {
+    await runCommand('bun run build', {
+      cwd: dir,
+    })
+    console.log(`Successfully built ${dir}`)
+  } catch (error) {
+    console.error(`Failed to build ${dir}:`, error)
+    continue // Continue with next directory even if this one fails
+  }
 
-//   // Check if the temp folder exists
-//   if (await exists(tempPath)) {
-//     await runCommand('rm -rf temp', {
-//       cwd: dir, // Change this to 'dir' to correctly set the working directory
-//     })
-//   }
-// }
+  const tempPath = p.resolve(dir, 'temp')
 
-// const endTime = Date.now()
-// const timeTaken = endTime - startTime
+  // Check if the temp folder exists
+  if (await exists(tempPath)) {
+    console.log(`Cleaning temp folder in ${dir}`)
+    await runCommand('rm -rf temp', {
+      cwd: dir,
+    })
+  }
+}
 
-// log.success(`Build took ${timeTaken}ms`)
+const endTime = Date.now()
+const timeTaken = endTime - startTime
+
+log.success(`Build took ${timeTaken}ms`)
