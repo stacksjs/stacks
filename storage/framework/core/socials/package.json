@@ -1,0 +1,47 @@
+{
+  "name": "@stacksjs/socials",
+  "type": "module",
+  "version": "0.70.23",
+  "description": "A simple and elegant social authentication package for Stacks.",
+  "author": "Chris Breuer",
+  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/socials#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/socials"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": ["social-auth", "oauth", "socials", "stacks"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["README.md", "dist"],
+  "scripts": {
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "@simplewebauthn/browser": "^13.1.0",
+    "@simplewebauthn/server": "^13.1.1",
+    "@stacksjs/development": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/router": "workspace:*",
+    "@types/qrcode": "^1.5.5",
+    "otplib": "^12.0.1",
+    "qrcode": "^1.5.4"
+  }
+}
