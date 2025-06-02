@@ -51,5 +51,3 @@ export interface RequestInstance {
   getMethod: () => HttpMethod
   user: () => Promise<AuthUser | undefined>
 }
-
-export type Request = RequestInstance

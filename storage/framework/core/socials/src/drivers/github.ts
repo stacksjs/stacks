@@ -1,8 +1,8 @@
 import type { GitHubEmail, GitHubTokenResponse, GitHubUser, ProviderInterface, SocialUser } from '../types'
+import { fetcher } from '@stacksjs/api'
 import { config } from '@stacksjs/config'
 import { AbstractProvider } from '../abstract'
 import { ConfigException } from '../exceptions'
-import { fetcher } from '@stacksjs/api'
 
 export class GitHubProvider extends AbstractProvider implements ProviderInterface {
   protected baseUrl = 'https://github.com'

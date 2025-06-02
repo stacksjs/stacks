@@ -10,4 +10,4 @@ export class ConfigException extends Error {
     super(message)
     this.name = 'ConfigException'
   }
-} 
+}

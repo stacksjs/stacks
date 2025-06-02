@@ -1,8 +1,8 @@
 import type { ProviderInterface, SocialUser } from '../types'
+import { fetcher } from '@stacksjs/api'
 import { config } from '@stacksjs/config'
 import { AbstractProvider } from '../abstract'
 import { ConfigException } from '../exceptions'
-import { fetcher } from '@stacksjs/api'
 
 interface FacebookTokenResponse {
   access_token: string

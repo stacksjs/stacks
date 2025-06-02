@@ -23,7 +23,7 @@ function formatMessage(...args: any[]): string {
 export interface Log {
   info: (...args: any[]) => void
   success: (msg: string) => void
-  error: (err: string | Error | object | unknown, options?: ErrorOptions) => void
+  error: (err: string | Error | object | unknown, options?: LogErrorOptions) => void
   warn: (arg: string, options?: Record<string, any>) => void
   warning: (arg: string) => void
   debug: (...args: any[]) => void
@@ -35,7 +35,7 @@ export interface Log {
 
 export type ErrorMessage = string
 
-export type ErrorOptions = {
+export type LogErrorOptions = {
   shouldExit: boolean
   silent?: boolean
   message?: ErrorMessage
@@ -59,7 +59,7 @@ export const log: Log = {
     await logger.warn(message)
   },
 
-  error: async (err: string | Error | object | unknown, options?: ErrorOptions) => {
+  error: async (err: string | Error | object | unknown, options?: LogErrorOptions) => {
     const errorMessage = typeof err === 'string'
       ? err
       : err instanceof Error

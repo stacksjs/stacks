@@ -1,4 +1,4 @@
-import type { ErrorOptions } from '@stacksjs/logging'
+import type { LogErrorOptions } from '@stacksjs/logging'
 import { appendFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import * as process from 'node:process'
@@ -13,7 +13,7 @@ export class ErrorHandler {
   static isTestEnvironment = false
   static shouldExitProcess = true
 
-  static handle(err: Error | ErrorMessage | unknown, options?: ErrorOptions): Error {
+  static handle(err: Error | ErrorMessage | unknown, options?: LogErrorOptions): Error {
     this.shouldExitProcess = options?.shouldExit !== false
     if (options?.silent !== true)
       this.writeErrorToConsole(err)
@@ -47,7 +47,7 @@ export class ErrorHandler {
     return error
   }
 
-  static handleError(err: Error, options?: ErrorOptions): Error {
+  static handleError(err: Error, options?: LogErrorOptions): Error {
     this.handle(err, options)
     return err
   }
@@ -136,7 +136,7 @@ export async function writeToLogFile(message: string, options?: WriteOptions): P
 
 export function handleError(
   err: string | Error | object | unknown,
-  options?: ErrorOptions | Record<string, any>,
+  options?: LogErrorOptions | Record<string, any>,
 ): Error {
   let errorMessage: string
   let contextData: Record<string, any> | undefined

@@ -1,8 +1,8 @@
 import type { ProviderInterface, SocialUser } from '../types'
+import { fetcher } from '@stacksjs/api'
 import { config } from '@stacksjs/config'
 import { AbstractProvider } from '../abstract'
 import { ConfigException } from '../exceptions'
-import { fetcher } from '@stacksjs/api'
 
 interface GoogleTokenResponse {
   access_token: string
@@ -35,7 +35,7 @@ export class GoogleProvider extends AbstractProvider implements ProviderInterfac
       scopes: config.services.google?.scopes ?? [
         'https://www.googleapis.com/auth/userinfo.profile',
         'https://www.googleapis.com/auth/userinfo.email',
-      ]
+      ],
     }
 
     this.setScopes(providerConfig.scopes)

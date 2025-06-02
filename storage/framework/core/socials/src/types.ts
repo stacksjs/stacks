@@ -42,9 +42,9 @@ export interface GitHubTokenResponse {
 }
 
 export interface ProviderInterface {
-  getAuthUrl(): Promise<string>
-  getAccessToken(code: string): Promise<string>
-  getUserByToken(token: string): Promise<SocialUser>
+  getAuthUrl: () => Promise<string>
+  getAccessToken: (code: string) => Promise<string>
+  getUserByToken: (token: string) => Promise<SocialUser>
 }
 
 export interface TwitterTokenResponse {

@@ -5,4 +5,4 @@ export class Token {
     public expiresIn: number | null = null,
     public approvedScopes: string[] = [],
   ) {}
-} 
+}

@@ -67,7 +67,7 @@ export interface ModelElement {
   fieldArray: FieldArrayElement | null
 }
 
-export interface AuthOptions {
+export interface UserAuthOptions {
   useTwoFactor?: boolean
   usePasskey?: boolean
 }
@@ -159,8 +159,8 @@ export interface ModelOptions extends Base {
     categorizable?: boolean // defaults to false
     taggable?: boolean // defaults to false
     commentables?: boolean // defaults to false
-    useAuth?: boolean | AuthOptions // defaults to false
-    authenticatable?: boolean | AuthOptions // useAuth alias
+    useAuth?: boolean | UserAuthOptions // defaults to false
+    authenticatable?: boolean | UserAuthOptions // useAuth alias
     useSeeder?: boolean | SeedOptions // defaults to a count of 10
     seedable?: boolean | SeedOptions // useSeeder alias
     useSearch?: boolean | SearchOptions // defaults to false

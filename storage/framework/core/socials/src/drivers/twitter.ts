@@ -1,9 +1,9 @@
 import type { ProviderInterface, SocialUser, TwitterTokenResponse, TwitterUser } from '../types'
+import { createHash, randomBytes } from 'node:crypto'
+import { fetcher } from '@stacksjs/api'
 import { config } from '@stacksjs/config'
 import { AbstractProvider } from '../abstract'
 import { ConfigException } from '../exceptions'
-import { fetcher } from '@stacksjs/api'
-import { createHash, randomBytes } from 'crypto'
 
 export class TwitterProvider extends AbstractProvider implements ProviderInterface {
   protected baseUrl = 'https://twitter.com'
@@ -27,7 +27,7 @@ export class TwitterProvider extends AbstractProvider implements ProviderInterfa
   private generateCodeVerifier(): string {
     return randomBytes(32)
       .toString('base64')
-      .replace(/[^a-zA-Z0-9]/g, '')
+      .replace(/[^a-z0-9]/gi, '')
       .substring(0, 128)
   }
 
@@ -78,10 +78,10 @@ export class TwitterProvider extends AbstractProvider implements ProviderInterfa
     }
 
     const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
-    
+
     const response = await fetcher
       .withHeaders({
-        Authorization: `Basic ${basicAuth}`,
+        'Authorization': `Basic ${basicAuth}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       })
       .post<TwitterTokenResponse>(`${this.apiUrl}/2/oauth2/token`, {
