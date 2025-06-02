@@ -1,5 +1,5 @@
-import { ref, onMounted } from 'vue'
 import type { Ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
 interface GitHubOAuthReturn {
   login: () => void
@@ -53,9 +53,11 @@ export function useGitHubOAuth(): GitHubOAuthReturn {
 
       const data = await res.json() as GitHubTokenResponse
       accessToken.value = data.access_token
-    } catch (err: any) {
+    }
+    catch (err: any) {
       error.value = err.message || 'Unknown error'
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }

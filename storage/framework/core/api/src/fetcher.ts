@@ -1,4 +1,4 @@
-import type { FetcherResponse, QueryParams, BodyData } from './types'
+import type { BodyData, FetcherResponse, FileAttachment, QueryParams } from './types'
 
 class FetcherResponseImpl<T> implements FetcherResponse<T> {
   constructor(
@@ -34,44 +34,147 @@ class FetcherResponseImpl<T> implements FetcherResponse<T> {
 }
 
 class Fetcher {
-  private defaultHeaders = {
+  private defaultHeaders: Record<string, string> = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
   }
 
   private queryParams?: QueryParams
+  private bodyData?: BodyData
+  private isFormData: boolean = false
+  private customHeaders: Record<string, string> = {}
+  private attachments: FileAttachment[] = []
+  private isMultipart: boolean = false
 
   withQueryParams(params: QueryParams): this {
     this.queryParams = params
     return this
   }
 
+  withHeaders(headers: Record<string, string>): this {
+    this.customHeaders = { ...this.customHeaders, ...headers }
+    return this
+  }
+
+  withBody<D extends BodyData>(data: D): this {
+    this.bodyData = data
+    return this
+  }
+
+  asForm(): this {
+    this.isFormData = true
+    this.defaultHeaders['Content-Type'] = 'application/x-www-form-urlencoded'
+    return this
+  }
+
+  attach(
+    name: string,
+    content: string | Blob | File,
+    filename?: string,
+    headers?: Record<string, string>,
+  ): this {
+    this.attachments.push({
+      name,
+      content,
+      filename,
+      headers,
+    })
+
+    this.isMultipart = true
+    delete this.defaultHeaders['Content-Type'] // Let browser set the correct boundary
+    return this
+  }
+
+  private getHeaders(): Record<string, string> {
+    return {
+      ...this.defaultHeaders,
+      ...this.customHeaders,
+    }
+  }
+
   private addQueryParams(url: string): string {
-    if (!this.queryParams) return url
+    if (!this.queryParams)
+      return url
 
     const searchParams = new URLSearchParams()
     Object.entries(this.queryParams).forEach(([key, value]) => {
-      if (value != null) searchParams.append(key, String(value))
+      if (value != null)
+        searchParams.append(key, String(value))
     })
 
     const queryString = searchParams.toString()
-    if (!queryString) return url
+    if (!queryString)
+      return url
 
     const hasParams = url.includes('?')
     return url + (hasParams ? '&' : '?') + queryString
   }
 
-  private async request<T>(url: string, method: string, body?: any): Promise<FetcherResponse<T>> {
+  private async formatBody(body?: BodyData): Promise<string | FormData | undefined> {
+    const finalBody = body || this.bodyData
+
+    if (this.isMultipart) {
+      const formData = new FormData()
+
+      // Add any regular body fields
+      if (finalBody) {
+        Object.entries(finalBody).forEach(([key, value]) => {
+          formData.append(key, String(value))
+        })
+      }
+
+      // Add file attachments
+      for (const attachment of this.attachments) {
+        if (attachment.headers) {
+          // If we have custom headers for the file, we need to use a Blob with type
+          const blob = attachment.content instanceof Blob
+            ? new Blob([attachment.content], { type: attachment.headers['Content-Type'] })
+            : attachment.content
+
+          formData.append(attachment.name, blob, attachment.filename)
+        }
+        else {
+          formData.append(attachment.name, attachment.content, attachment.filename)
+        }
+      }
+
+      return formData
+    }
+
+    if (this.isFormData && finalBody) {
+      const formData = new URLSearchParams()
+      Object.entries(finalBody).forEach(([key, value]) => {
+        if (value != null)
+          formData.append(key, String(value))
+      })
+      return formData.toString()
+    }
+
+    return finalBody ? JSON.stringify(finalBody) : undefined
+  }
+
+  private resetState(): void {
+    this.queryParams = undefined
+    this.bodyData = undefined
+    this.isFormData = false
+    this.isMultipart = false
+    this.customHeaders = {}
+    this.attachments = []
+    this.defaultHeaders['Content-Type'] = 'application/json'
+  }
+
+  private async request<T>(url: string, method: string, body?: BodyData): Promise<FetcherResponse<T>> {
     const urlWithParams = this.addQueryParams(url)
+    const formattedBody = await this.formatBody(body)
 
     const response = await fetch(urlWithParams, {
       method,
-      headers: this.defaultHeaders,
-      body: body ? JSON.stringify(body) : undefined,
+      headers: this.getHeaders(),
+      body: formattedBody as any,
     })
 
     const data = await response.json() as T
-    this.queryParams = undefined // Reset after use
+    this.resetState() // Reset after use
 
     return new FetcherResponseImpl(
       data,
@@ -86,22 +189,22 @@ class Fetcher {
   }
 
   async post<T = any, D extends BodyData = BodyData>(
-    url: string, 
-    body?: D
+    url: string,
+    body?: D,
   ): Promise<FetcherResponse<T>> {
     return this.request<T>(url, 'POST', body)
   }
 
   async put<T = any, D extends BodyData = BodyData>(
     url: string,
-    body?: D
+    body?: D,
   ): Promise<FetcherResponse<T>> {
     return this.request<T>(url, 'PUT', body)
   }
 
   async patch<T = any, D extends BodyData = BodyData>(
     url: string,
-    body?: D
+    body?: D,
   ): Promise<FetcherResponse<T>> {
     return this.request<T>(url, 'PATCH', body)
   }
@@ -112,4 +215,3 @@ class Fetcher {
 }
 
 export const fetcher: Fetcher = new Fetcher()
-

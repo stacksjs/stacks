@@ -1,6 +1,6 @@
 import type { GitHubEmail, GitHubTokenResponse, GitHubUser, ProviderInterface, SocialUser } from '../types'
-import { AbstractProvider, ConfigException } from '../types'
 import { config } from '@stacksjs/config'
+import { AbstractProvider, ConfigException } from '../types'
 
 export class GitHubProvider extends AbstractProvider implements ProviderInterface {
   protected baseUrl = 'https://github.com'
@@ -54,7 +54,7 @@ export class GitHubProvider extends AbstractProvider implements ProviderInterfac
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Accept: 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify({
         client_id: clientId,
@@ -113,7 +113,7 @@ export class GitHubProvider extends AbstractProvider implements ProviderInterfac
   protected getEmail(emails: GitHubEmail[]): string | null {
     const primaryEmail = emails.find(email => email.primary)
     const verifiedEmail = emails.find(email => email.verified)
-    
+
     return (primaryEmail || verifiedEmail || emails[0])?.email ?? null
   }
 
