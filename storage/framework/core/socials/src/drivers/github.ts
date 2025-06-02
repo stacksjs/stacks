@@ -1,6 +1,7 @@
 import type { GitHubEmail, GitHubTokenResponse, GitHubUser, ProviderInterface, SocialUser } from '../types'
 import { config } from '@stacksjs/config'
 import { AbstractProvider, ConfigException } from '../types'
+import { fetcher } from '@stacksjs/api'
 
 export class GitHubProvider extends AbstractProvider implements ProviderInterface {
   protected baseUrl = 'https://github.com'
@@ -50,27 +51,19 @@ export class GitHubProvider extends AbstractProvider implements ProviderInterfac
     const { clientId, clientSecret, redirectUrl } = this.getConfig()
     this.validateConfig()
 
-    const response = await fetch(`${this.baseUrl}/login/oauth/access_token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
+    const response = await fetcher
+      .post<GitHubTokenResponse>(`${this.baseUrl}/login/oauth/access_token`, {
         client_id: clientId,
         client_secret: clientSecret,
         code,
         redirect_uri: redirectUrl,
-      }),
-    })
+      })
 
-    const data = await response.json() as GitHubTokenResponse
-
-    if (data.error) {
-      throw new Error(`GitHub OAuth error: ${data.error_description}`)
+    if (response.data.error) {
+      throw new Error(`GitHub OAuth error: ${response.data.error_description}`)
     }
 
-    return data.access_token
+    return response.data.access_token
   }
 
   /**
@@ -79,31 +72,29 @@ export class GitHubProvider extends AbstractProvider implements ProviderInterfac
    */
   public async getUserByToken(token: string): Promise<SocialUser> {
     const [userResponse, emailsResponse] = await Promise.all([
-      fetch(`${this.apiUrl}/user`, {
-        headers: {
+      fetcher
+        .withHeaders({
           Accept: 'application/vnd.github.v3+json',
           Authorization: `token ${token}`,
-        },
-      }),
-      fetch(`${this.apiUrl}/user/emails`, {
-        headers: {
+        })
+        .get<GitHubUser>(`${this.apiUrl}/user`),
+
+      fetcher
+        .withHeaders({
           Accept: 'application/vnd.github.v3+json',
           Authorization: `token ${token}`,
-        },
-      }),
+        })
+        .get<GitHubEmail[]>(`${this.apiUrl}/user/emails`),
     ])
 
-    const user = await userResponse.json() as GitHubUser
-    const emails = await emailsResponse.json() as GitHubEmail[]
-
     return {
-      id: user.id.toString(),
-      nickname: user.login,
-      name: user.name,
-      email: this.getEmail(emails),
-      avatar: user.avatar_url,
+      id: userResponse.data.id.toString(),
+      nickname: userResponse.data.login,
+      name: userResponse.data.name,
+      email: this.getEmail(emailsResponse.data),
+      avatar: userResponse.data.avatar_url,
       token,
-      raw: user,
+      raw: userResponse.data,
     }
   }
 
