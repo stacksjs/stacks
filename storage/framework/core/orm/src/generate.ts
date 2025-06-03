@@ -131,6 +131,7 @@ export async function generateModelString(
     relationImports += `import type {${relationInstance.model}Model} from './${relationInstance.model}'\n\n`
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
+  const useSocials = model?.traits?.useSocials && Array.isArray(model.traits.useSocials) && model.traits.useSocials.length > 0
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
   const observer = model?.traits?.observe
   const useUuid = model?.traits?.useUuid || false
@@ -912,6 +913,50 @@ export async function generateModelString(
 
           return results.map((modelItem: ${modelName}JsonResponse) => new ${modelName}Model(modelItem))
         } \n\n`
+  }
+
+  if (useSocials) {
+    const socials = model.traits?.useSocials || []
+
+    if (socials.includes('google')) {
+      setFields += `set google_id(value: string) {
+        this.attributes.google_id = value
+      }\n\n`
+
+      getFields += `get google_id(): string | undefined {
+        return this.attributes.google_id
+      }\n\n`
+    }
+
+    if (socials.includes('github')) {
+      setFields += `set github_id(value: string) {
+        this.attributes.github_id = value
+      }\n\n`
+
+      getFields += `get github_id(): string | undefined {
+        return this.attributes.github_id
+      }\n\n`
+    }
+
+    if (socials.includes('twitter')) {
+      setFields += `set twitter_id(value: string) {
+        this.attributes.twitter_id = value
+      }\n\n`
+
+      getFields += `get twitter_id(): string | undefined {
+        return this.attributes.twitter_id
+      }\n\n`
+    }
+
+    if (socials.includes('facebook')) {
+      setFields += `set facebook_id(value: string) {
+        this.attributes.facebook_id = value
+      }\n\n`
+
+      getFields += `get facebook_id(): string | undefined {
+        return this.attributes.facebook_id
+      }\n\n`
+    }
   }
 
   if (useTimestamps) {

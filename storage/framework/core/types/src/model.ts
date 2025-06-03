@@ -82,6 +82,8 @@ type Action = ActionPath | ActionName | undefined
 
 export type ApiRoutes = 'index' | 'show' | 'store' | 'update' | 'destroy'
 
+export type SocialProviders = 'google' | 'github' | 'twitter' | 'facebook'
+
 export type VineType = VineString | VineNumber | VineBoolean | Date | Nullable<any>
 export interface SeedOptions {
   count: number
@@ -101,6 +103,8 @@ export interface Relations {
   belongsTo: BelongsTo<ModelNames> | ModelNames[]
   belongsToMany: BelongsToMany<ModelNames> | ModelNames[]
 }
+
+export type SocialOptions = SocialProviders[]
 
 export interface ApiSettings {
   uri: string
@@ -164,6 +168,7 @@ export interface ModelOptions extends Base {
     useSeeder?: boolean | SeedOptions // defaults to a count of 10
     seedable?: boolean | SeedOptions // useSeeder alias
     useSearch?: boolean | SearchOptions // defaults to false
+    useSocials?: SocialOptions // defaults to false
     searchable?: boolean | SearchOptions // useSearch alias
     useApi?: ApiOptions | boolean
     observe?: string[] | boolean
