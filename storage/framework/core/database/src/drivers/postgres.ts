@@ -128,6 +128,7 @@ async function createTableMigration(modelPath: string) {
 
   const otherModelRelations = await fetchOtherModelRelations(modelPath)
   const useTimestamps = model.traits?.useTimestamps ?? model.traits?.timestampable ?? true
+  const useSocials = model?.traits?.useSocials && Array.isArray(model.traits.useSocials) && model.traits.useSocials.length > 0
   const useSoftDeletes = model.traits?.useSoftDeletes ?? model.traits?.softDeletable ?? false
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
@@ -136,6 +137,18 @@ async function createTableMigration(modelPath: string) {
   migrationContent += `  await db.schema\n`
   migrationContent += `    .createTable('${tableName}')\n`
   migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
+
+  if (useSocials) {
+    const socials = model.traits?.useSocials || []
+    if (socials.includes('google'))
+      migrationContent += `    .addColumn('google_id', 'text')\n`
+    if (socials.includes('github'))
+      migrationContent += `    .addColumn('github_id', 'text')\n`
+    if (socials.includes('twitter'))
+      migrationContent += `    .addColumn('twitter_id', 'text')\n`
+    if (socials.includes('facebook'))
+      migrationContent += `    .addColumn('facebook_id', 'text')\n`
+  }
 
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
@@ -289,7 +302,7 @@ async function createAlterTableMigration(modelPath: string) {
   // Add new fields
   for (const fieldName of fieldsToAdd) {
     const options = currentFields[fieldName] as Attribute
-    const columnType = mapFieldTypeToColumnType(options.validation?.rule)
+    const columnType = mapFieldTypeToColumnType(options.validation?.rule, 'postgres')
     const formattedFieldName = snakeCase(fieldName)
 
     migrationContent += `    .addColumn('${formattedFieldName}', '${columnType}'`

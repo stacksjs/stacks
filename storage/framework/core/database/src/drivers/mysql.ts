@@ -123,6 +123,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
   const otherModelRelations = await fetchOtherModelRelations(modelName)
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
+  const useSocials = model?.traits?.useSocials && Array.isArray(model.traits.useSocials) && model.traits.useSocials.length > 0
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
 
   const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
@@ -141,6 +142,19 @@ async function createTableMigration(modelPath: string): Promise<void> {
 
   if (useUuid)
     migrationContent += `    .addColumn('uuid', 'varchar(255)')\n`
+
+  if (useSocials) {
+    const socials = model.traits?.useSocials || []
+
+    if (socials.includes('google'))
+      migrationContent += `    .addColumn('google_id', 'varchar(255)')\n`
+    if (socials.includes('github'))
+      migrationContent += `    .addColumn('github_id', 'varchar(255)')\n`
+    if (socials.includes('twitter'))
+      migrationContent += `    .addColumn('twitter_id', 'varchar(255)')\n`
+    if (socials.includes('facebook'))
+      migrationContent += `    .addColumn('facebook_id', 'varchar(255)')\n`
+  }
 
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
