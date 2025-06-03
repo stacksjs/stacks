@@ -25,6 +25,7 @@ export interface UsersTable {
   name: string
   email: string
   password: string
+  github_id?: string
   public_passkey?: string
   uuid?: string
 
@@ -242,6 +243,10 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return this.attributes.password
   }
 
+  get github_id(): string | undefined {
+    return this.attributes.github_id
+  }
+
   get created_at(): string | undefined {
     return this.attributes.created_at
   }
@@ -268,6 +273,10 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
   set password(value: string) {
     this.attributes.password = value
+  }
+
+  set github_id(value: string) {
+    this.attributes.github_id = value
   }
 
   set updated_at(value: string) {
@@ -915,6 +924,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       personal_access_tokens: this.personal_access_tokens,
       oauth_access_tokens: this.oauth_access_tokens,
       ...this.customColumns,
+      github_id: this.github_id,
       public_passkey: this.public_passkey,
     }
 

@@ -1009,6 +1009,29 @@ export async function generateModelString(
 
   const otherModelRelations = await fetchOtherModelRelations(modelName)
 
+  if (useSocials) {
+    const socials = model.traits?.useSocials || []
+    if (socials.includes('google')) {
+      jsonFields += 'google_id: this.google_id,\n'
+      fieldString += 'google_id?: string \n'
+    }
+
+    if (socials.includes('github')) {
+      jsonFields += 'github_id: this.github_id,\n'
+      fieldString += 'github_id?: string \n'
+    }
+
+    if (socials.includes('twitter')) {
+      jsonFields += 'twitter_id: this.twitter_id,\n'
+      fieldString += 'twitter_id?: string \n'
+    }
+
+    if (socials.includes('facebook')) {
+      jsonFields += 'facebook_id: this.facebook_id,\n'
+      fieldString += 'facebook_id?: string \n'
+    }
+  }
+
   if (useTwoFactor && tableName === 'users') {
     jsonFields += 'two_factor_secret: this.two_factor_secret\n'
     fieldString += 'two_factor_secret?: string \n'

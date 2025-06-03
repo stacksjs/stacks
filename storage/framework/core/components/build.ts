@@ -3,7 +3,7 @@ import { path as p } from '@stacksjs/path'
 import { exists, glob } from '@stacksjs/storage'
 
 // Only get immediate subdirectories of the current directory
-const dirs = await glob(['./*'], { 
+const dirs = await glob(['./*'], {
   onlyDirectories: true,
   absolute: true,
   deep: 1, // Only look one level deep
@@ -39,7 +39,8 @@ for (const dir of dirs) {
       cwd: dir,
     })
     console.log(`Successfully built ${dir}`)
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`Failed to build ${dir}:`, error)
     continue // Continue with next directory even if this one fails
   }

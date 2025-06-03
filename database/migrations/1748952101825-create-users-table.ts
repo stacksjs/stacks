@@ -6,6 +6,7 @@ export async function up(db: Database<any>) {
     .createTable('users')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'varchar(255)')
+    .addColumn('github_id', 'varchar(255)')
     .addColumn('email', 'varchar(255)', col => col.unique().notNull())
     .addColumn('name', 'varchar(255)', col => col.notNull())
     .addColumn('password', 'varchar(255)', col => col.notNull())
