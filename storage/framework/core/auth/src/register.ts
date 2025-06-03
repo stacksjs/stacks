@@ -30,7 +30,7 @@ export async function register(credentials: NewUser): Promise<{ token: AuthToken
 
   const insertId = Number(result?.insertId) || Number(result?.numInsertedOrUpdatedRows)
 
-  if (!result?.insertId)
+  if (!insertId)
     return null
 
   // Get the created user
