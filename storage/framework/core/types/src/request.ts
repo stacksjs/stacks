@@ -11,7 +11,7 @@ type RouteParams = { [key: string]: string | number } | null
 
 interface ValidationField {
   rule: VineType
-  message: Record<string, string>
+  message?: Record<string, string>
 }
 
 interface CustomAttributes {
