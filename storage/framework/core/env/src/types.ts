@@ -1,5 +1,5 @@
-import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from '@stacksjs/validation'
-import type { SchemaTypes } from '@vinejs/vine/types'
+import type { StringValidatorType, NumberValidatorType, BooleanValidatorType, EnumValidatorType, Infer, ValidationType } from '@stacksjs/ts-validation'
+import { ObjectValidator } from '@stacksjs/ts-validation'
 import type { EnvKey } from '../../../env'
 import { schema } from '@stacksjs/validation'
 import env from '~/config/env'
@@ -17,22 +17,22 @@ export const envEnum: EnumObject = {
 }
 
 interface StringEnvConfig {
-  validation: VineString
+  validation: StringValidatorType
   default: string
 }
 
 interface NumberEnvConfig {
-  validation: VineNumber
+  validation: NumberValidatorType
   default: number
 }
 
 interface BooleanEnvConfig {
-  validation: VineBoolean
+  validation: BooleanValidatorType
   default: boolean
 }
 
 interface EnumEnvConfig {
-  validation: VineEnum<any>
+  validation: EnumValidatorType<string>
   default: string
 }
 
@@ -40,7 +40,7 @@ type EnvValueConfig = StringEnvConfig | NumberEnvConfig | BooleanEnvConfig | Enu
 
 export type EnvConfig = Partial<Record<EnvKey, EnvValueConfig>>
 
-type EnvMap = Record<string, SchemaTypes>
+type EnvMap = Record<string, ValidationType>
 
 const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
   if (typeof value === 'object' && value !== null && 'validation' in value) {
@@ -48,7 +48,7 @@ const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
     return acc
   }
 
-  let validatorType: SchemaTypes
+  let validatorType: StringValidatorType | NumberValidatorType | BooleanValidatorType | EnumValidatorType<string>
   switch (typeof value) {
     case 'string':
       validatorType = schema.string()
@@ -67,8 +67,7 @@ const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
 
       // check if is on object
       if (typeof value === 'object' && value !== null) {
-        const schemaNameSymbol = Symbol.for('schema_name')
-        const schemaName = (value as { [key: symbol]: string })[schemaNameSymbol]
+        const schemaName = (value as { name: string }).name
 
         if (schemaName === 'vine.string') {
           validatorType = schema.string()
@@ -100,11 +99,11 @@ const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
   return acc
 }, {} as EnvMap)
 
-export const envSchema: ReturnType<typeof schema.object> = schema.object(envStructure)
+export const envSchema: ObjectValidator<EnvMap> = schema.object().shape(envStructure)
 export type Env = Infer<typeof envSchema>
 
-export type EnvOptions = Env
-
+export type EnvOptions = Env  
+  
 export interface FrontendEnv {
   FRONTEND_APP_ENV: 'local' | 'development' | 'staging' | 'production'
   FRONTEND_APP_URL: string
