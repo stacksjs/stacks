@@ -1,4 +1,5 @@
 import type { ProviderInterface, SocialUser, TwitterTokenResponse, TwitterUser } from '../types'
+import { Buffer } from 'node:buffer'
 import { createHash, randomBytes } from 'node:crypto'
 import { fetcher } from '@stacksjs/api'
 import { config } from '@stacksjs/config'

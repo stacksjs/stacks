@@ -3,9 +3,7 @@ import Stripe from 'stripe'
 
 const apiKey = config?.services?.stripe?.secretKey || ''
 
-console.log('apiKey', apiKey)
-
-const client = new Stripe('', {
+const client = new Stripe(apiKey, {
   apiVersion: '2025-02-24.acacia',
 })
 
