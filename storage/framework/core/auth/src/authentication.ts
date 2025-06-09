@@ -1,11 +1,10 @@
-import type { OauthClientJsonResponse } from '@stacksjs/orm'
+import type { OauthClientJsonResponse, UserModel } from '@stacksjs/orm'
 import type { AuthToken } from './token'
-import type { AuthUser } from './user'
 import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-import { formatDate } from '@stacksjs/orm'
+import { formatDate, User } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
 import { decrypt, encrypt, makeHash, verifyHash } from '@stacksjs/security'
 import { RateLimiter } from './rate-limiter'
@@ -18,7 +17,7 @@ interface Credentials {
 }
 
 export class Auth {
-  private static authUser: AuthUser | undefined = undefined
+  private static authUser: UserModel | undefined = undefined
   private static clientSecret: string | undefined = undefined
 
   private static async getClientSecret(): Promise<string> {
@@ -64,10 +63,7 @@ export class Auth {
       return false
 
     let hashCheck = false
-    const user = await db.selectFrom('users')
-      .where('email', '=', email)
-      .selectAll()
-      .executeTakeFirst()
+    const user = await User.where('email', '=', email).first()
 
     const authPass = credentials[password] || ''
 
@@ -84,7 +80,7 @@ export class Auth {
     return false
   }
 
-  public static async createToken(user: AuthUser, name: string = config.auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
+  public static async createToken(user: UserModel, name: string = config.auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
     const client = await this.getPersonalAccessClient()
     const clientSecret = await this.getClientSecret()
 
@@ -229,7 +225,7 @@ export class Auth {
     return true
   }
 
-  public static async getUserFromToken(token: string): Promise<AuthUser | undefined> {
+  public static async getUserFromToken(token: string): Promise<UserModel | undefined> {
     const [jwtToken, tokenId] = token.split(':')
     if (!tokenId || !jwtToken)
       return undefined
@@ -264,10 +260,7 @@ export class Auth {
       .where('id', '=', accessToken.id)
       .execute()
 
-    return await db.selectFrom('users')
-      .where('id', '=', accessToken.user_id)
-      .select(['id', 'name', 'email', 'created_at', 'updated_at', 'uuid', 'public_passkey'])
-      .executeTakeFirst()
+    return await User.find(accessToken.user_id)
   }
 
   public static async revokeToken(token: string): Promise<void> {
