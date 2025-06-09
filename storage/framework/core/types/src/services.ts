@@ -105,8 +105,8 @@ export interface ServicesOptions {
   }
 
   stripe?: {
-    appId: string
-    apiKey: string
+    secretKey: string
+    publicKey: string
   }
 
   // supabase?: {

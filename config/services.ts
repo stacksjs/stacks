@@ -107,7 +107,7 @@ export default {
     retryTimeout: env.SENDGRID_RETRY_TIMEOUT ? Number.parseInt(env.SENDGRID_RETRY_TIMEOUT) : 1000,
   },
   stripe: {
-    appId: '',
-    apiKey: '',
+    secretKey: env.STRIPE_SECRET_KEY,
+    publicKey: env.STRIPE_PUBLISHABLE_KEY,
   },
 } satisfies ServicesConfig

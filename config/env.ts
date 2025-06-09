@@ -168,6 +168,16 @@ export default {
     default: 'meilisearch',
   },
 
+  STRIPE_SECRET_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  STRIPE_PUBLISHABLE_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
   MEILISEARCH_HOST: {
     validation: schema.string(),
     default: '',

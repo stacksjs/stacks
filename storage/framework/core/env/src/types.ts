@@ -1,5 +1,4 @@
-import type { StringValidatorType, NumberValidatorType, BooleanValidatorType, EnumValidatorType, Infer, ValidationType } from '@stacksjs/ts-validation'
-import { ObjectValidator } from '@stacksjs/ts-validation'
+import type { BooleanValidatorType, EnumValidatorType, Infer, NumberValidatorType, StringValidatorType, ValidationType } from '@stacksjs/ts-validation'
 import type { EnvKey } from '../../../env'
 import { schema } from '@stacksjs/validation'
 import env from '~/config/env'
@@ -99,11 +98,11 @@ const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
   return acc
 }, {} as EnvMap)
 
-export const envSchema: ObjectValidator<EnvMap> = schema.object().shape(envStructure)
+export const envSchema: boolean = schema.object().test(envStructure)
 export type Env = Infer<typeof envSchema>
 
-export type EnvOptions = Env  
-  
+export type EnvOptions = Env
+
 export interface FrontendEnv {
   FRONTEND_APP_ENV: 'local' | 'development' | 'staging' | 'production'
   FRONTEND_APP_URL: string

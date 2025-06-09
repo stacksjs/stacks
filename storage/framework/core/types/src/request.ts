@@ -1,4 +1,4 @@
-import type { AuthUser } from '@stacksjs/auth'
+import type { UserModel } from '@stacksjs/orm'
 import type { AuthToken, RouteParam, VineType } from '@stacksjs/types'
 
 export type * from '../../../types/requests'
@@ -49,5 +49,5 @@ export interface RequestInstance {
   ip: () => string | null
   ipForRateLimit: () => string | null
   getMethod: () => HttpMethod
-  user: () => Promise<AuthUser | undefined>
+  user: () => Promise<UserModel | undefined>
 }

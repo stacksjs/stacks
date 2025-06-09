@@ -35,6 +35,8 @@ export function process(): Env {
 
 export const env: Env = new Proxy(process(), handler)
 
+console.log('env', env)
+
 export function writeEnv(key: EnvKey, value: string, options?: { path: string }): void {
   const envPath = options?.path || projectPath('.env')
   const env = fs.readFileSync(envPath, 'utf-8')
