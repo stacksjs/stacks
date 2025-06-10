@@ -1,4 +1,4 @@
-import type { BooleanValidatorType, EnumValidatorType, Infer, NumberValidatorType, StringValidatorType, ValidationType } from '@stacksjs/ts-validation'
+import type { BooleanValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, ValidationType } from '@stacksjs/ts-validation'
 import type { EnvKey } from '../../../env'
 import { schema } from '@stacksjs/validation'
 import env from '~/config/env'
@@ -39,28 +39,42 @@ type EnvValueConfig = StringEnvConfig | NumberEnvConfig | BooleanEnvConfig | Enu
 
 export type EnvConfig = Partial<Record<EnvKey, EnvValueConfig>>
 
-type EnvMap = Record<string, ValidationType>
+type EnvMap = Record<string, string>
+
+type TypeFromString<T extends string> = T extends 'string' 
+  ? string 
+  : T extends 'number' 
+    ? number 
+    : T extends 'boolean' 
+      ? boolean 
+      : T extends 'enum' 
+        ? string 
+        : never
+
+type Infer<T extends Record<string, string>> = {
+  [K in keyof T]: TypeFromString<T[K]>
+}
 
 const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
   if (typeof value === 'object' && value !== null && 'validation' in value) {
-    acc[key] = (value as EnvValueConfig).validation
+    acc[key] = (value as EnvValueConfig).validation.name
     return acc
   }
 
-  let validatorType: StringValidatorType | NumberValidatorType | BooleanValidatorType | EnumValidatorType<string>
+  let typeName: string
   switch (typeof value) {
     case 'string':
-      validatorType = schema.string()
+      typeName = 'string'
       break
     case 'number':
-      validatorType = schema.number()
+      typeName = 'number'
       break
     case 'boolean':
-      validatorType = schema.boolean()
+      typeName = 'boolean'
       break
     default:
       if (Array.isArray(value)) {
-        validatorType = schema.enum(value as string[])
+        typeName = 'enum'
         break
       }
 
@@ -68,23 +82,13 @@ const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
       if (typeof value === 'object' && value !== null) {
         const schemaName = (value as { name: string }).name
 
-        if (schemaName === 'string') {
-          validatorType = schema.string()
-          break
-        }
-
-        if (schemaName === 'number') {
-          validatorType = schema.number()
-          break
-        }
-
-        if (schemaName === 'boolean') {
-          validatorType = schema.boolean()
+        if (schemaName === 'string' || schemaName === 'number' || schemaName === 'boolean') {
+          typeName = schemaName
           break
         }
 
         if (!schemaName && key in envEnum) {
-          validatorType = schema.enum(envEnum[key as keyof typeof envEnum])
+          typeName = 'enum'
           break
         }
 
@@ -94,14 +98,11 @@ const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
       throw new Error(`Invalid env value for ${key}`)
   }
 
-  acc[key] = validatorType
+  acc[key] = typeName
   return acc
-}, {} as EnvMap)
+}, {} as Record<string, string>)
 
-export const envSchema: boolean = schema.object().test(envStructure)
-export type Env = Infer<typeof envSchema>
-
-export type EnvOptions = Env
+export type Env = ReturnType<Infer<typeof envStructure>>
 
 export interface FrontendEnv {
   FRONTEND_APP_ENV: 'local' | 'development' | 'staging' | 'production'
