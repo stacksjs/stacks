@@ -102,7 +102,11 @@ const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
   return acc
 }, {} as Record<string, string>)
 
-export type Env = ReturnType<Infer<typeof envStructure>>
+export type Env = {
+  [K in keyof typeof envStructure]: typeof envStructure[K]
+}
+
+export type EnvSchema = ReturnType<typeof schema.object<typeof envStructure>>
 
 export interface FrontendEnv {
   FRONTEND_APP_ENV: 'local' | 'development' | 'staging' | 'production'
