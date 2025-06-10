@@ -68,17 +68,17 @@ const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
       if (typeof value === 'object' && value !== null) {
         const schemaName = (value as { name: string }).name
 
-        if (schemaName === 'vine.string') {
+        if (schemaName === 'string') {
           validatorType = schema.string()
           break
         }
 
-        if (schemaName === 'vine.number') {
+        if (schemaName === 'number') {
           validatorType = schema.number()
           break
         }
 
-        if (schemaName === 'vine.boolean') {
+        if (schemaName === 'boolean') {
           validatorType = schema.boolean()
           break
         }
