@@ -50,6 +50,6 @@
     "@opensearch-project/opensearch": "^3.5.1",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*",
-    "meilisearch": "^0.50.0"
+    "meilisearch": "^0.51.0"
   }
 }
