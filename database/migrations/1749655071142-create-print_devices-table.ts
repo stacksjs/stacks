@@ -11,7 +11,7 @@ export async function up(db: Database<any>) {
     .addColumn('location', 'varchar(100)', col => col.notNull())
     .addColumn('terminal', 'varchar(50)', col => col.notNull())
     .addColumn('status', sql`enum('online', 'offline', 'warning')`, col => col.notNull())
-    .addColumn('last_ping', 'integer', col => col.notNull())
+    .addColumn('last_ping', 'bigint', col => col.notNull())
     .addColumn('print_count', 'integer', col => col.notNull())
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')

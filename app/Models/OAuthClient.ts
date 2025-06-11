@@ -11,9 +11,6 @@ export default {
   hasMany: ['OauthAccessToken'],
   traits: {
     useTimestamps: true,
-    useSeeder: {
-      count: 10,
-    },
   },
 
   attributes: {

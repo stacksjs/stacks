@@ -169,7 +169,7 @@ export function prepareDateTimeColumnType(validator: Validator, driver = 'mysql'
     if (rule.name === 'datetime')
       return `'datetime'`
     if (rule.name === 'unix')
-      return `'integer'`
+      return `'bigint'`
     if (rule.name === 'timestamp')
       return `'timestamp'`
   }

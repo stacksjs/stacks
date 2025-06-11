@@ -11,9 +11,6 @@ export default {
   belongsTo: ['User'],
   traits: {
     useTimestamps: true,
-    useSeeder: {
-      count: 10,
-    },
   },
 
   attributes: {
@@ -81,7 +78,7 @@ export default {
           timestamp: 'lastUsedAt must be a valid timestamp',
         },
       },
-      factory: faker => faker.date.recent().getTime(),
+      factory: faker => faker.date.recent().toDateString(),
     },
 
     expiresAt: {

@@ -96,12 +96,12 @@ export default {
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.unix(),
         message: {
           invalid: 'Invalid timestamp format',
         },
       },
-      factory: faker => faker.date.recent().toISOString(),
+      factory: faker => faker.date.recent().getTime(),
     },
 
     printCount: {

@@ -18,9 +18,6 @@ export default {
   ],
   traits: {
     useTimestamps: true,
-    useSeeder: {
-      count: 10,
-    },
   },
 
   attributes: {

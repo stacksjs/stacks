@@ -1,6 +1,7 @@
-import type { BooleanValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, ValidationType } from '@stacksjs/ts-validation'
+import type { VineBoolean, VineEnum, VineNumber, VineString } from '@vinejs/vine'
+import type { Infer, SchemaTypes } from '@vinejs/vine/types'
 import type { EnvKey } from '../../../env'
-import { schema } from '@stacksjs/validation'
+import schema from '@vinejs/vine'
 import env from '~/config/env'
 
 interface EnumObject {
@@ -16,22 +17,22 @@ export const envEnum: EnumObject = {
 }
 
 interface StringEnvConfig {
-  validation: StringValidatorType
+  validation: VineString
   default: string
 }
 
 interface NumberEnvConfig {
-  validation: NumberValidatorType
+  validation: VineNumber
   default: number
 }
 
 interface BooleanEnvConfig {
-  validation: BooleanValidatorType
+  validation: VineBoolean
   default: boolean
 }
 
 interface EnumEnvConfig {
-  validation: EnumValidatorType<string>
+  validation: VineEnum<any>
   default: string
 }
 
@@ -39,56 +40,53 @@ type EnvValueConfig = StringEnvConfig | NumberEnvConfig | BooleanEnvConfig | Enu
 
 export type EnvConfig = Partial<Record<EnvKey, EnvValueConfig>>
 
-type EnvMap = Record<string, string>
-
-type TypeFromString<T extends string> = T extends 'string' 
-  ? string 
-  : T extends 'number' 
-    ? number 
-    : T extends 'boolean' 
-      ? boolean 
-      : T extends 'enum' 
-        ? string 
-        : never
-
-type Infer<T extends Record<string, string>> = {
-  [K in keyof T]: TypeFromString<T[K]>
-}
+type EnvMap = Record<string, SchemaTypes>
 
 const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
   if (typeof value === 'object' && value !== null && 'validation' in value) {
-    acc[key] = (value as EnvValueConfig).validation.name
+    acc[key] = (value as EnvValueConfig).validation
     return acc
   }
 
-  let typeName: string
+  let validatorType: SchemaTypes
   switch (typeof value) {
     case 'string':
-      typeName = 'string'
+      validatorType = schema.string()
       break
     case 'number':
-      typeName = 'number'
+      validatorType = schema.number()
       break
     case 'boolean':
-      typeName = 'boolean'
+      validatorType = schema.boolean()
       break
     default:
       if (Array.isArray(value)) {
-        typeName = 'enum'
+        validatorType = schema.enum(value as string[])
         break
       }
 
       // check if is on object
       if (typeof value === 'object' && value !== null) {
-        const schemaName = (value as { name: string }).name
+        const schemaNameSymbol = Symbol.for('schema_name')
+        const schemaName = (value as { [key: symbol]: string })[schemaNameSymbol]
 
-        if (schemaName === 'string' || schemaName === 'number' || schemaName === 'boolean') {
-          typeName = schemaName
+        if (schemaName === 'vine.string') {
+          validatorType = schema.string()
+          break
+        }
+
+        if (schemaName === 'vine.number') {
+          validatorType = schema.number()
+          break
+        }
+
+        if (schemaName === 'vine.boolean') {
+          validatorType = schema.boolean()
           break
         }
 
         if (!schemaName && key in envEnum) {
-          typeName = 'enum'
+          validatorType = schema.enum(envEnum[key as keyof typeof envEnum])
           break
         }
 
@@ -98,15 +96,14 @@ const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
       throw new Error(`Invalid env value for ${key}`)
   }
 
-  acc[key] = typeName
+  acc[key] = validatorType
   return acc
-}, {} as Record<string, string>)
+}, {} as EnvMap)
 
-export type Env = {
-  [K in keyof typeof envStructure]: typeof envStructure[K]
-}
+export const envSchema: ReturnType<typeof schema.object> = schema.object(envStructure)
+export type Env = Infer<typeof envSchema>
 
-export type EnvSchema = ReturnType<typeof schema.object<typeof envStructure>>
+export type EnvOptions = Env
 
 export interface FrontendEnv {
   FRONTEND_APP_ENV: 'local' | 'development' | 'staging' | 'production'
