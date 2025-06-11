@@ -8,10 +8,11 @@ interface ResponseData {
 
 export class Response implements ResponseInstance {
   public json(data: any, statusCode: number = 200): ResponseData {
+    const isErrorStatus = statusCode >= 400
     return {
       status: statusCode,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify(isErrorStatus ? { errors: data } : { data }),
     }
   }
 
