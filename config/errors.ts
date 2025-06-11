@@ -43,7 +43,6 @@ export default {
 
     // number
     'number': 'The {{ field }} field must be a number',
-    'min': 'The {{ field }} field must be at least {{ min }}',
     'max': 'The {{ field }} field must not be greater than {{ max }}',
     'range': 'The {{ field }} field must be between {{ min }} and {{ max }}',
     'positive': 'The {{ field }} field must be positive',
