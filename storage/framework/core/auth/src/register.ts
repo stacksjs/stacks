@@ -1,6 +1,7 @@
 import type { NewUser } from '@stacksjs/orm'
 import type { AuthToken } from './token'
 import { db } from '@stacksjs/database'
+import { User } from '@stacksjs/orm'
 import { makeHash } from '@stacksjs/security'
 import { Auth } from './authentication'
 
@@ -8,10 +9,7 @@ export async function register(credentials: NewUser): Promise<{ token: AuthToken
   const { email, password, name } = credentials
 
   // Check if user already exists
-  const existingUser = await db.selectFrom('users')
-    .where('email', '=', email)
-    .selectAll()
-    .executeTakeFirst()
+  const existingUser = await User.where('email', '=', email).first()
 
   if (existingUser)
     return null
@@ -34,10 +32,7 @@ export async function register(credentials: NewUser): Promise<{ token: AuthToken
     return null
 
   // Get the created user
-  const user = await db.selectFrom('users')
-    .where('id', '=', insertId)
-    .selectAll()
-    .executeTakeFirst()
+  const user = await User.find(insertId)
 
   if (!user)
     return null

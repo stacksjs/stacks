@@ -104,11 +104,13 @@ export class Auth {
       })
       .executeTakeFirst()
 
-    if (!result?.insertId)
+    const insertId = Number(result?.insertId) || Number(result?.numInsertedOrUpdatedRows)
+
+    if (!insertId)
       throw new HttpError(500, 'Failed to create token')
 
     // Encrypt the token ID using client secret
-    const encryptedId = encrypt(result.insertId.toString(), clientSecret)
+    const encryptedId = encrypt(insertId.toString(), clientSecret)
 
     // Combine into final token format with JWT first
     return `${jwtToken}:${encryptedId}` as AuthToken
