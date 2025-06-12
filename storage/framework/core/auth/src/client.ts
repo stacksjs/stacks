@@ -19,7 +19,9 @@ export async function createPersonalAccessClient(userId: number): Promise<Ok<str
     })
     .executeTakeFirst()
 
-  if (!result?.insertId)
+  const insertId = result?.insertId || Number(result?.numInsertedOrUpdatedRows)
+
+  if (!insertId)
     throw new HttpError(500, 'Failed to create personal access client')
 
   return ok(secret)
