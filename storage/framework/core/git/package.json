@@ -40,7 +40,7 @@
     "bun-git-hooks": "^0.2.16",
     "changelogen": "^0.6.1",
     "commitizen": "^4.3.1",
-    "cz-git": "^1.11.1",
+    "cz-git": "^1.11.2",
     "giget": "^2.0.0"
   }
 }
