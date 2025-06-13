@@ -1511,7 +1511,7 @@ async function writeModelOrmImports(modelFiles: string[]): Promise<void> {
     const modelName = getModelName(model, modelFile)
     const tableName = getTableName(model, modelFile)
 
-    ormImportString += `export { default as ${modelName}, type ${modelName}JsonResponse, ${modelName}Model, type ${pascalCase(tableName)}Table, type New${modelName}, type ${modelName}Update } from './models/${modelName}'\n\n`
+    ormImportString += `export { default as ${modelName}, type ${modelName}JsonResponse, ${modelName}Model, type ${pascalCase(tableName)}Table, type New${modelName}, type ${modelName}Update } from './types/${modelName}ModelType'\n\n`
   }
 
   const file = Bun.file(path.frameworkPath(`orm/src/index.ts`))
@@ -1635,8 +1635,11 @@ export async function generateTypeString(
 ): Promise<string> {
   const formattedTableName = pascalCase(tableName)
 
-  // Generate the base table interface
-  let tableInterface = `export interface ${formattedTableName}Table {
+  // Generate base table interface
+  let typeString = `import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/orm'
+
+export interface ${formattedTableName}Table {
   id: Generated<number>
 `
 
@@ -1644,92 +1647,79 @@ export async function generateTypeString(
   for (const attribute of attributes) {
     const entity = mapEntity(attribute)
     const optionalIndicator = attribute.required === false ? '?' : ''
-    tableInterface += `  ${snakeCase(attribute.field)}${optionalIndicator}: ${entity}\n`
+    typeString += `  ${snakeCase(attribute.field)}${optionalIndicator}: ${entity}\n`
   }
 
   // Add common fields
-  if (model.traits?.useUuid)
-    tableInterface += '  uuid?: string\n'
-
-  if (model.traits?.useTimestamps ?? model.traits?.timestampable ?? true) {
-    tableInterface += '  created_at?: string\n'
-    tableInterface += '  updated_at?: string\n'
-  }
-
-  if (model.traits?.useSoftDeletes ?? model.traits?.softDeletable ?? false)
-    tableInterface += '  deleted_at?: string\n'
-
-  tableInterface += '}\n\n'
-
-  // Generate the read type
-  const readType = `export type ${modelName}Read = ${formattedTableName}Table\n\n`
-
-  // Generate the write type
-  const writeType = `export type ${modelName}Write = Omit<${formattedTableName}Table, 'created_at'> & {
+  typeString += `  uuid?: string
   created_at?: string
-}\n\n`
+  updated_at?: string
+}`
 
-  // Generate the response interface
-  const responseInterface = `export interface ${modelName}Response {
-  data: ${modelName}JsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
+  // Generate the model type interface
+  let modelTypeInterface = `export interface ${modelName}ModelType {
+  // Properties
+  readonly id: number
+`
+
+  // Add getters and setters for each attribute
+  for (const attribute of attributes) {
+    const fieldName = camelCase(attribute.field)
+    const entity = mapEntity(attribute)
+    const optionalIndicator = attribute.required === false ? ' | undefined' : ''
+
+    modelTypeInterface += `  get ${fieldName}(): ${entity}${optionalIndicator}
+  set ${fieldName}(value: ${entity})
+`
   }
-  next_cursor: number | null
-}\n\n`
 
-  // Generate the JSON response interface
-  const jsonResponseInterface = `export interface ${modelName}JsonResponse extends Omit<Selectable<${modelName}Read>, 'password'> {
-  [key: string]: any
-}\n\n`
+  // Add common getters and setters
+  modelTypeInterface += `  get uuid(): string | undefined
+  set uuid(value: string)
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
 
-  // Generate the new and update types
-  const newType = `export type New${modelName} = Insertable<${modelName}Write>\n`
-  const updateType = `export type ${modelName}Update = Updateable<${modelName}Write>\n\n`
-
-  // Generate the static interface
-  const staticInterface = `export interface I${modelName}ModelStatic {
-  with: (relations: string[]) => I${modelName}Model
-  select: (params: (keyof ${modelName}JsonResponse)[] | RawBuilder<string> | string) => I${modelName}Model
-  find: (id: number) => Promise<I${modelName}Model | undefined>
-  first: () => Promise<I${modelName}Model | undefined>
-  last: () => Promise<I${modelName}Model | undefined>
-  firstOrFail: () => Promise<I${modelName}Model | undefined>
-  all: () => Promise<I${modelName}Model[]>
-  findOrFail: (id: number) => Promise<I${modelName}Model | undefined>
-  findMany: (ids: number[]) => Promise<I${modelName}Model[]>
-  latest: (column?: keyof ${formattedTableName}Table) => Promise<I${modelName}Model | undefined>
-  oldest: (column?: keyof ${formattedTableName}Table) => Promise<I${modelName}Model | undefined>
-  skip: (count: number) => I${modelName}Model
-  take: (count: number) => I${modelName}Model
-  where: <V = string>(column: keyof ${formattedTableName}Table, ...args: [V] | [Operator, V]) => I${modelName}Model
-  orWhere: (...conditions: [string, any][]) => I${modelName}Model
-  whereNotIn: <V = number>(column: keyof ${formattedTableName}Table, values: V[]) => I${modelName}Model
-  whereBetween: <V = number>(column: keyof ${formattedTableName}Table, range: [V, V]) => I${modelName}Model
-  whereRef: (column: keyof ${formattedTableName}Table, ...args: string[]) => I${modelName}Model
-  when: (condition: boolean, callback: (query: I${modelName}Model) => I${modelName}Model) => I${modelName}Model
-  whereNull: (column: keyof ${formattedTableName}Table) => I${modelName}Model
-  whereNotNull: (column: keyof ${formattedTableName}Table) => I${modelName}Model
-  whereLike: (column: keyof ${formattedTableName}Table, value: string) => I${modelName}Model
-  orderBy: (column: keyof ${formattedTableName}Table, order: 'asc' | 'desc') => I${modelName}Model
-  orderByAsc: (column: keyof ${formattedTableName}Table) => I${modelName}Model
-  orderByDesc: (column: keyof ${formattedTableName}Table) => I${modelName}Model
-  groupBy: (column: keyof ${formattedTableName}Table) => I${modelName}Model
-  having: <V = string>(column: keyof ${formattedTableName}Table, operator: Operator, value: V) => I${modelName}Model
-  inRandomOrder: () => I${modelName}Model
-  whereColumn: (first: keyof ${formattedTableName}Table, operator: Operator, second: keyof ${formattedTableName}Table) => I${modelName}Model
+  // Static methods
+  with: (relations: string[]) => ${modelName}ModelType
+  select: (params: (keyof ${modelName}JsonResponse)[] | RawBuilder<string> | string) => ${modelName}ModelType
+  find: (id: number) => Promise<${modelName}ModelType | undefined>
+  first: () => Promise<${modelName}ModelType | undefined>
+  last: () => Promise<${modelName}ModelType | undefined>
+  firstOrFail: () => Promise<${modelName}ModelType | undefined>
+  all: () => Promise<${modelName}ModelType[]>
+  findOrFail: (id: number) => Promise<${modelName}ModelType | undefined>
+  findMany: (ids: number[]) => Promise<${modelName}ModelType[]>
+  latest: (column?: keyof ${formattedTableName}Table) => Promise<${modelName}ModelType | undefined>
+  oldest: (column?: keyof ${formattedTableName}Table) => Promise<${modelName}ModelType | undefined>
+  skip: (count: number) => ${modelName}ModelType
+  take: (count: number) => ${modelName}ModelType
+  where: <V = string>(column: keyof ${formattedTableName}Table, ...args: [V] | [Operator, V]) => ${modelName}ModelType
+  orWhere: (...conditions: [string, any][]) => ${modelName}ModelType
+  whereNotIn: <V = number>(column: keyof ${formattedTableName}Table, values: V[]) => ${modelName}ModelType
+  whereBetween: <V = number>(column: keyof ${formattedTableName}Table, range: [V, V]) => ${modelName}ModelType
+  whereRef: (column: keyof ${formattedTableName}Table, ...args: string[]) => ${modelName}ModelType
+  when: (condition: boolean, callback: (query: ${modelName}ModelType) => ${modelName}ModelType) => ${modelName}ModelType
+  whereNull: (column: keyof ${formattedTableName}Table) => ${modelName}ModelType
+  whereNotNull: (column: keyof ${formattedTableName}Table) => ${modelName}ModelType
+  whereLike: (column: keyof ${formattedTableName}Table, value: string) => ${modelName}ModelType
+  orderBy: (column: keyof ${formattedTableName}Table, order: 'asc' | 'desc') => ${modelName}ModelType
+  orderByAsc: (column: keyof ${formattedTableName}Table) => ${modelName}ModelType
+  orderByDesc: (column: keyof ${formattedTableName}Table) => ${modelName}ModelType
+  groupBy: (column: keyof ${formattedTableName}Table) => ${modelName}ModelType
+  having: <V = string>(column: keyof ${formattedTableName}Table, operator: Operator, value: V) => ${modelName}ModelType
+  inRandomOrder: () => ${modelName}ModelType
+  whereColumn: (first: keyof ${formattedTableName}Table, operator: Operator, second: keyof ${formattedTableName}Table) => ${modelName}ModelType
   max: (field: keyof ${formattedTableName}Table) => Promise<number>
   min: (field: keyof ${formattedTableName}Table) => Promise<number>
   avg: (field: keyof ${formattedTableName}Table) => Promise<number>
   sum: (field: keyof ${formattedTableName}Table) => Promise<number>
   count: () => Promise<number>
-  get: () => Promise<I${modelName}Model[]>
-  pluck: <K extends keyof I${modelName}Model>(field: K) => Promise<I${modelName}Model[K][]>
-  chunk: (size: number, callback: (models: I${modelName}Model[]) => Promise<void>) => Promise<void>
+  get: () => Promise<${modelName}ModelType[]>
+  pluck: <K extends keyof ${modelName}ModelType>(field: K) => Promise<${modelName}ModelType[K][]>
+  chunk: (size: number, callback: (models: ${modelName}ModelType[]) => Promise<void>) => Promise<void>
   paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: I${modelName}Model[]
+    data: ${modelName}ModelType[]
     paging: {
       total_records: number
       page: number
@@ -1737,64 +1727,57 @@ export async function generateTypeString(
     }
     next_cursor: number | null
   }>
-  create: (new${modelName}: New${modelName}) => Promise<I${modelName}Model>
-  firstOrCreate: (search: Partial<${formattedTableName}Table>, values?: New${modelName}) => Promise<I${modelName}Model>
-  updateOrCreate: (search: Partial<${formattedTableName}Table>, values?: New${modelName}) => Promise<I${modelName}Model>
+  create: (new${modelName}: New${modelName}) => Promise<${modelName}ModelType>
+  firstOrCreate: (search: Partial<${formattedTableName}Table>, values?: New${modelName}) => Promise<${modelName}ModelType>
+  updateOrCreate: (search: Partial<${formattedTableName}Table>, values?: New${modelName}) => Promise<${modelName}ModelType>
   createMany: (new${modelName}: New${modelName}[]) => Promise<void>
-  forceCreate: (new${modelName}: New${modelName}) => Promise<I${modelName}Model>
+  forceCreate: (new${modelName}: New${modelName}) => Promise<${modelName}ModelType>
   remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof ${formattedTableName}Table, values: V[]) => I${modelName}Model
-  distinct: (column: keyof ${modelName}JsonResponse) => I${modelName}Model
-  join: (table: string, firstCol: string, secondCol: string) => I${modelName}Model
-}\n\n`
+  whereIn: <V = number>(column: keyof ${formattedTableName}Table, values: V[]) => ${modelName}ModelType
+  distinct: (column: keyof ${modelName}JsonResponse) => ${modelName}ModelType
+  join: (table: string, firstCol: string, secondCol: string) => ${modelName}ModelType
 
-  // Generate the instance interface
-  let instanceInterface = `export interface I${modelName}Model {
-  // Properties
-  readonly id: number\n`
-
-  // Add getters and setters for each attribute
-  for (const attribute of attributes) {
-    const field = snakeCase(attribute.field)
-    const optionalIndicator = attribute.required === false ? ' | undefined' : ''
-    instanceInterface += `  get ${field}(): ${mapEntity(attribute)}${optionalIndicator}\n`
-    instanceInterface += `  set ${field}(value: ${mapEntity(attribute)})\n`
-  }
-
-  // Add common getters and setters
-  if (model.traits?.useUuid) {
-    instanceInterface += '  get uuid(): string | undefined\n'
-    instanceInterface += '  set uuid(value: string)\n'
-  }
-
-  if (model.traits?.useTimestamps ?? model.traits?.timestampable ?? true) {
-    instanceInterface += '  get created_at(): string | undefined\n'
-    instanceInterface += '  get updated_at(): string | undefined\n'
-    instanceInterface += '  set updated_at(value: string)\n'
-  }
-
-  // Add instance methods
-  instanceInterface += `
   // Instance methods
-  createInstance: (data: ${modelName}JsonResponse) => I${modelName}Model
-  create: (new${modelName}: New${modelName}) => Promise<I${modelName}Model>
-  update: (new${modelName}: ${modelName}Update) => Promise<I${modelName}Model | undefined>
-  forceUpdate: (new${modelName}: ${modelName}Update) => Promise<I${modelName}Model | undefined>
-  save: () => Promise<I${modelName}Model>
+  createInstance: (data: ${modelName}JsonResponse) => ${modelName}ModelType
+  update: (new${modelName}: ${modelName}Update) => Promise<${modelName}ModelType | undefined>
+  forceUpdate: (new${modelName}: ${modelName}Update) => Promise<${modelName}ModelType | undefined>
+  save: () => Promise<${modelName}ModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<${modelName}JsonResponse>
   toJSON: () => ${modelName}JsonResponse
-  parseResult: (model: I${modelName}Model) => I${modelName}Model
-}\n\n`
+  parseResult: (model: ${modelName}ModelType) => ${modelName}ModelType
+}`
 
-  // Generate the combined type
-  const combinedType = `export type ${modelName}ModelType = I${modelName}Model & I${modelName}ModelStatic\n`
+  // Generate the response types
+  const responseTypes = `export type ${modelName}Read = ${formattedTableName}Table
 
-  // Combine all type declarations
-  return `import type { Generated, Insertable, Selectable, Updateable, RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
+export type ${modelName}Write = Omit<${formattedTableName}Table, 'created_at'> & {
+  created_at?: string
+}
 
-${tableInterface}${readType}${writeType}${responseInterface}${jsonResponseInterface}${newType}${updateType}${staticInterface}${instanceInterface}${combinedType}`
+export interface ${modelName}Response {
+  data: ${modelName}JsonResponse[]
+  paging: {
+    total_records: number
+    page: number
+    total_pages: number
+  }
+  next_cursor: number | null
+}
+
+export interface ${modelName}JsonResponse extends Omit<Selectable<${modelName}Read>, 'password'> {
+  [key: string]: any
+}
+
+export type New${modelName} = Insertable<${modelName}Write>
+export type ${modelName}Update = Updateable<${modelName}Write>`
+
+  // Combine all the generated code
+  return `${typeString}
+
+${responseTypes}
+
+${modelTypeInterface}`
 }
 
 export async function writeTypeFile(

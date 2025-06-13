@@ -9,7 +9,7 @@ import { Pool } from 'pg'
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
 let appEnv = 'local'
-let dbDriver = 'mysql'
+let dbDriver = 'sqlite'
 let dbConfig = {
   connections: {
     sqlite: {
@@ -17,7 +17,7 @@ let dbConfig = {
       prefix: '',
     },
     mysql: {
-      name: 'stacks',
+      name: 'ice-tracker.sqlite',
       host: '127.0.0.1',
       username: 'root',
       password: '',
