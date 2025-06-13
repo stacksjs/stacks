@@ -10,7 +10,7 @@ export interface PriceManager {
 export const managePrice: PriceManager = (() => {
   async function retrieveByLookupKey(lookupKey: string): Promise<Stripe.Price | undefined> {
     try {
-      const prices = await stripe.price.list({ lookup_keys: [lookupKey] })
+      const prices = await stripe.prices.list({ lookup_keys: [lookupKey] })
 
       if (!prices.data.length)
         return undefined
@@ -35,7 +35,7 @@ export const managePrice: PriceManager = (() => {
     if (existingPrice)
       return existingPrice
 
-    const newPrice = await stripe.price.create({
+    const newPrice = await stripe.prices.create({
       ...params,
       lookup_key: lookupKey,
     })

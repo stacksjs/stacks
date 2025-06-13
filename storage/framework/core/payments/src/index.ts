@@ -1,3 +1,3 @@
 export * from './billable'
-export * as stripe from './drivers/stripe'
-export * from 'stripe'
+export * from './drivers/stripe'
+export * as Stripe from 'stripe'

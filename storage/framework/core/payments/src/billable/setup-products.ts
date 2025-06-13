@@ -19,7 +19,7 @@ export async function createStripeProduct(): Promise<Ok<string, never> | Err<str
     if (plans !== undefined && plans.length) {
       for (const plan of plans) {
         // First, create the product in Stripe
-        const product = await stripe.product.getOrCreate(plan.productName, {
+        const product = await stripe.products.create({
           name: plan.productName,
           description: plan.description,
           metadata: plan.metadata,
@@ -39,7 +39,7 @@ export async function createStripeProduct(): Promise<Ok<string, never> | Err<str
               priceParams.recurring = { interval: pricing.interval }
             }
 
-            await stripe.price.create(priceParams)
+            await stripe.prices.create(priceParams)
           }
         }
       }

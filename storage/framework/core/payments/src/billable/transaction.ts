@@ -1,5 +1,4 @@
-import type { PaymentTransactionsTable } from '../../../../orm/src/models/PaymentTransaction'
-import type { UserModel } from '../../../../orm/src/models/User'
+import type { PaymentTransactionsTable, UserModel } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 export interface ManageTransaction {

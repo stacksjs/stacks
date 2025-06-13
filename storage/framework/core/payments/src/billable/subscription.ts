@@ -1,6 +1,5 @@
+import type { SubscriptionsTable, UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
-import type { SubscriptionsTable } from '../../../../orm/src/models/Subscription'
-import type { UserModel } from '../../../../orm/src/models/User'
 import { db } from '@stacksjs/database'
 
 import { manageCustomer, managePrice, stripe } from '..'
@@ -50,7 +49,7 @@ export const manageSubscription: SubscriptionManager = (() => {
 
     const mergedParams = { ...defaultParams, ...params }
 
-    const subscription = await stripe.subscription.create(mergedParams)
+    const subscription = await stripe.subscriptions.create(mergedParams)
 
     await storeSubscription(user, type, lookupKey, subscription)
 
@@ -74,7 +73,7 @@ export const manageSubscription: SubscriptionManager = (() => {
 
     const subscriptionId = activeSubscription.subscription?.provider_id || ''
 
-    const subscription = await stripe.subscription.retrieve(subscriptionId)
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId)
 
     if (!subscription) {
       throw new Error('Subscription does not exist in Stripe')
@@ -91,7 +90,7 @@ export const manageSubscription: SubscriptionManager = (() => {
       quantity: 1,
     })
 
-    const updatedSubscription = await stripe.subscription.retrieve(subscriptionId)
+    const updatedSubscription = await stripe.subscriptions.retrieve(subscriptionId)
 
     await updateSubscription(activeSubscription.subscription?.id, type, updatedSubscription)
 
@@ -102,13 +101,13 @@ export const manageSubscription: SubscriptionManager = (() => {
     subscriptionId: string,
     params?: Partial<Stripe.SubscriptionCancelParams>,
   ): Promise<Stripe.Response<Stripe.Subscription>> {
-    const subscription = await stripe.subscription.retrieve(subscriptionId)
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId)
 
     if (!subscription) {
       throw new Error('Subscription does not exist or does not belong to the user')
     }
 
-    const updatedSubscription = await stripe.subscription.cancel(subscriptionId, params)
+    const updatedSubscription = await stripe.subscriptions.cancel(subscriptionId, params)
 
     await updateStoredSubscription(subscriptionId)
 
@@ -120,7 +119,7 @@ export const manageSubscription: SubscriptionManager = (() => {
       throw new Error('Customer does not exist in Stripe')
     }
 
-    const subscription = await stripe.subscription.retrieve(subscriptionId)
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId)
 
     return subscription
   }

@@ -21,7 +21,7 @@ export const manageCheckout: Checkout = (() => {
 
     const mergedParams = { ...defaultParams, ...params }
 
-    return await stripe.checkout.create(mergedParams)
+    return await stripe.checkout.sessions.create(mergedParams)
   }
 
   return { create }

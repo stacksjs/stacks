@@ -1,5 +1,5 @@
+import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
-import type { UserModel } from '../../../../orm/src/models/User'
 import { manageCustomer, stripe } from '..'
 
 export interface SetupIntent {

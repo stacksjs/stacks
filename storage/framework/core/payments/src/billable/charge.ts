@@ -1,5 +1,5 @@
+import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
-import type { UserModel } from '../../../../orm/src/models/User'
 import { log } from '@stacksjs/logging'
 import { stripe } from '..'
 
@@ -24,12 +24,12 @@ export const manageCharge: ManageCharge = (() => {
 
     const mergedOptions = { ...defaultOptions, ...options }
 
-    return await stripe.paymentIntent.create(mergedOptions)
+    return await stripe.paymentIntents.create(mergedOptions)
   }
 
   async function findPayment(id: string): Promise<Stripe.PaymentIntent | null> {
     try {
-      const stripePaymentIntent = await stripe.paymentIntent.retrieve(id)
+      const stripePaymentIntent = await stripe.paymentIntents.retrieve(id)
       return stripePaymentIntent
     }
     catch (error) {
@@ -45,7 +45,7 @@ export const manageCharge: ManageCharge = (() => {
       ...options,
     }
 
-    return await stripe.refund.create(refundParams)
+    return await stripe.refunds.create(refundParams)
   }
 
   async function charge(user: UserModel, amount: number, paymentMethod: string, options: Stripe.PaymentIntentCreateParams): Promise<Stripe.Response<Stripe.PaymentIntent>> {
