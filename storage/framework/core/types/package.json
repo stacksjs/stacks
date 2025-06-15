@@ -68,7 +68,7 @@
     "unplugin-auto-import": "^19.3.0",
     "unplugin-vue-components": "^28.7.0",
     "vite": "npm:rolldown-vite@latest",
-    "vite-plugin-inspect": "^11.1.0",
+    "vite-plugin-inspect": "^11.2.0",
     "vite-plugin-pwa": "^1.0.0",
     "vite-ssg": "^27.0.1",
     "vitepress": "1.6.3",

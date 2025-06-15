@@ -92,7 +92,7 @@
     "unplugin-vue-markdown": "^28.3.1",
     "vite": "npm:rolldown-vite@latest",
     "vite-plugin-full-reload": "^1.2.0",
-    "vite-plugin-inspect": "^11.1.0",
+    "vite-plugin-inspect": "^11.2.0",
     "vite-plugin-local": "^0.5.0",
     "vite-plugin-pwa": "^1.0.0",
     "vite-ssg": "^27.0.1",
