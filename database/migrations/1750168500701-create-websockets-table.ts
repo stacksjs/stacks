@@ -5,7 +5,7 @@ export async function up(db: Database<any>) {
   await db.schema
     .createTable('websockets')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
-    .addColumn('type', 'varchar(255)', col => col.notNull())
+    .addColumn('type', sql`enum('disconnection', 'error', 'success')`, col => col.notNull())
     .addColumn('socket', 'varchar(255)', col => col.notNull())
     .addColumn('details', 'varchar(1000)', col => col.notNull())
     .addColumn('time', 'integer', col => col.notNull())

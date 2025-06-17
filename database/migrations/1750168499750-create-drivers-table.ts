@@ -10,7 +10,7 @@ export async function up(db: Database<any>) {
     .addColumn('phone', 'varchar(255)', col => col.notNull())
     .addColumn('vehicle_number', 'varchar(255)', col => col.notNull())
     .addColumn('license', 'varchar(255)', col => col.notNull())
-    .addColumn('status', 'varchar(255)', col => col.defaultTo('active'))
+    .addColumn('status', sql`enum('active', 'on_delivery', 'on_break')`, col => col.defaultTo('active'))
     .addColumn('user_id', 'integer', col =>
       col.references('users.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))

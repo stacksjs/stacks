@@ -6,7 +6,7 @@ export async function up(db: Database<any>) {
     .createTable('carts')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'varchar(255)')
-    .addColumn('status', 'varchar(255)', col => col.defaultTo('active'))
+    .addColumn('status', sql`enum('active', 'abandoned', 'converted', 'expired')`, col => col.defaultTo('active'))
     .addColumn('total_items', 'integer', col => col.defaultTo(0))
     .addColumn('subtotal', 'integer', col => col.defaultTo(0))
     .addColumn('tax_amount', 'integer', col => col.defaultTo(0))
