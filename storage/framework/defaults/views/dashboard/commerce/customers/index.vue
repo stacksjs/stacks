@@ -209,6 +209,55 @@ function getStatusClass(status: string): string {
       return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
   }
 }
+
+// Define new customer type
+interface NewCustomer {
+  name: string
+  email: string
+  phone: string
+  status: string
+}
+
+// Modal state
+const showAddModal = ref(false)
+const newCustomer = ref<NewCustomer>({
+  name: '',
+  email: '',
+  phone: '',
+  status: 'Active'
+})
+
+function openAddModal(): void {
+  newCustomer.value = {
+    name: '',
+    email: '',
+    phone: '',
+    status: 'Active'
+  }
+  showAddModal.value = true
+}
+
+function closeAddModal(): void {
+  showAddModal.value = false
+}
+
+function addCustomer(): void {
+  // In a real app, this would send data to the server
+  const id = Math.max(...customers.value.map(c => c.id)) + 1
+
+  customers.value.push({
+    id,
+    name: newCustomer.value.name,
+    email: newCustomer.value.email,
+    phone: newCustomer.value.phone,
+    orders: 0,
+    totalSpent: 0,
+    lastOrder: new Date().toISOString().split('T')[0],
+    status: newCustomer.value.status,
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
+  })
+  closeAddModal()
+}
 </script>
 
 <template>
@@ -223,7 +272,11 @@ function getStatusClass(status: string): string {
             </p>
           </div>
           <div class="mt-4 sm:mt-0">
-            <button type="button" class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+            <button
+              type="button"
+              @click="openAddModal"
+              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
               <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
               Add customer
             </button>
@@ -425,6 +478,93 @@ function getStatusClass(status: string): string {
               ]"
             >
               <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div v-if="showAddModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal"></div>
+
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+          <div>
+            <div class="mt-3 text-center sm:mt-5">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Add New Customer</h3>
+              <div class="mt-4">
+                <div class="space-y-4">
+                  <div>
+                    <label for="customer-name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Full Name</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="customer-name"
+                        v-model="newCustomer.name"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter customer name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="customer-email" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Email Address</label>
+                    <div class="mt-2">
+                      <input
+                        type="email"
+                        id="customer-email"
+                        v-model="newCustomer.email"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter email address"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="customer-phone" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Phone Number</label>
+                    <div class="mt-2">
+                      <input
+                        type="tel"
+                        id="customer-phone"
+                        v-model="newCustomer.phone"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter phone number"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="customer-status" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Status</label>
+                    <div class="mt-2">
+                      <select
+                        id="customer-status"
+                        v-model="newCustomer.status"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                      >
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+            <button
+              type="button"
+              @click="addCustomer"
+              class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+            >
+              Add Customer
+            </button>
+            <button
+              type="button"
+              @click="closeAddModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+            >
+              Cancel
             </button>
           </div>
         </div>

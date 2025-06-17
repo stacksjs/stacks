@@ -1,4 +1,4 @@
-import type { WaitlistProduct } from '../../../types'
+import type { WaitlistProduct } from '../../types'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent waitlist products array using VueUse's useStorage
