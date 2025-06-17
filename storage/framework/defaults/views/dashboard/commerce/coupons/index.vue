@@ -285,7 +285,7 @@ async function addCoupon(): Promise<void> {
     usage_count: 0,
     start_date: newCoupon.value.start_date,
     end_date: newCoupon.value.end_date,
-    status: newCoupon.value.status,
+    status: newCoupon.value.status
   }
 
   try {

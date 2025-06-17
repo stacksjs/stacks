@@ -13,10 +13,12 @@ async function fetchCoupons() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json() as Coupons[]
+    const { data } = await response.json() as { data: Coupons[] }
 
     if (Array.isArray(data)) {
+      // Update both the storage and the reactive ref
       coupons.value = data
+
       return data
     }
     else {
@@ -26,11 +28,12 @@ async function fetchCoupons() {
   }
   catch (error) {
     console.error('Error fetching coupons:', error)
-    return []
+    // Return the stored coupons if fetch fails
+    return coupons.value
   }
 }
 
-async function createCoupon(coupon: Coupons) {
+async function createCoupon(coupon: Omit<Coupons, 'id'>) {
   try {
     const response = await fetch(`${baseURL}/commerce/coupons`, {
       method: 'POST',
@@ -46,7 +49,8 @@ async function createCoupon(coupon: Coupons) {
 
     const data = await response.json() as Coupons
     if (data) {
-      coupons.value.push(data)
+      // Update both the storage and the reactive ref
+      coupons.value = [...coupons.value, data]
       return data
     }
     return null
@@ -73,9 +77,14 @@ async function updateCoupon(coupon: Coupons) {
 
     const data = await response.json() as Coupons
     if (data) {
+      // Update both the storage and the reactive ref
       const index = coupons.value.findIndex(c => c.id === coupon.id)
       if (index !== -1) {
-        coupons.value[index] = data
+        coupons.value = [
+          ...coupons.value.slice(0, index),
+          data,
+          ...coupons.value.slice(index + 1)
+        ]
       }
       return data
     }
@@ -97,11 +106,8 @@ async function deleteCoupon(id: number) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const index = coupons.value.findIndex(c => c.id === id)
-    if (index !== -1) {
-      coupons.value.splice(index, 1)
-    }
-
+    // Update both the storage and the reactive ref
+    coupons.value = coupons.value.filter(c => c.id !== id)
     return true
   }
   catch (error) {
