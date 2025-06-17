@@ -1,5 +1,5 @@
 import type { Categories } from '../../types'
-import { useFetch, useStorage } from '@vueuse/core'
+import { useStorage } from '@vueuse/core'
 
 // Create a persistent categories array using VueUse's useStorage
 const categories = useStorage<Categories[]>('categories', [])
@@ -8,84 +8,102 @@ const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all categories
 async function fetchCategories(): Promise<Categories[]> {
-  const { error, data } = useFetch<Categories[]>(`${baseURL}/commerce/products/categories`)
-
-  if (error.value) {
-    console.error('Error fetching categories:', error.value)
-    return []
-  }
-
-  if (Array.isArray(data.value)) {
-    categories.value = data.value
-    return data.value
-  }
-  else {
-    console.error('Expected array of categories but received:', typeof data.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/products/categories`)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const data = await response.json() as Categories[]
+    
+    if (Array.isArray(data)) {
+      categories.value = data
+      return data
+    }
+    else {
+      console.error('Expected array of categories but received:', typeof data)
+      return []
+    }
+  } catch (error) {
+    console.error('Error fetching categories:', error)
     return []
   }
 }
 
 async function createCategory(category: Categories): Promise<Categories | null> {
-  const { error, data } = useFetch<Categories>(`${baseURL}/commerce/products/categories`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(category),
-  })
-
-  if (error.value) {
-    console.error('Error creating category:', error.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/products/categories`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(category),
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const data = await response.json() as Categories
+    if (data) {
+      categories.value.push(data)
+      return data
+    }
+    return null
+  } catch (error) {
+    console.error('Error creating category:', error)
     return null
   }
-
-  if (data.value) {
-    categories.value.push(data.value)
-    return data.value
-  }
-  return null
 }
 
 async function updateCategory(category: Categories): Promise<Categories | null> {
-  const { error, data } = useFetch<Categories>(`${baseURL}/commerce/products/categories/${category.id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(category),
-  })
-
-  if (error.value) {
-    console.error('Error updating category:', error.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/products/categories/${category.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(category),
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const data = await response.json() as Categories
+    if (data) {
+      const index = categories.value.findIndex(c => c.id === category.id)
+      if (index !== -1) {
+        categories.value[index] = data
+      }
+      return data
+    }
+    return null
+  } catch (error) {
+    console.error('Error updating category:', error)
     return null
   }
-
-  if (data.value) {
-    const index = categories.value.findIndex(c => c.id === category.id)
-    if (index !== -1) {
-      categories.value[index] = data.value
-    }
-    return data.value
-  }
-  return null
 }
 
 async function deleteCategory(id: number): Promise<boolean> {
-  const { error } = useFetch(`${baseURL}/commerce/products/categories/${id}`, {
-    method: 'DELETE',
-  })
+  try {
+    const response = await fetch(`${baseURL}/commerce/products/categories/${id}`, {
+      method: 'DELETE',
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
 
-  if (error.value) {
-    console.error('Error deleting category:', error.value)
+    const index = categories.value.findIndex(c => c.id === id)
+    if (index !== -1) {
+      categories.value.splice(index, 1)
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error deleting category:', error)
     return false
   }
-
-  const index = categories.value.findIndex(c => c.id === id)
-  if (index !== -1) {
-    categories.value.splice(index, 1)
-  }
-
-  return true
 }
 
 // Export the composable

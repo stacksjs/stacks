@@ -1,5 +1,5 @@
 import type { WaitlistProduct } from '../../../types'
-import { useFetch, useStorage } from '@vueuse/core'
+import { useStorage } from '@vueuse/core'
 
 // Create a persistent waitlist products array using VueUse's useStorage
 const waitlistProducts = useStorage<WaitlistProduct[]>('waitlist_products', [])
@@ -8,85 +8,102 @@ const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all waitlist products
 async function fetchWaitlistProducts() {
-  const { error, data } = useFetch<WaitlistProduct[]>(`${baseURL}/commerce/waitlist/products`)
-
-  if (error.value) {
-    console.error('Error fetching waitlist products:', error.value)
-    return []
-  }
-
-  // Ensure data is an array before assigning
-  if (Array.isArray(data.value)) {
-    waitlistProducts.value = data.value
-    return data.value
-  }
-  else {
-    console.error('Expected array of waitlist products but received:', typeof data.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/waitlist/products`)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const data = await response.json() as WaitlistProduct[]
+    
+    if (Array.isArray(data)) {
+      waitlistProducts.value = data
+      return data
+    }
+    else {
+      console.error('Expected array of waitlist products but received:', typeof data)
+      return []
+    }
+  } catch (error) {
+    console.error('Error fetching waitlist products:', error)
     return []
   }
 }
 
 async function createWaitlistProduct(waitlistProduct: WaitlistProduct) {
-  const { error, data } = useFetch<WaitlistProduct>(`${baseURL}/commerce/waitlist/products`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(waitlistProduct),
-  })
-
-  if (error.value) {
-    console.error('Error creating waitlist product:', error.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/waitlist/products`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(waitlistProduct),
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const data = await response.json() as WaitlistProduct
+    if (data) {
+      waitlistProducts.value.push(data)
+      return data
+    }
+    return null
+  } catch (error) {
+    console.error('Error creating waitlist product:', error)
     return null
   }
-
-  if (data.value) {
-    waitlistProducts.value.push(data.value)
-    return data.value
-  }
-  return null
 }
 
 async function updateWaitlistProduct(waitlistProduct: WaitlistProduct) {
-  const { error, data } = useFetch<WaitlistProduct>(`${baseURL}/commerce/waitlist/products/${waitlistProduct.id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(waitlistProduct),
-  })
-
-  if (error.value) {
-    console.error('Error updating waitlist product:', error.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/waitlist/products/${waitlistProduct.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(waitlistProduct),
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const data = await response.json() as WaitlistProduct
+    if (data) {
+      const index = waitlistProducts.value.findIndex(wp => wp.id === waitlistProduct.id)
+      if (index !== -1) {
+        waitlistProducts.value[index] = data
+      }
+      return data
+    }
+    return null
+  } catch (error) {
+    console.error('Error updating waitlist product:', error)
     return null
   }
-
-  if (data.value) {
-    const index = waitlistProducts.value.findIndex(wp => wp.id === waitlistProduct.id)
-    if (index !== -1) {
-      waitlistProducts.value[index] = data.value
-    }
-    return data.value
-  }
-  return null
 }
 
 async function deleteWaitlistProduct(id: number) {
-  const { error } = useFetch(`${baseURL}/commerce/waitlist/products/${id}`, {
-    method: 'DELETE',
-  })
+  try {
+    const response = await fetch(`${baseURL}/commerce/waitlist/products/${id}`, {
+      method: 'DELETE',
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
 
-  if (error.value) {
-    console.error('Error deleting waitlist product:', error.value)
+    const index = waitlistProducts.value.findIndex(wp => wp.id === id)
+    if (index !== -1) {
+      waitlistProducts.value.splice(index, 1)
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error deleting waitlist product:', error)
     return false
   }
-
-  const index = waitlistProducts.value.findIndex(wp => wp.id === id)
-  if (index !== -1) {
-    waitlistProducts.value.splice(index, 1)
-  }
-
-  return true
 }
 
 // Export the composable

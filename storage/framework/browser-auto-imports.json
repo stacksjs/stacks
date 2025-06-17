@@ -57,6 +57,8 @@
     "Units": true,
     "VNode": true,
     "WaitOptions": true,
+    "WaitlistProduct": true,
+    "WaitlistRestaurant": true,
     "Websockets": true,
     "WritableComputedRef": true,
     "acceptHMRUpdate": true,

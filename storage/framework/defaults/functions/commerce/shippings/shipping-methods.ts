@@ -1,5 +1,5 @@
 import type { ShippingMethods } from '../../types'
-import { useFetch, useStorage } from '@vueuse/core'
+import { useStorage } from '@vueuse/core'
 
 // Create a persistent shipping methods array using VueUse's useStorage
 const shippingMethods = useStorage<ShippingMethods[]>('shippingMethods', [])
@@ -8,85 +8,102 @@ const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all shipping methods
 async function fetchShippingMethods() {
-  const { error, data } = useFetch<ShippingMethods[]>(`${baseURL}/commerce/shipping-methods`)
-
-  if (error.value) {
-    console.error('Error fetching shipping methods:', error.value)
-    return []
-  }
-
-  // Ensure data is an array before assigning
-  if (Array.isArray(data.value)) {
-    shippingMethods.value = data.value
-    return data.value
-  }
-  else {
-    console.error('Expected array of shipping methods but received:', typeof data.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/shipping-methods`)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const data = await response.json() as ShippingMethods[]
+    
+    if (Array.isArray(data)) {
+      shippingMethods.value = data
+      return data
+    }
+    else {
+      console.error('Expected array of shipping methods but received:', typeof data)
+      return []
+    }
+  } catch (error) {
+    console.error('Error fetching shipping methods:', error)
     return []
   }
 }
 
 async function createShippingMethod(shippingMethod: ShippingMethods) {
-  const { error, data } = useFetch<ShippingMethods>(`${baseURL}/commerce/shipping-methods`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(shippingMethod),
-  })
-
-  if (error.value) {
-    console.error('Error creating shipping method:', error.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/shipping-methods`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(shippingMethod),
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const data = await response.json() as ShippingMethods
+    if (data) {
+      shippingMethods.value.push(data)
+      return data
+    }
+    return null
+  } catch (error) {
+    console.error('Error creating shipping method:', error)
     return null
   }
-
-  if (data.value) {
-    shippingMethods.value.push(data.value)
-    return data.value
-  }
-  return null
 }
 
 async function updateShippingMethod(shippingMethod: ShippingMethods) {
-  const { error, data } = useFetch<ShippingMethods>(`${baseURL}/commerce/shipping-methods/${shippingMethod.id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(shippingMethod),
-  })
-
-  if (error.value) {
-    console.error('Error updating shipping method:', error.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/shipping-methods/${shippingMethod.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(shippingMethod),
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const data = await response.json() as ShippingMethods
+    if (data) {
+      const index = shippingMethods.value.findIndex(s => s.id === shippingMethod.id)
+      if (index !== -1) {
+        shippingMethods.value[index] = data
+      }
+      return data
+    }
+    return null
+  } catch (error) {
+    console.error('Error updating shipping method:', error)
     return null
   }
-
-  if (data.value) {
-    const index = shippingMethods.value.findIndex(s => s.id === shippingMethod.id)
-    if (index !== -1) {
-      shippingMethods.value[index] = data.value
-    }
-    return data.value
-  }
-  return null
 }
 
 async function deleteShippingMethod(id: number) {
-  const { error } = useFetch(`${baseURL}/commerce/shipping-methods/${id}`, {
-    method: 'DELETE',
-  })
+  try {
+    const response = await fetch(`${baseURL}/commerce/shipping-methods/${id}`, {
+      method: 'DELETE',
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
 
-  if (error.value) {
-    console.error('Error deleting shipping method:', error.value)
+    const index = shippingMethods.value.findIndex(s => s.id === id)
+    if (index !== -1) {
+      shippingMethods.value.splice(index, 1)
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error deleting shipping method:', error)
     return false
   }
-
-  const index = shippingMethods.value.findIndex(s => s.id === id)
-  if (index !== -1) {
-    shippingMethods.value.splice(index, 1)
-  }
-
-  return true
 }
 
 // Export the composable

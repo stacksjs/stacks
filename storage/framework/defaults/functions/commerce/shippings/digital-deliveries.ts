@@ -1,5 +1,5 @@
 import type { DigitalDeliveries } from '../../types'
-import { useFetch, useStorage } from '@vueuse/core'
+import { useStorage } from '@vueuse/core'
 
 // Create a persistent digital deliveries array using VueUse's useStorage
 const digitalDeliveries = useStorage<DigitalDeliveries[]>('digitalDeliveries', [])
@@ -8,85 +8,102 @@ const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all digital deliveries
 async function fetchDigitalDeliveries() {
-  const { error, data } = useFetch<DigitalDeliveries[]>(`${baseURL}/commerce/digital-deliveries`)
-
-  if (error.value) {
-    console.error('Error fetching digital deliveries:', error.value)
-    return []
-  }
-
-  // Ensure data is an array before assigning
-  if (Array.isArray(data.value)) {
-    digitalDeliveries.value = data.value
-    return data.value
-  }
-  else {
-    console.error('Expected array of digital deliveries but received:', typeof data.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/digital-deliveries`)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const data = await response.json() as DigitalDeliveries[]
+    
+    if (Array.isArray(data)) {
+      digitalDeliveries.value = data
+      return data
+    }
+    else {
+      console.error('Expected array of digital deliveries but received:', typeof data)
+      return []
+    }
+  } catch (error) {
+    console.error('Error fetching digital deliveries:', error)
     return []
   }
 }
 
 async function createDigitalDelivery(digitalDelivery: DigitalDeliveries) {
-  const { error, data } = useFetch<DigitalDeliveries>(`${baseURL}/commerce/digital-deliveries`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(digitalDelivery),
-  })
-
-  if (error.value) {
-    console.error('Error creating digital delivery:', error.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/digital-deliveries`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(digitalDelivery),
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const data = await response.json() as DigitalDeliveries
+    if (data) {
+      digitalDeliveries.value.push(data)
+      return data
+    }
+    return null
+  } catch (error) {
+    console.error('Error creating digital delivery:', error)
     return null
   }
-
-  if (data.value) {
-    digitalDeliveries.value.push(data.value)
-    return data.value
-  }
-  return null
 }
 
 async function updateDigitalDelivery(digitalDelivery: DigitalDeliveries) {
-  const { error, data } = useFetch<DigitalDeliveries>(`${baseURL}/commerce/digital-deliveries/${digitalDelivery.id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(digitalDelivery),
-  })
-
-  if (error.value) {
-    console.error('Error updating digital delivery:', error.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/digital-deliveries/${digitalDelivery.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(digitalDelivery),
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const data = await response.json() as DigitalDeliveries
+    if (data) {
+      const index = digitalDeliveries.value.findIndex(s => s.id === digitalDelivery.id)
+      if (index !== -1) {
+        digitalDeliveries.value[index] = data
+      }
+      return data
+    }
+    return null
+  } catch (error) {
+    console.error('Error updating digital delivery:', error)
     return null
   }
-
-  if (data.value) {
-    const index = digitalDeliveries.value.findIndex(s => s.id === digitalDelivery.id)
-    if (index !== -1) {
-      digitalDeliveries.value[index] = data.value
-    }
-    return data.value
-  }
-  return null
 }
 
 async function deleteDigitalDelivery(id: number) {
-  const { error } = useFetch(`${baseURL}/commerce/digital-deliveries/${id}`, {
-    method: 'DELETE',
-  })
+  try {
+    const response = await fetch(`${baseURL}/commerce/digital-deliveries/${id}`, {
+      method: 'DELETE',
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
 
-  if (error.value) {
-    console.error('Error deleting digital delivery:', error.value)
+    const index = digitalDeliveries.value.findIndex(s => s.id === id)
+    if (index !== -1) {
+      digitalDeliveries.value.splice(index, 1)
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error deleting digital delivery:', error)
     return false
   }
-
-  const index = digitalDeliveries.value.findIndex(s => s.id === id)
-  if (index !== -1) {
-    digitalDeliveries.value.splice(index, 1)
-  }
-
-  return true
 }
 
 // Export the composable

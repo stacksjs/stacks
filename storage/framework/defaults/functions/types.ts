@@ -312,4 +312,24 @@ export interface Websockets {
   uuid?: string
 }
 
+export interface WaitlistProduct {
+  id: number
+  name: string
+  description: string
+  price: number
+  status: string
+  created_at: Date
+  updated_at: Date
+}
+
+export interface WaitlistRestaurant {
+  id: number
+  name: string
+  description: string
+  address: string
+  status: string
+  created_at: Date
+  updated_at: Date
+} 
+
 export type StoreWebsocket = Omit<Websockets, 'id' | 'uuid' | 'created_at' | 'updated_at'>

@@ -1,5 +1,5 @@
 import type { ProductVariants } from '../../types'
-import { useFetch, useStorage } from '@vueuse/core'
+import { useStorage } from '@vueuse/core'
 
 // Create a persistent variants array using VueUse's useStorage
 const variants = useStorage<ProductVariants[]>('variants', [])
@@ -8,84 +8,102 @@ const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all variants
 async function fetchVariants() {
-  const { error, data } = useFetch<ProductVariants[]>(`${baseURL}/commerce/products/variants`)
-
-  if (error.value) {
-    console.error('Error fetching variants:', error.value)
-    return []
-  }
-
-  if (Array.isArray(data.value)) {
-    variants.value = data.value
-    return data.value
-  }
-  else {
-    console.error('Expected array of variants but received:', typeof data.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/products/variants`)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const data = await response.json() as ProductVariants[]
+    
+    if (Array.isArray(data)) {
+      variants.value = data
+      return data
+    }
+    else {
+      console.error('Expected array of variants but received:', typeof data)
+      return []
+    }
+  } catch (error) {
+    console.error('Error fetching variants:', error)
     return []
   }
 }
 
 async function createVariant(variant: ProductVariants) {
-  const { error, data } = useFetch<ProductVariants>(`${baseURL}/commerce/products/variants`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(variant),
-  })
-
-  if (error.value) {
-    console.error('Error creating variant:', error.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/products/variants`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(variant),
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const data = await response.json() as ProductVariants
+    if (data) {
+      variants.value.push(data)
+      return data
+    }
+    return null
+  } catch (error) {
+    console.error('Error creating variant:', error)
     return null
   }
-
-  if (data.value) {
-    variants.value.push(data.value)
-    return data.value
-  }
-  return null
 }
 
 async function updateVariant(variant: ProductVariants) {
-  const { error, data } = useFetch<ProductVariants>(`${baseURL}/commerce/products/variants/${variant.id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(variant),
-  })
-
-  if (error.value) {
-    console.error('Error updating variant:', error.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/products/variants/${variant.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(variant),
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const data = await response.json() as ProductVariants
+    if (data) {
+      const index = variants.value.findIndex(v => v.id === variant.id)
+      if (index !== -1) {
+        variants.value[index] = data
+      }
+      return data
+    }
+    return null
+  } catch (error) {
+    console.error('Error updating variant:', error)
     return null
   }
-
-  if (data.value) {
-    const index = variants.value.findIndex(v => v.id === variant.id)
-    if (index !== -1) {
-      variants.value[index] = data.value
-    }
-    return data.value
-  }
-  return null
 }
 
 async function deleteVariant(id: number) {
-  const { error } = useFetch(`${baseURL}/commerce/products/variants/${id}`, {
-    method: 'DELETE',
-  })
+  try {
+    const response = await fetch(`${baseURL}/commerce/products/variants/${id}`, {
+      method: 'DELETE',
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
 
-  if (error.value) {
-    console.error('Error deleting variant:', error.value)
+    const index = variants.value.findIndex(v => v.id === id)
+    if (index !== -1) {
+      variants.value.splice(index, 1)
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error deleting variant:', error)
     return false
   }
-
-  const index = variants.value.findIndex(v => v.id === id)
-  if (index !== -1) {
-    variants.value.splice(index, 1)
-  }
-
-  return true
 }
 
 // Export the composable

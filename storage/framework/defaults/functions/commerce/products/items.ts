@@ -1,5 +1,5 @@
 import type { ProductItems } from '../../types'
-import { useFetch, useStorage } from '@vueuse/core'
+import { useStorage } from '@vueuse/core'
 
 // Create a persistent items array using VueUse's useStorage
 const items = useStorage<ProductItems[]>('items', [])
@@ -8,84 +8,102 @@ const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all items
 async function fetchItems(): Promise<ProductItems[]> {
-  const { error, data } = useFetch<ProductItems[]>(`${baseURL}/commerce/products/items`)
-
-  if (error.value) {
-    console.error('Error fetching items:', error.value)
-    return []
-  }
-
-  if (Array.isArray(data.value)) {
-    items.value = data.value
-    return data.value
-  }
-  else {
-    console.error('Expected array of items but received:', typeof data.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/products/items`)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const data = await response.json() as ProductItems[]
+    
+    if (Array.isArray(data)) {
+      items.value = data
+      return data
+    }
+    else {
+      console.error('Expected array of items but received:', typeof data)
+      return []
+    }
+  } catch (error) {
+    console.error('Error fetching items:', error)
     return []
   }
 }
 
 async function createItem(item: ProductItems): Promise<ProductItems | null> {
-  const { error, data } = useFetch<ProductItems>(`${baseURL}/commerce/products/items`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(item),
-  })
-
-  if (error.value) {
-    console.error('Error creating item:', error.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/products/items`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(item),
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const data = await response.json() as ProductItems
+    if (data) {
+      items.value.push(data)
+      return data
+    }
+    return null
+  } catch (error) {
+    console.error('Error creating item:', error)
     return null
   }
-
-  if (data.value) {
-    items.value.push(data.value)
-    return data.value
-  }
-  return null
 }
 
 async function updateItem(item: ProductItems): Promise<ProductItems | null> {
-  const { error, data } = useFetch<ProductItems>(`${baseURL}/commerce/products/items/${item.id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(item),
-  })
-
-  if (error.value) {
-    console.error('Error updating item:', error.value)
+  try {
+    const response = await fetch(`${baseURL}/commerce/products/items/${item.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(item),
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const data = await response.json() as ProductItems
+    if (data) {
+      const index = items.value.findIndex(i => i.id === item.id)
+      if (index !== -1) {
+        items.value[index] = data
+      }
+      return data
+    }
+    return null
+  } catch (error) {
+    console.error('Error updating item:', error)
     return null
   }
-
-  if (data.value) {
-    const index = items.value.findIndex(i => i.id === item.id)
-    if (index !== -1) {
-      items.value[index] = data.value
-    }
-    return data.value
-  }
-  return null
 }
 
 async function deleteItem(id: number): Promise<boolean> {
-  const { error } = useFetch(`${baseURL}/commerce/products/items/${id}`, {
-    method: 'DELETE',
-  })
+  try {
+    const response = await fetch(`${baseURL}/commerce/products/items/${id}`, {
+      method: 'DELETE',
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
 
-  if (error.value) {
-    console.error('Error deleting item:', error.value)
+    const index = items.value.findIndex(i => i.id === id)
+    if (index !== -1) {
+      items.value.splice(index, 1)
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error deleting item:', error)
     return false
   }
-
-  const index = items.value.findIndex(i => i.id === id)
-  if (index !== -1) {
-    items.value.splice(index, 1)
-  }
-
-  return true
 }
 
 // Export the composable
