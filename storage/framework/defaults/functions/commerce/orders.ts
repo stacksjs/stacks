@@ -14,7 +14,7 @@ async function fetchOrders() {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as Orders[]
-    
+
     if (Array.isArray(data)) {
       orders.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchOrders() {
       console.error('Expected array of orders but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching orders:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createOrder(order: Orders) {
       },
       body: JSON.stringify(order),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Orders
     if (data) {
       orders.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating order:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateOrder(order: Orders) {
       },
       body: JSON.stringify(order),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Orders
     if (data) {
       const index = orders.value.findIndex(o => o.id === order.id)
@@ -78,7 +80,8 @@ async function updateOrder(order: Orders) {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating order:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteOrder(id: number) {
     const response = await fetch(`${baseURL}/commerce/orders/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteOrder(id: number) {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting order:', error)
     return false
   }

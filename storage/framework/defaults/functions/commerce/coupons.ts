@@ -14,7 +14,7 @@ async function fetchCoupons() {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as Coupons[]
-    
+
     if (Array.isArray(data)) {
       coupons.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchCoupons() {
       console.error('Expected array of coupons but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching coupons:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createCoupon(coupon: Coupons) {
       },
       body: JSON.stringify(coupon),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Coupons
     if (data) {
       coupons.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating coupon:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateCoupon(coupon: Coupons) {
       },
       body: JSON.stringify(coupon),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Coupons
     if (data) {
       const index = coupons.value.findIndex(c => c.id === coupon.id)
@@ -78,7 +80,8 @@ async function updateCoupon(coupon: Coupons) {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating coupon:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteCoupon(id: number) {
     const response = await fetch(`${baseURL}/commerce/coupons/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteCoupon(id: number) {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting coupon:', error)
     return false
   }

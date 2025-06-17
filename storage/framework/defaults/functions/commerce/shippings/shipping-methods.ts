@@ -14,7 +14,7 @@ async function fetchShippingMethods() {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as ShippingMethods[]
-    
+
     if (Array.isArray(data)) {
       shippingMethods.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchShippingMethods() {
       console.error('Expected array of shipping methods but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching shipping methods:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createShippingMethod(shippingMethod: ShippingMethods) {
       },
       body: JSON.stringify(shippingMethod),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as ShippingMethods
     if (data) {
       shippingMethods.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating shipping method:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateShippingMethod(shippingMethod: ShippingMethods) {
       },
       body: JSON.stringify(shippingMethod),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as ShippingMethods
     if (data) {
       const index = shippingMethods.value.findIndex(s => s.id === shippingMethod.id)
@@ -78,7 +80,8 @@ async function updateShippingMethod(shippingMethod: ShippingMethods) {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating shipping method:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteShippingMethod(id: number) {
     const response = await fetch(`${baseURL}/commerce/shipping-methods/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteShippingMethod(id: number) {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting shipping method:', error)
     return false
   }

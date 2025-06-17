@@ -14,7 +14,7 @@ async function fetchPayments(): Promise<Payments[]> {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as Payments[]
-    
+
     if (Array.isArray(data)) {
       payments.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchPayments(): Promise<Payments[]> {
       console.error('Expected array of payments but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching payments:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createPayment(payment: Payments): Promise<Payments | null> {
       },
       body: JSON.stringify(payment),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Payments
     if (data) {
       payments.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating payment:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updatePayment(payment: Payments): Promise<Payments | null> {
       },
       body: JSON.stringify(payment),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Payments
     if (data) {
       const index = payments.value.findIndex(p => p.id === payment.id)
@@ -78,7 +80,8 @@ async function updatePayment(payment: Payments): Promise<Payments | null> {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating payment:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deletePayment(id: number): Promise<boolean> {
     const response = await fetch(`${baseURL}/commerce/payments/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deletePayment(id: number): Promise<boolean> {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting payment:', error)
     return false
   }

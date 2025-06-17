@@ -14,7 +14,7 @@ async function fetchReviews(): Promise<Reviews[]> {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as Reviews[]
-    
+
     if (Array.isArray(data)) {
       reviews.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchReviews(): Promise<Reviews[]> {
       console.error('Expected array of reviews but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching reviews:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createReview(review: Reviews): Promise<Reviews | null> {
       },
       body: JSON.stringify(review),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Reviews
     if (data) {
       reviews.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating review:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateReview(review: Reviews): Promise<Reviews | null> {
       },
       body: JSON.stringify(review),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Reviews
     if (data) {
       const index = reviews.value.findIndex(r => r.id === review.id)
@@ -78,7 +80,8 @@ async function updateReview(review: Reviews): Promise<Reviews | null> {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating review:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteReview(id: number): Promise<boolean> {
     const response = await fetch(`${baseURL}/commerce/products/reviews/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteReview(id: number): Promise<boolean> {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting review:', error)
     return false
   }

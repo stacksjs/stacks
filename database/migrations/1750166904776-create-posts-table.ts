@@ -12,7 +12,7 @@ export async function up(db: Database<any>) {
     .addColumn('excerpt', 'varchar(500)')
     .addColumn('views', 'integer', col => col.defaultTo(0))
     .addColumn('published_at', 'timestamp')
-    .addColumn('status', sql`enum('published', 'draft', 'archived')`, col => col.notNull().defaultTo('draft'))
+    .addColumn('status', 'varchar(255)', col => col.notNull().defaultTo('draft'))
     .addColumn('is_featured', 'integer')
     .addColumn('author_id', 'integer', col =>
       col.references('authors.id').onDelete('cascade'))

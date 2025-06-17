@@ -14,7 +14,7 @@ async function fetchDeliveryRoutes() {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as DeliveryRoutes[]
-    
+
     if (Array.isArray(data)) {
       deliveryRoutes.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchDeliveryRoutes() {
       console.error('Expected array of delivery routes but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching delivery routes:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createDeliveryRoute(deliveryRoute: DeliveryRoutes) {
       },
       body: JSON.stringify(deliveryRoute),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as DeliveryRoutes
     if (data) {
       deliveryRoutes.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating delivery route:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateDeliveryRoute(deliveryRoute: DeliveryRoutes) {
       },
       body: JSON.stringify(deliveryRoute),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as DeliveryRoutes
     if (data) {
       const index = deliveryRoutes.value.findIndex(s => s.id === deliveryRoute.id)
@@ -78,7 +80,8 @@ async function updateDeliveryRoute(deliveryRoute: DeliveryRoutes) {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating delivery route:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteDeliveryRoute(id: number) {
     const response = await fetch(`${baseURL}/commerce/delivery-routes/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteDeliveryRoute(id: number) {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting delivery route:', error)
     return false
   }

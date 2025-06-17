@@ -14,7 +14,7 @@ async function fetchShippingRates() {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as ShippingRates[]
-    
+
     if (Array.isArray(data)) {
       shippingRates.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchShippingRates() {
       console.error('Expected array of shipping rates but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching shipping rates:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createShippingRate(shippingRate: ShippingRates) {
       },
       body: JSON.stringify(shippingRate),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as ShippingRates
     if (data) {
       shippingRates.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating shipping rate:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateShippingRate(shippingRate: ShippingRates) {
       },
       body: JSON.stringify(shippingRate),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as ShippingRates
     if (data) {
       const index = shippingRates.value.findIndex(s => s.id === shippingRate.id)
@@ -78,7 +80,8 @@ async function updateShippingRate(shippingRate: ShippingRates) {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating shipping rate:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteShippingRate(id: number) {
     const response = await fetch(`${baseURL}/commerce/shipping-rates/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteShippingRate(id: number) {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting shipping rate:', error)
     return false
   }

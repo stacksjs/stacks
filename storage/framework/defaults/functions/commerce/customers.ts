@@ -4,7 +4,7 @@ import { useStorage } from '@vueuse/core'
 // Create a persistent customers array using VueUse's useStorage
 const customers = useStorage<Customers[]>('customers', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all customers
 async function fetchCustomers() {
@@ -14,7 +14,7 @@ async function fetchCustomers() {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as Customers[]
-    
+
     if (Array.isArray(data)) {
       customers.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchCustomers() {
       console.error('Expected array of customers but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching customers:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createCustomer(customer: Customers) {
       },
       body: JSON.stringify(customer),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Customers
     if (data) {
       customers.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating customer:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateCustomer(customer: Customers) {
       },
       body: JSON.stringify(customer),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Customers
     if (data) {
       const index = customers.value.findIndex(c => c.id === customer.id)
@@ -78,7 +80,8 @@ async function updateCustomer(customer: Customers) {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating customer:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteCustomer(id: number) {
     const response = await fetch(`${baseURL}/commerce/customers/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteCustomer(id: number) {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting customer:', error)
     return false
   }

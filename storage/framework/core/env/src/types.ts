@@ -1,6 +1,6 @@
-import type { BooleanValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, ValidationType } from '@stacksjs/ts-validation'
+import type { BooleanValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType } from '@stacksjs/ts-validation'
+import type { schema } from '@stacksjs/validation'
 import type { EnvKey } from '../../../env'
-import { schema } from '@stacksjs/validation'
 import env from '~/config/env'
 
 interface EnumObject {
@@ -41,14 +41,14 @@ export type EnvConfig = Partial<Record<EnvKey, EnvValueConfig>>
 
 type EnvMap = Record<string, string>
 
-type TypeFromString<T extends string> = T extends 'string' 
-  ? string 
-  : T extends 'number' 
-    ? number 
-    : T extends 'boolean' 
-      ? boolean 
-      : T extends 'enum' 
-        ? string 
+type TypeFromString<T extends string> = T extends 'string'
+  ? string
+  : T extends 'number'
+    ? number
+    : T extends 'boolean'
+      ? boolean
+      : T extends 'enum'
+        ? string
         : never
 
 type Infer<T extends Record<string, string>> = {

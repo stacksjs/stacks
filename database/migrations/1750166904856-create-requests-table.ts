@@ -5,7 +5,7 @@ export async function up(db: Database<any>) {
   await db.schema
     .createTable('requests')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
-    .addColumn('method', sql`enum('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD')`)
+    .addColumn('method', 'varchar(255)')
     .addColumn('path', 'varchar(255)')
     .addColumn('status_code', 'integer')
     .addColumn('duration_ms', 'integer')

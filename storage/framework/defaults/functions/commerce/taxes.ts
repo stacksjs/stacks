@@ -14,7 +14,7 @@ async function fetchTaxRates() {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as TaxRates[]
-    
+
     if (Array.isArray(data)) {
       taxRates.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchTaxRates() {
       console.error('Expected array of tax rates but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching tax rates:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createTaxRate(taxRate: TaxRates) {
       },
       body: JSON.stringify(taxRate),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as TaxRates
     if (data) {
       taxRates.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating tax rate:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateTaxRate(taxRate: TaxRates) {
       },
       body: JSON.stringify(taxRate),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as TaxRates
     if (data) {
       const index = taxRates.value.findIndex(t => t.id === taxRate.id)
@@ -78,7 +80,8 @@ async function updateTaxRate(taxRate: TaxRates) {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating tax rate:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteTaxRate(id: number) {
     const response = await fetch(`${baseURL}/commerce/tax-rates/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteTaxRate(id: number) {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting tax rate:', error)
     return false
   }

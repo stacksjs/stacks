@@ -14,7 +14,7 @@ async function fetchUnits(): Promise<Units[]> {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as Units[]
-    
+
     if (Array.isArray(data)) {
       units.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchUnits(): Promise<Units[]> {
       console.error('Expected array of units but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching units:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createUnit(unit: Units): Promise<Units | null> {
       },
       body: JSON.stringify(unit),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Units
     if (data) {
       units.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating unit:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateUnit(unit: Units): Promise<Units | null> {
       },
       body: JSON.stringify(unit),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Units
     if (data) {
       const index = units.value.findIndex(u => u.id === unit.id)
@@ -78,7 +80,8 @@ async function updateUnit(unit: Units): Promise<Units | null> {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating unit:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteUnit(id: number): Promise<boolean> {
     const response = await fetch(`${baseURL}/commerce/products/units/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteUnit(id: number): Promise<boolean> {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting unit:', error)
     return false
   }

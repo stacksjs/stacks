@@ -56,8 +56,6 @@ route.group({ prefix: '/payments' }, async () => {
 })
 
 route.group({ prefix: '/commerce' }, async () => {
-  route.get('/customers', 'Actions/Commerce/CustomersAction')
-
   // Print Devices
   route.get('/print-devices', 'Actions/Commerce/PrintDeviceIndexOrmAction')
   route.post('/print-devices', 'Actions/Commerce/PrintDeviceStoreOrmAction')
@@ -117,25 +115,25 @@ route.group({ prefix: '/commerce' }, async () => {
   route.delete('/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneDestroyOrmAction')
 
   // Customers
-  route.get('/customers', 'Actions/Commerce/CustomerIndexOrmAction')
-  route.post('/customers', 'Actions/Commerce/CustomerStoreOrmAction')
-  route.get('/customers/{id}', 'Actions/Commerce/CustomerShowOrmAction')
-  route.patch('/customers/{id}', 'Actions/Commerce/CustomerUpdateOrmAction')
-  route.delete('/customers/{id}', 'Actions/Commerce/CustomerDestroyOrmAction')
+  route.get('/customers', 'Actions/Commerce/CustomerIndexAction')
+  route.post('/customers', 'Actions/Commerce/CustomerStoreAction')
+  route.get('/customers/{id}', 'Actions/Commerce/CustomerShowAction')
+  route.patch('/customers/{id}', 'Actions/Commerce/CustomerUpdateAction')
+  route.delete('/customers/{id}', 'Actions/Commerce/CustomerDestroyAction')
 
   // Print Logs
-  route.get('/print-logs', 'Actions/Commerce/ReceiptIndexOrmAction')
-  route.post('/print-logs', 'Actions/Commerce/ReceiptStoreOrmAction')
-  route.get('/print-logs/{id}', 'Actions/Commerce/ReceiptShowOrmAction')
-  route.patch('/print-logs/{id}', 'Actions/Commerce/ReceiptUpdateOrmAction')
-  route.delete('/print-logs/{id}', 'Actions/Commerce/ReceiptDestroyOrmAction')
+  route.get('/print-logs', 'Actions/Commerce/ReceiptIndexAction')
+  route.post('/print-logs', 'Actions/Commerce/ReceiptStoreAction')
+  route.get('/print-logs/{id}', 'Actions/Commerce/ReceiptShowAction')
+  route.patch('/print-logs/{id}', 'Actions/Commerce/ReceiptUpdateAction')
+  route.delete('/print-logs/{id}', 'Actions/Commerce/ReceiptDestroyAction')
 
   // Product Variants
-  route.get('/product-variants', 'Actions/Commerce/Products/ProductVariantIndexOrmAction')
-  route.post('/product-variants', 'Actions/Commerce/ProductVariantStoreOrmAction')
-  route.get('/product-variants/{id}', 'Actions/Commerce/ProductVariantShowOrmAction')
-  route.patch('/product-variants/{id}', 'Actions/Commerce/ProductVariantUpdateOrmAction')
-  route.delete('/product-variants/{id}', 'Actions/Commerce/ProductVariantDestroyOrmAction')
+  route.get('/product-variants', 'Actions/Commerce/Products/ProductVariantIndexAction')
+  route.post('/product-variants', 'Actions/Commerce/ProductVariantStoreAction')
+  route.get('/product-variants/{id}', 'Actions/Commerce/ProductVariantShowAction')
+  route.patch('/product-variants/{id}', 'Actions/Commerce/ProductVariantUpdateAction')
+  route.delete('/product-variants/{id}', 'Actions/Commerce/ProductVariantDestroyAction')
 
   // License Keys
   route.get('/license-keys', 'Actions/Commerce/Shipping/LicenseKeyIndexOrmAction')

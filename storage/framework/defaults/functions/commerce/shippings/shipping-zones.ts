@@ -14,7 +14,7 @@ async function fetchShippingZones() {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as ShippingZones[]
-    
+
     if (Array.isArray(data)) {
       shippingZones.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchShippingZones() {
       console.error('Expected array of shipping zones but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching shipping zones:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createShippingZone(shippingZone: ShippingZones) {
       },
       body: JSON.stringify(shippingZone),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as ShippingZones
     if (data) {
       shippingZones.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating shipping zone:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateShippingZone(shippingZone: ShippingZones) {
       },
       body: JSON.stringify(shippingZone),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as ShippingZones
     if (data) {
       const index = shippingZones.value.findIndex(s => s.id === shippingZone.id)
@@ -78,7 +80,8 @@ async function updateShippingZone(shippingZone: ShippingZones) {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating shipping zone:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteShippingZone(id: number) {
     const response = await fetch(`${baseURL}/commerce/shipping-zones/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteShippingZone(id: number) {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting shipping zone:', error)
     return false
   }

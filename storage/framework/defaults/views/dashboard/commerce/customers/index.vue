@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
+import { useCustomers } from '../../../../functions/commerce/customers'
 
 useHead({
   title: 'Dashboard - Commerce Customers',
@@ -120,6 +121,9 @@ const customers = ref([
   }
 ])
 
+// Get customers data and functions from the composable
+const { createCustomer } = useCustomers()
+
 // Filter and sort options
 const searchQuery = ref('')
 const sortBy = ref('name')
@@ -199,8 +203,9 @@ function toggleSort(column: string): void {
 }
 
 // Get status badge class
-function getStatusClass(status: string): string {
-  switch (status) {
+function getStatusClass(status: string | string[]): string {
+  const statusStr = Array.isArray(status) ? status[0] : status
+  switch (statusStr) {
     case 'Active':
       return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
     case 'Inactive':
@@ -241,22 +246,42 @@ function closeAddModal(): void {
   showAddModal.value = false
 }
 
-function addCustomer(): void {
-  // In a real app, this would send data to the server
+async function addCustomer(): Promise<void> {
+  // First add to local state for immediate UI update
   const id = Math.max(...customers.value.map(c => c.id)) + 1
-
-  customers.value.push({
+  const newCustomerData = {
     id,
     name: newCustomer.value.name,
     email: newCustomer.value.email,
     phone: newCustomer.value.phone,
     orders: 0,
     totalSpent: 0,
-    lastOrder: new Date().toISOString().split('T')[0],
+    lastOrder: new Date().toISOString().split('T')[0] || '',
     status: newCustomer.value.status,
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-  })
-  closeAddModal()
+  }
+  customers.value.push(newCustomerData)
+
+  // Then send to server
+  const customerData = {
+    name: newCustomer.value.name,
+    email: newCustomer.value.email,
+    phone: newCustomer.value.phone,
+    total_spent: 0,
+    last_order: new Date().toISOString().split('T')[0] || '',
+    status: newCustomer.value.status as string,
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+    user_id: 1 // Default user ID, should be replaced with actual user ID in production
+  }
+
+  try {
+    await createCustomer(customerData)
+    closeAddModal()
+  } catch (error) {
+    // If server request fails, remove from local state
+    customers.value = customers.value.filter(c => c.id !== id)
+    console.error('Failed to create customer:', error)
+  }
 }
 </script>
 

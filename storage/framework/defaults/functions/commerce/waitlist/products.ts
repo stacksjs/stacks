@@ -14,7 +14,7 @@ async function fetchWaitlistProducts() {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as WaitlistProduct[]
-    
+
     if (Array.isArray(data)) {
       waitlistProducts.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchWaitlistProducts() {
       console.error('Expected array of waitlist products but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching waitlist products:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createWaitlistProduct(waitlistProduct: WaitlistProduct) {
       },
       body: JSON.stringify(waitlistProduct),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as WaitlistProduct
     if (data) {
       waitlistProducts.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating waitlist product:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateWaitlistProduct(waitlistProduct: WaitlistProduct) {
       },
       body: JSON.stringify(waitlistProduct),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as WaitlistProduct
     if (data) {
       const index = waitlistProducts.value.findIndex(wp => wp.id === waitlistProduct.id)
@@ -78,7 +80,8 @@ async function updateWaitlistProduct(waitlistProduct: WaitlistProduct) {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating waitlist product:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteWaitlistProduct(id: number) {
     const response = await fetch(`${baseURL}/commerce/waitlist/products/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteWaitlistProduct(id: number) {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting waitlist product:', error)
     return false
   }

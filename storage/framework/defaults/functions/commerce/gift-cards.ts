@@ -14,7 +14,7 @@ async function fetchGiftCards(): Promise<GiftCards[]> {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as GiftCards[]
-    
+
     if (Array.isArray(data)) {
       giftCards.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchGiftCards(): Promise<GiftCards[]> {
       console.error('Expected array of gift cards but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching gift cards:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createGiftCard(giftCard: GiftCards): Promise<GiftCards | null> {
       },
       body: JSON.stringify(giftCard),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as GiftCards
     if (data) {
       giftCards.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating gift card:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateGiftCard(giftCard: GiftCards): Promise<GiftCards | null> {
       },
       body: JSON.stringify(giftCard),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as GiftCards
     if (data) {
       const index = giftCards.value.findIndex(g => g.id === giftCard.id)
@@ -78,7 +80,8 @@ async function updateGiftCard(giftCard: GiftCards): Promise<GiftCards | null> {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating gift card:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteGiftCard(id: number): Promise<boolean> {
     const response = await fetch(`${baseURL}/commerce/gift-cards/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteGiftCard(id: number): Promise<boolean> {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting gift card:', error)
     return false
   }

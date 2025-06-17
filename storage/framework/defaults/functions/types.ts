@@ -1,6 +1,6 @@
 export interface Customers {
-  id: number
-  user_id: number
+  id?: number
+  user_id?: number
   name: string
   email: string
   phone: string
@@ -330,6 +330,6 @@ export interface WaitlistRestaurant {
   status: string
   created_at: Date
   updated_at: Date
-} 
+}
 
 export type StoreWebsocket = Omit<Websockets, 'id' | 'uuid' | 'created_at' | 'updated_at'>

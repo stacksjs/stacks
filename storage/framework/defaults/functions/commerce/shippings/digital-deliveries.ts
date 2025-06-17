@@ -14,7 +14,7 @@ async function fetchDigitalDeliveries() {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as DigitalDeliveries[]
-    
+
     if (Array.isArray(data)) {
       digitalDeliveries.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchDigitalDeliveries() {
       console.error('Expected array of digital deliveries but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching digital deliveries:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createDigitalDelivery(digitalDelivery: DigitalDeliveries) {
       },
       body: JSON.stringify(digitalDelivery),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as DigitalDeliveries
     if (data) {
       digitalDeliveries.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating digital delivery:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateDigitalDelivery(digitalDelivery: DigitalDeliveries) {
       },
       body: JSON.stringify(digitalDelivery),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as DigitalDeliveries
     if (data) {
       const index = digitalDeliveries.value.findIndex(s => s.id === digitalDelivery.id)
@@ -78,7 +80,8 @@ async function updateDigitalDelivery(digitalDelivery: DigitalDeliveries) {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating digital delivery:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteDigitalDelivery(id: number) {
     const response = await fetch(`${baseURL}/commerce/digital-deliveries/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteDigitalDelivery(id: number) {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting digital delivery:', error)
     return false
   }

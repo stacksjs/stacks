@@ -316,7 +316,8 @@ export function prepareEnumColumnType(validator: Validator, driver = 'mysql'): s
   if (driver === 'sqlite')
     return `'text'` // SQLite doesn't support ENUM, but we'll enforce values at app level
 
-  return `sql\`enum(${enumStructure})\`` // MySQL supports native ENUM
+  return `'varchar(255)'`
+  // return `sql\`enum(${enumStructure})\`` // MySQL supports native ENUM
 }
 
 export function mapFieldTypeToColumnType(validator: Validator, driver = 'mysql'): string {

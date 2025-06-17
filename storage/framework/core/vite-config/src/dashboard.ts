@@ -1,6 +1,5 @@
 import type { UserConfig as ViteConfig } from 'vite'
 import { alias } from '@stacksjs/alias'
-import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { autoImports, components, i18n, layouts } from '@stacksjs/vite-plugin'
 import Vue from '@vitejs/plugin-vue'

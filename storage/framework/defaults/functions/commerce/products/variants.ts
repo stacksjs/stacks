@@ -14,7 +14,7 @@ async function fetchVariants() {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as ProductVariants[]
-    
+
     if (Array.isArray(data)) {
       variants.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchVariants() {
       console.error('Expected array of variants but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching variants:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createVariant(variant: ProductVariants) {
       },
       body: JSON.stringify(variant),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as ProductVariants
     if (data) {
       variants.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating variant:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateVariant(variant: ProductVariants) {
       },
       body: JSON.stringify(variant),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as ProductVariants
     if (data) {
       const index = variants.value.findIndex(v => v.id === variant.id)
@@ -78,7 +80,8 @@ async function updateVariant(variant: ProductVariants) {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating variant:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteVariant(id: number) {
     const response = await fetch(`${baseURL}/commerce/products/variants/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteVariant(id: number) {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting variant:', error)
     return false
   }

@@ -14,7 +14,7 @@ async function fetchItems(): Promise<ProductItems[]> {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as ProductItems[]
-    
+
     if (Array.isArray(data)) {
       items.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchItems(): Promise<ProductItems[]> {
       console.error('Expected array of items but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching items:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createItem(item: ProductItems): Promise<ProductItems | null> {
       },
       body: JSON.stringify(item),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as ProductItems
     if (data) {
       items.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating item:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateItem(item: ProductItems): Promise<ProductItems | null> {
       },
       body: JSON.stringify(item),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as ProductItems
     if (data) {
       const index = items.value.findIndex(i => i.id === item.id)
@@ -78,7 +80,8 @@ async function updateItem(item: ProductItems): Promise<ProductItems | null> {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating item:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteItem(id: number): Promise<boolean> {
     const response = await fetch(`${baseURL}/commerce/products/items/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteItem(id: number): Promise<boolean> {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting item:', error)
     return false
   }

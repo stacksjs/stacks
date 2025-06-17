@@ -14,7 +14,7 @@ async function fetchCategories(): Promise<Categories[]> {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as Categories[]
-    
+
     if (Array.isArray(data)) {
       categories.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchCategories(): Promise<Categories[]> {
       console.error('Expected array of categories but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching categories:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createCategory(category: Categories): Promise<Categories | null> 
       },
       body: JSON.stringify(category),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Categories
     if (data) {
       categories.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating category:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateCategory(category: Categories): Promise<Categories | null> 
       },
       body: JSON.stringify(category),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Categories
     if (data) {
       const index = categories.value.findIndex(c => c.id === category.id)
@@ -78,7 +80,8 @@ async function updateCategory(category: Categories): Promise<Categories | null> 
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating category:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteCategory(id: number): Promise<boolean> {
     const response = await fetch(`${baseURL}/commerce/products/categories/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteCategory(id: number): Promise<boolean> {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting category:', error)
     return false
   }

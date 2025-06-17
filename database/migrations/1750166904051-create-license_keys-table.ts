@@ -7,9 +7,9 @@ export async function up(db: Database<any>) {
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'varchar(255)')
     .addColumn('key', 'varchar(255)', col => col.notNull())
-    .addColumn('template', sql`enum('Standard License', 'Premium License', 'Enterprise License')`, col => col.notNull())
+    .addColumn('template', 'varchar(255)', col => col.notNull())
     .addColumn('expiry_date', 'timestamp', col => col.notNull())
-    .addColumn('status', sql`enum('active', 'inactive', 'unassigned')`, col => col.defaultTo('unassigned'))
+    .addColumn('status', 'varchar(255)', col => col.defaultTo('unassigned'))
     .addColumn('customer_id', 'integer', col =>
       col.references('customers.id').onDelete('cascade'))
     .addColumn('product_id', 'integer', col =>

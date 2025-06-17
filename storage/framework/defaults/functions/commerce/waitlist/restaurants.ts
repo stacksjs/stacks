@@ -14,7 +14,7 @@ async function fetchWaitlistRestaurants() {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as WaitlistRestaurant[]
-    
+
     if (Array.isArray(data)) {
       waitlistRestaurants.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchWaitlistRestaurants() {
       console.error('Expected array of waitlist restaurants but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching waitlist restaurants:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createWaitlistRestaurant(waitlistRestaurant: WaitlistRestaurant) 
       },
       body: JSON.stringify(waitlistRestaurant),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as WaitlistRestaurant
     if (data) {
       waitlistRestaurants.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating waitlist restaurant:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateWaitlistRestaurant(waitlistRestaurant: WaitlistRestaurant) 
       },
       body: JSON.stringify(waitlistRestaurant),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as WaitlistRestaurant
     if (data) {
       const index = waitlistRestaurants.value.findIndex(wr => wr.id === waitlistRestaurant.id)
@@ -78,7 +80,8 @@ async function updateWaitlistRestaurant(waitlistRestaurant: WaitlistRestaurant) 
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating waitlist restaurant:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteWaitlistRestaurant(id: number) {
     const response = await fetch(`${baseURL}/commerce/waitlist/restaurants/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteWaitlistRestaurant(id: number) {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting waitlist restaurant:', error)
     return false
   }

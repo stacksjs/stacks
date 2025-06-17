@@ -12,7 +12,7 @@ export async function up(db: Database<any>) {
     .addColumn('expiry_days', 'integer', col => col.notNull())
     .addColumn('requires_login', 'boolean', col => col.defaultTo(false))
     .addColumn('automatic_delivery', 'boolean', col => col.defaultTo(false))
-    .addColumn('status', sql`enum('active', 'inactive')`, col => col.defaultTo('active'))
+    .addColumn('status', 'varchar(255)', col => col.defaultTo('active'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
     .execute()

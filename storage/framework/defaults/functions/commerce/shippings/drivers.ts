@@ -14,7 +14,7 @@ async function fetchDrivers() {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json() as Drivers[]
-    
+
     if (Array.isArray(data)) {
       drivers.value = data
       return data
@@ -23,7 +23,8 @@ async function fetchDrivers() {
       console.error('Expected array of drivers but received:', typeof data)
       return []
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching drivers:', error)
     return []
   }
@@ -38,18 +39,19 @@ async function createDriver(driver: Drivers) {
       },
       body: JSON.stringify(driver),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Drivers
     if (data) {
       drivers.value.push(data)
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating driver:', error)
     return null
   }
@@ -64,11 +66,11 @@ async function updateDriver(driver: Drivers) {
       },
       body: JSON.stringify(driver),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    
+
     const data = await response.json() as Drivers
     if (data) {
       const index = drivers.value.findIndex(s => s.id === driver.id)
@@ -78,7 +80,8 @@ async function updateDriver(driver: Drivers) {
       return data
     }
     return null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating driver:', error)
     return null
   }
@@ -89,7 +92,7 @@ async function deleteDriver(id: number) {
     const response = await fetch(`${baseURL}/commerce/drivers/${id}`, {
       method: 'DELETE',
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -100,7 +103,8 @@ async function deleteDriver(id: number) {
     }
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error deleting driver:', error)
     return false
   }
