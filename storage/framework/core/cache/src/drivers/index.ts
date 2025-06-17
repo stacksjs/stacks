@@ -18,7 +18,7 @@ const drivers: Record<string, CacheDriver> = {
 }
 
 // Get configured driver name with fallback to memory
-const driverName = config.cache?.driver || 'memory'
+const driverName = 'memory'
 
 // Select the appropriate driver
 const selectedDriver = drivers[driverName] || memory

@@ -1,5 +1,4 @@
 import type Stripe from 'stripe'
-import { cache } from '@stacksjs/cache'
 import { stripe } from '..'
 
 export interface PriceManager {
@@ -16,7 +15,6 @@ export const managePrice: PriceManager = (() => {
         return undefined
 
       const price = prices.data[0]
-      cache.set(`price_${lookupKey}`, JSON.stringify(price))
 
       return price
     }
