@@ -1,7 +1,7 @@
 import type { WebsocketRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { db } from '@stacksjs/database'
+import { Websocket } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -10,7 +10,7 @@ export default new Action({
   method: 'POST',
   async handle(request: WebsocketRequestType) {
     await request.validate()
-    const model = await db.insertInto('websockets').values(request.all()).execute()
+    const model = await Websocket.create(request.all())
 
     return response.json(model)
   },

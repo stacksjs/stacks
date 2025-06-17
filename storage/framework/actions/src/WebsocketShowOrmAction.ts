@@ -1,7 +1,7 @@
 import type { WebsocketRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { db } from '@stacksjs/database'
+import { Websocket } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -11,7 +11,7 @@ export default new Action({
   async handle(request: WebsocketRequestType) {
     const id = request.getParam('id')
 
-    const model = await db.selectFrom('websockets').selectAll().where('id', '=', id).executeTakeFirst()
+    const model = await Websocket.findOrFail(id)
 
     return response.json(model)
   },

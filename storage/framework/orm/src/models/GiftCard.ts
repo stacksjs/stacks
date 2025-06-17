@@ -1,66 +1,15 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { GiftCardJsonResponse, GiftCardsTable, GiftCardUpdate, NewGiftCard } from '../types/GiftCardType'
 import type { CustomerModel } from './Customer'
 import type { OrderModel } from './Order'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface GiftCardsTable {
-  id: Generated<number>
-  customer_id: number
-  code: string
-  initial_balance: number
-  current_balance: number
-  currency?: string
-  status: string
-  purchaser_id?: string
-  recipient_email?: string
-  recipient_name?: string
-  personal_message?: string
-  is_digital?: boolean
-  is_reloadable?: boolean
-  is_active?: boolean
-  expiry_date?: Date | string
-  last_used_date?: Date | string
-  template_id?: string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type GiftCardRead = GiftCardsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type GiftCardWrite = Omit<GiftCardsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface GiftCardResponse {
-  data: GiftCardJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface GiftCardJsonResponse extends Omit<Selectable<GiftCardRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewGiftCard = Insertable<GiftCardWrite>
-export type GiftCardUpdate = Updateable<GiftCardWrite>
 
 export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCardJsonResponse> {
   private readonly hidden: Array<keyof GiftCardJsonResponse> = []

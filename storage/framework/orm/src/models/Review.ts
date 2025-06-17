@@ -1,62 +1,15 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewReview, ReviewJsonResponse, ReviewsTable, ReviewUpdate } from '../types/ReviewType'
 import type { CustomerModel } from './Customer'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface ReviewsTable {
-  id: Generated<number>
-  product_id: number
-  customer_id: number
-  rating: number
-  title: string
-  content: string
-  is_verified_purchase?: boolean
-  is_approved?: boolean
-  is_featured?: boolean
-  helpful_votes?: number
-  unhelpful_votes?: number
-  purchase_date?: string
-  images?: string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type ReviewRead = ReviewsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type ReviewWrite = Omit<ReviewsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface ReviewResponse {
-  data: ReviewJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface ReviewJsonResponse extends Omit<Selectable<ReviewRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewReview = Insertable<ReviewWrite>
-export type ReviewUpdate = Updateable<ReviewWrite>
 
 export class ReviewModel extends BaseOrm<ReviewModel, ReviewsTable, ReviewJsonResponse> {
   private readonly hidden: Array<keyof ReviewJsonResponse> = []

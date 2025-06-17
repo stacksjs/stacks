@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewProduct, ProductJsonResponse, ProductsTable, ProductUpdate } from '../types/ProductType'
 import type { CategoryModel } from './Category'
 import type { CouponModel } from './Coupon'
 import type { LicenseKeyModel } from './LicenseKey'
@@ -7,9 +8,7 @@ import type { ManufacturerModel } from './Manufacturer'
 import type { ProductUnitModel } from './ProductUnit'
 import type { ProductVariantModel } from './ProductVariant'
 import type { ReviewModel } from './Review'
-
 import type { WaitlistProductModel } from './WaitlistProduct'
-
 import { randomUUIDv7 } from 'bun'
 
 import { sql } from '@stacksjs/database'
@@ -21,52 +20,6 @@ import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface ProductsTable {
-  id: Generated<number>
-  category_id: number
-  manufacturer_id: number
-  name: string
-  description?: string
-  price: number
-  image_url?: string
-  is_available?: boolean
-  inventory_count?: number
-  preparation_time: number
-  allergens?: string
-  nutritional_info?: string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type ProductRead = ProductsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type ProductWrite = Omit<ProductsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface ProductResponse {
-  data: ProductJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface ProductJsonResponse extends Omit<Selectable<ProductRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewProduct = Insertable<ProductWrite>
-export type ProductUpdate = Updateable<ProductWrite>
 
 export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJsonResponse> {
   private readonly hidden: Array<keyof ProductJsonResponse> = []

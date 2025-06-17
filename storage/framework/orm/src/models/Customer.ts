@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CustomerJsonResponse, CustomersTable, CustomerUpdate, NewCustomer } from '../types/CustomerType'
 import type { GiftCardModel } from './GiftCard'
 import type { LicenseKeyModel } from './LicenseKey'
 import type { OrderModel } from './Order'
@@ -7,9 +8,7 @@ import type { PaymentModel } from './Payment'
 import type { ReviewModel } from './Review'
 import type { UserModel } from './User'
 import type { WaitlistProductModel } from './WaitlistProduct'
-
 import type { WaitlistRestaurantModel } from './WaitlistRestaurant'
-
 import { randomUUIDv7 } from 'bun'
 
 import { sql } from '@stacksjs/database'
@@ -21,49 +20,6 @@ import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface CustomersTable {
-  id: Generated<number>
-  user_id: number
-  name: string
-  email: string
-  phone: string
-  total_spent?: number
-  last_order?: string
-  status: string | string[]
-  avatar?: string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type CustomerRead = CustomersTable
-
-// Type for creating/updating model data (created_at is optional)
-export type CustomerWrite = Omit<CustomersTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface CustomerResponse {
-  data: CustomerJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface CustomerJsonResponse extends Omit<Selectable<CustomerRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewCustomer = Insertable<CustomerWrite>
-export type CustomerUpdate = Updateable<CustomerWrite>
 
 export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, CustomerJsonResponse> {
   private readonly hidden: Array<keyof CustomerJsonResponse> = []

@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewShippingMethod, ShippingMethodJsonResponse, ShippingMethodsTable, ShippingMethodUpdate } from '../types/ShippingMethodType'
 import type { ShippingZoneModel } from './ShippingZone'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -8,46 +9,6 @@ import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface ShippingMethodsTable {
-  id: Generated<number>
-  name: string
-  description?: string
-  base_rate: number
-  free_shipping?: number
-  status: string | string[]
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type ShippingMethodRead = ShippingMethodsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type ShippingMethodWrite = Omit<ShippingMethodsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface ShippingMethodResponse {
-  data: ShippingMethodJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface ShippingMethodJsonResponse extends Omit<Selectable<ShippingMethodRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewShippingMethod = Insertable<ShippingMethodWrite>
-export type ShippingMethodUpdate = Updateable<ShippingMethodWrite>
 
 export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMethodsTable, ShippingMethodJsonResponse> {
   private readonly hidden: Array<keyof ShippingMethodJsonResponse> = []

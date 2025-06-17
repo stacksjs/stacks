@@ -1,56 +1,13 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { DeploymentJsonResponse, DeploymentsTable, DeploymentUpdate, NewDeployment } from '../types/DeploymentType'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface DeploymentsTable {
-  id: Generated<number>
-  user_id: number
-  commit_sha: string
-  commit_message: string
-  branch: string
-  status: string
-  execution_time: number
-  deploy_script: string
-  terminal_output: string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type DeploymentRead = DeploymentsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type DeploymentWrite = Omit<DeploymentsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface DeploymentResponse {
-  data: DeploymentJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface DeploymentJsonResponse extends Omit<Selectable<DeploymentRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewDeployment = Insertable<DeploymentWrite>
-export type DeploymentUpdate = Updateable<DeploymentWrite>
 
 export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, DeploymentJsonResponse> {
   private readonly hidden: Array<keyof DeploymentJsonResponse> = []

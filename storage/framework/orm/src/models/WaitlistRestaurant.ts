@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewWaitlistRestaurant, WaitlistRestaurantJsonResponse, WaitlistRestaurantsTable, WaitlistRestaurantUpdate } from '../types/WaitlistRestaurantType'
 import type { CustomerModel } from './Customer'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -8,55 +9,6 @@ import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface WaitlistRestaurantsTable {
-  id: Generated<number>
-  customer_id: number
-  name: string
-  email: string
-  phone?: string
-  party_size: number
-  check_in_time: Date | string
-  table_preference: string | string[]
-  status: string | string[]
-  quoted_wait_time: number
-  actual_wait_time?: number
-  queue_position?: number
-  seated_at?: Date | string
-  no_show_at?: Date | string
-  cancelled_at?: Date | string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type WaitlistRestaurantRead = WaitlistRestaurantsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type WaitlistRestaurantWrite = Omit<WaitlistRestaurantsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface WaitlistRestaurantResponse {
-  data: WaitlistRestaurantJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface WaitlistRestaurantJsonResponse extends Omit<Selectable<WaitlistRestaurantRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewWaitlistRestaurant = Insertable<WaitlistRestaurantWrite>
-export type WaitlistRestaurantUpdate = Updateable<WaitlistRestaurantWrite>
 
 export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, WaitlistRestaurantsTable, WaitlistRestaurantJsonResponse> {
   private readonly hidden: Array<keyof WaitlistRestaurantJsonResponse> = []

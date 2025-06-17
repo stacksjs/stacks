@@ -1,64 +1,17 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewProductItem, ProductItemJsonResponse, ProductItemsTable, ProductItemUpdate } from '../types/ProductItemType'
 import type { CategoryModel } from './Category'
 import type { ManufacturerModel } from './Manufacturer'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-
 import { dispatch } from '@stacksjs/events'
 
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface ProductItemsTable {
-  id: Generated<number>
-  product_id: number
-  manufacturer_id: number
-  category_id: number
-  name: string
-  size?: string
-  color?: string
-  price: number
-  image_url?: string
-  is_available?: boolean
-  inventory_count?: number
-  sku: string
-  custom_options?: string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type ProductItemRead = ProductItemsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type ProductItemWrite = Omit<ProductItemsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface ProductItemResponse {
-  data: ProductItemJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface ProductItemJsonResponse extends Omit<Selectable<ProductItemRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewProductItem = Insertable<ProductItemWrite>
-export type ProductItemUpdate = Updateable<ProductItemWrite>
 
 export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTable, ProductItemJsonResponse> {
   private readonly hidden: Array<keyof ProductItemJsonResponse> = []

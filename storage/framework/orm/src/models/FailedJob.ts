@@ -1,53 +1,15 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { FailedJobJsonResponse, FailedJobsTable, FailedJobUpdate, NewFailedJob } from '../types/FailedJobType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface FailedJobsTable {
-  id: Generated<number>
-  connection: string
-  queue: string
-  payload: string
-  exception: string
-  failed_at?: Date | string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type FailedJobRead = FailedJobsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type FailedJobWrite = Omit<FailedJobsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface FailedJobResponse {
-  data: FailedJobJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface FailedJobJsonResponse extends Omit<Selectable<FailedJobRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewFailedJob = Insertable<FailedJobWrite>
-export type FailedJobUpdate = Updateable<FailedJobWrite>
-
 export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, FailedJobJsonResponse> {
   private readonly hidden: Array<keyof FailedJobJsonResponse> = []
-  private readonly fillable: Array<keyof FailedJobJsonResponse> = ['connection', 'queue', 'payload', 'exception', 'failed_at', 'uuid']
+  private readonly fillable: Array<keyof FailedJobJsonResponse> = ['connection', 'queue', 'payload', 'exception', 'failed_at']
   private readonly guarded: Array<keyof FailedJobJsonResponse> = []
   protected attributes = {} as FailedJobJsonResponse
   protected originalAttributes = {} as FailedJobJsonResponse

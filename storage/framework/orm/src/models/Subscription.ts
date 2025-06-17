@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewSubscription, SubscriptionJsonResponse, SubscriptionsTable, SubscriptionUpdate } from '../types/SubscriptionType'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -7,53 +8,6 @@ import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface SubscriptionsTable {
-  id: Generated<number>
-  user_id: number
-  type: string
-  plan?: string
-  provider_id: string
-  provider_status: string
-  unit_price?: number
-  provider_type: string
-  provider_price_id?: string
-  quantity?: number
-  trial_ends_at?: Date | string
-  ends_at?: Date | string
-  last_used_at?: Date | string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type SubscriptionRead = SubscriptionsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type SubscriptionWrite = Omit<SubscriptionsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface SubscriptionResponse {
-  data: SubscriptionJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface SubscriptionJsonResponse extends Omit<Selectable<SubscriptionRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewSubscription = Insertable<SubscriptionWrite>
-export type SubscriptionUpdate = Updateable<SubscriptionWrite>
 
 export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsTable, SubscriptionJsonResponse> {
   private readonly hidden: Array<keyof SubscriptionJsonResponse> = []

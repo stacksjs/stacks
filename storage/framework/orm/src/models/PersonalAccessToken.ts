@@ -1,61 +1,16 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewPersonalAccessToken, PersonalAccessTokenJsonResponse, PersonalAccessTokensTable, PersonalAccessTokenUpdate } from '../types/PersonalAccessTokenType'
 import type { UserModel } from './User'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface PersonalAccessTokensTable {
-  id: Generated<number>
-  user_id: number
-  name: string
-  token: string
-  plain_text_token: string
-  abilities: string
-  last_used_at?: Date | string
-  expires_at?: Date | string
-  revoked_at?: Date | string
-  ip_address?: string
-  device_name?: string
-  is_single_use?: boolean
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type PersonalAccessTokenRead = PersonalAccessTokensTable
-
-// Type for creating/updating model data (created_at is optional)
-export type PersonalAccessTokenWrite = Omit<PersonalAccessTokensTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface PersonalAccessTokenResponse {
-  data: PersonalAccessTokenJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface PersonalAccessTokenJsonResponse extends Omit<Selectable<PersonalAccessTokenRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewPersonalAccessToken = Insertable<PersonalAccessTokenWrite>
-export type PersonalAccessTokenUpdate = Updateable<PersonalAccessTokenWrite>
-
 export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, PersonalAccessTokensTable, PersonalAccessTokenJsonResponse> {
   private readonly hidden: Array<keyof PersonalAccessTokenJsonResponse> = []
-  private readonly fillable: Array<keyof PersonalAccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'last_used_at', 'expires_at', 'revoked_at', 'ip_address', 'device_name', 'is_single_use', 'uuid', 'team_id', 'user_id']
+  private readonly fillable: Array<keyof PersonalAccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'last_used_at', 'expires_at', 'revoked_at', 'ip_address', 'device_name', 'is_single_use', 'team_id', 'user_id']
   private readonly guarded: Array<keyof PersonalAccessTokenJsonResponse> = []
   protected attributes = {} as PersonalAccessTokenJsonResponse
   protected originalAttributes = {} as PersonalAccessTokenJsonResponse

@@ -1,49 +1,15 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewSubscriber, SubscriberJsonResponse, SubscribersTable, SubscriberUpdate } from '../types/SubscriberType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface SubscribersTable {
-  id: Generated<number>
-  subscribed: boolean
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type SubscriberRead = SubscribersTable
-
-// Type for creating/updating model data (created_at is optional)
-export type SubscriberWrite = Omit<SubscribersTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface SubscriberResponse {
-  data: SubscriberJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface SubscriberJsonResponse extends Omit<Selectable<SubscriberRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewSubscriber = Insertable<SubscriberWrite>
-export type SubscriberUpdate = Updateable<SubscriberWrite>
-
 export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, SubscriberJsonResponse> {
   private readonly hidden: Array<keyof SubscriberJsonResponse> = []
-  private readonly fillable: Array<keyof SubscriberJsonResponse> = ['subscribed', 'uuid', 'user_id']
+  private readonly fillable: Array<keyof SubscriberJsonResponse> = ['subscribed', 'user_id']
   private readonly guarded: Array<keyof SubscriberJsonResponse> = []
   protected attributes = {} as SubscriberJsonResponse
   protected originalAttributes = {} as SubscriberJsonResponse

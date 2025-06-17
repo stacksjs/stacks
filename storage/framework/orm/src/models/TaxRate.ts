@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewTaxRate, TaxRateJsonResponse, TaxRatesTable, TaxRateUpdate } from '../types/TaxRateType'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -7,48 +8,6 @@ import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface TaxRatesTable {
-  id: Generated<number>
-  name: string
-  rate: number
-  type: string
-  country: string
-  region: string | string[]
-  status?: string | string[]
-  is_default?: boolean
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type TaxRateRead = TaxRatesTable
-
-// Type for creating/updating model data (created_at is optional)
-export type TaxRateWrite = Omit<TaxRatesTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface TaxRateResponse {
-  data: TaxRateJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface TaxRateJsonResponse extends Omit<Selectable<TaxRateRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewTaxRate = Insertable<TaxRateWrite>
-export type TaxRateUpdate = Updateable<TaxRateWrite>
 
 export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJsonResponse> {
   private readonly hidden: Array<keyof TaxRateJsonResponse> = []

@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewReceipt, ReceiptJsonResponse, ReceiptsTable, ReceiptUpdate } from '../types/ReceiptType'
 import type { PrintDeviceModel } from './PrintDevice'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -8,50 +9,6 @@ import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface ReceiptsTable {
-  id: Generated<number>
-  print_device_id: number
-  printer: string
-  document: string
-  timestamp: number
-  status: string | string[]
-  size?: number
-  pages?: number
-  duration?: number
-  metadata?: string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type ReceiptRead = ReceiptsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type ReceiptWrite = Omit<ReceiptsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface ReceiptResponse {
-  data: ReceiptJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface ReceiptJsonResponse extends Omit<Selectable<ReceiptRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewReceipt = Insertable<ReceiptWrite>
-export type ReceiptUpdate = Updateable<ReceiptWrite>
 
 export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJsonResponse> {
   private readonly hidden: Array<keyof ReceiptJsonResponse> = []

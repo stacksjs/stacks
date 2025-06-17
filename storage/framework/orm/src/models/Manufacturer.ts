@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { ManufacturerJsonResponse, ManufacturersTable, ManufacturerUpdate, NewManufacturer } from '../types/ManufacturerType'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -8,45 +9,6 @@ import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface ManufacturersTable {
-  id: Generated<number>
-  manufacturer: string
-  description?: string
-  country: string
-  featured?: boolean
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type ManufacturerRead = ManufacturersTable
-
-// Type for creating/updating model data (created_at is optional)
-export type ManufacturerWrite = Omit<ManufacturersTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface ManufacturerResponse {
-  data: ManufacturerJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface ManufacturerJsonResponse extends Omit<Selectable<ManufacturerRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewManufacturer = Insertable<ManufacturerWrite>
-export type ManufacturerUpdate = Updateable<ManufacturerWrite>
 
 export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersTable, ManufacturerJsonResponse> {
   private readonly hidden: Array<keyof ManufacturerJsonResponse> = []

@@ -1,53 +1,15 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { ErrorJsonResponse, ErrorsTable, ErrorUpdate, NewError } from '../types/ErrorType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface ErrorsTable {
-  id: Generated<number>
-  type: string
-  message: string
-  stack?: string
-  status: number
-  additional_info?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type ErrorRead = ErrorsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type ErrorWrite = Omit<ErrorsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface ErrorResponse {
-  data: ErrorJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface ErrorJsonResponse extends Omit<Selectable<ErrorRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewError = Insertable<ErrorWrite>
-export type ErrorUpdate = Updateable<ErrorWrite>
-
 export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonResponse> {
   private readonly hidden: Array<keyof ErrorJsonResponse> = []
-  private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
+  private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info']
   private readonly guarded: Array<keyof ErrorJsonResponse> = []
   protected attributes = {} as ErrorJsonResponse
   protected originalAttributes = {} as ErrorJsonResponse

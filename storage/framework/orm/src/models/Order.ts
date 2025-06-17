@@ -1,12 +1,12 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewOrder, OrderJsonResponse, OrdersTable, OrderUpdate } from '../types/OrderType'
 import type { CouponModel } from './Coupon'
 import type { CustomerModel } from './Customer'
 import type { LicenseKeyModel } from './LicenseKey'
 import type { OrderItemModel } from './OrderItem'
 import type { PaymentModel } from './Payment'
 import { randomUUIDv7 } from 'bun'
-
 import { sql } from '@stacksjs/database'
 
 import { HttpError } from '@stacksjs/error-handling'
@@ -16,54 +16,6 @@ import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface OrdersTable {
-  id: Generated<number>
-  customer_id: number
-  coupon_id: number
-  status: string
-  total_amount: number
-  tax_amount?: number
-  discount_amount?: number
-  delivery_fee?: number
-  tip_amount?: number
-  order_type: string
-  delivery_address?: string
-  special_instructions?: string
-  estimated_delivery_time?: string
-  applied_coupon_id?: string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type OrderRead = OrdersTable
-
-// Type for creating/updating model data (created_at is optional)
-export type OrderWrite = Omit<OrdersTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface OrderResponse {
-  data: OrderJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface OrderJsonResponse extends Omit<Selectable<OrderRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewOrder = Insertable<OrderWrite>
-export type OrderUpdate = Updateable<OrderWrite>
 
 export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonResponse> {
   private readonly hidden: Array<keyof OrderJsonResponse> = []

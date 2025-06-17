@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { DeliveryRouteJsonResponse, DeliveryRoutesTable, DeliveryRouteUpdate, NewDeliveryRoute } from '../types/DeliveryRouteType'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -7,47 +8,6 @@ import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface DeliveryRoutesTable {
-  id: Generated<number>
-  driver: string
-  vehicle: string
-  stops: number
-  delivery_time: number
-  total_distance: number
-  last_active?: Date | string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type DeliveryRouteRead = DeliveryRoutesTable
-
-// Type for creating/updating model data (created_at is optional)
-export type DeliveryRouteWrite = Omit<DeliveryRoutesTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface DeliveryRouteResponse {
-  data: DeliveryRouteJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface DeliveryRouteJsonResponse extends Omit<Selectable<DeliveryRouteRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewDeliveryRoute = Insertable<DeliveryRouteWrite>
-export type DeliveryRouteUpdate = Updateable<DeliveryRouteWrite>
 
 export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRoutesTable, DeliveryRouteJsonResponse> {
   private readonly hidden: Array<keyof DeliveryRouteJsonResponse> = []

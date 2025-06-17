@@ -1,53 +1,15 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { JobJsonResponse, JobsTable, JobUpdate, NewJob } from '../types/JobType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface JobsTable {
-  id: Generated<number>
-  queue: string
-  payload: string
-  attempts?: number
-  available_at?: number
-  reserved_at?: Date | string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type JobRead = JobsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type JobWrite = Omit<JobsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface JobResponse {
-  data: JobJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface JobJsonResponse extends Omit<Selectable<JobRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewJob = Insertable<JobWrite>
-export type JobUpdate = Updateable<JobWrite>
-
 export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
   private readonly hidden: Array<keyof JobJsonResponse> = []
-  private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
+  private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at']
   private readonly guarded: Array<keyof JobJsonResponse> = []
   protected attributes = {} as JobJsonResponse
   protected originalAttributes = {} as JobJsonResponse

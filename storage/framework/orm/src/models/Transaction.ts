@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewTransaction, TransactionJsonResponse, TransactionsTable, TransactionUpdate } from '../types/TransactionType'
 import type { OrderModel } from './Order'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -8,49 +9,6 @@ import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface TransactionsTable {
-  id: Generated<number>
-  order_id: number
-  amount: number
-  status: string
-  payment_method: string
-  payment_details?: string
-  transaction_reference?: string
-  loyalty_points_earned?: number
-  loyalty_points_redeemed?: number
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type TransactionRead = TransactionsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type TransactionWrite = Omit<TransactionsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface TransactionResponse {
-  data: TransactionJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface TransactionJsonResponse extends Omit<Selectable<TransactionRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewTransaction = Insertable<TransactionWrite>
-export type TransactionUpdate = Updateable<TransactionWrite>
 
 export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTable, TransactionJsonResponse> {
   private readonly hidden: Array<keyof TransactionJsonResponse> = ['paymentDetails']

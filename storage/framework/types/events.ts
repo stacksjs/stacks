@@ -26,16 +26,12 @@ import type { ShippingRateModel } from '../orm/src/models/ShippingRate'
 import type { ShippingZoneModel } from '../orm/src/models/ShippingZone'
 import type { TaxRateModel } from '../orm/src/models/TaxRate'
 import type { TransactionModel } from '../orm/src/models/Transaction'
-import type { UserModel } from '../orm/src/models/User'
 import type { WaitlistProductModel } from '../orm/src/models/WaitlistProduct'
 import type { WaitlistRestaurantModel } from '../orm/src/models/WaitlistRestaurant'
 import type { WebsocketModel } from '../orm/src/models/Websocket'
 
 export interface ModelEvents {
 
-  'user:created': UserModel
-  'user:updated': UserModel
-  'user:deleted': UserModel
   'print-device:created': PrintDeviceModel
   'print-device:updated': PrintDeviceModel
   'print-device:deleted': PrintDeviceModel

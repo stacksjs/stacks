@@ -474,7 +474,7 @@ interface RequestDataPrintDevice {
   location: string
   terminal: string
   status: string[] | string
-  last_ping: number
+  last_ping: unix
   print_count: number
   created_at?: string
   updated_at?: string
@@ -489,7 +489,7 @@ export interface PrintDeviceRequestType extends Request {
   location: string
   terminal: string
   status: string[] | string
-  last_ping: number
+  last_ping: unix
   print_count: number
   created_at?: string
   updated_at?: string

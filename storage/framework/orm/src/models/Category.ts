@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CategoriesTable, CategoryJsonResponse, CategoryUpdate, NewCategory } from '../types/CategoryType'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -8,47 +9,6 @@ import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface CategoriesTable {
-  id: Generated<number>
-  name: string
-  description?: string
-  image_url?: string
-  is_active?: boolean
-  parent_category_id?: string
-  display_order: number
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type CategoryRead = CategoriesTable
-
-// Type for creating/updating model data (created_at is optional)
-export type CategoryWrite = Omit<CategoriesTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface CategoryResponse {
-  data: CategoryJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface CategoryJsonResponse extends Omit<Selectable<CategoryRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewCategory = Insertable<CategoryWrite>
-export type CategoryUpdate = Updateable<CategoryWrite>
 
 export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, CategoryJsonResponse> {
   private readonly hidden: Array<keyof CategoryJsonResponse> = []

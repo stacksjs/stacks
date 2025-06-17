@@ -1,55 +1,15 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { LogJsonResponse, LogsTable, LogUpdate, NewLog } from '../types/LogType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface LogsTable {
-  id: Generated<number>
-  timestamp: number
-  type: string | string[]
-  source: string | string[]
-  message: string
-  project: string
-  stacktrace?: string
-  file?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type LogRead = LogsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type LogWrite = Omit<LogsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface LogResponse {
-  data: LogJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface LogJsonResponse extends Omit<Selectable<LogRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewLog = Insertable<LogWrite>
-export type LogUpdate = Updateable<LogWrite>
-
 export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
   private readonly hidden: Array<keyof LogJsonResponse> = []
-  private readonly fillable: Array<keyof LogJsonResponse> = ['timestamp', 'type', 'source', 'message', 'project', 'stacktrace', 'file', 'uuid']
+  private readonly fillable: Array<keyof LogJsonResponse> = ['timestamp', 'type', 'source', 'message', 'project', 'stacktrace', 'file']
   private readonly guarded: Array<keyof LogJsonResponse> = []
   protected attributes = {} as LogJsonResponse
   protected originalAttributes = {} as LogJsonResponse

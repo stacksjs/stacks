@@ -1,63 +1,15 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewWaitlistProduct, WaitlistProductJsonResponse, WaitlistProductsTable, WaitlistProductUpdate } from '../types/WaitlistProductType'
 import type { CustomerModel } from './Customer'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface WaitlistProductsTable {
-  id: Generated<number>
-  product_id: number
-  customer_id: number
-  name: string
-  email: string
-  phone?: string
-  quantity: number
-  notification_preference: string | string[]
-  source: string
-  notes?: string
-  status: string | string[]
-  notified_at?: Date | string
-  purchased_at?: Date | string
-  cancelled_at?: Date | string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type WaitlistProductRead = WaitlistProductsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type WaitlistProductWrite = Omit<WaitlistProductsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface WaitlistProductResponse {
-  data: WaitlistProductJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface WaitlistProductJsonResponse extends Omit<Selectable<WaitlistProductRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewWaitlistProduct = Insertable<WaitlistProductWrite>
-export type WaitlistProductUpdate = Updateable<WaitlistProductWrite>
 
 export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitlistProductsTable, WaitlistProductJsonResponse> {
   private readonly hidden: Array<keyof WaitlistProductJsonResponse> = []

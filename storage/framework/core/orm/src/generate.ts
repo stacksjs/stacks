@@ -95,7 +95,6 @@ export async function generateModelString(
   let instanceSoftDeleteStatementsUpdateFrom = ''
   let thisSoftDeleteStatementsUpdateFrom = ''
 
-  let fieldString = ''
   let getFields = ''
   let setFields = ''
   // const constructorFields = ''
@@ -348,9 +347,6 @@ export async function generateModelString(
       const morphName = relation.relationName || `${formattedModelName}able`
 
       // Add field to the model for relationship access
-      fieldString += `${snakeCase(morphName)}: ${modelRelation}Model | undefined\n`
-
-      // Add getter for the relationship
       getFields += `get ${snakeCase(morphName)}():${modelRelation}Model | undefined {
         return this.attributes.${snakeCase(morphName)}
       }\n\n`
@@ -380,9 +376,6 @@ export async function generateModelString(
       const morphName = relation.relationName || `${formattedModelName}able`
 
       // Add field to the model for relationship access
-      fieldString += `${snakeCase(morphName)}: ${modelRelation}Model[] | undefined\n`
-
-      // Add getter for the relationship
       getFields += `get ${snakeCase(morphName)}():${modelRelation}Model[] | [] {
         return this.attributes.${snakeCase(morphName)}
       }\n\n`
@@ -418,8 +411,6 @@ export async function generateModelString(
 
     if (relationType === 'belongsType' && !relationCount) {
       const relationName = camelCase(relation.relationName || formattedModelRelation)
-
-      fieldString += ` ${relation.modelKey}: number \n`
 
       getFields += `get ${relation.modelKey}(): number {
         return this.attributes.${relation.modelKey}
@@ -984,10 +975,6 @@ export async function generateModelString(
   }
 
   if (useSoftDeletes) {
-    // Remove fieldString usage since it's not needed
-    // fieldString += `
-    //   deleted_at?: string
-    // `
     getFields += `get deleted_at(): string | undefined {
       return this.attributes.deleted_at
     }\n\n`
@@ -995,10 +982,6 @@ export async function generateModelString(
     setFields += `set deleted_at(value: string) {
       this.attributes.deleted_at = value
     }\n\n`
-
-    // constructorFields += `
-    //     this.deleted_at = ${formattedModelName}?.deleted_at\n
-    //   `
 
     jsonFields += `
         deleted_at: this.deleted_at,\n

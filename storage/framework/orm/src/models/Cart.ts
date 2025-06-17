@@ -1,64 +1,17 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CartJsonResponse, CartsTable, CartUpdate, NewCart } from '../types/CartType'
 import type { CartItemModel } from './CartItem'
 import type { CouponModel } from './Coupon'
 import type { CustomerModel } from './Customer'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-
 import { dispatch } from '@stacksjs/events'
 
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface CartsTable {
-  id: Generated<number>
-  customer_id: number
-  coupon_id: number
-  status?: string | string[]
-  total_items?: number
-  subtotal?: number
-  tax_amount?: number
-  discount_amount?: number
-  total?: number
-  expires_at: Date | string
-  currency?: string
-  notes?: string
-  applied_coupon_id?: string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type CartRead = CartsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type CartWrite = Omit<CartsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface CartResponse {
-  data: CartJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface CartJsonResponse extends Omit<Selectable<CartRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewCart = Insertable<CartWrite>
-export type CartUpdate = Updateable<CartWrite>
 
 export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> {
   private readonly hidden: Array<keyof CartJsonResponse> = []

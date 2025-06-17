@@ -1,59 +1,17 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { LicenseKeyJsonResponse, LicenseKeysTable, LicenseKeyUpdate, NewLicenseKey } from '../types/LicenseKeyType'
 import type { CustomerModel } from './Customer'
 import type { OrderModel } from './Order'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-
 import { dispatch } from '@stacksjs/events'
 
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface LicenseKeysTable {
-  id: Generated<number>
-  customer_id: number
-  product_id: number
-  order_id: number
-  key: string
-  template: string | string[]
-  expiry_date: Date | string
-  status?: string | string[]
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type LicenseKeyRead = LicenseKeysTable
-
-// Type for creating/updating model data (created_at is optional)
-export type LicenseKeyWrite = Omit<LicenseKeysTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface LicenseKeyResponse {
-  data: LicenseKeyJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface LicenseKeyJsonResponse extends Omit<Selectable<LicenseKeyRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewLicenseKey = Insertable<LicenseKeyWrite>
-export type LicenseKeyUpdate = Updateable<LicenseKeyWrite>
 
 export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, LicenseKeyJsonResponse> {
   private readonly hidden: Array<keyof LicenseKeyJsonResponse> = []

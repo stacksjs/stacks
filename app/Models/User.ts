@@ -42,8 +42,6 @@ export default {
 
       routes: ['index', 'store', 'show'],
     },
-
-    observe: true,
   },
 
   hasOne: ['Subscriber', 'Driver', 'Author'],

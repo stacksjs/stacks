@@ -36,7 +36,7 @@ export interface Attributes {
   mac_address: string
   location: string
   terminal: string
-  last_ping: number
+  last_ping: unix
   print_count: number
   image_url: string
   is_active: boolean

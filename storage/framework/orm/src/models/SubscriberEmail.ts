@@ -1,52 +1,16 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+// soon, these will be auto-imported
+import type { NewSubscriberEmail, SubscriberEmailJsonResponse, SubscriberEmailsTable, SubscriberEmailUpdate } from '../types/SubscriberEmailType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
-// soon, these will be auto-imported
 
 import { BaseOrm } from '../utils/base'
 
-export interface SubscriberEmailsTable {
-  id: Generated<number>
-  email: string
-
-  created_at?: string
-
-  updated_at?: string
-
-  deleted_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type SubscriberEmailRead = SubscriberEmailsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type SubscriberEmailWrite = Omit<SubscriberEmailsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface SubscriberEmailResponse {
-  data: SubscriberEmailJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface SubscriberEmailJsonResponse extends Omit<Selectable<SubscriberEmailRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewSubscriberEmail = Insertable<SubscriberEmailWrite>
-export type SubscriberEmailUpdate = Updateable<SubscriberEmailWrite>
-
 export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, SubscriberEmailsTable, SubscriberEmailJsonResponse> {
   private readonly hidden: Array<keyof SubscriberEmailJsonResponse> = []
-  private readonly fillable: Array<keyof SubscriberEmailJsonResponse> = ['email', 'uuid']
+  private readonly fillable: Array<keyof SubscriberEmailJsonResponse> = ['email']
   private readonly guarded: Array<keyof SubscriberEmailJsonResponse> = []
   protected attributes = {} as SubscriberEmailJsonResponse
   protected originalAttributes = {} as SubscriberEmailJsonResponse
@@ -720,8 +684,13 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
+    if (this.softDeletes) {
+      return await DB.instance.updateTable('subscriber_emails')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', this.id)
+        .execute()
     }
 
     const deleted = await DB.instance.deleteFrom('subscriber_emails')

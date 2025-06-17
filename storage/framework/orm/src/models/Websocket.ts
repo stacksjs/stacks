@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewWebsocket, WebsocketJsonResponse, WebsocketsTable, WebsocketUpdate } from '../types/WebsocketType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
@@ -7,47 +8,9 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface WebsocketsTable {
-  id: Generated<number>
-  type: string | string[]
-  socket: string
-  details: string
-  time: number
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type WebsocketRead = WebsocketsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type WebsocketWrite = Omit<WebsocketsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface WebsocketResponse {
-  data: WebsocketJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface WebsocketJsonResponse extends Omit<Selectable<WebsocketRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewWebsocket = Insertable<WebsocketWrite>
-export type WebsocketUpdate = Updateable<WebsocketWrite>
-
 export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, WebsocketJsonResponse> {
   private readonly hidden: Array<keyof WebsocketJsonResponse> = []
-  private readonly fillable: Array<keyof WebsocketJsonResponse> = ['type', 'socket', 'details', 'time', 'uuid']
+  private readonly fillable: Array<keyof WebsocketJsonResponse> = ['type', 'socket', 'details', 'time']
   private readonly guarded: Array<keyof WebsocketJsonResponse> = []
   protected attributes = {} as WebsocketJsonResponse
   protected originalAttributes = {} as WebsocketJsonResponse

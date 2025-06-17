@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewTeam, TeamJsonResponse, TeamsTable, TeamUpdate } from '../types/TeamType'
 import type { PersonalAccessTokenModel } from './PersonalAccessToken'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -8,51 +9,9 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface TeamsTable {
-  id: Generated<number>
-  name: string
-  company_name: string
-  email: string
-  billing_email: string
-  status: string
-  description: string
-  path: string
-  is_personal: boolean
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type TeamRead = TeamsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type TeamWrite = Omit<TeamsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface TeamResponse {
-  data: TeamJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface TeamJsonResponse extends Omit<Selectable<TeamRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewTeam = Insertable<TeamWrite>
-export type TeamUpdate = Updateable<TeamWrite>
-
 export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> {
   private readonly hidden: Array<keyof TeamJsonResponse> = []
-  private readonly fillable: Array<keyof TeamJsonResponse> = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid', 'user_id']
+  private readonly fillable: Array<keyof TeamJsonResponse> = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'user_id']
   private readonly guarded: Array<keyof TeamJsonResponse> = []
   protected attributes = {} as TeamJsonResponse
   protected originalAttributes = {} as TeamJsonResponse

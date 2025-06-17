@@ -1,59 +1,17 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewOauthClient, OauthClientJsonResponse, OauthClientsTable, OauthClientUpdate } from '../types/OauthClientType'
 import type { OauthAccessTokenModel } from './OauthAccessToken'
 import type { UserModel } from './User'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface OauthClientsTable {
-  id: Generated<number>
-  user_id: number
-  name: string
-  secret: string
-  provider?: string
-  redirect: string
-  personal_access_client: boolean
-  password_client: boolean
-  revoked: boolean
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type OauthClientRead = OauthClientsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type OauthClientWrite = Omit<OauthClientsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface OauthClientResponse {
-  data: OauthClientJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface OauthClientJsonResponse extends Omit<Selectable<OauthClientRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewOauthClient = Insertable<OauthClientWrite>
-export type OauthClientUpdate = Updateable<OauthClientWrite>
-
 export class OauthClientModel extends BaseOrm<OauthClientModel, OauthClientsTable, OauthClientJsonResponse> {
   private readonly hidden: Array<keyof OauthClientJsonResponse> = []
-  private readonly fillable: Array<keyof OauthClientJsonResponse> = ['name', 'secret', 'provider', 'redirect', 'personal_access_client', 'password_client', 'revoked', 'uuid']
+  private readonly fillable: Array<keyof OauthClientJsonResponse> = ['name', 'secret', 'provider', 'redirect', 'personal_access_client', 'password_client', 'revoked']
   private readonly guarded: Array<keyof OauthClientJsonResponse> = []
   protected attributes = {} as OauthClientJsonResponse
   protected originalAttributes = {} as OauthClientJsonResponse

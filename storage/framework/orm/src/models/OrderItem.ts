@@ -1,56 +1,17 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewOrderItem, OrderItemJsonResponse, OrderItemsTable, OrderItemUpdate } from '../types/OrderItemType'
 import type { OrderModel } from './Order'
 import type { ProductModel } from './Product'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface OrderItemsTable {
-  id: Generated<number>
-  order_id: number
-  product_id: number
-  quantity: number
-  price: number
-  special_instructions?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type OrderItemRead = OrderItemsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type OrderItemWrite = Omit<OrderItemsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface OrderItemResponse {
-  data: OrderItemJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface OrderItemJsonResponse extends Omit<Selectable<OrderItemRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewOrderItem = Insertable<OrderItemWrite>
-export type OrderItemUpdate = Updateable<OrderItemWrite>
-
 export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, OrderItemJsonResponse> {
   private readonly hidden: Array<keyof OrderItemJsonResponse> = []
-  private readonly fillable: Array<keyof OrderItemJsonResponse> = ['quantity', 'price', 'special_instructions', 'uuid', 'order_id']
+  private readonly fillable: Array<keyof OrderItemJsonResponse> = ['quantity', 'price', 'special_instructions', 'order_id']
   private readonly guarded: Array<keyof OrderItemJsonResponse> = []
   protected attributes = {} as OrderItemJsonResponse
   protected originalAttributes = {} as OrderItemJsonResponse

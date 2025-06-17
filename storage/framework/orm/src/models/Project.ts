@@ -1,52 +1,15 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewProject, ProjectJsonResponse, ProjectsTable, ProjectUpdate } from '../types/ProjectType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface ProjectsTable {
-  id: Generated<number>
-  name: string
-  description: string
-  url: string
-  status: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type ProjectRead = ProjectsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type ProjectWrite = Omit<ProjectsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface ProjectResponse {
-  data: ProjectJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface ProjectJsonResponse extends Omit<Selectable<ProjectRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewProject = Insertable<ProjectWrite>
-export type ProjectUpdate = Updateable<ProjectWrite>
-
 export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJsonResponse> {
   private readonly hidden: Array<keyof ProjectJsonResponse> = []
-  private readonly fillable: Array<keyof ProjectJsonResponse> = ['name', 'description', 'url', 'status', 'uuid']
+  private readonly fillable: Array<keyof ProjectJsonResponse> = ['name', 'description', 'url', 'status']
   private readonly guarded: Array<keyof ProjectJsonResponse> = []
   protected attributes = {} as ProjectJsonResponse
   protected originalAttributes = {} as ProjectJsonResponse

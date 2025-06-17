@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewPage, PageJsonResponse, PagesTable, PageUpdate } from '../types/PageType'
 import type { AuthorModel } from './Author'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -7,47 +8,6 @@ import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface PagesTable {
-  id: Generated<number>
-  author_id: number
-  title: string
-  template: string
-  views?: number
-  published_at?: Date | string
-  conversions?: number
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type PageRead = PagesTable
-
-// Type for creating/updating model data (created_at is optional)
-export type PageWrite = Omit<PagesTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface PageResponse {
-  data: PageJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface PageJsonResponse extends Omit<Selectable<PageRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewPage = Insertable<PageWrite>
-export type PageUpdate = Updateable<PageWrite>
 
 export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> {
   private readonly hidden: Array<keyof PageJsonResponse> = []

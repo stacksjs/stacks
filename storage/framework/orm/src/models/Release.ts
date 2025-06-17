@@ -1,51 +1,16 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+// soon, these will be auto-imported
+import type { NewRelease, ReleaseJsonResponse, ReleasesTable, ReleaseUpdate } from '../types/ReleaseType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
-// soon, these will be auto-imported
 
 import { BaseOrm } from '../utils/base'
 
-export interface ReleasesTable {
-  id: Generated<number>
-  name: string
-  version: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type ReleaseRead = ReleasesTable
-
-// Type for creating/updating model data (created_at is optional)
-export type ReleaseWrite = Omit<ReleasesTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface ReleaseResponse {
-  data: ReleaseJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface ReleaseJsonResponse extends Omit<Selectable<ReleaseRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewRelease = Insertable<ReleaseWrite>
-export type ReleaseUpdate = Updateable<ReleaseWrite>
-
 export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJsonResponse> {
   private readonly hidden: Array<keyof ReleaseJsonResponse> = []
-  private readonly fillable: Array<keyof ReleaseJsonResponse> = ['version', 'uuid']
+  private readonly fillable: Array<keyof ReleaseJsonResponse> = ['version']
   private readonly guarded: Array<keyof ReleaseJsonResponse> = []
   protected attributes = {} as ReleaseJsonResponse
   protected originalAttributes = {} as ReleaseJsonResponse

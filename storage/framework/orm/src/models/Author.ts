@@ -1,53 +1,15 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { AuthorJsonResponse, AuthorsTable, AuthorUpdate, NewAuthor } from '../types/AuthorType'
 import type { PostModel } from './Post'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface AuthorsTable {
-  id: Generated<number>
-  user_id: number
-  name: string
-  email: string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type AuthorRead = AuthorsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type AuthorWrite = Omit<AuthorsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface AuthorResponse {
-  data: AuthorJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface AuthorJsonResponse extends Omit<Selectable<AuthorRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewAuthor = Insertable<AuthorWrite>
-export type AuthorUpdate = Updateable<AuthorWrite>
 
 export class AuthorModel extends BaseOrm<AuthorModel, AuthorsTable, AuthorJsonResponse> {
   private readonly hidden: Array<keyof AuthorJsonResponse> = []

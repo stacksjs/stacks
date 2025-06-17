@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { LoyaltyRewardJsonResponse, LoyaltyRewardsTable, LoyaltyRewardUpdate, NewLoyaltyReward } from '../types/LoyaltyRewardType'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -8,51 +9,6 @@ import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface LoyaltyRewardsTable {
-  id: Generated<number>
-  product_id: number
-  name: string
-  description?: string
-  points_required: number
-  reward_type: string
-  discount_percentage?: number
-  free_product_id?: string
-  is_active?: boolean
-  expiry_days?: number
-  image_url?: string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type LoyaltyRewardRead = LoyaltyRewardsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type LoyaltyRewardWrite = Omit<LoyaltyRewardsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface LoyaltyRewardResponse {
-  data: LoyaltyRewardJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface LoyaltyRewardJsonResponse extends Omit<Selectable<LoyaltyRewardRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewLoyaltyReward = Insertable<LoyaltyRewardWrite>
-export type LoyaltyRewardUpdate = Updateable<LoyaltyRewardWrite>
 
 export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewardsTable, LoyaltyRewardJsonResponse> {
   private readonly hidden: Array<keyof LoyaltyRewardJsonResponse> = []

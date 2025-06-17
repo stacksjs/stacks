@@ -1,58 +1,17 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewOauthAccessToken, OauthAccessTokenJsonResponse, OauthAccessTokensTable, OauthAccessTokenUpdate } from '../types/OauthAccessTokenType'
 import type { OauthClientModel } from './OauthClient'
 import type { UserModel } from './User'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface OauthAccessTokensTable {
-  id: Generated<number>
-  user_id: number
-  oauth_client_id: number
-  token: string
-  name?: string
-  scopes?: string
-  revoked: boolean
-  expires_at?: Date | string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type OauthAccessTokenRead = OauthAccessTokensTable
-
-// Type for creating/updating model data (created_at is optional)
-export type OauthAccessTokenWrite = Omit<OauthAccessTokensTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface OauthAccessTokenResponse {
-  data: OauthAccessTokenJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface OauthAccessTokenJsonResponse extends Omit<Selectable<OauthAccessTokenRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewOauthAccessToken = Insertable<OauthAccessTokenWrite>
-export type OauthAccessTokenUpdate = Updateable<OauthAccessTokenWrite>
-
 export class OauthAccessTokenModel extends BaseOrm<OauthAccessTokenModel, OauthAccessTokensTable, OauthAccessTokenJsonResponse> {
   private readonly hidden: Array<keyof OauthAccessTokenJsonResponse> = []
-  private readonly fillable: Array<keyof OauthAccessTokenJsonResponse> = ['token', 'name', 'scopes', 'revoked', 'expires_at', 'uuid', 'oauth_client_id', 'user_id']
+  private readonly fillable: Array<keyof OauthAccessTokenJsonResponse> = ['token', 'name', 'scopes', 'revoked', 'expires_at', 'oauth_client_id', 'user_id']
   private readonly guarded: Array<keyof OauthAccessTokenJsonResponse> = []
   protected attributes = {} as OauthAccessTokenJsonResponse
   protected originalAttributes = {} as OauthAccessTokenJsonResponse

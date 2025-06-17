@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewPaymentMethod, PaymentMethodJsonResponse, PaymentMethodsTable, PaymentMethodUpdate } from '../types/PaymentMethodType'
 import type { PaymentTransactionModel } from './PaymentTransaction'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
@@ -9,49 +10,6 @@ import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
-
-export interface PaymentMethodsTable {
-  id: Generated<number>
-  user_id: number
-  type: string
-  last_four: number
-  brand: string
-  exp_month: number
-  exp_year: number
-  is_default?: boolean
-  provider_id?: string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type PaymentMethodRead = PaymentMethodsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type PaymentMethodWrite = Omit<PaymentMethodsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface PaymentMethodResponse {
-  data: PaymentMethodJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface PaymentMethodJsonResponse extends Omit<Selectable<PaymentMethodRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewPaymentMethod = Insertable<PaymentMethodWrite>
-export type PaymentMethodUpdate = Updateable<PaymentMethodWrite>
 
 export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMethodsTable, PaymentMethodJsonResponse> {
   private readonly hidden: Array<keyof PaymentMethodJsonResponse> = []
