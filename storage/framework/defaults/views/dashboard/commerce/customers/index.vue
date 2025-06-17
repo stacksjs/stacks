@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useCustomers } from '../../../../functions/commerce/customers'
 
@@ -7,131 +7,22 @@ useHead({
   title: 'Dashboard - Commerce Customers',
 })
 
-// Sample customers data
-const customers = ref([
-  {
-    id: 1,
-    name: 'John Smith',
-    email: 'john.smith@example.com',
-    phone: '+1 (555) 123-4567',
-    orders: 12,
-    totalSpent: 1249.97,
-    lastOrder: '2023-12-01',
-    status: 'Active',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-  },
-  {
-    id: 2,
-    name: 'Sarah Johnson',
-    email: 'sarah.j@example.com',
-    phone: '+1 (555) 234-5678',
-    orders: 8,
-    totalSpent: 879.92,
-    lastOrder: '2023-12-01',
-    status: 'Active',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-  },
-  {
-    id: 3,
-    name: 'Michael Brown',
-    email: 'mbrown@example.com',
-    phone: '+1 (555) 345-6789',
-    orders: 5,
-    totalSpent: 649.95,
-    lastOrder: '2023-11-30',
-    status: 'Active',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-  },
-  {
-    id: 4,
-    name: 'Emily Davis',
-    email: 'emily.davis@example.com',
-    phone: '+1 (555) 456-7890',
-    orders: 3,
-    totalSpent: 329.97,
-    lastOrder: '2023-11-30',
-    status: 'Active',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-  },
-  {
-    id: 5,
-    name: 'David Wilson',
-    email: 'dwilson@example.com',
-    phone: '+1 (555) 567-8901',
-    orders: 7,
-    totalSpent: 789.93,
-    lastOrder: '2023-11-29',
-    status: 'Active',
-    avatar: 'https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-  },
-  {
-    id: 6,
-    name: 'Jessica Taylor',
-    email: 'jtaylor@example.com',
-    phone: '+1 (555) 678-9012',
-    orders: 2,
-    totalSpent: 159.98,
-    lastOrder: '2023-11-29',
-    status: 'Inactive',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-  },
-  {
-    id: 7,
-    name: 'Robert Martinez',
-    email: 'rmartinez@example.com',
-    phone: '+1 (555) 789-0123',
-    orders: 4,
-    totalSpent: 429.96,
-    lastOrder: '2023-11-28',
-    status: 'Active',
-    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-  },
-  {
-    id: 8,
-    name: 'Jennifer Anderson',
-    email: 'janderson@example.com',
-    phone: '+1 (555) 890-1234',
-    orders: 1,
-    totalSpent: 149.99,
-    lastOrder: '2023-11-28',
-    status: 'Inactive',
-    avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-  },
-  {
-    id: 9,
-    name: 'Christopher Lee',
-    email: 'clee@example.com',
-    phone: '+1 (555) 901-2345',
-    orders: 6,
-    totalSpent: 699.94,
-    lastOrder: '2023-11-27',
-    status: 'Active',
-    avatar: 'https://images.unsplash.com/photo-1513910367299-bce8d8a0ebf6?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-  },
-  {
-    id: 10,
-    name: 'Amanda White',
-    email: 'awhite@example.com',
-    phone: '+1 (555) 012-3456',
-    orders: 3,
-    totalSpent: 279.97,
-    lastOrder: '2023-11-27',
-    status: 'Active',
-    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-  }
-])
-
 // Get customers data and functions from the composable
-const { createCustomer } = useCustomers()
+const { customers, createCustomer, fetchCustomers } = useCustomers()
+
+// Fetch customers on component mount
+onMounted(async () => {
+  await fetchCustomers()
+})
+
+// Available statuses
+const statuses = ['all', 'Active', 'Inactive'] as const
+const statusFilter = ref('all')
+const sortBy = ref('name')
+const sortOrder = ref('asc')
 
 // Filter and sort options
 const searchQuery = ref('')
-const sortBy = ref('name')
-const sortOrder = ref('asc')
-const statusFilter = ref('all')
-
-// Available statuses
-const statuses = ['all', 'Active', 'Inactive']
 
 // Computed filtered and sorted customers
 const filteredCustomers = computed(() => {
@@ -153,12 +44,12 @@ const filteredCustomers = computed(() => {
       let comparison = 0
       if (sortBy.value === 'name') {
         comparison = a.name.localeCompare(b.name)
-      } else if (sortBy.value === 'orders') {
-        comparison = a.orders - b.orders
-      } else if (sortBy.value === 'totalSpent') {
-        comparison = a.totalSpent - b.totalSpent
-      } else if (sortBy.value === 'lastOrder') {
-        comparison = new Date(a.lastOrder).getTime() - new Date(b.lastOrder).getTime()
+      } else if (sortBy.value === 'total_spent') {
+        comparison = (a.total_spent || 0) - (b.total_spent || 0)
+      } else if (sortBy.value === 'last_order') {
+        const dateA = a.last_order ? new Date(a.last_order).getTime() : 0
+        const dateB = b.last_order ? new Date(b.last_order).getTime() : 0
+        comparison = dateA - dateB
       }
 
       return sortOrder.value === 'asc' ? comparison : -comparison
@@ -248,15 +139,14 @@ function closeAddModal(): void {
 
 async function addCustomer(): Promise<void> {
   // First add to local state for immediate UI update
-  const id = Math.max(...customers.value.map(c => c.id)) + 1
+  const id = Math.max(...customers.value.map(c => c.id || 0)) + 1
   const newCustomerData = {
     id,
     name: newCustomer.value.name,
     email: newCustomer.value.email,
     phone: newCustomer.value.phone,
-    orders: 0,
-    totalSpent: 0,
-    lastOrder: new Date().toISOString().split('T')[0] || '',
+    total_spent: 0,
+    last_order: new Date().toISOString().split('T')[0] || '',
     status: newCustomer.value.status,
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
   }
@@ -269,9 +159,8 @@ async function addCustomer(): Promise<void> {
     phone: newCustomer.value.phone,
     total_spent: 0,
     last_order: new Date().toISOString().split('T')[0] || '',
-    status: newCustomer.value.status as string,
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    user_id: 1 // Default user ID, should be replaced with actual user ID in production
+    status: newCustomer.value.status,
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
   }
 
   try {
@@ -327,9 +216,7 @@ async function addCustomer(): Promise<void> {
               v-model="statusFilter"
               class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
             >
-              <option value="all">All Customers</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
+              <option v-for="status in statuses" :value="status">{{ status }}</option>
             </select>
 
             <select
@@ -366,22 +253,10 @@ async function addCustomer(): Promise<void> {
                       </th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Contact</th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('orders')" class="group inline-flex items-center">
-                          Orders
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'orders'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('totalSpent')" class="group inline-flex items-center">
+                        <button @click="toggleSort('total_spent')" class="group inline-flex items-center">
                           Total Spent
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'totalSpent'" :class="[
+                            <div v-if="sortBy === 'total_spent'" :class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
@@ -390,10 +265,10 @@ async function addCustomer(): Promise<void> {
                         </button>
                       </th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('lastOrder')" class="group inline-flex items-center">
+                        <button @click="toggleSort('last_order')" class="group inline-flex items-center">
                           Last Order
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'lastOrder'" :class="[
+                            <div v-if="sortBy === 'last_order'" :class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
@@ -423,13 +298,10 @@ async function addCustomer(): Promise<void> {
                         <div>{{ customer.phone }}</div>
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ customer.orders }}
+                        ${{ (customer.total_spent ?? 0).toFixed(2) }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        ${{ customer.totalSpent.toFixed(2) }}
-                      </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ customer.lastOrder }}
+                        {{ customer.last_order || 'Never' }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm">
                         <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium" :class="getStatusClass(customer.status)">
@@ -567,8 +439,7 @@ async function addCustomer(): Promise<void> {
                         v-model="newCustomer.status"
                         class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
                       >
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
+                        <option v-for="status in statuses" :value="status">{{ status }}</option>
                       </select>
                     </div>
                   </div>

@@ -13,9 +13,10 @@ async function fetchCustomers() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json() as Customers[]
+    const { data } = await response.json() as { data: Customers[] }
 
     if (Array.isArray(data)) {
+      // Update both the storage and the reactive ref
       customers.value = data
       return data
     }
@@ -26,11 +27,12 @@ async function fetchCustomers() {
   }
   catch (error) {
     console.error('Error fetching customers:', error)
-    return []
+    // Return the stored customers if fetch fails
+    return customers.value
   }
 }
 
-async function createCustomer(customer: Customers) {
+async function createCustomer(customer: Omit<Customers, 'id'>) {
   try {
     const response = await fetch(`${baseURL}/commerce/customers`, {
       method: 'POST',
@@ -44,9 +46,10 @@ async function createCustomer(customer: Customers) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as Customers
+    const { data } = await response.json() as { data: Customers }
     if (data) {
-      customers.value.push(data)
+      // Update both the storage and the reactive ref
+      customers.value = [...customers.value, data]
       return data
     }
     return null
@@ -71,11 +74,16 @@ async function updateCustomer(customer: Customers) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as Customers
+    const { data } = await response.json() as { data: Customers }
     if (data) {
+      // Update both the storage and the reactive ref
       const index = customers.value.findIndex(c => c.id === customer.id)
       if (index !== -1) {
-        customers.value[index] = data
+        customers.value = [
+          ...customers.value.slice(0, index),
+          data,
+          ...customers.value.slice(index + 1)
+        ]
       }
       return data
     }
@@ -97,11 +105,8 @@ async function deleteCustomer(id: number) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const index = customers.value.findIndex(c => c.id === id)
-    if (index !== -1) {
-      customers.value.splice(index, 1)
-    }
-
+    // Update both the storage and the reactive ref
+    customers.value = customers.value.filter(c => c.id !== id)
     return true
   }
   catch (error) {
