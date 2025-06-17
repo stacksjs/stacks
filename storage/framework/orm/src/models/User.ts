@@ -2,6 +2,7 @@ import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { NewUser, UserJsonResponse, UsersTable, UserUpdate } from '../types/UserType'
 import type { AuthorModel } from './Author'
+import type { CustomerModel } from './Customer'
 import type { DriverModel } from './Driver'
 import type { OauthAccessTokenModel } from './OauthAccessToken'
 import type { PersonalAccessTokenModel } from './PersonalAccessToken'
@@ -177,6 +178,10 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
   get oauth_access_tokens(): OauthAccessTokenModel[] | [] {
     return this.attributes.oauth_access_tokens
+  }
+
+  get customers(): CustomerModel[] | [] {
+    return this.attributes.customers
   }
 
   get id(): number {
@@ -859,6 +864,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
       personal_access_tokens: this.personal_access_tokens,
       oauth_access_tokens: this.oauth_access_tokens,
+      customers: this.customers,
       ...this.customColumns,
       github_id: this.github_id,
       public_passkey: this.public_passkey,

@@ -88,7 +88,6 @@ export interface MigrationOptions {
 }
 
 export async function resetDatabase(): Promise<Ok<string, never>> {
-  console.log('resetDatabase', getDriver())
   if (getDriver() === 'sqlite')
     return await resetSqliteDatabase()
   if (getDriver() === 'mysql')

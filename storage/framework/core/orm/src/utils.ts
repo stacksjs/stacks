@@ -1277,7 +1277,7 @@ export async function generateKyselyTypes(): Promise<void> {
     const words = tableName.split('_')
     const pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}`
 
-    text += `import type { ${pivotFormatted}Table } from '../src/models/${modelName}'\n`
+    text += `import type { ${pivotFormatted}Table } from '../src/types/${modelName}Type'\n`
   }
 
   text += `import type { Generated } from 'kysely'\n\n`
@@ -1293,7 +1293,7 @@ export async function generateKyselyTypes(): Promise<void> {
       pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
 
       text += `export interface ${pivotFormatted} {
-        id?: number
+        id: Generated<number>
         ${pivotTable.firstForeignKey}: number
         ${pivotTable.secondForeignKey}: number
       }\n\n`

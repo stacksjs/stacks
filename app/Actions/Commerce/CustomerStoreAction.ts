@@ -13,7 +13,7 @@ export default new Action({
     await request.validate()
 
     const data = {
-      user_id: request.get<number>('user_id'),
+      user_id: 1,
       name: request.get('name'),
       email: request.get('email'),
       phone: request.get('phone'),

@@ -736,6 +736,7 @@ interface RequestDataCustomer {
   last_order: string
   status: string[] | string
   avatar: string
+  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -751,6 +752,7 @@ export interface CustomerRequestType extends Request {
   last_order: string
   status: string[] | string
   avatar: string
+  user_id: number
   created_at?: string
   updated_at?: string
 }
