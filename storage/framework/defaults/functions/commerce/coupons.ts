@@ -4,7 +4,7 @@ import { useStorage } from '@vueuse/core'
 // Create a persistent coupons array using VueUse's useStorage
 const coupons = useStorage<Coupons[]>('coupons', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all coupons
 async function fetchCoupons() {

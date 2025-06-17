@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
+import { useCoupons } from '../../../../functions/commerce/coupons'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -109,69 +110,13 @@ const monthlyChartData = computed(() => {
 const timeRange = ref('Last 30 days')
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
-// Sample coupons data
-const coupons = ref<Coupon[]>([
-  {
-    id: 1,
-    code: 'WELCOME20',
-    type: 'Percentage',
-    value: 20,
-    minPurchase: 50,
-    maxUses: 1000,
-    usedCount: 345,
-    startDate: '2023-10-01',
-    endDate: '2023-12-31',
-    status: 'Active'
-  },
-  {
-    id: 2,
-    code: 'SUMMER10',
-    type: 'Percentage',
-    value: 10,
-    minPurchase: 0,
-    maxUses: 500,
-    usedCount: 210,
-    startDate: '2023-06-01',
-    endDate: '2023-08-31',
-    status: 'Expired'
-  },
-  {
-    id: 3,
-    code: 'FREESHIP',
-    type: 'Fixed',
-    value: 15,
-    minPurchase: 75,
-    maxUses: 2000,
-    usedCount: 876,
-    startDate: '2023-01-01',
-    endDate: '2023-12-31',
-    status: 'Active'
-  },
-  {
-    id: 4,
-    code: 'HOLIDAY25',
-    type: 'Percentage',
-    value: 25,
-    minPurchase: 100,
-    maxUses: 1500,
-    usedCount: 0,
-    startDate: '2023-12-15',
-    endDate: '2023-12-25',
-    status: 'Scheduled'
-  },
-  {
-    id: 5,
-    code: 'FLASH50',
-    type: 'Percentage',
-    value: 50,
-    minPurchase: 200,
-    maxUses: 100,
-    usedCount: 100,
-    startDate: '2023-11-24',
-    endDate: '2023-11-27',
-    status: 'Expired'
-  }
-])
+// Get coupons data and functions from the composable
+const { coupons, createCoupon, fetchCoupons } = useCoupons()
+
+// Fetch coupons on component mount
+onMounted(async () => {
+  await fetchCoupons()
+})
 
 // Filter and sort options
 const searchQuery = ref('')
@@ -185,7 +130,7 @@ const statuses = ['all', 'Active', 'Expired', 'Scheduled']
 // Computed coupon statistics
 const couponStats = computed(() => {
   const activeCoupons = coupons.value.filter(c => c.status === 'Active').length
-  const totalRedemptions = coupons.value.reduce((sum, c) => sum + c.usedCount, 0)
+  const totalRedemptions = coupons.value.reduce((sum, c) => sum + c.used_count, 0)
 
   // Calculate total discount amount (simplified calculation)
   const totalDiscountAmount = coupons.value.reduce((sum, c) => {
@@ -198,7 +143,7 @@ const couponStats = computed(() => {
       discountPerUse = c.value
     }
 
-    return sum + (discountPerUse * c.usedCount)
+    return sum + (discountPerUse * c.used_count)
   }, 0)
 
   const avgDiscountPerOrder = totalRedemptions > 0
@@ -232,10 +177,10 @@ const filteredCoupons = computed(() => {
         comparison = a.code.localeCompare(b.code)
       } else if (sortBy.value === 'value') {
         comparison = a.value - b.value
-      } else if (sortBy.value === 'usedCount') {
-        comparison = a.usedCount - b.usedCount
-      } else if (sortBy.value === 'endDate') {
-        comparison = new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
+      } else if (sortBy.value === 'used_count') {
+        comparison = a.used_count - b.used_count
+      } else if (sortBy.value === 'end_date') {
+        comparison = new Date(a.end_date).getTime() - new Date(b.end_date).getTime()
       }
 
       return sortOrder.value === 'asc' ? comparison : -comparison
@@ -273,38 +218,26 @@ const nextMonth = new Date()
 nextMonth.setMonth(nextMonth.getMonth() + 1)
 const nextMonthDate = nextMonth.toISOString().split('T')[0] as string
 
-interface Coupon {
-  id: number;
-  code: string;
-  type: string;
-  value: number;
-  minPurchase: number;
-  maxUses: number;
-  usedCount: number;
-  startDate: string;
-  endDate: string;
-  status: string;
-}
-
 interface NewCoupon {
-  code: string;
-  type: string;
-  value: number;
-  minPurchase: number;
-  maxUses: number;
-  startDate: string;
-  endDate: string;
-  status: string;
+  code: string
+  type: string
+  value: number
+  min_purchase: number
+  max_uses: number
+  start_date: string
+  end_date: string
+  status: string
+  user_id?: number
 }
 
 const newCoupon = ref<NewCoupon>({
   code: '',
   type: 'Percentage',
   value: 10,
-  minPurchase: 0,
-  maxUses: 100,
-  startDate: today,
-  endDate: nextMonthDate,
+  min_purchase: 0,
+  max_uses: 100,
+  start_date: today,
+  end_date: nextMonthDate,
   status: 'Active'
 })
 
@@ -313,10 +246,10 @@ function openAddModal(): void {
     code: '',
     type: 'Percentage',
     value: 10,
-    minPurchase: 0,
-    maxUses: 100,
-    startDate: today,
-    endDate: nextMonthDate,
+    min_purchase: 0,
+    max_uses: 100,
+    start_date: today,
+    end_date: nextMonthDate,
     status: 'Active'
   }
   showAddModal.value = true
@@ -326,23 +259,45 @@ function closeAddModal(): void {
   showAddModal.value = false
 }
 
-function addCoupon(): void {
-  // In a real app, this would send data to the server
-  const id = Math.max(...coupons.value.map(c => c.id)) + 1
-  const newCouponEntry: Coupon = {
+async function addCoupon(): Promise<void> {
+  // First add to local state for immediate UI update
+  const id = Math.max(...coupons.value.map(c => c.id || 0)) + 1
+  const newCouponData = {
     id,
     code: newCoupon.value.code,
     type: newCoupon.value.type,
     value: newCoupon.value.value,
-    minPurchase: newCoupon.value.minPurchase,
-    maxUses: newCoupon.value.maxUses,
-    usedCount: 0,
-    startDate: newCoupon.value.startDate,
-    endDate: newCoupon.value.endDate,
+    min_purchase: newCoupon.value.min_purchase,
+    max_uses: newCoupon.value.max_uses,
+    used_count: 0,
+    start_date: newCoupon.value.start_date,
+    end_date: newCoupon.value.end_date,
     status: newCoupon.value.status
   }
-  coupons.value.push(newCouponEntry)
-  closeAddModal()
+  coupons.value.push(newCouponData)
+
+  // Then send to server
+  const couponData = {
+    code: newCoupon.value.code,
+    type: newCoupon.value.type,
+    value: newCoupon.value.value,
+    min_purchase: newCoupon.value.min_purchase,
+    max_uses: newCoupon.value.max_uses,
+    used_count: 0,
+    start_date: newCoupon.value.start_date,
+    end_date: newCoupon.value.end_date,
+    status: newCoupon.value.status,
+    user_id: 1 // Default user ID, should be replaced with actual user ID in production
+  }
+
+  try {
+    await createCoupon(couponData)
+    closeAddModal()
+  } catch (error) {
+    // If server request fails, remove from local state
+    coupons.value = coupons.value.filter(c => c.id !== id)
+    console.error('Failed to create coupon:', error)
+  }
 }
 </script>
 
@@ -509,10 +464,10 @@ function addCoupon(): void {
                       </th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Min Purchase</th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('usedCount')" class="group inline-flex items-center">
+                        <button @click="toggleSort('used_count')" class="group inline-flex items-center">
                           Usage
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'usedCount'" :class="[
+                            <div v-if="sortBy === 'used_count'" :class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
@@ -521,10 +476,10 @@ function addCoupon(): void {
                         </button>
                       </th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('endDate')" class="group inline-flex items-center">
+                        <button @click="toggleSort('end_date')" class="group inline-flex items-center">
                           Expiry
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'endDate'" :class="[
+                            <div v-if="sortBy === 'end_date'" :class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
@@ -550,13 +505,13 @@ function addCoupon(): void {
                         {{ coupon.type === 'Percentage' ? `${coupon.value}%` : `$${coupon.value.toFixed(2)}` }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ coupon.minPurchase > 0 ? `$${coupon.minPurchase.toFixed(2)}` : 'None' }}
+                        {{ coupon.min_purchase > 0 ? `$${coupon.min_purchase.toFixed(2)}` : 'None' }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ coupon.usedCount }} / {{ coupon.maxUses }}
+                        {{ coupon.used_count }} / {{ coupon.max_uses }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ coupon.endDate }}
+                        {{ coupon.end_date }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm">
                         <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium" :class="getStatusClass(coupon.status)">
@@ -656,7 +611,7 @@ function addCoupon(): void {
                           <input
                             type="number"
                             id="min-purchase"
-                            v-model="newCoupon.minPurchase"
+                            v-model="newCoupon.min_purchase"
                             class="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
                           />
                         </div>
@@ -669,7 +624,7 @@ function addCoupon(): void {
                         <input
                           type="number"
                           id="max-uses"
-                          v-model="newCoupon.maxUses"
+                          v-model="newCoupon.max_uses"
                           class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
                         />
                       </div>
@@ -683,7 +638,7 @@ function addCoupon(): void {
                         <input
                           type="date"
                           id="start-date"
-                          v-model="newCoupon.startDate"
+                          v-model="newCoupon.start_date"
                           class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
                         />
                       </div>
@@ -695,7 +650,7 @@ function addCoupon(): void {
                         <input
                           type="date"
                           id="end-date"
-                          v-model="newCoupon.endDate"
+                          v-model="newCoupon.end_date"
                           class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
                         />
                       </div>
