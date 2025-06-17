@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
 import {
@@ -14,6 +14,7 @@ import {
   Legend,
   Filler,
 } from 'chart.js'
+import { useGiftCards } from '../../../../functions/commerce/gift-cards'
 
 ChartJS.register(
   CategoryScale,
@@ -29,6 +30,14 @@ ChartJS.register(
 
 useHead({
   title: 'Dashboard - Commerce Gift Cards',
+})
+
+// Get gift cards data and functions from the composable
+const { giftCards, createGiftCard, fetchGiftCards } = useGiftCards()
+
+// Fetch gift cards on component mount
+onMounted(async () => {
+  await fetchGiftCards()
 })
 
 // Chart options
@@ -109,20 +118,6 @@ const monthlyChartData = computed(() => {
 const timeRange = ref('Last 30 days')
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
-// Define gift card type
-interface GiftCard {
-  id: number
-  code: string
-  initialValue: number
-  currentBalance: number
-  recipient: string
-  email: string
-  purchasedBy: string
-  purchaseDate: string
-  expiryDate: string
-  status: string
-}
-
 // Define new gift card type
 interface NewGiftCard {
   code: string
@@ -131,70 +126,6 @@ interface NewGiftCard {
   email: string
   expiryDate: string
 }
-
-// Sample gift cards data
-const giftCards = ref<GiftCard[]>([
-  {
-    id: 1,
-    code: 'GFT-1234-5678-9ABC',
-    initialValue: 100,
-    currentBalance: 75.50,
-    recipient: 'John Smith',
-    email: 'john.smith@example.com',
-    purchasedBy: 'Sarah Johnson',
-    purchaseDate: '2023-11-15',
-    expiryDate: '2024-11-15',
-    status: 'Active'
-  },
-  {
-    id: 2,
-    code: 'GFT-2345-6789-ABCD',
-    initialValue: 50,
-    currentBalance: 50,
-    recipient: 'Emily Davis',
-    email: 'emily.davis@example.com',
-    purchasedBy: 'Michael Brown',
-    purchaseDate: '2023-11-20',
-    expiryDate: '2024-11-20',
-    status: 'Active'
-  },
-  {
-    id: 3,
-    code: 'GFT-3456-789A-BCDE',
-    initialValue: 200,
-    currentBalance: 0,
-    recipient: 'David Wilson',
-    email: 'dwilson@example.com',
-    purchasedBy: 'Jessica Taylor',
-    purchaseDate: '2023-10-05',
-    expiryDate: '2024-10-05',
-    status: 'Used'
-  },
-  {
-    id: 4,
-    code: 'GFT-4567-89AB-CDEF',
-    initialValue: 75,
-    currentBalance: 75,
-    recipient: 'Robert Martinez',
-    email: 'rmartinez@example.com',
-    purchasedBy: 'Jennifer Anderson',
-    purchaseDate: '2023-11-25',
-    expiryDate: '2024-11-25',
-    status: 'Active'
-  },
-  {
-    id: 5,
-    code: 'GFT-5678-9ABC-DEFG',
-    initialValue: 150,
-    currentBalance: 32.75,
-    recipient: 'Christopher Lee',
-    email: 'clee@example.com',
-    purchasedBy: 'Amanda White',
-    purchaseDate: '2023-09-10',
-    expiryDate: '2024-09-10',
-    status: 'Active'
-  }
-])
 
 // Filter and sort options
 const searchQuery = ref('')
@@ -211,8 +142,8 @@ const giftCardStats = computed(() => {
   const totalGiftCards = giftCards.value.length
 
   // Calculate total initial value and current balance
-  const totalInitialValue = giftCards.value.reduce((sum, card) => sum + card.initialValue, 0)
-  const totalCurrentBalance = giftCards.value.reduce((sum, card) => sum + card.currentBalance, 0)
+  const totalInitialValue = giftCards.value.reduce((sum, card) => sum + card.initial_balance, 0)
+  const totalCurrentBalance = giftCards.value.reduce((sum, card) => sum + card.current_balance, 0)
 
   // Calculate amount redeemed
   const totalRedeemed = totalInitialValue - totalCurrentBalance
@@ -239,8 +170,8 @@ const filteredGiftCards = computed(() => {
       // Apply search filter
       const matchesSearch =
         card.code.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        card.recipient.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        card.email.toLowerCase().includes(searchQuery.value.toLowerCase())
+        card.recipient_name?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        card.recipient_email?.toLowerCase().includes(searchQuery.value.toLowerCase())
 
       // Apply status filter
       const matchesStatus = statusFilter.value === 'all' || card.status === statusFilter.value
@@ -250,14 +181,14 @@ const filteredGiftCards = computed(() => {
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy.value === 'purchaseDate') {
-        comparison = new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime()
-      } else if (sortBy.value === 'expiryDate') {
-        comparison = new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
-      } else if (sortBy.value === 'initialValue') {
-        comparison = a.initialValue - b.initialValue
-      } else if (sortBy.value === 'currentBalance') {
-        comparison = a.currentBalance - b.currentBalance
+      if (sortBy.value === 'pur') {
+        comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      } else if (sortBy.value === 'expiry_date') {
+        comparison = new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime()
+      } else if (sortBy.value === 'initial_balance') {
+        comparison = a.initial_balance - b.initial_balance
+      } else if (sortBy.value === 'current_balance') {
+        comparison = a.current_balance - b.current_balance
       }
 
       return sortOrder.value === 'asc' ? comparison : -comparison
@@ -289,7 +220,7 @@ function getStatusClass(status: string): string {
 }
 
 // Define global date variables
-const currentDate = new Date().toISOString().split('T')[0] as string
+// const currentDate = new Date().toISOString().split('T')[0] as string
 const oneYearFromNow = new Date()
 oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
 const futureDate = oneYearFromNow.toISOString().split('T')[0] as string
@@ -345,29 +276,26 @@ function generateGiftCardCode(): string {
   return code
 }
 
-function addGiftCard(): void {
-  // In a real app, this would send data to the server
-  const id = Math.max(...giftCards.value.map(c => c.id)) + 1
+async function addGiftCard(): Promise<void> {
+  const newGiftCardData = {
+    code: newGiftCard.value.code,
+    initial_balance: newGiftCard.value.initialValue,
+    current_balance: newGiftCard.value.initialValue,
+    customer_id: 1, // TODO: Get from auth
+    status: 'Active',
+    recipient_email: newGiftCard.value.email,
+    recipient_name: newGiftCard.value.recipient,
+    expiry_date: new Date(newGiftCard.value.expiryDate).getTime(),
+    is_active: true,
+    is_digital: true
+  }
 
-  // Ensure we have non-null values with default values
-  const code = newGiftCard.value.code || generateGiftCardCode()
-  const recipient = newGiftCard.value.recipient || 'Anonymous'
-  const email = newGiftCard.value.email || ''
-  const expiryDate = newGiftCard.value.expiryDate || futureDate
-
-  giftCards.value.push({
-    id,
-    code,
-    initialValue: newGiftCard.value.initialValue,
-    currentBalance: newGiftCard.value.initialValue,
-    recipient,
-    email,
-    purchasedBy: 'Current User', // In a real app, this would be the logged-in user
-    purchaseDate: currentDate,
-    expiryDate,
-    status: 'Active'
-  })
-  closeAddModal()
+  try {
+    await createGiftCard(newGiftCardData)
+    closeAddModal()
+  } catch (error) {
+    console.error('Failed to create gift card:', error)
+  }
 }
 </script>
 
@@ -571,20 +499,20 @@ function addGiftCard(): void {
                         {{ card.code }}
                       </td>
                       <td class="px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        <div>{{ card.recipient }}</div>
-                        <div class="text-xs text-gray-400">{{ card.email }}</div>
+                        <div>{{ card.recipient_name }}</div>
+                        <div class="text-xs text-gray-400">{{ card.recipient_email }}</div>
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        ${{ card.initialValue.toFixed(2) }}
+                        ${{ card.initial_balance.toFixed(2) }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        ${{ card.currentBalance.toFixed(2) }}
+                        ${{ card.current_balance.toFixed(2) }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ card.purchaseDate }}
+                        {{ card.created_at }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ card.expiryDate }}
+                        {{ card.expiry_date }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm">
                         <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium" :class="getStatusClass(card.status)">

@@ -27,7 +27,7 @@ export interface Coupons {
 }
 
 export interface GiftCards {
-  id: number
+  id?: number
   customer_id: number
   code: string
   initial_balance: number
@@ -45,6 +45,7 @@ export interface GiftCards {
   last_used_date?: number
   template_id?: string
   uuid?: string
+  created_at?: string
 }
 
 export interface Orders {
