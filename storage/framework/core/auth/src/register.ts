@@ -5,14 +5,14 @@ import { User } from '@stacksjs/orm'
 import { makeHash } from '@stacksjs/security'
 import { Auth } from './authentication'
 
-export async function register(credentials: NewUser): Promise<{ token: AuthToken } | null> {
+export async function register(credentials: NewUser): Promise<{ token: AuthToken }> {
   const { email, password, name } = credentials
 
   // Check if user already exists
   const existingUser = await User.where('email', '=', email).first()
 
   if (existingUser)
-    return null
+    throw new Error(`Email already exists!`)
 
   // Hash the password
   const hashedPassword = await makeHash(password, { algorithm: 'bcrypt' })
@@ -29,13 +29,13 @@ export async function register(credentials: NewUser): Promise<{ token: AuthToken
   const insertId = Number(result?.insertId) || Number(result?.numInsertedOrUpdatedRows)
 
   if (!insertId)
-    return null
+    throw new Error('Failed to create user')
 
   // Get the created user
   const user = await User.find(insertId)
 
   if (!user)
-    return null
+    throw new Error('Failed to retrieve created user')
 
   // Create and return the authentication token
   return { token: await Auth.createToken(user, 'user-auth-token') }

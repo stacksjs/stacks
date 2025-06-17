@@ -279,7 +279,7 @@ export async function fetchTables(): Promise<string[]> {
   return tables
 }
 
-function getUpvoteTableName(model: Model, tableName: string): string | undefined {
+export function getUpvoteTableName(model: Model, tableName: string): string | undefined {
   const defaultTable = `${tableName}_likes`
   const traits = model.traits
 

@@ -454,7 +454,7 @@ export function getFillableAttributes(model: Model, otherModelRelations: Relatio
 
   const useBillable = typeof model.traits?.billable === 'object' || typeof model.traits?.billable === 'boolean'
   const usePasskey = typeof model.traits?.useAuth === 'object' ? model.traits?.useAuth.usePasskey : false
-  const useUuid = typeof model.traits?.useUuid || false
+  const useUuid = model.traits?.useUuid || false
 
   if (useBillable)
     additionalCols.push('stripe_id')
@@ -1511,7 +1511,8 @@ async function writeModelOrmImports(modelFiles: string[]): Promise<void> {
     const modelName = getModelName(model, modelFile)
     const tableName = getTableName(model, modelFile)
 
-    ormImportString += `export { default as ${modelName}, type ${modelName}JsonResponse, ${modelName}Model, type ${pascalCase(tableName)}Table, type New${modelName}, type ${modelName}Update } from './types/${modelName}ModelType'\n\n`
+    ormImportString += `export { type ${modelName}JsonResponse, type ${pascalCase(tableName)}Table, type New${modelName}, type ${modelName}ModelType, type ${modelName}Update } from './types/${modelName}Type'\n\n`
+    ormImportString += `export { default as ${modelName} } from './models/${modelName}'\n\n`
   }
 
   const file = Bun.file(path.frameworkPath(`orm/src/index.ts`))
@@ -1651,7 +1652,7 @@ export interface ${formattedTableName}Table {
   }
 
   // Add common fields
-  typeString += `  uuid?: string
+  typeString += `
   created_at?: string
   updated_at?: string
 }`

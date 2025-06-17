@@ -16,6 +16,7 @@ import {
   fetchTables,
   findDifferingKeys,
   getLastMigrationFields,
+  getUpvoteTableName,
   isArrayEqual,
   mapFieldTypeToColumnType,
   pluckChanges,
@@ -159,6 +160,7 @@ async function createTableMigration(modelPath: string) {
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSocials = model?.traits?.useSocials && Array.isArray(model.traits.useSocials) && model.traits.useSocials.length > 0
+  const useLikeable = model?.traits?.likeable && Array.isArray(model.traits.likeable) && model.traits.likeable.length > 0
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
 
   const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
@@ -267,6 +269,26 @@ async function createTableMigration(modelPath: string) {
   }
 
   migrationContent += generatePrimaryKeyIndexSQL(tableName)
+
+  // Add upvote table if useLikeable is enabled
+  if (useLikeable) {
+    const upvoteTable = getUpvoteTableName(model, tableName)
+    if (upvoteTable) {
+      migrationContent += `\n  // Create upvote table\n`
+      migrationContent += `  await db.schema\n`
+      migrationContent += `    .createTable('${upvoteTable}')\n`
+      migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
+      migrationContent += `    .addColumn('${tableName}_id', 'integer', col => col.notNull())\n`
+      migrationContent += `    .addColumn('user_id', 'integer', col => col.notNull())\n`
+      migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql\`CURRENT_TIMESTAMP\`))\n`
+      migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
+      migrationContent += `    .execute()\n\n`
+      migrationContent += `  // Add indexes for upvote table\n`
+      migrationContent += `  await db.schema.createIndex('${upvoteTable}_${tableName}_id_index').on('${upvoteTable}').column('${tableName}_id').execute()\n`
+      migrationContent += `  await db.schema.createIndex('${upvoteTable}_user_id_index').on('${upvoteTable}').column('user_id').execute()\n`
+      migrationContent += `  await db.schema.createIndex('${upvoteTable}_id_index').on('${upvoteTable}').column('id').execute()\n`
+    }
+  }
 
   migrationContent += `}\n`
 

@@ -165,7 +165,6 @@ export async function generateModelString(
         }
       `
 
-    // eslint-disable-next-line unused-imports/no-unused-vars
     thisSoftDeleteStatementsUpdateFrom += `if (this.softDeletes) {
         return await DB.instance.updateTable('${tableName}')
         .set({
@@ -1723,7 +1722,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     ${mittDeleteFindStatement}
-    ${instanceSoftDeleteStatements}
+    ${thisSoftDeleteStatementsUpdateFrom}
     ${mittDeleteStatement}
 
     const deleted = await DB.instance.deleteFrom('${tableName}')
