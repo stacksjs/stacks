@@ -20,6 +20,25 @@ export const dashboardConfig: ViteConfig = {
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
 
+  build: {
+    rollupOptions: {
+      external: [
+        'fs',
+        'node:fs',
+        'node:fs/promises',
+        'node:module',
+        'node:path',
+        'node:process',
+        'node:url',
+        'node:assert',
+        'node:v8',
+        'node:util',
+        '@iconify/utils',
+        '@antfu/install-pkg',
+      ],
+    },
+  },
+
   assetsInclude: [p.publicPath('**/*'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
 
   server: {
@@ -41,7 +60,6 @@ export const dashboardConfig: ViteConfig = {
       extensions: ['.stx', '.vue', '.md'],
       dts: p.frameworkPath('types/dashboard-router.d.ts'),
       routesFolder: [p.resourcesPath('views/dashboard'), p.frameworkPath('defaults/views/dashboard')],
-      logs: config.app.debug || false,
     }),
 
     layouts({

@@ -4,8 +4,8 @@ import { ViteSSG } from 'vite-ssg'
 import { routes } from 'vue-router/auto-routes'
 import App from './App.vue'
 import '@unocss/reset/tailwind.css'
-import 'unocss'
-import '../../../../../resources/assets/styles/main.css'
+import 'uno.css'
+import './styles/main.css'
 
 const pinia = createPinia()
 ViteSSG(

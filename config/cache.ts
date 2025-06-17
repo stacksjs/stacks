@@ -1,6 +1,8 @@
 import type { CacheConfig } from '@stacksjs/types'
 import { env } from '@stacksjs/env'
 
+console.log(env.AWS_ACCESS_KEY_ID)
+
 /**
  * **Cache Configuration**
  *

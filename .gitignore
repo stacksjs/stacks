@@ -5,7 +5,7 @@ node_modules
 .cache
 temp
 .temp
-.env*
+.env
 *.local
 updates
 tests/unit/coverage

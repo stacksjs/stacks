@@ -1,0 +1,58 @@
+@import './markdown.css';
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+html.dark {
+  background: #121212;
+  color-scheme: dark;
+}
+
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: rgb(13,148,136);
+  opacity: 0.75;
+  position: fixed;
+  z-index: 1031;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+}
+
+code {
+  @apply rounded-lg !important
+}
+
+.table-responsive {
+  position: static !important;
+  }
+
+.table-responsive{
+  overflow-y: visible !important;
+}
+
+textarea {
+  @apply resize-none;
+}
+
+.primary-button {
+  @apply rounded-lg bg-blue-600 px-3.5 py-1.5 text-sm transition duration-150 ease-in-out font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600;
+}
+
+.secondary-button {
+  @apply rounded-lg bg-white px-3.5 py-1.5 text-sm dark:bg-gray-800 dark:text-gray-100 dark-hover:bg-gray-700 font-semibold transition ease-in-out duration-150 text-blue-900 shadow-sm border border-gray-300 hover:bg-blue-gray-50;
+}
+/* textarea {
+  background: #1c1c1c !important;
+  color: #FFFFFF !important;
+} */
+

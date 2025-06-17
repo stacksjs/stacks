@@ -1042,7 +1042,6 @@ import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { generateTwoFactorSecret } from '@stacksjs/auth'
 import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { cache } from '@stacksjs/cache'
 import { randomUUIDv7 } from 'bun'
 import type { ${modelName}ModelType, ${modelName}JsonResponse, New${modelName}, ${modelName}Update, ${pascalCase(tableName)}Table } from '../types/${modelName}Type'
 ${paymentImports}
