@@ -41,20 +41,6 @@ export type EnvConfig = Partial<Record<EnvKey, EnvValueConfig>>
 
 type EnvMap = Record<string, string>
 
-type TypeFromString<T extends string> = T extends 'string'
-  ? string
-  : T extends 'number'
-    ? number
-    : T extends 'boolean'
-      ? boolean
-      : T extends 'enum'
-        ? string
-        : never
-
-type Infer<T extends Record<string, string>> = {
-  [K in keyof T]: TypeFromString<T[K]>
-}
-
 const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
   if (typeof value === 'object' && value !== null && 'validation' in value) {
     acc[key] = (value as EnvValueConfig).validation.name

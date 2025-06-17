@@ -10,8 +10,6 @@ import { db } from '@stacksjs/database'
 export async function store(data: NewCoupon): Promise<CouponJsonResponse | undefined> {
   const couponData: NewCoupon = data
 
-  console.log('couponData', couponData)
-
   try {
     // Insert the coupon record
     const createdCoupon = await db
