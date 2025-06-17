@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'code', 'discountType', 'discountValue', 'isActive', 'startDate', 'endDate'],
+      displayable: ['id', 'code', 'discountType', 'discountValue', 'startDate', 'endDate'],
       searchable: ['code', 'description', 'discountType'],
       sortable: ['createdAt', 'startDate', 'endDate', 'discountValue', 'usageCount'],
-      filterable: ['discountType', 'isActive'],
+      filterable: ['discountType'],
     },
 
     useSeeder: {
@@ -106,14 +106,14 @@ export default {
       factory: faker => faker.helpers.maybe(() => faker.string.uuid(), { probability: 0.3 }),
     },
 
-    isActive: {
+    status: {
       required: false,
       order: 8,
       fillable: true,
       validation: {
-        rule: schema.boolean(),
+        rule: schema.enum(['active', 'scheduled']),
       },
-      factory: faker => faker.datatype.boolean({ probability: 0.8 }),
+      factory: faker => faker.helpers.arrayElement(['active', 'scheduled']),
     },
 
     usageLimit: {

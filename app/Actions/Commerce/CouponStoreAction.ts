@@ -12,7 +12,9 @@ export default new Action({
   async handle(request: CouponRequestType) {
     await request.validate()
 
-    const model = await coupons.store(request)
+    const data = request.all()
+
+    const model = await coupons.store(data)
 
     return response.json(model)
   },

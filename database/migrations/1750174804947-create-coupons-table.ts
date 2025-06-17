@@ -13,7 +13,7 @@ export async function up(db: Database<any>) {
     .addColumn('min_order_amount', 'integer')
     .addColumn('max_discount_amount', 'integer')
     .addColumn('free_product_id', 'varchar(255)')
-    .addColumn('is_active', 'boolean')
+    .addColumn('status', sql`enum('active', 'scheduled')`)
     .addColumn('usage_limit', 'integer')
     .addColumn('usage_count', 'integer')
     .addColumn('start_date', 'date', col => col.notNull())

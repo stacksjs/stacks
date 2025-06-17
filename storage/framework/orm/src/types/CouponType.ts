@@ -10,7 +10,7 @@ export interface CouponsTable {
   min_order_amount?: number
   max_discount_amount?: number
   free_product_id?: string
-  is_active?: boolean
+  status?: string | string[]
   usage_limit?: number
   usage_count?: number
   start_date: Date | string
@@ -62,8 +62,8 @@ export interface CouponModelType {
   set maxDiscountAmount(value: number)
   get freeProductId(): string | undefined
   set freeProductId(value: string)
-  get isActive(): boolean | undefined
-  set isActive(value: boolean)
+  get status(): string | string[] | undefined
+  set status(value: string | string[])
   get usageLimit(): number | undefined
   set usageLimit(value: number)
   get usageCount(): number | undefined

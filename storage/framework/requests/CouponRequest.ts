@@ -20,7 +20,7 @@ interface RequestDataCoupon {
   min_order_amount: number
   max_discount_amount: number
   free_product_id: string
-  is_active: boolean
+  status: string[] | string
   usage_limit: number
   usage_count: number
   start_date: date
@@ -40,7 +40,7 @@ export class CouponRequest extends Request<RequestDataCoupon> implements CouponR
   public min_order_amount = 0
   public max_discount_amount = 0
   public free_product_id = ''
-  public is_active = false
+  public status = []
   public usage_limit = 0
   public usage_count = 0
   public start_date = ''

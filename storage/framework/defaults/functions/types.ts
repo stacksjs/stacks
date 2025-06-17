@@ -15,11 +15,11 @@ export interface Coupons {
   id?: number
   user_id?: number
   code: string
-  type: string
-  value: number
-  min_purchase: number
-  max_uses: number
-  used_count: number
+  discount_type: string
+  discount_value: number
+  min_order_amount: number
+  usage_limit: number
+  usage_count: number
   start_date: string
   end_date: string
   status: string

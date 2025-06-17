@@ -1082,7 +1082,7 @@ interface RequestDataCoupon {
   min_order_amount: number
   max_discount_amount: number
   free_product_id: string
-  is_active: boolean
+  status: string[] | string
   usage_limit: number
   usage_count: number
   start_date: date
@@ -1105,7 +1105,7 @@ export interface CouponRequestType extends Request {
   min_order_amount: number
   max_discount_amount: number
   free_product_id: string
-  is_active: boolean
+  status: string[] | string
   usage_limit: number
   usage_count: number
   start_date: date

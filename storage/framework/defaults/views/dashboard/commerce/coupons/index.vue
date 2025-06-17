@@ -130,20 +130,20 @@ const statuses = ['all', 'Active', 'Expired', 'Scheduled']
 // Computed coupon statistics
 const couponStats = computed(() => {
   const activeCoupons = coupons.value.filter(c => c.status === 'Active').length
-  const totalRedemptions = coupons.value.reduce((sum, c) => sum + c.used_count, 0)
+  const totalRedemptions = coupons.value.reduce((sum, c) => sum + c.usage_count, 0)
 
   // Calculate total discount amount (simplified calculation)
   const totalDiscountAmount = coupons.value.reduce((sum, c) => {
     const avgOrderValue = 100 // Assuming $100 average order value
     let discountPerUse = 0
 
-    if (c.type === 'Percentage') {
-      discountPerUse = avgOrderValue * (c.value / 100)
+    if (c.discount_type === 'Percentage') {
+      discountPerUse = avgOrderValue * (c.discount_value / 100)
     } else {
-      discountPerUse = c.value
+      discountPerUse = c.discount_value
     }
 
-    return sum + (discountPerUse * c.used_count)
+    return sum + (discountPerUse * c.usage_count)
   }, 0)
 
   const avgDiscountPerOrder = totalRedemptions > 0
@@ -175,10 +175,10 @@ const filteredCoupons = computed(() => {
       let comparison = 0
       if (sortBy.value === 'code') {
         comparison = a.code.localeCompare(b.code)
-      } else if (sortBy.value === 'value') {
-        comparison = a.value - b.value
-      } else if (sortBy.value === 'used_count') {
-        comparison = a.used_count - b.used_count
+      } else if (sortBy.value === 'discount_value') {
+        comparison = a.discount_value - b.discount_value
+      } else if (sortBy.value === 'usage_count') {
+        comparison = a.usage_count - b.usage_count
       } else if (sortBy.value === 'end_date') {
         comparison = new Date(a.end_date).getTime() - new Date(b.end_date).getTime()
       }
@@ -220,22 +220,21 @@ const nextMonthDate = nextMonth.toISOString().split('T')[0] as string
 
 interface NewCoupon {
   code: string
-  type: string
-  value: number
-  min_purchase: number
-  max_uses: number
+  discount_type: string
+  discount_value: number
+  min_order_amount: number
+  usage_limit: number
   start_date: string
   end_date: string
   status: string
-  user_id?: number
 }
 
 const newCoupon = ref<NewCoupon>({
   code: '',
-  type: 'Percentage',
-  value: 10,
-  min_purchase: 0,
-  max_uses: 100,
+  discount_type: 'Percentage',
+  discount_value: 10,
+  min_order_amount: 0,
+  usage_limit: 100,
   start_date: today,
   end_date: nextMonthDate,
   status: 'Active'
@@ -244,10 +243,10 @@ const newCoupon = ref<NewCoupon>({
 function openAddModal(): void {
   newCoupon.value = {
     code: '',
-    type: 'Percentage',
-    value: 10,
-    min_purchase: 0,
-    max_uses: 100,
+    discount_type: 'Percentage',
+    discount_value: 10,
+    min_order_amount: 0,
+    usage_limit: 100,
     start_date: today,
     end_date: nextMonthDate,
     status: 'Active'
@@ -265,11 +264,11 @@ async function addCoupon(): Promise<void> {
   const newCouponData = {
     id,
     code: newCoupon.value.code,
-    type: newCoupon.value.type,
-    value: newCoupon.value.value,
-    min_purchase: newCoupon.value.min_purchase,
-    max_uses: newCoupon.value.max_uses,
-    used_count: 0,
+    discount_type: newCoupon.value.discount_type,
+    discount_value: newCoupon.value.discount_value,
+    min_order_amount: newCoupon.value.min_order_amount,
+    usage_limit: newCoupon.value.usage_limit,
+    usage_count: 0,
     start_date: newCoupon.value.start_date,
     end_date: newCoupon.value.end_date,
     status: newCoupon.value.status
@@ -279,15 +278,14 @@ async function addCoupon(): Promise<void> {
   // Then send to server
   const couponData = {
     code: newCoupon.value.code,
-    type: newCoupon.value.type,
-    value: newCoupon.value.value,
-    min_purchase: newCoupon.value.min_purchase,
-    max_uses: newCoupon.value.max_uses,
-    used_count: 0,
+    discount_type: newCoupon.value.discount_type,
+    discount_value: newCoupon.value.discount_value,
+    min_order_amount: newCoupon.value.min_order_amount,
+    usage_limit: newCoupon.value.usage_limit,
+    usage_count: 0,
     start_date: newCoupon.value.start_date,
     end_date: newCoupon.value.end_date,
     status: newCoupon.value.status,
-    user_id: 1 // Default user ID, should be replaced with actual user ID in production
   }
 
   try {
@@ -451,10 +449,10 @@ async function addCoupon(): Promise<void> {
                       </th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Type</th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('value')" class="group inline-flex items-center">
+                        <button @click="toggleSort('discount_value')" class="group inline-flex items-center">
                           Value
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'value'" :class="[
+                            <div v-if="sortBy === 'discount_value'" :class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
@@ -462,12 +460,12 @@ async function addCoupon(): Promise<void> {
                           </span>
                         </button>
                       </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Min Purchase</th>
+                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Min Order Amount</th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('used_count')" class="group inline-flex items-center">
+                        <button @click="toggleSort('usage_count')" class="group inline-flex items-center">
                           Usage
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'used_count'" :class="[
+                            <div v-if="sortBy === 'usage_count'" :class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
@@ -499,16 +497,16 @@ async function addCoupon(): Promise<void> {
                         {{ coupon.code }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ coupon.type }}
+                        {{ coupon.discount_type }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ coupon.type === 'Percentage' ? `${coupon.value}%` : `$${coupon.value.toFixed(2)}` }}
+                        {{ coupon.discount_type === 'Percentage' ? `${coupon.discount_value}%` : `$${coupon.discount_value.toFixed(2)}` }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ coupon.min_purchase > 0 ? `$${coupon.min_purchase.toFixed(2)}` : 'None' }}
+                        {{ coupon.min_order_amount > 0 ? `$${coupon.min_order_amount.toFixed(2)}` : 'None' }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ coupon.used_count }} / {{ coupon.max_uses }}
+                        {{ coupon.usage_count }} / {{ coupon.usage_limit }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
                         {{ coupon.end_date }}
@@ -573,7 +571,7 @@ async function addCoupon(): Promise<void> {
                       <div class="mt-2">
                         <select
                           id="coupon-type"
-                          v-model="newCoupon.type"
+                          v-model="newCoupon.discount_type"
                           class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
                         >
                           <option value="Percentage">Percentage</option>
@@ -587,12 +585,12 @@ async function addCoupon(): Promise<void> {
                       <div class="mt-2">
                         <div class="relative rounded-md shadow-sm">
                           <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <span class="text-gray-500 sm:text-sm">{{ newCoupon.type === 'Percentage' ? '%' : '$' }}</span>
+                            <span class="text-gray-500 sm:text-sm">{{ newCoupon.discount_type === 'Percentage' ? '%' : '$' }}</span>
                           </div>
                           <input
                             type="number"
                             id="coupon-value"
-                            v-model="newCoupon.value"
+                            v-model="newCoupon.discount_value"
                             class="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
                           />
                         </div>
@@ -602,7 +600,7 @@ async function addCoupon(): Promise<void> {
 
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label for="min-purchase" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Min Purchase</label>
+                      <label for="min-order-amount" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Min Order Amount</label>
                       <div class="mt-2">
                         <div class="relative rounded-md shadow-sm">
                           <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -610,8 +608,8 @@ async function addCoupon(): Promise<void> {
                           </div>
                           <input
                             type="number"
-                            id="min-purchase"
-                            v-model="newCoupon.min_purchase"
+                            id="min-order-amount"
+                            v-model="newCoupon.min_order_amount"
                             class="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
                           />
                         </div>
@@ -619,12 +617,12 @@ async function addCoupon(): Promise<void> {
                     </div>
 
                     <div>
-                      <label for="max-uses" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Max Uses</label>
+                      <label for="usage-limit" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Usage Limit</label>
                       <div class="mt-2">
                         <input
                           type="number"
-                          id="max-uses"
-                          v-model="newCoupon.max_uses"
+                          id="usage-limit"
+                          v-model="newCoupon.usage_limit"
                           class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
                         />
                       </div>
