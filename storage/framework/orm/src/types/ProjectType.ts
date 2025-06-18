@@ -9,7 +9,7 @@ export interface ProjectsTable {
   status: string
   created_at?: string
   updated_at?: string
-
+}
 
 export type ProjectRead = ProjectsTable
 
@@ -46,9 +46,10 @@ export interface ProjectModelType {
   get status(): string
   set status(value: string)
 
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => ProjectModelType
   select: (params: (keyof ProjectJsonResponse)[] | RawBuilder<string> | string) => ProjectModelType

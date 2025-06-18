@@ -11,7 +11,7 @@ export interface PaymentProductsTable {
   image?: string
   provider_id?: string
   uuid: string
-
+}
 
 export type PaymentProductRead = PaymentProductsTable
 
@@ -54,8 +54,8 @@ export interface PaymentProductModelType {
   get providerId(): string | undefined
   set providerId(value: string)
   get uuid(): string | undefined
-      set uuid(value: string)
-    
+  set uuid(value: string)
+
   // Static methods
   with: (relations: string[]) => PaymentProductModelType
   select: (params: (keyof PaymentProductJsonResponse)[] | RawBuilder<string> | string) => PaymentProductModelType

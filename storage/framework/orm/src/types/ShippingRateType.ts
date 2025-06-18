@@ -11,7 +11,7 @@ export interface ShippingRatesTable {
   uuid: string
   created_at?: string
   updated_at?: string
-
+}
 
 export type ShippingRateRead = ShippingRatesTable
 
@@ -50,11 +50,12 @@ export interface ShippingRateModelType {
   get rate(): number
   set rate(value: number)
   get uuid(): string | undefined
-      set uuid(value: string)
-    
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  set uuid(value: string)
+
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => ShippingRateModelType
   select: (params: (keyof ShippingRateJsonResponse)[] | RawBuilder<string> | string) => ShippingRateModelType

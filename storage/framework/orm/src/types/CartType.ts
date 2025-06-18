@@ -16,7 +16,7 @@ export interface CartsTable {
   uuid: string
   created_at?: string
   updated_at?: string
-
+}
 
 export type CartRead = CartsTable
 
@@ -65,11 +65,12 @@ export interface CartModelType {
   get appliedCouponId(): string | undefined
   set appliedCouponId(value: string)
   get uuid(): string | undefined
-      set uuid(value: string)
-    
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  set uuid(value: string)
+
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => CartModelType
   select: (params: (keyof CartJsonResponse)[] | RawBuilder<string> | string) => CartModelType

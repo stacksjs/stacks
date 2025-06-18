@@ -1639,7 +1639,6 @@ export async function generateTypeString(
   const useUuid = model.traits?.useUuid
   const useTimestamps = model.traits?.useTimestamps
   const billable = model.traits?.billable
-
   // Generate base table interface
   let typeString = `import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
@@ -1668,6 +1667,8 @@ export interface ${formattedTableName}Table {
     typeString += `  stripe_id?: string\n`
   }
 
+  typeString += `}`
+
   // Generate the model type interface
   let modelTypeInterface = `export interface ${modelName}ModelType {
   // Properties
@@ -1685,20 +1686,28 @@ export interface ${formattedTableName}Table {
 `
   }
 
-  // Add common getters and setters
   if (useUuid) {
     modelTypeInterface += `  get uuid(): string | undefined
-      set uuid(value: string)
-    `
+  set uuid(value: string)
+`
   }
 
   if (useTimestamps) {
     modelTypeInterface += `
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)`
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+`
   }
 
+  if (billable) {
+    modelTypeInterface += `
+  get stripe_id(): string | undefined
+  set stripe_id(value: string)
+`
+  }
+
+  // Add common getters and setters
   modelTypeInterface += `
   // Static methods
   with: (relations: string[]) => ${modelName}ModelType

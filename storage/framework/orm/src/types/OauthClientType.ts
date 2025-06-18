@@ -12,7 +12,7 @@ export interface OauthClientsTable {
   revoked: boolean
   created_at?: string
   updated_at?: string
-
+}
 
 export type OauthClientRead = OauthClientsTable
 
@@ -55,9 +55,10 @@ export interface OauthClientModelType {
   get revoked(): boolean
   set revoked(value: boolean)
 
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => OauthClientModelType
   select: (params: (keyof OauthClientJsonResponse)[] | RawBuilder<string> | string) => OauthClientModelType

@@ -10,7 +10,7 @@ export interface ErrorsTable {
   additional_info?: string
   created_at?: string
   updated_at?: string
-
+}
 
 export type ErrorRead = ErrorsTable
 
@@ -49,9 +49,10 @@ export interface ErrorModelType {
   get additionalInfo(): string | undefined
   set additionalInfo(value: string)
 
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => ErrorModelType
   select: (params: (keyof ErrorJsonResponse)[] | RawBuilder<string> | string) => ErrorModelType

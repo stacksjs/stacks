@@ -15,7 +15,7 @@ export interface PersonalAccessTokensTable {
   is_single_use?: boolean
   created_at?: string
   updated_at?: string
-
+}
 
 export type PersonalAccessTokenRead = PersonalAccessTokensTable
 
@@ -64,9 +64,10 @@ export interface PersonalAccessTokenModelType {
   get isSingleUse(): boolean | undefined
   set isSingleUse(value: boolean)
 
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => PersonalAccessTokenModelType
   select: (params: (keyof PersonalAccessTokenJsonResponse)[] | RawBuilder<string> | string) => PersonalAccessTokenModelType

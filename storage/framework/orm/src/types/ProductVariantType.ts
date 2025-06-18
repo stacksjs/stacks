@@ -11,7 +11,7 @@ export interface ProductVariantsTable {
   uuid: string
   created_at?: string
   updated_at?: string
-
+}
 
 export type ProductVariantRead = ProductVariantsTable
 
@@ -50,11 +50,12 @@ export interface ProductVariantModelType {
   get status(): string | string[]
   set status(value: string | string[])
   get uuid(): string | undefined
-      set uuid(value: string)
-    
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  set uuid(value: string)
+
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => ProductVariantModelType
   select: (params: (keyof ProductVariantJsonResponse)[] | RawBuilder<string> | string) => ProductVariantModelType

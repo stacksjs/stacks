@@ -9,7 +9,7 @@ export interface UsersTable {
   uuid: string
   created_at?: string
   updated_at?: string
-
+}
 
 export type UserRead = UsersTable
 
@@ -44,11 +44,12 @@ export interface UserModelType {
   get password(): string
   set password(value: string)
   get uuid(): string | undefined
-      set uuid(value: string)
-    
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  set uuid(value: string)
+
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => UserModelType
   select: (params: (keyof UserJsonResponse)[] | RawBuilder<string> | string) => UserModelType

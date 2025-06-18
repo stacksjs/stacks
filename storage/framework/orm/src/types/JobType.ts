@@ -10,7 +10,7 @@ export interface JobsTable {
   reserved_at?: Date | string
   created_at?: string
   updated_at?: string
-
+}
 
 export type JobRead = JobsTable
 
@@ -49,9 +49,10 @@ export interface JobModelType {
   get reservedAt(): Date | string | undefined
   set reservedAt(value: Date | string)
 
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => JobModelType
   select: (params: (keyof JobJsonResponse)[] | RawBuilder<string> | string) => JobModelType

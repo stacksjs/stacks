@@ -11,7 +11,7 @@ export interface PaymentMethodsTable {
   is_default?: boolean
   provider_id?: string
   uuid: string
-
+}
 
 export type PaymentMethodRead = PaymentMethodsTable
 
@@ -54,8 +54,8 @@ export interface PaymentMethodModelType {
   get providerId(): string | undefined
   set providerId(value: string)
   get uuid(): string | undefined
-      set uuid(value: string)
-    
+  set uuid(value: string)
+
   // Static methods
   with: (relations: string[]) => PaymentMethodModelType
   select: (params: (keyof PaymentMethodJsonResponse)[] | RawBuilder<string> | string) => PaymentMethodModelType

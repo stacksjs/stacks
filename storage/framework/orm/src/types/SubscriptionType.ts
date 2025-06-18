@@ -15,7 +15,7 @@ export interface SubscriptionsTable {
   ends_at?: Date | string
   last_used_at?: Date | string
   uuid: string
-
+}
 
 export type SubscriptionRead = SubscriptionsTable
 
@@ -66,8 +66,8 @@ export interface SubscriptionModelType {
   get lastUsedAt(): Date | string | undefined
   set lastUsedAt(value: Date | string)
   get uuid(): string | undefined
-      set uuid(value: string)
-    
+  set uuid(value: string)
+
   // Static methods
   with: (relations: string[]) => SubscriptionModelType
   select: (params: (keyof SubscriptionJsonResponse)[] | RawBuilder<string> | string) => SubscriptionModelType

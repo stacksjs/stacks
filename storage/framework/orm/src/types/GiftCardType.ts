@@ -21,7 +21,7 @@ export interface GiftCardsTable {
   uuid: string
   created_at?: string
   updated_at?: string
-
+}
 
 export type GiftCardRead = GiftCardsTable
 
@@ -80,11 +80,12 @@ export interface GiftCardModelType {
   get templateId(): string | undefined
   set templateId(value: string)
   get uuid(): string | undefined
-      set uuid(value: string)
-    
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  set uuid(value: string)
+
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => GiftCardModelType
   select: (params: (keyof GiftCardJsonResponse)[] | RawBuilder<string> | string) => GiftCardModelType

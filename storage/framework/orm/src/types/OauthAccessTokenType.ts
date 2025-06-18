@@ -10,7 +10,7 @@ export interface OauthAccessTokensTable {
   expires_at?: Date | string
   created_at?: string
   updated_at?: string
-
+}
 
 export type OauthAccessTokenRead = OauthAccessTokensTable
 
@@ -49,9 +49,10 @@ export interface OauthAccessTokenModelType {
   get expiresAt(): Date | string | undefined
   set expiresAt(value: Date | string)
 
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => OauthAccessTokenModelType
   select: (params: (keyof OauthAccessTokenJsonResponse)[] | RawBuilder<string> | string) => OauthAccessTokenModelType

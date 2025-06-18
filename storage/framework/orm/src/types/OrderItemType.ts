@@ -8,7 +8,7 @@ export interface OrderItemsTable {
   special_instructions?: string
   created_at?: string
   updated_at?: string
-
+}
 
 export type OrderItemRead = OrderItemsTable
 
@@ -43,9 +43,10 @@ export interface OrderItemModelType {
   get specialInstructions(): string | undefined
   set specialInstructions(value: string)
 
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => OrderItemModelType
   select: (params: (keyof OrderItemJsonResponse)[] | RawBuilder<string> | string) => OrderItemModelType

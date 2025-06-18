@@ -17,7 +17,7 @@ export interface WaitlistProductsTable {
   uuid: string
   created_at?: string
   updated_at?: string
-
+}
 
 export type WaitlistProductRead = WaitlistProductsTable
 
@@ -68,11 +68,12 @@ export interface WaitlistProductModelType {
   get cancelledAt(): Date | string | undefined
   set cancelledAt(value: Date | string)
   get uuid(): string | undefined
-      set uuid(value: string)
-    
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  set uuid(value: string)
+
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => WaitlistProductModelType
   select: (params: (keyof WaitlistProductJsonResponse)[] | RawBuilder<string> | string) => WaitlistProductModelType

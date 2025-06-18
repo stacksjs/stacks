@@ -7,7 +7,7 @@ export interface ReleasesTable {
   version: string
   created_at?: string
   updated_at?: string
-
+}
 
 export type ReleaseRead = ReleasesTable
 
@@ -40,9 +40,10 @@ export interface ReleaseModelType {
   get version(): string
   set version(value: string)
 
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => ReleaseModelType
   select: (params: (keyof ReleaseJsonResponse)[] | RawBuilder<string> | string) => ReleaseModelType

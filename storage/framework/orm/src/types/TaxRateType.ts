@@ -13,7 +13,7 @@ export interface TaxRatesTable {
   uuid: string
   created_at?: string
   updated_at?: string
-
+}
 
 export type TaxRateRead = TaxRatesTable
 
@@ -56,11 +56,12 @@ export interface TaxRateModelType {
   get isDefault(): boolean | undefined
   set isDefault(value: boolean)
   get uuid(): string | undefined
-      set uuid(value: string)
-    
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  set uuid(value: string)
+
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => TaxRateModelType
   select: (params: (keyof TaxRateJsonResponse)[] | RawBuilder<string> | string) => TaxRateModelType

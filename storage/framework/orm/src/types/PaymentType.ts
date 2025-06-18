@@ -18,7 +18,7 @@ export interface PaymentsTable {
   uuid: string
   created_at?: string
   updated_at?: string
-
+}
 
 export type PaymentRead = PaymentsTable
 
@@ -71,11 +71,12 @@ export interface PaymentModelType {
   get notes(): string | undefined
   set notes(value: string)
   get uuid(): string | undefined
-      set uuid(value: string)
-    
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  set uuid(value: string)
+
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => PaymentModelType
   select: (params: (keyof PaymentJsonResponse)[] | RawBuilder<string> | string) => PaymentModelType

@@ -10,7 +10,7 @@ export interface ManufacturersTable {
   uuid: string
   created_at?: string
   updated_at?: string
-
+}
 
 export type ManufacturerRead = ManufacturersTable
 
@@ -47,11 +47,12 @@ export interface ManufacturerModelType {
   get featured(): boolean | undefined
   set featured(value: boolean)
   get uuid(): string | undefined
-      set uuid(value: string)
-    
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  set uuid(value: string)
+
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => ManufacturerModelType
   select: (params: (keyof ManufacturerJsonResponse)[] | RawBuilder<string> | string) => ManufacturerModelType

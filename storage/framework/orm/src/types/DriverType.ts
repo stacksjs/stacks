@@ -11,7 +11,7 @@ export interface DriversTable {
   uuid: string
   created_at?: string
   updated_at?: string
-
+}
 
 export type DriverRead = DriversTable
 
@@ -50,11 +50,12 @@ export interface DriverModelType {
   get status(): string | string[] | undefined
   set status(value: string | string[])
   get uuid(): string | undefined
-      set uuid(value: string)
-    
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  set uuid(value: string)
+
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => DriverModelType
   select: (params: (keyof DriverJsonResponse)[] | RawBuilder<string> | string) => DriverModelType

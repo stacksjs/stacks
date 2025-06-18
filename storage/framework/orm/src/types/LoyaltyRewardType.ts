@@ -15,7 +15,7 @@ export interface LoyaltyRewardsTable {
   uuid: string
   created_at?: string
   updated_at?: string
-
+}
 
 export type LoyaltyRewardRead = LoyaltyRewardsTable
 
@@ -62,11 +62,12 @@ export interface LoyaltyRewardModelType {
   get imageUrl(): string | undefined
   set imageUrl(value: string)
   get uuid(): string | undefined
-      set uuid(value: string)
-    
-    get created_at(): string | undefined
-    get updated_at(): string | undefined
-    set updated_at(value: string)
+  set uuid(value: string)
+
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
   // Static methods
   with: (relations: string[]) => LoyaltyRewardModelType
   select: (params: (keyof LoyaltyRewardJsonResponse)[] | RawBuilder<string> | string) => LoyaltyRewardModelType
