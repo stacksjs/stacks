@@ -7,7 +7,7 @@ export default new Action({
   description: 'ShippingZone Index ORM Action',
   method: 'GET',
   async handle() {
-    const results = shippings.zones.fetchAll()
+      const results = await shippings.zones.fetchAll()
 
     return response.json(results)
   },

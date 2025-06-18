@@ -106,20 +106,35 @@ const currentPage = ref(1)
 const itemsPerPage = 5
 
 const filteredShippingZones = computed(() => {
-  if (!searchQuery.value) return shippingZones.value
+  // Ensure shippingZones.value is always an array
+  const zones = Array.isArray(shippingZones.value) ? shippingZones.value : []
+  
+  if (!searchQuery.value) return zones
 
   const query = searchQuery.value.toLowerCase()
-  return shippingZones.value.filter(zone =>
+  return zones.filter(zone =>
     zone.name.toLowerCase().includes(query) ||
     zone.countries?.toLowerCase().includes(query) ||
     zone.regions?.toLowerCase().includes(query)
   )
 })
 
+console.log(filteredShippingZones.value)
+
 const paginatedShippingZones = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return filteredShippingZones.value.slice(start, end)
+  const sliced = filteredShippingZones.value.slice(start, end)
+  
+  // Transform ShippingZones to ShippingZone interface for the table component
+  return sliced.map(zone => ({
+    id: zone.id,
+    name: zone.name,
+    countries: zone.countries ? zone.countries.split(',').map(c => c.trim()) : [],
+    regions: zone.regions ? zone.regions.split(',').map(r => r.trim()) : [],
+    postalCodes: zone.postal_codes ? zone.postal_codes.split(',').map(p => p.trim()) : [],
+    status: zone.status
+  }))
 })
 
 // Event handlers

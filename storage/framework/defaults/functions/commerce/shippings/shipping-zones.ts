@@ -13,16 +13,15 @@ async function fetchShippingZones() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json() as ShippingZones[]
 
-    if (Array.isArray(data)) {
-      shippingZones.value = data
-      return data
-    }
-    else {
-      console.error('Expected array of shipping zones but received:', typeof data)
-      return []
-    }
+    const { data } = await response.json() as { data: ShippingZones[] }
+
+   
+  
+    shippingZones.value = data
+    
+    return data
+   
   }
   catch (error) {
     console.error('Error fetching shipping zones:', error)

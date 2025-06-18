@@ -16,8 +16,6 @@ export async function store(data: NewShippingMethod): Promise<ShippingMethodJson
       uuid: randomUUIDv7(),
     }
 
-    console.log(shippingData)
-
     const result = await db
       .insertInto('shipping_methods')
       .values(shippingData)

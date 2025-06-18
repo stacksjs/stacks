@@ -75,18 +75,11 @@
 </template>
 
 <script setup lang="ts">
-interface ShippingZone {
-  id: number
-  name: string
-  countries: string[]
-  regions: string[]
-  postalCodes: string[]
-  status: string
-}
+import { ShippingZones } from '../../../../functions/types';
 
 defineProps({
   zones: {
-    type: Array as () => ShippingZone[],
+    type: Array as () => ShippingZones[],
     required: true
   }
 })
