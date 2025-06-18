@@ -1636,6 +1636,10 @@ export async function generateTypeString(
 ): Promise<string> {
   const formattedTableName = pascalCase(tableName)
 
+  const useUuid = model.traits?.useUuid
+  const useTimestamps = model.traits?.useTimestamps
+  const billable = model.traits?.billable
+
   // Generate base table interface
   let typeString = `import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
@@ -1651,11 +1655,18 @@ export interface ${formattedTableName}Table {
     typeString += `  ${snakeCase(attribute.field)}${optionalIndicator}: ${entity}\n`
   }
 
-  // Add common fields
-  typeString += `
-  created_at?: string
-  updated_at?: string
-}`
+  if (useUuid) {
+    typeString += `  uuid: string\n`
+  }
+
+  if (useTimestamps) {
+    typeString += `  created_at?: string\n`
+    typeString += `  updated_at?: string\n`
+  }
+
+  if (billable) {
+    typeString += `  stripe_id?: string\n`
+  }
 
   // Generate the model type interface
   let modelTypeInterface = `export interface ${modelName}ModelType {
@@ -1675,12 +1686,20 @@ export interface ${formattedTableName}Table {
   }
 
   // Add common getters and setters
-  modelTypeInterface += `  get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
+  if (useUuid) {
+    modelTypeInterface += `  get uuid(): string | undefined
+      set uuid(value: string)
+    `
+  }
 
+  if (useTimestamps) {
+    modelTypeInterface += `
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)`
+  }
+
+  modelTypeInterface += `
   // Static methods
   with: (relations: string[]) => ${modelName}ModelType
   select: (params: (keyof ${modelName}JsonResponse)[] | RawBuilder<string> | string) => ${modelName}ModelType

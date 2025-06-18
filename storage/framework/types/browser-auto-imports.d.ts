@@ -434,7 +434,7 @@ declare global {
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
-  export type { Customers, Coupons, GiftCards, Orders, StorePost, Posts, Payments, TaxRates, Categories, Units, ProductItems, Reviews, Drivers, DeliveryRoutes, DigitalDeliveries, ShippingMethods, ShippingRates, ShippingZones, ProductVariants, Taggables, PostTaggable, Categorizables, PostCategorizable, Pages, Websockets, WaitlistProduct, WaitlistRestaurant, StoreWebsocket } from '../defaults/functions/types'
+  export type { Customers, NewCustomer, Coupons, NewCoupon, GiftCards, NewGiftCard, Orders, NewOrder, StorePost, Posts, NewPost, Payments, NewPayment, TaxRates, NewTaxRate, Categories, NewCategory, Units, NewUnit, ProductItems, NewProductItem, Reviews, NewReview, Drivers, NewDriver, DeliveryRoutes, NewDeliveryRoute, DigitalDeliveries, NewDigitalDelivery, ShippingMethods, NewShippingMethod, ShippingRates, NewShippingRate, ShippingZones, NewShippingZone, ProductVariants, NewProductVariant, Taggables, PostTaggable, NewTaggable, Categorizables, PostCategorizable, NewCategorizable, Pages, NewPage, Websockets, StoreWebsocket, WaitlistProduct, NewWaitlistProduct, WaitlistRestaurant, NewWaitlistRestaurant } from '../defaults/functions/types'
   import('../defaults/functions/types')
   // @ts-ignore
   export type { SingletonPromiseReturn, ControlledPromise } from '../core/browser/src/utils/promise'

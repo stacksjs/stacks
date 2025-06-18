@@ -12,10 +12,10 @@ export interface ProductItemsTable {
   inventory_count?: number
   sku: string
   custom_options?: string
-
+  uuid: string
   created_at?: string
   updated_at?: string
-}
+
 
 export type ProductItemRead = ProductItemsTable
 
@@ -62,11 +62,11 @@ export interface ProductItemModelType {
   get customOptions(): string | undefined
   set customOptions(value: string)
   get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
-
+      set uuid(value: string)
+    
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => ProductItemModelType
   select: (params: (keyof ProductItemJsonResponse)[] | RawBuilder<string> | string) => ProductItemModelType

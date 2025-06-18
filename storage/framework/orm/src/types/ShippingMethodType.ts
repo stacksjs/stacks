@@ -8,10 +8,10 @@ export interface ShippingMethodsTable {
   base_rate: number
   free_shipping?: number
   status: string | string[]
-
+  uuid: string
   created_at?: string
   updated_at?: string
-}
+
 
 export type ShippingMethodRead = ShippingMethodsTable
 
@@ -50,11 +50,11 @@ export interface ShippingMethodModelType {
   get status(): string | string[]
   set status(value: string | string[])
   get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
-
+      set uuid(value: string)
+    
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => ShippingMethodModelType
   select: (params: (keyof ShippingMethodJsonResponse)[] | RawBuilder<string> | string) => ShippingMethodModelType

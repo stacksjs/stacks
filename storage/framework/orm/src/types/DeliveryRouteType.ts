@@ -9,10 +9,10 @@ export interface DeliveryRoutesTable {
   delivery_time: number
   total_distance: number
   last_active?: Date | string
-
+  uuid: string
   created_at?: string
   updated_at?: string
-}
+
 
 export type DeliveryRouteRead = DeliveryRoutesTable
 
@@ -53,11 +53,11 @@ export interface DeliveryRouteModelType {
   get lastActive(): Date | string | undefined
   set lastActive(value: Date | string)
   get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
-
+      set uuid(value: string)
+    
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => DeliveryRouteModelType
   select: (params: (keyof DeliveryRouteJsonResponse)[] | RawBuilder<string> | string) => DeliveryRouteModelType

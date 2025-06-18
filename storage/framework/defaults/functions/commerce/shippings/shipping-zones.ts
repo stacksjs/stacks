@@ -4,7 +4,7 @@ import { useStorage } from '@vueuse/core'
 // Create a persistent shipping zones array using VueUse's useStorage
 const shippingZones = useStorage<ShippingZones[]>('shippingZones', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all shipping zones
 async function fetchShippingZones() {

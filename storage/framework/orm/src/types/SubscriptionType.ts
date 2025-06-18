@@ -14,10 +14,8 @@ export interface SubscriptionsTable {
   trial_ends_at?: Date | string
   ends_at?: Date | string
   last_used_at?: Date | string
+  uuid: string
 
-  created_at?: string
-  updated_at?: string
-}
 
 export type SubscriptionRead = SubscriptionsTable
 
@@ -68,11 +66,8 @@ export interface SubscriptionModelType {
   get lastUsedAt(): Date | string | undefined
   set lastUsedAt(value: Date | string)
   get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
-
+      set uuid(value: string)
+    
   // Static methods
   with: (relations: string[]) => SubscriptionModelType
   select: (params: (keyof SubscriptionJsonResponse)[] | RawBuilder<string> | string) => SubscriptionModelType

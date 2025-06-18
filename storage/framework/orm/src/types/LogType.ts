@@ -10,10 +10,9 @@ export interface LogsTable {
   project: string
   stacktrace?: string
   file?: string
-
   created_at?: string
   updated_at?: string
-}
+
 
 export type LogRead = LogsTable
 
@@ -55,12 +54,10 @@ export interface LogModelType {
   set stacktrace(value: string)
   get file(): string | undefined
   set file(value: string)
-  get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
 
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => LogModelType
   select: (params: (keyof LogJsonResponse)[] | RawBuilder<string> | string) => LogModelType

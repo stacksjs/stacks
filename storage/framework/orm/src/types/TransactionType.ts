@@ -10,10 +10,10 @@ export interface TransactionsTable {
   transaction_reference?: string
   loyalty_points_earned?: number
   loyalty_points_redeemed?: number
-
+  uuid: string
   created_at?: string
   updated_at?: string
-}
+
 
 export type TransactionRead = TransactionsTable
 
@@ -56,11 +56,11 @@ export interface TransactionModelType {
   get loyaltyPointsRedeemed(): number | undefined
   set loyaltyPointsRedeemed(value: number)
   get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
-
+      set uuid(value: string)
+    
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => TransactionModelType
   select: (params: (keyof TransactionJsonResponse)[] | RawBuilder<string> | string) => TransactionModelType

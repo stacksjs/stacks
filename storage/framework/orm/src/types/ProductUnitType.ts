@@ -8,10 +8,10 @@ export interface ProductUnitsTable {
   type: string
   description?: string
   is_default?: boolean
-
+  uuid: string
   created_at?: string
   updated_at?: string
-}
+
 
 export type ProductUnitRead = ProductUnitsTable
 
@@ -50,11 +50,11 @@ export interface ProductUnitModelType {
   get isDefault(): boolean | undefined
   set isDefault(value: boolean)
   get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
-
+      set uuid(value: string)
+    
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => ProductUnitModelType
   select: (params: (keyof ProductUnitJsonResponse)[] | RawBuilder<string> | string) => ProductUnitModelType

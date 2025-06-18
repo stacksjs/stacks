@@ -6,7 +6,7 @@ import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/Sea
 import ShippingZonesTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingZonesTable.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import { useShippingZones } from '../../../../functions/commerce/shippings/shipping-zones'
-import type { NewShippingZone } from '../../../../functions/types'
+
 
 useHead({
   title: 'Dashboard - Shipping Zones',

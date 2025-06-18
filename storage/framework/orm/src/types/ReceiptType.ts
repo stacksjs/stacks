@@ -11,10 +11,10 @@ export interface ReceiptsTable {
   pages?: number
   duration?: number
   metadata?: string
-
+  uuid: string
   created_at?: string
   updated_at?: string
-}
+
 
 export type ReceiptRead = ReceiptsTable
 
@@ -59,11 +59,11 @@ export interface ReceiptModelType {
   get metadata(): string | undefined
   set metadata(value: string)
   get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
-
+      set uuid(value: string)
+    
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => ReceiptModelType
   select: (params: (keyof ReceiptJsonResponse)[] | RawBuilder<string> | string) => ReceiptModelType

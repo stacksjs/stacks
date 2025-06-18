@@ -83,7 +83,7 @@ async function updateCoupon(coupon: Coupons) {
         coupons.value = [
           ...coupons.value.slice(0, index),
           data,
-          ...coupons.value.slice(index + 1)
+          ...coupons.value.slice(index + 1),
         ]
       }
       return data

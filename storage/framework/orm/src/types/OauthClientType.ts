@@ -10,10 +10,9 @@ export interface OauthClientsTable {
   personal_access_client: boolean
   password_client: boolean
   revoked: boolean
-
   created_at?: string
   updated_at?: string
-}
+
 
 export type OauthClientRead = OauthClientsTable
 
@@ -55,12 +54,10 @@ export interface OauthClientModelType {
   set passwordClient(value: boolean)
   get revoked(): boolean
   set revoked(value: boolean)
-  get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
 
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => OauthClientModelType
   select: (params: (keyof OauthClientJsonResponse)[] | RawBuilder<string> | string) => OauthClientModelType

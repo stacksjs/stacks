@@ -11,10 +11,9 @@ export interface TeamsTable {
   description: string
   path: string
   is_personal: boolean
-
   created_at?: string
   updated_at?: string
-}
+
 
 export type TeamRead = TeamsTable
 
@@ -58,12 +57,10 @@ export interface TeamModelType {
   set path(value: string)
   get isPersonal(): boolean
   set isPersonal(value: boolean)
-  get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
 
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => TeamModelType
   select: (params: (keyof TeamJsonResponse)[] | RawBuilder<string> | string) => TeamModelType

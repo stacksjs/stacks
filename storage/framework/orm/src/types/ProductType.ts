@@ -12,10 +12,10 @@ export interface ProductsTable {
   preparation_time: number
   allergens?: string
   nutritional_info?: string
-
+  uuid: string
   created_at?: string
   updated_at?: string
-}
+
 
 export type ProductRead = ProductsTable
 
@@ -62,11 +62,11 @@ export interface ProductModelType {
   get nutritionalInfo(): string | undefined
   set nutritionalInfo(value: string)
   get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
-
+      set uuid(value: string)
+    
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => ProductModelType
   select: (params: (keyof ProductJsonResponse)[] | RawBuilder<string> | string) => ProductModelType

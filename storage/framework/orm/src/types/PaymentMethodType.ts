@@ -10,10 +10,8 @@ export interface PaymentMethodsTable {
   exp_year: number
   is_default?: boolean
   provider_id?: string
+  uuid: string
 
-  created_at?: string
-  updated_at?: string
-}
 
 export type PaymentMethodRead = PaymentMethodsTable
 
@@ -56,11 +54,8 @@ export interface PaymentMethodModelType {
   get providerId(): string | undefined
   set providerId(value: string)
   get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
-
+      set uuid(value: string)
+    
   // Static methods
   with: (relations: string[]) => PaymentMethodModelType
   select: (params: (keyof PaymentMethodJsonResponse)[] | RawBuilder<string> | string) => PaymentMethodModelType

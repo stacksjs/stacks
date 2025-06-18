@@ -8,10 +8,9 @@ export interface FailedJobsTable {
   payload: string
   exception: string
   failed_at?: Date | string
-
   created_at?: string
   updated_at?: string
-}
+
 
 export type FailedJobRead = FailedJobsTable
 
@@ -49,12 +48,10 @@ export interface FailedJobModelType {
   set exception(value: string)
   get failedAt(): Date | string | undefined
   set failedAt(value: Date | string)
-  get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
 
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => FailedJobModelType
   select: (params: (keyof FailedJobJsonResponse)[] | RawBuilder<string> | string) => FailedJobModelType

@@ -11,10 +11,9 @@ export interface RequestsTable {
   memory_usage?: number
   user_agent?: string
   error_message?: string
-
   created_at?: string
   updated_at?: string
-}
+
 
 export type RequestRead = RequestsTable
 
@@ -58,12 +57,10 @@ export interface RequestModelType {
   set userAgent(value: string)
   get errorMessage(): string | undefined
   set errorMessage(value: string)
-  get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
 
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => RequestModelType
   select: (params: (keyof RequestJsonResponse)[] | RawBuilder<string> | string) => RequestModelType

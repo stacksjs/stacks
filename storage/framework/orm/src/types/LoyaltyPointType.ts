@@ -10,10 +10,10 @@ export interface LoyaltyPointsTable {
   description?: string
   expiry_date?: Date | string
   is_used?: boolean
-
+  uuid: string
   created_at?: string
   updated_at?: string
-}
+
 
 export type LoyaltyPointRead = LoyaltyPointsTable
 
@@ -56,11 +56,11 @@ export interface LoyaltyPointModelType {
   get isUsed(): boolean | undefined
   set isUsed(value: boolean)
   get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
-
+      set uuid(value: string)
+    
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => LoyaltyPointModelType
   select: (params: (keyof LoyaltyPointJsonResponse)[] | RawBuilder<string> | string) => LoyaltyPointModelType

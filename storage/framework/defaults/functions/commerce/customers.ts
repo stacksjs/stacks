@@ -82,7 +82,7 @@ async function updateCustomer(customer: Customers) {
         customers.value = [
           ...customers.value.slice(0, index),
           data,
-          ...customers.value.slice(index + 1)
+          ...customers.value.slice(index + 1),
         ]
       }
       return data

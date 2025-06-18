@@ -7,10 +7,9 @@ export interface WebsocketsTable {
   socket: string
   details: string
   time: number
-
   created_at?: string
   updated_at?: string
-}
+
 
 export type WebsocketRead = WebsocketsTable
 
@@ -46,12 +45,10 @@ export interface WebsocketModelType {
   set details(value: string)
   get time(): number
   set time(value: number)
-  get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
 
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => WebsocketModelType
   select: (params: (keyof WebsocketJsonResponse)[] | RawBuilder<string> | string) => WebsocketModelType

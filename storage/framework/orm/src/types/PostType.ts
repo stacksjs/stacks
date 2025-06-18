@@ -11,10 +11,10 @@ export interface PostsTable {
   published_at?: Date | string
   status: string | string[]
   is_featured?: number
-
+  uuid: string
   created_at?: string
   updated_at?: string
-}
+
 
 export type PostRead = PostsTable
 
@@ -59,11 +59,11 @@ export interface PostModelType {
   get isFeatured(): number | undefined
   set isFeatured(value: number)
   get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
-
+      set uuid(value: string)
+    
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => PostModelType
   select: (params: (keyof PostJsonResponse)[] | RawBuilder<string> | string) => PostModelType

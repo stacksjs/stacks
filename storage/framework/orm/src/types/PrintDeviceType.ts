@@ -10,10 +10,10 @@ export interface PrintDevicesTable {
   status: string | string[]
   last_ping: unix
   print_count: number
-
+  uuid: string
   created_at?: string
   updated_at?: string
-}
+
 
 export type PrintDeviceRead = PrintDevicesTable
 
@@ -56,11 +56,11 @@ export interface PrintDeviceModelType {
   get printCount(): number
   set printCount(value: number)
   get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
-
+      set uuid(value: string)
+    
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => PrintDeviceModelType
   select: (params: (keyof PrintDeviceJsonResponse)[] | RawBuilder<string> | string) => PrintDeviceModelType

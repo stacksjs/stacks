@@ -8,10 +8,8 @@ export interface PaymentTransactionsTable {
   amount: number
   type: string
   provider_id?: string
+  uuid: string
 
-  created_at?: string
-  updated_at?: string
-}
 
 export type PaymentTransactionRead = PaymentTransactionsTable
 
@@ -50,11 +48,8 @@ export interface PaymentTransactionModelType {
   get providerId(): string | undefined
   set providerId(value: string)
   get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
-
+      set uuid(value: string)
+    
   // Static methods
   with: (relations: string[]) => PaymentTransactionModelType
   select: (params: (keyof PaymentTransactionJsonResponse)[] | RawBuilder<string> | string) => PaymentTransactionModelType

@@ -8,10 +8,10 @@ export interface PagesTable {
   views?: number
   published_at?: Date | string
   conversions?: number
-
+  uuid: string
   created_at?: string
   updated_at?: string
-}
+
 
 export type PageRead = PagesTable
 
@@ -50,11 +50,11 @@ export interface PageModelType {
   get conversions(): number | undefined
   set conversions(value: number)
   get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
-
+      set uuid(value: string)
+    
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => PageModelType
   select: (params: (keyof PageJsonResponse)[] | RawBuilder<string> | string) => PageModelType

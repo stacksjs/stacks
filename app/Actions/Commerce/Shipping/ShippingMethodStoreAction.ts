@@ -9,7 +9,7 @@ export default new Action({
   method: 'POST',
   async handle(request: ShippingMethodRequestType) {
     const data = request.all()
-    
+
     const model = await shippings.methods.store(data)
 
     return response.json(model)

@@ -1,8 +1,9 @@
 import type { CustomerRequestType } from '@stacksjs/orm'
+import { randomUUIDv7 } from 'bun'
+
 import { Action } from '@stacksjs/actions'
 
 import { customers } from '@stacksjs/commerce'
-
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -18,6 +19,7 @@ export default new Action({
       email: request.get('email'),
       phone: request.get('phone'),
       status: request.get('status'),
+      uuid: randomUUIDv7(),
     }
 
     const model = await customers.store(data)

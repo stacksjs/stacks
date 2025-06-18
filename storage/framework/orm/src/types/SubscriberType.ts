@@ -4,10 +4,9 @@ import type { Operator } from '@stacksjs/orm'
 export interface SubscribersTable {
   id: Generated<number>
   subscribed: boolean
-
   created_at?: string
   updated_at?: string
-}
+
 
 export type SubscriberRead = SubscribersTable
 
@@ -37,12 +36,10 @@ export interface SubscriberModelType {
   readonly id: number
   get subscribed(): boolean
   set subscribed(value: boolean)
-  get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
 
+    get created_at(): string | undefined
+    get updated_at(): string | undefined
+    set updated_at(value: string)
   // Static methods
   with: (relations: string[]) => SubscriberModelType
   select: (params: (keyof SubscriberJsonResponse)[] | RawBuilder<string> | string) => SubscriberModelType

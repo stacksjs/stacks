@@ -8,7 +8,9 @@ export default new Action({
   description: 'ShippingZone Store ORM Action',
   method: 'POST',
   async handle(request: ShippingZoneRequestType) {
-    const model = await shippings.zones.store(request)
+    const data = request.all()
+
+    const model = await shippings.zones.store(data)
 
     return response.json(model)
   },
