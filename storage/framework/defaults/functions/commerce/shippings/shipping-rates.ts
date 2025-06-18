@@ -1,10 +1,10 @@
-import type { ShippingRates } from '../../types'
+import type { ShippingRates, NewShippingRate } from '../../types'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent shipping rates array using VueUse's useStorage
 const shippingRates = useStorage<ShippingRates[]>('shippingRates', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all shipping rates
 async function fetchShippingRates() {
@@ -13,16 +13,12 @@ async function fetchShippingRates() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json() as ShippingRates[]
 
-    if (Array.isArray(data)) {
-      shippingRates.value = data
-      return data
-    }
-    else {
-      console.error('Expected array of shipping rates but received:', typeof data)
-      return []
-    }
+    const { data } = await response.json() as { data: ShippingRates[] }
+
+    shippingRates.value = data
+
+    return data
   }
   catch (error) {
     console.error('Error fetching shipping rates:', error)
@@ -30,7 +26,7 @@ async function fetchShippingRates() {
   }
 }
 
-async function createShippingRate(shippingRate: ShippingRates) {
+async function createShippingRate(shippingRate: NewShippingRate) {
   try {
     const response = await fetch(`${baseURL}/commerce/shipping-rates`, {
       method: 'POST',

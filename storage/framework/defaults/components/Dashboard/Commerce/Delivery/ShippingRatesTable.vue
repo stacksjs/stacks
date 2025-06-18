@@ -51,48 +51,43 @@
 </template>
 
 <script setup lang="ts">
-interface ShippingRate {
-  id: number
-  methodId: number
-  zoneId: number
-  weightFrom: number
-  weightTo: number
-  rate: number
-}
-
-interface ShippingMethod {
-  id: number
-  name: string
-}
-
-interface ShippingZone {
-  id: number
-  name: string
-}
+import { ShippingRates, ShippingMethods, ShippingZones } from '../../../../functions/types'
 
 const props = defineProps({
   rates: {
-    type: Array as () => ShippingRate[],
+    type: Array as () => ShippingRates[],
     required: true
   },
   methods: {
-    type: Array as () => ShippingMethod[],
+    type: Array as () => ShippingMethods[],
     required: true
   },
   zones: {
-    type: Array as () => ShippingZone[],
+    type: Array as () => ShippingZones[],
     required: true
   }
 })
 
 defineEmits(['edit', 'delete'])
 
-const getMethodName = (methodId: number): string => {
+const getMethodName = (methodId: string | number): string => {
+  // If methodId is a string, return it directly
+  if (typeof methodId === 'string') {
+    return methodId
+  }
+  
+  // If it's a number, try to find the method name
   const method = props.methods.find(m => m.id === methodId)
   return method ? method.name : 'Unknown'
 }
 
-const getZoneName = (zoneId: number): string => {
+const getZoneName = (zoneId: string | number): string => {
+  // If zoneId is a string, return it directly
+  if (typeof zoneId === 'string') {
+    return zoneId
+  }
+  
+  // If it's a number, try to find the zone name
   const zone = props.zones.find(z => z.id === zoneId)
   return zone ? zone.name : 'Unknown'
 }

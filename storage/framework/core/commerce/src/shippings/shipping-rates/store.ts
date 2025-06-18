@@ -2,6 +2,7 @@
 import type { NewShippingRate, ShippingRateJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { fetchById } from './fetch'
 
 /**
  * Create a new shipping rate
@@ -19,13 +20,16 @@ export async function store(data: NewShippingRate): Promise<ShippingRateJsonResp
     const result = await db
       .insertInto('shipping_rates')
       .values(rateData)
-      .returningAll()
       .executeTakeFirst()
 
     if (!result)
       throw new Error('Failed to create shipping rate')
 
-    return result
+    const insertId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+
+    const model = await fetchById(insertId)
+
+    return model as ShippingRateJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

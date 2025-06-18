@@ -1,68 +1,99 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.vue'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
 import ShippingRatesTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingRatesTable.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
+import { useShippingRates } from '../../../../functions/commerce/shippings/shipping-rates'
 
 useHead({
   title: 'Dashboard - Shipping Rates',
 })
 
-interface ShippingMethod {
-  id: number
-  name: string
-}
+// Get shipping rates data and functions from the composable
+const { shippingRates, createShippingRate, fetchShippingRates, updateShippingRate, deleteShippingRate } = useShippingRates()
 
-interface ShippingZone {
-  id: number
-  name: string
-}
+// Fetch shipping rates on component mount
+onMounted(async () => {
+  await fetchShippingRates()
+})
 
-interface ShippingRate {
-  id: number
-  methodId: number
-  zoneId: number
-  weightFrom: number
-  weightTo: number
+// Define new shipping rate type
+interface NewShippingRateForm {
+  method: string
+  zone: string
+  weight_from: number
+  weight_to: number
   rate: number
 }
 
-// Sample shipping methods data
-const shippingMethods = ref<ShippingMethod[]>([
-  { id: 1, name: 'Standard Shipping' },
-  { id: 2, name: 'Express Shipping' },
-  { id: 3, name: 'Next Day Air' },
-  { id: 4, name: 'International Economy' },
-  { id: 5, name: 'International Priority' }
-])
+// Modal state
+const showAddModal = ref(false)
+const showEditModal = ref(false)
+const editingRate = ref<any>(null)
+const newShippingRate = ref<NewShippingRateForm>({
+  method: '',
+  zone: '',
+  weight_from: 0,
+  weight_to: 0,
+  rate: 0
+})
 
-// Sample shipping zones data
-const shippingZones = ref<ShippingZone[]>([
-  { id: 1, name: 'Domestic' },
-  { id: 2, name: 'North America' },
-  { id: 3, name: 'Europe' },
-  { id: 4, name: 'Asia Pacific' },
-  { id: 5, name: 'Rest of World' }
-])
+function openAddModal(): void {
+  newShippingRate.value = {
+    method: '',
+    zone: '',
+    weight_from: 0,
+    weight_to: 0,
+    rate: 0
+  }
+  showAddModal.value = true
+}
 
-// Sample shipping rates data
-const shippingRates = ref<ShippingRate[]>([
-  { id: 1, methodId: 1, zoneId: 1, weightFrom: 0, weightTo: 1, rate: 5.99 },
-  { id: 2, methodId: 1, zoneId: 1, weightFrom: 1, weightTo: 5, rate: 8.99 },
-  { id: 3, methodId: 1, zoneId: 1, weightFrom: 5, weightTo: 10, rate: 12.99 },
-  { id: 4, methodId: 1, zoneId: 2, weightFrom: 0, weightTo: 1, rate: 9.99 },
-  { id: 5, methodId: 1, zoneId: 2, weightFrom: 1, weightTo: 5, rate: 14.99 },
-  { id: 6, methodId: 2, zoneId: 1, weightFrom: 0, weightTo: 1, rate: 12.99 },
-  { id: 7, methodId: 2, zoneId: 1, weightFrom: 1, weightTo: 5, rate: 18.99 },
-  { id: 8, methodId: 3, zoneId: 1, weightFrom: 0, weightTo: 1, rate: 24.99 },
-  { id: 9, methodId: 3, zoneId: 1, weightFrom: 1, weightTo: 5, rate: 34.99 },
-  { id: 10, methodId: 4, zoneId: 3, weightFrom: 0, weightTo: 1, rate: 19.99 },
-  { id: 11, methodId: 4, zoneId: 4, weightFrom: 0, weightTo: 1, rate: 24.99 },
-  { id: 12, methodId: 5, zoneId: 3, weightFrom: 0, weightTo: 1, rate: 34.99 },
-  { id: 13, methodId: 5, zoneId: 4, weightFrom: 0, weightTo: 1, rate: 39.99 }
-])
+function closeAddModal(): void {
+  showAddModal.value = false
+}
+
+function openEditModal(rate: any): void {
+  editingRate.value = rate
+  newShippingRate.value = {
+    method: rate.method,
+    zone: rate.zone,
+    weight_from: rate.weight_from,
+    weight_to: rate.weight_to,
+    rate: rate.rate
+  }
+  showEditModal.value = true
+}
+
+function closeEditModal(): void {
+  showEditModal.value = false
+  editingRate.value = null
+}
+
+async function addShippingRate(): Promise<void> {
+  try {
+    await createShippingRate(newShippingRate.value)
+    closeAddModal()
+  } catch (error) {
+    console.error('Failed to create shipping rate:', error)
+  }
+}
+
+async function saveShippingRate(): Promise<void> {
+  if (!editingRate.value) return
+
+  try {
+    await updateShippingRate({
+      ...editingRate.value,
+      ...newShippingRate.value
+    })
+    closeEditModal()
+  } catch (error) {
+    console.error('Failed to update shipping rate:', error)
+  }
+}
 
 // Search and filtering
 const searchQuery = ref('')
@@ -70,25 +101,35 @@ const currentPage = ref(1)
 const itemsPerPage = 5
 
 const filteredShippingRates = computed(() => {
-  if (!searchQuery.value) return shippingRates.value
+  // Ensure shippingRates.value is always an array
+  const rates = Array.isArray(shippingRates.value) ? shippingRates.value : []
+  
+  if (!searchQuery.value) return rates
 
   const query = searchQuery.value.toLowerCase()
-  return shippingRates.value.filter(rate => {
-    const method = shippingMethods.value.find(m => m.id === rate.methodId)
-    const zone = shippingZones.value.find(z => z.id === rate.zoneId)
-
-    return (method && method.name.toLowerCase().includes(query)) ||
-           (zone && zone.name.toLowerCase().includes(query)) ||
-           rate.weightFrom.toString().includes(query) ||
-           rate.weightTo.toString().includes(query) ||
-           rate.rate.toString().includes(query)
-  })
+  return rates.filter(rate =>
+    rate.method.toLowerCase().includes(query) ||
+    rate.zone.toLowerCase().includes(query) ||
+    rate.weight_from.toString().includes(query) ||
+    rate.weight_to.toString().includes(query) ||
+    rate.rate.toString().includes(query)
+  )
 })
 
 const paginatedShippingRates = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return filteredShippingRates.value.slice(start, end)
+  const sliced = filteredShippingRates.value.slice(start, end)
+  
+  // Transform data to match the expected interface
+  return sliced.map(rate => ({
+    id: rate.id,
+    methodId: rate.method, // Using method string directly
+    zoneId: rate.zone, // Using zone string directly
+    weightFrom: rate.weight_from,
+    weightTo: rate.weight_to,
+    rate: rate.rate
+  }))
 })
 
 // Event handlers
@@ -98,19 +139,21 @@ const handleSearch = (query: string) => {
 }
 
 const handleAddRate = () => {
-  alert('Add shipping rate functionality would go here')
+  openAddModal()
 }
 
-const handleEditRate = (rate: ShippingRate) => {
-  const method = shippingMethods.value.find(m => m.id === rate.methodId)
-  const zone = shippingZones.value.find(z => z.id === rate.zoneId)
-  alert(`Edit shipping rate: ${method?.name} - ${zone?.name}`)
+const handleEditRate = (rate: any) => {
+  openEditModal(rate)
 }
 
-const handleDeleteRate = (rate: ShippingRate) => {
-  const method = shippingMethods.value.find(m => m.id === rate.methodId)
-  const zone = shippingZones.value.find(z => z.id === rate.zoneId)
-  alert(`Delete shipping rate: ${method?.name} - ${zone?.name}`)
+const handleDeleteRate = async (rate: any) => {
+  if (confirm(`Are you sure you want to delete this shipping rate?`)) {
+    try {
+      await deleteShippingRate(rate.id)
+    } catch (error) {
+      console.error('Failed to delete shipping rate:', error)
+    }
+  }
 }
 
 const handlePrevPage = () => {
@@ -175,8 +218,8 @@ const tabs = [
 
         <ShippingRatesTable
           :rates="paginatedShippingRates"
-          :methods="shippingMethods"
-          :zones="shippingZones"
+          :methods="[]"
+          :zones="[]"
           @edit="handleEditRate"
           @delete="handleDeleteRate"
         />
@@ -190,6 +233,208 @@ const tabs = [
             @next="handleNextPage"
             @page="handlePageChange"
           />
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Shipping Rate Modal -->
+    <div v-if="showAddModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal"></div>
+
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+          <div>
+            <div class="mt-3 text-center sm:mt-5">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Add New Shipping Rate</h3>
+              <div class="mt-4">
+                <div class="space-y-4">
+                  <div>
+                    <label for="rate-method" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Method</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="rate-method"
+                        v-model="newShippingRate.method"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter shipping method"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="rate-zone" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Zone</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="rate-zone"
+                        v-model="newShippingRate.zone"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter shipping zone"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label for="rate-weight-from" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Weight From</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="rate-weight-from"
+                          v-model="newShippingRate.weight_from"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="rate-weight-to" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Weight To</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="rate-weight-to"
+                          v-model="newShippingRate.weight_to"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                          placeholder="10"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="rate-rate" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Rate (in cents)</label>
+                    <div class="mt-2">
+                      <input
+                        type="number"
+                        id="rate-rate"
+                        v-model="newShippingRate.rate"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="599"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+            <button
+              type="button"
+              @click="addShippingRate"
+              class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+            >
+              Add Rate
+            </button>
+            <button
+              type="button"
+              @click="closeAddModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Shipping Rate Modal -->
+    <div v-if="showEditModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeEditModal"></div>
+
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+          <div>
+            <div class="mt-3 text-center sm:mt-5">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Edit Shipping Rate</h3>
+              <div class="mt-4">
+                <div class="space-y-4">
+                  <div>
+                    <label for="edit-rate-method" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Method</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="edit-rate-method"
+                        v-model="newShippingRate.method"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter shipping method"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-rate-zone" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Zone</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="edit-rate-zone"
+                        v-model="newShippingRate.zone"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter shipping zone"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label for="edit-rate-weight-from" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Weight From</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="edit-rate-weight-from"
+                          v-model="newShippingRate.weight_from"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="edit-rate-weight-to" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Weight To</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="edit-rate-weight-to"
+                          v-model="newShippingRate.weight_to"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                          placeholder="10"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-rate-rate" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Rate (in cents)</label>
+                    <div class="mt-2">
+                      <input
+                        type="number"
+                        id="edit-rate-rate"
+                        v-model="newShippingRate.rate"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="599"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+            <button
+              type="button"
+              @click="saveShippingRate"
+              class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+            >
+              Save Changes
+            </button>
+            <button
+              type="button"
+              @click="closeEditModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
     </div>
