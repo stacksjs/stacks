@@ -8,7 +8,9 @@ export default new Action({
   description: 'ShippingMethod Store ORM Action',
   method: 'POST',
   async handle(request: ShippingMethodRequestType) {
-    const model = await shippings.methods.store(request)
+    const data = request.all()
+    
+    const model = await shippings.methods.store(data)
 
     return response.json(model)
   },

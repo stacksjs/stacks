@@ -4,7 +4,16 @@ import { useStorage } from '@vueuse/core'
 // Create a persistent shipping methods array using VueUse's useStorage
 const shippingMethods = useStorage<ShippingMethods[]>('shippingMethods', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = 'http://localhost:3008'
+
+interface NewShippingMethod {
+  name: string
+  description: string
+  base_rate: number
+  free_shipping: number | null
+  status: string
+}
+
 
 // Basic fetch function to get all shipping methods
 async function fetchShippingMethods() {
@@ -30,7 +39,7 @@ async function fetchShippingMethods() {
   }
 }
 
-async function createShippingMethod(shippingMethod: ShippingMethods) {
+async function createShippingMethod(shippingMethod: NewShippingMethod) {
   try {
     const response = await fetch(`${baseURL}/commerce/shipping-methods`, {
       method: 'POST',

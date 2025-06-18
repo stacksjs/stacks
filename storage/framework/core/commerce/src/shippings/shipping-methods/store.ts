@@ -1,6 +1,7 @@
 import type { NewShippingMethod, ShippingMethodJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { fetchById } from './fetch'
 
 /**
  * Create a new shipping method
@@ -15,16 +16,21 @@ export async function store(data: NewShippingMethod): Promise<ShippingMethodJson
       uuid: randomUUIDv7(),
     }
 
+    console.log(shippingData)
+
     const result = await db
       .insertInto('shipping_methods')
       .values(shippingData)
-      .returningAll()
       .executeTakeFirst()
 
     if (!result)
       throw new Error('Failed to create shipping method')
 
-    return result
+    const insertId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+
+    const model = await fetchById(insertId)
+
+    return model as ShippingMethodJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

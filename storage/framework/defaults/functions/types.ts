@@ -1,5 +1,5 @@
 export interface Customers {
-  id?: number
+  id: number
   user_id?: number
   name: string
   email: string
@@ -10,6 +10,8 @@ export interface Customers {
   avatar?: string
   uuid?: string
 }
+
+export type NewCustomer = Omit<Customers, 'id'>
 
 export interface Coupons {
   id?: number
@@ -25,6 +27,8 @@ export interface Coupons {
   status: string
   uuid?: string
 }
+
+export type NewCoupon = Omit<Coupons, 'id'>
 
 export interface GiftCards {
   id?: number
@@ -48,6 +52,8 @@ export interface GiftCards {
   created_at?: string
 }
 
+export type NewGiftCard = Omit<GiftCards, 'id'>
+
 export interface Orders {
   id: number
   customer_id: number
@@ -65,6 +71,8 @@ export interface Orders {
   applied_coupon_id?: string
   uuid?: string
 }
+
+export type NewOrder = Omit<Orders, 'id'>
 
 export type StorePost = Omit<Posts, 'id' | 'uuid' | 'created_at' | 'updated_at' | 'views' | 'comments' | 'published' | 'featured'>
 
@@ -92,6 +100,8 @@ export interface Posts {
   featured?: boolean
 }
 
+export type NewPost = Omit<Posts, 'id'>
+
 export interface Payments {
   id: number
   order_id: number
@@ -111,6 +121,8 @@ export interface Payments {
   uuid?: string
 }
 
+export type NewPayment = Omit<Payments, 'id'>
+
 export interface TaxRates {
   id: number
   name: string
@@ -123,6 +135,8 @@ export interface TaxRates {
   uuid?: string
 }
 
+export type NewTaxRate = Omit<TaxRates, 'id'>
+
 export interface Categories {
   id: number
   name: string
@@ -133,6 +147,9 @@ export interface Categories {
   display_order: number
   uuid?: string
 }
+
+export type NewCategory = Omit<Categories, 'id'>
+
 export interface Units {
   id: number
   product_id: number
@@ -143,6 +160,8 @@ export interface Units {
   is_default?: boolean
   uuid?: string
 }
+
+export type NewUnit = Omit<Units, 'id'>
 
 export interface ProductItems {
   id: number
@@ -161,6 +180,8 @@ export interface ProductItems {
   uuid?: string
 }
 
+export type NewProductItem = Omit<ProductItems, 'id'>
+
 export interface Reviews {
   id: number
   product_id: number
@@ -178,6 +199,8 @@ export interface Reviews {
   uuid?: string
 }
 
+export type NewReview = Omit<Reviews, 'id'>
+
 export interface Drivers {
   id: number
   user_id: number
@@ -189,6 +212,9 @@ export interface Drivers {
   uuid?: string
 
 }
+
+export type NewDriver = Omit<Drivers, 'id'>
+
 export interface DeliveryRoutes {
   id: number
   driver: string
@@ -200,6 +226,8 @@ export interface DeliveryRoutes {
   uuid?: string
 
 }
+
+export type NewDeliveryRoute = Omit<DeliveryRoutes, 'id'>
 
 export interface DigitalDeliveries {
   id: number
@@ -214,6 +242,8 @@ export interface DigitalDeliveries {
 
 }
 
+export type NewDigitalDelivery = Omit<DigitalDeliveries, 'id'>
+
 export interface ShippingMethods {
   id: number
   name: string
@@ -224,6 +254,8 @@ export interface ShippingMethods {
   uuid?: string
 }
 
+export type NewShippingMethod = Omit<ShippingMethods, 'id'>
+
 export interface ShippingRates {
   id: number
   method: string
@@ -233,6 +265,8 @@ export interface ShippingRates {
   rate: number
   uuid?: string
 }
+
+export type NewShippingRate = Omit<ShippingRates, 'id'>
 
 export interface ShippingZones {
   id: number
@@ -245,6 +279,8 @@ export interface ShippingZones {
   uuid?: string
 }
 
+export type NewShippingZone = Omit<ShippingZones, 'id'>
+
 export interface ProductVariants {
   id: number
   product_id: number
@@ -255,6 +291,8 @@ export interface ProductVariants {
   status: string | string[]
   uuid?: string
 }
+
+export type NewProductVariant = Omit<ProductVariants, 'id'>
 
 export interface Taggables {
   id: number
@@ -270,6 +308,7 @@ export interface Taggables {
 }
 
 export type PostTaggable = Omit<Taggables, 'taggable_id' | 'taggable_type' | 'is_active'>
+export type NewTaggable = Omit<Taggables, 'id'>
 
 export interface Categorizables {
   id: number
@@ -283,6 +322,7 @@ export interface Categorizables {
 }
 
 export type PostCategorizable = Omit<Categorizables, 'categorizable_type' | 'is_active'>
+export type NewCategorizable = Omit<Categorizables, 'id'>
 
 export interface Pages {
   id: number
@@ -297,6 +337,8 @@ export interface Pages {
   uuid?: string
 }
 
+export type NewPage = Omit<Pages, 'id'>
+
 export interface Websockets {
   id: number
   type: string
@@ -308,6 +350,8 @@ export interface Websockets {
   uuid?: string
 }
 
+export type StoreWebsocket = Omit<Websockets, 'id' | 'uuid' | 'created_at' | 'updated_at'>
+
 export interface WaitlistProduct {
   id: number
   name: string
@@ -317,6 +361,8 @@ export interface WaitlistProduct {
   created_at: Date
   updated_at: Date
 }
+
+export type NewWaitlistProduct = Omit<WaitlistProduct, 'id'>
 
 export interface WaitlistRestaurant {
   id: number
@@ -328,4 +374,4 @@ export interface WaitlistRestaurant {
   updated_at: Date
 }
 
-export type StoreWebsocket = Omit<Websockets, 'id' | 'uuid' | 'created_at' | 'updated_at'>
+export type NewWaitlistRestaurant = Omit<WaitlistRestaurant, 'id'>
