@@ -1,4 +1,4 @@
-import type { ShippingZones } from '../../types'
+import type { NewShippingZone, ShippingZones } from '../../types'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent shipping zones array using VueUse's useStorage
@@ -30,7 +30,7 @@ async function fetchShippingZones() {
   }
 }
 
-async function createShippingZone(shippingZone: ShippingZones) {
+async function createShippingZone(shippingZone: NewShippingZone) {
   try {
     const response = await fetch(`${baseURL}/commerce/shipping-zones`, {
       method: 'POST',
