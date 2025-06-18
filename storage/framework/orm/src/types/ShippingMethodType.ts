@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { ShippingRateModelType } from './ShippingRateType'
 import type { ShippingZoneModelType } from './ShippingZoneType'
 
 export interface ShippingMethodsTable {
@@ -51,6 +52,7 @@ export interface ShippingMethodModelType {
   get status(): string | string[]
   set status(value: string | string[])
   get shipping_zone(): ShippingZoneModelType[] | []
+  get shipping_rate(): ShippingRateModelType[] | []
 
   get uuid(): string | undefined
   set uuid(value: string)

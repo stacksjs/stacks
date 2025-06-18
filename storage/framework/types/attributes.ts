@@ -164,7 +164,6 @@ export interface Attributes {
   discount_percentage: number
   base_rate: number
   free_shipping: number
-  zone: string
   weight_from: number
   weight_to: number
   total_items: number

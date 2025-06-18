@@ -19,10 +19,10 @@
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
               <tr v-for="rate in rates" :key="rate.id">
                 <td class="whitespace-nowrap py-4.5 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                  <!-- {{ getMethodName(rate.methodId) }} -->NA
+                  {{ rate.method }}
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                  <!-- {{ getZoneName(rate.zoneId) }} -->NA
+                  {{ rate.zone }}
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
                   {{ rate.weight_from }} kg
@@ -69,28 +69,6 @@ const props = defineProps({
 })
 
 defineEmits(['edit', 'delete'])
-
-const getMethodName = (methodId: string | number): string => {
-  // If methodId is a string, return it directly
-  if (typeof methodId === 'string') {
-    return methodId
-  }
-  
-  // If it's a number, try to find the method name
-  const method = props.methods.find(m => m.id === methodId)
-  return method ? method.name : 'Unknown'
-}
-
-const getZoneName = (zoneId: string | number): string => {
-  // If zoneId is a string, return it directly
-  if (typeof zoneId === 'string') {
-    return zoneId
-  }
-  
-  // If it's a number, try to find the zone name
-  const zone = props.zones.find(z => z.id === zoneId)
-  return zone ? zone.name : 'Unknown'
-}
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-US', {

@@ -28,7 +28,7 @@ export default {
     observe: true,
   },
 
-  hasMany: ['ShippingZone'],
+  hasMany: ['ShippingZone', 'ShippingRate'],
 
   attributes: {
     name: {

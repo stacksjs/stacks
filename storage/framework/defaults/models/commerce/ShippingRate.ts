@@ -28,35 +28,9 @@ export default {
     observe: true,
   },
 
-  hasOne: ['ShippingMethod', 'ShippingZone'],
+  belongsTo: ['ShippingMethod', 'ShippingZone'],
 
   attributes: {
-    method: {
-      required: true,
-      order: 2,
-      fillable: true,
-      validation: {
-        rule: schema.string().max(255),
-        message: {
-          max: 'Method must have a maximum of 255 characters',
-        },
-      },
-      factory: faker => faker.commerce.productName(),
-    },
-
-    zone: {
-      required: true,
-      order: 3,
-      fillable: true,
-      validation: {
-        rule: schema.string().max(255),
-        message: {
-          max: 'Zone must have a maximum of 255 characters',
-        },
-      },
-      factory: faker => faker.location.country(),
-    },
-
     weightFrom: {
       required: true,
       order: 4,

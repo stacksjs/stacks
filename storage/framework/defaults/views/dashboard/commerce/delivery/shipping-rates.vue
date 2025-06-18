@@ -6,6 +6,8 @@ import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/Sea
 import ShippingRatesTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingRatesTable.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import { useShippingRates } from '../../../../functions/commerce/shippings/shipping-rates'
+import { useShippingMethods } from '../../../../functions/commerce/shippings/shipping-methods'
+import { useShippingZones } from '../../../../functions/commerce/shippings/shipping-zones'
 
 useHead({
   title: 'Dashboard - Shipping Rates',
@@ -14,9 +16,17 @@ useHead({
 // Get shipping rates data and functions from the composable
 const { shippingRates, createShippingRate, fetchShippingRates, updateShippingRate, deleteShippingRate } = useShippingRates()
 
-// Fetch shipping rates on component mount
+// Get shipping methods and zones for dropdowns
+const { shippingMethods, fetchShippingMethods } = useShippingMethods()
+const { shippingZones, fetchShippingZones } = useShippingZones()
+
+// Fetch all data on component mount
 onMounted(async () => {
-  await fetchShippingRates()
+  await Promise.all([
+    fetchShippingRates(),
+    fetchShippingMethods(),
+    fetchShippingZones()
+  ])
 })
 
 // Define new shipping rate type
@@ -119,17 +129,7 @@ const filteredShippingRates = computed(() => {
 const paginatedShippingRates = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
-  const sliced = filteredShippingRates.value.slice(start, end)
-  
-  // Transform data to match the expected interface
-  return sliced.map(rate => ({
-    id: rate.id,
-    methodId: rate.method, // Using method string directly
-    zoneId: rate.zone, // Using zone string directly
-    weightFrom: rate.weight_from,
-    weightTo: rate.weight_to,
-    rate: rate.rate
-  }))
+  return filteredShippingRates.value.slice(start, end)
 })
 
 // Event handlers
@@ -218,8 +218,8 @@ const tabs = [
 
         <ShippingRatesTable
           :rates="paginatedShippingRates"
-          :methods="[]"
-          :zones="[]"
+          :methods="shippingMethods || []"
+          :zones="shippingZones || []"
           @edit="handleEditRate"
           @delete="handleDeleteRate"
         />
@@ -251,26 +251,32 @@ const tabs = [
                   <div>
                     <label for="rate-method" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Method</label>
                     <div class="mt-2">
-                      <input
-                        type="text"
+                      <select
                         id="rate-method"
                         v-model="newShippingRate.method"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
-                        placeholder="Enter shipping method"
-                      />
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                      >
+                        <option value="">Select a shipping method</option>
+                        <option v-for="method in shippingMethods" :key="method.id" :value="method.name">
+                          {{ method.name }}
+                        </option>
+                      </select>
                     </div>
                   </div>
 
                   <div>
                     <label for="rate-zone" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Zone</label>
                     <div class="mt-2">
-                      <input
-                        type="text"
+                      <select
                         id="rate-zone"
                         v-model="newShippingRate.zone"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
-                        placeholder="Enter shipping zone"
-                      />
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                      >
+                        <option value="">Select a shipping zone</option>
+                        <option v-for="zone in shippingZones" :key="zone.id" :value="zone.name">
+                          {{ zone.name }}
+                        </option>
+                      </select>
                     </div>
                   </div>
 
@@ -352,26 +358,32 @@ const tabs = [
                   <div>
                     <label for="edit-rate-method" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Method</label>
                     <div class="mt-2">
-                      <input
-                        type="text"
+                      <select
                         id="edit-rate-method"
                         v-model="newShippingRate.method"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
-                        placeholder="Enter shipping method"
-                      />
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                      >
+                        <option value="">Select a shipping method</option>
+                        <option v-for="method in shippingMethods" :key="method.id" :value="method.name">
+                          {{ method.name }}
+                        </option>
+                      </select>
                     </div>
                   </div>
 
                   <div>
                     <label for="edit-rate-zone" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Zone</label>
                     <div class="mt-2">
-                      <input
-                        type="text"
+                      <select
                         id="edit-rate-zone"
                         v-model="newShippingRate.zone"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
-                        placeholder="Enter shipping zone"
-                      />
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                      >
+                        <option value="">Select a shipping zone</option>
+                        <option v-for="zone in shippingZones" :key="zone.id" :value="zone.name">
+                          {{ zone.name }}
+                        </option>
+                      </select>
                     </div>
                   </div>
 

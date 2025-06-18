@@ -13,7 +13,7 @@ import { BaseOrm } from '../utils/base'
 
 export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesTable, ShippingRateJsonResponse> {
   private readonly hidden: Array<keyof ShippingRateJsonResponse> = []
-  private readonly fillable: Array<keyof ShippingRateJsonResponse> = ['method', 'zone', 'weight_from', 'weight_to', 'rate', 'uuid']
+  private readonly fillable: Array<keyof ShippingRateJsonResponse> = ['weight_from', 'weight_to', 'rate', 'uuid', 'shipping_zone_id', 'shipping_method_id']
   private readonly guarded: Array<keyof ShippingRateJsonResponse> = []
   protected attributes = {} as ShippingRateJsonResponse
   protected originalAttributes = {} as ShippingRateJsonResponse
@@ -138,8 +138,16 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
     }
   }
 
+  get shipping_method_id(): number {
+    return this.attributes.shipping_method_id
+  }
+
   get shipping_method(): ShippingMethodModel | undefined {
     return this.attributes.shipping_method
+  }
+
+  get shipping_zone_id(): number {
+    return this.attributes.shipping_zone_id
   }
 
   get shipping_zone(): ShippingZoneModel | undefined {
@@ -152,14 +160,6 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
 
   get uuid(): string | undefined {
     return this.attributes.uuid
-  }
-
-  get method(): string {
-    return this.attributes.method
-  }
-
-  get zone(): string {
-    return this.attributes.zone
   }
 
   get weight_from(): number {
@@ -184,14 +184,6 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
 
   set uuid(value: string) {
     this.attributes.uuid = value
-  }
-
-  set method(value: string) {
-    this.attributes.method = value
-  }
-
-  set zone(value: string) {
-    this.attributes.zone = value
   }
 
   set weight_from(value: number) {
@@ -766,22 +758,6 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
       .execute()
   }
 
-  static whereMethod(value: string): ShippingRateModel {
-    const instance = new ShippingRateModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('method', '=', value)
-
-    return instance
-  }
-
-  static whereZone(value: string): ShippingRateModel {
-    const instance = new ShippingRateModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('zone', '=', value)
-
-    return instance
-  }
-
   static whereWeightFrom(value: string): ShippingRateModel {
     const instance = new ShippingRateModel(undefined)
 
@@ -810,6 +786,34 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
     const instance = new ShippingRateModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
+  }
+
+  async shippingMethodBelong(): Promise<ShippingMethodModel> {
+    if (this.shipping_method_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const model = await ShippingMethod
+      .where('id', '=', this.shipping_method_id)
+      .first()
+
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
+
+    return model
+  }
+
+  async shippingZoneBelong(): Promise<ShippingZoneModel> {
+    if (this.shipping_zone_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const model = await ShippingZone
+      .where('id', '=', this.shipping_zone_id)
+      .first()
+
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
+
+    return model
   }
 
   toSearchableObject(): Partial<ShippingRateJsonResponse> {
@@ -841,8 +845,6 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
       uuid: this.uuid,
 
       id: this.id,
-      method: this.method,
-      zone: this.zone,
       weight_from: this.weight_from,
       weight_to: this.weight_to,
       rate: this.rate,
@@ -851,6 +853,10 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
 
       updated_at: this.updated_at,
 
+      shipping_method_id: this.shipping_method_id,
+      shipping_method: this.shipping_method,
+      shipping_zone_id: this.shipping_zone_id,
+      shipping_zone: this.shipping_zone,
       ...this.customColumns,
     }
 
@@ -915,20 +921,6 @@ export async function remove(id: number): Promise<void> {
   await DB.instance.deleteFrom('shipping_rates')
     .where('id', '=', id)
     .execute()
-}
-
-export async function whereMethod(value: string): Promise<ShippingRateModel[]> {
-  const query = DB.instance.selectFrom('shipping_rates').where('method', '=', value)
-  const results: ShippingRateJsonResponse = await query.execute()
-
-  return results.map((modelItem: ShippingRateJsonResponse) => new ShippingRateModel(modelItem))
-}
-
-export async function whereZone(value: string): Promise<ShippingRateModel[]> {
-  const query = DB.instance.selectFrom('shipping_rates').where('zone', '=', value)
-  const results: ShippingRateJsonResponse = await query.execute()
-
-  return results.map((modelItem: ShippingRateJsonResponse) => new ShippingRateModel(modelItem))
 }
 
 export async function whereWeightFrom(value: number): Promise<ShippingRateModel[]> {

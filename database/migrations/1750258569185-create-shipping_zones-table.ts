@@ -13,14 +13,10 @@ export async function up(db: Database<any>) {
     .addColumn('status', sql`enum('active', 'inactive', 'draft')`, col => col.notNull())
     .addColumn('shipping_method_id', 'integer', col =>
       col.references('shipping_methods.id').onDelete('cascade'))
-    .addColumn('shipping_rate_id', 'integer', col =>
-      col.references('shipping_rates.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
     .execute()
   await db.schema.createIndex('shipping_zones_shipping_method_id_index').on('shipping_zones').column('shipping_method_id').execute()
-
-  await db.schema.createIndex('shipping_zones_shipping_rate_id_index').on('shipping_zones').column('shipping_rate_id').execute()
 
   await db.schema.createIndex('shipping_zones_id_index').on('shipping_zones').column('id').execute()
 }

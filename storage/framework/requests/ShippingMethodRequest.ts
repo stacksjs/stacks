@@ -18,7 +18,6 @@ interface RequestDataShippingMethod {
   base_rate: number
   free_shipping: number
   status: string[] | string
-  shipping_rate_id: number
   created_at?: string
   updated_at?: string
 }
@@ -29,7 +28,6 @@ export class ShippingMethodRequest extends Request<RequestDataShippingMethod> im
   public base_rate = 0
   public free_shipping = 0
   public status = []
-  public shipping_rate_id = 0
   public created_at = ''
   public updated_at = ''
   public uuid = ''

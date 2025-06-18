@@ -1,6 +1,7 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { NewShippingMethod, ShippingMethodJsonResponse, ShippingMethodsTable, ShippingMethodUpdate } from '../types/ShippingMethodType'
+import type { ShippingRateModel } from './ShippingRate'
 import type { ShippingZoneModel } from './ShippingZone'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -12,7 +13,7 @@ import { BaseOrm } from '../utils/base'
 
 export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMethodsTable, ShippingMethodJsonResponse> {
   private readonly hidden: Array<keyof ShippingMethodJsonResponse> = []
-  private readonly fillable: Array<keyof ShippingMethodJsonResponse> = ['name', 'description', 'base_rate', 'free_shipping', 'status', 'uuid', 'shipping_rate_id']
+  private readonly fillable: Array<keyof ShippingMethodJsonResponse> = ['name', 'description', 'base_rate', 'free_shipping', 'status', 'uuid']
   private readonly guarded: Array<keyof ShippingMethodJsonResponse> = []
   protected attributes = {} as ShippingMethodJsonResponse
   protected originalAttributes = {} as ShippingMethodJsonResponse
@@ -139,6 +140,10 @@ export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMe
 
   get shipping_zones(): ShippingZoneModel[] | [] {
     return this.attributes.shipping_zones
+  }
+
+  get shipping_rates(): ShippingRateModel[] | [] {
+    return this.attributes.shipping_rates
   }
 
   get id(): number {
@@ -847,6 +852,7 @@ export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMe
       updated_at: this.updated_at,
 
       shipping_zones: this.shipping_zones,
+      shipping_rates: this.shipping_rates,
       ...this.customColumns,
     }
 

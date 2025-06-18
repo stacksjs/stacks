@@ -1,13 +1,15 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { ShippingMethodModelType } from './ShippingMethodType'
+import type { ShippingZoneModelType } from './ShippingZoneType'
 
 export interface ShippingRatesTable {
   id: Generated<number>
-  method: string
-  zone: string
   weight_from: number
   weight_to: number
   rate: number
+  shipping_method_id?: number
+  shipping_zone_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -39,16 +41,16 @@ export type ShippingRateUpdate = Updateable<ShippingRateWrite>
 export interface ShippingRateModelType {
   // Properties
   readonly id: number
-  get method(): string
-  set method(value: string)
-  get zone(): string
-  set zone(value: string)
   get weightFrom(): number
   set weightFrom(value: number)
   get weightTo(): number
   set weightTo(value: number)
   get rate(): number
   set rate(value: number)
+  get shipping_method_id(): number
+  get shipping_method(): ShippingMethodModelType | undefined
+  get shipping_zone_id(): number
+  get shipping_zone(): ShippingZoneModelType | undefined
 
   get uuid(): string | undefined
   set uuid(value: string)
@@ -124,4 +126,6 @@ export interface ShippingRateModelType {
   toJSON: () => ShippingRateJsonResponse
   parseResult: (model: ShippingRateModelType) => ShippingRateModelType
 
+  shippingMethodBelong: () => Promise<ShippingMethodType>
+  shippingZoneBelong: () => Promise<ShippingZoneType>
 }

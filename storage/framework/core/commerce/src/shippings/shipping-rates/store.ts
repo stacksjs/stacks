@@ -1,5 +1,5 @@
 // Import dependencies
-import type { NewShippingRate, ShippingRateJsonResponse } from '@stacksjs/orm'
+import type { NewShippingRate, ShippingMethodJsonResponse, ShippingRateJsonResponse, ShippingZoneJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
@@ -7,36 +7,38 @@ import { fetchById } from './fetch'
 /**
  * Validate shipping method exists by name
  */
-async function validateShippingMethodByName(name: string): Promise<boolean> {
+async function findShippingMethodByName(name: string): Promise<ShippingMethodJsonResponse | undefined> {
   try {
     const method = await db
       .selectFrom('shipping_methods')
       .where('name', '=', name)
-      .select('id')
+      .selectAll()
       .executeTakeFirst()
 
-    return !!method
-  } catch (error) {
+    return method
+  }
+  catch (error) {
     console.warn(`Failed to validate shipping method by name "${name}":`, error)
-    return false
+    return undefined
   }
 }
 
 /**
  * Validate shipping zone exists by name
  */
-async function validateShippingZoneByName(name: string): Promise<boolean> {
+async function findShippingZoneByName(name: string): Promise<ShippingZoneJsonResponse | undefined> {
   try {
     const zone = await db
       .selectFrom('shipping_zones')
       .where('name', '=', name)
-      .select('id')
+      .selectAll()
       .executeTakeFirst()
 
-    return !!zone
-  } catch (error) {
+    return zone
+  }
+  catch (error) {
     console.warn(`Failed to validate shipping zone by name "${name}":`, error)
-    return false
+    return undefined
   }
 }
 
@@ -49,19 +51,15 @@ async function validateShippingZoneByName(name: string): Promise<boolean> {
 export async function store(data: NewShippingRate): Promise<ShippingRateJsonResponse> {
   try {
     // Validate that the shipping method and zone exist
-    const methodExists = await validateShippingMethodByName(data.method)
-    const zoneExists = await validateShippingZoneByName(data.zone)
-
-    if (!methodExists) {
-      console.warn(`Shipping method "${data.method}" not found, proceeding with creation anyway`)
-    }
-
-    if (!zoneExists) {
-      console.warn(`Shipping zone "${data.zone}" not found, proceeding with creation anyway`)
-    }
+    const method = await findShippingMethodByName(data.method)
+    const zone = await findShippingZoneByName(data.zone)
 
     const rateData = {
-      ...data,
+      weight_from: data.weight_from,
+      weight_to: data.weight_to,
+      rate: data.rate,
+      shipping_method_id: method?.id,
+      shipping_zone_id: zone?.id,
       uuid: randomUUIDv7(),
     }
 

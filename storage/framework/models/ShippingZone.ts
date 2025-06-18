@@ -28,8 +28,8 @@ export default {
     observe: true,
   },
 
-  belongsTo: ['ShippingMethod', 'ShippingRate'],
-
+  belongsTo: ['ShippingMethod'],
+  hasMany: ['ShippingRate'],
   attributes: {
     name: {
       required: true,
