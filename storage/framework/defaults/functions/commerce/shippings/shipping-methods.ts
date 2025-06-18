@@ -1,19 +1,10 @@
-import type { ShippingMethods } from '../../types'
+import type { ShippingMethods, NewShippingMethod } from '../../types'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent shipping methods array using VueUse's useStorage
 const shippingMethods = useStorage<ShippingMethods[]>('shippingMethods', [])
 
 const baseURL = 'http://localhost:3008'
-
-interface NewShippingMethod {
-  name: string
-  description: string
-  base_rate: number
-  free_shipping: number | null
-  status: string
-}
-
 
 // Basic fetch function to get all shipping methods
 async function fetchShippingMethods() {

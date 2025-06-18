@@ -6,6 +6,7 @@ import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/Sea
 import ShippingMethodsTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingMethodsTable.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import { useShippingMethods } from '../../../../functions/commerce/shippings/shipping-methods'
+import type { NewShippingMethod } from '../../../../functions/types'
 
 useHead({
   title: 'Dashboard - Shipping Methods',
@@ -27,7 +28,7 @@ const newShippingMethod = ref<NewShippingMethod>({
   name: '',
   description: '',
   base_rate: 0,
-  free_shipping: null,
+  free_shipping: undefined,
   status: 'Active'
 })
 
@@ -36,7 +37,7 @@ function openAddModal(): void {
     name: '',
     description: '',
     base_rate: 0,
-    free_shipping: null,
+    free_shipping: undefined,
     status: 'Active'
   }
   showAddModal.value = true

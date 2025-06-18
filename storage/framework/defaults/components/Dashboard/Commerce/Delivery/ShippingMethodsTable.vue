@@ -78,20 +78,11 @@
 </template>
 
 <script setup lang="ts">
-interface ShippingMethod {
-  id: number
-  name: string
-  description: string
-  baseRate: number
-  handlingFee: number
-  freeShippingThreshold: number | null
-  zones: string[]
-  status: string
-}
+import type { ShippingMethods } from '../../../../functions/types'
 
 defineProps({
   methods: {
-    type: Array as () => ShippingMethod[],
+    type: Array as () => ShippingMethods[],
     required: true
   }
 })
