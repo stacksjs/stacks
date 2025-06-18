@@ -119,21 +119,20 @@ const filteredShippingZones = computed(() => {
   )
 })
 
-console.log(filteredShippingZones.value)
-
 const paginatedShippingZones = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
   const sliced = filteredShippingZones.value.slice(start, end)
   
-  // Transform ShippingZones to ShippingZone interface for the table component
+  // Transform data to match the expected interface
   return sliced.map(zone => ({
     id: zone.id,
     name: zone.name,
-    countries: zone.countries ? zone.countries.split(',').map(c => c.trim()) : [],
-    regions: zone.regions ? zone.regions.split(',').map(r => r.trim()) : [],
-    postalCodes: zone.postal_codes ? zone.postal_codes.split(',').map(p => p.trim()) : [],
-    status: zone.status
+    countries: zone.countries || '',
+    regions: zone.regions || '',
+    postal_codes: zone.postal_codes || '',
+    status: zone.status,
+    shipping_method_id: zone.shipping_method_id
   }))
 })
 

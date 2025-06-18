@@ -44,17 +44,17 @@
                   </div>
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                  {{ zone.postalCodes.join(', ') || 'All' }}
+                  {{ getPostalCodes(zone.postal_codes) }}
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm">
                   <span
                     class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
                     :class="{
-                      'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': zone.status === 'Active',
-                      'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': zone.status === 'Inactive'
+                      'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': zone.status === 'active',
+                      'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': zone.status === 'inactive'
                     }"
                   >
-                    {{ zone.status }}
+                    {{ zone.status.charAt(0).toUpperCase() + zone.status.slice(1) }}
                   </span>
                 </td>
                 <td class="relative whitespace-nowrap py-4.5 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
@@ -83,6 +83,12 @@ defineProps({
     required: true
   }
 })
+
+function getPostalCodes(postalCodes: string | undefined) {
+  if (!postalCodes) return 'All'
+
+  return postalCodes.split(',').map(code => code.trim()).join(', ')
+}
 
 defineEmits(['edit', 'delete'])
 </script>
