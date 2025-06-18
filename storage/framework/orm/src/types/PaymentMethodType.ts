@@ -10,7 +10,7 @@ export interface PaymentMethodsTable {
   exp_year: number
   is_default?: boolean
   provider_id?: string
-  uuid: string
+  uuid?: string
 }
 
 export type PaymentMethodRead = PaymentMethodsTable

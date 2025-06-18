@@ -17,7 +17,7 @@ export interface CouponsTable {
   end_date: Date | string
   applicable_products?: string
   applicable_categories?: string
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

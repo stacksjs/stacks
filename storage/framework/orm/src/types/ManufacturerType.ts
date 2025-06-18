@@ -7,7 +7,7 @@ export interface ManufacturersTable {
   description?: string
   country: string
   featured?: boolean
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

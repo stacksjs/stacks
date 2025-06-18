@@ -8,7 +8,7 @@ export interface ShippingZonesTable {
   regions?: string
   postal_codes?: string
   status: string | string[]
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

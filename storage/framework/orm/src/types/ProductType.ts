@@ -12,7 +12,7 @@ export interface ProductsTable {
   preparation_time: number
   allergens?: string
   nutritional_info?: string
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

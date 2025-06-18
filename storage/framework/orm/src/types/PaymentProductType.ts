@@ -10,7 +10,7 @@ export interface PaymentProductsTable {
   status?: string
   image?: string
   provider_id?: string
-  uuid: string
+  uuid?: string
 }
 
 export type PaymentProductRead = PaymentProductsTable

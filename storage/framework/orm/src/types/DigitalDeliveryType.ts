@@ -10,7 +10,7 @@ export interface DigitalDeliveriesTable {
   requires_login?: boolean
   automatic_delivery?: boolean
   status?: string | string[]
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

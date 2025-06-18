@@ -8,7 +8,7 @@ export interface ProductVariantsTable {
   description?: string
   options?: string
   status: string | string[]
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

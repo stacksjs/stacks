@@ -14,7 +14,7 @@ export interface CartItemsTable {
   product_sku?: string
   product_image?: string
   notes?: string
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

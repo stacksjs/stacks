@@ -16,7 +16,7 @@ export interface WaitlistRestaurantsTable {
   seated_at?: Date | string
   no_show_at?: Date | string
   cancelled_at?: Date | string
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

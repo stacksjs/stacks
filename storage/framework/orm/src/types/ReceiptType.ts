@@ -11,7 +11,7 @@ export interface ReceiptsTable {
   pages?: number
   duration?: number
   metadata?: string
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

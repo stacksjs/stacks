@@ -8,7 +8,7 @@ export interface PaymentTransactionsTable {
   amount: number
   type: string
   provider_id?: string
-  uuid: string
+  uuid?: string
 }
 
 export type PaymentTransactionRead = PaymentTransactionsTable

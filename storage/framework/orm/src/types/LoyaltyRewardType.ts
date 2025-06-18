@@ -12,7 +12,7 @@ export interface LoyaltyRewardsTable {
   is_active?: boolean
   expiry_days?: number
   image_url?: string
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

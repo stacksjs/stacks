@@ -12,7 +12,7 @@ export interface ProductItemsTable {
   inventory_count?: number
   sku: string
   custom_options?: string
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

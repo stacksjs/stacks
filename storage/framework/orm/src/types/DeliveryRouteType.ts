@@ -9,7 +9,7 @@ export interface DeliveryRoutesTable {
   delivery_time: number
   total_distance: number
   last_active?: Date | string
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

@@ -8,7 +8,7 @@ export interface ProductUnitsTable {
   type: string
   description?: string
   is_default?: boolean
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

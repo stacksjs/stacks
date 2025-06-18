@@ -10,7 +10,7 @@ export interface TaxRatesTable {
   region: string | string[]
   status?: string | string[]
   is_default?: boolean
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

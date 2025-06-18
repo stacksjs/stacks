@@ -14,7 +14,7 @@ export interface SubscriptionsTable {
   trial_ends_at?: Date | string
   ends_at?: Date | string
   last_used_at?: Date | string
-  uuid: string
+  uuid?: string
 }
 
 export type SubscriptionRead = SubscriptionsTable

@@ -13,7 +13,7 @@ export interface CartsTable {
   currency?: string
   notes?: string
   applied_coupon_id?: string
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

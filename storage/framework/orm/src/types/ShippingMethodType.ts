@@ -8,7 +8,7 @@ export interface ShippingMethodsTable {
   base_rate: number
   free_shipping?: number
   status: string | string[]
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

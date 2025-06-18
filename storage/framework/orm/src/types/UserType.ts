@@ -6,7 +6,7 @@ export interface UsersTable {
   name: string
   email: string
   password: string
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

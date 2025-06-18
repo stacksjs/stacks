@@ -15,7 +15,7 @@ export interface PaymentsTable {
   payment_provider?: string
   refund_amount?: number
   notes?: string
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

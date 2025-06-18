@@ -1655,7 +1655,7 @@ export interface ${formattedTableName}Table {
   }
 
   if (useUuid) {
-    typeString += `  uuid: string\n`
+    typeString += `  uuid?: string\n`
   }
 
   if (useTimestamps) {

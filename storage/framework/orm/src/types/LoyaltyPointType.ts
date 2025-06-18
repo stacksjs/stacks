@@ -10,7 +10,7 @@ export interface LoyaltyPointsTable {
   description?: string
   expiry_date?: Date | string
   is_used?: boolean
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

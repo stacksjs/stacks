@@ -11,7 +11,7 @@ export interface PostsTable {
   published_at?: Date | string
   status: string | string[]
   is_featured?: number
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

@@ -13,7 +13,7 @@ export interface ReviewsTable {
   unhelpful_votes?: number
   purchase_date?: string
   images?: string
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

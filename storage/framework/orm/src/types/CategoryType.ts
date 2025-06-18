@@ -9,7 +9,7 @@ export interface CategoriesTable {
   is_active?: boolean
   parent_category_id?: string
   display_order: number
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }

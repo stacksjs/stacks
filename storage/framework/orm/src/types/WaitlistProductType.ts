@@ -14,7 +14,7 @@ export interface WaitlistProductsTable {
   notified_at?: Date | string
   purchased_at?: Date | string
   cancelled_at?: Date | string
-  uuid: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }
