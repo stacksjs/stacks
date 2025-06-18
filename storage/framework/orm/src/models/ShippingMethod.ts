@@ -137,8 +137,8 @@ export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMe
     }
   }
 
-  get shipping_zone(): ShippingZoneModel | undefined {
-    return this.attributes.shipping_zone
+  get shipping_zones(): ShippingZoneModel[] | [] {
+    return this.attributes.shipping_zones
   }
 
   get id(): number {
@@ -846,6 +846,7 @@ export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMe
 
       updated_at: this.updated_at,
 
+      shipping_zones: this.shipping_zones,
       ...this.customColumns,
     }
 

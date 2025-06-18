@@ -28,7 +28,7 @@ export default {
     observe: true,
   },
 
-  hasOne: ['ShippingZone'],
+  hasMany: ['ShippingZone'],
 
   attributes: {
     name: {

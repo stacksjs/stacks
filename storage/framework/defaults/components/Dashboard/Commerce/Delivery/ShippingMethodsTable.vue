@@ -41,11 +41,11 @@
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
                   <div class="flex flex-wrap gap-1">
                     <span
-                      v-for="zone in method.shipping_zones"
-                      :key="zone"
+                      v-for="(zone, index) in method.shipping_zones"
+                      :key="index"
                       class="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300"
                     >
-                      {{ zone }}
+                      {{ zone.name }}
                     </span>
                   </div>
                 </td>
@@ -53,8 +53,8 @@
                   <span
                     class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
                     :class="{
-                      'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': method.status === 'Active',
-                      'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': method.status === 'Inactive'
+                      'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': method.status === 'active',
+                      'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': method.status === 'inactive'
                     }"
                   >
                     {{ method.status }}
