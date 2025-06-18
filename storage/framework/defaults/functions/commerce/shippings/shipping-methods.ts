@@ -13,7 +13,7 @@ async function fetchShippingMethods() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json() as ShippingMethods[]
+    const { data } = await response.json() as { data: ShippingMethods[] }
 
     if (Array.isArray(data)) {
       shippingMethods.value = data

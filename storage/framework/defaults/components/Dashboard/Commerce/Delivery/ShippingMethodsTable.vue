@@ -27,21 +27,21 @@
                   {{ method.description }}
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                  {{ formatCurrency(method.baseRate) }}
+                  {{ formatCurrency(method.base_rate) }}
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                  {{ formatCurrency(method.handlingFee) }}
+                  {{ formatCurrency(method.free_shipping) }}
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                  <span v-if="method.freeShippingThreshold !== null">
-                    Over {{ formatCurrency(method.freeShippingThreshold) }}
+                  <span v-if="method.free_shipping !== null">
+                    Over {{ formatCurrency(method.free_shipping) }}
                   </span>
                   <span v-else>Not available</span>
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
                   <div class="flex flex-wrap gap-1">
                     <span
-                      v-for="zone in method.zones"
+                      v-for="zone in method.shipping_zones"
                       :key="zone"
                       class="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300"
                     >
@@ -89,7 +89,9 @@ defineProps({
 
 defineEmits(['edit', 'delete'])
 
-const formatCurrency = (amount: number) => {
+const formatCurrency = (amount: number | undefined) => {
+  if (!amount) return 'N/A'
+  
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD'

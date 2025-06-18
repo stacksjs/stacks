@@ -250,6 +250,7 @@ export interface ShippingMethods {
   description?: string
   base_rate: number
   free_shipping?: number
+  shipping_zones?: string[]
   status: string | string[]
   uuid?: string
 }
