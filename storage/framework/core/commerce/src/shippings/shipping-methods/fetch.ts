@@ -29,10 +29,10 @@ export async function fetchById(id: number): Promise<ShippingMethodJsonResponse 
 export async function fetchAll(): Promise<ShippingMethodJsonResponse[]> {
   // Fetch all shipping methods
   const models = await db.selectFrom('shipping_methods').selectAll().execute()
-  
+
   // Get the IDs of all shipping methods
   const shippingMethodIds = models.map(model => model.id)
-  
+
   // Fetch shipping zones for these specific shipping methods using WHERE IN
   const allShippingZones = await db
     .selectFrom('shipping_zones')
@@ -58,4 +58,3 @@ export async function fetchAll(): Promise<ShippingMethodJsonResponse[]> {
     shipping_zones: shippingZonesByMethodId[model.id] || [],
   }))
 }
-

@@ -19,16 +19,16 @@
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
               <tr v-for="rate in rates" :key="rate.id">
                 <td class="whitespace-nowrap py-4.5 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                  {{ getMethodName(rate.methodId) }}
+                  <!-- {{ getMethodName(rate.methodId) }} -->NA
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                  {{ getZoneName(rate.zoneId) }}
+                  <!-- {{ getZoneName(rate.zoneId) }} -->NA
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                  {{ rate.weightFrom }} kg
+                  {{ rate.weight_from }} kg
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                  {{ rate.weightTo }} kg
+                  {{ rate.weight_to }} kg
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
                   {{ formatCurrency(rate.rate) }}

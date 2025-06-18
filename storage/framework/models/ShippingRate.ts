@@ -28,6 +28,8 @@ export default {
     observe: true,
   },
 
+  hasOne: ['ShippingMethod', 'ShippingZone'],
+
   attributes: {
     method: {
       required: true,

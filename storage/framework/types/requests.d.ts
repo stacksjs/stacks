@@ -709,6 +709,7 @@ interface RequestDataShippingZone {
   postal_codes: string
   status: string[] | string
   shipping_method_id: number
+  shipping_rate_id: number
   created_at?: string
   updated_at?: string
 }
@@ -723,6 +724,7 @@ export interface ShippingZoneRequestType extends Request {
   postal_codes: string
   status: string[] | string
   shipping_method_id: number
+  shipping_rate_id: number
   created_at?: string
   updated_at?: string
 }
@@ -1272,6 +1274,7 @@ interface RequestDataShippingMethod {
   base_rate: number
   free_shipping: number
   status: string[] | string
+  shipping_rate_id: number
   created_at?: string
   updated_at?: string
 }
@@ -1285,6 +1288,7 @@ export interface ShippingMethodRequestType extends Request {
   base_rate: number
   free_shipping: number
   status: string[] | string
+  shipping_rate_id: number
   created_at?: string
   updated_at?: string
 }

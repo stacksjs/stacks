@@ -28,7 +28,7 @@ export default {
     observe: true,
   },
 
-  belongsTo: ['ShippingMethod'],
+  belongsTo: ['ShippingMethod', 'ShippingRate'],
 
   attributes: {
     name: {

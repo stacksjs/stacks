@@ -1,6 +1,8 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { NewShippingRate, ShippingRateJsonResponse, ShippingRatesTable, ShippingRateUpdate } from '../types/ShippingRateType'
+import type { ShippingMethodModel } from './ShippingMethod'
+import type { ShippingZoneModel } from './ShippingZone'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -134,6 +136,14 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
     for (const [key, fn] of Object.entries(customSetter)) {
       (model as any)[key] = await fn()
     }
+  }
+
+  get shipping_method(): ShippingMethodModel | undefined {
+    return this.attributes.shipping_method
+  }
+
+  get shipping_zone(): ShippingZoneModel | undefined {
+    return this.attributes.shipping_zone
   }
 
   get id(): number {

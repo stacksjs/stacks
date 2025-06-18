@@ -2,6 +2,7 @@ import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { NewShippingZone, ShippingZoneJsonResponse, ShippingZonesTable, ShippingZoneUpdate } from '../types/ShippingZoneType'
 import type { ShippingMethodModel } from './ShippingMethod'
+import type { ShippingRateModel } from './ShippingRate'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -12,7 +13,7 @@ import { BaseOrm } from '../utils/base'
 
 export class ShippingZoneModel extends BaseOrm<ShippingZoneModel, ShippingZonesTable, ShippingZoneJsonResponse> {
   private readonly hidden: Array<keyof ShippingZoneJsonResponse> = []
-  private readonly fillable: Array<keyof ShippingZoneJsonResponse> = ['name', 'countries', 'regions', 'postal_codes', 'status', 'uuid', 'shipping_method_id']
+  private readonly fillable: Array<keyof ShippingZoneJsonResponse> = ['name', 'countries', 'regions', 'postal_codes', 'status', 'uuid', 'shipping_method_id', 'shipping_rate_id']
   private readonly guarded: Array<keyof ShippingZoneJsonResponse> = []
   protected attributes = {} as ShippingZoneJsonResponse
   protected originalAttributes = {} as ShippingZoneJsonResponse
@@ -143,6 +144,14 @@ export class ShippingZoneModel extends BaseOrm<ShippingZoneModel, ShippingZonesT
 
   get shipping_method(): ShippingMethodModel | undefined {
     return this.attributes.shipping_method
+  }
+
+  get shipping_rate_id(): number {
+    return this.attributes.shipping_rate_id
+  }
+
+  get shipping_rate(): ShippingRateModel | undefined {
+    return this.attributes.shipping_rate
   }
 
   get id(): number {
@@ -825,6 +834,20 @@ export class ShippingZoneModel extends BaseOrm<ShippingZoneModel, ShippingZonesT
     return model
   }
 
+  async shippingRateBelong(): Promise<ShippingRateModel> {
+    if (this.shipping_rate_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const model = await ShippingRate
+      .where('id', '=', this.shipping_rate_id)
+      .first()
+
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
+
+    return model
+  }
+
   toSearchableObject(): Partial<ShippingZoneJsonResponse> {
     return {
       id: this.id,
@@ -866,6 +889,8 @@ export class ShippingZoneModel extends BaseOrm<ShippingZoneModel, ShippingZonesT
 
       shipping_method_id: this.shipping_method_id,
       shipping_method: this.shipping_method,
+      shipping_rate_id: this.shipping_rate_id,
+      shipping_rate: this.shipping_rate,
       ...this.customColumns,
     }
 

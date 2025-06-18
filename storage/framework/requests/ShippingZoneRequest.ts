@@ -19,6 +19,7 @@ interface RequestDataShippingZone {
   postal_codes: string
   status: string[] | string
   shipping_method_id: number
+  shipping_rate_id: number
   created_at?: string
   updated_at?: string
 }
@@ -30,6 +31,7 @@ export class ShippingZoneRequest extends Request<RequestDataShippingZone> implem
   public postal_codes = ''
   public status = []
   public shipping_method_id = 0
+  public shipping_rate_id = 0
   public created_at = ''
   public updated_at = ''
   public uuid = ''

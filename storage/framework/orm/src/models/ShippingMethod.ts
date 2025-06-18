@@ -12,7 +12,7 @@ import { BaseOrm } from '../utils/base'
 
 export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMethodsTable, ShippingMethodJsonResponse> {
   private readonly hidden: Array<keyof ShippingMethodJsonResponse> = []
-  private readonly fillable: Array<keyof ShippingMethodJsonResponse> = ['name', 'description', 'base_rate', 'free_shipping', 'status', 'uuid']
+  private readonly fillable: Array<keyof ShippingMethodJsonResponse> = ['name', 'description', 'base_rate', 'free_shipping', 'status', 'uuid', 'shipping_rate_id']
   private readonly guarded: Array<keyof ShippingMethodJsonResponse> = []
   protected attributes = {} as ShippingMethodJsonResponse
   protected originalAttributes = {} as ShippingMethodJsonResponse
