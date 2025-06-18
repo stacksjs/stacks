@@ -24,17 +24,38 @@ export async function fetchById(id: number): Promise<ShippingMethodJsonResponse 
 }
 
 /**
- * Fetch all shipping methods
+ * Fetch all shipping methods with their shipping zones
  */
 export async function fetchAll(): Promise<ShippingMethodJsonResponse[]> {
+  // Fetch all shipping methods
   const models = await db.selectFrom('shipping_methods').selectAll().execute()
+  
+  // Get the IDs of all shipping methods
+  const shippingMethodIds = models.map(model => model.id)
+  
+  // Fetch shipping zones for these specific shipping methods using WHERE IN
+  const allShippingZones = await db
+    .selectFrom('shipping_zones')
+    .where('shipping_method_id', 'in', shippingMethodIds)
+    .selectAll()
+    .execute()
 
-  for (const model of models) {
-    const shippingZones = await db.selectFrom('shipping_zones').where('shipping_method_id', '=', model.id).selectAll().execute()
+  // Group shipping zones by shipping method ID
+  const shippingZonesByMethodId = allShippingZones.reduce((acc, zone) => {
+    const methodId = zone.shipping_method_id
+    if (methodId !== null && methodId !== undefined) {
+      if (!acc[methodId]) {
+        acc[methodId] = []
+      }
+      acc[methodId].push(zone)
+    }
+    return acc
+  }, {} as Record<number, typeof allShippingZones>)
 
-    model.shipping_zones = shippingZones
-  }
-
-  return models
+  // Attach shipping zones to each shipping method
+  return models.map(model => ({
+    ...model,
+    shipping_zones: shippingZonesByMethodId[model.id] || [],
+  }))
 }
 
