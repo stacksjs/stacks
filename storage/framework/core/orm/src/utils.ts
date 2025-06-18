@@ -1635,13 +1635,26 @@ export async function generateTypeString(
   attributes: ModelElement[],
 ): Promise<string> {
   const formattedTableName = pascalCase(tableName)
+  const formattedModelName = camelCase(modelName)
 
   const useUuid = model.traits?.useUuid
   const useTimestamps = model.traits?.useTimestamps
   const billable = model.traits?.billable
+
+  // Get relations for this model
+  const relations = await getRelations(model, modelName)
+
+  let relationImports = ``
+
+  for (const relation of relations) {
+    const modelRelation = relation.model
+    relationImports += `import type { ${modelRelation}ModelType } from './${modelRelation}Type'\n`
+  }
+
   // Generate base table interface
   let typeString = `import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+${relationImports}
 
 export interface ${formattedTableName}Table {
   id: Generated<number>
@@ -1652,6 +1665,17 @@ export interface ${formattedTableName}Table {
     const entity = mapEntity(attribute)
     const optionalIndicator = attribute.required === false ? '?' : ''
     typeString += `  ${snakeCase(attribute.field)}${optionalIndicator}: ${entity}\n`
+  }
+
+  // Add relation foreign keys to the table interface
+  for (const relation of relations) {
+    const relationType = getRelationType(relation.relationship)
+    const relationCount = getRelationCount(relation.relationship)
+
+    if (relationType === 'belongsType' && !relationCount) {
+      // belongsTo relation - add foreign key
+      typeString += `  ${relation.modelKey}?: number\n`
+    }
   }
 
   if (useUuid) {
@@ -1686,8 +1710,42 @@ export interface ${formattedTableName}Table {
 `
   }
 
+  // Add relation getters and setters
+  for (const relation of relations) {
+    const modelRelation = relation.model
+    const formattedModelRelation = camelCase(modelRelation)
+    const relationType = getRelationType(relation.relationship)
+    const relationCount = getRelationCount(relation.relationship)
+
+    if (relationType === 'hasType' && relationCount === 'many') {
+      const relationName = relation.relationName || formattedModelRelation
+      modelTypeInterface += `  get ${snakeCase(relationName)}(): ${modelRelation}ModelType[] | []
+`
+    }
+
+    if (relationType === 'morphType' && relationCount === 'one') {
+      const morphName = relation.relationName || `${formattedModelName}able`
+      modelTypeInterface += `  get ${snakeCase(morphName)}(): ${modelRelation}ModelType | undefined
+`
+    }
+
+    if (relationType === 'morphType' && relationCount === 'many') {
+      const morphName = relation.relationName || `${formattedModelName}able`
+      modelTypeInterface += `  get ${snakeCase(morphName)}(): ${modelRelation}ModelType[] | []
+`
+    }
+
+    if (relationType === 'belongsType' && !relationCount) {
+      const relationName = camelCase(relation.relationName || formattedModelRelation)
+      modelTypeInterface += `  get ${relation.modelKey}(): number
+  get ${snakeCase(relationName)}(): ${modelRelation}ModelType | undefined
+`
+    }
+  }
+
   if (useUuid) {
-    modelTypeInterface += `  get uuid(): string | undefined
+    modelTypeInterface += `
+  get uuid(): string | undefined
   set uuid(value: string)
 `
   }
@@ -1775,6 +1833,49 @@ export interface ${formattedTableName}Table {
   toSearchableObject: () => Partial<${modelName}JsonResponse>
   toJSON: () => ${modelName}JsonResponse
   parseResult: (model: ${modelName}ModelType) => ${modelName}ModelType
+`
+
+  // Add relation methods to the interface
+  for (const relation of relations) {
+    const modelRelation = relation.model
+    const formattedModelRelation = camelCase(modelRelation)
+    const relationType = getRelationType(relation.relationship)
+    const relationCount = getRelationCount(relation.relationship)
+
+    if (relationType === 'throughType') {
+      const relationName = relation.relationName || formattedModelName + modelRelation
+      if (relation.throughModel !== undefined) {
+        modelTypeInterface += `
+  ${relationName}: () => Promise<${modelRelation}Type | undefined>`
+      }
+    }
+
+    if (relationType === 'morphType' && relationCount === 'one') {
+      const morphName = relation.relationName || `${formattedModelName}able`
+      modelTypeInterface += `
+  ${morphName}: () => Promise<${modelRelation}Type | undefined>`
+    }
+
+    if (relationType === 'morphType' && relationCount === 'many') {
+      const morphName = relation.relationName || `${formattedModelName}able`
+      modelTypeInterface += `
+  ${morphName}: () => Promise<${modelRelation}Type[]>`
+    }
+
+    if (relationType === 'belongsType' && !relationCount) {
+      const relationName = camelCase(relation.relationName || formattedModelRelation)
+      modelTypeInterface += `
+  ${relationName}Belong: () => Promise<${modelRelation}Type>`
+    }
+
+    if (relationType === 'belongsType' && relationCount === 'many') {
+      const relationName = relation.relationName || formattedModelName + plural(pascalCase(modelRelation))
+      modelTypeInterface += `
+  ${relationName}: () => Promise<${modelRelation}Type[]>`
+    }
+  }
+
+  modelTypeInterface += `
 }`
 
   // Generate the response types
@@ -1818,5 +1919,6 @@ export async function writeTypeFile(
   log.info('Writing type file for', modelName)
   const typeString = await generateTypeString(tableName, modelName, model, attributes)
   const typeFilePath = path.frameworkPath(`orm/src/types/${modelName}Type.ts`)
+
   await Bun.write(typeFilePath, typeString)
 }

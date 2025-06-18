@@ -16,12 +16,9 @@ async function fetchShippingZones() {
 
     const { data } = await response.json() as { data: ShippingZones[] }
 
-   
-  
     shippingZones.value = data
-    
+
     return data
-   
   }
   catch (error) {
     console.error('Error fetching shipping zones:', error)

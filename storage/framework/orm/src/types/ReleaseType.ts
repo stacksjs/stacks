@@ -110,4 +110,5 @@ export interface ReleaseModelType {
   toSearchableObject: () => Partial<ReleaseJsonResponse>
   toJSON: () => ReleaseJsonResponse
   parseResult: (model: ReleaseModelType) => ReleaseModelType
+
 }

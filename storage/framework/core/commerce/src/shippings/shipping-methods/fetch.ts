@@ -7,6 +7,7 @@ import { db } from '@stacksjs/database'
 export async function fetchById(id: number): Promise<ShippingMethodJsonResponse | undefined> {
   return await db
     .selectFrom('shipping_methods')
+    .innerJoin('shipping_zones', 'shipping_zones.shipping_method_id', 'shipping_methods.id')
     .where('id', '=', id)
     .selectAll()
     .executeTakeFirst()
@@ -16,5 +17,5 @@ export async function fetchById(id: number): Promise<ShippingMethodJsonResponse 
  * Fetch all shipping methods
  */
 export async function fetchAll(): Promise<ShippingMethodJsonResponse[]> {
-  return await db.selectFrom('shipping_methods').selectAll().execute()
+  return await db.selectFrom('shipping_methods').innerJoin('shipping_zones', 'shipping_zones.shipping_method_id', 'shipping_methods.id').selectAll().execute()
 }

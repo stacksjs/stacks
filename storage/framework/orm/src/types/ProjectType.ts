@@ -116,4 +116,5 @@ export interface ProjectModelType {
   toSearchableObject: () => Partial<ProjectJsonResponse>
   toJSON: () => ProjectJsonResponse
   parseResult: (model: ProjectModelType) => ProjectModelType
+
 }

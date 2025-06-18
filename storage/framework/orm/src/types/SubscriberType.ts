@@ -107,4 +107,5 @@ export interface SubscriberModelType {
   toSearchableObject: () => Partial<SubscriberJsonResponse>
   toJSON: () => SubscriberJsonResponse
   parseResult: (model: SubscriberModelType) => SubscriberModelType
+
 }

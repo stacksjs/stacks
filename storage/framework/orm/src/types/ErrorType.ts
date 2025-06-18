@@ -119,4 +119,5 @@ export interface ErrorModelType {
   toSearchableObject: () => Partial<ErrorJsonResponse>
   toJSON: () => ErrorJsonResponse
   parseResult: (model: ErrorModelType) => ErrorModelType
+
 }

@@ -53,6 +53,7 @@ export interface PaymentProductModelType {
   set image(value: string)
   get providerId(): string | undefined
   set providerId(value: string)
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -122,4 +123,5 @@ export interface PaymentProductModelType {
   toSearchableObject: () => Partial<PaymentProductJsonResponse>
   toJSON: () => PaymentProductJsonResponse
   parseResult: (model: PaymentProductModelType) => PaymentProductModelType
+
 }

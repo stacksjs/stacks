@@ -116,4 +116,5 @@ export interface WebsocketModelType {
   toSearchableObject: () => Partial<WebsocketJsonResponse>
   toJSON: () => WebsocketJsonResponse
   parseResult: (model: WebsocketModelType) => WebsocketModelType
+
 }

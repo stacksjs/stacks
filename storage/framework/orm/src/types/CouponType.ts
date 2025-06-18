@@ -1,5 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { OrderModelType } from './OrderType'
+import type { ProductModelType } from './ProductType'
 
 export interface CouponsTable {
   id: Generated<number>
@@ -17,6 +19,7 @@ export interface CouponsTable {
   end_date: Date | string
   applicable_products?: string
   applicable_categories?: string
+  product_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -76,6 +79,10 @@ export interface CouponModelType {
   set applicableProducts(value: string)
   get applicableCategories(): string | undefined
   set applicableCategories(value: string)
+  get order(): OrderModelType[] | []
+  get product_id(): number
+  get product(): ProductModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -149,4 +156,6 @@ export interface CouponModelType {
   toSearchableObject: () => Partial<CouponJsonResponse>
   toJSON: () => CouponJsonResponse
   parseResult: (model: CouponModelType) => CouponModelType
+
+  productBelong: () => Promise<ProductType>
 }

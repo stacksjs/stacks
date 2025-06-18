@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { UserModelType } from './UserType'
 
 export interface PersonalAccessTokensTable {
   id: Generated<number>
@@ -13,6 +14,7 @@ export interface PersonalAccessTokensTable {
   ip_address?: string
   device_name?: string
   is_single_use?: boolean
+  user_id?: number
   created_at?: string
   updated_at?: string
 }
@@ -63,6 +65,8 @@ export interface PersonalAccessTokenModelType {
   set deviceName(value: string)
   get isSingleUse(): boolean | undefined
   set isSingleUse(value: boolean)
+  get user_id(): number
+  get user(): UserModelType | undefined
 
   get created_at(): string | undefined
   get updated_at(): string | undefined
@@ -134,4 +138,6 @@ export interface PersonalAccessTokenModelType {
   toSearchableObject: () => Partial<PersonalAccessTokenJsonResponse>
   toJSON: () => PersonalAccessTokenJsonResponse
   parseResult: (model: PersonalAccessTokenModelType) => PersonalAccessTokenModelType
+
+  userBelong: () => Promise<UserType>
 }

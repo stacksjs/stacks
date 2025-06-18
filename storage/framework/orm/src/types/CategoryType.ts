@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { ProductModelType } from './ProductType'
 
 export interface CategoriesTable {
   id: Generated<number>
@@ -52,6 +53,8 @@ export interface CategoryModelType {
   set parentCategoryId(value: string)
   get displayOrder(): number
   set displayOrder(value: number)
+  get product(): ProductModelType[] | []
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -125,4 +128,5 @@ export interface CategoryModelType {
   toSearchableObject: () => Partial<CategoryJsonResponse>
   toJSON: () => CategoryJsonResponse
   parseResult: (model: CategoryModelType) => CategoryModelType
+
 }

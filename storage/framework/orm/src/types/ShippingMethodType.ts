@@ -49,6 +49,7 @@ export interface ShippingMethodModelType {
   set freeShipping(value: number)
   get status(): string | string[]
   set status(value: string | string[])
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -122,4 +123,5 @@ export interface ShippingMethodModelType {
   toSearchableObject: () => Partial<ShippingMethodJsonResponse>
   toJSON: () => ShippingMethodJsonResponse
   parseResult: (model: ShippingMethodModelType) => ShippingMethodModelType
+
 }

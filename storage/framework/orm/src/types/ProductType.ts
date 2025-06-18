@@ -1,5 +1,13 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CategoryModelType } from './CategoryType'
+import type { CouponModelType } from './CouponType'
+import type { LicenseKeyModelType } from './LicenseKeyType'
+import type { ManufacturerModelType } from './ManufacturerType'
+import type { ProductUnitModelType } from './ProductUnitType'
+import type { ProductVariantModelType } from './ProductVariantType'
+import type { ReviewModelType } from './ReviewType'
+import type { WaitlistProductModelType } from './WaitlistProductType'
 
 export interface ProductsTable {
   id: Generated<number>
@@ -12,6 +20,8 @@ export interface ProductsTable {
   preparation_time: number
   allergens?: string
   nutritional_info?: string
+  category_id?: number
+  manufacturer_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -61,6 +71,17 @@ export interface ProductModelType {
   set allergens(value: string)
   get nutritionalInfo(): string | undefined
   set nutritionalInfo(value: string)
+  get review(): ReviewModelType[] | []
+  get product_unit(): ProductUnitModelType[] | []
+  get product_variant(): ProductVariantModelType[] | []
+  get license_key(): LicenseKeyModelType[] | []
+  get waitlist_product(): WaitlistProductModelType[] | []
+  get coupon(): CouponModelType[] | []
+  get category_id(): number
+  get category(): CategoryModelType | undefined
+  get manufacturer_id(): number
+  get manufacturer(): ManufacturerModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -134,4 +155,7 @@ export interface ProductModelType {
   toSearchableObject: () => Partial<ProductJsonResponse>
   toJSON: () => ProductJsonResponse
   parseResult: (model: ProductModelType) => ProductModelType
+
+  categoryBelong: () => Promise<CategoryType>
+  manufacturerBelong: () => Promise<ManufacturerType>
 }

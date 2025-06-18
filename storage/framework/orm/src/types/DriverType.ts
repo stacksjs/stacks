@@ -1,5 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { DeliveryRouteModelType } from './DeliveryRouteType'
+import type { UserModelType } from './UserType'
 
 export interface DriversTable {
   id: Generated<number>
@@ -8,6 +10,7 @@ export interface DriversTable {
   vehicle_number: string
   license: string
   status?: string | string[]
+  user_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -49,6 +52,10 @@ export interface DriverModelType {
   set license(value: string)
   get status(): string | string[] | undefined
   set status(value: string | string[])
+  get delivery_route(): DeliveryRouteModelType[] | []
+  get user_id(): number
+  get user(): UserModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -122,4 +129,6 @@ export interface DriverModelType {
   toSearchableObject: () => Partial<DriverJsonResponse>
   toJSON: () => DriverJsonResponse
   parseResult: (model: DriverModelType) => DriverModelType
+
+  userBelong: () => Promise<UserType>
 }

@@ -1,10 +1,13 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { PostModelType } from './PostType'
+import type { UserModelType } from './UserType'
 
 export interface AuthorsTable {
   id: Generated<number>
   name: string
   email: string
+  user_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -40,6 +43,10 @@ export interface AuthorModelType {
   set name(value: string)
   get email(): string
   set email(value: string)
+  get post(): PostModelType[] | []
+  get user_id(): number
+  get user(): UserModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -113,4 +120,6 @@ export interface AuthorModelType {
   toSearchableObject: () => Partial<AuthorJsonResponse>
   toJSON: () => AuthorJsonResponse
   parseResult: (model: AuthorModelType) => AuthorModelType
+
+  userBelong: () => Promise<UserType>
 }

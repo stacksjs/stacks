@@ -119,4 +119,5 @@ export interface FailedJobModelType {
   toSearchableObject: () => Partial<FailedJobJsonResponse>
   toJSON: () => FailedJobJsonResponse
   parseResult: (model: FailedJobModelType) => FailedJobModelType
+
 }

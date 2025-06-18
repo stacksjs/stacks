@@ -119,4 +119,5 @@ export interface JobModelType {
   toSearchableObject: () => Partial<JobJsonResponse>
   toJSON: () => JobJsonResponse
   parseResult: (model: JobModelType) => JobModelType
+
 }

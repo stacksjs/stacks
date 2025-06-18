@@ -1,5 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CustomerModelType } from './CustomerType'
+import type { OrderModelType } from './OrderType'
 
 export interface PaymentsTable {
   id: Generated<number>
@@ -15,6 +17,8 @@ export interface PaymentsTable {
   payment_provider?: string
   refund_amount?: number
   notes?: string
+  order_id?: number
+  customer_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -70,6 +74,11 @@ export interface PaymentModelType {
   set refundAmount(value: number)
   get notes(): string | undefined
   set notes(value: string)
+  get order_id(): number
+  get order(): OrderModelType | undefined
+  get customer_id(): number
+  get customer(): CustomerModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -143,4 +152,7 @@ export interface PaymentModelType {
   toSearchableObject: () => Partial<PaymentJsonResponse>
   toJSON: () => PaymentJsonResponse
   parseResult: (model: PaymentModelType) => PaymentModelType
+
+  orderBelong: () => Promise<OrderType>
+  customerBelong: () => Promise<CustomerType>
 }

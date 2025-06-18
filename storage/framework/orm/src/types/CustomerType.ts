@@ -1,5 +1,13 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { GiftCardModelType } from './GiftCardType'
+import type { LicenseKeyModelType } from './LicenseKeyType'
+import type { OrderModelType } from './OrderType'
+import type { PaymentModelType } from './PaymentType'
+import type { ReviewModelType } from './ReviewType'
+import type { UserModelType } from './UserType'
+import type { WaitlistProductModelType } from './WaitlistProductType'
+import type { WaitlistRestaurantModelType } from './WaitlistRestaurantType'
 
 export interface CustomersTable {
   id: Generated<number>
@@ -10,6 +18,7 @@ export interface CustomersTable {
   last_order?: string
   status: string | string[]
   avatar?: string
+  user_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -55,6 +64,16 @@ export interface CustomerModelType {
   set status(value: string | string[])
   get avatar(): string | undefined
   set avatar(value: string)
+  get order(): OrderModelType[] | []
+  get gift_card(): GiftCardModelType[] | []
+  get review(): ReviewModelType[] | []
+  get payment(): PaymentModelType[] | []
+  get license_key(): LicenseKeyModelType[] | []
+  get waitlist_product(): WaitlistProductModelType[] | []
+  get waitlist_restaurant(): WaitlistRestaurantModelType[] | []
+  get user_id(): number
+  get user(): UserModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -128,4 +147,6 @@ export interface CustomerModelType {
   toSearchableObject: () => Partial<CustomerJsonResponse>
   toJSON: () => CustomerJsonResponse
   parseResult: (model: CustomerModelType) => CustomerModelType
+
+  userBelong: () => Promise<UserType>
 }

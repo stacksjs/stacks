@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { UserModelType } from './UserType'
 
 export interface SubscriptionsTable {
   id: Generated<number>
@@ -14,6 +15,7 @@ export interface SubscriptionsTable {
   trial_ends_at?: Date | string
   ends_at?: Date | string
   last_used_at?: Date | string
+  user_id?: number
   uuid?: string
 }
 
@@ -65,6 +67,9 @@ export interface SubscriptionModelType {
   set endsAt(value: Date | string)
   get lastUsedAt(): Date | string | undefined
   set lastUsedAt(value: Date | string)
+  get user_id(): number
+  get user(): UserModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -134,4 +139,6 @@ export interface SubscriptionModelType {
   toSearchableObject: () => Partial<SubscriptionJsonResponse>
   toJSON: () => SubscriptionJsonResponse
   parseResult: (model: SubscriptionModelType) => SubscriptionModelType
+
+  userBelong: () => Promise<UserType>
 }

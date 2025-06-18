@@ -55,6 +55,7 @@ export interface DigitalDeliveryModelType {
   set automaticDelivery(value: boolean)
   get status(): string | string[] | undefined
   set status(value: string | string[])
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -128,4 +129,5 @@ export interface DigitalDeliveryModelType {
   toSearchableObject: () => Partial<DigitalDeliveryJsonResponse>
   toJSON: () => DigitalDeliveryJsonResponse
   parseResult: (model: DigitalDeliveryModelType) => DigitalDeliveryModelType
+
 }

@@ -1,5 +1,8 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CartItemModelType } from './CartItemType'
+import type { CouponModelType } from './CouponType'
+import type { CustomerModelType } from './CustomerType'
 
 export interface CartsTable {
   id: Generated<number>
@@ -13,6 +16,8 @@ export interface CartsTable {
   currency?: string
   notes?: string
   applied_coupon_id?: string
+  customer_id?: number
+  coupon_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -64,6 +69,12 @@ export interface CartModelType {
   set notes(value: string)
   get appliedCouponId(): string | undefined
   set appliedCouponId(value: string)
+  get cart_item(): CartItemModelType[] | []
+  get customer_id(): number
+  get customer(): CustomerModelType | undefined
+  get coupon_id(): number
+  get coupon(): CouponModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -137,4 +148,7 @@ export interface CartModelType {
   toSearchableObject: () => Partial<CartJsonResponse>
   toJSON: () => CartJsonResponse
   parseResult: (model: CartModelType) => CartModelType
+
+  customerBelong: () => Promise<CustomerType>
+  couponBelong: () => Promise<CouponType>
 }

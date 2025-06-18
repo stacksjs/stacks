@@ -49,6 +49,7 @@ export interface ShippingRateModelType {
   set weightTo(value: number)
   get rate(): number
   set rate(value: number)
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -122,4 +123,5 @@ export interface ShippingRateModelType {
   toSearchableObject: () => Partial<ShippingRateJsonResponse>
   toJSON: () => ShippingRateJsonResponse
   parseResult: (model: ShippingRateModelType) => ShippingRateModelType
+
 }

@@ -1,5 +1,10 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CouponModelType } from './CouponType'
+import type { CustomerModelType } from './CustomerType'
+import type { LicenseKeyModelType } from './LicenseKeyType'
+import type { OrderItemModelType } from './OrderItemType'
+import type { PaymentModelType } from './PaymentType'
 
 export interface OrdersTable {
   id: Generated<number>
@@ -14,6 +19,8 @@ export interface OrdersTable {
   special_instructions?: string
   estimated_delivery_time?: string
   applied_coupon_id?: string
+  customer_id?: number
+  coupon_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -67,6 +74,14 @@ export interface OrderModelType {
   set estimatedDeliveryTime(value: string)
   get appliedCouponId(): string | undefined
   set appliedCouponId(value: string)
+  get order_item(): OrderItemModelType[] | []
+  get payment(): PaymentModelType[] | []
+  get license_key(): LicenseKeyModelType[] | []
+  get customer_id(): number
+  get customer(): CustomerModelType | undefined
+  get coupon_id(): number
+  get coupon(): CouponModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -140,4 +155,7 @@ export interface OrderModelType {
   toSearchableObject: () => Partial<OrderJsonResponse>
   toJSON: () => OrderJsonResponse
   parseResult: (model: OrderModelType) => OrderModelType
+
+  customerBelong: () => Promise<CustomerType>
+  couponBelong: () => Promise<CouponType>
 }

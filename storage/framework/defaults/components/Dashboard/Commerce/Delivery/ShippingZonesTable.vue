@@ -54,7 +54,7 @@
                       'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': zone.status === 'inactive'
                     }"
                   >
-                    {{ zone.status.charAt(0).toUpperCase() + zone.status.slice(1) }}
+                    {{ zone.status }}
                   </span>
                 </td>
                 <td class="relative whitespace-nowrap py-4.5 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">

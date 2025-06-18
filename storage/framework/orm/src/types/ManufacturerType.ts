@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { ProductModelType } from './ProductType'
 
 export interface ManufacturersTable {
   id: Generated<number>
@@ -46,6 +47,8 @@ export interface ManufacturerModelType {
   set country(value: string)
   get featured(): boolean | undefined
   set featured(value: boolean)
+  get product(): ProductModelType[] | []
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -119,4 +122,5 @@ export interface ManufacturerModelType {
   toSearchableObject: () => Partial<ManufacturerJsonResponse>
   toJSON: () => ManufacturerJsonResponse
   parseResult: (model: ManufacturerModelType) => ManufacturerModelType
+
 }

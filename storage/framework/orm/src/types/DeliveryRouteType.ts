@@ -52,6 +52,7 @@ export interface DeliveryRouteModelType {
   set totalDistance(value: number)
   get lastActive(): Date | string | undefined
   set lastActive(value: Date | string)
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -125,4 +126,5 @@ export interface DeliveryRouteModelType {
   toSearchableObject: () => Partial<DeliveryRouteJsonResponse>
   toJSON: () => DeliveryRouteJsonResponse
   parseResult: (model: DeliveryRouteModelType) => DeliveryRouteModelType
+
 }

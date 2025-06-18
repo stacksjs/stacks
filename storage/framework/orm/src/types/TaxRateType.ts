@@ -55,6 +55,7 @@ export interface TaxRateModelType {
   set status(value: string | string[])
   get isDefault(): boolean | undefined
   set isDefault(value: boolean)
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -128,4 +129,5 @@ export interface TaxRateModelType {
   toSearchableObject: () => Partial<TaxRateJsonResponse>
   toJSON: () => TaxRateJsonResponse
   parseResult: (model: TaxRateModelType) => TaxRateModelType
+
 }

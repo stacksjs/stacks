@@ -1,5 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { PaymentMethodModelType } from './PaymentMethodType'
+import type { UserModelType } from './UserType'
 
 export interface PaymentTransactionsTable {
   id: Generated<number>
@@ -8,6 +10,8 @@ export interface PaymentTransactionsTable {
   amount: number
   type: string
   provider_id?: string
+  user_id?: number
+  payment_method_id?: number
   uuid?: string
 }
 
@@ -47,6 +51,11 @@ export interface PaymentTransactionModelType {
   set type(value: string)
   get providerId(): string | undefined
   set providerId(value: string)
+  get user_id(): number
+  get user(): UserModelType | undefined
+  get payment_method_id(): number
+  get payment_method(): PaymentMethodModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -116,4 +125,7 @@ export interface PaymentTransactionModelType {
   toSearchableObject: () => Partial<PaymentTransactionJsonResponse>
   toJSON: () => PaymentTransactionJsonResponse
   parseResult: (model: PaymentTransactionModelType) => PaymentTransactionModelType
+
+  userBelong: () => Promise<UserType>
+  paymentMethodBelong: () => Promise<PaymentMethodType>
 }

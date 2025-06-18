@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { PersonalAccessTokenModelType } from './PersonalAccessTokenType'
 
 export interface TeamsTable {
   id: Generated<number>
@@ -57,6 +58,7 @@ export interface TeamModelType {
   set path(value: string)
   get isPersonal(): boolean
   set isPersonal(value: boolean)
+  get personal_access_token(): PersonalAccessTokenModelType[] | []
 
   get created_at(): string | undefined
   get updated_at(): string | undefined
@@ -128,4 +130,6 @@ export interface TeamModelType {
   toSearchableObject: () => Partial<TeamJsonResponse>
   toJSON: () => TeamJsonResponse
   parseResult: (model: TeamModelType) => TeamModelType
+
+  teamUsers: () => Promise<UserType[]>
 }

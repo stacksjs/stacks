@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { PrintDeviceModelType } from './PrintDeviceType'
 
 export interface ReceiptsTable {
   id: Generated<number>
@@ -11,6 +12,7 @@ export interface ReceiptsTable {
   pages?: number
   duration?: number
   metadata?: string
+  print_device_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -58,6 +60,9 @@ export interface ReceiptModelType {
   set duration(value: number)
   get metadata(): string | undefined
   set metadata(value: string)
+  get print_device_id(): number
+  get print_device(): PrintDeviceModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -131,4 +136,6 @@ export interface ReceiptModelType {
   toSearchableObject: () => Partial<ReceiptJsonResponse>
   toJSON: () => ReceiptJsonResponse
   parseResult: (model: ReceiptModelType) => ReceiptModelType
+
+  printDeviceBelong: () => Promise<PrintDeviceType>
 }

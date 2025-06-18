@@ -1,5 +1,8 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CategoryModelType } from './CategoryType'
+import type { ManufacturerModelType } from './ManufacturerType'
+import type { ProductModelType } from './ProductType'
 
 export interface ProductItemsTable {
   id: Generated<number>
@@ -12,6 +15,9 @@ export interface ProductItemsTable {
   inventory_count?: number
   sku: string
   custom_options?: string
+  product_id?: number
+  manufacturer_id?: number
+  category_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -61,6 +67,13 @@ export interface ProductItemModelType {
   set sku(value: string)
   get customOptions(): string | undefined
   set customOptions(value: string)
+  get product_id(): number
+  get product(): ProductModelType | undefined
+  get manufacturer_id(): number
+  get manufacturer(): ManufacturerModelType | undefined
+  get category_id(): number
+  get category(): CategoryModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -134,4 +147,8 @@ export interface ProductItemModelType {
   toSearchableObject: () => Partial<ProductItemJsonResponse>
   toJSON: () => ProductItemJsonResponse
   parseResult: (model: ProductItemModelType) => ProductItemModelType
+
+  productBelong: () => Promise<ProductType>
+  manufacturerBelong: () => Promise<ManufacturerType>
+  categoryBelong: () => Promise<CategoryType>
 }

@@ -55,6 +55,7 @@ export interface LoyaltyPointModelType {
   set expiryDate(value: Date | string)
   get isUsed(): boolean | undefined
   set isUsed(value: boolean)
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -128,4 +129,5 @@ export interface LoyaltyPointModelType {
   toSearchableObject: () => Partial<LoyaltyPointJsonResponse>
   toJSON: () => LoyaltyPointJsonResponse
   parseResult: (model: LoyaltyPointModelType) => LoyaltyPointModelType
+
 }

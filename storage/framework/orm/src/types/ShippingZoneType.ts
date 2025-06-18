@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { ShippingMethodModelType } from './ShippingMethodType'
 
 export interface ShippingZonesTable {
   id: Generated<number>
@@ -8,6 +9,7 @@ export interface ShippingZonesTable {
   regions?: string
   postal_codes?: string
   status: string | string[]
+  shipping_method_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -49,6 +51,9 @@ export interface ShippingZoneModelType {
   set postalCodes(value: string)
   get status(): string | string[]
   set status(value: string | string[])
+  get shipping_method_id(): number
+  get shipping_method(): ShippingMethodModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -122,4 +127,6 @@ export interface ShippingZoneModelType {
   toSearchableObject: () => Partial<ShippingZoneJsonResponse>
   toJSON: () => ShippingZoneJsonResponse
   parseResult: (model: ShippingZoneModelType) => ShippingZoneModelType
+
+  shippingMethodBelong: () => Promise<ShippingMethodType>
 }

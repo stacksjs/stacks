@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CustomerModelType } from './CustomerType'
 
 export interface WaitlistRestaurantsTable {
   id: Generated<number>
@@ -16,6 +17,7 @@ export interface WaitlistRestaurantsTable {
   seated_at?: Date | string
   no_show_at?: Date | string
   cancelled_at?: Date | string
+  customer_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -73,6 +75,9 @@ export interface WaitlistRestaurantModelType {
   set noShowAt(value: Date | string)
   get cancelledAt(): Date | string | undefined
   set cancelledAt(value: Date | string)
+  get customer_id(): number
+  get customer(): CustomerModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -146,4 +151,6 @@ export interface WaitlistRestaurantModelType {
   toSearchableObject: () => Partial<WaitlistRestaurantJsonResponse>
   toJSON: () => WaitlistRestaurantJsonResponse
   parseResult: (model: WaitlistRestaurantModelType) => WaitlistRestaurantModelType
+
+  customerBelong: () => Promise<CustomerType>
 }

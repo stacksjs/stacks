@@ -1,5 +1,8 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CustomerModelType } from './CustomerType'
+import type { OauthAccessTokenModelType } from './OauthAccessTokenType'
+import type { PersonalAccessTokenModelType } from './PersonalAccessTokenType'
 
 export interface UsersTable {
   id: Generated<number>
@@ -43,6 +46,10 @@ export interface UserModelType {
   set email(value: string)
   get password(): string
   set password(value: string)
+  get personal_access_token(): PersonalAccessTokenModelType[] | []
+  get oauth_access_token(): OauthAccessTokenModelType[] | []
+  get customer(): CustomerModelType[] | []
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -116,4 +123,6 @@ export interface UserModelType {
   toSearchableObject: () => Partial<UserJsonResponse>
   toJSON: () => UserJsonResponse
   parseResult: (model: UserModelType) => UserModelType
+
+  userTeams: () => Promise<TeamType[]>
 }

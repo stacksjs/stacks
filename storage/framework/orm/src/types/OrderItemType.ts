@@ -1,11 +1,15 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { OrderModelType } from './OrderType'
+import type { ProductModelType } from './ProductType'
 
 export interface OrderItemsTable {
   id: Generated<number>
   quantity: number
   price: number
   special_instructions?: string
+  order_id?: number
+  product_id?: number
   created_at?: string
   updated_at?: string
 }
@@ -42,6 +46,10 @@ export interface OrderItemModelType {
   set price(value: number)
   get specialInstructions(): string | undefined
   set specialInstructions(value: string)
+  get order_id(): number
+  get order(): OrderModelType | undefined
+  get product_id(): number
+  get product(): ProductModelType | undefined
 
   get created_at(): string | undefined
   get updated_at(): string | undefined
@@ -113,4 +121,7 @@ export interface OrderItemModelType {
   toSearchableObject: () => Partial<OrderItemJsonResponse>
   toJSON: () => OrderItemJsonResponse
   parseResult: (model: OrderItemModelType) => OrderItemModelType
+
+  orderBelong: () => Promise<OrderType>
+  productBelong: () => Promise<ProductType>
 }

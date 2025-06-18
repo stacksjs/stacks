@@ -1,5 +1,8 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CustomerModelType } from './CustomerType'
+import type { OrderModelType } from './OrderType'
+import type { ProductModelType } from './ProductType'
 
 export interface LicenseKeysTable {
   id: Generated<number>
@@ -7,6 +10,9 @@ export interface LicenseKeysTable {
   template: string | string[]
   expiry_date: Date | string
   status?: string | string[]
+  customer_id?: number
+  product_id?: number
+  order_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -46,6 +52,13 @@ export interface LicenseKeyModelType {
   set expiryDate(value: Date | string)
   get status(): string | string[] | undefined
   set status(value: string | string[])
+  get customer_id(): number
+  get customer(): CustomerModelType | undefined
+  get product_id(): number
+  get product(): ProductModelType | undefined
+  get order_id(): number
+  get order(): OrderModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -119,4 +132,8 @@ export interface LicenseKeyModelType {
   toSearchableObject: () => Partial<LicenseKeyJsonResponse>
   toJSON: () => LicenseKeyJsonResponse
   parseResult: (model: LicenseKeyModelType) => LicenseKeyModelType
+
+  customerBelong: () => Promise<CustomerType>
+  productBelong: () => Promise<ProductType>
+  orderBelong: () => Promise<OrderType>
 }

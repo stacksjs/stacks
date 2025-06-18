@@ -125,4 +125,5 @@ export interface LogModelType {
   toSearchableObject: () => Partial<LogJsonResponse>
   toJSON: () => LogJsonResponse
   parseResult: (model: LogModelType) => LogModelType
+
 }

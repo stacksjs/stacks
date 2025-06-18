@@ -1,5 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CustomerModelType } from './CustomerType'
+import type { ProductModelType } from './ProductType'
 
 export interface ReviewsTable {
   id: Generated<number>
@@ -13,6 +15,8 @@ export interface ReviewsTable {
   unhelpful_votes?: number
   purchase_date?: string
   images?: string
+  product_id?: number
+  customer_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -64,6 +68,11 @@ export interface ReviewModelType {
   set purchaseDate(value: string)
   get images(): string | undefined
   set images(value: string)
+  get product_id(): number
+  get product(): ProductModelType | undefined
+  get customer_id(): number
+  get customer(): CustomerModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -137,4 +146,7 @@ export interface ReviewModelType {
   toSearchableObject: () => Partial<ReviewJsonResponse>
   toJSON: () => ReviewJsonResponse
   parseResult: (model: ReviewModelType) => ReviewModelType
+
+  productBelong: () => Promise<ProductType>
+  customerBelong: () => Promise<CustomerType>
 }

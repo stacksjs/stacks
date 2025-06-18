@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { ProductModelType } from './ProductType'
 
 export interface LoyaltyRewardsTable {
   id: Generated<number>
@@ -12,6 +13,7 @@ export interface LoyaltyRewardsTable {
   is_active?: boolean
   expiry_days?: number
   image_url?: string
+  product_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -61,6 +63,9 @@ export interface LoyaltyRewardModelType {
   set expiryDays(value: number)
   get imageUrl(): string | undefined
   set imageUrl(value: string)
+  get product_id(): number
+  get product(): ProductModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -134,4 +139,6 @@ export interface LoyaltyRewardModelType {
   toSearchableObject: () => Partial<LoyaltyRewardJsonResponse>
   toJSON: () => LoyaltyRewardJsonResponse
   parseResult: (model: LoyaltyRewardModelType) => LoyaltyRewardModelType
+
+  productBelong: () => Promise<ProductType>
 }

@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { AuthorModelType } from './AuthorType'
 
 export interface PagesTable {
   id: Generated<number>
@@ -8,6 +9,7 @@ export interface PagesTable {
   views?: number
   published_at?: Date | string
   conversions?: number
+  author_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -49,6 +51,9 @@ export interface PageModelType {
   set publishedAt(value: Date | string)
   get conversions(): number | undefined
   set conversions(value: number)
+  get author_id(): number
+  get author(): AuthorModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -122,4 +127,6 @@ export interface PageModelType {
   toSearchableObject: () => Partial<PageJsonResponse>
   toJSON: () => PageJsonResponse
   parseResult: (model: PageModelType) => PageModelType
+
+  authorBelong: () => Promise<AuthorType>
 }

@@ -128,4 +128,5 @@ export interface RequestModelType {
   toSearchableObject: () => Partial<RequestJsonResponse>
   toJSON: () => RequestJsonResponse
   parseResult: (model: RequestModelType) => RequestModelType
+
 }

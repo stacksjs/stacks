@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { UserModelType } from './UserType'
 
 export interface DeploymentsTable {
   id: Generated<number>
@@ -10,6 +11,7 @@ export interface DeploymentsTable {
   execution_time: number
   deploy_script: string
   terminal_output: string
+  user_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -55,6 +57,9 @@ export interface DeploymentModelType {
   set deployScript(value: string)
   get terminalOutput(): string
   set terminalOutput(value: string)
+  get user_id(): number
+  get user(): UserModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -128,4 +133,6 @@ export interface DeploymentModelType {
   toSearchableObject: () => Partial<DeploymentJsonResponse>
   toJSON: () => DeploymentJsonResponse
   parseResult: (model: DeploymentModelType) => DeploymentModelType
+
+  userBelong: () => Promise<UserType>
 }

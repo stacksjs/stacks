@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { OrderModelType } from './OrderType'
 
 export interface TransactionsTable {
   id: Generated<number>
@@ -10,6 +11,7 @@ export interface TransactionsTable {
   transaction_reference?: string
   loyalty_points_earned?: number
   loyalty_points_redeemed?: number
+  order_id?: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -55,6 +57,9 @@ export interface TransactionModelType {
   set loyaltyPointsEarned(value: number)
   get loyaltyPointsRedeemed(): number | undefined
   set loyaltyPointsRedeemed(value: number)
+  get order_id(): number
+  get order(): OrderModelType | undefined
+
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -128,4 +133,6 @@ export interface TransactionModelType {
   toSearchableObject: () => Partial<TransactionJsonResponse>
   toJSON: () => TransactionJsonResponse
   parseResult: (model: TransactionModelType) => TransactionModelType
+
+  orderBelong: () => Promise<OrderType>
 }
