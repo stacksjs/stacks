@@ -53,7 +53,7 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/eslint-config": "^4.14.0-beta.3",
     "bun-git-hooks": "^0.2.16",
-    "lint-staged": "^16.1.0",
+    "lint-staged": "^16.1.2",
     "publint": "^0.3.12"
   }
 }

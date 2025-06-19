@@ -34,7 +34,7 @@
   "dependencies": {
     "@stacksjs/ui": "workspace:*",
     "highlight.js": "^11.11.1",
-    "vue": "^3.5.16"
+    "vue": "^3.5.17"
   },
   "devDependencies": {
     "@iconify-json/hugeicons": "^1.2.5",
