@@ -221,12 +221,15 @@ export interface LicenseKeys {
   key: string
   template: string
   customer: Customers
+  customer_id: number
   product: string
   order_id: number
   created_at: Date | string
   expiry_date: Date | string
   status: string
 }
+
+export type NewLicenseKey = Omit<LicenseKeys, 'id' | 'customer' | 'created_at'>
 
 export interface LicenseTemplates {
   id: number
@@ -297,7 +300,7 @@ export interface ShippingRates {
   uuid?: string
 }
 
-export type NewShippingRate = Omit<ShippingRates, 'id'>
+export type NewShippingRate = Omit<ShippingRates, 'id' | 'shipping_method' | 'shipping_zone'>
 
 export interface ShippingZones {
   id: number
