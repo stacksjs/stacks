@@ -1,7 +1,7 @@
 import type { LicenseKeyRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { licenses } from '@stacksjs/commerce'
+import { shippings } from '@stacksjs/commerce'
 
 import { response } from '@stacksjs/router'
 
@@ -10,7 +10,9 @@ export default new Action({
   description: 'LicenseKey Store ORM Action',
   method: 'POST',
   async handle(request: LicenseKeyRequestType) {
-    const results = await licenses.store(request)
+    const data = await request.all()
+    
+    const results = await shippings.licenses.store(data)
 
     return response.json(results)
   },
