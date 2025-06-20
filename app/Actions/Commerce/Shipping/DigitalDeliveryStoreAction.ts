@@ -10,7 +10,9 @@ export default new Action({
   description: 'DigitalDelivery Store ORM Action',
   method: 'POST',
   async handle(request: DigitalDeliveryRequestType) {
-    const model = await shippings.digital.store(request)
+    const data = await request.all()
+    
+    const model = await shippings.digital.store(data)
 
     return response.json(model)
   },

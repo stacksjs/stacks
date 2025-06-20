@@ -38,12 +38,9 @@
           <td class="whitespace-nowrap px-4 py-4.5 text-sm">
             <span
               class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
-              :class="{
-                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': method.status === 'Active',
-                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': method.status === 'Inactive'
-              }"
+              :class="statusClass(method.status as string)"
             >
-              {{ method.status }}
+              {{ uppercaseFirstLetter(method.status as string) }}
             </span>
           </td>
           <td class="relative whitespace-nowrap py-4.5 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
@@ -76,6 +73,14 @@ defineProps({
 })
 
 defineEmits(['edit', 'delete'])
+
+function statusClass(status: string) {
+  return uppercaseFirstLetter(status) === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+}
+
+function uppercaseFirstLetter(status: string) {
+  return status.charAt(0).toUpperCase() + status.slice(1)
+}
 
 const formatLimit = (value: number | null | undefined) => {
   return value !== null && value !== undefined ? value.toString() : 'Unlimited'

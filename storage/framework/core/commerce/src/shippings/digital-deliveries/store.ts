@@ -1,6 +1,7 @@
 import type { DigitalDeliveryJsonResponse, NewDigitalDelivery } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { fetchById } from './fetch'
 
 /**
  * Create a new digital delivery
@@ -18,13 +19,19 @@ export async function store(data: NewDigitalDelivery): Promise<DigitalDeliveryJs
     const result = await db
       .insertInto('digital_deliveries')
       .values(deliveryData)
-      .returningAll()
       .executeTakeFirst()
 
     if (!result)
       throw new Error('Failed to create digital delivery')
 
-    return result
+    const insertedId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+
+    const digitalDelivery = await fetchById(insertedId)
+
+    if (!digitalDelivery)
+      throw new Error('Failed to create digital delivery')
+
+    return digitalDelivery
   }
   catch (error) {
     if (error instanceof Error) {
