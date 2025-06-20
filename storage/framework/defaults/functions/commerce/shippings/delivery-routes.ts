@@ -1,10 +1,10 @@
-import type { DeliveryRoutes } from '../../types'
+import type { DeliveryRoutes, NewDeliveryRoute } from '../../types'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent delivery routes array using VueUse's useStorage
 const deliveryRoutes = useStorage<DeliveryRoutes[]>('deliveryRoutes', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all delivery routes
 async function fetchDeliveryRoutes() {
@@ -13,7 +13,7 @@ async function fetchDeliveryRoutes() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json() as DeliveryRoutes[]
+    const { data } = await response.json() as { data: DeliveryRoutes[] }
 
     if (Array.isArray(data)) {
       deliveryRoutes.value = data
@@ -30,7 +30,7 @@ async function fetchDeliveryRoutes() {
   }
 }
 
-async function createDeliveryRoute(deliveryRoute: DeliveryRoutes) {
+async function createDeliveryRoute(deliveryRoute: NewDeliveryRoute) {
   try {
     const response = await fetch(`${baseURL}/commerce/delivery-routes`, {
       method: 'POST',
@@ -44,7 +44,7 @@ async function createDeliveryRoute(deliveryRoute: DeliveryRoutes) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as DeliveryRoutes
+    const { data } = await response.json() as { data: DeliveryRoutes }
     if (data) {
       deliveryRoutes.value.push(data)
       return data
@@ -71,7 +71,7 @@ async function updateDeliveryRoute(deliveryRoute: DeliveryRoutes) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as DeliveryRoutes
+    const { data } = await response.json() as { data: DeliveryRoutes }
     if (data) {
       const index = deliveryRoutes.value.findIndex(s => s.id === deliveryRoute.id)
       if (index !== -1) {
