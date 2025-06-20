@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { computed } from 'vue'
 
 // Define props interface
 interface Customer {

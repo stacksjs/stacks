@@ -96,11 +96,11 @@ route.group({ prefix: '/commerce' }, async () => {
   route.get('/waitlist-products/time-series', 'Actions/Commerce/WaitlistProductTimeSeriesAction')
 
   // Digital Deliveries
-  route.get('/digital-deliveries', 'Actions/Commerce/DigitalDeliveryIndexAction')
-  route.post('/digital-deliveries', 'Actions/Commerce/DigitalDeliveryStoreAction')
-  route.get('/digital-deliveries/{id}', 'Actions/Commerce/DigitalDeliveryShowAction')
-  route.patch('/digital-deliveries/{id}', 'Actions/Commerce/DigitalDeliveryUpdateAction')
-  route.delete('/digital-deliveries/{id}', 'Actions/Commerce/DigitalDeliveryDestroyAction')
+  route.get('/digital-deliveries', 'Actions/Commerce/Shipping/DigitalDeliveryIndexAction')
+  route.post('/digital-deliveries', 'Actions/Commerce/Shipping/DigitalDeliveryStoreAction')
+  route.get('/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryShowAction')
+  route.patch('/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryUpdateAction')
+  route.delete('/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryDestroyAction')
 
   // Product Manufacturers
   route.get('/product-manufacturers', 'Actions/Commerce/ManufacturerIndexAction')
