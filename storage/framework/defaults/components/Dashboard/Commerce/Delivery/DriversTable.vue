@@ -8,7 +8,6 @@
               <tr>
                 <th scope="col" class="py-4 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">ID</th>
                 <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Name</th>
-                <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Email</th>
                 <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Phone</th>
                 <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Vehicle</th>
                 <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">License</th>
@@ -39,13 +38,10 @@
                   </div>
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                  {{ driver.email }}
-                </td>
-                <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
                   {{ driver.phone }}
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                  {{ driver.vehicle }}
+                  {{ driver.vehicle_number }}
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
                   {{ driver.license }}
@@ -62,7 +58,7 @@
                   </span>
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300 text-right">
-                  {{ formatDate(driver.lastActive) }}
+                  {{ formatDate(driver.last_active) }}
                 </td>
                 <td class="relative whitespace-nowrap py-4.5 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                   <button type="button" class="text-gray-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded-md border border-transparent hover:border-blue-200 dark:hover:border-blue-800 mr-2" @click="$emit('view-routes', driver)" title="View Routes">
@@ -85,30 +81,18 @@
 </template>
 
 <script setup lang="ts">
-export interface Driver {
-  id: number
-  name: string
-  email: string
-  phone: string
-  vehicle: string
-  license: string
-  status: 'Active' | 'On Delivery' | 'On Break' | 'Inactive'
-  lastActive: Date | string
-  avatar?: string
-  deliveryCount?: number
-  rating?: number
-}
+import type { Drivers } from '../../../../functions/types'
 
 defineProps({
   drivers: {
-    type: Array as () => Driver[],
+    type: Array as () => Drivers[],
     required: true
   }
 })
 
 defineEmits(['view-routes', 'edit', 'delete'])
 
-const formatDate = (date: Date | string) => {
+const formatDate = (date: Date | string | null | undefined): string => {
   if (!date) return 'N/A'
 
   const dateObj = typeof date === 'string' ? new Date(date) : date

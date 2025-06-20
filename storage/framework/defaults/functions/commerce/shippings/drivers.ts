@@ -1,10 +1,10 @@
-import type { Drivers } from '../../types'
+import type { Drivers, NewDriver } from '../../types'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent drivers array using VueUse's useStorage
 const drivers = useStorage<Drivers[]>('drivers', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all drivers
 async function fetchDrivers() {
@@ -13,7 +13,7 @@ async function fetchDrivers() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json() as Drivers[]
+    const { data } = await response.json() as { data: Drivers[] }
 
     if (Array.isArray(data)) {
       drivers.value = data
@@ -30,7 +30,7 @@ async function fetchDrivers() {
   }
 }
 
-async function createDriver(driver: Drivers) {
+async function createDriver(driver: NewDriver) {
   try {
     const response = await fetch(`${baseURL}/commerce/drivers`, {
       method: 'POST',
@@ -44,7 +44,7 @@ async function createDriver(driver: Drivers) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as Drivers
+    const { data } = await response.json() as { data: Drivers }
     if (data) {
       drivers.value.push(data)
       return data
@@ -71,7 +71,7 @@ async function updateDriver(driver: Drivers) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as Drivers
+    const { data } = await response.json() as { data: Drivers }
     if (data) {
       const index = drivers.value.findIndex(s => s.id === driver.id)
       if (index !== -1) {

@@ -1,110 +1,104 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.vue'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
 import DriversTable from '../../../../components/Dashboard/Commerce/Delivery/DriversTable.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
-import { Driver } from '../../../../components/Dashboard/Commerce/Delivery/DriversTable.vue'
+import { useDrivers } from '../../../../functions/commerce/shippings/drivers'
+import type { Drivers } from '../../../../functions/types'
 
 useHead({
   title: 'Dashboard - Delivery Drivers',
 })
 
-// Sample drivers data
-const drivers = ref<Driver[]>([
-  {
-    id: 1,
-    name: 'John Smith',
-    email: 'john.smith@example.com',
-    phone: '(555) 123-4567',
-    vehicle: 'Van #103',
-    license: 'DL-12345678',
-    status: 'Active',
-    lastActive: new Date('2023-06-15'),
-    avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-    deliveryCount: 1243,
-    rating: 4.8
-  },
-  {
-    id: 2,
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@example.com',
-    phone: '(555) 234-5678',
-    vehicle: 'Truck #205',
-    license: 'DL-23456789',
-    status: 'On Delivery',
-    lastActive: new Date('2023-06-15'),
-    avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
-    deliveryCount: 987,
-    rating: 4.9
-  },
-  {
-    id: 3,
-    name: 'Michael Brown',
-    email: 'michael.brown@example.com',
-    phone: '(555) 345-6789',
-    vehicle: 'Van #104',
-    license: 'DL-34567890',
-    status: 'On Break',
-    lastActive: new Date('2023-06-14'),
-    avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
-    deliveryCount: 756,
-    rating: 4.7
-  },
-  {
-    id: 4,
-    name: 'Emily Davis',
-    email: 'emily.davis@example.com',
-    phone: '(555) 456-7890',
-    vehicle: 'Truck #206',
-    license: 'DL-45678901',
-    status: 'Active',
-    lastActive: new Date('2023-06-15'),
-    avatar: 'https://randomuser.me/api/portraits/women/4.jpg',
-    deliveryCount: 1102,
-    rating: 4.6
-  },
-  {
-    id: 5,
-    name: 'Robert Wilson',
-    email: 'robert.wilson@example.com',
-    phone: '(555) 567-8901',
-    vehicle: 'Van #105',
-    license: 'DL-56789012',
-    status: 'On Delivery',
-    lastActive: new Date('2023-06-15'),
-    avatar: 'https://randomuser.me/api/portraits/men/5.jpg',
-    deliveryCount: 892,
-    rating: 4.5
-  },
-  {
-    id: 6,
-    name: 'Jennifer Lee',
-    email: 'jennifer.lee@example.com',
-    phone: '(555) 678-9012',
-    vehicle: 'Van #106',
-    license: 'DL-67890123',
-    status: 'Inactive',
-    lastActive: new Date('2023-06-10'),
-    avatar: 'https://randomuser.me/api/portraits/women/6.jpg',
-    deliveryCount: 543,
-    rating: 4.4
-  },
-  {
-    id: 7,
-    name: 'David Martinez',
-    email: 'david.martinez@example.com',
-    phone: '(555) 789-0123',
-    vehicle: 'Truck #207',
-    license: 'DL-78901234',
-    status: 'Active',
-    lastActive: new Date('2023-06-14'),
-    avatar: 'https://randomuser.me/api/portraits/men/7.jpg',
-    deliveryCount: 678,
-    rating: 4.7
+// Get drivers data and functions from the composable
+const { drivers, createDriver, fetchDrivers, updateDriver, deleteDriver } = useDrivers()
+
+// Fetch data on component mount
+onMounted(async () => {
+  await fetchDrivers()
+})
+
+// Define new driver type
+interface NewDriverForm {
+  user_id: number
+  name: string
+  phone: string
+  vehicle_number: string
+  license: string
+  status: string
+}
+
+// Modal state
+const showAddModal = ref(false)
+const showEditModal = ref(false)
+const editingDriver = ref<Drivers | null>(null)
+const newDriver = ref<NewDriverForm>({
+  user_id: 0,
+  name: '',
+  phone: '',
+  vehicle_number: '',
+  license: '',
+  status: 'Active'
+})
+
+function openAddModal(): void {
+  newDriver.value = {
+    user_id: 0,
+    name: '',
+    phone: '',
+    vehicle_number: '',
+    license: '',
+    status: 'Active'
   }
-])
+  showAddModal.value = true
+}
+
+function closeAddModal(): void {
+  showAddModal.value = false
+}
+
+function openEditModal(driver: Drivers): void {
+  editingDriver.value = driver
+  newDriver.value = {
+    user_id: driver.user_id,
+    name: driver.name,
+    phone: driver.phone,
+    vehicle_number: driver.vehicle_number,
+    license: driver.license,
+    status: typeof driver.status === 'string' ? driver.status : (Array.isArray(driver.status) ? driver.status[0] || 'Active' : 'Active')
+  }
+  showEditModal.value = true
+}
+
+function closeEditModal(): void {
+  showEditModal.value = false
+  editingDriver.value = null
+}
+
+async function addDriver(): Promise<void> {
+  try {
+    await createDriver(newDriver.value)
+    closeAddModal()
+  } catch (error) {
+    console.error('Failed to create driver:', error)
+  }
+}
+
+async function saveDriver(): Promise<void> {
+  if (!editingDriver.value) return
+
+  try {
+    await updateDriver({
+      ...editingDriver.value,
+      ...newDriver.value
+    })
+    closeEditModal()
+  } catch (error) {
+    console.error('Failed to update driver:', error)
+  }
+}
 
 // Search and filtering
 const searchQuery = ref('')
@@ -112,15 +106,17 @@ const currentPage = ref(1)
 const itemsPerPage = 5
 
 const filteredDrivers = computed(() => {
-  if (!searchQuery.value) return drivers.value
+  const driverList = Array.isArray(drivers.value) ? drivers.value : []
+  
+  if (!searchQuery.value) return driverList
 
   const query = searchQuery.value.toLowerCase()
-  return drivers.value.filter(driver =>
+  return driverList.filter(driver =>
     driver.name.toLowerCase().includes(query) ||
-    driver.email.toLowerCase().includes(query) ||
     driver.phone.toLowerCase().includes(query) ||
-    driver.vehicle.toLowerCase().includes(query) ||
-    driver.status.toLowerCase().includes(query)
+    driver.vehicle_number.toLowerCase().includes(query) ||
+    driver.license.toLowerCase().includes(query) ||
+    (typeof driver.status === 'string' ? driver.status.toLowerCase().includes(query) : false)
   )
 })
 
@@ -137,18 +133,24 @@ const handleSearch = (query: string) => {
 }
 
 const handleAddDriver = () => {
-  alert('Add driver functionality would go here')
+  openAddModal()
 }
 
-const handleEditDriver = (driver: Driver) => {
-  alert(`Edit driver: ${driver.name}`)
+const handleEditDriver = (driver: Drivers) => {
+  openEditModal(driver)
 }
 
-const handleDeleteDriver = (driver: Driver) => {
-  alert(`Delete driver: ${driver.name}`)
+const handleDeleteDriver = async (driver: Drivers) => {
+  if (confirm(`Are you sure you want to delete this driver?`)) {
+    try {
+      await deleteDriver(driver.id)
+    } catch (error) {
+      console.error('Failed to delete driver:', error)
+    }
+  }
 }
 
-const viewDriverRoutes = (driver: Driver) => {
+const viewDriverRoutes = (driver: Drivers) => {
   alert(`View routes for driver: ${driver.name}`)
 }
 
@@ -255,7 +257,7 @@ const tabs = [
           </dt>
           <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
             <p class="text-2xl text-gray-900 font-semibold dark:text-white">
-              {{ (drivers.reduce((sum, driver) => sum + (driver.rating || 0), 0) / drivers.length).toFixed(1) }}
+              {{ drivers.length > 0 ? '4.7' : '0.0' }}
             </p>
             <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
               <svg class="h-5 w-5 flex-shrink-0 self-center text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -306,6 +308,210 @@ const tabs = [
             @next="handleNextPage"
             @page="handlePageChange"
           />
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Driver Modal -->
+    <div v-if="showAddModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal"></div>
+
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+          <div>
+            <div class="mt-3 text-center sm:mt-5">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Add New Driver</h3>
+              <div class="mt-4">
+                <div class="space-y-4">
+                  <div>
+                    <label for="driver-name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Name</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="driver-name"
+                        v-model="newDriver.name"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter driver name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="driver-phone" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Phone</label>
+                    <div class="mt-2">
+                      <input
+                        type="tel"
+                        id="driver-phone"
+                        v-model="newDriver.phone"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter phone number"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="driver-vehicle" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Vehicle Number</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="driver-vehicle"
+                        v-model="newDriver.vehicle_number"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter vehicle number"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="driver-license" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">License</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="driver-license"
+                        v-model="newDriver.license"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter license number"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="driver-status" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Status</label>
+                    <div class="mt-2">
+                      <select
+                        id="driver-status"
+                        v-model="newDriver.status"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                      >
+                        <option value="Active">Active</option>
+                        <option value="On Delivery">On Delivery</option>
+                        <option value="On Break">On Break</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+            <button
+              type="button"
+              @click="addDriver"
+              class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+            >
+              Add Driver
+            </button>
+            <button
+              type="button"
+              @click="closeAddModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Driver Modal -->
+    <div v-if="showEditModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeEditModal"></div>
+
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+          <div>
+            <div class="mt-3 text-center sm:mt-5">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Edit Driver</h3>
+              <div class="mt-4">
+                <div class="space-y-4">
+                  <div>
+                    <label for="edit-driver-name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Name</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="edit-driver-name"
+                        v-model="newDriver.name"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter driver name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-driver-phone" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Phone</label>
+                    <div class="mt-2">
+                      <input
+                        type="tel"
+                        id="edit-driver-phone"
+                        v-model="newDriver.phone"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter phone number"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-driver-vehicle" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Vehicle Number</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="edit-driver-vehicle"
+                        v-model="newDriver.vehicle_number"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter vehicle number"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-driver-license" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">License</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="edit-driver-license"
+                        v-model="newDriver.license"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter license number"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-driver-status" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Status</label>
+                    <div class="mt-2">
+                      <select
+                        id="edit-driver-status"
+                        v-model="newDriver.status"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                      >
+                        <option value="Active">Active</option>
+                        <option value="On Delivery">On Delivery</option>
+                        <option value="On Break">On Break</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+            <button
+              type="button"
+              @click="saveDriver"
+              class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+            >
+              Save Changes
+            </button>
+            <button
+              type="button"
+              @click="closeEditModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
     </div>
