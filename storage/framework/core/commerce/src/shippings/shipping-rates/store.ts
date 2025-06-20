@@ -3,6 +3,8 @@ import type { NewShippingRate, ShippingMethodJsonResponse, ShippingRateJsonRespo
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
+import { fetchById as fetchShippingMethodById } from '../shipping-methods/fetch'
+import { fetchById as fetchShippingZoneById } from '../shipping-zones/fetch'
 
 /**
  * Validate shipping method exists by name
@@ -48,11 +50,11 @@ async function findShippingZoneByName(name: string): Promise<ShippingZoneJsonRes
  * @param data The shipping rate data to store
  * @returns The newly created shipping rate record
 */
-export async function store(data: NewShippingRate & { method: string; zone: string }): Promise<ShippingRateJsonResponse> {
+export async function store(data: NewShippingRate): Promise<ShippingRateJsonResponse> {
   try {
     // Validate that the shipping method and zone exist
-    const method = await findShippingMethodByName(data.method)
-    const zone = await findShippingZoneByName(data.zone)
+    const method = await fetchShippingMethodById(Number(data.shipping_method_id))
+    const zone = await fetchShippingZoneById(Number(data.shipping_zone_id))
 
     const rateData = {
       weight_from: data.weight_from,

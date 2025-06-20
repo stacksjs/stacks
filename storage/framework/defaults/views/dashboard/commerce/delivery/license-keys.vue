@@ -27,22 +27,11 @@ onMounted(async () => {
   ])
 })
 
-// Define new license key type
-interface NewLicenseKeyForm {
-  key: string
-  template: string
-  customer_id: number
-  product: string
-  order_id: number
-  expiry_date: string
-  status: string
-}
-
 // Modal state
 const showAddModal = ref(false)
 const showEditModal = ref(false)
 const editingLicenseKey = ref<LicenseKeys | null>(null)
-const newLicenseKey = ref<NewLicenseKeyForm>({
+const newLicenseKey = ref<NewLicenseKey>({
   key: '',
   template: '',
   customer_id: 0,
@@ -77,7 +66,7 @@ function openEditModal(licenseKey: LicenseKeys): void {
     customer_id: licenseKey.customer_id,
     product: licenseKey.product,
     order_id: licenseKey.order_id,
-    expiry_date: typeof licenseKey.expiry_date === 'string' ? licenseKey.expiry_date : new Date(licenseKey.expiry_date).toISOString().split('T')[0],
+    expiry_date: typeof licenseKey.expiry_date === 'string' ? licenseKey.expiry_date : new Date(licenseKey.expiry_date).toISOString().split('T')[0] || '',
     status: licenseKey.status
   }
   showEditModal.value = true

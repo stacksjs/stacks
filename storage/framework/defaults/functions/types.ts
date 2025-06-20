@@ -224,12 +224,12 @@ export interface LicenseKeys {
   customer_id: number
   product: string
   order_id: number
-  created_at: Date | string
+  created_at?: Date | string
   expiry_date: Date | string
   status: string
 }
 
-export type NewLicenseKey = Omit<LicenseKeys, 'id' | 'customer' | 'created_at'>
+export type NewLicenseKey = Omit<LicenseKeys, 'id' | 'customer' | 'created_at' | 'uuid'>
 
 export interface LicenseTemplates {
   id: number
@@ -290,8 +290,8 @@ export type NewShippingMethod = Omit<ShippingMethods, 'id'>
 
 export interface ShippingRates {
   id: number
-  method: string
-  zone: string
+  shipping_method_id: number
+  shipping_zone_id: number
   weight_from: number
   weight_to: number
   shipping_method: ShippingMethods

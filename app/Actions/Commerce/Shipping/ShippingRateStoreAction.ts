@@ -10,7 +10,7 @@ export default new Action({
   async handle(request: ShippingRateRequestType) {
     const data = await request.all()
 
-    const model = await shippings.rates.store(data as unknown as NewShippingRate & { method: string; zone: string })
+    const model = await shippings.rates.store(data)
 
     return response.json(model)
   },

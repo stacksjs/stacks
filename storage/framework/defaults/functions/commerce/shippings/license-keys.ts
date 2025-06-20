@@ -1,4 +1,4 @@
-import type { LicenseKeys } from '../../types'
+import type { LicenseKeys, NewLicenseKey } from '../../types'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent license keys array using VueUse's useStorage
@@ -30,7 +30,7 @@ async function fetchLicenseKeys() {
   }
 }
 
-async function createLicenseKey(licenseKey: Omit<LicenseKeys, 'id'>) {
+async function createLicenseKey(licenseKey: NewLicenseKey) {
   try {
     const response = await fetch(`${baseURL}/commerce/license-keys`, {
       method: 'POST',

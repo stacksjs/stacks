@@ -8,6 +8,7 @@ import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagin
 import { useShippingRates } from '../../../../functions/commerce/shippings/shipping-rates'
 import { useShippingMethods } from '../../../../functions/commerce/shippings/shipping-methods'
 import { useShippingZones } from '../../../../functions/commerce/shippings/shipping-zones'
+import type { NewShippingRate } from '../../../../functions/types'
 
 useHead({
   title: 'Dashboard - Shipping Rates',
@@ -29,22 +30,14 @@ onMounted(async () => {
   ])
 })
 
-// Define new shipping rate type
-interface NewShippingRateForm {
-  method: string
-  zone: string
-  weight_from: number
-  weight_to: number
-  rate: number
-}
 
 // Modal state
 const showAddModal = ref(false)
 const showEditModal = ref(false)
 const editingRate = ref<any>(null)
-const newShippingRate = ref<NewShippingRateForm>({
-  method: '',
-  zone: '',
+const newShippingRate = ref<NewShippingRate>({
+  shipping_method_id: 0,
+  shipping_zone_id: 0,
   weight_from: 0,
   weight_to: 0,
   rate: 0
@@ -52,8 +45,8 @@ const newShippingRate = ref<NewShippingRateForm>({
 
 function openAddModal(): void {
   newShippingRate.value = {
-    method: '',
-    zone: '',
+    shipping_method_id: 0,
+    shipping_zone_id: 0,
     weight_from: 0,
     weight_to: 0,
     rate: 0
@@ -68,8 +61,8 @@ function closeAddModal(): void {
 function openEditModal(rate: any): void {
   editingRate.value = rate
   newShippingRate.value = {
-    method: rate.method,
-    zone: rate.zone,
+    shipping_method_id: rate.shipping_method_id,
+    shipping_zone_id: rate.shipping_zone_id,
     weight_from: rate.weight_from,
     weight_to: rate.weight_to,
     rate: rate.rate
@@ -251,11 +244,11 @@ const tabs = [
                     <div class="mt-2">
                       <select
                         id="rate-method"
-                        v-model="newShippingRate.method"
+                        v-model="newShippingRate.shipping_method_id"
                         class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
                       >
                         <option value="">Select a shipping method</option>
-                        <option v-for="method in shippingMethods" :key="method.id" :value="method.name">
+                        <option v-for="method in shippingMethods" :key="method.id" :value="method.id">
                           {{ method.name }}
                         </option>
                       </select>
@@ -267,11 +260,11 @@ const tabs = [
                     <div class="mt-2">
                       <select
                         id="rate-zone"
-                        v-model="newShippingRate.zone"
+                        v-model="newShippingRate.shipping_zone_id"
                         class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
                       >
                         <option value="">Select a shipping zone</option>
-                        <option v-for="zone in shippingZones" :key="zone.id" :value="zone.name">
+                        <option v-for="zone in shippingZones" :key="zone.id" :value="zone.id">
                           {{ zone.name }}
                         </option>
                       </select>
