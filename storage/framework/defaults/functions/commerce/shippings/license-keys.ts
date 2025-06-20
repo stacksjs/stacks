@@ -1,24 +1,28 @@
-import type { DigitalDeliveries } from '../../types'
+import type { LicenseKeys } from '../../types'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent digital deliveries array using VueUse's useStorage
-const digitalDeliveries = useStorage<DigitalDeliveries[]>('digitalDeliveries', [])
+const licenseKeys = useStorage<LicenseKeys[]>('licenseKeys', [])
 
 const baseURL = 'http://localhost:3008'
 
-// Basic fetch function to get all digital deliveries
-async function fetchDigitalDeliveries() {
+// Basic fetch function to get all license keys
+async function fetchLicenseKeys() {
   try {
-    const response = await fetch(`${baseURL}/commerce/digital-deliveries`)
+    const response = await fetch(`${baseURL}/commerce/license-keys`)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
+    const data = await response.json() as LicenseKeys[]
 
-    const { data } = await response.json() as { data: DigitalDeliveries[] }
-
-    digitalDeliveries.value = data
-
-    return data
+    if (Array.isArray(data)) {
+      licenseKeys.value = data
+      return data
+    }
+    else {
+      console.error('Expected array of digital deliveries but received:', typeof data)
+      return []
+    }
   }
   catch (error) {
     console.error('Error fetching digital deliveries:', error)
@@ -26,52 +30,52 @@ async function fetchDigitalDeliveries() {
   }
 }
 
-async function createDigitalDelivery(digitalDelivery: Omit<DigitalDeliveries, 'id'>) {
+async function createLicenseKey(licenseKey: LicenseKeys) {
   try {
-    const response = await fetch(`${baseURL}/commerce/digital-deliveries`, {
+    const response = await fetch(`${baseURL}/commerce/license-keys`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(digitalDelivery),
+      body: JSON.stringify(licenseKey),
     })
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as DigitalDeliveries
+    const data = await response.json() as LicenseKeys
     if (data) {
-      digitalDeliveries.value.push(data)
+      licenseKeys.value.push(data)
       return data
     }
     return null
   }
   catch (error) {
-    console.error('Error creating digital delivery:', error)
+    console.error('Error creating license key:', error)
     return null
   }
 }
 
-async function updateDigitalDelivery(digitalDelivery: DigitalDeliveries) {
+async function updateLicenseKey(licenseKey: LicenseKeys) {
   try {
-    const response = await fetch(`${baseURL}/commerce/digital-deliveries/${digitalDelivery.id}`, {
+    const response = await fetch(`${baseURL}/commerce/license-keys/${licenseKey.id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(digitalDelivery),
+      body: JSON.stringify(licenseKey),
     })
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as DigitalDeliveries
+    const data = await response.json() as LicenseKeys
     if (data) {
-      const index = digitalDeliveries.value.findIndex(d => d.id === digitalDelivery.id)
+      const index = licenseKeys.value.findIndex(s => s.id === licenseKey.id)
       if (index !== -1) {
-        digitalDeliveries.value[index] = data
+        licenseKeys.value[index] = data
       }
       return data
     }
@@ -93,9 +97,9 @@ async function deleteDigitalDelivery(id: number) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const index = digitalDeliveries.value.findIndex(d => d.id === id)
+    const index = licenseKeys.value.findIndex(s => s.id === id)
     if (index !== -1) {
-      digitalDeliveries.value.splice(index, 1)
+      licenseKeys.value.splice(index, 1)
     }
 
     return true
@@ -109,10 +113,10 @@ async function deleteDigitalDelivery(id: number) {
 // Export the composable
 export function useDigitalDeliveries() {
   return {
-    digitalDeliveries,
-    fetchDigitalDeliveries,
-    createDigitalDelivery,
-    updateDigitalDelivery,
+    licenseKeys,
+    fetchLicenseKeys,
+    createLicenseKey,
+    updateLicenseKey,
     deleteDigitalDelivery,
   }
-} 
+}

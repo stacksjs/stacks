@@ -215,6 +215,19 @@ export interface Drivers {
 
 export type NewDriver = Omit<Drivers, 'id'>
 
+export interface LicenseKeys {
+  id: number
+  uuid?: string
+  key: string
+  template: string
+  customer: Customers
+  product: string
+  order_id: number
+  created_at: Date | string
+  expiry_date: Date | string
+  status: string
+}
+
 export interface DeliveryRoutes {
   id: number
   driver: string

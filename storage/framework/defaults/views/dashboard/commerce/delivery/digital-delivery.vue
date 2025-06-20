@@ -5,7 +5,7 @@ import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/Ta
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
 import DigitalDeliveryTable from '../../../../components/Dashboard/Commerce/Delivery/DigitalDeliveryTable.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
-import { useDigitalDeliveries } from '../../../../functions/commerce/delivery/digital-delivery'
+import { useDigitalDeliveries } from '../../../../functions/commerce/shippings/digital-deliveries'
 
 useHead({
   title: 'Dashboard - Digital Delivery',

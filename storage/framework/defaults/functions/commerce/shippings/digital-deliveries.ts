@@ -4,7 +4,7 @@ import { useStorage } from '@vueuse/core'
 // Create a persistent digital deliveries array using VueUse's useStorage
 const digitalDeliveries = useStorage<DigitalDeliveries[]>('digitalDeliveries', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all digital deliveries
 async function fetchDigitalDeliveries() {
@@ -13,16 +13,12 @@ async function fetchDigitalDeliveries() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json() as DigitalDeliveries[]
 
-    if (Array.isArray(data)) {
-      digitalDeliveries.value = data
-      return data
-    }
-    else {
-      console.error('Expected array of digital deliveries but received:', typeof data)
-      return []
-    }
+    const { data } = await response.json() as { data: DigitalDeliveries[] }
+
+    digitalDeliveries.value = data
+
+    return data
   }
   catch (error) {
     console.error('Error fetching digital deliveries:', error)
@@ -30,7 +26,7 @@ async function fetchDigitalDeliveries() {
   }
 }
 
-async function createDigitalDelivery(digitalDelivery: DigitalDeliveries) {
+async function createDigitalDelivery(digitalDelivery: Omit<DigitalDeliveries, 'id'>) {
   try {
     const response = await fetch(`${baseURL}/commerce/digital-deliveries`, {
       method: 'POST',
@@ -73,7 +69,7 @@ async function updateDigitalDelivery(digitalDelivery: DigitalDeliveries) {
 
     const data = await response.json() as DigitalDeliveries
     if (data) {
-      const index = digitalDeliveries.value.findIndex(s => s.id === digitalDelivery.id)
+      const index = digitalDeliveries.value.findIndex(d => d.id === digitalDelivery.id)
       if (index !== -1) {
         digitalDeliveries.value[index] = data
       }
@@ -97,7 +93,7 @@ async function deleteDigitalDelivery(id: number) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const index = digitalDeliveries.value.findIndex(s => s.id === id)
+    const index = digitalDeliveries.value.findIndex(d => d.id === id)
     if (index !== -1) {
       digitalDeliveries.value.splice(index, 1)
     }
@@ -119,4 +115,4 @@ export function useDigitalDeliveries() {
     updateDigitalDelivery,
     deleteDigitalDelivery,
   }
-}
+} 
