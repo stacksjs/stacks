@@ -1,7 +1,7 @@
 import type { LicenseKeys } from '../../types'
 import { useStorage } from '@vueuse/core'
 
-// Create a persistent digital deliveries array using VueUse's useStorage
+// Create a persistent license keys array using VueUse's useStorage
 const licenseKeys = useStorage<LicenseKeys[]>('licenseKeys', [])
 
 const baseURL = 'http://localhost:3008'
@@ -13,24 +13,24 @@ async function fetchLicenseKeys() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json() as LicenseKeys[]
+    const { data } = await response.json() as { data: LicenseKeys[] }
 
     if (Array.isArray(data)) {
       licenseKeys.value = data
       return data
     }
     else {
-      console.error('Expected array of digital deliveries but received:', typeof data)
+      console.error('Expected array of license keys but received:', typeof data)
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching digital deliveries:', error)
+    console.error('Error fetching license keys:', error)
     return []
   }
 }
 
-async function createLicenseKey(licenseKey: LicenseKeys) {
+async function createLicenseKey(licenseKey: Omit<LicenseKeys, 'id'>) {
   try {
     const response = await fetch(`${baseURL}/commerce/license-keys`, {
       method: 'POST',
@@ -44,7 +44,7 @@ async function createLicenseKey(licenseKey: LicenseKeys) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as LicenseKeys
+    const { data } = await response.json() as { data: LicenseKeys }
     if (data) {
       licenseKeys.value.push(data)
       return data
@@ -71,7 +71,7 @@ async function updateLicenseKey(licenseKey: LicenseKeys) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as LicenseKeys
+    const { data } = await response.json() as { data: LicenseKeys }
     if (data) {
       const index = licenseKeys.value.findIndex(s => s.id === licenseKey.id)
       if (index !== -1) {
@@ -82,14 +82,14 @@ async function updateLicenseKey(licenseKey: LicenseKeys) {
     return null
   }
   catch (error) {
-    console.error('Error updating digital delivery:', error)
+    console.error('Error updating license key:', error)
     return null
   }
 }
 
-async function deleteDigitalDelivery(id: number) {
+async function deleteLicenseKey(id: number) {
   try {
-    const response = await fetch(`${baseURL}/commerce/digital-deliveries/${id}`, {
+    const response = await fetch(`${baseURL}/commerce/license-keys/${id}`, {
       method: 'DELETE',
     })
 
@@ -105,18 +105,18 @@ async function deleteDigitalDelivery(id: number) {
     return true
   }
   catch (error) {
-    console.error('Error deleting digital delivery:', error)
+    console.error('Error deleting license key:', error)
     return false
   }
 }
 
 // Export the composable
-export function useDigitalDeliveries() {
+export function useLicenseKeys() {
   return {
     licenseKeys,
     fetchLicenseKeys,
     createLicenseKey,
     updateLicenseKey,
-    deleteDigitalDelivery,
+    deleteLicenseKey,
   }
 }

@@ -228,6 +228,21 @@ export interface LicenseKeys {
   status: string
 }
 
+export interface LicenseTemplates {
+  id: number
+  uuid?: string
+  name: string
+  format: string
+  prefix: string
+  suffix: string
+  separator: string
+  char_set: string
+  segment_length: number
+  segment_count: number
+  active: boolean
+  status?: string | string[]
+}
+
 export interface DeliveryRoutes {
   id: number
   driver: string
