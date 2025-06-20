@@ -8,7 +8,9 @@ export default new Action({
   description: 'ShippingRate Store ORM Action',
   method: 'POST',
   async handle(request: ShippingRateRequestType) {
-    const model = await shippings.rates.store(request)
+    const data = await request.all()
+
+    const model = await shippings.rates.store(data as unknown as NewShippingRate & { method: string; zone: string })
 
     return response.json(model)
   },

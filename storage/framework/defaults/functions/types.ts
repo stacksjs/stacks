@@ -263,6 +263,8 @@ export interface ShippingRates {
   zone: string
   weight_from: number
   weight_to: number
+  shipping_method: ShippingMethods
+  shipping_zone: ShippingZones
   rate: number
   uuid?: string
 }

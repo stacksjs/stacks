@@ -19,10 +19,10 @@
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
               <tr v-for="rate in rates" :key="rate.id">
                 <td class="whitespace-nowrap py-4.5 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                  {{ rate.method }}
+                  {{ rate.shipping_method.name }}
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                  {{ rate.zone }}
+                  {{ rate.shipping_zone.name }}
                 </td>
                 <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
                   {{ rate.weight_from }} kg
@@ -51,21 +51,13 @@
 </template>
 
 <script setup lang="ts">
-import { ShippingRates, ShippingMethods, ShippingZones } from '../../../../functions/types'
+import { ShippingRates } from '../../../../functions/types'
 
-const props = defineProps({
+defineProps({
   rates: {
     type: Array as () => ShippingRates[],
     required: true
   },
-  methods: {
-    type: Array as () => ShippingMethods[],
-    required: true
-  },
-  zones: {
-    type: Array as () => ShippingZones[],
-    required: true
-  }
 })
 
 defineEmits(['edit', 'delete'])

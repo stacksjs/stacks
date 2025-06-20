@@ -218,8 +218,6 @@ const tabs = [
 
         <ShippingRatesTable
           :rates="paginatedShippingRates"
-          :methods="shippingMethods || []"
-          :zones="shippingZones || []"
           @edit="handleEditRate"
           @delete="handleDeleteRate"
         />

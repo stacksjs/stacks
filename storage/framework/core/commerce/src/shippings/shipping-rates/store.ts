@@ -47,8 +47,8 @@ async function findShippingZoneByName(name: string): Promise<ShippingZoneJsonRes
  *
  * @param data The shipping rate data to store
  * @returns The newly created shipping rate record
- */
-export async function store(data: NewShippingRate): Promise<ShippingRateJsonResponse> {
+*/
+export async function store(data: NewShippingRate & { method: string; zone: string }): Promise<ShippingRateJsonResponse> {
   try {
     // Validate that the shipping method and zone exist
     const method = await findShippingMethodByName(data.method)
