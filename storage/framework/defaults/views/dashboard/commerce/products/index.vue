@@ -473,7 +473,7 @@ async function addProduct(): Promise<void> {
                         required
                       >
                         <option value="">Select a manufacturer</option>
-                        <option v-for="manufacturer in manufacturers" :key="manufacturer.id" :value="manufacturer.id">{{ manufacturer.name }}</option>
+                        <option v-for="manufacturer in manufacturers" :key="manufacturer.id" :value="manufacturer.id">{{ manufacturer.manufacturer }}</option>
                       </select>
                     </div>
                   </div>

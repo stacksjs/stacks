@@ -1,6 +1,7 @@
 import type { NewProduct, ProductJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { fetchById } from './fetch'
 
 /**
  * Create a new product item
@@ -18,13 +19,19 @@ export async function store(data: NewProduct): Promise<ProductJsonResponse> {
     const result = await db
       .insertInto('products')
       .values(itemData)
-      .returningAll()
       .executeTakeFirst()
 
     if (!result)
       throw new Error('Failed to create product item')
 
-    return result
+    const insertId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+
+    const model = await fetchById(insertId)
+
+    if (!model)
+      throw new Error('Failed to create product item')
+
+    return model
   }
   catch (error) {
     if (error instanceof Error) {

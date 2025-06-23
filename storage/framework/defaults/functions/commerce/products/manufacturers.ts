@@ -13,7 +13,7 @@ async function fetchManufacturers(): Promise<Manufacturers[]> {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json() as Manufacturers[]
+    const { data } = await response.json() as { data: Manufacturers[] }
 
     if (Array.isArray(data)) {
       manufacturers.value = data
@@ -44,7 +44,7 @@ async function createManufacturer(manufacturer: Manufacturers): Promise<Manufact
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as Manufacturers
+    const { data } = await response.json() as { data: Manufacturers }
     if (data) {
       manufacturers.value.push(data)
       return data
@@ -71,7 +71,7 @@ async function updateManufacturer(manufacturer: Manufacturers): Promise<Manufact
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as Manufacturers
+    const { data } = await response.json() as { data: Manufacturers }
     if (data) {
       const index = manufacturers.value.findIndex(m => m.id === manufacturer.id)
       if (index !== -1) {

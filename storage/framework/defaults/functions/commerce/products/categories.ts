@@ -13,7 +13,7 @@ async function fetchCategories(): Promise<Categories[]> {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json() as Categories[]
+    const { data } = await response.json() as { data: Categories[] }
 
     if (Array.isArray(data)) {
       categories.value = data
@@ -44,7 +44,7 @@ async function createCategory(category: Categories): Promise<Categories | null> 
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as Categories
+    const { data } = await response.json() as { data: Categories }
     if (data) {
       categories.value.push(data)
       return data
@@ -71,7 +71,7 @@ async function updateCategory(category: Categories): Promise<Categories | null> 
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as Categories
+    const { data } = await response.json() as { data: Categories }
     if (data) {
       const index = categories.value.findIndex(c => c.id === category.id)
       if (index !== -1) {

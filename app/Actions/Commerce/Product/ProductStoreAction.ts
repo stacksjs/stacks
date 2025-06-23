@@ -9,7 +9,9 @@ export default new Action({
   description: 'ProductItem Store ORM Action',
   method: 'POST',
   async handle(request: ProductRequestType) {
-    const model = await products.items.store(request)
+    const data = request.all()
+    
+    const model = await products.items.store(data)
 
     return response.json(model)
   },
