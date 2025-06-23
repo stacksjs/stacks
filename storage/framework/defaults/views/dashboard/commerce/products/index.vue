@@ -156,6 +156,9 @@ interface NewProduct {
   dateAdded: string
 }
 
+// Status options for the dropdown
+const statuses = computed(() => ['Active', 'Inactive', 'Draft', 'Archived'])
+
 // Modal state
 const showProductModal = ref(false)
 const newProduct = ref<NewProduct>({

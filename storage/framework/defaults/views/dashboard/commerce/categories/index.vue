@@ -2,13 +2,16 @@
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useCategories } from '../../../../functions/commerce/products/categories'
+import CategoriesTable from '../../../../components/Dashboard/Commerce/CategoriesTable.vue'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
+import type { Categories } from '../../../../functions/types'
 
 useHead({
   title: 'Dashboard - Commerce Categories',
 })
 
 // Get categories data and functions from the composable
-const { categories, fetchCategories, createCategory } = useCategories()
+const { categories, fetchCategories, createCategory, deleteCategory: deleteCategoryFromAPI } = useCategories()
 
 // Fetch categories on component mount
 onMounted(async () => {
@@ -20,6 +23,10 @@ const searchQuery = ref('')
 const sortBy = ref('name')
 const sortOrder = ref('asc')
 const featuredFilter = ref('all')
+
+// Pagination
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
 
 // Computed filtered and sorted categories
 const filteredCategories = computed(() => {
@@ -48,6 +55,37 @@ const filteredCategories = computed(() => {
       return sortOrder.value === 'asc' ? comparison : -comparison
     })
 })
+
+// Paginated categories
+const paginatedCategories = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredCategories.value.slice(start, end)
+})
+
+// Pagination handlers
+const handlePrevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--
+  }
+}
+
+const handleNextPage = () => {
+  const totalPages = Math.ceil(filteredCategories.value.length / itemsPerPage.value)
+  if (currentPage.value < totalPages) {
+    currentPage.value++
+  }
+}
+
+const handlePageChange = (page: number) => {
+  currentPage.value = page
+}
+
+// Reset to first page when search changes
+const handleSearch = (query: string) => {
+  searchQuery.value = query
+  currentPage.value = 1
+}
 
 // Toggle sort order
 function toggleSort(column: string): void {
@@ -116,28 +154,74 @@ function closeAddModal(): void {
 }
 
 async function addCategory(): Promise<void> {
+  // First add to local state for immediate UI update
+  const id = Math.max(...categories.value.map(c => c.id || 0)) + 1
+  
+  const newCategoryData = {
+    id,
+    name: newCategory.value.name,
+    description: newCategory.value.description,
+    image_url: newCategory.value.image_url,
+    is_active: newCategory.value.is_active,
+    display_order: newCategory.value.display_order,
+    uuid: `category-${id}`
+  }
+  categories.value.push(newCategoryData)
+
+  // Then send to server
+  const categoryData = {
+    name: newCategory.value.name,
+    description: newCategory.value.description,
+    image_url: newCategory.value.image_url,
+    is_active: newCategory.value.is_active,
+    display_order: newCategory.value.display_order
+  }
+
   try {
-    const categoryData = {
-      name: newCategory.value.name,
-      description: newCategory.value.description,
-      is_active: newCategory.value.is_active,
-      image_url: newCategory.value.image_url,
-      display_order: newCategory.value.display_order
-    }
-    
     await createCategory(categoryData as any)
     closeAddModal()
   } catch (error) {
+    // If server request fails, remove from local state
+    categories.value = categories.value.filter(c => c.id !== id)
     console.error('Failed to create category:', error)
   }
 }
 
-// Color mapping for initial letters
-const initialColors: Record<string, string> = {
-  'Burgers': 'bg-red-500',
-  'Mexican': 'bg-green-500',
-  'Desserts': 'bg-purple-500',
-  'Asian Fusion': 'bg-blue-500'
+// Category actions
+function viewCategory(category: Categories): void {
+  console.log('View category:', category)
+  // Implement view category logic
+}
+
+function editCategory(category: Categories): void {
+  console.log('Edit category:', category)
+  // Populate the form with existing data
+  newCategory.value = {
+    name: category.name,
+    description: category.description || '',
+    is_active: category.is_active || true,
+    image_url: category.image_url || '',
+    display_order: category.display_order
+  }
+  showAddModal.value = true
+  // TODO: Change modal title to "Edit Category" when editing
+}
+
+async function handleDeleteCategory(category: Categories): Promise<void> {
+  if (confirm(`Are you sure you want to delete the category "${category.name}"?`)) {
+    // Remove from local state immediately for better UX
+    const originalCategories = [...categories.value]
+    categories.value = categories.value.filter(c => c.id !== category.id)
+    
+    try {
+      // Then send delete request to server
+      await deleteCategoryFromAPI(category.id)
+    } catch (error) {
+      // If server request fails, restore the category
+      categories.value = originalCategories
+      console.error('Failed to delete category:', error)
+    }
+  }
 }
 </script>
 
@@ -175,6 +259,7 @@ const initialColors: Record<string, string> = {
               type="text"
               class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
               placeholder="Search categories..."
+              @input="(event) => handleSearch((event.target as HTMLInputElement).value)"
             />
           </div>
 
@@ -184,8 +269,18 @@ const initialColors: Record<string, string> = {
               class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
             >
               <option value="all">All Categories</option>
-              <option value="featured">Featured Only</option>
-              <option value="not-featured">Not Featured</option>
+              <option value="featured">Active Only</option>
+              <option value="not-featured">Inactive Only</option>
+            </select>
+
+            <select
+              v-model="itemsPerPage"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            >
+              <option :value="5">5 per page</option>
+              <option :value="10">10 per page</option>
+              <option :value="25">25 per page</option>
+              <option :value="50">50 per page</option>
             </select>
           </div>
         </div>
@@ -195,96 +290,35 @@ const initialColors: Record<string, string> = {
           <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                  <thead class="bg-gray-50 dark:bg-blue-gray-700">
-                    <tr>
-                      <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">
-                        <button @click="toggleSort('name')" class="group inline-flex items-center">
-                          Category
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'name'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Description</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('display_order')" class="group inline-flex items-center">
-                          Display Order
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus-visible">
-                            <div v-if="sortBy === 'display_order'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Active</th>
-                      <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                        <span class="sr-only">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
-                    <tr v-for="category in filteredCategories" :key="category.id">
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white">
-                        <div class="flex items-center space-x-3">
-                          <template v-if="category.image_url">
-                            <img
-                              :src="category.image_url"
-                              :alt="category.name"
-                              class="h-10 w-10 rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm"
-                              onerror="this.src='/images/categories/placeholder.jpg'"
-                            />
-                          </template>
-                          <template v-else>
-                            <div
-                              :class="['h-10 w-10 rounded-full flex items-center justify-center text-white font-medium shadow-sm',
-                                initialColors[category.name] || 'bg-blue-500']"
-                            >
-                              {{ category.name ? category.name.charAt(0).toUpperCase() : '?' }}
-                            </div>
-                          </template>
-                          <span>{{ category.name }}</span>
-                        </div>
-                      </td>
-                      <td class="px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ category.description }}
-                      </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ category.display_order }}
-                      </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        <div v-if="category.is_active" class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-green-500"></div>
-                        <div v-else class="i-hugeicons-cancel-circle h-5 w-5 text-gray-400"></div>
-                      </td>
-                      <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                        <div class="flex items-center justify-end space-x-2">
-                          <button type="button" class="text-gray-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                            <div class="i-hugeicons-edit-01 h-5 w-5"></div>
-                          </button>
-                          <button type="button" class="text-gray-400 transition-colors duration-150 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                            <div class="i-hugeicons-waste h-5 w-5"></div>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr v-if="filteredCategories.length === 0">
-                      <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                        No categories found matching your criteria
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <CategoriesTable
+                  :categories="paginatedCategories"
+                  :search-query="searchQuery"
+                  :featured-filter="featuredFilter"
+                  :sort-by="sortBy"
+                  :sort-order="sortOrder"
+                  :current-page="currentPage"
+                  :items-per-page="itemsPerPage"
+                  @toggle-sort="toggleSort"
+                  @view-category="viewCategory"
+                  @edit-category="editCategory"
+                  @delete-category="handleDeleteCategory"
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+      <Pagination
+        :current-page="currentPage"
+        :total-items="filteredCategories.length"
+        :items-per-page="itemsPerPage"
+        @prev="handlePrevPage"
+        @next="handleNextPage"
+        @page="handlePageChange"
+      />
     </div>
 
     <!-- Add Category Modal -->
