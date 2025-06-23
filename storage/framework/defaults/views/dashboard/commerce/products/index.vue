@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useLocalStorage } from '@vueuse/core'
-import { useProductsStore } from '../../../../stores/products'
+import { useProducts } from '../../../../functions/commerce/products/products'
 import ProductTables from '../../../../components/Dashboard/Commerce/ProductTables.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
@@ -13,7 +13,7 @@ useHead({
 })
 
 // Get products store
-const productsStore = useProductsStore()
+const productsStore = useProducts()
 
 // Fetch products on component mount
 onMounted(async () => {

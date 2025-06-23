@@ -7,7 +7,7 @@ const products = useStorage<Products[]>('products', [])
 const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all products
-async function fetchProducts() {
+async function fetchProducts(): Promise<Products[]> {
   try {
     const response = await fetch(`${baseURL}/commerce/products`)
     if (!response.ok) {
@@ -32,7 +32,7 @@ async function fetchProducts() {
   }
 }
 
-async function createProduct(product: Omit<Products, 'id'>) {
+async function createProduct(product: Omit<Products, 'id'>): Promise<Products | null> {
   try {
     const response = await fetch(`${baseURL}/commerce/products`, {
       method: 'POST',
@@ -60,7 +60,7 @@ async function createProduct(product: Omit<Products, 'id'>) {
   }
 }
 
-async function updateProduct(product: Products) {
+async function updateProduct(product: Products): Promise<Products | null> {
   try {
     const response = await fetch(`${baseURL}/commerce/products/${product.id}`, {
       method: 'PATCH',
@@ -95,7 +95,7 @@ async function updateProduct(product: Products) {
   }
 }
 
-async function deleteProduct(id: number) {
+async function deleteProduct(id: number): Promise<boolean> {
   try {
     const response = await fetch(`${baseURL}/commerce/products/${id}`, {
       method: 'DELETE',
