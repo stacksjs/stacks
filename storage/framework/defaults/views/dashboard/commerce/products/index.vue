@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useLocalStorage } from '@vueuse/core'
+import { useProducts } from '../../../../functions/commerce/products'
 import ProductTables from '../../../../components/Dashboard/Commerce/ProductTables.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
@@ -11,247 +12,13 @@ useHead({
   title: 'Dashboard - Commerce Products',
 })
 
-// Sample products data (DoorDash-like food products)
-const products = ref<Products[]>([
-  {
-    id: 1,
-    name: 'Classic Cheeseburger',
-    description: 'Juicy beef patty with melted cheese, lettuce, tomato, and special sauce on a brioche bun',
-    price: 12.99,
-    salePrice: null,
-    category: 'Burgers',
-    manufacturer: 'Burger Joint',
-    tags: ['beef', 'cheese', 'popular'],
-    imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
-    inventory: 100,
-    status: 'Active',
-    featured: true,
-    rating: 4.8,
-    reviewCount: 243,
-    dateAdded: '2023-10-15'
-  },
-  {
-    id: 2,
-    name: 'Margherita Pizza',
-    description: 'Classic pizza with tomato sauce, fresh mozzarella, basil, and olive oil on a thin crust',
-    price: 14.99,
-    salePrice: 12.99,
-    category: 'Pizza',
-    manufacturer: 'Pizza Palace',
-    tags: ['vegetarian', 'italian', 'popular'],
-    imageUrl: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
-    inventory: 80,
-    status: 'Active',
-    featured: true,
-    rating: 4.7,
-    reviewCount: 189,
-    dateAdded: '2023-10-20'
-  },
-  {
-    id: 3,
-    name: 'Chicken Caesar Salad',
-    description: 'Crisp romaine lettuce with grilled chicken, parmesan cheese, croutons, and Caesar dressing',
-    price: 11.99,
-    salePrice: null,
-    category: 'Salads',
-    manufacturer: 'Fresh Greens',
-    tags: ['chicken', 'healthy'],
-    imageUrl: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
-    inventory: 50,
-    status: 'Active',
-    featured: false,
-    rating: 4.5,
-    reviewCount: 124,
-    dateAdded: '2023-11-05'
-  },
-  {
-    id: 4,
-    name: 'Spicy Ramen Bowl',
-    description: 'Authentic Japanese ramen with spicy broth, sliced pork, soft-boiled egg, and fresh vegetables',
-    price: 15.99,
-    salePrice: null,
-    category: 'Asian',
-    manufacturer: 'Noodle House',
-    tags: ['spicy', 'japanese', 'popular'],
-    imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
-    inventory: 60,
-    status: 'Active',
-    featured: true,
-    rating: 4.9,
-    reviewCount: 201,
-    dateAdded: '2023-11-10'
-  },
-  {
-    id: 5,
-    name: 'Veggie Wrap',
-    description: 'Fresh vegetables, hummus, and feta cheese wrapped in a spinach tortilla',
-    price: 9.99,
-    salePrice: 8.49,
-    category: 'Wraps',
-    manufacturer: 'Wrap Masters',
-    tags: ['vegetarian', 'healthy'],
-    imageUrl: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
-    inventory: 40,
-    status: 'Active',
-    featured: false,
-    rating: 4.4,
-    reviewCount: 98,
-    dateAdded: '2023-11-15'
-  },
-  {
-    id: 6,
-    name: 'BBQ Pulled Pork Sandwich',
-    description: 'Slow-cooked pulled pork with BBQ sauce, coleslaw, and pickles on a brioche bun',
-    price: 13.99,
-    salePrice: null,
-    category: 'Sandwiches',
-    manufacturer: 'Smokey BBQ',
-    tags: ['pork', 'bbq'],
-    imageUrl: 'https://images.unsplash.com/photo-1513185041617-8ab03f83d6c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
-    inventory: 35,
-    status: 'Active',
-    featured: false,
-    rating: 4.6,
-    reviewCount: 156,
-    dateAdded: '2023-11-20'
-  },
-  {
-    id: 7,
-    name: 'Chocolate Brownie Sundae',
-    description: 'Warm chocolate brownie topped with vanilla ice cream, chocolate sauce, and whipped cream',
-    price: 8.99,
-    salePrice: null,
-    category: 'Desserts',
-    manufacturer: 'Sweet Treats',
-    tags: ['chocolate', 'sweet', 'popular'],
-    imageUrl: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
-    inventory: 45,
-    status: 'Active',
-    featured: true,
-    rating: 4.9,
-    reviewCount: 178,
-    dateAdded: '2023-11-25'
-  },
-  {
-    id: 8,
-    name: 'Iced Caramel Macchiato',
-    description: 'Espresso with vanilla syrup, milk, and caramel drizzle over ice',
-    price: 5.99,
-    salePrice: null,
-    category: 'Beverages',
-    manufacturer: 'Coffee Co.',
-    tags: ['coffee', 'cold'],
-    imageUrl: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
-    inventory: 120,
-    status: 'Active',
-    featured: false,
-    rating: 4.7,
-    reviewCount: 143,
-    dateAdded: '2023-12-01'
-  },
-  {
-    id: 9,
-    name: 'Chicken Wings (12 pc)',
-    description: 'Crispy chicken wings with your choice of sauce: Buffalo, BBQ, or Honey Garlic',
-    price: 16.99,
-    salePrice: 14.99,
-    category: 'Appetizers',
-    manufacturer: 'Wing World',
-    tags: ['chicken', 'spicy', 'popular'],
-    imageUrl: 'https://images.unsplash.com/photo-1608039755401-742074f0548d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
-    inventory: 70,
-    status: 'Active',
-    featured: true,
-    rating: 4.8,
-    reviewCount: 215,
-    dateAdded: '2023-12-05'
-  },
-  {
-    id: 10,
-    name: 'Vegetable Stir Fry',
-    description: 'Fresh vegetables stir-fried with tofu in a savory sauce, served with steamed rice',
-    price: 13.49,
-    salePrice: null,
-    category: 'Asian',
-    manufacturer: 'Wok & Roll',
-    tags: ['vegetarian', 'healthy'],
-    imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
-    inventory: 30,
-    status: 'Active',
-    featured: false,
-    rating: 4.5,
-    reviewCount: 87,
-    dateAdded: '2023-12-10'
-  },
-  {
-    id: 11,
-    name: 'Beef Tacos (3 pc)',
-    description: 'Soft corn tortillas filled with seasoned beef, lettuce, cheese, and pico de gallo',
-    price: 10.99,
-    salePrice: null,
-    category: 'Mexican',
-    manufacturer: 'Taco Time',
-    tags: ['beef', 'spicy'],
-    imageUrl: 'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
-    inventory: 55,
-    status: 'Active',
-    featured: false,
-    rating: 4.6,
-    reviewCount: 132,
-    dateAdded: '2023-12-15'
-  },
-  {
-    id: 12,
-    name: 'Strawberry Cheesecake',
-    description: 'Creamy New York-style cheesecake topped with fresh strawberry sauce',
-    price: 7.99,
-    salePrice: null,
-    category: 'Desserts',
-    manufacturer: 'Sweet Treats',
-    tags: ['sweet', 'popular'],
-    imageUrl: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
-    inventory: 25,
-    status: 'Low Stock',
-    featured: true,
-    rating: 4.9,
-    reviewCount: 167,
-    dateAdded: '2023-12-20'
-  },
-  {
-    id: 13,
-    name: 'Truffle Mushroom Pasta',
-    description: 'Handmade fettuccine with wild mushrooms, truffle oil, and parmesan cream sauce',
-    price: 18.99,
-    salePrice: null,
-    category: 'Pasta',
-    manufacturer: 'Pasta Paradise',
-    tags: ['vegetarian', 'premium', 'new'],
-    imageUrl: 'https://images.unsplash.com/photo-1555072956-7758afb20e8f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
-    inventory: 0,
-    status: 'Coming Soon',
-    featured: true,
-    rating: 0,
-    reviewCount: 0,
-    dateAdded: '2024-01-15'
-  },
-  {
-    id: 14,
-    name: 'Matcha Green Tea Latte',
-    description: 'Premium Japanese matcha powder whisked with steamed milk and a touch of honey',
-    price: 6.49,
-    salePrice: null,
-    category: 'Beverages',
-    manufacturer: 'Tea Time',
-    tags: ['tea', 'japanese', 'new'],
-    imageUrl: 'https://images.unsplash.com/photo-1536013455962-2668f3b24cdd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
-    inventory: 0,
-    status: 'Coming Soon',
-    featured: false,
-    rating: 0,
-    reviewCount: 0,
-    dateAdded: '2024-01-20'
-  }
-])
+// Get products data and functions from the composable
+const { products, createProduct, fetchProducts } = useProducts()
+
+// Fetch products on component mount
+onMounted(async () => {
+  await fetchProducts()
+})
 
 // Categories derived from products
 const categories = computed<ProductCategories[]>(() => {
@@ -372,75 +139,45 @@ function editProduct(product: Products): void {
   // Implement edit product logic
 }
 
-function deleteProduct(productId: number): void {
-  if (confirm('Are you sure you want to delete this product?')) {
-    const index = products.value.findIndex((p: Products) => p.id === productId)
-    if (index !== -1) {
-      products.value.splice(index, 1)
-    }
-  }
+// Define new product type
+interface NewProduct {
+  name: string
+  description: string
+  price: number
+  salePrice: number | null
+  category: string
+  manufacturer: string
+  tags: string[]
+  imageUrl: string
+  inventory: number
+  status: string
+  featured: boolean
+  rating: number
+  reviewCount: number
+  dateAdded: string
 }
 
-// Modal state for adding/editing product
+// Modal state
 const showProductModal = ref(false)
-const isEditMode = ref(false)
-const currentProduct = ref<Products | null>(null)
-
-// Computed properties for form fields to handle null currentProduct
-const productName = computed({
-  get: () => currentProduct.value?.name || '',
-  set: (value) => { if (currentProduct.value) currentProduct.value.name = value }
-})
-
-const productDescription = computed({
-  get: () => currentProduct.value?.description || '',
-  set: (value) => { if (currentProduct.value) currentProduct.value.description = value }
-})
-
-const productPrice = computed({
-  get: () => currentProduct.value?.price || 0,
-  set: (value) => { if (currentProduct.value) currentProduct.value.price = value }
-})
-
-const productSalePrice = computed({
-  get: () => currentProduct.value?.salePrice || null,
-  set: (value) => { if (currentProduct.value) currentProduct.value.salePrice = value }
-})
-
-const productCategory = computed({
-  get: () => currentProduct.value?.category || '',
-  set: (value) => { if (currentProduct.value) currentProduct.value.category = value }
-})
-
-const productManufacturer = computed({
-  get: () => currentProduct.value?.manufacturer || '',
-  set: (value) => { if (currentProduct.value) currentProduct.value.manufacturer = value }
-})
-
-const productInventory = computed({
-  get: () => currentProduct.value?.inventory || 0,
-  set: (value) => { if (currentProduct.value) currentProduct.value.inventory = value }
-})
-
-const productStatus = computed({
-  get: () => currentProduct.value?.status || 'Active',
-  set: (value) => { if (currentProduct.value) currentProduct.value.status = value }
-})
-
-const productFeatured = computed({
-  get: () => currentProduct.value?.featured || false,
-  set: (value) => { if (currentProduct.value) currentProduct.value.featured = value }
-})
-
-const productImageUrl = computed({
-  get: () => currentProduct.value?.imageUrl || '',
-  set: (value) => { if (currentProduct.value) currentProduct.value.imageUrl = value }
+const newProduct = ref<NewProduct>({
+  name: '',
+  description: '',
+  price: 0,
+  salePrice: null,
+  category: '',
+  manufacturer: '',
+  tags: [],
+  imageUrl: '',
+  inventory: 0,
+  status: 'Active',
+  featured: false,
+  rating: 0,
+  reviewCount: 0,
+  dateAdded: new Date().toISOString().split('T')[0] || ''
 })
 
 function openAddProductModal(): void {
-  isEditMode.value = false
-  currentProduct.value = {
-    id: Math.max(...products.value.map((p: Products) => p.id)) + 1,
+  newProduct.value = {
     name: '',
     description: '',
     price: 0,
@@ -463,21 +200,54 @@ function closeProductModal(): void {
   showProductModal.value = false
 }
 
-function saveProduct(): void {
-  if (!currentProduct.value) return
+async function addProduct(): Promise<void> {
+  // First add to local state for immediate UI update
+  const id = Math.max(...products.value.map(p => p.id || 0)) + 1
+  const newProductData = {
+    id,
+    name: newProduct.value.name,
+    description: newProduct.value.description,
+    price: newProduct.value.price,
+    salePrice: newProduct.value.salePrice,
+    category: newProduct.value.category,
+    manufacturer: newProduct.value.manufacturer,
+    tags: newProduct.value.tags,
+    imageUrl: newProduct.value.imageUrl,
+    inventory: newProduct.value.inventory,
+    status: newProduct.value.status,
+    featured: newProduct.value.featured,
+    rating: newProduct.value.rating,
+    reviewCount: newProduct.value.reviewCount,
+    dateAdded: newProduct.value.dateAdded
+  }
+  products.value.push(newProductData)
 
-  if (isEditMode.value) {
-    // Update existing product
-    const index = products.value.findIndex((p: Products) => p.id === currentProduct.value!.id)
-    if (index !== -1) {
-      products.value[index] = { ...currentProduct.value }
-    }
-  } else {
-    // Add new product
-    products.value.push({ ...currentProduct.value })
+  // Then send to server
+  const productData = {
+    name: newProduct.value.name,
+    description: newProduct.value.description,
+    price: newProduct.value.price,
+    salePrice: newProduct.value.salePrice,
+    category: newProduct.value.category,
+    manufacturer: newProduct.value.manufacturer,
+    tags: newProduct.value.tags,
+    imageUrl: newProduct.value.imageUrl,
+    inventory: newProduct.value.inventory,
+    status: newProduct.value.status,
+    featured: newProduct.value.featured,
+    rating: newProduct.value.rating,
+    reviewCount: newProduct.value.reviewCount,
+    dateAdded: newProduct.value.dateAdded
   }
 
-  closeProductModal()
+  try {
+    await createProduct(productData)
+    closeProductModal()
+  } catch (error) {
+    // If server request fails, remove from local state
+    products.value = products.value.filter(p => p.id !== id)
+    console.error('Failed to create product:', error)
+  }
 }
 </script>
 
@@ -585,7 +355,6 @@ function saveProduct(): void {
           @next-page="handleNextPage"
           @view-product="viewProduct"
           @edit-product="editProduct"
-          @delete-product="deleteProduct"
         />
 
         <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
@@ -620,17 +389,17 @@ function saveProduct(): void {
           <div class="sm:flex sm:items-start">
             <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                {{ isEditMode ? 'Edit Product' : 'Add New Product' }}
+                Add New Product
               </h3>
               <div class="mt-4">
-                <form @submit.prevent="saveProduct" class="space-y-4">
+                <form @submit.prevent="addProduct" class="space-y-4">
                   <!-- Product name -->
                   <div>
                     <label for="product-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
                     <input
                       type="text"
                       id="product-name"
-                      v-model="productName"
+                      v-model="newProduct.name"
                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                       required
                     />
@@ -641,7 +410,7 @@ function saveProduct(): void {
                     <label for="product-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
                     <textarea
                       id="product-description"
-                      v-model="productDescription"
+                      v-model="newProduct.description"
                       rows="3"
                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                     ></textarea>
@@ -654,7 +423,7 @@ function saveProduct(): void {
                       <input
                         type="number"
                         id="product-price"
-                        v-model="productPrice"
+                        v-model="newProduct.price"
                         min="0"
                         step="0.01"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
@@ -666,7 +435,7 @@ function saveProduct(): void {
                       <input
                         type="number"
                         id="product-sale-price"
-                        v-model="productSalePrice"
+                        v-model="newProduct.salePrice"
                         min="0"
                         step="0.01"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
@@ -681,7 +450,7 @@ function saveProduct(): void {
                       <input
                         type="text"
                         id="product-category"
-                        v-model="productCategory"
+                        v-model="newProduct.category"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                         required
                       />
@@ -691,7 +460,7 @@ function saveProduct(): void {
                       <input
                         type="text"
                         id="product-manufacturer"
-                        v-model="productManufacturer"
+                        v-model="newProduct.manufacturer"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                         required
                       />
@@ -705,7 +474,7 @@ function saveProduct(): void {
                       <input
                         type="number"
                         id="product-inventory"
-                        v-model="productInventory"
+                        v-model="newProduct.inventory"
                         min="0"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                         required
@@ -715,7 +484,7 @@ function saveProduct(): void {
                       <label for="product-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                       <select
                         id="product-status"
-                        v-model="productStatus"
+                        v-model="newProduct.status"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                       >
                         <option v-for="status in statuses.slice(1)" :key="status" :value="status">{{ status }}</option>
@@ -729,7 +498,7 @@ function saveProduct(): void {
                       <input
                         id="product-featured"
                         type="checkbox"
-                        v-model="productFeatured"
+                        v-model="newProduct.featured"
                         class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600"
                       />
                       <label for="product-featured" class="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Featured product</label>
@@ -742,7 +511,7 @@ function saveProduct(): void {
                     <input
                       type="text"
                       id="product-image"
-                      v-model="productImageUrl"
+                      v-model="newProduct.imageUrl"
                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </div>
@@ -752,7 +521,7 @@ function saveProduct(): void {
                       type="submit"
                       class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
                     >
-                      {{ isEditMode ? 'Save Changes' : 'Add Product' }}
+                      Add Product
                     </button>
                     <button
                       type="button"
