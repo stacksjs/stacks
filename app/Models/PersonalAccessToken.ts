@@ -78,7 +78,10 @@ export default {
           timestamp: 'lastUsedAt must be a valid timestamp',
         },
       },
-      factory: faker => faker.date.recent().toDateString(),
+      factory: faker => {
+        const date = faker.date.recent()
+        return date.toISOString().slice(0, 19).replace('T', ' ')
+      },
     },
 
     expiresAt: {
@@ -89,7 +92,10 @@ export default {
           timestamp: 'expiresAt must be a valid timestamp',
         },
       },
-      factory: faker => faker.date.future().toDateString(),
+      factory: faker => {
+        const date = faker.date.future()
+        return date.toISOString().slice(0, 19).replace('T', ' ')
+      },
     },
 
     revokedAt: {
@@ -100,7 +106,10 @@ export default {
           timestamp: 'revokedAt must be a valid timestamp',
         },
       },
-      factory: faker => faker.date.future().toDateString(),
+      factory: faker => {
+        const date = faker.date.future()
+        return date.toISOString().slice(0, 19).replace('T', ' ')
+      },
     },
 
     ipAddress: {

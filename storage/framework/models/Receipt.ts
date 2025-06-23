@@ -60,12 +60,15 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.timestamp(),
         message: {
           invalid: 'Invalid date format',
         },
       },
-      factory: faker => faker.date.recent().toISOString(),
+      factory: faker => {
+        const date = faker.date.recent()
+        return date.toISOString().slice(0, 19).replace('T', ' ')
+      },
     },
 
     status: {
@@ -123,9 +126,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: faker => ({
-        lorem: faker.lorem.sentence(),
-      }),
+      factory: faker => 'test',
     },
   },
 

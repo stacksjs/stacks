@@ -120,7 +120,10 @@ export default {
           timestamp: 'trial_ends_at must be a valid timestamp',
         },
       },
-      factory: faker => faker.date.future().getTime(),
+      factory: faker => {
+        const date = faker.date.future()
+        return date.toISOString().slice(0, 19).replace('T', ' ')
+      },
     },
 
     endsAt: {
@@ -131,7 +134,10 @@ export default {
           timestamp: 'ends_at must be a valid timestamp',
         },
       },
-      factory: faker => faker.date.future().getTime(),
+      factory: faker => {
+        const date = faker.date.future()
+        return date.toISOString().slice(0, 19).replace('T', ' ')
+      },
     },
 
     lastUsedAt: {
@@ -142,7 +148,10 @@ export default {
         },
       },
       fillable: true,
-      factory: faker => faker.date.recent().toString(),
+      factory: faker => {
+        const date = faker.date.recent()
+        return date.toISOString().slice(0, 19).replace('T', ' ')
+      },
     },
   },
 } satisfies Model

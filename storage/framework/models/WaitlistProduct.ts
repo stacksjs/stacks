@@ -130,7 +130,7 @@ export default {
       order: 9,
       fillable: true,
       validation: {
-        rule: schema.timestamp(),
+        rule: schema.unix(),
       },
       factory: faker => faker.date.future().getTime(),
     },
@@ -139,7 +139,7 @@ export default {
       order: 10,
       fillable: true,
       validation: {
-        rule: schema.timestamp(),
+        rule: schema.unix(),
       },
       factory: faker => faker.date.future().getTime(),
     },
@@ -148,7 +148,7 @@ export default {
       order: 11,
       fillable: true,
       validation: {
-        rule: schema.timestamp(),
+        rule: schema.unix(),
       },
       factory: faker => faker.date.future().getTime(),
     },

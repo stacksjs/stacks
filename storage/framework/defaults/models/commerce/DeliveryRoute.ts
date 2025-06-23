@@ -84,9 +84,12 @@ export default {
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.timestamp(),
       },
-      factory: faker => faker.date.recent().toISOString(),
+      factory: faker => {
+        const date = faker.date.recent()
+        return date.toISOString().slice(0, 19).replace('T', ' ')
+      },
     },
   },
 

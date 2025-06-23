@@ -143,7 +143,7 @@ export default {
       validation: {
         rule: schema.date(),
       },
-      factory: faker => faker.date.recent().toISOString(),
+      factory: faker => faker.date.recent().toISOString().slice(0, 10),
     },
 
     endDate: {
@@ -153,7 +153,7 @@ export default {
       validation: {
         rule: schema.date(),
       },
-      factory: faker => faker.date.future().toISOString(),
+      factory: faker => faker.date.future().toISOString().slice(0, 10),
     },
 
     applicableProducts: {

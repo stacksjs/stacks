@@ -167,7 +167,10 @@ export default {
           timestamp: 'Expiry date must be a valid timestamp',
         },
       },
-      factory: faker => faker.date.future().getTime(),
+      factory: faker => {
+        const date = faker.date.future()
+        return date.toISOString().slice(0, 19).replace('T', ' ')
+      },
     },
 
     lastUsedDate: {
@@ -180,7 +183,10 @@ export default {
           timestamp: 'Last used date must be a valid timestamp',
         },
       },
-      factory: faker => faker.date.future().getTime(),
+      factory: faker => {
+        const date = faker.date.future()
+        return date.toISOString().slice(0, 19).replace('T', ' ')
+      },
     },
 
     templateId: {

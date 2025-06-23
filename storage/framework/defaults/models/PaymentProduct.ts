@@ -30,10 +30,10 @@ export default {
     description: {
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.string(),
         message: {
-          number: 'last_four must be a number',
-          required: 'last_four is required',
+          string: 'description must be a string',
+          required: 'description is required',
         },
       },
       factory: faker => faker.lorem.lines(3),
@@ -42,10 +42,10 @@ export default {
       required: true,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.string(),
         message: {
-          number: 'last_four must be a number',
-          required: 'last_four is required',
+          string: 'key must be a string',
+          required: 'key is required',
         },
       },
       factory: faker => faker.string.alphanumeric(5),

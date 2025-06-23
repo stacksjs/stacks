@@ -65,13 +65,13 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().min(10).max(20),
+        rule: schema.string().min(10).max(50),
         message: {
           min: 'Phone number must have a minimum of 10 characters',
           max: 'Phone number must have a maximum of 20 characters',
         },
       },
-      factory: faker => faker.phone.number(),
+      factory: faker => faker.phone.number({ style: 'international' }),
     },
 
     totalSpent: {

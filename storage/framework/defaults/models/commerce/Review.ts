@@ -140,15 +140,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker) => {
-        const hasImages = faker.datatype.boolean({ probability: 0.3 })
-        if (hasImages) {
-          const imageCount = faker.number.int({ min: 1, max: 5 })
-          const images = Array.from({ length: imageCount }, () => faker.image.url())
-          return JSON.stringify(images)
-        }
-        return JSON.stringify([])
-      },
+      factory: faker => 'test',
     },
   },
 

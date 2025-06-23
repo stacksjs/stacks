@@ -88,7 +88,10 @@ export default {
       validation: {
         rule: schema.timestamp(),
       },
-      factory: faker => faker.date.future().getTime(),
+      factory: faker => {
+        const date = faker.date.future()
+        return date.toISOString().slice(0, 19).replace('T', ' ')
+      },
     },
 
     tablePreference: {
@@ -158,7 +161,10 @@ export default {
       validation: {
         rule: schema.timestamp(),
       },
-      factory: faker => faker.date.future().getTime(),
+      factory: faker => {
+        const date = faker.date.future()
+        return date.toISOString().slice(0, 19).replace('T', ' ')
+      },
     },
 
     noShowAt: {
@@ -168,7 +174,10 @@ export default {
       validation: {
         rule: schema.timestamp(),
       },
-      factory: faker => faker.date.future().getTime(),
+      factory: faker => {
+        const date = faker.date.future()
+        return date.toISOString().slice(0, 19).replace('T', ' ')
+      },
     },
 
     cancelledAt: {
@@ -178,7 +187,10 @@ export default {
       validation: {
         rule: schema.timestamp(),
       },
-      factory: faker => faker.date.future().getTime(),
+      factory: faker => {
+        const date = faker.date.future()
+        return date.toISOString().slice(0, 19).replace('T', ' ')
+      },
     },
   },
 
