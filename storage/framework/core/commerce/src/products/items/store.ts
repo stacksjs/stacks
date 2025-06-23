@@ -1,4 +1,4 @@
-import type { NewProductItem, ProductItemJsonResponse } from '@stacksjs/orm'
+import type { NewProduct, ProductJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
@@ -8,7 +8,7 @@ import { db } from '@stacksjs/database'
  * @param data The product item data to store
  * @returns The newly created product item record
  */
-export async function store(data: NewProductItem): Promise<ProductItemJsonResponse> {
+export async function store(data: NewProduct): Promise<ProductJsonResponse> {
   try {
     const itemData = {
       ...data,
@@ -41,7 +41,7 @@ export async function store(data: NewProductItem): Promise<ProductItemJsonRespon
  * @param data Array of product item data to store
  * @returns Number of product items created
  */
-export async function bulkStore(data: NewProductItem[]): Promise<number> {
+export async function bulkStore(data: NewProduct[]): Promise<number> {
   if (!data.length)
     return 0
 

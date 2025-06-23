@@ -1,4 +1,4 @@
-import type { ProductItemRequestType } from '@stacksjs/orm'
+import type { ProductRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { products } from '@stacksjs/commerce'
@@ -8,7 +8,7 @@ export default new Action({
   name: 'ProductItem Store',
   description: 'ProductItem Store ORM Action',
   method: 'POST',
-  async handle(request: ProductItemRequestType) {
+  async handle(request: ProductRequestType) {
     const model = await products.items.store(request)
 
     return response.json(model)

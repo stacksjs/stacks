@@ -1,4 +1,4 @@
-import type { ProductItemJsonResponse, ProductItemUpdate } from '@stacksjs/orm'
+import type { ProductJsonResponse, ProductUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
@@ -10,7 +10,7 @@ import { fetchById } from './fetch'
  * @param data The product item data to update
  * @returns The updated product item record
  */
-export async function update(id: number, data: Omit<ProductItemUpdate, 'id'>): Promise<ProductItemJsonResponse> {
+export async function update(id: number, data: Omit<ProductUpdate, 'id'>): Promise<ProductJsonResponse> {
   try {
     if (!id)
       throw new Error('Product item ID is required for update')
@@ -45,7 +45,7 @@ export async function update(id: number, data: Omit<ProductItemUpdate, 'id'>): P
  * @param data Array of product item updates
  * @returns Number of product items updated
  */
-export async function bulkUpdate(data: ProductItemUpdate[]): Promise<number> {
+export async function bulkUpdate(data: ProductUpdate[]): Promise<number> {
   if (!data.length)
     return 0
 
@@ -92,7 +92,7 @@ export async function bulkUpdate(data: ProductItemUpdate[]): Promise<number> {
 export async function updateAvailability(
   id: number,
   isAvailable: boolean,
-): Promise<ProductItemJsonResponse | undefined> {
+): Promise<ProductJsonResponse | undefined> {
   // Check if product item exists
   const productItem = await fetchById(id)
 
@@ -133,7 +133,7 @@ export async function updateAvailability(
 export async function updateInventory(
   id: number,
   inventoryCount?: number,
-): Promise<ProductItemJsonResponse | undefined> {
+): Promise<ProductJsonResponse | undefined> {
   // Check if product item exists
   const productItem = await fetchById(id)
 
