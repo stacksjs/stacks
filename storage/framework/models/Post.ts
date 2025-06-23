@@ -63,12 +63,12 @@ export default {
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string().min(10),
+        rule: schema.string().min(10).max(1000),
         message: {
           min: 'Post body must have a minimum of 10 characters',
         },
       },
-      factory: faker => faker.lorem.paragraphs(3),
+      factory: faker => faker.lorem.paragraphs(1),
     },
 
     excerpt: {
@@ -109,7 +109,10 @@ export default {
           timestamp: 'Published timestamp must be a valid timestamp',
         },
       },
-      factory: faker => faker.date.past().getTime(),
+      factory: (faker) => {
+        const date = faker.date.past()
+        return date.toISOString().slice(0, 19).replace('T', ' ')
+      },
     },
 
     status: {

@@ -67,7 +67,7 @@ export default {
           timestamp: 'Expiry date must be a valid timestamp',
         },
       },
-      factory: faker => {
+      factory: (faker) => {
         const date = faker.date.future()
         return date.toISOString().slice(0, 19).replace('T', ' ')
       },

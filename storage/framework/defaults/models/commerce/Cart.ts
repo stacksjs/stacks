@@ -99,7 +99,7 @@ export default {
       validation: {
         rule: schema.timestamp(),
       },
-      factory: faker => {
+      factory: (faker) => {
         const date = faker.date.past()
         return date.toISOString().slice(0, 19).replace('T', ' ')
       },

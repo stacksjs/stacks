@@ -65,7 +65,7 @@ export default {
           invalid: 'Invalid date format',
         },
       },
-      factory: faker => {
+      factory: (faker) => {
         const date = faker.date.recent()
         return date.toISOString().slice(0, 19).replace('T', ' ')
       },
@@ -126,7 +126,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: faker => 'test',
+      factory: () => 'test',
     },
   },
 

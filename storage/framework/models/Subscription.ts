@@ -120,7 +120,7 @@ export default {
           timestamp: 'trial_ends_at must be a valid timestamp',
         },
       },
-      factory: faker => {
+      factory: (faker) => {
         const date = faker.date.future()
         return date.toISOString().slice(0, 19).replace('T', ' ')
       },
@@ -134,7 +134,7 @@ export default {
           timestamp: 'ends_at must be a valid timestamp',
         },
       },
-      factory: faker => {
+      factory: (faker) => {
         const date = faker.date.future()
         return date.toISOString().slice(0, 19).replace('T', ' ')
       },
@@ -148,7 +148,7 @@ export default {
         },
       },
       fillable: true,
-      factory: faker => {
+      factory: (faker) => {
         const date = faker.date.recent()
         return date.toISOString().slice(0, 19).replace('T', ' ')
       },

@@ -140,7 +140,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: faker => 'test',
+      factory: () => 'test',
     },
   },
 

@@ -78,7 +78,7 @@ export default {
           timestamp: 'lastUsedAt must be a valid timestamp',
         },
       },
-      factory: faker => {
+      factory: (faker) => {
         const date = faker.date.recent()
         return date.toISOString().slice(0, 19).replace('T', ' ')
       },
@@ -92,7 +92,7 @@ export default {
           timestamp: 'expiresAt must be a valid timestamp',
         },
       },
-      factory: faker => {
+      factory: (faker) => {
         const date = faker.date.future()
         return date.toISOString().slice(0, 19).replace('T', ' ')
       },
@@ -106,7 +106,7 @@ export default {
           timestamp: 'revokedAt must be a valid timestamp',
         },
       },
-      factory: faker => {
+      factory: (faker) => {
         const date = faker.date.future()
         return date.toISOString().slice(0, 19).replace('T', ' ')
       },
