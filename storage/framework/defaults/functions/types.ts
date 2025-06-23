@@ -394,20 +394,22 @@ export type NewWaitlistRestaurant = Omit<WaitlistRestaurant, 'id'>
 // Define product type
 export interface Products {
   id: number
+  uuid: string
   name: string
   description: string
   price: number
-  salePrice: number | null
-  category: string
-  manufacturer: string
-  tags: string[]
-  imageUrl: string
-  inventory: number
-  status: string
-  featured: boolean
-  rating: number
-  reviewCount: number
-  dateAdded: string
+  image_url: string
+  is_available: number
+  inventory_count: number
+  preparation_time: number
+  allergens: string
+  nutritional_info: string
+  category_id: number | null
+  manufacturer_id: number | null
+  created_at: string
+  updated_at: string | null
+  manufacturer: string | null
+  category: string | null
 }
 
 export type NewProduct = Omit<Products, 'id'>
