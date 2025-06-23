@@ -1,5 +1,7 @@
+import type { CategoryJsonResponse, NewCategory } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { slug } from '@stacksjs/strings'
+import { fetchById } from './fetch'
 
 export interface CategorizableTable {
   id: number
@@ -18,25 +20,32 @@ export interface CategorizableTable {
  * @param data The category data to store
  * @returns The newly created category record
  */
-export async function store(data: Omit<CategorizableTable, 'id' | 'created_at' | 'updated_at'>): Promise<CategorizableTable> {
+export async function store(data: NewCategory): Promise<CategoryJsonResponse> {
   try {
+    // Add missing required properties
     const categoryData = {
-      name: data.name,
-      slug: data.slug,
-      is_active: data.is_active,
-      categorizable_type: data.categorizable_type,
+      ...data,
+      slug: data.name?.toLowerCase().replace(/\s+/g, '-') || '',
+      categorizable_type: 'product',
+      display_order: 0,
     }
 
     const result = await db
-      .insertInto('categorizable')
+      .insertInto('categories')
       .values(categoryData)
-      .returningAll()
       .executeTakeFirst()
 
     if (!result)
       throw new Error('Failed to create category')
 
-    return result as CategorizableTable
+    const insertId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+
+    const model = await fetchById(insertId)
+
+    if (!model)
+      throw new Error('Failed to create category')
+
+    return model
   }
   catch (error) {
     if (error instanceof Error) {
@@ -51,24 +60,26 @@ export async function store(data: Omit<CategorizableTable, 'id' | 'created_at' |
   }
 }
 
-export async function findOrCreateByName(data: Partial<CategorizableTable>): Promise<CategorizableTable> {
+export async function findOrCreateByName(data: Partial<CategorizableTable>): Promise<CategoryJsonResponse> {
   if (!data.name)
     throw new Error('Name is required')
 
   const existingCategory = await db
-    .selectFrom('categorizable')
+    .selectFrom('categories')
     .selectAll()
     .where('name', '=', data.name)
     .executeTakeFirst()
 
   if (existingCategory)
-    return existingCategory as CategorizableTable
+    return existingCategory
 
   const categoryData = {
     name: data.name,
     slug: slug(data.name),
     is_active: data.is_active ?? true,
     categorizable_type: data.categorizable_type ?? 'default',
+    display_order: 0,
+
   }
 
   return await store(categoryData)
