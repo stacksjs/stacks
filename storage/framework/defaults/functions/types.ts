@@ -411,7 +411,7 @@ export interface WaitlistRestaurant {
 export type NewWaitlistRestaurant = Omit<WaitlistRestaurant, 'id'>
 
 // Define product type
-export interface Product {
+export interface Products {
   id: number
   name: string
   description: string
@@ -429,7 +429,7 @@ export interface Product {
   dateAdded: string
 }
 
-export type NewProduct = Omit<Product, 'id'>
+export type NewProduct = Omit<Products, 'id'>
 
 // Define category type
 export interface ProductCategories {

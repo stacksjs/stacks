@@ -1,26 +1,8 @@
 <script lang="ts" setup>
-
-// Define props interface
-interface Product {
-  id: number
-  name: string
-  description: string
-  price: number
-  salePrice: number | null
-  category: string
-  manufacturer: string
-  tags: string[]
-  imageUrl: string
-  inventory: number
-  status: string
-  featured: boolean
-  rating: number
-  reviewCount: number
-  dateAdded: string
-}
+import type { Products } from '../../../functions/types'
 
 interface Props {
-  products: Product[]
+  products: Products[]
   searchQuery: string
   statusFilter: string
   categoryFilter: string
@@ -37,8 +19,8 @@ interface Emits {
   (e: 'changePage', page: number): void
   (e: 'previousPage'): void
   (e: 'nextPage'): void
-  (e: 'viewProduct', product: Product): void
-  (e: 'editProduct', product: Product): void
+  (e: 'viewProduct', product: Products): void
+  (e: 'editProduct', product: Products): void
   (e: 'deleteProduct', productId: number): void
 }
 
@@ -50,11 +32,11 @@ function handleToggleSort(column: string): void {
   emit('toggleSort', column)
 }
 
-function handleViewProduct(product: Product): void {
+function handleViewProduct(product: Products): void {
   emit('viewProduct', product)
 }
 
-function handleEditProduct(product: Product): void {
+function handleEditProduct(product: Products): void {
   emit('editProduct', product)
 }
 

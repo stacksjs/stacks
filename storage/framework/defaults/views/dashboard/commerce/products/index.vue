@@ -11,7 +11,6 @@ useHead({
   title: 'Dashboard - Commerce Products',
 })
 
-
 // Sample products data (DoorDash-like food products)
 const products = ref<Products[]>([
   {
@@ -285,12 +284,12 @@ const statuses = ['all', 'Active', 'Coming Soon', 'Low Stock', 'Out of Stock', '
 // Computed filtered and sorted products
 const filteredProducts = computed(() => {
   return products.value
-    .filter(product => {
+    .filter((product: Products) => {
       // Apply search filter
       const matchesSearch =
         product.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         product.description.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        product.tags.some(tag => tag.toLowerCase().includes(searchQuery.value.toLowerCase()))
+        product.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.value.toLowerCase()))
 
       // Apply category filter
       const matchesCategory = categoryFilter.value === 'all' || product.category === categoryFilter.value
@@ -300,7 +299,7 @@ const filteredProducts = computed(() => {
 
       return matchesSearch && matchesCategory && matchesStatus
     })
-    .sort((a, b) => {
+    .sort((a: Products, b: Products) => {
       // Apply sorting
       let comparison = 0
       if (sortBy.value === 'dateAdded') {
@@ -322,7 +321,6 @@ const filteredProducts = computed(() => {
 // Pagination
 const currentPage = ref(1)
 const itemsPerPage = ref(8)
-const totalPages = computed(() => Math.ceil(filteredProducts.value.length / itemsPerPage.value))
 
 const paginatedProducts = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
@@ -364,35 +362,29 @@ function toggleSort(column: string): void {
 }
 
 // Product actions
-function viewProduct(product: any): void {
+function viewProduct(product: Products): void {
   console.log('View product:', product)
   // Implement view product logic
 }
 
-function editProduct(product: any): void {
+function editProduct(product: Products): void {
   console.log('Edit product:', product)
   // Implement edit product logic
 }
 
 function deleteProduct(productId: number): void {
   if (confirm('Are you sure you want to delete this product?')) {
-    const index = products.value.findIndex(p => p.id === productId)
+    const index = products.value.findIndex((p: Products) => p.id === productId)
     if (index !== -1) {
       products.value.splice(index, 1)
     }
   }
 }
 
-// Calculate total products and featured products
-const totalProducts = computed(() => products.value.length)
-const featuredProducts = computed(() => products.value.filter(p => p.featured).length)
-const lowStockProducts = computed(() => products.value.filter(p => p.status === 'Low Stock').length)
-const comingSoonProducts = computed(() => products.value.filter(p => p.status === 'Coming Soon').length)
-
 // Modal state for adding/editing product
 const showProductModal = ref(false)
 const isEditMode = ref(false)
-const currentProduct = ref<Product | null>(null)
+const currentProduct = ref<Products | null>(null)
 
 // Computed properties for form fields to handle null currentProduct
 const productName = computed({
@@ -448,7 +440,7 @@ const productImageUrl = computed({
 function openAddProductModal(): void {
   isEditMode.value = false
   currentProduct.value = {
-    id: Math.max(...products.value.map(p => p.id)) + 1,
+    id: Math.max(...products.value.map((p: Products) => p.id)) + 1,
     name: '',
     description: '',
     price: 0,
@@ -467,12 +459,6 @@ function openAddProductModal(): void {
   showProductModal.value = true
 }
 
-function openEditProductModal(product: Product): void {
-  isEditMode.value = true
-  currentProduct.value = { ...product }
-  showProductModal.value = true
-}
-
 function closeProductModal(): void {
   showProductModal.value = false
 }
@@ -482,7 +468,7 @@ function saveProduct(): void {
 
   if (isEditMode.value) {
     // Update existing product
-    const index = products.value.findIndex(p => p.id === currentProduct.value!.id)
+    const index = products.value.findIndex((p: Products) => p.id === currentProduct.value!.id)
     if (index !== -1) {
       products.value[index] = { ...currentProduct.value }
     }
