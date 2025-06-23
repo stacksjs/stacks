@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useCustomers } from '../../../../functions/commerce/customers'
-import CustomerTables from '../../../../components/Dashboard/Commerce/CustomerTables.vue'
+import CustomersTable from '../../../../components/Dashboard/Commerce/CustomersTable.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
 
@@ -223,7 +223,7 @@ async function addCustomer(): Promise<void> {
         </div>
 
         <!-- Customer Tables Component -->
-        <CustomerTables
+        <CustomersTable
           :customers="paginatedCustomers"
           :search-query="searchQuery"
           :status-filter="statusFilter"

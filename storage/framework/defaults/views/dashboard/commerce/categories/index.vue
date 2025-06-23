@@ -1,114 +1,19 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
+import { useCategories } from '../../../../functions/commerce/products/categories'
 
 useHead({
   title: 'Dashboard - Commerce Categories',
 })
 
-// Sample categories data
-const categories = ref([
-  {
-    id: 1,
-    name: 'Pizza',
-    slug: 'pizza',
-    description: 'Traditional and specialty pizzas',
-    productCount: 24,
-    featured: true,
-    createdAt: '2023-05-10',
-    image: '/images/categories/pizza.jpg'
-  },
-  {
-    id: 2,
-    name: 'Burgers',
-    slug: 'burgers',
-    description: 'Gourmet and classic burgers',
-    productCount: 18,
-    featured: true,
-    createdAt: '2023-05-15',
-    image: ''
-  },
-  {
-    id: 3,
-    name: 'Sushi',
-    slug: 'sushi',
-    description: 'Fresh sushi, rolls, and Japanese cuisine',
-    productCount: 32,
-    featured: true,
-    createdAt: '2023-06-01',
-    image: '/images/categories/sushi.jpg'
-  },
-  {
-    id: 4,
-    name: 'Mexican',
-    slug: 'mexican',
-    description: 'Authentic Mexican dishes and street food',
-    productCount: 22,
-    featured: false,
-    createdAt: '2023-06-10',
-    image: ''
-  },
-  {
-    id: 5,
-    name: 'Pasta',
-    slug: 'pasta',
-    description: 'Italian pasta dishes and specialties',
-    productCount: 16,
-    featured: false,
-    createdAt: '2023-06-20',
-    image: '/images/categories/pasta.jpg'
-  },
-  {
-    id: 6,
-    name: 'Healthy',
-    slug: 'healthy',
-    description: 'Nutritious, plant-based, and health-conscious options',
-    productCount: 28,
-    featured: true,
-    createdAt: '2023-07-05',
-    image: '/images/categories/healthy.jpg'
-  },
-  {
-    id: 7,
-    name: 'Desserts',
-    slug: 'desserts',
-    description: 'Sweet treats, cakes, and pastries',
-    productCount: 35,
-    featured: false,
-    createdAt: '2023-07-15',
-    image: ''
-  },
-  {
-    id: 8,
-    name: 'Beverages',
-    slug: 'beverages',
-    description: 'Coffee, tea, smoothies, and specialty drinks',
-    productCount: 19,
-    featured: false,
-    createdAt: '2023-08-01',
-    image: '/images/categories/beverages.jpg'
-  },
-  {
-    id: 9,
-    name: 'Appetizers',
-    slug: 'appetizers',
-    description: 'Starters, small plates, and shareable items',
-    productCount: 26,
-    featured: true,
-    createdAt: '2023-08-10',
-    image: '/images/categories/appetizers.jpg'
-  },
-  {
-    id: 10,
-    name: 'Asian Fusion',
-    slug: 'asian-fusion',
-    description: 'Creative dishes combining Asian culinary traditions',
-    productCount: 21,
-    featured: false,
-    createdAt: '2023-08-20',
-    image: ''
-  }
-])
+// Get categories data and functions from the composable
+const { categories, fetchCategories, createCategory } = useCategories()
+
+// Fetch categories on component mount
+onMounted(async () => {
+  await fetchCategories()
+})
 
 // Filter and sort options
 const searchQuery = ref('')
@@ -122,12 +27,12 @@ const filteredCategories = computed(() => {
     .filter(category => {
       // Apply search filter
       const matchesSearch = category.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                           category.description.toLowerCase().includes(searchQuery.value.toLowerCase())
+                           (category.description || '').toLowerCase().includes(searchQuery.value.toLowerCase())
 
       // Apply featured filter
       const matchesFeatured = featuredFilter.value === 'all' ||
-                             (featuredFilter.value === 'featured' && category.featured) ||
-                             (featuredFilter.value === 'not-featured' && !category.featured)
+                             (featuredFilter.value === 'featured' && category.is_active) ||
+                             (featuredFilter.value === 'not-featured' && !category.is_active)
 
       return matchesSearch && matchesFeatured
     })
@@ -136,10 +41,8 @@ const filteredCategories = computed(() => {
       let comparison = 0
       if (sortBy.value === 'name') {
         comparison = a.name.localeCompare(b.name)
-      } else if (sortBy.value === 'productCount') {
-        comparison = a.productCount - b.productCount
-      } else if (sortBy.value === 'createdAt') {
-        comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      } else if (sortBy.value === 'display_order') {
+        comparison = (a.display_order || 0) - (b.display_order || 0)
       }
 
       return sortOrder.value === 'asc' ? comparison : -comparison
@@ -161,18 +64,20 @@ const showAddModal = ref(false)
 const newCategory = ref<{
   name: string;
   description: string;
-  featured: boolean;
-  image: string;
+  is_active: boolean;
+  image_url: string;
+  display_order: number;
 }>({
   name: '',
   description: '',
-  featured: false,
-  image: ''
+  is_active: true,
+  image_url: '',
+  display_order: 0
 })
 
 // Image preview helper
 const imagePreview = computed(() => {
-  return newCategory.value.image || '/images/categories/placeholder.jpg'
+  return newCategory.value.image_url || '/images/categories/placeholder.jpg'
 })
 
 // Handle file upload
@@ -188,7 +93,7 @@ function handleImageUpload(event: Event): void {
     reader.onload = (e) => {
       if (e.target && e.target.result) {
         // In a real app, this would be the URL returned from the server
-        newCategory.value.image = e.target.result as string
+        newCategory.value.image_url = e.target.result as string
       }
     }
     reader.readAsDataURL(file)
@@ -199,8 +104,9 @@ function openAddModal(): void {
   newCategory.value = {
     name: '',
     description: '',
-    featured: false,
-    image: ''
+    is_active: true,
+    image_url: '',
+    display_order: 0
   }
   showAddModal.value = true
 }
@@ -209,22 +115,21 @@ function closeAddModal(): void {
   showAddModal.value = false
 }
 
-function addCategory(): void {
-  // In a real app, this would send data to the server
-  const id = Math.max(...categories.value.map(c => c.id)) + 1
-  const currentDate = new Date().toISOString().split('T')[0] as string;
-
-  categories.value.push({
-    id,
-    name: newCategory.value.name || '',
-    slug: (newCategory.value.name || '').toLowerCase().replace(/\s+/g, '-'),
-    description: newCategory.value.description || '',
-    productCount: 0,
-    featured: newCategory.value.featured,
-    createdAt: currentDate,
-    image: newCategory.value.image || '/images/categories/placeholder.jpg'
-  })
-  closeAddModal()
+async function addCategory(): Promise<void> {
+  try {
+    const categoryData = {
+      name: newCategory.value.name,
+      description: newCategory.value.description,
+      is_active: newCategory.value.is_active,
+      image_url: newCategory.value.image_url,
+      display_order: newCategory.value.display_order
+    }
+    
+    await createCategory(categoryData as any)
+    closeAddModal()
+  } catch (error) {
+    console.error('Failed to create category:', error)
+  }
 }
 
 // Color mapping for initial letters
@@ -307,10 +212,10 @@ const initialColors: Record<string, string> = {
                       </th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Description</th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('productCount')" class="group inline-flex items-center">
-                          Products
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'productCount'" :class="[
+                        <button @click="toggleSort('display_order')" class="group inline-flex items-center">
+                          Display Order
+                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus-visible">
+                            <div v-if="sortBy === 'display_order'" :class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
@@ -318,19 +223,7 @@ const initialColors: Record<string, string> = {
                           </span>
                         </button>
                       </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Featured</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200 text-right">
-                        <button @click="toggleSort('createdAt')" class="group inline-flex items-center text-right">
-                          Created
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'createdAt'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
+                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Active</th>
                       <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                         <span class="sr-only">Actions</span>
                       </th>
@@ -340,9 +233,9 @@ const initialColors: Record<string, string> = {
                     <tr v-for="category in filteredCategories" :key="category.id">
                       <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white">
                         <div class="flex items-center space-x-3">
-                          <template v-if="category.image">
+                          <template v-if="category.image_url">
                             <img
-                              :src="category.image"
+                              :src="category.image_url"
                               :alt="category.name"
                               class="h-10 w-10 rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm"
                               onerror="this.src='/images/categories/placeholder.jpg'"
@@ -363,14 +256,11 @@ const initialColors: Record<string, string> = {
                         {{ category.description }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ category.productCount }}
+                        {{ category.display_order }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        <div v-if="category.featured" class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-green-500"></div>
+                        <div v-if="category.is_active" class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-green-500"></div>
                         <div v-else class="i-hugeicons-cancel-circle h-5 w-5 text-gray-400"></div>
-                      </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 text-right">
-                        {{ category.createdAt }}
                       </td>
                       <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                         <div class="flex items-center justify-end space-x-2">
@@ -437,7 +327,7 @@ const initialColors: Record<string, string> = {
                         <input
                           type="text"
                           id="category-image"
-                          v-model="newCategory.image"
+                          v-model="newCategory.image_url"
                           placeholder="/images/categories/your-category.jpg"
                           class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
                         />
@@ -455,7 +345,7 @@ const initialColors: Record<string, string> = {
                       </div>
                     </div>
                     <div class="mt-2 flex justify-center">
-                      <template v-if="newCategory.image">
+                      <template v-if="newCategory.image_url">
                         <img
                           :src="imagePreview"
                           alt="Category preview"
@@ -473,14 +363,27 @@ const initialColors: Record<string, string> = {
                     </div>
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 text-left">Enter the URL of the category image or upload a file</p>
                   </div>
+                  <div>
+                    <label for="category-display-order" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Display Order</label>
+                    <div class="mt-2">
+                      <input
+                        type="number"
+                        id="category-display-order"
+                        v-model="newCategory.display_order"
+                        min="0"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
                   <div class="flex items-center">
                     <input
                       id="category-featured"
                       type="checkbox"
-                      v-model="newCategory.featured"
+                      v-model="newCategory.is_active"
                       class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-blue-gray-700"
                     />
-                    <label for="category-featured" class="ml-2 block text-sm text-gray-900 dark:text-gray-200">Featured category</label>
+                    <label for="category-featured" class="ml-2 block text-sm text-gray-900 dark:text-gray-200">Active category</label>
                   </div>
                 </div>
               </div>

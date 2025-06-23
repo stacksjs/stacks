@@ -4,13 +4,11 @@ import type { Products } from '../../../functions/types'
 interface Props {
   products: Products[]
   searchQuery: string
-  statusFilter: string
   categoryFilter: string
   sortBy: string
   sortOrder: string
   currentPage: number
   itemsPerPage: number
-  statuses: readonly string[]
   categories: readonly string[]
 }
 
@@ -129,7 +127,7 @@ function formatDate(dateString: string): string {
             </div>
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-            {{ product.manufacturer?.manufacturer || 'N/A' }}
+            {{ product.manufacturer?.name || 'N/A' }}
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
             {{ product.category?.name || 'N/A' }}

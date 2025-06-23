@@ -5,7 +5,7 @@ import { useLocalStorage } from '@vueuse/core'
 import { useProducts } from '../../../../functions/commerce/products'
 import { useCategories } from '../../../../functions/commerce/products/categories'
 import { useManufacturers } from '../../../../functions/commerce/products/manufacturers'
-import ProductTables from '../../../../components/Dashboard/Commerce/ProductTables.vue'
+import ProductsTable from '../../../../components/Dashboard/Commerce/ProductsTable.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
 import type { Products } from '../../../../functions/types'
@@ -33,9 +33,7 @@ onMounted(async () => {
 // View mode for grid/list toggle
 const viewMode = useLocalStorage('products-view-mode', 'list')
 
-// Available statuses
-const statuses = ['all', 'Active', 'Coming Soon', 'Low Stock', 'Out of Stock', 'Discontinued'] as const
-const statusFilter = ref('all')
+// Filter and sort options
 const categoryFilter = ref('all')
 const sortBy = ref('name')
 const sortOrder = ref('asc')
@@ -55,13 +53,10 @@ const filteredProducts = computed(() => {
         product.description.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         (product.category?.name || '').toLowerCase().includes(searchQuery.value.toLowerCase())
 
-      // Apply status filter
-      const matchesStatus = statusFilter.value === 'all' || product.status === statusFilter.value
-
       // Apply category filter
       const matchesCategory = categoryFilter.value === 'all' || (product.category?.name || '') === categoryFilter.value
 
-      return matchesSearch && matchesStatus && matchesCategory
+      return matchesSearch && matchesCategory
     })
     .sort((a, b) => {
       // Apply sorting
@@ -292,17 +287,6 @@ async function addProduct(): Promise<void> {
                 </option>
               </select>
 
-              <!-- Status filter -->
-              <select
-                v-model="statusFilter"
-                class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-              >
-                <option value="all">All Statuses</option>
-                <option v-for="status in statuses.slice(1)" :key="status" :value="status">
-                  {{ status }}
-                </option>
-              </select>
-
               <!-- View mode toggle -->
               <div class="flex rounded-md shadow-sm">
                 <button
@@ -345,16 +329,14 @@ async function addProduct(): Promise<void> {
         </div>
 
         <!-- Product Tables Component -->
-        <ProductTables
+        <ProductsTable
           :products="paginatedProducts"
           :search-query="searchQuery"
-          :status-filter="statusFilter"
           :category-filter="categoryFilter"
           :sort-by="sortBy"
           :sort-order="sortOrder"
           :current-page="currentPage"
           :items-per-page="itemsPerPage"
-          :statuses="statuses"
           :categories="categoriesForFilter.map(c => c.name)"
           @toggle-sort="toggleSort"
           @change-page="handlePageChange"
@@ -473,7 +455,7 @@ async function addProduct(): Promise<void> {
                         required
                       >
                         <option value="">Select a manufacturer</option>
-                        <option v-for="manufacturer in manufacturers" :key="manufacturer.id" :value="manufacturer.id">{{ manufacturer.manufacturer }}</option>
+                        <option v-for="manufacturer in manufacturers" :key="manufacturer.id" :value="manufacturer.id">{{ manufacturer.name }}</option>
                       </select>
                     </div>
                   </div>
