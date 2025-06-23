@@ -156,9 +156,6 @@ export interface Attributes {
   points: number
   source_reference_id: string
   is_used: boolean
-  color: string
-  sku: string
-  custom_options: string
   points_required: number
   reward_type: string
   discount_percentage: number

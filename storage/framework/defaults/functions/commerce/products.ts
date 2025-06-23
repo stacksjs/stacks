@@ -124,4 +124,4 @@ export function useProducts() {
     updateProduct,
     deleteProduct,
   }
-} 
+}

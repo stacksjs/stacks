@@ -1,4 +1,4 @@
-import type { Products, ProductCategories } from '../functions/types'
+import type { ProductCategories, Products } from '../functions/types'
 
 const apiUrl = 'http://localhost:3008'
 
@@ -35,10 +35,10 @@ export const useProductsStore = defineStore('products', () => {
     return products.value
       .filter((product: Products) => {
         // Apply search filter
-        const matchesSearch =
-          product.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-          product.description.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-          product.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.value.toLowerCase()))
+        const matchesSearch
+          = product.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+            || product.description.toLowerCase().includes(searchQuery.value.toLowerCase())
+            || product.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.value.toLowerCase()))
 
         // Apply category filter
         const matchesCategory = categoryFilter.value === 'all' || product.category === categoryFilter.value
@@ -53,13 +53,16 @@ export const useProductsStore = defineStore('products', () => {
         let comparison = 0
         if (sortBy.value === 'dateAdded') {
           comparison = new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime()
-        } else if (sortBy.value === 'price') {
+        }
+        else if (sortBy.value === 'price') {
           const aPrice = a.salePrice !== null ? a.salePrice : a.price
           const bPrice = b.salePrice !== null ? b.salePrice : b.price
           comparison = aPrice - bPrice
-        } else if (sortBy.value === 'name') {
+        }
+        else if (sortBy.value === 'name') {
           comparison = a.name.localeCompare(b.name)
-        } else if (sortBy.value === 'rating') {
+        }
+        else if (sortBy.value === 'rating') {
           comparison = a.rating - b.rating
         }
 
@@ -79,7 +82,7 @@ export const useProductsStore = defineStore('products', () => {
   // API Functions
   async function fetchProducts(): Promise<Products[]> {
     setLoadingState('fetchProducts')
-    
+
     try {
       const response = await fetch(`${apiUrl}/commerce/products`)
       if (!response.ok) {
@@ -91,12 +94,14 @@ export const useProductsStore = defineStore('products', () => {
         products.value = data
         removeLoadingState('fetchProducts')
         return data
-      } else {
+      }
+      else {
         console.error('Expected array of products but received:', typeof data)
         removeLoadingState('fetchProducts')
         return []
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Error fetching products:', error)
       removeLoadingState('fetchProducts')
       return []
@@ -105,7 +110,7 @@ export const useProductsStore = defineStore('products', () => {
 
   async function createProduct(product: Omit<Products, 'id'>): Promise<Products | null> {
     setLoadingState('createProduct')
-    
+
     try {
       const response = await fetch(`${apiUrl}/commerce/products`, {
         method: 'POST',
@@ -127,7 +132,8 @@ export const useProductsStore = defineStore('products', () => {
       }
       removeLoadingState('createProduct')
       return null
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Error creating product:', error)
       removeLoadingState('createProduct')
       return null
@@ -136,7 +142,7 @@ export const useProductsStore = defineStore('products', () => {
 
   async function updateProduct(product: Products): Promise<Products | null> {
     setLoadingState('updateProduct')
-    
+
     try {
       const response = await fetch(`${apiUrl}/commerce/products/${product.id}`, {
         method: 'PATCH',
@@ -165,7 +171,8 @@ export const useProductsStore = defineStore('products', () => {
       }
       removeLoadingState('updateProduct')
       return null
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Error updating product:', error)
       removeLoadingState('updateProduct')
       return null
@@ -174,7 +181,7 @@ export const useProductsStore = defineStore('products', () => {
 
   async function deleteProduct(id: number): Promise<boolean> {
     setLoadingState('deleteProduct')
-    
+
     try {
       const response = await fetch(`${apiUrl}/commerce/products/${id}`, {
         method: 'DELETE',
@@ -187,7 +194,8 @@ export const useProductsStore = defineStore('products', () => {
       products.value = products.value.filter(p => p.id !== id)
       removeLoadingState('deleteProduct')
       return true
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Error deleting product:', error)
       removeLoadingState('deleteProduct')
       return false
@@ -207,7 +215,7 @@ export const useProductsStore = defineStore('products', () => {
       id: index + 1,
       name,
       slug: name.toLowerCase().replace(/\s+/g, '-'),
-      count
+      count,
     }))
   }
 
@@ -220,7 +228,8 @@ export const useProductsStore = defineStore('products', () => {
   function setSortBy(column: string): void {
     if (sortBy.value === column) {
       sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
-    } else {
+    }
+    else {
       sortBy.value = column
       sortOrder.value = 'desc'
     }
@@ -344,4 +353,4 @@ export const useProductsStore = defineStore('products', () => {
 })
 
 if (import.meta.hot)
-  import.meta.hot.accept(acceptHMRUpdate(useProductsStore as any, import.meta.hot)) 
+  import.meta.hot.accept(acceptHMRUpdate(useProductsStore as any, import.meta.hot))

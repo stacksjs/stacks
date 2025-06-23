@@ -154,11 +154,11 @@ export async function formatShippingRateOptions(): Promise<{ id: number, shippin
       .execute()
 
     // Filter out any results with undefined/null values to match the return type
-    return results.filter(result => 
-      result.shipping_method_id !== null && 
-      result.shipping_method_id !== undefined &&
-      result.shipping_zone_id !== null && 
-      result.shipping_zone_id !== undefined
+    return results.filter(result =>
+      result.shipping_method_id !== null
+      && result.shipping_method_id !== undefined
+      && result.shipping_zone_id !== null
+      && result.shipping_zone_id !== undefined,
     ) as { id: number, shipping_method_id: number, shipping_zone_id: number, rate: number }[]
   }
   catch (error) {

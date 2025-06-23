@@ -62,8 +62,6 @@ export { default as PrintDevice } from './models/PrintDevice'
 
 export { default as Product } from './models/Product'
 
-export { default as ProductItem } from './models/ProductItem'
-
 export { default as ProductUnit } from './models/ProductUnit'
 
 export { default as ProductVariant } from './models/ProductVariant'
@@ -165,8 +163,6 @@ export { type NewPersonalAccessToken, type PersonalAccessTokenJsonResponse, type
 export { type NewPost, type PostJsonResponse, type PostModelType, type PostsTable, type PostUpdate } from './types/PostType'
 
 export { type NewPrintDevice, type PrintDeviceJsonResponse, type PrintDeviceModelType, type PrintDevicesTable, type PrintDeviceUpdate } from './types/PrintDeviceType'
-
-export { type NewProductItem, type ProductItemJsonResponse, type ProductItemModelType, type ProductItemsTable, type ProductItemUpdate } from './types/ProductItemType'
 
 export { type NewProduct, type ProductJsonResponse, type ProductModelType, type ProductsTable, type ProductUpdate } from './types/ProductType'
 

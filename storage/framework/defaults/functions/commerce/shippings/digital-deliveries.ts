@@ -115,4 +115,4 @@ export function useDigitalDeliveries() {
     updateDigitalDelivery,
     deleteDigitalDelivery,
   }
-} 
+}

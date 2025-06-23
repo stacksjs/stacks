@@ -16,7 +16,6 @@ import type { OrderModel } from '../orm/src/models/Order'
 import type { PaymentModel } from '../orm/src/models/Payment'
 import type { PrintDeviceModel } from '../orm/src/models/PrintDevice'
 import type { ProductModel } from '../orm/src/models/Product'
-import type { ProductItemModel } from '../orm/src/models/ProductItem'
 import type { ProductUnitModel } from '../orm/src/models/ProductUnit'
 import type { ProductVariantModel } from '../orm/src/models/ProductVariant'
 import type { ReceiptModel } from '../orm/src/models/Receipt'
@@ -98,9 +97,6 @@ export interface ModelEvents {
   'loyalty-point:created': LoyaltyPointModel
   'loyalty-point:updated': LoyaltyPointModel
   'loyalty-point:deleted': LoyaltyPointModel
-  'product-item:created': ProductItemModel
-  'product-item:updated': ProductItemModel
-  'product-item:deleted': ProductItemModel
   'loyalty-reward:created': LoyaltyRewardModel
   'loyalty-reward:updated': LoyaltyRewardModel
   'loyalty-reward:deleted': LoyaltyRewardModel

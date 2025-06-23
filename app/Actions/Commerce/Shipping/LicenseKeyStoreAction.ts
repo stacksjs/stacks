@@ -11,7 +11,7 @@ export default new Action({
   method: 'POST',
   async handle(request: LicenseKeyRequestType) {
     const data = await request.all()
-    
+
     const results = await shippings.licenses.store(data)
 
     return response.json(results)

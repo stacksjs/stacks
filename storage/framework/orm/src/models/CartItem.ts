@@ -2,7 +2,6 @@ import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { CartItemJsonResponse, CartItemsTable, CartItemUpdate, NewCartItem } from '../types/CartItemType'
 import type { CartModel } from './Cart'
-import type { ProductItemModel } from './ProductItem'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -144,14 +143,6 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
 
   get cart(): CartModel | undefined {
     return this.attributes.cart
-  }
-
-  get product_item_id(): number {
-    return this.attributes.product_item_id
-  }
-
-  get product_item(): ProductItemModel | undefined {
-    return this.attributes.product_item
   }
 
   get id(): number {
@@ -930,20 +921,6 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
     return model
   }
 
-  async productItemBelong(): Promise<ProductItemModel> {
-    if (this.product_item_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const model = await ProductItem
-      .where('id', '=', this.product_item_id)
-      .first()
-
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
-
-    return model
-  }
-
   toSearchableObject(): Partial<CartItemJsonResponse> {
     return {
       id: this.id,
@@ -991,8 +968,6 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
 
       cart_id: this.cart_id,
       cart: this.cart,
-      product_item_id: this.product_item_id,
-      product_item: this.product_item,
       ...this.customColumns,
     }
 

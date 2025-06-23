@@ -28,7 +28,7 @@ export default {
     observe: true,
   },
 
-  belongsTo: ['Cart', 'ProductItem'],
+  belongsTo: ['Cart'],
 
   attributes: {
     quantity: {

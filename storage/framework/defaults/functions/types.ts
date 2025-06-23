@@ -440,4 +440,3 @@ export interface ProductCategories {
 }
 
 export type NewProductCategory = Omit<ProductCategories, 'id'>
-

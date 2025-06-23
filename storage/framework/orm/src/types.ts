@@ -30,7 +30,6 @@ import type { PaymentsTable } from '../src/types/PaymentType'
 import type { PersonalAccessTokensTable } from '../src/types/PersonalAccessTokenType'
 import type { PostsTable } from '../src/types/PostType'
 import type { PrintDevicesTable } from '../src/types/PrintDeviceType'
-import type { ProductItemsTable } from '../src/types/ProductItemType'
 import type { ProductsTable } from '../src/types/ProductType'
 import type { ProductUnitsTable } from '../src/types/ProductUnitType'
 import type { ProductVariantsTable } from '../src/types/ProductVariantType'
@@ -213,7 +212,6 @@ export interface Database {
   tax_rates: TaxRatesTable
   transactions: TransactionsTable
   loyalty_points: LoyaltyPointsTable
-  product_items: ProductItemsTable
   loyalty_rewards: LoyaltyRewardsTable
   shipping_methods: ShippingMethodsTable
   shipping_rates: ShippingRatesTable

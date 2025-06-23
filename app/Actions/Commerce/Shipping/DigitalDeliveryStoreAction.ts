@@ -11,7 +11,7 @@ export default new Action({
   method: 'POST',
   async handle(request: DigitalDeliveryRequestType) {
     const data = await request.all()
-    
+
     const model = await shippings.digital.store(data)
 
     return response.json(model)
