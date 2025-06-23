@@ -64,11 +64,11 @@ route.group({ prefix: '/commerce' }, async () => {
   route.delete('/print-devices/{id}', 'Actions/Commerce/PrintDeviceDestroyAction')
 
   // Product Categories
-  route.get('/product-categories', 'Actions/Commerce/CategoryIndexAction')
-  route.post('/product-categories', 'Actions/Commerce/CategoryStoreAction')
-  route.get('/product-categories/{id}', 'Actions/Commerce/CategoryShowAction')
-  route.patch('/product-categories/{id}', 'Actions/Commerce/CategoryUpdateAction')
-  route.delete('/product-categories/{id}', 'Actions/Commerce/CategoryDestroyAction')
+  route.get('/product-categories', 'Actions/Commerce/Product/ProductCategoryIndexAction')
+  route.post('/product-categories', 'Actions/Commerce/Product/ProductCategoryStoreAction')
+  route.get('/product-categories/{id}', 'Actions/Commerce/Product/ProductCategoryShowAction')
+  route.patch('/product-categories/{id}', 'Actions/Commerce/Product/ProductCategoryUpdateAction')
+  route.delete('/product-categories/{id}', 'Actions/Commerce/Product/ProductCategoryDestroyAction')
 
   // Payments
   route.get('/payments', 'Actions/Commerce/PaymentIndexAction')
@@ -103,9 +103,9 @@ route.group({ prefix: '/commerce' }, async () => {
   route.delete('/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryDestroyAction')
 
   // Product Manufacturers
-  route.get('/product-manufacturers', 'Actions/Commerce/ManufacturerIndexAction')
-  route.post('/product-manufacturers', 'Actions/Commerce/ManufacturerStoreAction')
-  route.get('/product-manufacturers/{id}', 'Actions/Commerce/ManufacturerShowAction')
+  route.get('/product-manufacturers', 'Actions/Commerce/Product/ManufacturerIndexAction')
+  route.post('/product-manufacturers', 'Actions/Commerce/Product/ManufacturerStoreAction')
+  route.get('/product-manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerShowAction')
 
   // Shipping Zones
   route.get('/shipping-zones', 'Actions/Commerce/Shipping/ShippingZoneIndexAction')

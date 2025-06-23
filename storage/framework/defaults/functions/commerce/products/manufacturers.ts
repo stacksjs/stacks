@@ -4,12 +4,12 @@ import { useStorage } from '@vueuse/core'
 // Create a persistent manufacturers array using VueUse's useStorage
 const manufacturers = useStorage<Manufacturers[]>('manufacturers', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all manufacturers
 async function fetchManufacturers(): Promise<Manufacturers[]> {
   try {
-    const response = await fetch(`${baseURL}/commerce/products/manufacturers`)
+    const response = await fetch(`${baseURL}/commerce/product-manufacturers`)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -32,7 +32,7 @@ async function fetchManufacturers(): Promise<Manufacturers[]> {
 
 async function createManufacturer(manufacturer: Manufacturers): Promise<Manufacturers | null> {
   try {
-    const response = await fetch(`${baseURL}/commerce/products/manufacturers`, {
+    const response = await fetch(`${baseURL}/commerce/product-manufacturers`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -59,7 +59,7 @@ async function createManufacturer(manufacturer: Manufacturers): Promise<Manufact
 
 async function updateManufacturer(manufacturer: Manufacturers): Promise<Manufacturers | null> {
   try {
-    const response = await fetch(`${baseURL}/commerce/products/manufacturers/${manufacturer.id}`, {
+    const response = await fetch(`${baseURL}/commerce/product-manufacturers/${manufacturer.id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -89,7 +89,7 @@ async function updateManufacturer(manufacturer: Manufacturers): Promise<Manufact
 
 async function deleteManufacturer(id: number): Promise<boolean> {
   try {
-    const response = await fetch(`${baseURL}/commerce/products/manufacturers/${id}`, {
+    const response = await fetch(`${baseURL}/commerce/product-manufacturers/${id}`, {
       method: 'DELETE',
     })
 

@@ -4,12 +4,12 @@ import { useStorage } from '@vueuse/core'
 // Create a persistent categories array using VueUse's useStorage
 const categories = useStorage<Categories[]>('categories', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all categories
 async function fetchCategories(): Promise<Categories[]> {
   try {
-    const response = await fetch(`${baseURL}/commerce/products/categories`)
+    const response = await fetch(`${baseURL}/commerce/product-categories`)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -32,7 +32,7 @@ async function fetchCategories(): Promise<Categories[]> {
 
 async function createCategory(category: Categories): Promise<Categories | null> {
   try {
-    const response = await fetch(`${baseURL}/commerce/products/categories`, {
+    const response = await fetch(`${baseURL}/commerce/product-categories`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -59,7 +59,7 @@ async function createCategory(category: Categories): Promise<Categories | null> 
 
 async function updateCategory(category: Categories): Promise<Categories | null> {
   try {
-    const response = await fetch(`${baseURL}/commerce/products/categories/${category.id}`, {
+    const response = await fetch(`${baseURL}/commerce/product-categories/${category.id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -89,7 +89,7 @@ async function updateCategory(category: Categories): Promise<Categories | null> 
 
 async function deleteCategory(id: number): Promise<boolean> {
   try {
-    const response = await fetch(`${baseURL}/commerce/products/categories/${id}`, {
+    const response = await fetch(`${baseURL}/commerce/product-categories/${id}`, {
       method: 'DELETE',
     })
 
