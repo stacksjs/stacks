@@ -150,6 +150,19 @@ export interface Categories {
 
 export type NewCategory = Omit<Categories, 'id'>
 
+export interface Manufacturers {
+  id: number
+  name: string
+  description?: string
+  country: string
+  featured?: boolean
+  uuid?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export type NewManufacturer = Omit<Manufacturers, 'id'>
+
 export interface Units {
   id: number
   product_id: number
@@ -408,8 +421,8 @@ export interface Products {
   manufacturer_id: number | null
   created_at: string
   updated_at: string | null
-  manufacturer: string | null
-  category: string | null
+  manufacturer: Manufacturers | null
+  category: Categories | null
 }
 
 export type NewProduct = Omit<Products, 'id'>

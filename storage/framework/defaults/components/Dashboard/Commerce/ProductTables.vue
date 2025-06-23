@@ -129,10 +129,10 @@ function formatDate(dateString: string): string {
             </div>
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-            {{ product.manufacturer || 'N/A' }}
+            {{ product.manufacturer?.manufacturer || 'N/A' }}
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-            {{ product.category || 'N/A' }}
+            {{ product.category?.name || 'N/A' }}
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm">
             <div class="font-medium text-gray-900 dark:text-white">${{ product.price.toFixed(2) }}</div>
