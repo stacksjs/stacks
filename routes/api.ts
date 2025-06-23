@@ -196,9 +196,9 @@ route.group({ prefix: '/commerce' }, async () => {
   route.get('/loyalty-points/{id}', 'Actions/Commerce/LoyaltyPointShowAction')
 
   // Product Items
-  route.get('/product-items', 'Actions/Commerce/Product/ItemIndexAction')
-  route.post('/product-items', 'Actions/Commerce/Product/ItemStoreAction')
-  route.get('/product-items/{id}', 'Actions/Commerce/Product/ItemShowAction')
+  route.get('/products', 'Actions/Commerce/Product/ProductIndexAction')
+  route.post('/products', 'Actions/Commerce/Product/ProductStoreAction')
+  route.get('/products/{id}', 'Actions/Commerce/Product/ProductShowAction')
 
   // Loyalty Rewards
   route.get('/loyalty-rewards', 'Actions/Commerce/LoyaltyRewardIndexAction')

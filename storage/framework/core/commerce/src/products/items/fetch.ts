@@ -6,7 +6,7 @@ import { db } from '@stacksjs/database'
  */
 export async function fetchById(id: number): Promise<ProductItemJsonResponse | undefined> {
   return await db
-    .selectFrom('product_items')
+    .selectFrom('products')
     .where('id', '=', id)
     .selectAll()
     .executeTakeFirst()
@@ -16,5 +16,5 @@ export async function fetchById(id: number): Promise<ProductItemJsonResponse | u
  * Fetch all product items
  */
 export async function fetchAll(): Promise<ProductItemJsonResponse[]> {
-  return await db.selectFrom('product_items').selectAll().execute()
+  return await db.selectFrom('products').selectAll().execute()
 }

@@ -16,7 +16,7 @@ export async function store(data: NewProductItem): Promise<ProductItemJsonRespon
     }
 
     const result = await db
-      .insertInto('product_items')
+      .insertInto('products')
       .values(itemData)
       .returningAll()
       .executeTakeFirst()
@@ -56,7 +56,7 @@ export async function bulkStore(data: NewProductItem[]): Promise<number> {
         }
 
         await trx
-          .insertInto('product_items')
+          .insertInto('products')
           .values(itemData)
           .execute()
 

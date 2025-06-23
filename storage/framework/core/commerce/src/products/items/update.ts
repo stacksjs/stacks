@@ -16,7 +16,7 @@ export async function update(id: number, data: Omit<ProductItemUpdate, 'id'>): P
       throw new Error('Product item ID is required for update')
 
     const result = await db
-      .updateTable('product_items')
+      .updateTable('products')
       .set({
         ...data,
         updated_at: formatDate(new Date()),
@@ -58,7 +58,7 @@ export async function bulkUpdate(data: ProductItemUpdate[]): Promise<number> {
           continue
 
         const result = await trx
-          .updateTable('product_items')
+          .updateTable('products')
           .set({
             ...item,
             updated_at: formatDate(new Date()),
@@ -103,7 +103,7 @@ export async function updateAvailability(
   try {
     // Update the product item availability
     await db
-      .updateTable('product_items')
+      .updateTable('products')
       .set({
         is_available: isAvailable,
         updated_at: formatDate(new Date()),
@@ -158,7 +158,7 @@ export async function updateInventory(
   try {
     // Update the product item
     await db
-      .updateTable('product_items')
+      .updateTable('products')
       .set(updateData)
       .where('id', '=', id)
       .execute()
