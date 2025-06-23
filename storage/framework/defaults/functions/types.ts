@@ -420,12 +420,12 @@ export interface Products {
   category_id: number | null
   manufacturer_id: number | null
   created_at: string
-  updated_at: string | null
-  manufacturer: Manufacturers | null
-  category: Categories | null
+  updated_at?: string
+  manufacturer?: Manufacturers
+  category?: Categories
 }
 
-export type NewProduct = Omit<Products, 'id'>
+export type NewProduct = Omit<Products, 'id' | 'manufacturer' | 'category' | 'created_at' | 'updated_at' | 'uuid'>
 
 // Define category type
 export interface ProductCategories {

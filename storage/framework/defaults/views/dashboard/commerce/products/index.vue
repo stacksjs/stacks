@@ -3,6 +3,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useLocalStorage } from '@vueuse/core'
 import { useProducts } from '../../../../functions/commerce/products'
+import { useCategories } from '../../../../functions/commerce/products/categories'
+import { useManufacturers } from '../../../../functions/commerce/products/manufacturers'
 import ProductTables from '../../../../components/Dashboard/Commerce/ProductTables.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
@@ -15,9 +17,17 @@ useHead({
 // Get products data and functions from the composable
 const { products, createProduct, fetchProducts } = useProducts()
 
-// Fetch products on component mount
+// Get categories and manufacturers for dropdowns
+const { categories, fetchCategories } = useCategories()
+const { manufacturers, fetchManufacturers } = useManufacturers()
+
+// Fetch all data on component mount
 onMounted(async () => {
-  await fetchProducts()
+  await Promise.all([
+    fetchProducts(),
+    fetchCategories(),
+    fetchManufacturers()
+  ])
 })
 
 // View mode for grid/list toggle
@@ -43,13 +53,13 @@ const filteredProducts = computed(() => {
       const matchesSearch =
         product.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         product.description.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchQuery.value.toLowerCase())
+        (product.category?.name || '').toLowerCase().includes(searchQuery.value.toLowerCase())
 
       // Apply status filter
       const matchesStatus = statusFilter.value === 'all' || product.status === statusFilter.value
 
       // Apply category filter
-      const matchesCategory = categoryFilter.value === 'all' || product.category === categoryFilter.value
+      const matchesCategory = categoryFilter.value === 'all' || (product.category?.name || '') === categoryFilter.value
 
       return matchesSearch && matchesStatus && matchesCategory
     })
@@ -61,10 +71,10 @@ const filteredProducts = computed(() => {
       } else if (sortBy.value === 'price') {
         comparison = (a.price || 0) - (b.price || 0)
       } else if (sortBy.value === 'inventory') {
-        comparison = (a.inventory || 0) - (b.inventory || 0)
+        comparison = (a.inventory_count || 0) - (b.inventory_count || 0)
       } else if (sortBy.value === 'dateAdded') {
-        const dateA = a.dateAdded ? new Date(a.dateAdded).getTime() : 0
-        const dateB = b.dateAdded ? new Date(b.dateAdded).getTime() : 0
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
         comparison = dateA - dateB
       }
 
@@ -79,9 +89,10 @@ const paginatedProducts = computed(() => {
 })
 
 // Get unique categories for filter
-const categories = computed(() => {
+const categoriesForFilter = computed(() => {
   const categoryCounts = products.value.reduce((acc, product) => {
-    acc[product.category] = (acc[product.category] || 0) + 1
+    const categoryName = product.category?.name || 'Unknown'
+    acc[categoryName] = (acc[categoryName] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
@@ -138,8 +149,8 @@ interface NewProduct {
   description: string
   price: number
   salePrice: number | null
-  category: string
-  manufacturer: string
+  category_id: number
+  manufacturer_id: number
   tags: string[]
   imageUrl: string
   inventory: number
@@ -157,8 +168,8 @@ const newProduct = ref<NewProduct>({
   description: '',
   price: 0,
   salePrice: null,
-  category: '',
-  manufacturer: '',
+  category_id: 0,
+  manufacturer_id: 0,
   tags: [],
   imageUrl: '',
   inventory: 0,
@@ -175,8 +186,8 @@ function openAddProductModal(): void {
     description: '',
     price: 0,
     salePrice: null,
-    category: '',
-    manufacturer: '',
+    category_id: 0,
+    manufacturer_id: 0,
     tags: [],
     imageUrl: '',
     inventory: 0,
@@ -196,22 +207,28 @@ function closeProductModal(): void {
 async function addProduct(): Promise<void> {
   // First add to local state for immediate UI update
   const id = Math.max(...products.value.map(p => p.id || 0)) + 1
+  
+  // Find the selected category and manufacturer
+  const selectedCategory = categories.value.find(c => c.id === newProduct.value.category_id)
+  const selectedManufacturer = manufacturers.value.find(m => m.id === newProduct.value.manufacturer_id)
+  
   const newProductData = {
     id,
+    uuid: `product-${id}`,
     name: newProduct.value.name,
     description: newProduct.value.description,
     price: newProduct.value.price,
-    salePrice: newProduct.value.salePrice,
-    category: newProduct.value.category,
-    manufacturer: newProduct.value.manufacturer,
-    tags: newProduct.value.tags,
-    imageUrl: newProduct.value.imageUrl,
-    inventory: newProduct.value.inventory,
-    status: newProduct.value.status,
-    featured: newProduct.value.featured,
-    rating: newProduct.value.rating,
-    reviewCount: newProduct.value.reviewCount,
-    dateAdded: newProduct.value.dateAdded
+    image_url: newProduct.value.imageUrl,
+    is_available: newProduct.value.status === 'Active' ? 1 : 0,
+    inventory_count: newProduct.value.inventory,
+    preparation_time: 0,
+    allergens: '',
+    nutritional_info: '',
+    category_id: newProduct.value.category_id,
+    manufacturer_id: newProduct.value.manufacturer_id,
+    created_at: new Date().toISOString(),
+    manufacturer: selectedManufacturer,
+    category: selectedCategory
   }
   products.value.push(newProductData)
 
@@ -220,21 +237,18 @@ async function addProduct(): Promise<void> {
     name: newProduct.value.name,
     description: newProduct.value.description,
     price: newProduct.value.price,
-    salePrice: newProduct.value.salePrice,
-    category: newProduct.value.category,
-    manufacturer: newProduct.value.manufacturer,
-    tags: newProduct.value.tags,
-    imageUrl: newProduct.value.imageUrl,
-    inventory: newProduct.value.inventory,
-    status: newProduct.value.status,
-    featured: newProduct.value.featured,
-    rating: newProduct.value.rating,
-    reviewCount: newProduct.value.reviewCount,
-    dateAdded: newProduct.value.dateAdded
+    image_url: newProduct.value.imageUrl,
+    is_available: newProduct.value.status === 'Active' ? 1 : 0,
+    inventory_count: newProduct.value.inventory,
+    preparation_time: 0,
+    allergens: '',
+    nutritional_info: '',
+    category_id: newProduct.value.category_id,
+    manufacturer_id: newProduct.value.manufacturer_id,
   }
 
   try {
-    await createProduct(productData as any)
+    await createProduct(productData)
     closeProductModal()
   } catch (error) {
     // If server request fails, remove from local state
@@ -273,7 +287,7 @@ async function addProduct(): Promise<void> {
                 class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
               >
                 <option value="all">All Categories</option>
-                <option v-for="category in categories" :key="category.name" :value="category.name">
+                <option v-for="category in categoriesForFilter" :key="category.name" :value="category.name">
                   {{ category.name }} ({{ category.count }})
                 </option>
               </select>
@@ -341,7 +355,7 @@ async function addProduct(): Promise<void> {
           :current-page="currentPage"
           :items-per-page="itemsPerPage"
           :statuses="statuses"
-          :categories="categories.map(c => c.name)"
+          :categories="categoriesForFilter.map(c => c.name)"
           @toggle-sort="toggleSort"
           @change-page="handlePageChange"
           @previous-page="handlePrevPage"
@@ -440,23 +454,27 @@ async function addProduct(): Promise<void> {
                   <div class="grid grid-cols-2 gap-4">
                     <div>
                       <label for="product-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
-                      <input
-                        type="text"
+                      <select
                         id="product-category"
-                        v-model="newProduct.category"
+                        v-model="newProduct.category_id"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                         required
-                      />
+                      >
+                        <option value="">Select a category</option>
+                        <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
+                      </select>
                     </div>
                     <div>
                       <label for="product-manufacturer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label>
-                      <input
-                        type="text"
+                      <select
                         id="product-manufacturer"
-                        v-model="newProduct.manufacturer"
+                        v-model="newProduct.manufacturer_id"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                         required
-                      />
+                      >
+                        <option value="">Select a manufacturer</option>
+                        <option v-for="manufacturer in manufacturers" :key="manufacturer.id" :value="manufacturer.id">{{ manufacturer.name }}</option>
+                      </select>
                     </div>
                   </div>
 

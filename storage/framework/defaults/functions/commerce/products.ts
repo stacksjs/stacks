@@ -1,4 +1,4 @@
-import type { Products } from '../types'
+import type { NewProduct, Products } from '../types'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent products array using VueUse's useStorage
@@ -32,7 +32,7 @@ async function fetchProducts(): Promise<Products[]> {
   }
 }
 
-async function createProduct(product: Omit<Products, 'id'>): Promise<Products | null> {
+async function createProduct(product: NewProduct): Promise<Products | null> {
   try {
     const response = await fetch(`${baseURL}/commerce/products`, {
       method: 'POST',
