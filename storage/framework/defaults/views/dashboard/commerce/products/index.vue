@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useLocalStorage } from '@vueuse/core'
-import { useProducts } from '../../../../functions/commerce/products/products'
+import { useProducts } from '../../../../functions/commerce/products'
 import ProductTables from '../../../../components/Dashboard/Commerce/ProductTables.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
@@ -12,12 +12,12 @@ useHead({
   title: 'Dashboard - Commerce Products',
 })
 
-// Get products store
-const productsStore = useProducts()
+// Get products data and functions from the composable
+const { products, createProduct, fetchProducts } = useProducts()
 
 // Fetch products on component mount
 onMounted(async () => {
-  await productsStore.fetchProducts()
+  await fetchProducts()
 })
 
 // View mode for grid/list toggle
@@ -25,36 +25,111 @@ const viewMode = useLocalStorage('products-view-mode', 'list')
 
 // Available statuses
 const statuses = ['all', 'Active', 'Coming Soon', 'Low Stock', 'Out of Stock', 'Discontinued'] as const
+const statusFilter = ref('all')
+const categoryFilter = ref('all')
+const sortBy = ref('name')
+const sortOrder = ref('asc')
+
+// Search and filtering
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = ref(5)
+
+// Computed filtered products
+const filteredProducts = computed(() => {
+  return products.value
+    .filter(product => {
+      // Apply search filter
+      const matchesSearch =
+        product.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchQuery.value.toLowerCase())
+
+      // Apply status filter
+      const matchesStatus = statusFilter.value === 'all' || product.status === statusFilter.value
+
+      // Apply category filter
+      const matchesCategory = categoryFilter.value === 'all' || product.category === categoryFilter.value
+
+      return matchesSearch && matchesStatus && matchesCategory
+    })
+    .sort((a, b) => {
+      // Apply sorting
+      let comparison = 0
+      if (sortBy.value === 'name') {
+        comparison = a.name.localeCompare(b.name)
+      } else if (sortBy.value === 'price') {
+        comparison = (a.price || 0) - (b.price || 0)
+      } else if (sortBy.value === 'inventory') {
+        comparison = (a.inventory || 0) - (b.inventory || 0)
+      } else if (sortBy.value === 'dateAdded') {
+        const dateA = a.dateAdded ? new Date(a.dateAdded).getTime() : 0
+        const dateB = b.dateAdded ? new Date(b.dateAdded).getTime() : 0
+        comparison = dateA - dateB
+      }
+
+      return sortOrder.value === 'asc' ? comparison : -comparison
+    })
+})
+
+const paginatedProducts = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredProducts.value.slice(start, end)
+})
+
+// Get unique categories for filter
+const categories = computed(() => {
+  const categoryCounts = products.value.reduce((acc, product) => {
+    acc[product.category] = (acc[product.category] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  return Object.entries(categoryCounts).map(([name, count]) => ({ name, count }))
+})
 
 // Event handlers
 const handleSearch = (query: string) => {
-  productsStore.setSearchQuery(query)
+  searchQuery.value = query
+  currentPage.value = 1
 }
 
 const handlePrevPage = () => {
-  productsStore.previousPage()
+  if (currentPage.value > 1) {
+    currentPage.value--
+  }
 }
 
 const handleNextPage = () => {
-  productsStore.nextPage()
+  const totalPages = Math.ceil(filteredProducts.value.length / itemsPerPage.value)
+  if (currentPage.value < totalPages) {
+    currentPage.value++
+  }
 }
 
 const handlePageChange = (page: number) => {
-  productsStore.setCurrentPage(page)
+  currentPage.value = page
 }
 
 // Toggle sort order
 function toggleSort(column: string): void {
-  productsStore.setSortBy(column)
+  if (sortBy.value === column) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = column
+    sortOrder.value = 'asc'
+  }
 }
 
 // Product actions
 function viewProduct(product: Products): void {
-  productsStore.viewProduct(product)
+  console.log('View product:', product)
+  // Implement view product logic
 }
 
 function editProduct(product: Products): void {
-  productsStore.editProduct(product)
+  console.log('Edit product:', product)
+  // Implement edit product logic
 }
 
 // Define new product type
@@ -119,6 +194,28 @@ function closeProductModal(): void {
 }
 
 async function addProduct(): Promise<void> {
+  // First add to local state for immediate UI update
+  const id = Math.max(...products.value.map(p => p.id || 0)) + 1
+  const newProductData = {
+    id,
+    name: newProduct.value.name,
+    description: newProduct.value.description,
+    price: newProduct.value.price,
+    salePrice: newProduct.value.salePrice,
+    category: newProduct.value.category,
+    manufacturer: newProduct.value.manufacturer,
+    tags: newProduct.value.tags,
+    imageUrl: newProduct.value.imageUrl,
+    inventory: newProduct.value.inventory,
+    status: newProduct.value.status,
+    featured: newProduct.value.featured,
+    rating: newProduct.value.rating,
+    reviewCount: newProduct.value.reviewCount,
+    dateAdded: newProduct.value.dateAdded
+  }
+  products.value.push(newProductData)
+
+  // Then send to server
   const productData = {
     name: newProduct.value.name,
     description: newProduct.value.description,
@@ -137,9 +234,11 @@ async function addProduct(): Promise<void> {
   }
 
   try {
-    await productsStore.createProduct(productData)
+    await createProduct(productData as any)
     closeProductModal()
   } catch (error) {
+    // If server request fails, remove from local state
+    products.value = products.value.filter(p => p.id !== id)
     console.error('Failed to create product:', error)
   }
 }
@@ -170,20 +269,18 @@ async function addProduct(): Promise<void> {
             <div class="flex flex-col sm:flex-row gap-4">
               <!-- Category filter -->
               <select
-                :model-value="productsStore.getCategoryFilter"
-                @update:model-value="productsStore.setCategoryFilter"
+                v-model="categoryFilter"
                 class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
               >
                 <option value="all">All Categories</option>
-                <option v-for="category in productsStore.getCategories" :key="category.id" :value="category.name">
+                <option v-for="category in categories" :key="category.name" :value="category.name">
                   {{ category.name }} ({{ category.count }})
                 </option>
               </select>
 
               <!-- Status filter -->
               <select
-                :model-value="productsStore.getStatusFilter"
-                @update:model-value="productsStore.setStatusFilter"
+                v-model="statusFilter"
                 class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
               >
                 <option value="all">All Statuses</option>
@@ -221,8 +318,7 @@ async function addProduct(): Promise<void> {
               </div>
 
               <select
-                :model-value="productsStore.getItemsPerPage"
-                @update:model-value="productsStore.setItemsPerPage"
+                v-model="itemsPerPage"
                 class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
               >
                 <option :value="5">5 per page</option>
@@ -236,16 +332,16 @@ async function addProduct(): Promise<void> {
 
         <!-- Product Tables Component -->
         <ProductTables
-          :products="productsStore.paginatedProducts"
-          :search-query="productsStore.getSearchQuery"
-          :status-filter="productsStore.getStatusFilter"
-          :category-filter="productsStore.getCategoryFilter"
-          :sort-by="productsStore.getSortBy"
-          :sort-order="productsStore.getSortOrder"
-          :current-page="productsStore.getCurrentPage"
-          :items-per-page="productsStore.getItemsPerPage"
+          :products="paginatedProducts"
+          :search-query="searchQuery"
+          :status-filter="statusFilter"
+          :category-filter="categoryFilter"
+          :sort-by="sortBy"
+          :sort-order="sortOrder"
+          :current-page="currentPage"
+          :items-per-page="itemsPerPage"
           :statuses="statuses"
-          :categories="productsStore.getCategories.map((c: any) => c.name)"
+          :categories="categories.map(c => c.name)"
           @toggle-sort="toggleSort"
           @change-page="handlePageChange"
           @previous-page="handlePrevPage"
@@ -256,9 +352,9 @@ async function addProduct(): Promise<void> {
 
         <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
           <Pagination
-            :current-page="productsStore.getCurrentPage"
-            :total-items="productsStore.filteredProducts.length"
-            :items-per-page="productsStore.getItemsPerPage"
+            :current-page="currentPage"
+            :total-items="filteredProducts.length"
+            :items-per-page="itemsPerPage"
             @prev="handlePrevPage"
             @next="handleNextPage"
             @page="handlePageChange"
