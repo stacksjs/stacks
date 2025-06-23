@@ -2,40 +2,18 @@
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useLocalStorage } from '@vueuse/core'
+import ProductTables from '../../../../components/Dashboard/Commerce/ProductTables.vue'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
+import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
+import type { Products, ProductCategories } from '../../../../functions/types'
 
 useHead({
   title: 'Dashboard - Commerce Products',
 })
 
-// Define product type
-interface Product {
-  id: number
-  name: string
-  description: string
-  price: number
-  salePrice: number | null
-  category: string
-  manufacturer: string
-  tags: string[]
-  imageUrl: string
-  inventory: number
-  status: string
-  featured: boolean
-  rating: number
-  reviewCount: number
-  dateAdded: string
-}
-
-// Define category type
-interface Category {
-  id: number
-  name: string
-  slug: string
-  count: number
-}
 
 // Sample products data (DoorDash-like food products)
-const products = ref<Product[]>([
+const products = ref<Products[]>([
   {
     id: 1,
     name: 'Classic Cheeseburger',
@@ -277,10 +255,10 @@ const products = ref<Product[]>([
 ])
 
 // Categories derived from products
-const categories = computed<Category[]>(() => {
+const categories = computed<ProductCategories[]>(() => {
   const categoryMap = new Map<string, number>()
 
-  products.value.forEach(product => {
+  products.value.forEach((product: Products) => {
     const count = categoryMap.get(product.category) || 0
     categoryMap.set(product.category, count + 1)
   })
@@ -302,7 +280,7 @@ const statusFilter = ref('all')
 const viewMode = useLocalStorage('products-view-mode', 'list') // Default to list view and save in localStorage
 
 // Available statuses
-const statuses = ['all', 'Active', 'Coming Soon', 'Low Stock', 'Out of Stock', 'Discontinued']
+const statuses = ['all', 'Active', 'Coming Soon', 'Low Stock', 'Out of Stock', 'Discontinued'] as const
 
 // Computed filtered and sorted products
 const filteredProducts = computed(() => {
@@ -352,20 +330,27 @@ const paginatedProducts = computed(() => {
   return filteredProducts.value.slice(start, end)
 })
 
-function changePage(page: number): void {
-  currentPage.value = page
+// Event handlers
+const handleSearch = (query: string) => {
+  searchQuery.value = query
+  currentPage.value = 1
 }
 
-function previousPage(): void {
+const handlePrevPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
-function nextPage(): void {
-  if (currentPage.value < totalPages.value) {
+const handleNextPage = () => {
+  const totalPages = Math.ceil(filteredProducts.value.length / itemsPerPage.value)
+  if (currentPage.value < totalPages) {
     currentPage.value++
   }
+}
+
+const handlePageChange = (page: number) => {
+  currentPage.value = page
 }
 
 // Toggle sort order
@@ -378,23 +363,31 @@ function toggleSort(column: string): void {
   }
 }
 
-// Get status badge class
-function getStatusClass(status: string): string {
-  switch (status) {
-    case 'Active':
-      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
-    case 'Low Stock':
-      return 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400'
-    case 'Out of Stock':
-      return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
-    case 'Discontinued':
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
-    case 'Coming Soon':
-      return 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-400'
-    default:
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+// Product actions
+function viewProduct(product: any): void {
+  console.log('View product:', product)
+  // Implement view product logic
+}
+
+function editProduct(product: any): void {
+  console.log('Edit product:', product)
+  // Implement edit product logic
+}
+
+function deleteProduct(productId: number): void {
+  if (confirm('Are you sure you want to delete this product?')) {
+    const index = products.value.findIndex(p => p.id === productId)
+    if (index !== -1) {
+      products.value.splice(index, 1)
+    }
   }
 }
+
+// Calculate total products and featured products
+const totalProducts = computed(() => products.value.length)
+const featuredProducts = computed(() => products.value.filter(p => p.featured).length)
+const lowStockProducts = computed(() => products.value.filter(p => p.status === 'Low Stock').length)
+const comingSoonProducts = computed(() => products.value.filter(p => p.status === 'Coming Soon').length)
 
 // Modal state for adding/editing product
 const showProductModal = ref(false)
@@ -500,492 +493,124 @@ function saveProduct(): void {
 
   closeProductModal()
 }
-
-// Calculate total products and featured products
-const totalProducts = computed(() => products.value.length)
-const featuredProducts = computed(() => products.value.filter(p => p.featured).length)
-const lowStockProducts = computed(() => products.value.filter(p => p.status === 'Low Stock').length)
-const comingSoonProducts = computed(() => products.value.filter(p => p.status === 'Coming Soon').length)
-
-// Function to delete a product
-function deleteProduct(productId: number): void {
-  if (confirm('Are you sure you want to delete this product?')) {
-    const index = products.value.findIndex(p => p.id === productId)
-    if (index !== -1) {
-      products.value.splice(index, 1)
-    }
-  }
-}
 </script>
 
 <template>
-  <main>
-    <div class="px-6 py-6 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl">
-        <!-- Header section -->
-        <div class="sm:flex sm:items-center sm:justify-between">
-          <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Products</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              Manage your product catalog
-            </p>
-          </div>
-          <div class="mt-4 sm:mt-0">
+  <div class="py-6">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
+      <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+        <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex justify-between items-center">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Products</h2>
             <button
-              type="button"
               @click="openAddProductModal"
+              type="button"
               class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
             >
-              <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
-              Add product
+              <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
+              Add Product
             </button>
           </div>
-        </div>
-
-        <!-- Summary cards -->
-        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <!-- Total products card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-blue-100 p-2 dark:bg-blue-900">
-                    <div class="i-hugeicons-package h-6 w-6 text-blue-600 dark:text-blue-300"></div>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Products</dt>
-                    <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalProducts }}</div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Featured products card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-yellow-100 p-2 dark:bg-yellow-900">
-                    <div class="i-hugeicons-star h-6 w-6 text-yellow-600 dark:text-yellow-300"></div>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Featured Products</dt>
-                    <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ featuredProducts }}</div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Low stock products card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-red-100 p-2 dark:bg-red-900">
-                    <div class="i-hugeicons-alert-01 h-6 w-6 text-red-600 dark:text-red-300"></div>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Low Stock Products</dt>
-                    <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ lowStockProducts }}</div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Coming Soon products card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-purple-100 p-2 dark:bg-purple-900">
-                    <div class="i-hugeicons-calendar-01 h-6 w-6 text-purple-600 dark:text-purple-300"></div>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Coming Soon</dt>
-                    <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ comingSoonProducts }}</div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Filters and view options -->
-        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div class="relative max-w-sm">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
-            </div>
-            <input
-              v-model="searchQuery"
-              type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+          <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <SearchFilter
               placeholder="Search products..."
+              @search="handleSearch"
+              class="w-full md:w-96"
             />
-          </div>
-
-          <div class="flex flex-col sm:flex-row gap-4">
-            <!-- Category filter -->
-            <select
-              v-model="categoryFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option value="all">All Categories</option>
-              <option v-for="category in categories" :key="category.id" :value="category.name">
-                {{ category.name }} ({{ category.count }})
-              </option>
-            </select>
-
-            <!-- Status filter -->
-            <select
-              v-model="statusFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option value="all">All Statuses</option>
-              <option v-for="status in statuses.slice(1)" :key="status" :value="status">
-                {{ status }}
-              </option>
-            </select>
-
-            <!-- View mode toggle -->
-            <div class="flex rounded-md shadow-sm">
-              <button
-                type="button"
-                @click="viewMode = 'grid'"
-                :class="[
-                  'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                  viewMode === 'grid'
-                    ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
-                ]"
+            <div class="flex flex-col sm:flex-row gap-4">
+              <!-- Category filter -->
+              <select
+                v-model="categoryFilter"
+                class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
               >
-                <div class="i-hugeicons-grid h-5 w-5"></div>
-              </button>
-              <button
-                type="button"
-                @click="viewMode = 'list'"
-                :class="[
-                  'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                  viewMode === 'list'
-                    ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
-                ]"
+                <option value="all">All Categories</option>
+                <option v-for="category in categories" :key="category.id" :value="category.name">
+                  {{ category.name }} ({{ category.count }})
+                </option>
+              </select>
+
+              <!-- Status filter -->
+              <select
+                v-model="statusFilter"
+                class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
               >
-                <div class="i-hugeicons-right-to-left-list-number h-5 w-5"></div>
-              </button>
-            </div>
-          </div>
-        </div>
+                <option value="all">All Statuses</option>
+                <option v-for="status in statuses.slice(1)" :key="status" :value="status">
+                  {{ status }}
+                </option>
+              </select>
 
-        <!-- Sort options -->
-        <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
-          <span class="mr-2">Sort by:</span>
-          <button
-            @click="toggleSort('name')"
-            class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'name' }"
-          >
-            Name
-            <span v-if="sortBy === 'name'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
-            </span>
-          </button>
-          <button
-            @click="toggleSort('price')"
-            class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'price' }"
-          >
-            Price
-            <span v-if="sortBy === 'price'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
-            </span>
-          </button>
-          <button
-            @click="toggleSort('rating')"
-            class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'rating' }"
-          >
-            Rating
-            <span v-if="sortBy === 'rating'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
-            </span>
-          </button>
-          <button
-            @click="toggleSort('dateAdded')"
-            class="flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'dateAdded' }"
-          >
-            Date Added
-            <span v-if="sortBy === 'dateAdded'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
-            </span>
-          </button>
-        </div>
-
-        <!-- Grid view -->
-        <div v-if="viewMode === 'grid'" class="mt-6">
-          <div v-if="paginatedProducts.length === 0" class="py-12 text-center">
-            <div class="i-hugeicons-box-01 mx-auto h-12 w-12 text-gray-400"></div>
-            <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No products found</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or filter to find what you're looking for.</p>
-          </div>
-
-          <div v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <!-- Product card -->
-            <div
-              v-for="product in paginatedProducts"
-              :key="product.id"
-              class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-blue-gray-800"
-              :class="{ 'ring-2 ring-purple-500 dark:ring-purple-400': product.status === 'Coming Soon' }"
-            >
-              <!-- Product image with status badge -->
-              <div class="relative aspect-square overflow-hidden bg-gray-200 dark:bg-gray-700">
-                <img
-                  :src="product.imageUrl"
-                  :alt="product.name"
-                  class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  :class="{ 'opacity-80': product.status === 'Coming Soon' }"
-                />
-                <span
-                  v-if="product.status !== 'Active'"
-                  :class="[getStatusClass(product.status), 'absolute top-2 right-2 rounded-full px-2 py-0.5 text-xs font-medium']"
-                >
-                  {{ product.status }}
-                </span>
-                <span
-                  v-if="product.featured"
-                  class="absolute top-2 left-2 rounded-full bg-yellow-50 px-2 py-0.5 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400"
-                >
-                  Featured
-                </span>
-                <div v-if="product.status === 'Coming Soon'" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
-                  <span class="transform rotate-12 bg-purple-600 text-white px-6 py-2 text-lg font-bold shadow-lg">Coming Soon</span>
-                </div>
-              </div>
-
-              <!-- Product info -->
-              <div class="p-4">
-                <div class="flex items-center justify-between">
-                  <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ product.name }}</h3>
-                  <div class="flex items-center">
-                    <div class="i-hugeicons-star h-4 w-4 text-yellow-400"></div>
-                    <span class="ml-1 text-sm text-gray-600 dark:text-gray-400">{{ product.rating }}</span>
-                    <span class="ml-1 text-xs text-gray-500 dark:text-gray-500">({{ product.reviewCount }})</span>
-                  </div>
-                </div>
-
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{{ product.description }}</p>
-
-                <div class="mt-2">
-                  <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ product.category }}</span>
-                </div>
-
-                <div class="mt-2 flex items-center">
-                  <span v-if="product.salePrice !== null" class="text-sm font-medium text-gray-900 dark:text-white">${{ product.salePrice.toFixed(2) }}</span>
-                  <span
-                    :class="[product.salePrice !== null ? 'line-through ml-2 text-sm text-gray-500 dark:text-gray-400' : 'text-sm font-medium text-gray-900 dark:text-white']"
-                  >
-                    ${{ product.price.toFixed(2) }}
-                  </span>
-                </div>
-
-                <div class="mt-3 flex items-center justify-between">
-                  <span class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ product.inventory }} in stock
-                  </span>
-                  <div class="flex space-x-2">
-                    <button
-                      @click="openEditProductModal(product)"
-                      class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                    >
-                      <div class="i-hugeicons-edit-01 h-4 w-4"></div>
-                      <span class="sr-only">Edit {{ product.name }}</span>
-                    </button>
-                    <button
-                      @click="deleteProduct(product.id)"
-                      class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                    >
-                      <div class="i-hugeicons-waste h-4 w-4"></div>
-                      <span class="sr-only">Delete {{ product.name }}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- List view -->
-        <div v-if="viewMode === 'list'" class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-blue-gray-700">
-              <tr>
-                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Product</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Manufacturer</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Category</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Price</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
-                <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white">Inventory</th>
-                <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white">Created At</th>
-                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                  <span class="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
-              <tr v-if="paginatedProducts.length === 0">
-                <td colspan="8" class="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  No products found. Try adjusting your search or filter.
-                </td>
-              </tr>
-              <tr v-for="product in paginatedProducts" :key="product.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700">
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                  <div class="flex items-center">
-                    <div class="h-10 w-10 flex-shrink-0">
-                      <img :src="product.imageUrl" :alt="product.name" class="h-10 w-10 rounded-md object-cover" />
-                    </div>
-                    <div class="ml-4">
-                      <div class="font-medium text-gray-900 dark:text-white">{{ product.name }}</div>
-                      <div class="flex items-center mt-1">
-                        <div class="i-hugeicons-star h-3 w-3 text-yellow-400"></div>
-                        <span class="ml-1 text-xs text-gray-500 dark:text-gray-400">{{ product.rating }} ({{ product.reviewCount }})</span>
-                        <span v-if="product.featured" class="ml-2 inline-flex items-center rounded-full bg-yellow-50 px-1.5 py-0.5 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400">
-                          Featured
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ product.manufacturer }}</td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ product.category }}</td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm">
-                  <div v-if="product.salePrice !== null">
-                    <div class="font-medium text-gray-900 dark:text-white">${{ product.salePrice.toFixed(2) }}</div>
-                    <div class="line-through text-xs text-gray-500 dark:text-gray-400">${{ product.price.toFixed(2) }}</div>
-                  </div>
-                  <div v-else class="font-medium text-gray-900 dark:text-white">${{ product.price.toFixed(2) }}</div>
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm">
-                  <span :class="[getStatusClass(product.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium']">
-                    {{ product.status }}
-                  </span>
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">{{ product.inventory }}</td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">{{ product.dateAdded }}</td>
-                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                  <div class="flex justify-end space-x-2">
-                    <button
-                      @click="openEditProductModal(product)"
-                      class="text-gray-400 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                    >
-                      <div class="i-hugeicons-edit-01 h-5 w-5"></div>
-                      <span class="sr-only">Edit {{ product.name }}</span>
-                    </button>
-                    <button
-                      @click="deleteProduct(product.id)"
-                      class="text-gray-400 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-                    >
-                      <div class="i-hugeicons-waste h-5 w-5"></div>
-                      <span class="sr-only">Delete {{ product.name }}</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Pagination -->
-        <div v-if="totalPages > 1" class="mt-6 flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-gray-700 sm:px-6">
-          <div class="flex flex-1 justify-between sm:hidden">
-            <button
-              @click="previousPage"
-              :disabled="currentPage === 1"
-              :class="[
-                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-white',
-                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700'
-              ]"
-            >
-              Previous
-            </button>
-            <button
-              @click="nextPage"
-              :disabled="currentPage === totalPages"
-              :class="[
-                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-white',
-                currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700'
-              ]"
-            >
-              Next
-            </button>
-          </div>
-          <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-            <div>
-              <p class="text-sm text-gray-700 dark:text-gray-300">
-                Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
-                <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredProducts.length) }}</span> of
-                <span class="font-medium">{{ filteredProducts.length }}</span> results
-              </p>
-            </div>
-            <div>
-              <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+              <!-- View mode toggle -->
+              <div class="flex rounded-md shadow-sm">
                 <button
-                  @click="previousPage"
-                  :disabled="currentPage === 1"
-                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700 dark:text-gray-500"
-                  :class="{ 'opacity-50 cursor-not-allowed': currentPage === 1 }"
-                >
-                  <span class="sr-only">Previous</span>
-                  <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
-                </button>
-                <button
-                  v-for="page in totalPages"
-                  :key="page"
-                  @click="changePage(page)"
+                  type="button"
+                  @click="viewMode = 'grid'"
                   :class="[
-                    'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-gray-600',
-                    page === currentPage
-                      ? 'bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
-                      : 'text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-blue-gray-700'
+                    'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+                    viewMode === 'grid'
+                      ? 'bg-blue-600 text-white ring-blue-600'
+                      : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
                   ]"
                 >
-                  {{ page }}
+                  <div class="i-hugeicons-grid h-5 w-5"></div>
                 </button>
                 <button
-                  @click="nextPage"
-                  :disabled="currentPage === totalPages"
-                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700 dark:text-gray-500"
-                  :class="{ 'opacity-50 cursor-not-allowed': currentPage === totalPages }"
+                  type="button"
+                  @click="viewMode = 'list'"
+                  :class="[
+                    'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+                    viewMode === 'list'
+                      ? 'bg-blue-600 text-white ring-blue-600'
+                      : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
+                  ]"
                 >
-                  <span class="sr-only">Next</span>
-                  <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
+                  <div class="i-hugeicons-right-to-left-list-number h-5 w-5"></div>
                 </button>
-              </nav>
+              </div>
+
+              <select
+                v-model="itemsPerPage"
+                class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              >
+                <option :value="5">5 per page</option>
+                <option :value="10">10 per page</option>
+                <option :value="25">25 per page</option>
+                <option :value="50">50 per page</option>
+              </select>
             </div>
           </div>
+        </div>
+
+        <!-- Product Tables Component -->
+        <ProductTables
+          :products="paginatedProducts"
+          :search-query="searchQuery"
+          :status-filter="statusFilter"
+          :category-filter="categoryFilter"
+          :sort-by="sortBy"
+          :sort-order="sortOrder"
+          :current-page="currentPage"
+          :items-per-page="itemsPerPage"
+          :statuses="statuses"
+          :categories="categories.map(c => c.name)"
+          @toggle-sort="toggleSort"
+          @change-page="handlePageChange"
+          @previous-page="handlePrevPage"
+          @next-page="handleNextPage"
+          @view-product="viewProduct"
+          @edit-product="editProduct"
+          @delete-product="deleteProduct"
+        />
+
+        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+          <Pagination
+            :current-page="currentPage"
+            :total-items="filteredProducts.length"
+            :items-per-page="itemsPerPage"
+            @prev="handlePrevPage"
+            @next="handleNextPage"
+            @page="handlePageChange"
+          />
         </div>
       </div>
     </div>
@@ -1158,5 +783,5 @@ function deleteProduct(productId: number): void {
         </div>
       </div>
     </div>
-  </main>
+  </div>
 </template>

@@ -409,3 +409,35 @@ export interface WaitlistRestaurant {
 }
 
 export type NewWaitlistRestaurant = Omit<WaitlistRestaurant, 'id'>
+
+// Define product type
+export interface Product {
+  id: number
+  name: string
+  description: string
+  price: number
+  salePrice: number | null
+  category: string
+  manufacturer: string
+  tags: string[]
+  imageUrl: string
+  inventory: number
+  status: string
+  featured: boolean
+  rating: number
+  reviewCount: number
+  dateAdded: string
+}
+
+export type NewProduct = Omit<Product, 'id'>
+
+// Define category type
+export interface ProductCategories {
+  id: number
+  name: string
+  slug: string
+  count: number
+}
+
+export type NewProductCategory = Omit<ProductCategories, 'id'>
+
