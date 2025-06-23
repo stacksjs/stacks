@@ -1,4 +1,5 @@
 import type { Model } from '@stacksjs/types'
+import { slug } from '@stacksjs/strings'
 import { schema } from '@stacksjs/validation'
 
 export default {
@@ -52,6 +53,16 @@ export default {
         rule: schema.string(),
       },
       factory: faker => faker.commerce.productDescription(),
+    },
+
+    slug: {
+      required: true,
+      order: 3,
+      fillable: true,
+      validation: {
+        rule: schema.string(),
+      },
+      factory: faker => slug(faker.commerce.department()),
     },
 
     imageUrl: {

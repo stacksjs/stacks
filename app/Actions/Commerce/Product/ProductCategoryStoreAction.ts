@@ -9,7 +9,7 @@ export default new Action({
   method: 'POST',
   async handle(request: CategoryRequestType) {
     const data = request.all()
-    
+
     const model = await products.categories.store(data)
 
     return response.json(model)

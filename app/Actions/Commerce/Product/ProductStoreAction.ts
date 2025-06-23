@@ -10,7 +10,7 @@ export default new Action({
   method: 'POST',
   async handle(request: ProductRequestType) {
     const data = request.all()
-    
+
     const model = await products.items.store(data)
 
     return response.json(model)

@@ -8,6 +8,7 @@ export async function up(db: Database<any>) {
     .addColumn('uuid', 'varchar(255)')
     .addColumn('name', 'varchar(50)', col => col.notNull())
     .addColumn('description', 'varchar(255)')
+    .addColumn('slug', 'varchar(255)', col => col.notNull())
     .addColumn('image_url', 'varchar(255)')
     .addColumn('is_active', 'boolean')
     .addColumn('parent_category_id', 'varchar(255)')

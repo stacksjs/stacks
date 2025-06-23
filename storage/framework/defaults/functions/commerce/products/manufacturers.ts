@@ -119,4 +119,4 @@ export function useManufacturers() {
     updateManufacturer,
     deleteManufacturer,
   }
-} 
+}
