@@ -163,25 +163,6 @@ export interface Units {
 
 export type NewUnit = Omit<Units, 'id'>
 
-export interface ProductItems {
-  id: number
-  product_id: number
-  manufacturer_id: number
-  category_id: number
-  name: string
-  size?: string
-  color?: string
-  price: number
-  image_url?: string
-  is_available?: boolean
-  inventory_count?: number
-  sku: string
-  custom_options?: string
-  uuid?: string
-}
-
-export type NewProductItem = Omit<ProductItems, 'id'>
-
 export interface Reviews {
   id: number
   product_id: number

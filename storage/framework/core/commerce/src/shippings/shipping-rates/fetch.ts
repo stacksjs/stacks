@@ -89,7 +89,7 @@ export async function fetchAll(): Promise<ShippingRateJsonResponse[]> {
 /**
  * Get shipping rates by zone
  *
- * @param zone Shipping zone identifier
+ * @param zoneId Shipping zone identifier
  * @returns List of shipping rates for the specified zone
  */
 export async function getRatesByZone(zoneId: number): Promise<ShippingRateJsonResponse[]> {
@@ -116,7 +116,7 @@ export async function getRatesByZone(zoneId: number): Promise<ShippingRateJsonRe
  * Get shipping rate based on weight and zone
  *
  * @param weight Weight in the appropriate unit
- * @param zone Shipping zone identifier
+ * @param zoneId Shipping zone identifier
  * @returns Matching shipping rate or undefined
  */
 export async function getRateByWeightAndZone(weight: number, zoneId: number): Promise<ShippingRateJsonResponse | undefined> {
@@ -173,7 +173,7 @@ export async function formatShippingRateOptions(): Promise<{ id: number, shippin
 /**
  * Get shipping rates for a specific method
  *
- * @param method The shipping method to filter by
+ * @param methodId The shipping method to filter by
  * @returns List of shipping rates for the specified method
  */
 export async function getShippingRatesByMethod(methodId: number): Promise<ShippingRateJsonResponse[]> {

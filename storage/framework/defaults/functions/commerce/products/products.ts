@@ -1,22 +1,22 @@
-import type { ProductItems } from '../../types'
+import type { Products } from '../../types'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent items array using VueUse's useStorage
-const items = useStorage<ProductItems[]>('items', [])
+const products = useStorage<Products[]>('products', [])
 
 const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all items
-async function fetchItems(): Promise<ProductItems[]> {
+async function fetchProducts(): Promise<Products[]> {
   try {
-    const response = await fetch(`${baseURL}/commerce/products/items`)
+    const response = await fetch(`${baseURL}/commerce/products`)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json() as ProductItems[]
+    const data = await response.json() as Products[]
 
     if (Array.isArray(data)) {
-      items.value = data
+      products.value = data
       return data
     }
     else {
@@ -30,23 +30,23 @@ async function fetchItems(): Promise<ProductItems[]> {
   }
 }
 
-async function createItem(item: ProductItems): Promise<ProductItems | null> {
+async function createProduct(product: Products): Promise<Products | null> {
   try {
-    const response = await fetch(`${baseURL}/commerce/products/items`, {
+    const response = await fetch(`${baseURL}/commerce/products`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(item),
+      body: JSON.stringify(product),
     })
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as ProductItems
+    const data = await response.json() as Products
     if (data) {
-      items.value.push(data)
+      products.value.push(data)
       return data
     }
     return null
@@ -57,39 +57,39 @@ async function createItem(item: ProductItems): Promise<ProductItems | null> {
   }
 }
 
-async function updateItem(item: ProductItems): Promise<ProductItems | null> {
+async function updateProduct(product: Products): Promise<Products | null> {
   try {
-    const response = await fetch(`${baseURL}/commerce/products/items/${item.id}`, {
+    const response = await fetch(`${baseURL}/commerce/products/${product.id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(item),
+      body: JSON.stringify(product),
     })
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json() as ProductItems
+    const data = await response.json() as Products
     if (data) {
-      const index = items.value.findIndex(i => i.id === item.id)
+      const index = products.value.findIndex(i => i.id === product.id)
       if (index !== -1) {
-        items.value[index] = data
+        products.value[index] = data
       }
       return data
     }
     return null
   }
   catch (error) {
-    console.error('Error updating item:', error)
+    console.error('Error updating product:', error)
     return null
   }
 }
 
-async function deleteItem(id: number): Promise<boolean> {
+async function deleteProduct(id: number): Promise<boolean> {
   try {
-    const response = await fetch(`${baseURL}/commerce/products/items/${id}`, {
+    const response = await fetch(`${baseURL}/commerce/products/${id}`, {
       method: 'DELETE',
     })
 
@@ -97,26 +97,26 @@ async function deleteItem(id: number): Promise<boolean> {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const index = items.value.findIndex(i => i.id === id)
+    const index = products.value.findIndex(i => i.id === id)
     if (index !== -1) {
-      items.value.splice(index, 1)
+      products.value.splice(index, 1)
     }
 
     return true
   }
   catch (error) {
-    console.error('Error deleting item:', error)
+    console.error('Error deleting product:', error)
     return false
   }
 }
 
 // Export the composable
-export function useItems() {
+export function useProducts() {
   return {
-    items,
-    fetchItems,
-    createItem,
-    updateItem,
-    deleteItem,
+    products,
+    fetchProducts,
+    createProduct,
+    updateProduct,
+    deleteProduct,
   }
 }
