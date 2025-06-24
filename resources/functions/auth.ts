@@ -11,7 +11,7 @@ const user = ref<UserData | null>(null)
 const isAuthenticated = ref(false)
 
 export function useAuth(): AuthComposable {
-  async function fetchUser() {
+  async function fetchAuthUser(): Promise<UserData | null> {
     try {
       if (!token) {
         isAuthenticated.value = false
@@ -50,7 +50,7 @@ export function useAuth(): AuthComposable {
 
   async function checkAuthentication(): Promise<boolean> {
     try {
-      const userData = await fetchUser()
+      const userData = await fetchAuthUser()
       return userData !== null
     }
     catch (error) {
@@ -109,11 +109,11 @@ export function useAuth(): AuthComposable {
 
       const data = await response.json() as LoginResponse
       localStorage.setItem('token', data.data.token)
-      await fetchUser() // Fetch user data after successful login
+      await fetchAuthUser() // Fetch user data after successful login
       return data
     }
     catch (error) {
-      return error
+      return error as LoginError
     }
   }
 
@@ -143,10 +143,12 @@ export function useAuth(): AuthComposable {
   return {
     user,
     isAuthenticated,
+    token,
+    getToken: () => token.value,
     register,
     login,
     logout,
-    fetchUser,
+    fetchAuthUser,
     checkAuthentication,
   }
 }

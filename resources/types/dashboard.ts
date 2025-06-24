@@ -1,4 +1,4 @@
-import type { ComputedRef, Ref } from 'vue'
+import type { Ref } from 'vue'
 
 export interface ValidationError {
   [key: string]: {
@@ -61,6 +61,9 @@ export interface AuthComposable {
   isAuthenticated: Ref<boolean>
   user: Ref<UserData | null>
   login: (user: AuthUser) => Promise<LoginResponse | LoginError>
+  register: (user: AuthUser) => Promise<RegisterResponse | RegisterError>
+  fetchAuthUser: () => Promise<UserData | null>
+  checkAuthentication: () => Promise<boolean>
   logout: () => void
   getToken: () => string | null
   token: Ref<string | null>

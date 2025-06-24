@@ -16,5 +16,5 @@ function handleLogin(email: string, password: string) {
 
 <route lang="yaml">
   meta:
-  layout: guest
+    layout: guest
 </route>
