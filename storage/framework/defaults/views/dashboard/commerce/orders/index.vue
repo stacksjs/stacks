@@ -1,12 +1,15 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
+import OrdersTable from '../../../../components/Dashboard/Commerce/OrdersTable.vue'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
+import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
 
 useHead({
   title: 'Dashboard - Commerce Orders',
 })
 
-// Sample orders data
+// Sample orders data (in a real app, this would come from a composable)
 const orders = ref([
   {
     id: 'ORD-5432',
@@ -110,16 +113,18 @@ const orders = ref([
   }
 ])
 
-// Filter and sort options
-const searchQuery = ref('')
+// Available statuses
+const statuses = ['all', 'Completed', 'Processing', 'Shipped', 'Cancelled', 'Refunded'] as const
+const statusFilter = ref('all')
 const sortBy = ref('date')
 const sortOrder = ref('desc')
-const statusFilter = ref('all')
 
-// Available statuses
-const statuses = ['all', 'Completed', 'Processing', 'Shipped', 'Cancelled', 'Refunded']
+// Search and filtering
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = ref(5)
 
-// Computed filtered and sorted orders
+// Computed filtered orders
 const filteredOrders = computed(() => {
   return orders.value
     .filter(order => {
@@ -149,31 +154,33 @@ const filteredOrders = computed(() => {
     })
 })
 
-// Pagination
-const currentPage = ref(1)
-const itemsPerPage = ref(5)
-const totalPages = computed(() => Math.ceil(filteredOrders.value.length / itemsPerPage.value))
-
 const paginatedOrders = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return filteredOrders.value.slice(start, end)
 })
 
-function changePage(page: number): void {
-  currentPage.value = page
+// Event handlers
+const handleSearch = (query: string) => {
+  searchQuery.value = query
+  currentPage.value = 1
 }
 
-function previousPage(): void {
+const handlePrevPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
-function nextPage(): void {
-  if (currentPage.value < totalPages.value) {
+const handleNextPage = () => {
+  const totalPages = Math.ceil(filteredOrders.value.length / itemsPerPage.value)
+  if (currentPage.value < totalPages) {
     currentPage.value++
   }
+}
+
+const handlePageChange = (page: number) => {
+  currentPage.value = page
 }
 
 // Toggle sort order
@@ -186,229 +193,324 @@ function toggleSort(column: string): void {
   }
 }
 
-// Get status badge class
-function getStatusClass(status: string): string {
-  switch (status) {
-    case 'Completed':
-      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
-    case 'Processing':
-      return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
-    case 'Shipped':
-      return 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400'
-    case 'Cancelled':
-      return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
-    case 'Refunded':
-      return 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-400'
-    default:
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+// Order actions
+function viewOrder(order: any): void {
+  console.log('View order:', order)
+  // Implement view order logic
+}
+
+function editOrder(order: any): void {
+  console.log('Edit order:', order)
+  // Implement edit order logic
+}
+
+function removeOrder(order: any): void {
+  orderToDelete.value = order
+  showDeleteModal.value = true
+}
+
+// Define new order type
+interface NewOrder {
+  customer: string
+  email: string
+  total: number
+  status: string
+  items: number
+}
+
+// Modal state
+const showAddModal = ref(false)
+const showDeleteModal = ref(false)
+const orderToDelete = ref<any>(null)
+const newOrder = ref<NewOrder>({
+  customer: '',
+  email: '',
+  total: 0,
+  status: 'Processing',
+  items: 1
+})
+
+function openAddModal(): void {
+  newOrder.value = {
+    customer: '',
+    email: '',
+    total: 0,
+    status: 'Processing',
+    items: 1
+  }
+  showAddModal.value = true
+}
+
+function closeAddModal(): void {
+  showAddModal.value = false
+}
+
+function closeDeleteModal(): void {
+  showDeleteModal.value = false
+  orderToDelete.value = null
+}
+
+async function confirmDelete(): Promise<void> {
+  if (!orderToDelete.value) return
+
+  const orderId = orderToDelete.value.id
+  
+  // Remove from local state for immediate UI update
+  orders.value = orders.value.filter(o => o.id !== orderId)
+  
+  try {
+    // TODO: Implement actual API call to delete order
+    // await deleteOrderFromServer(orderId)
+    console.log('Order deleted:', orderToDelete.value)
+    closeDeleteModal()
+  } catch (error) {
+    // If server request fails, restore to local state
+    orders.value.push(orderToDelete.value)
+    console.error('Failed to delete order:', error)
+  }
+}
+
+async function addOrder(): Promise<void> {
+  // First add to local state for immediate UI update
+  const id = `ORD-${Math.floor(Math.random() * 9000) + 1000}`
+  const currentDate = new Date().toISOString().split('T')[0] || ''
+  const newOrderData = {
+    id,
+    customer: newOrder.value.customer,
+    email: newOrder.value.email,
+    date: currentDate,
+    total: newOrder.value.total,
+    status: newOrder.value.status,
+    paymentMethod: 'Credit Card',
+    items: newOrder.value.items
+  }
+  orders.value.unshift(newOrderData)
+
+  try {
+    // TODO: Implement actual API call to create order
+    // await createOrder(newOrderData)
+    closeAddModal()
+  } catch (error) {
+    // If server request fails, remove from local state
+    orders.value = orders.value.filter(o => o.id !== id)
+    console.error('Failed to create order:', error)
   }
 }
 </script>
 
 <template>
-  <main>
-    <div class="px-6 py-6 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl">
-        <div class="sm:flex sm:items-center sm:justify-between">
-          <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Orders</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              A list of all customer orders
-            </p>
-          </div>
-          <div class="mt-4 sm:mt-0">
-            <button type="button" class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-              <div class="i-hugeicons-download-04 h-5 w-5 mr-1"></div>
-              Export orders
+  <div class="py-6">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
+      <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+        <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex justify-between items-center">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Orders</h2>
+            <button
+              @click="openAddModal"
+              type="button"
+              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
+              Add Order
             </button>
           </div>
-        </div>
-
-        <!-- Filters -->
-        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div class="relative max-w-sm">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
-            </div>
-            <input
-              v-model="searchQuery"
-              type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+          <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <SearchFilter
               placeholder="Search orders..."
+              @search="handleSearch"
+              class="w-full md:w-96"
             />
-          </div>
+            <div class="flex flex-col sm:flex-row gap-4">
+              <select
+                v-model="statusFilter"
+                class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              >
+                <option v-for="status in statuses" :value="status">{{ status }}</option>
+              </select>
 
-          <div class="flex flex-col sm:flex-row gap-4">
-            <select
-              v-model="statusFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option value="all">All Statuses</option>
-              <option v-for="status in statuses.slice(1)" :key="status" :value="status">
-                {{ status }}
-              </option>
-            </select>
-
-            <select
-              v-model="itemsPerPage"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option :value="5">5 per page</option>
-              <option :value="10">10 per page</option>
-              <option :value="25">25 per page</option>
-              <option :value="50">50 per page</option>
-            </select>
+              <select
+                v-model="itemsPerPage"
+                class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              >
+                <option :value="5">5 per page</option>
+                <option :value="10">10 per page</option>
+                <option :value="25">25 per page</option>
+                <option :value="50">50 per page</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <!-- Orders table -->
-        <div class="mt-6 flow-root">
-          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                  <thead class="bg-gray-50 dark:bg-blue-gray-700">
-                    <tr>
-                      <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">
-                        Order ID
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('customer')" class="group inline-flex items-center">
-                          Customer
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'customer'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('date')" class="group inline-flex items-center">
-                          Date
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'date'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('total')" class="group inline-flex items-center">
-                          Total
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'total'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Status</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Items</th>
-                      <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                        <span class="sr-only">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
-                    <tr v-for="order in paginatedOrders" :key="order.id">
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
-                        #{{ order.id }}
-                      </td>
-                      <td class="px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        <div>{{ order.customer }}</div>
-                        <div class="text-xs text-gray-400">{{ order.email }}</div>
-                      </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ order.date }}
-                      </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        ${{ order.total.toFixed(2) }}
-                      </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm">
-                        <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium" :class="getStatusClass(order.status)">
-                          {{ order.status }}
-                        </span>
-                      </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ order.items }}
-                      </td>
-                      <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                        <div class="flex items-center justify-end space-x-2">
-                          <button type="button" class="text-gray-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                            <div class="i-hugeicons-view h-5 w-5"></div>
-                          </button>
-                          <button type="button" class="text-gray-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                            <div class="i-hugeicons-edit-01 h-5 w-5"></div>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr v-if="paginatedOrders.length === 0">
-                      <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                        No orders found matching your criteria
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+        <!-- Orders Table Component -->
+        <OrdersTable
+          :orders="paginatedOrders"
+          :search-query="searchQuery"
+          :status-filter="statusFilter"
+          :sort-by="sortBy"
+          :sort-order="sortOrder"
+          :current-page="currentPage"
+          :items-per-page="itemsPerPage"
+          :statuses="statuses"
+          @toggle-sort="toggleSort"
+          @change-page="handlePageChange"
+          @previous-page="handlePrevPage"
+          @next-page="handleNextPage"
+          @view-order="viewOrder"
+          @edit-order="editOrder"
+          @delete-order="removeOrder"
+        />
+
+        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+          <Pagination
+            :current-page="currentPage"
+            :total-items="filteredOrders.length"
+            :items-per-page="itemsPerPage"
+            @prev="handlePrevPage"
+            @next="handleNextPage"
+            @page="handlePageChange"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Order Modal -->
+    <div v-if="showAddModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal"></div>
+
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+          <div>
+            <div class="mt-3 text-center sm:mt-5">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Add New Order</h3>
+              <div class="mt-4">
+                <div class="space-y-4">
+                  <div>
+                    <label for="order-customer" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Customer Name</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="order-customer"
+                        v-model="newOrder.customer"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter customer name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="order-email" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Email Address</label>
+                    <div class="mt-2">
+                      <input
+                        type="email"
+                        id="order-email"
+                        v-model="newOrder.email"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter email address"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="order-total" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Total Amount</label>
+                    <div class="mt-2">
+                      <input
+                        type="number"
+                        id="order-total"
+                        v-model="newOrder.total"
+                        step="0.01"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter total amount"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="order-items" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Number of Items</label>
+                    <div class="mt-2">
+                      <input
+                        type="number"
+                        id="order-items"
+                        v-model="newOrder.items"
+                        min="1"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter number of items"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="order-status" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Status</label>
+                    <div class="mt-2">
+                      <select
+                        id="order-status"
+                        v-model="newOrder.status"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                      >
+                        <option v-for="status in statuses.slice(1)" :value="status">{{ status }}</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Pagination -->
-        <div class="mt-6 flex items-center justify-between">
-          <div class="text-sm text-gray-700 dark:text-gray-300">
-            Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
-            <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredOrders.length) }}</span> of
-            <span class="font-medium">{{ filteredOrders.length }}</span> results
-          </div>
-          <div class="flex space-x-2">
+          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
             <button
-              @click="previousPage"
-              :disabled="currentPage === 1"
-              :class="[
-                'relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset',
-                currentPage === 1
-                  ? 'text-gray-400 ring-gray-300 dark:text-gray-500 dark:ring-gray-700'
-                  : 'text-gray-900 ring-gray-300 hover:bg-gray-50 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
-              ]"
+              type="button"
+              @click="addOrder"
+              class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
             >
-              <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
+              Add Order
             </button>
             <button
-              v-for="page in totalPages"
-              :key="page"
-              @click="changePage(page)"
-              :class="[
-                'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset',
-                page === currentPage
-                  ? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                  : 'text-gray-900 ring-gray-300 hover:bg-gray-50 focus:z-20 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
-              ]"
+              type="button"
+              @click="closeAddModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
             >
-              {{ page }}
-            </button>
-            <button
-              @click="nextPage"
-              :disabled="currentPage === totalPages"
-              :class="[
-                'relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset',
-                currentPage === totalPages
-                  ? 'text-gray-400 ring-gray-300 dark:text-gray-500 dark:ring-gray-700'
-                  : 'text-gray-900 ring-gray-300 hover:bg-gray-50 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
-              ]"
-            >
-              <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
+              Cancel
             </button>
           </div>
         </div>
       </div>
     </div>
-  </main>
+
+    <!-- Delete Order Confirmation Modal -->
+    <div v-if="showDeleteModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeDeleteModal"></div>
+
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+          <div>
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
+              <div class="i-hugeicons-alert-triangle h-6 w-6 text-red-600 dark:text-red-400"></div>
+            </div>
+            <div class="mt-3 text-center sm:mt-5">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Delete Order</h3>
+              <div class="mt-2">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  Are you sure you want to delete order <strong>#{{ orderToDelete?.id }}</strong>? This action cannot be undone.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+            <button
+              type="button"
+              @click="confirmDelete"
+              class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:col-start-2"
+            >
+              Delete Order
+            </button>
+            <button
+              type="button"
+              @click="closeDeleteModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>

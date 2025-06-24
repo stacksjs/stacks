@@ -12,6 +12,6 @@ export default new Action({
 
     await customers.destroy(id)
 
-    return response.json({ message: 'Customer deleted successfully' })
+    return response.noContent()
   },
 })
