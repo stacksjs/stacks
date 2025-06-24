@@ -111,6 +111,11 @@ function editCustomer(customer: any): void {
   // Implement edit customer logic
 }
 
+function deleteCustomer(customer: any): void {
+  customerToDelete.value = customer
+  showDeleteModal.value = true
+}
+
 // Define new customer type
 interface NewCustomer {
   name: string
@@ -121,6 +126,8 @@ interface NewCustomer {
 
 // Modal state
 const showAddModal = ref(false)
+const showDeleteModal = ref(false)
+const customerToDelete = ref<any>(null)
 const newCustomer = ref<NewCustomer>({
   name: '',
   email: '',
@@ -140,6 +147,31 @@ function openAddModal(): void {
 
 function closeAddModal(): void {
   showAddModal.value = false
+}
+
+function closeDeleteModal(): void {
+  showDeleteModal.value = false
+  customerToDelete.value = null
+}
+
+async function confirmDelete(): Promise<void> {
+  if (!customerToDelete.value) return
+
+  const customerId = customerToDelete.value.id
+  
+  // Remove from local state for immediate UI update
+  customers.value = customers.value.filter(c => c.id !== customerId)
+  
+  try {
+    // TODO: Implement actual API call to delete customer
+    // await deleteCustomerFromServer(customerId)
+    console.log('Customer deleted:', customerToDelete.value)
+    closeDeleteModal()
+  } catch (error) {
+    // If server request fails, restore to local state
+    customers.value.push(customerToDelete.value)
+    console.error('Failed to delete customer:', error)
+  }
 }
 
 async function addCustomer(): Promise<void> {
@@ -238,6 +270,7 @@ async function addCustomer(): Promise<void> {
           @next-page="handleNextPage"
           @view-customer="viewCustomer"
           @edit-customer="editCustomer"
+          @delete-customer="deleteCustomer"
         />
 
         <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
@@ -330,6 +363,45 @@ async function addCustomer(): Promise<void> {
             <button
               type="button"
               @click="closeAddModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Customer Confirmation Modal -->
+    <div v-if="showDeleteModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeDeleteModal"></div>
+
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+          <div>
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
+              <div class="i-hugeicons-alert-triangle h-6 w-6 text-red-600 dark:text-red-400"></div>
+            </div>
+            <div class="mt-3 text-center sm:mt-5">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Delete Customer</h3>
+              <div class="mt-2">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  Are you sure you want to delete <strong>{{ customerToDelete?.name }}</strong>? This action cannot be undone.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+            <button
+              type="button"
+              @click="confirmDelete"
+              class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:col-start-2"
+            >
+              Delete Customer
+            </button>
+            <button
+              type="button"
+              @click="closeDeleteModal"
               class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
             >
               Cancel

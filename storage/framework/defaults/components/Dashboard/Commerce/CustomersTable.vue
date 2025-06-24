@@ -1,21 +1,8 @@
 <script lang="ts" setup>
-
-// Define props interface
-interface Customer {
-  id: number
-  user_id?: number
-  name: string
-  email: string
-  phone: string
-  total_spent?: number
-  last_order?: string
-  status: string | string[]
-  avatar?: string
-  uuid?: string
-}
+import type { Customers } from '../../../functions/types'
 
 interface Props {
-  customers: Customer[]
+  customers: Customers[]
   searchQuery: string
   statusFilter: string
   sortBy: string
@@ -30,8 +17,9 @@ interface Emits {
   (e: 'changePage', page: number): void
   (e: 'previousPage'): void
   (e: 'nextPage'): void
-  (e: 'viewCustomer', customer: Customer): void
-  (e: 'editCustomer', customer: Customer): void
+  (e: 'viewCustomer', customer: Customers): void
+  (e: 'editCustomer', customer: Customers): void
+  (e: 'deleteCustomer', customer: Customers): void
 }
 
 const props = defineProps<Props>()
@@ -42,12 +30,16 @@ function handleToggleSort(column: string): void {
   emit('toggleSort', column)
 }
 
-function handleViewCustomer(customer: Customer): void {
+function handleViewCustomer(customer: Customers): void {
   emit('viewCustomer', customer)
 }
 
-function handleEditCustomer(customer: Customer): void {
+function handleEditCustomer(customer: Customers): void {
   emit('editCustomer', customer)
+}
+
+function handleDeleteCustomer(customer: Customers): void {
+  emit('deleteCustomer', customer)
 }
 
 // Get status badge class
@@ -74,8 +66,8 @@ function getStatusClass(status: string | string[]): string {
             <button @click="handleToggleSort('name')" class="group inline-flex items-center">
               Customer
               <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                <div v-if="sortBy === 'name'" :class="[
-                  sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                <div v-if="props.sortBy === 'name'" :class="[
+                  props.sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                   'h-4 w-4'
                 ]"></div>
                 <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -87,8 +79,8 @@ function getStatusClass(status: string | string[]): string {
             <button @click="handleToggleSort('total_spent')" class="group inline-flex items-center">
               Total Spent
               <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                <div v-if="sortBy === 'total_spent'" :class="[
-                  sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                <div v-if="props.sortBy === 'total_spent'" :class="[
+                  props.sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                   'h-4 w-4'
                 ]"></div>
                 <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -99,8 +91,8 @@ function getStatusClass(status: string | string[]): string {
             <button @click="handleToggleSort('last_order')" class="group inline-flex items-center">
               Last Order
               <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus-visible">
-                <div v-if="sortBy === 'last_order'" :class="[
-                  sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                <div v-if="props.sortBy === 'last_order'" :class="[
+                  props.sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                   'h-4 w-4'
                 ]"></div>
                 <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -154,6 +146,13 @@ function getStatusClass(status: string | string[]): string {
                 class="text-gray-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
               >
                 <div class="i-hugeicons-edit-01 h-5 w-5"></div>
+              </button>
+              <button 
+                type="button" 
+                @click="handleDeleteCustomer(customer)"
+                class="text-gray-400 transition-colors duration-150 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
+              >
+                <div class="i-hugeicons-trash-01 h-5 w-5"></div>
               </button>
             </div>
           </td>
