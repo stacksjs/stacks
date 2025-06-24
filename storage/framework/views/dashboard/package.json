@@ -42,11 +42,11 @@
     "typecheck": "bun tsc --noEmit"
   },
   "devDependencies": {
+    "@stacksjs/components": "workspace:*",
     "@stacksjs/desktop": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/notification": "workspace:*",
     "@stacksjs/popover": "workspace:*",
-    "@stacksjs/components": "workspace:*",
     "vite-ssg": "^27.0.1"
   }
 }

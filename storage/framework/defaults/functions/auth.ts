@@ -1,6 +1,6 @@
-import { ref } from 'vue'
-import type { ErrorResponse, MeResponse, RegisterError, RegisterResponse, AuthUser, UserData, AuthComposable, LoginResponse, LoginError } from '../types/dashboard'
+import type { AuthComposable, AuthUser, ErrorResponse, LoginError, LoginResponse, MeResponse, RegisterError, RegisterResponse, UserData } from '../types/dashboard'
 import { useStorage } from '@vueuse/core'
+import { ref } from 'vue'
 
 const token = useStorage('token', '')
 
@@ -152,7 +152,6 @@ export function useAuth(): AuthComposable {
     checkAuthentication,
   }
 }
-
 
 // Strict auth guard middleware
 // Usage: call in setup() of page/component, or in router beforeEach

@@ -1,7 +1,7 @@
+import { createPinia } from 'pinia'
 import { setupLayouts } from 'virtual:generated-layouts'
 import { ViteSSG } from 'vite-ssg'
 import { routes } from 'vue-router/auto-routes'
-import { createPinia } from 'pinia'
 import App from './App.vue'
 import '@unocss/reset/tailwind.css'
 import 'uno.css'
@@ -24,11 +24,12 @@ export const createApp = ViteSSG(
       console.log('to', to)
       if (to.meta.requiresAuth && !isLoggedIn) {
         next('/login')
-      } else {
+      }
+      else {
         next()
       }
     })
-    
+
     // Install all modules under `modules/` if they exist
     Object.values(import.meta.glob<{ install: any }>('./modules/*.ts', { eager: true }))
       .forEach(i => i.install?.(ctx))

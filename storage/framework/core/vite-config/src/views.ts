@@ -13,8 +13,8 @@ import {
   stacks,
   uiEngine,
 } from '@stacksjs/vite-plugin'
-import generateSitemap from 'vite-ssg-sitemap'
 import Unocss from 'unocss/vite'
+import generateSitemap from 'vite-ssg-sitemap'
 
 // import { fonts } from './plugin/fonts'
 

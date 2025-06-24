@@ -97,7 +97,7 @@ export default {
         },
       },
 
-      factory: faker => faker.internet.password(),
+      factory: () => '123456',
     },
   },
   get: {
