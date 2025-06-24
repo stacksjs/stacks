@@ -8,13 +8,13 @@ function handleLogin(email: string, password: string) {
 }
 </script>
 
-<route lang="yaml">
-meta:
-layout: guest
-</route>
-
 <template>
   <div>
     <Login @submit="handleLogin" />
   </div>
 </template>
+
+<route lang="yaml">
+  meta:
+  layout: guest
+</route>
