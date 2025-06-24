@@ -1,47 +1,158 @@
-/// <reference lib="dom" />
-import { computed, type ComputedRef, type Ref } from 'vue'
+import { ref } from 'vue'
+import type { ErrorResponse, MeResponse, RegisterError, RegisterResponse, AuthUser, UserData, AuthComposable, LoginResponse, LoginError } from '../types/dashboard'
 import { useStorage } from '@vueuse/core'
 
-const TOKEN_KEY = 'auth_token'
+const token = useStorage('token', '')
 
-interface AuthComposable {
-  isAuthenticated: ComputedRef<boolean>
-  login: (newToken: string) => void
-  logout: () => void
-  getToken: () => string | null
-  token: Ref<string | null>
-}
+const baseUrl = 'http://localhost:3008'
+
+// Create singleton state
+const user = ref<UserData | null>(null)
+const isAuthenticated = ref(false)
 
 export function useAuth(): AuthComposable {
-  // Reactive token from localStorage
-  const token = useStorage<string | null>(TOKEN_KEY, null)
+  async function fetchAuthUser(): Promise<UserData | null> {
+    try {
+      if (!token) {
+        isAuthenticated.value = false
+        user.value = null
+        return null
+      }
 
-  // Computed authentication state
-  const isAuthenticated = computed(() => !!token.value)
+      const response = await fetch(`${baseUrl}/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      })
 
-  // Login: set token
-  function login(newToken: string): void {
-    token.value = newToken
+      if (!response.ok) {
+        token.value = null
+        isAuthenticated.value = false
+        user.value = null
+        return null
+      }
+
+      const data = await response.json() as MeResponse
+      user.value = data.user
+      isAuthenticated.value = true
+
+      return data.user
+    }
+    catch (error) {
+      console.error('Error fetching user:', error)
+      token.value = null
+      isAuthenticated.value = false
+      user.value = null
+      return null
+    }
   }
 
-  // Logout: clear token
-  function logout(): void {
-    token.value = null
+  async function checkAuthentication(): Promise<boolean> {
+    try {
+      const userData = await fetchAuthUser()
+      return userData !== null
+    }
+    catch (error) {
+      console.error('Error checking authentication:', error)
+      return false
+    }
   }
 
-  // Get token (for API calls, etc.)
-  function getToken(): string | null {
-    return token.value
+  async function register(user: AuthUser): Promise<RegisterResponse | RegisterError> {
+    const url = `${baseUrl}/register`
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(user),
+    })
+
+    const data = await response.json() as RegisterResponse | RegisterError
+
+    if (isRegisterError(data)) {
+      return data
+    }
+
+    if (isRegisterResponse(data)) {
+      token.value = data.data.token
+      return data
+    }
+
+    return data
+  }
+
+  function isRegisterError(data: RegisterResponse | RegisterError): data is RegisterError {
+    return 'errors' in data
+  }
+
+  function isRegisterResponse(data: RegisterResponse | RegisterError): data is RegisterResponse {
+    return 'data' in data && 'token' in data.data
+  }
+
+  async function login(user: AuthUser): Promise<LoginResponse | LoginError> {
+    try {
+      const url = `${baseUrl}/login`
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(user),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json() as ErrorResponse
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json() as LoginResponse
+      localStorage.setItem('token', data.data.token)
+      await fetchAuthUser() // Fetch user data after successful login
+      return data
+    }
+    catch (error) {
+      return error as LoginError
+    }
+  }
+
+  async function logout() {
+    try {
+      const token = localStorage.getItem('token')
+      if (token) {
+        await fetch(`${baseUrl}/logout`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        })
+      }
+    }
+    catch (error) {
+      console.error('Error during logout:', error)
+    }
+    finally {
+      localStorage.removeItem('token')
+      user.value = null
+      isAuthenticated.value = false
+    }
   }
 
   return {
+    user,
     isAuthenticated,
+    token,
+    getToken: () => token.value,
+    register,
     login,
     logout,
-    getToken,
-    token, // expose for advanced use
+    fetchAuthUser,
+    checkAuthentication,
   }
 }
+
 
 // Strict auth guard middleware
 // Usage: call in setup() of page/component, or in router beforeEach
