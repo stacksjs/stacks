@@ -1,12 +1,11 @@
 import { computed, type ComputedRef, type Ref } from 'vue'
 import { useStorage } from '@vueuse/core'
-import { useRouter } from 'vue-router'
 
 const TOKEN_KEY = 'auth_token'
 
 interface AuthComposable {
   isAuthenticated: ComputedRef<boolean>
-  login: (newToken: string) => void
+  login: (username: string, password: string) => Promise<void>
   logout: () => void
   getToken: () => string | null
   token: Ref<string | null>
@@ -19,9 +18,30 @@ export function useAuth(): AuthComposable {
   // Computed authentication state
   const isAuthenticated = computed(() => !!token.value)
 
-  // Login: set token
-  function login(newToken: string): void {
-    token.value = newToken
+  // Login: send credentials, set token if successful
+  async function login(username: string, password: string): Promise<void> {
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Login failed')
+      }
+
+      const data = await response.json()
+      if (!data.token) {
+        throw new Error('No token returned')
+      }
+
+      token.value = data.token
+      window.location.replace('/')
+    } catch (error) {
+      // Handle error (show message, etc.)
+      throw error
+    }
   }
 
   // Logout: clear token
