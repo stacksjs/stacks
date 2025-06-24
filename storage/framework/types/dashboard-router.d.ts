@@ -94,6 +94,7 @@ declare module 'vue-router/auto-routes' {
     '/jobs/': RouteRecordInfo<'/jobs/', '/jobs', Record<never, never>, Record<never, never>>,
     '/jobs/[id]': RouteRecordInfo<'/jobs/[id]', '/jobs/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     '/jobs/history': RouteRecordInfo<'/jobs/history', '/jobs/history', Record<never, never>, Record<never, never>>,
+    '/login': RouteRecordInfo<'/login', '/login', Record<never, never>, Record<never, never>>,
     '/logs/': RouteRecordInfo<'/logs/', '/logs', Record<never, never>, Record<never, never>>,
     '/mailboxes/': RouteRecordInfo<'/mailboxes/', '/mailboxes', Record<never, never>, Record<never, never>>,
     '/management/permissions/': RouteRecordInfo<'/management/permissions/', '/management/permissions', Record<never, never>, Record<never, never>>,

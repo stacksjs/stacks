@@ -36,16 +36,24 @@ export function useAuth() {
 
 // Strict auth guard middleware
 // Usage: call in setup() of page/component, or in router beforeEach
-export function authGuard({ redirect }: { redirect?: (to: string) => void } = {}) {
+// Pass { guest: true } for guest-only pages
+export function authGuard({ guest = false }: { guest?: boolean } = {}) {
   const { isAuthenticated } = useAuth()
 
-  // If not authenticated, block immediately
+  if (guest) {
+    // Guest-only page: block if authenticated
+    if (isAuthenticated.value) {
+      if (typeof window !== 'undefined') {
+        window.location.replace('/')
+      }
+    }
+    return
+  }
+
+  // Auth-only page: block if not authenticated
   if (!isAuthenticated.value) {
-    if (redirect) {
-      redirect('/auth/login')
-    } else {
-      // Throw to block setup/render
-      throw new Error('Not authenticated')
+    if (typeof window !== 'undefined') {
+      window.location.replace('/login')
     }
   }
 }

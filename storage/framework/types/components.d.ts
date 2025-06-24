@@ -96,6 +96,7 @@ declare module 'vue' {
     NotificationErrorModal: typeof import('./../defaults/components/Dashboard/NotificationErrorModal.vue')['default']
     NotificationStatusBadge: typeof import('./../defaults/components/Dashboard/NotificationStatusBadge.vue')['default']
     OneTimePayment: typeof import('./../defaults/components/Dashboard/Billing/OneTimePayment.vue')['default']
+    OrdersTable: typeof import('./../defaults/components/Dashboard/Commerce/OrdersTable.vue')['default']
     Pagination: typeof import('./../defaults/components/Dashboard/Commerce/Delivery/Pagination.vue')['default']
     PaymentForm: typeof import('./../defaults/components/Dashboard/Billing/PaymentForm.vue')['default']
     PaymentMethod: typeof import('./../defaults/components/Dashboard/Billing/PaymentMethod.vue')['default']
