@@ -12,13 +12,7 @@ useHead({
 const { login } = useAuth()
 
 async function handleLogin(user: AuthUser) {
-  const response = await login(user)
-
-  if (response.error) {
-    console.error(response.error)
-  }
-  
-  console.log(response)
+  await login(user)
 }
 </script>
 

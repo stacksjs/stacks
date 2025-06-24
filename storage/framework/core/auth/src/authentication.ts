@@ -1,4 +1,4 @@
-import type { OauthClientJsonResponse, UserModel } from '@stacksjs/orm'
+import type { OauthClientJsonResponse, UserModelType } from '@stacksjs/orm'
 import type { AuthToken } from './token'
 import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
@@ -17,7 +17,7 @@ interface Credentials {
 }
 
 export class Auth {
-  private static authUser: UserModel | undefined = undefined
+  private static authUser: UserModelType | undefined = undefined
   private static clientSecret: string | undefined = undefined
 
   private static async getClientSecret(): Promise<string> {
@@ -67,6 +67,9 @@ export class Auth {
     if (user?.password)
       hashCheck = await verifyHash(authPass, user.password, 'bcrypt')
 
+    if (!email)
+      return false
+
     if (hashCheck && user) {
       RateLimiter.resetAttempts(email)
       this.authUser = user
@@ -77,7 +80,7 @@ export class Auth {
     return false
   }
 
-  public static async createToken(user: UserModel, name: string = config.auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
+  public static async createToken(user: UserModelType, name: string = config.auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
     const client = await this.getPersonalAccessClient()
     const clientSecret = await this.getClientSecret()
 
@@ -125,13 +128,13 @@ export class Auth {
     return { token: await this.createToken(this.authUser, 'user-auth-token') }
   }
 
-  public static async login(credentials: Credentials): Promise<{ token: AuthToken } | null> {
+  public static async login(credentials: Credentials): Promise<{ user: UserModelType, token: AuthToken } | null> {
     const isValid = await this.attempt(credentials)
     if (!isValid || !this.authUser)
       return null
 
-    return { token: await this.createToken(this.authUser, 'user-auth-token') }
-  }
+    return { user: this.authUser, token: await this.createToken(this.authUser, 'user-auth-token') }
+  } 
 
   public static async rotateToken(oldToken: string): Promise<AuthToken | null> {
     const [jwtToken, tokenId] = oldToken.split(':')
@@ -224,7 +227,7 @@ export class Auth {
     return true
   }
 
-  public static async getUserFromToken(token: string): Promise<UserModel | undefined> {
+  public static async getUserFromToken(token: string): Promise<UserModelType | undefined> {
     const [jwtToken, tokenId] = token.split(':')
     if (!tokenId || !jwtToken)
       return undefined

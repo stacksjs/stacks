@@ -1,12 +1,12 @@
-import type { UserJsonResponse, UserModel } from '@stacksjs/orm'
+import type { UserJsonResponse, UserModelType } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
 import { Auth } from './authentication'
 
 export type AuthUser = UserJsonResponse
 
-let currentUser: UserModel | undefined
+let currentUser: UserModelType | undefined
 
-export async function getCurrentUser(): Promise<UserModel | undefined> {
+export async function getCurrentUser(): Promise<UserModelType | undefined> {
   if (currentUser)
     return currentUser
 

@@ -92,7 +92,6 @@ export function useAuth(): AuthComposable {
   }
 
   async function login(user: AuthUser): Promise<LoginResponse | LoginError> {
-    console.log('user', user)
     try {
       const url = `${baseUrl}/login`
       const response = await fetch(url, {
@@ -109,8 +108,9 @@ export function useAuth(): AuthComposable {
       }
 
       const data = await response.json() as LoginResponse
-      localStorage.setItem('token', data.data.token)
-      await fetchAuthUser() // Fetch user data after successful login
+
+      token.value = data.data.token
+
       return data
     }
     catch (error) {
@@ -120,8 +120,7 @@ export function useAuth(): AuthComposable {
 
   async function logout() {
     try {
-      const token = localStorage.getItem('token')
-      if (token) {
+      if (token.value) {
         await fetch(`${baseUrl}/logout`, {
           method: 'POST',
           headers: {
@@ -135,7 +134,7 @@ export function useAuth(): AuthComposable {
       console.error('Error during logout:', error)
     }
     finally {
-      localStorage.removeItem('token')
+      token.value = null
       user.value = null
       isAuthenticated.value = false
     }
