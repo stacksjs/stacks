@@ -1,4 +1,3 @@
-/// <reference lib="dom" />
 import { ref } from 'vue'
 import type { ErrorResponse, MeResponse, RegisterError, RegisterResponse, AuthUser, UserData, AuthComposable, LoginResponse, LoginError } from '../types/dashboard'
 import { useStorage } from '@vueuse/core'
@@ -109,7 +108,7 @@ export function useAuth(): AuthComposable {
       }
 
       const data = await response.json() as LoginResponse
-      token.value = data.data.token
+      localStorage.setItem('token', data.data.token)
       await fetchAuthUser() // Fetch user data after successful login
       return data
     }

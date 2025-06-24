@@ -2,13 +2,22 @@
 <script setup lang="ts">
 import Login from '../../../core/components/auth/src/components/Login.vue'
 import { useHead } from '@vueuse/head'
+import { useAuth } from '../../functions/auth'
 
 useHead({
   title: 'Login - Dashboard',
 })
 
-function handleLogin(email: string, password: string) {
-  console.log(email, password)
+const { login } = useAuth()
+
+async function handleLogin(email: string, password: string) {
+  const response = await login({ email, password })
+
+  if (response.error) {
+    console.error(response.error)
+  }
+  
+  console.log(response)
 }
 </script>
 
