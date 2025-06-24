@@ -5,8 +5,7 @@
 </template>
   
 <script setup lang="ts">
-  import { Login } from '@stacksjs/components'
-
+  import Login from '../../../core/components/auth/src/components/Login.vue'
 </script>
 
 <route lang="yaml">

@@ -2,7 +2,9 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-const props = defineProps({
+const emit = defineEmits(['submit'])
+
+defineProps({
   showLogo: {
     type: Boolean,
     default: true
@@ -36,48 +38,11 @@ const props = defineProps({
 // Reactive state for form inputs and messages
 const email = ref('')
 const password = ref('')
-const errorMessage = ref('')
 
-// Router instance
-const router = useRouter()
-
-// Method to handle email and password login
-async function login() {
-  const body = {
-    email: email.value,
-    password: password.value,
-  }
-
-  try {
-    const url = 'http://localhost:3008/api/login'
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(body),
-    })
-
-    const data: any = await response.json()
-
-    if (!response.ok) {
-      errorMessage.value = data.error || 'Login failed'
-    }
-    else {
-      localStorage.setItem('token', data.token)
-      router.push({ path: '/dashboard' })
-    }
-  }
-  catch (error) {
-    console.error(error)
-    errorMessage.value = 'An error occurred during login'
-  }
-  finally {
-    // Clear password after login attempt
-    password.value = ''
-  }
+// Method to emit submit event with email and password
+function submitLogin() {
+  emit('submit', { email: email.value, password: password.value })
+  password.value = '' // Optionally clear password after emit
 }
 </script>
 
@@ -119,7 +84,7 @@ async function login() {
           </div>
 
           <div>
-            <button type="submit" class="w-full flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white font-semibold leading-6 shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline" @click="login">
+            <button type="submit" class="w-full flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white font-semibold leading-6 shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline" @click="submitLogin">
               Sign in
             </button>
           </div>

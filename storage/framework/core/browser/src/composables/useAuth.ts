@@ -1,6 +1,6 @@
+/// <reference lib="dom" />
 import { computed, type ComputedRef, type Ref } from 'vue'
 import { useStorage } from '@vueuse/core'
-import { useRouter } from 'vue-router'
 
 const TOKEN_KEY = 'auth_token'
 
