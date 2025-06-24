@@ -59,9 +59,6 @@ export class Auth {
 
     const email = credentials[username]
 
-    if (!email || typeof email !== 'string')
-      return false
-
     let hashCheck = false
     const user = await User.where('email', '=', email).first()
 
@@ -261,6 +258,9 @@ export class Auth {
       })
       .where('id', '=', accessToken.id)
       .execute()
+
+    if (!accessToken?.user_id)
+      return undefined
 
     return await User.find(accessToken.user_id)
   }

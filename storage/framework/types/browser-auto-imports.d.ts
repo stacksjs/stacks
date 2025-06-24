@@ -14,7 +14,7 @@ declare global {
   const and: typeof import('../core/browser/src/utils/math')['and']
   const anyOf: typeof import('../core/browser/src/utils/regex')['anyOf']
   const asyncComputed: typeof import('../core/browser/src/utils/vendors')['asyncComputed']
-  const authGuard: typeof import('../../../resources/functions/auth')['authGuard']
+  const authGuard: typeof import('../core/browser/src/composables/useAuth')['authGuard']
   const autoResetRef: typeof import('../core/browser/src/utils/vendors')['autoResetRef']
   const batchInvoke: typeof import('../core/browser/src/utils/function')['batchInvoke']
   const breakpointsAntDesign: typeof import('../core/browser/src/utils/vendors')['breakpointsAntDesign']
@@ -234,7 +234,7 @@ declare global {
   const useAsyncQueue: typeof import('../core/browser/src/utils/vendors')['useAsyncQueue']
   const useAsyncState: typeof import('../core/browser/src/utils/vendors')['useAsyncState']
   const useAttrs: typeof import('vue')['useAttrs']
-  const useAuth: typeof import('../../../resources/functions/auth')['useAuth']
+  const useAuth: typeof import('../core/browser/src/composables/useAuth')['useAuth']
   const useAverage: typeof import('../core/browser/src/utils/math')['useAverage']
   const useBase64: typeof import('../core/browser/src/utils/vendors')['useBase64']
   const useBattery: typeof import('../core/browser/src/utils/vendors')['useBattery']
@@ -436,9 +436,6 @@ declare global {
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
-  export type { Customers, NewCustomer, Coupons, NewCoupon, GiftCards, NewGiftCard, Orders, NewOrder, StorePost, Posts, NewPost, Payments, NewPayment, TaxRates, NewTaxRate, Categories, NewCategory, Manufacturers, NewManufacturer, Units, NewUnit, Reviews, NewReview, Drivers, NewDriver, LicenseKeys, NewLicenseKey, LicenseTemplates, DeliveryRoutes, NewDeliveryRoute, DigitalDeliveries, NewDigitalDelivery, ShippingMethods, NewShippingMethod, ShippingRates, NewShippingRate, ShippingZones, NewShippingZone, ProductVariants, NewProductVariant, Taggables, PostTaggable, NewTaggable, Categorizables, PostCategorizable, NewCategorizable, Pages, NewPage, Websockets, StoreWebsocket, WaitlistProduct, NewWaitlistProduct, WaitlistRestaurant, NewWaitlistRestaurant, Products, NewProduct, ProductCategories, NewProductCategory } from '../defaults/functions/types'
-  import('../defaults/functions/types')
-  // @ts-ignore
   export type { SingletonPromiseReturn, ControlledPromise } from '../core/browser/src/utils/promise'
   import('../core/browser/src/utils/promise')
   // @ts-ignore
@@ -468,7 +465,7 @@ declare module 'vue' {
     readonly and: UnwrapRef<typeof import('../core/browser/src/utils/math')['and']>
     readonly anyOf: UnwrapRef<typeof import('../core/browser/src/utils/regex')['anyOf']>
     readonly asyncComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['asyncComputed']>
-    readonly authGuard: UnwrapRef<typeof import('../../../resources/functions/auth')['authGuard']>
+    readonly authGuard: UnwrapRef<typeof import('../core/browser/src/composables/useAuth')['authGuard']>
     readonly autoResetRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['autoResetRef']>
     readonly breakpointsAntDesign: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsAntDesign']>
     readonly breakpointsBootstrapV5: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsBootstrapV5']>
@@ -685,7 +682,7 @@ declare module 'vue' {
     readonly useAsyncQueue: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useAsyncQueue']>
     readonly useAsyncState: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useAsyncState']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
-    readonly useAuth: UnwrapRef<typeof import('../../../resources/functions/auth')['useAuth']>
+    readonly useAuth: UnwrapRef<typeof import('../core/browser/src/composables/useAuth')['useAuth']>
     readonly useAverage: UnwrapRef<typeof import('../core/browser/src/utils/math')['useAverage']>
     readonly useBase64: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBase64']>
     readonly useBattery: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBattery']>

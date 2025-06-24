@@ -3,6 +3,7 @@
 import Login from '../../../core/components/auth/src/components/Login.vue'
 import { useHead } from '@vueuse/head'
 import { useAuth } from '../../functions/auth'
+import type { AuthUser } from '../../types/dashboard'
 
 useHead({
   title: 'Login - Dashboard',
@@ -10,8 +11,8 @@ useHead({
 
 const { login } = useAuth()
 
-async function handleLogin(email: string, password: string) {
-  const response = await login({ email, password })
+async function handleLogin(user: AuthUser) {
+  const response = await login(user)
 
   if (response.error) {
     console.error(response.error)

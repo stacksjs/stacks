@@ -47,9 +47,12 @@ async function seedModel(name: string, modelPath: string, model: Model) {
       const field = model.attributes[fieldName]
 
       // Pass faker to the factory function
-      if (formattedFieldName === 'password')
-        record[formattedFieldName] = field?.factory ? await makeHash('Test@123', { algorithm: 'bcrypt' }) : undefined
-      else record[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
+      if (formattedFieldName === 'password') {
+        record[formattedFieldName] = field?.factory ? await makeHash(field.factory(faker), { algorithm: 'bcrypt' }) : undefined
+      }
+      else {
+        record[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
+      }
     }
 
     if (otherRelations?.length) {
@@ -100,9 +103,13 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
     const formattedFieldName = snakeCase(fieldName)
     const field = relationModelInstance.attributes[fieldName]
     // Pass faker to the factory function
-    if (formattedFieldName === 'password')
-      record[formattedFieldName] = field?.factory ? await makeHash('Test@123', { algorithm: 'bcrypt' }) : undefined
-    else record[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
+    if (formattedFieldName === 'password') {
+      console.log('password', field?.factory(faker))
+      record[formattedFieldName] = field?.factory ? await makeHash(field.factory(faker), { algorithm: 'bcrypt' }) : undefined
+    }
+    else {
+      record[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
+    }
   }
 
   for (const fieldName in modelInstance.attributes) {
@@ -110,7 +117,7 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
     const field = modelInstance.attributes[fieldName]
     // Pass faker to the factory function
     if (formattedFieldName === 'password')
-      record2[formattedFieldName] = field?.factory ? await makeHash('Test@123', { algorithm: 'bcrypt' }) : undefined
+      record2[formattedFieldName] = field?.factory ? await makeHash(field.factory(faker), { algorithm: 'bcrypt' }) : undefined
     else record2[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
   }
 

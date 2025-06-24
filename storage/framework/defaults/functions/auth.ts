@@ -92,6 +92,7 @@ export function useAuth(): AuthComposable {
   }
 
   async function login(user: AuthUser): Promise<LoginResponse | LoginError> {
+    console.log('user', user)
     try {
       const url = `${baseUrl}/login`
       const response = await fetch(url, {
