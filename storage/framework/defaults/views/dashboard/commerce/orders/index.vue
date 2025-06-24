@@ -1,6 +1,7 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
+import { useOrders } from '../../../../functions/commerce/orders'
 import OrdersTable from '../../../../components/Dashboard/Commerce/OrdersTable.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
@@ -9,109 +10,13 @@ useHead({
   title: 'Dashboard - Commerce Orders',
 })
 
-// Sample orders data (in a real app, this would come from a composable)
-const orders = ref([
-  {
-    id: 'ORD-5432',
-    customer: 'John Smith',
-    email: 'john.smith@example.com',
-    date: '2023-12-01',
-    total: 349.97,
-    status: 'Completed',
-    paymentMethod: 'Credit Card',
-    items: 3
-  },
-  {
-    id: 'ORD-5431',
-    customer: 'Sarah Johnson',
-    email: 'sarah.j@example.com',
-    date: '2023-12-01',
-    total: 129.99,
-    status: 'Processing',
-    paymentMethod: 'PayPal',
-    items: 1
-  },
-  {
-    id: 'ORD-5430',
-    customer: 'Michael Brown',
-    email: 'mbrown@example.com',
-    date: '2023-11-30',
-    total: 459.98,
-    status: 'Completed',
-    paymentMethod: 'Credit Card',
-    items: 4
-  },
-  {
-    id: 'ORD-5429',
-    customer: 'Emily Davis',
-    email: 'emily.davis@example.com',
-    date: '2023-11-30',
-    total: 89.99,
-    status: 'Shipped',
-    paymentMethod: 'Credit Card',
-    items: 1
-  },
-  {
-    id: 'ORD-5428',
-    customer: 'David Wilson',
-    email: 'dwilson@example.com',
-    date: '2023-11-29',
-    total: 199.99,
-    status: 'Completed',
-    paymentMethod: 'PayPal',
-    items: 2
-  },
-  {
-    id: 'ORD-5427',
-    customer: 'Jessica Taylor',
-    email: 'jtaylor@example.com',
-    date: '2023-11-29',
-    total: 79.99,
-    status: 'Cancelled',
-    paymentMethod: 'Credit Card',
-    items: 1
-  },
-  {
-    id: 'ORD-5426',
-    customer: 'Robert Martinez',
-    email: 'rmartinez@example.com',
-    date: '2023-11-28',
-    total: 299.97,
-    status: 'Completed',
-    paymentMethod: 'Credit Card',
-    items: 3
-  },
-  {
-    id: 'ORD-5425',
-    customer: 'Jennifer Anderson',
-    email: 'janderson@example.com',
-    date: '2023-11-28',
-    total: 149.99,
-    status: 'Refunded',
-    paymentMethod: 'PayPal',
-    items: 1
-  },
-  {
-    id: 'ORD-5424',
-    customer: 'Christopher Lee',
-    email: 'clee@example.com',
-    date: '2023-11-27',
-    total: 249.98,
-    status: 'Completed',
-    paymentMethod: 'Credit Card',
-    items: 2
-  },
-  {
-    id: 'ORD-5423',
-    customer: 'Amanda White',
-    email: 'awhite@example.com',
-    date: '2023-11-27',
-    total: 59.99,
-    status: 'Processing',
-    paymentMethod: 'Credit Card',
-    items: 1
-  }
-])
+// Get orders data and functions from the composable
+const { orders, createOrder, fetchOrders, deleteOrder } = useOrders()
+
+// Fetch orders on component mount
+onMounted(async () => {
+  await fetchOrders()
+})
 
 // Available statuses
 const statuses = ['all', 'Completed', 'Processing', 'Shipped', 'Cancelled', 'Refunded'] as const
@@ -130,9 +35,9 @@ const filteredOrders = computed(() => {
     .filter(order => {
       // Apply search filter
       const matchesSearch =
-        order.id.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        order.customer.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        order.email.toLowerCase().includes(searchQuery.value.toLowerCase())
+        order.id.toString().toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        order.customer_id.toString().toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        order.order_type.toLowerCase().includes(searchQuery.value.toLowerCase())
 
       // Apply status filter
       const matchesStatus = statusFilter.value === 'all' || order.status === statusFilter.value
@@ -142,12 +47,10 @@ const filteredOrders = computed(() => {
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy.value === 'date') {
-        comparison = new Date(a.date).getTime() - new Date(b.date).getTime()
-      } else if (sortBy.value === 'total') {
-        comparison = a.total - b.total
-      } else if (sortBy.value === 'customer') {
-        comparison = a.customer.localeCompare(b.customer)
+      if (sortBy.value === 'total_amount') {
+        comparison = a.total_amount - b.total_amount
+      } else if (sortBy.value === 'customer_id') {
+        comparison = a.customer_id - b.customer_id
       }
 
       return sortOrder.value === 'asc' ? comparison : -comparison
@@ -211,11 +114,10 @@ function removeOrder(order: any): void {
 
 // Define new order type
 interface NewOrder {
-  customer: string
-  email: string
-  total: number
+  customer_id: number
+  total_amount: number
   status: string
-  items: number
+  order_type: string
 }
 
 // Modal state
@@ -223,20 +125,18 @@ const showAddModal = ref(false)
 const showDeleteModal = ref(false)
 const orderToDelete = ref<any>(null)
 const newOrder = ref<NewOrder>({
-  customer: '',
-  email: '',
-  total: 0,
+  customer_id: 1,
+  total_amount: 0,
   status: 'Processing',
-  items: 1
+  order_type: 'delivery'
 })
 
 function openAddModal(): void {
   newOrder.value = {
-    customer: '',
-    email: '',
-    total: 0,
+    customer_id: 1,
+    total_amount: 0,
     status: 'Processing',
-    items: 1
+    order_type: 'delivery'
   }
   showAddModal.value = true
 }
@@ -259,10 +159,15 @@ async function confirmDelete(): Promise<void> {
   orders.value = orders.value.filter(o => o.id !== orderId)
   
   try {
-    // TODO: Implement actual API call to delete order
-    // await deleteOrderFromServer(orderId)
-    console.log('Order deleted:', orderToDelete.value)
-    closeDeleteModal()
+    // Use the composable's deleteOrder function
+    const success = await deleteOrder(orderId)
+    if (success) {
+      closeDeleteModal()
+    } else {
+      // If server request fails, restore to local state
+      orders.value.push(orderToDelete.value)
+      console.error('Failed to delete order')
+    }
   } catch (error) {
     // If server request fails, restore to local state
     orders.value.push(orderToDelete.value)
@@ -272,24 +177,27 @@ async function confirmDelete(): Promise<void> {
 
 async function addOrder(): Promise<void> {
   // First add to local state for immediate UI update
-  const id = `ORD-${Math.floor(Math.random() * 9000) + 1000}`
-  const currentDate = new Date().toISOString().split('T')[0] || ''
+  const id = Math.max(...orders.value.map(o => o.id || 0)) + 1
   const newOrderData = {
     id,
-    customer: newOrder.value.customer,
-    email: newOrder.value.email,
-    date: currentDate,
-    total: newOrder.value.total,
+    customer_id: newOrder.value.customer_id,
+    coupon_id: 0,
     status: newOrder.value.status,
-    paymentMethod: 'Credit Card',
-    items: newOrder.value.items
+    total_amount: newOrder.value.total_amount,
+    order_type: newOrder.value.order_type
   }
   orders.value.unshift(newOrderData)
 
   try {
-    // TODO: Implement actual API call to create order
-    // await createOrder(newOrderData)
-    closeAddModal()
+    // Use the composable's createOrder function
+    const createdOrder = await createOrder(newOrderData)
+    if (createdOrder) {
+      closeAddModal()
+    } else {
+      // If server request fails, remove from local state
+      orders.value = orders.value.filter(o => o.id !== id)
+      console.error('Failed to create order')
+    }
   } catch (error) {
     // If server request fails, remove from local state
     orders.value = orders.value.filter(o => o.id !== id)
@@ -385,27 +293,14 @@ async function addOrder(): Promise<void> {
               <div class="mt-4">
                 <div class="space-y-4">
                   <div>
-                    <label for="order-customer" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Customer Name</label>
+                    <label for="order-customer" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Customer ID</label>
                     <div class="mt-2">
                       <input
-                        type="text"
+                        type="number"
                         id="order-customer"
-                        v-model="newOrder.customer"
+                        v-model="newOrder.customer_id"
                         class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
-                        placeholder="Enter customer name"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label for="order-email" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Email Address</label>
-                    <div class="mt-2">
-                      <input
-                        type="email"
-                        id="order-email"
-                        v-model="newOrder.email"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
-                        placeholder="Enter email address"
+                        placeholder="Enter customer ID"
                       />
                     </div>
                   </div>
@@ -416,7 +311,7 @@ async function addOrder(): Promise<void> {
                       <input
                         type="number"
                         id="order-total"
-                        v-model="newOrder.total"
+                        v-model="newOrder.total_amount"
                         step="0.01"
                         class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
                         placeholder="Enter total amount"
@@ -425,16 +320,17 @@ async function addOrder(): Promise<void> {
                   </div>
 
                   <div>
-                    <label for="order-items" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Number of Items</label>
+                    <label for="order-type" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Order Type</label>
                     <div class="mt-2">
-                      <input
-                        type="number"
-                        id="order-items"
-                        v-model="newOrder.items"
-                        min="1"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
-                        placeholder="Enter number of items"
-                      />
+                      <select
+                        id="order-type"
+                        v-model="newOrder.order_type"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                      >
+                        <option value="delivery">Delivery</option>
+                        <option value="pickup">Pickup</option>
+                        <option value="dine-in">Dine-in</option>
+                      </select>
                     </div>
                   </div>
 

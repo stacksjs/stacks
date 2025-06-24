@@ -131,7 +131,7 @@ export async function serverResponse(req: Request, body: string): Promise<Respon
 
   if (!foundRoute) {
     // TODO: create a pretty 404 page
-    return new Response('<html><body><h1>Page not found!</h1<pre></pre></body></html>', {
+    return new Response('<html><body><h1>Route not found!</h1<pre></pre></body></html>', {
       status: 404,
       headers: {
         'Access-Control-Allow-Origin': '*',

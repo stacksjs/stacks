@@ -24,7 +24,6 @@ export default new Action({
       payment_status: request.get('payment_status'),
       order_type: request.get('order_type'),
       coupon_id: request.get<number>('coupon_id'),
-
     }
 
     const model = await orders.store(data)

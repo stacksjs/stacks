@@ -4,25 +4,20 @@ import { useStorage } from '@vueuse/core'
 // Create a persistent orders array using VueUse's useStorage
 const orders = useStorage<Orders[]>('orders', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = 'http://localhost:3008'
 
 // Basic fetch function to get all orders
-async function fetchOrders() {
+async function fetchOrders(): Promise<Orders[]> {
   try {
     const response = await fetch(`${baseURL}/commerce/orders`)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json() as Orders[]
+    const { data } = await response.json() as { data: Orders[] }
 
-    if (Array.isArray(data)) {
-      orders.value = data
-      return data
-    }
-    else {
-      console.error('Expected array of orders but received:', typeof data)
-      return []
-    }
+    orders.value = data
+
+    return data
   }
   catch (error) {
     console.error('Error fetching orders:', error)

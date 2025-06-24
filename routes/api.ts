@@ -170,6 +170,8 @@ route.group({ prefix: '/commerce' }, async () => {
   // Orders
   route.get('/orders', 'Actions/Commerce/OrderIndexAction')
   route.post('/orders', 'Actions/Commerce/OrderStoreAction')
+  route.patch('/orders/{id}', 'Actions/Commerce/OrderUpdateAction')
+  route.delete('/orders/{id}', 'Actions/Commerce/OrderDestroyAction')
   route.get('/orders/{id}', 'Actions/Commerce/OrderShowAction')
   route.get('/orders/export', 'Actions/Commerce/OrderExportAction')
 

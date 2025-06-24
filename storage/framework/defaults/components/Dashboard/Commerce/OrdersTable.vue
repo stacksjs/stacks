@@ -1,19 +1,9 @@
 <script lang="ts" setup>
+import type { Orders } from '../../../functions/types'
 
 // Define props interface
-interface Order {
-  id: string
-  customer: string
-  email: string
-  date: string
-  total: number
-  status: string
-  paymentMethod: string
-  items: number
-}
-
 interface Props {
-  orders: Order[]
+  orders: Orders[]
   searchQuery: string
   statusFilter: string
   sortBy: string
@@ -28,9 +18,9 @@ interface Emits {
   (e: 'changePage', page: number): void
   (e: 'previousPage'): void
   (e: 'nextPage'): void
-  (e: 'viewOrder', order: Order): void
-  (e: 'editOrder', order: Order): void
-  (e: 'deleteOrder', order: Order): void
+  (e: 'viewOrder', order: Orders): void
+  (e: 'editOrder', order: Orders): void
+  (e: 'deleteOrder', order: Orders): void
 }
 
 const props = defineProps<Props>()
@@ -41,15 +31,15 @@ function handleToggleSort(column: string): void {
   emit('toggleSort', column)
 }
 
-function handleViewOrder(order: Order): void {
+function handleViewOrder(order: Orders): void {
   emit('viewOrder', order)
 }
 
-function handleEditOrder(order: Order): void {
+function handleEditOrder(order: Orders): void {
   emit('editOrder', order)
 }
 
-function handleDeleteOrder(order: Order): void {
+function handleDeleteOrder(order: Orders): void {
   emit('deleteOrder', order)
 }
 
@@ -82,34 +72,16 @@ function getStatusClass(status: string): string {
             Order ID
           </th>
           <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-            <button @click="handleToggleSort('customer')" class="group inline-flex items-center">
-              Customer
-              <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                <div v-if="props.sortBy === 'customer'" :class="[
-                  props.sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                  'h-4 w-4'
-                ]"></div>
-                <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-              </span>
-            </button>
+            Customer Info
           </th>
           <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-            <button @click="handleToggleSort('date')" class="group inline-flex items-center">
-              Date
-              <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                <div v-if="props.sortBy === 'date'" :class="[
-                  props.sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                  'h-4 w-4'
-                ]"></div>
-                <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-              </span>
-            </button>
+            Date
           </th>
           <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-            <button @click="handleToggleSort('total')" class="group inline-flex items-center">
+            <button @click="handleToggleSort('total_amount')" class="group inline-flex items-center">
               Total
               <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                <div v-if="props.sortBy === 'total'" :class="[
+                <div v-if="props.sortBy === 'total_amount'" :class="[
                   props.sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                   'h-4 w-4'
                 ]"></div>
@@ -118,7 +90,7 @@ function getStatusClass(status: string): string {
             </button>
           </th>
           <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Status</th>
-          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Items</th>
+          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Type</th>
           <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
             <span class="sr-only">Actions</span>
           </th>
@@ -130,14 +102,14 @@ function getStatusClass(status: string): string {
             #{{ order.id }}
           </td>
           <td class="px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-            <div>{{ order.customer }}</div>
-            <div class="text-xs text-gray-400">{{ order.email }}</div>
+            <div>Customer ID: {{ order.customer_id }}</div>
+            <div class="text-xs text-gray-400">Order Type: {{ order.order_type }}</div>
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-            {{ order.date }}
+            {{ new Date().toLocaleDateString() }}
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-            ${{ order.total.toFixed(2) }}
+            ${{ order.total_amount.toFixed(2) }}
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm">
             <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium" :class="getStatusClass(order.status)">
@@ -145,7 +117,7 @@ function getStatusClass(status: string): string {
             </span>
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-            {{ order.items }}
+            {{ order.order_type }}
           </td>
           <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
             <div class="flex items-center justify-end space-x-2">

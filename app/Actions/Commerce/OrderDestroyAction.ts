@@ -14,9 +14,6 @@ export default new Action({
 
     await orders.destroy(id)
 
-    return response.json({
-      success: true,
-      message: 'Order deleted successfully',
-    })
+    return response.noContent()
   },
 })
