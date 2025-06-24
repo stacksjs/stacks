@@ -150,9 +150,10 @@ function getStatusClass(status: string | string[]): string {
               <button 
                 type="button" 
                 @click="handleDeleteCustomer(customer)"
-                class="text-gray-400 transition-colors duration-150 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
+                class="text-red-400 transition-colors duration-150 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
+                title="Delete customer"
               >
-                <div class="i-hugeicons-trash-01 h-5 w-5"></div>
+                <div class="i-hugeicons-waste h-5 w-5"></div>
               </button>
             </div>
           </td>

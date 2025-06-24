@@ -11,7 +11,7 @@ useHead({
 })
 
 // Get customers data and functions from the composable
-const { customers, createCustomer, fetchCustomers } = useCustomers()
+const { customers, createCustomer, fetchCustomers, deleteCustomer } = useCustomers()
 
 // Fetch customers on component mount
 onMounted(async () => {
@@ -111,7 +111,7 @@ function editCustomer(customer: any): void {
   // Implement edit customer logic
 }
 
-function deleteCustomer(customer: any): void {
+function removeCustomer(customer: any): void {
   customerToDelete.value = customer
   showDeleteModal.value = true
 }
@@ -164,8 +164,7 @@ async function confirmDelete(): Promise<void> {
   
   try {
     // TODO: Implement actual API call to delete customer
-    // await deleteCustomerFromServer(customerId)
-    console.log('Customer deleted:', customerToDelete.value)
+    await deleteCustomer(customerId)
     closeDeleteModal()
   } catch (error) {
     // If server request fails, restore to local state
@@ -270,7 +269,7 @@ async function addCustomer(): Promise<void> {
           @next-page="handleNextPage"
           @view-customer="viewCustomer"
           @edit-customer="editCustomer"
-          @delete-customer="deleteCustomer"
+          @delete-customer="removeCustomer"
         />
 
         <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
