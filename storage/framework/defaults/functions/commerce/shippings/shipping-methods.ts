@@ -1,4 +1,4 @@
-import type { NewShippingMethod, ShippingMethods } from '../../types'
+import type { NewShippingMethod, ShippingMethods } from '../../../types/defaults'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent shipping methods array using VueUse's useStorage

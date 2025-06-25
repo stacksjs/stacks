@@ -1,4 +1,4 @@
-import type { WaitlistRestaurant } from '../../types'
+import type { WaitlistRestaurant } from '../../../types/defaults'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent waitlist restaurants array using VueUse's useStorage

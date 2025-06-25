@@ -1,4 +1,4 @@
-import type { LicenseKeys, NewLicenseKey } from '../../types'
+import type { LicenseKeys, NewLicenseKey } from '../../../types/defaults'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent license keys array using VueUse's useStorage

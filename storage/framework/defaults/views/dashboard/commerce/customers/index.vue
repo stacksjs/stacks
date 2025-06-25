@@ -205,13 +205,15 @@ async function addCustomer(): Promise<void> {
   }
 
   try {
-    await createCustomer(customerData)
-    closeAddModal()
+    const response = await createCustomer(customerData)
+    console.log(response)
   } catch (error) {
     // If server request fails, remove from local state
     customers.value = customers.value.filter(c => c.id !== id)
     console.error('Failed to create customer:', error)
   }
+
+  
 }
 </script>
 

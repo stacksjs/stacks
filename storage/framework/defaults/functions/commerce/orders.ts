@@ -1,4 +1,4 @@
-import type { Orders } from '../types'
+import type { Orders } from '../../types/defaults'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent orders array using VueUse's useStorage

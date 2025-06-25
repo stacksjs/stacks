@@ -10,6 +10,7 @@ export default new Action({
   name: 'Customer Store',
   description: 'Customer Store ORM Action',
   method: 'POST',
+  requestFile: 'CustomerRequest',
   async handle(request: CustomerRequestType) {
     await request.validate()
 

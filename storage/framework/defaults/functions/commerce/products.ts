@@ -1,4 +1,4 @@
-import type { NewProduct, Products } from '../types'
+import type { NewProduct, Products } from '../../types/defaults'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent products array using VueUse's useStorage

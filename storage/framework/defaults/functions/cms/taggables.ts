@@ -1,4 +1,4 @@
-import type { Taggables } from '../types'
+import type { Taggables } from '../../types/defaults'
 import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent tags array using VueUse's useStorage

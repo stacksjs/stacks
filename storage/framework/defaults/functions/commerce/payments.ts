@@ -1,4 +1,4 @@
-import type { Payments } from '../types'
+import type { Payments } from '../../types/defaults'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent payments array using VueUse's useStorage

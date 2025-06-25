@@ -1,4 +1,4 @@
-import type { ProductVariants } from '../../types'
+import type { ProductVariants } from '../../../types/defaults'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent variants array using VueUse's useStorage

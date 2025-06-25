@@ -1,4 +1,4 @@
-import type { Coupons } from '../types'
+import type { Coupons } from '../../types/defaults'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent coupons array using VueUse's useStorage

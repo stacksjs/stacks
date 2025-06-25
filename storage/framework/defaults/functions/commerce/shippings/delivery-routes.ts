@@ -1,4 +1,4 @@
-import type { DeliveryRoutes, NewDeliveryRoute } from '../../types'
+import type { DeliveryRoutes, NewDeliveryRoute } from '../../../types/defaults'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent delivery routes array using VueUse's useStorage

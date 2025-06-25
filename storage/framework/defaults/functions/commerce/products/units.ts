@@ -1,4 +1,4 @@
-import type { Units } from '../../types'
+import type { Units } from '../../../types/defaults'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent units array using VueUse's useStorage

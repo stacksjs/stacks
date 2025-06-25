@@ -1,4 +1,4 @@
-import type { Posts, StorePost } from '../types'
+import type { Posts, StorePost } from '../../types/defaults'
 import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent posts array using VueUse's useStorage

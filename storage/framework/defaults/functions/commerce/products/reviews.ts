@@ -1,4 +1,4 @@
-import type { Reviews } from '../../types'
+import type { Reviews } from '../../../types/defaults'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent reviews array using VueUse's useStorage

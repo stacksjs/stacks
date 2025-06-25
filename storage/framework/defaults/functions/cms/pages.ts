@@ -1,4 +1,4 @@
-import type { Pages } from '../types'
+import type { Pages } from '../../types/defaults'
 import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent pages array using VueUse's useStorage

@@ -1,4 +1,4 @@
-import type { Manufacturers } from '../../types'
+import type { Manufacturers } from '../../../types/defaults'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent manufacturers array using VueUse's useStorage

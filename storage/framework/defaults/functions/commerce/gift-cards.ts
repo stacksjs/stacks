@@ -1,4 +1,4 @@
-import type { GiftCards } from '../types'
+import type { GiftCards } from '../../types/defaults'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent gift cards array using VueUse's useStorage

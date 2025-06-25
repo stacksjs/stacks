@@ -1,4 +1,4 @@
-import type { StoreWebsocket, Websockets } from '../types'
+import type { StoreWebsocket, Websockets } from '../../types/defaults'
 import { useFetch, useStorage } from '@vueuse/core'
 
 const baseURL = 'http://localhost:3008'

@@ -1,4 +1,4 @@
-import type { NewShippingRate, ShippingRates } from '../../types'
+import type { NewShippingRate, ShippingRates } from '../../../types/defaults'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent shipping rates array using VueUse's useStorage
