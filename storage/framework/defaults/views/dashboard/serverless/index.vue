@@ -1,5 +1,10 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import * as d3 from 'd3'
 

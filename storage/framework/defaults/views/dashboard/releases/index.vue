@@ -1,3 +1,8 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script lang="ts" setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'

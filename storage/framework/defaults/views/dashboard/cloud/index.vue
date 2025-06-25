@@ -1,5 +1,10 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useHead } from '@vueuse/head'
 import * as d3 from 'd3'
 
@@ -8,7 +13,7 @@ useHead({
 })
 
 // Add type for server config values
-type ServerConfigValue = string | number | undefined
+// type ServerConfigValue = string | number | undefined
 
 // Update ServerConfig interface
 interface ServerConfig {
@@ -236,7 +241,7 @@ const workerSizes = {
   't4g.2xlarge': { vcpu: 8, ram: 32768 },
 } as const
 
-type WorkerSize = keyof typeof workerSizes
+// type WorkerSize = keyof typeof workerSizes
 type WorkerSizeSpecs = {
   vcpu: number
   ram: number

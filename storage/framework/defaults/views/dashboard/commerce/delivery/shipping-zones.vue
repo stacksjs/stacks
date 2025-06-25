@@ -11,7 +11,7 @@ import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/Sea
 import ShippingZonesTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingZonesTable.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import { useShippingZones } from '../../../../functions/commerce/shippings/shipping-zones'
-
+import type { NewShippingZone } from '../../../../types/defaults'
 
 useHead({
   title: 'Dashboard - Shipping Zones',
@@ -25,24 +25,16 @@ onMounted(async () => {
   await fetchShippingZones()
 })
 
-// Define new shipping zone type
-interface NewShippingZoneForm {
-  name: string
-  countries: string
-  regions: string
-  postal_codes: string
-  status: string
-}
-
 // Modal state
 const showAddModal = ref(false)
 const showEditModal = ref(false)
 const editingZone = ref<any>(null)
-const newShippingZone = ref<NewShippingZoneForm>({
+const newShippingZone = ref<NewShippingZone>({
   name: '',
   countries: '',
   regions: '',
   postal_codes: '',
+  shipping_method_id: 0,
   status: 'Active'
 })
 
@@ -51,7 +43,8 @@ function openAddModal(): void {
     name: '',
     countries: '',
     regions: '',
-    postal_codes: '',
+    postal_codes: '', 
+    shipping_method_id: 0,
     status: 'Active'
   }
   showAddModal.value = true
@@ -68,6 +61,7 @@ function openEditModal(zone: any): void {
     countries: zone.countries || '',
     regions: zone.regions || '',
     postal_codes: zone.postal_codes || '',
+    shipping_method_id: zone.shipping_method_id,
     status: zone.status
   }
   showEditModal.value = true

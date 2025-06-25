@@ -1,3 +1,8 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <template>
   <div class="px-4 py-8 lg:px-8 sm:px-6">
     <form class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-blue-gray-800">

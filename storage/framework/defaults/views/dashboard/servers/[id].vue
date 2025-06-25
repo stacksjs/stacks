@@ -1,5 +1,10 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useRoute } from 'vue-router'
 

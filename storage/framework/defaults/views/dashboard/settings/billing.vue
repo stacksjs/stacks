@@ -1,3 +1,8 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script setup lang="ts">
 import { useBillable } from '../../../functions/billing/payments'
 import ActivePlan from '../../../components/Dashboard/Billing/ActivePlan.vue'
