@@ -1,3 +1,8 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
@@ -7,7 +12,7 @@ import LicenseKeysTable from '../../../../components/Dashboard/Commerce/Delivery
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import { useLicenseKeys } from '../../../../functions/commerce/shippings/license-keys'
 import { useCustomers } from '../../../../functions/commerce/customers'
-import type { LicenseKeys, NewLicenseKey } from '../../../../functions/types'
+import type { LicenseKeys, NewLicenseKey } from '../../../../types/defaults'
 
 useHead({
   title: 'Dashboard - License Keys',

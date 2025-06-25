@@ -1,7 +1,11 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useHead } from '@vueuse/head'
-import { useLocalStorage } from '@vueuse/core'
 import Chart from 'chart.js/auto'
 
 useHead({

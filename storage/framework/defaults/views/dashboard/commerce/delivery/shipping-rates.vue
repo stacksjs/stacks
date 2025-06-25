@@ -1,3 +1,8 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
@@ -8,7 +13,7 @@ import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagin
 import { useShippingRates } from '../../../../functions/commerce/shippings/shipping-rates'
 import { useShippingMethods } from '../../../../functions/commerce/shippings/shipping-methods'
 import { useShippingZones } from '../../../../functions/commerce/shippings/shipping-zones'
-import type { NewShippingRate } from '../../../../functions/types'
+import type { NewShippingRate } from '../../../../types/defaults'
 
 useHead({
   title: 'Dashboard - Shipping Rates',

@@ -1,8 +1,13 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar, Doughnut } from 'vue-chartjs'
-import type { StorePost } from '../../../../functions/types'
+import type { StorePost } from '../../../functions/types'
 import { usePosts } from '../../../../functions/cms/posts'
 import { useCategorizables } from '../../../../functions/cms/categorizables'
 

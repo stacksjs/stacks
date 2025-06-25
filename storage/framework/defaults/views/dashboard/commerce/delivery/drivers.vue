@@ -1,3 +1,8 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
@@ -6,7 +11,7 @@ import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/Sea
 import DriversTable from '../../../../components/Dashboard/Commerce/Delivery/DriversTable.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import { useDrivers } from '../../../../functions/commerce/shippings/drivers'
-import type { Drivers } from '../../../../functions/types'
+import type { Drivers } from '../../../../types/defaults'
 
 useHead({
   title: 'Dashboard - Delivery Drivers',

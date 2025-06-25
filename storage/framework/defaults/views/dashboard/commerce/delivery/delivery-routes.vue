@@ -1,3 +1,8 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
@@ -6,7 +11,7 @@ import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/Sea
 import DeliveryRoutesTable from '../../../../components/Dashboard/Commerce/Delivery/DeliveryRoutesTable.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import { useDeliveryRoutes } from '../../../../functions/commerce/shippings/delivery-routes'
-import type { DeliveryRoutes, NewDeliveryRoute } from '../../../../functions/types'
+import type { DeliveryRoutes, NewDeliveryRoute } from '../../../../types/defaults'
 
 useHead({
   title: 'Dashboard - Delivery Routes',

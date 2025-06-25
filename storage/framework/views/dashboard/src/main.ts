@@ -19,9 +19,8 @@ export const createApp = ViteSSG(
     ctx.app.use(pinia)
 
     ctx.router.beforeEach((to, from, next) => {
-      const isLoggedIn = false
+      const isLoggedIn = !!localStorage.getItem('token')
 
-      console.log('to', to)
       if (to.meta.requiresAuth && !isLoggedIn) {
         next('/login')
       }

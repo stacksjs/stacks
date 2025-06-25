@@ -1,3 +1,8 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
@@ -8,7 +13,7 @@ import { useManufacturers } from '../../../../functions/commerce/products/manufa
 import ProductsTable from '../../../../components/Dashboard/Commerce/ProductsTable.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
-import type { Products } from '../../../../functions/types'
+import type { Products } from '../../../../types/defaults'
 
 useHead({
   title: 'Dashboard - Commerce Products',

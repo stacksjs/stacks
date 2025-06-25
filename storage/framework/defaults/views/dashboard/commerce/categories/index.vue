@@ -4,7 +4,7 @@ import { useHead } from '@vueuse/head'
 import { useCategories } from '../../../../functions/commerce/products/categories'
 import CategoriesTable from '../../../../components/Dashboard/Commerce/CategoriesTable.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
-import type { Categories } from '../../../../functions/types'
+import type { Categories } from '../../../../types/defaults'
 
 useHead({
   title: 'Dashboard - Commerce Categories',

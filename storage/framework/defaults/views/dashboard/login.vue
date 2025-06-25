@@ -5,6 +5,8 @@ import { useHead } from '@vueuse/head'
 import { useAuth } from '../../functions/auth'
 import type { AuthUser } from '../../types/dashboard'
 
+const router = useRouter()
+
 useHead({
   title: 'Login - Dashboard',
 })
@@ -12,7 +14,14 @@ useHead({
 const { login } = useAuth()
 
 async function handleLogin(user: AuthUser) {
-  await login(user)
+  try {
+    await login(user)
+
+    router.push('/')
+  }
+  catch (error) {
+    console.error(error)
+  }
 }
 </script>
 
