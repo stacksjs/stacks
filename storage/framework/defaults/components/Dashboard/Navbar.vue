@@ -162,7 +162,7 @@ async function doLogout() {
         <!-- Profile dropdown -->
         <div class="relative ml-3">
           <div>
-            <Tooltip text="User profile" :dark="isDark" :usePortal="true">
+            <Tooltip :text="$user?.name || 'User profile'" :dark="isDark" :usePortal="true">
               <button id="user-menu-button" type="button" class="relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-gray-800" aria-expanded="false" aria-haspopup="true" @click="showDropdown = !showDropdown">
                 <span class="absolute -inset-1.5" />
                 <span class="sr-only">Open user menu</span>
