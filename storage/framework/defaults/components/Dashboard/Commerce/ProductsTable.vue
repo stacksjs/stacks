@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Products } from '../../../functions/types'
+import type { Products } from '../../../types/defaults'
 
 interface Props {
   products: Products[]

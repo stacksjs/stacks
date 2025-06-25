@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Customers } from '../../../functions/types'
+import type { Customers } from '../../../types/defaults'
 
 interface Props {
   customers: Customers[]

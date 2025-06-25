@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import type { LicenseTemplates } from '../../../../functions/types'
+import type { LicenseTemplates } from '../../../../types/defaults'
 
 defineProps({
   templates: {

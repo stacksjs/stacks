@@ -75,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import { ShippingZones } from '../../../../functions/types';
+import { ShippingZones } from '../../../../types/defaults';
 
 defineProps({
   zones: {

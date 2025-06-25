@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ShippingMethods } from '../../../../functions/types'
+import type { ShippingMethods } from '../../../../types/defaults'
 
 defineProps({
   methods: {

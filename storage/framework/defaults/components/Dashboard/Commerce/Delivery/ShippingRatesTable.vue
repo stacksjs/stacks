@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { ShippingRates } from '../../../../functions/types'
+import { ShippingRates } from '../../../../types/defaults'
 
 defineProps({
   rates: {

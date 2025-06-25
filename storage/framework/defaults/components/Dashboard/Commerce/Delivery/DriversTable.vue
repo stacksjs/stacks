@@ -81,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Drivers } from '../../../../functions/types'
+import type { Drivers } from '../../../../types/defaults'
 
 defineProps({
   drivers: {

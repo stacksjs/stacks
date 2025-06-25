@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import type { LicenseKeys } from '../../../../functions/types'
+import type { LicenseKeys } from '../../../../types/defaults'
 
 defineProps({
   licenseKeys: {

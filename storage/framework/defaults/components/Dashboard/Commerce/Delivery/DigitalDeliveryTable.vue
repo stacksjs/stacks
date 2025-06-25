@@ -63,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import type { DigitalDeliveries } from '../../../../functions/types'
+import type { DigitalDeliveries } from '../../../../types/defaults'
 
 defineProps({
   methods: {

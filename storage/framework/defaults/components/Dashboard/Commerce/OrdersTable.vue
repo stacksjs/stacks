@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Orders } from '../../../functions/types'
+import type { Orders } from '../../../types/defaults'
 
 // Define props interface
 interface Props {

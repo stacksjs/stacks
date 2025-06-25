@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import type { DeliveryRoutes } from '../../../../functions/types'
+import type { DeliveryRoutes } from '../../../../types/defaults'
 
 defineProps({
   routes: {

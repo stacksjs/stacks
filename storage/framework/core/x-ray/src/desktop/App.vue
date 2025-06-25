@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 // import type { Ref } from 'vue'
 // import { ref } from 'vue'
-// import type { Log } from './functions/types'
+// import type { Log } from './types/defaults'
 // import request from './functions/http'
 
 // const logs: Ref<Log[]> = ref([])

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Categories } from '../../../functions/types'
+import type { Categories } from '../../../types/defaults'
 
 interface Props {
   categories: Categories[]
