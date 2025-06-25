@@ -1,5 +1,6 @@
 import type { UserModelType } from '@stacksjs/orm'
 import type { AuthToken, RouteParam, VineType } from '@stacksjs/types'
+import type { UploadedFile } from '../../router/src/uploaded-file'
 
 export type * from '../../../types/requests'
 
@@ -26,12 +27,18 @@ export interface RequestInstance {
   query: RequestData
   params: RouteParams
   headers: any
+  files: Record<string, UploadedFile | UploadedFile[]>
 
   addQuery: (url: URL) => void
   addBodies: (params: any) => void
   addParam: (param: RouteParam) => void
   addHeaders: (headerParams: Headers) => void
+  addFiles: (files: Record<string, File | File[]>) => void
   get: <T = string>(element: string, defaultValue?: T) => T
+  file: (key: string) => UploadedFile | null
+  getFiles: (key: string) => UploadedFile[]
+  hasFile: (key: string) => boolean
+  allFiles: () => Record<string, UploadedFile | UploadedFile[]>
   header: (element: string) => string | number | boolean | null
   Header: (element: string) => string | number | boolean | null
   getHeaders: () => any

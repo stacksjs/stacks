@@ -2,6 +2,7 @@ import type { AuthToken, CustomAttributes, HttpMethod, NumericField, RequestData
 import { getCurrentUser } from '@stacksjs/auth'
 import { customValidate } from '@stacksjs/validation'
 import type { UserModelType } from '@stacksjs/orm'
+import { UploadedFile } from './uploaded-file'
 
 const numericFields = new Set<NumericField>([
   'id',
@@ -50,6 +51,7 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   public query: T = {} as T
   public params: RouteParams = {} as RouteParams
   public headers: any = {}
+  public files: Record<string, UploadedFile | UploadedFile[]> = {}
 
   private sanitizeString(input: string): string {
     // Remove any null bytes
@@ -107,6 +109,53 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
 
   public addHeaders(headerParams: Headers): void {
     this.headers = headerParams
+  }
+
+  public addFiles(files: Record<string, File | File[]>): void {
+    for (const [key, fileOrFiles] of Object.entries(files)) {
+      if (Array.isArray(fileOrFiles)) {
+        this.files[key] = fileOrFiles.map(file => new UploadedFile(file))
+      } else {
+        this.files[key] = new UploadedFile(fileOrFiles)
+      }
+    }
+  }
+
+  /**
+   * Extract files from FormData and add them to the request
+   * This is the main method you'll use to populate files from HTTP requests
+   */
+  public async addFilesFromFormData(formData: FormData): Promise<void> {
+    const files: Record<string, File | File[]> = {}
+    
+    for (const [key, value] of formData.entries()) {
+      if (value && typeof value === 'object' && 'name' in value && 'size' in value) {
+        // Handle single file
+        if (key in files) {
+          // Convert to array if multiple files with same key
+          const existing = files[key]
+          if (Array.isArray(existing)) {
+            existing.push(value as File)
+          } else {
+            files[key] = [existing, value as File]
+          }
+        } else {
+          files[key] = value as File
+        }
+      }
+    }
+    
+    this.addFiles(files)
+  }
+
+  /**
+   * Convenience method to create a Request from FormData
+   * This is the easiest way to get started
+   */
+  public static async fromFormData(formData: FormData): Promise<Request> {
+    const request = new Request()
+    await request.addFilesFromFormData(formData)
+    return request
   }
 
   public get<T = string>(element: string, defaultValue?: T): T {
@@ -255,6 +304,42 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
 
   public async user(): Promise<UserModelType | undefined> {
     return await getCurrentUser()
+  }
+
+  public file(key: string): UploadedFile | null {
+    const fileOrFiles = this.files[key]
+    
+    if (!fileOrFiles) {
+      return null
+    }
+
+    if (Array.isArray(fileOrFiles)) {
+      return fileOrFiles[0] || null
+    }
+
+    return fileOrFiles
+  }
+
+  public getFiles(key: string): UploadedFile[] {
+    const fileOrFiles = this.files[key]
+    
+    if (!fileOrFiles) {
+      return []
+    }
+
+    if (Array.isArray(fileOrFiles)) {
+      return fileOrFiles
+    }
+
+    return [fileOrFiles]
+  }
+
+  public hasFile(key: string): boolean {
+    return key in this.files
+  }
+
+  public allFiles(): Record<string, UploadedFile | UploadedFile[]> {
+    return this.files
   }
 }
 
