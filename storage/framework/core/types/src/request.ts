@@ -1,4 +1,4 @@
-import type { UserModel } from '@stacksjs/orm'
+import type { UserModelType } from '@stacksjs/orm'
 import type { AuthToken, RouteParam, VineType } from '@stacksjs/types'
 
 export type * from '../../../types/requests'
@@ -11,7 +11,7 @@ type RouteParams = { [key: string]: string | number } | null
 
 interface ValidationField {
   rule: VineType
-  message?: Record<string, string>
+  message: Record<string, string>
 }
 
 interface CustomAttributes {
@@ -49,5 +49,5 @@ export interface RequestInstance {
   ip: () => string | null
   ipForRateLimit: () => string | null
   getMethod: () => HttpMethod
-  user: () => Promise<UserModel | undefined>
+  user: () => Promise<UserModelType | undefined>
 }
