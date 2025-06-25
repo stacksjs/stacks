@@ -6,6 +6,7 @@ import App from './App.vue'
 import '@unocss/reset/tailwind.css'
 import 'uno.css'
 import './styles/main.css'
+import { useAuth } from '../../../defaults/functions/auth'
 
 export const createApp = ViteSSG(
   App,
