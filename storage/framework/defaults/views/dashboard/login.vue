@@ -5,8 +5,6 @@ import { useHead } from '@vueuse/head'
 import { useAuth } from '../../functions/auth'
 import type { AuthUser } from '../../types/dashboard'
 
-const router = useRouter()
-
 useHead({
   title: 'Login - Dashboard',
 })

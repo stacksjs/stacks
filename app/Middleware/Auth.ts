@@ -1,4 +1,5 @@
-import type { RequestInstance } from '@stacksjs/types'
+import type { Request } from '@stacksjs/router'
+
 import { Auth } from '@stacksjs/auth'
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
@@ -6,7 +7,7 @@ import { Middleware } from '@stacksjs/router'
 export default new Middleware({
   name: 'Auth',
   priority: 1,
-  async handle(request: RequestInstance) {
+  async handle(request: Request) {
     const bearerToken = request.bearerToken()
 
     if (!bearerToken)
