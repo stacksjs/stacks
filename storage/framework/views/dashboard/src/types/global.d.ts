@@ -3,7 +3,7 @@ import type { UserData } from '../../../../defaults/types/dashboard'
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
-    $user: Ref<UserData | null>
-    $isAuthenticated: Ref<boolean>
+    $user: UserData | null
+    $isAuthenticated: boolean
   }
 } 
