@@ -1,6 +1,6 @@
-import type { AuthComposable, AuthUser, ErrorResponse, LoginError, LoginResponse, MeResponse, RegisterError, RegisterResponse, UserData } from '../types/dashboard'
+import type { AuthUser, ErrorResponse, LoginError, LoginResponse, MeResponse, RegisterError, RegisterResponse, UserData } from '../types/dashboard'
 import { useStorage } from '@vueuse/core'
-import { ref } from 'vue'
+import { ref, type Ref } from 'vue'
 
 const token = useStorage('token', '')
 
@@ -9,6 +9,20 @@ const baseUrl = 'http://localhost:3008'
 // Create singleton state
 const user = ref<UserData | null>(null)
 const isAuthenticated = ref(false)
+
+
+export interface AuthComposable {
+  isAuthenticated: Ref<boolean>
+  user: Ref<UserData | null>
+  login: (user: AuthUser) => Promise<LoginResponse | LoginError>
+  register: (user: AuthUser) => Promise<RegisterResponse | RegisterError>
+  fetchAuthUser: () => Promise<UserData | null>
+  checkAuthentication: () => Promise<boolean>
+  logout: () => void
+  getToken: () => string | null
+  token: Ref<string | null>
+}
+
 
 export function useAuth(): AuthComposable {
   async function fetchAuthUser(): Promise<UserData | null> {

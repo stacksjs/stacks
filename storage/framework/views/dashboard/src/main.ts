@@ -8,6 +8,8 @@ import 'uno.css'
 import './styles/main.css'
 import { useAuth } from '../../../defaults/functions/auth'
 
+const { checkAuthentication } = useAuth()
+
 export const createApp = ViteSSG(
   App,
   {
@@ -19,10 +21,16 @@ export const createApp = ViteSSG(
     const pinia = createPinia()
     ctx.app.use(pinia)
 
-    ctx.router.beforeEach((to, from, next) => {
-      const isLoggedIn = !!localStorage.getItem('token')
+    ctx.router.beforeEach(async (to, from, next) => {
+      if (to.meta.requiresAuth === false) {
+        next()
+        
+        return
+      }
 
-      if (to.meta.requiresAuth && !isLoggedIn) {
+      const isAuthenticated = await checkAuthentication()
+
+      if (to.meta.requiresAuth && !isAuthenticated) {
         next('/login')
       }
       else {

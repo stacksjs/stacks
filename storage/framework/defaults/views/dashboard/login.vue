@@ -17,7 +17,7 @@ async function handleLogin(user: AuthUser) {
   try {
     await login(user)
 
-    router.push('/')
+    // router.push('/')
   }
   catch (error) {
     console.error(error)
