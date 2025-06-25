@@ -3,6 +3,8 @@ import { useDark, useLocalStorage } from '@vueuse/core'
 import { ref, watch, computed } from 'vue'
 import Tooltip from './Tooltip.vue'
 
+import { useAuth } from '../../functions/auth'
+
 const showDropdown = ref(false)
 const isDark = useDark()
 const theme = ref(isDark.value ? 'dark' : 'light')
@@ -25,6 +27,13 @@ watch(theme, (currentVal) => {
 
   useToggle(isDark)
 })
+
+const { logout } = useAuth()
+
+async function doLogout() {
+  await logout()
+  router.push('/login')
+}
 </script>
 
 <template>
@@ -172,7 +181,7 @@ watch(theme, (currentVal) => {
               <a id="user-menu-item-0" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Documentation</a>
               <a id="user-menu-item-1" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Billing</a>
               <a id="user-menu-item-1" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Settings</a>
-              <a id="user-menu-item-2" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Sign out</a>
+              <a id="user-menu-item-2" @click="doLogout" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Sign out</a>
               <a
                 id="user-menu-item-4"
                 href="#"
