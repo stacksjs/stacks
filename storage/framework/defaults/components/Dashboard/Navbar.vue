@@ -5,6 +5,10 @@ import Tooltip from './Tooltip.vue'
 
 import { useAuth } from '../../functions/auth'
 
+const router = useRouter()
+
+const route = useRoute()
+
 const showDropdown = ref(false)
 const isDark = useDark()
 const theme = ref(isDark.value ? 'dark' : 'light')
@@ -78,7 +82,7 @@ async function doLogout() {
             <RouterLink
               to="/errors"
               class="header-link"
-              :class="{ 'active-header-link': $route.path === '/errors' }"
+              :class="{ 'active-header-link': route.path === '/errors' }"
             >
               <div class="i-hugeicons-alert-01 h-6 w-6 transition duration-150 ease-in-out" />
             </RouterLink>
@@ -94,7 +98,7 @@ async function doLogout() {
             <RouterLink
               to="/health"
               class="header-link"
-              :class="{ 'active-header-link': $route.path === '/health' }"
+              :class="{ 'active-header-link': route.path === '/health' }"
             >
               <div class="i-hugeicons-health h-6 w-6 transition duration-150 ease-in-out" />
             </RouterLink>
@@ -110,7 +114,7 @@ async function doLogout() {
             <RouterLink
               to="/insights"
               class="header-link"
-              :class="{ 'active-header-link': $route.path === '/insights' }"
+              :class="{ 'active-header-link': route.path === '/insights' }"
             >
               <div class="i-hugeicons-pulse-01 h-6 w-6 transition duration-150 ease-in-out" />
             </RouterLink>
@@ -126,7 +130,7 @@ async function doLogout() {
             <RouterLink
               to="/inbox"
               class="header-link"
-              :class="{ 'active-header-link': $route.path.startsWith('/inbox') }"
+              :class="{ 'active-header-link': route.path.startsWith('/inbox') }"
             >
               <div class="i-hugeicons-mail-02 h-6 w-6 transition duration-150 ease-in-out" />
             </RouterLink>
@@ -142,7 +146,7 @@ async function doLogout() {
             <RouterLink
               to="/notifications"
               class="header-link"
-              :class="{ 'active-header-link': $route.path === '/notifications' }"
+              :class="{ 'active-header-link': route.path === '/notifications' }"
             >
               <div class="i-hugeicons-notification-02 h-6 w-6" />
             </RouterLink>
@@ -175,17 +179,17 @@ async function doLogout() {
             leave-from-class="transform opacity-100 scale-100"
             leave-to-class="transform opacity-0 scale-95"
           >
-            <div v-show="showDropdown" class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
+            <div v-show="showDropdown" class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-blue-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
               <!-- Active: "bg-gray-100", Not Active: "" -->
-              <a id="user-menu-item-0" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Your Profile</a>
-              <a id="user-menu-item-0" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Documentation</a>
-              <a id="user-menu-item-1" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Billing</a>
-              <a id="user-menu-item-1" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Settings</a>
-              <a id="user-menu-item-2" @click="doLogout" href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Sign out</a>
+              <a id="user-menu-item-0" href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem" tabindex="-1">Your Profile</a>
+              <a id="user-menu-item-0" href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem" tabindex="-1">Documentation</a>
+              <a id="user-menu-item-1" href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem" tabindex="-1">Billing</a>
+              <a id="user-menu-item-1" href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem" tabindex="-1">Settings</a>
+              <a id="user-menu-item-2" @click="doLogout" href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem" tabindex="-1">Sign out</a>
               <a
                 id="user-menu-item-4"
                 href="#"
-                class="my-1 flex justify-between px-4 py-2 text-sm text-gray-500 leading-6 hover:bg-blue-gray-50 hover:text-blue-gray-600 dark-hover:bg-gray-600"
+                class="my-1 flex justify-between px-4 py-2 text-sm text-gray-500 dark:text-gray-400 leading-6 hover:bg-blue-gray-50 hover:text-blue-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-200"
                 role="menuitem"
                 tabindex="-1"
               >
