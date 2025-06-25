@@ -3,13 +3,24 @@ import { useStorage } from '@vueuse/core'
 import { ref, type Ref } from 'vue'
 
 const token = useStorage('token', '')
+const user = useStorage<UserData | null>('user', null, undefined, {
+
+  serializer: {
+    read: (v: string): UserData | null => {
+      try {
+        return v ? (JSON.parse(v) as UserData | null) : null
+      } catch {
+        return null
+      }
+    },
+    write: (v: UserData | null): string => JSON.stringify(v)
+  }
+})
 
 const baseUrl = 'http://localhost:3008'
 
 // Create singleton state
-const user = ref<UserData | null>(null)
 const isAuthenticated = ref(false)
-
 
 export interface AuthComposable {
   isAuthenticated: Ref<boolean>
@@ -46,11 +57,13 @@ export function useAuth(): AuthComposable {
         return null
       }
 
-      const data = await response.json() as MeResponse
-      user.value = data.user
+
+      const { data } = await response.json() as MeResponse
+
+      user.value = data
       isAuthenticated.value = true
 
-      return data.user
+      return data
     }
     catch (error) {
       console.error('Error fetching user:', error)

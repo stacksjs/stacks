@@ -54,5 +54,5 @@ export interface UserData {
 }
 
 export interface MeResponse {
-  user: UserData
+  data: UserData
 }
