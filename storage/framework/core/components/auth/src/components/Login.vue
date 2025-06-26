@@ -54,6 +54,7 @@ function submitLogin() {
       </h2>
     </div>
 
+    <form @submit.prevent="submitLogin">
     <div class="mt-10 sm:mx-auto sm:max-w-[480px] sm:w-full">
       <div class="bg-white dark:bg-blue-gray-800 px-6 py-12 shadow sm:rounded-lg sm:px-12">
         <div class="space-y-6">
@@ -123,7 +124,8 @@ function submitLogin() {
       <p v-if="showSignup" class="mt-10 text-center text-sm text-gray-500 dark:text-gray-400">
         Not a member?
         <a href="#" class="text-indigo-600 dark:text-indigo-400 font-semibold leading-6 hover:text-indigo-500 dark:hover:text-indigo-300">Start a 14 day free trial</a>
-      </p>
-    </div>
+        </p>
+      </div>
+    </form>
   </div>
 </template>

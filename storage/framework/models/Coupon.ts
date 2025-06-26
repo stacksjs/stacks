@@ -111,9 +111,9 @@ export default {
       order: 8,
       fillable: true,
       validation: {
-        rule: schema.enum(['active', 'scheduled']),
+        rule: schema.enum(['Active', 'Scheduled', 'Expired']),
       },
-      factory: faker => faker.helpers.arrayElement(['active', 'scheduled']),
+      factory: faker => faker.helpers.arrayElement(['Active', 'Scheduled', 'Expired']),
     },
 
     usageLimit: {

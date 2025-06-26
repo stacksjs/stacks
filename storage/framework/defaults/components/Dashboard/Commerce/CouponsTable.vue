@@ -48,7 +48,7 @@ function getStatus(status: string | string[]): string {
   if (!statusStr)
     return 'N/A'
 
-  return statusStr.charAt(0).toUpperCase() + statusStr.slice(1)
+  return statusStr
 }
 
 // Get status badge class

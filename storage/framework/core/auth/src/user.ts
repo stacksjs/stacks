@@ -1,4 +1,4 @@
-import type { UserJsonResponse, UserModel, UserModelType } from '@stacksjs/orm'
+import type { UserJsonResponse, UserModel } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
 import { Auth } from './authentication'
 
