@@ -17,7 +17,7 @@ interface Credentials {
 }
 
 export class Auth {
-  private static authUser: UserModelType | undefined = undefined
+  private static authUser: UserModel | undefined = undefined
   private static clientSecret: string | undefined = undefined
 
   private static async getClientSecret(): Promise<string> {
@@ -134,7 +134,7 @@ export class Auth {
       return null
 
     return { user: this.authUser, token: await this.createToken(this.authUser, 'user-auth-token') }
-  } 
+  }
 
   public static async rotateToken(oldToken: string): Promise<AuthToken | null> {
     const [jwtToken, tokenId] = oldToken.split(':')

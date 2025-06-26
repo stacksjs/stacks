@@ -20,9 +20,8 @@ export async function up(db: Database<any>) {
     .addColumn('end_date', 'date', col => col.notNull())
     .addColumn('applicable_products', 'varchar(255)')
     .addColumn('applicable_categories', 'varchar(255)')
-    .addColumn('product_id', 'integer', (col) =>
-        col.references('products.id').onDelete('cascade')
-      ) 
+    .addColumn('product_id', 'integer', col =>
+      col.references('products.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
     .execute()

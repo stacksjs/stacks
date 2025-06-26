@@ -18,12 +18,10 @@ export async function up(db: Database<any>) {
     .addColumn('payment_provider', 'varchar(255)')
     .addColumn('refund_amount', 'integer')
     .addColumn('notes', 'varchar(255)')
-    .addColumn('customer_id', 'integer', (col) =>
-        col.references('customers.id').onDelete('cascade')
-      ) 
-    .addColumn('order_id', 'integer', (col) =>
-        col.references('orders.id').onDelete('cascade')
-      ) 
+    .addColumn('customer_id', 'integer', col =>
+      col.references('customers.id').onDelete('cascade'))
+    .addColumn('order_id', 'integer', col =>
+      col.references('orders.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
     .execute()

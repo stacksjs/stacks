@@ -124,4 +124,4 @@ export class UploadedFile {
   async getString(): Promise<string> {
     return await this.file.text()
   }
-} 
+}

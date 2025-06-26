@@ -1,106 +1,106 @@
-export { default as Author } from './models/Author'
+export { default as Author, AuthorModel } from './models/Author'
 
-export { default as Cart } from './models/Cart'
+export { default as Cart, CartModel } from './models/Cart'
 
-export { default as CartItem } from './models/CartItem'
+export { default as CartItem, CartItemModel } from './models/CartItem'
 
-export { default as Category } from './models/Category'
+export { default as Category, CategoryModel } from './models/Category'
 
-export { default as Coupon } from './models/Coupon'
+export { default as Coupon, CouponModel } from './models/Coupon'
 
-export { default as Customer } from './models/Customer'
+export { default as Customer, CustomerModel } from './models/Customer'
 
-export { default as DeliveryRoute } from './models/DeliveryRoute'
+export { default as DeliveryRoute, DeliveryRouteModel } from './models/DeliveryRoute'
 
-export { default as Deployment } from './models/Deployment'
+export { default as Deployment, DeploymentModel } from './models/Deployment'
 
-export { default as DigitalDelivery } from './models/DigitalDelivery'
+export { default as DigitalDelivery, DigitalDeliveryModel } from './models/DigitalDelivery'
 
-export { default as Driver } from './models/Driver'
+export { default as Driver, DriverModel } from './models/Driver'
 
-export { default as Error } from './models/Error'
+export { default as Error, ErrorModel } from './models/Error'
 
-export { default as FailedJob } from './models/FailedJob'
+export { default as FailedJob, FailedJobModel } from './models/FailedJob'
 
-export { default as GiftCard } from './models/GiftCard'
+export { default as GiftCard, GiftCardModel } from './models/GiftCard'
 
-export { default as Job } from './models/Job'
+export { default as Job, JobModel } from './models/Job'
 
-export { default as LicenseKey } from './models/LicenseKey'
+export { default as LicenseKey, LicenseKeyModel } from './models/LicenseKey'
 
-export { default as Log } from './models/Log'
+export { default as Log, LogModel } from './models/Log'
 
-export { default as LoyaltyPoint } from './models/LoyaltyPoint'
+export { default as LoyaltyPoint, LoyaltyPointModel } from './models/LoyaltyPoint'
 
-export { default as LoyaltyReward } from './models/LoyaltyReward'
+export { default as LoyaltyReward, LoyaltyRewardModel } from './models/LoyaltyReward'
 
-export { default as Manufacturer } from './models/Manufacturer'
+export { default as Manufacturer, ManufacturerModel } from './models/Manufacturer'
 
-export { default as OauthAccessToken } from './models/OauthAccessToken'
+export { default as OauthAccessToken, OauthAccessTokenModel } from './models/OauthAccessToken'
 
-export { default as OauthClient } from './models/OauthClient'
+export { default as OauthClient, OauthClientModel } from './models/OauthClient'
 
-export { default as Order } from './models/Order'
+export { default as Order, OrderModel } from './models/Order'
 
-export { default as OrderItem } from './models/OrderItem'
+export { default as OrderItem, OrderItemModel } from './models/OrderItem'
 
-export { default as Page } from './models/Page'
+export { default as Page, PageModel } from './models/Page'
 
-export { default as Payment } from './models/Payment'
+export { default as Payment, PaymentModel } from './models/Payment'
 
-export { default as PaymentMethod } from './models/PaymentMethod'
+export { default as PaymentMethod, PaymentMethodModel } from './models/PaymentMethod'
 
-export { default as PaymentProduct } from './models/PaymentProduct'
+export { default as PaymentProduct, PaymentProductModel } from './models/PaymentProduct'
 
-export { default as PaymentTransaction } from './models/PaymentTransaction'
+export { default as PaymentTransaction, PaymentTransactionModel } from './models/PaymentTransaction'
 
-export { default as PersonalAccessToken } from './models/PersonalAccessToken'
+export { default as PersonalAccessToken, PersonalAccessTokenModel } from './models/PersonalAccessToken'
 
-export { default as Post } from './models/Post'
+export { default as Post, PostModel } from './models/Post'
 
-export { default as PrintDevice } from './models/PrintDevice'
+export { default as PrintDevice, PrintDeviceModel } from './models/PrintDevice'
 
-export { default as Product } from './models/Product'
+export { default as Product, ProductModel } from './models/Product'
 
-export { default as ProductUnit } from './models/ProductUnit'
+export { default as ProductUnit, ProductUnitModel } from './models/ProductUnit'
 
-export { default as ProductVariant } from './models/ProductVariant'
+export { default as ProductVariant, ProductVariantModel } from './models/ProductVariant'
 
-export { default as Project } from './models/Project'
+export { default as Project, ProjectModel } from './models/Project'
 
-export { default as Receipt } from './models/Receipt'
+export { default as Receipt, ReceiptModel } from './models/Receipt'
 
-export { default as Release } from './models/Release'
+export { default as Release, ReleaseModel } from './models/Release'
 
-export { default as Request } from './models/Request'
+export { default as Request, RequestModel } from './models/Request'
 
-export { default as Review } from './models/Review'
+export { default as Review, ReviewModel } from './models/Review'
 
-export { default as ShippingMethod } from './models/ShippingMethod'
+export { default as ShippingMethod, ShippingMethodModel } from './models/ShippingMethod'
 
-export { default as ShippingRate } from './models/ShippingRate'
+export { default as ShippingRate, ShippingRateModel } from './models/ShippingRate'
 
-export { default as ShippingZone } from './models/ShippingZone'
+export { default as ShippingZone, ShippingZoneModel } from './models/ShippingZone'
 
-export { default as Subscriber } from './models/Subscriber'
+export { default as Subscriber, SubscriberModel } from './models/Subscriber'
 
-export { default as SubscriberEmail } from './models/SubscriberEmail'
+export { default as SubscriberEmail, SubscriberEmailModel } from './models/SubscriberEmail'
 
-export { default as Subscription } from './models/Subscription'
+export { default as Subscription, SubscriptionModel } from './models/Subscription'
 
-export { default as TaxRate } from './models/TaxRate'
+export { default as TaxRate, TaxRateModel } from './models/TaxRate'
 
-export { default as Team } from './models/Team'
+export { default as Team, TeamModel } from './models/Team'
 
-export { default as Transaction } from './models/Transaction'
+export { default as Transaction, TransactionModel } from './models/Transaction'
 
-export { default as User } from './models/User'
+export { default as User, UserModel } from './models/User'
 
-export { default as WaitlistProduct } from './models/WaitlistProduct'
+export { default as WaitlistProduct, WaitlistProductModel } from './models/WaitlistProduct'
 
-export { default as WaitlistRestaurant } from './models/WaitlistRestaurant'
+export { default as WaitlistRestaurant, WaitlistRestaurantModel } from './models/WaitlistRestaurant'
 
-export { default as Websocket } from './models/Websocket'
+export { default as Websocket, WebsocketModel } from './models/Websocket'
 
 export { type AuthorJsonResponse, type AuthorModelType, type AuthorsTable, type AuthorUpdate, type NewAuthor } from './types/AuthorType'
 

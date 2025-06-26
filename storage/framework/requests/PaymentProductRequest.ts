@@ -14,8 +14,8 @@ interface CustomAttributes {
 interface RequestDataPaymentProduct {
   id: number
   name: string
-  description: number
-  key: number
+  description: string
+  key: string
   unit_price: number
   status: string
   image: string
@@ -26,8 +26,8 @@ interface RequestDataPaymentProduct {
 export class PaymentProductRequest extends Request<RequestDataPaymentProduct> implements PaymentProductRequestType {
   public id = 1
   public name = ''
-  public description = 0
-  public key = 0
+  public description = ''
+  public key = ''
   public unit_price = 0
   public status = ''
   public image = ''

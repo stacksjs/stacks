@@ -6,7 +6,7 @@ export interface ReceiptsTable {
   id: Generated<number>
   printer: string
   document: string
-  timestamp: number
+  timestamp: Date | string
   status: string | string[]
   size?: number
   pages?: number
@@ -48,8 +48,8 @@ export interface ReceiptModelType {
   set printer(value: string)
   get document(): string
   set document(value: string)
-  get timestamp(): number
-  set timestamp(value: number)
+  get timestamp(): Date | string
+  set timestamp(value: Date | string)
   get status(): string | string[]
   set status(value: string | string[])
   get size(): number | undefined

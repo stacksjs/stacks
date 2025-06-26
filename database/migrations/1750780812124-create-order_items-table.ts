@@ -8,9 +8,8 @@ export async function up(db: Database<any>) {
     .addColumn('quantity', 'integer', col => col.notNull().defaultTo(1))
     .addColumn('price', 'integer', col => col.notNull())
     .addColumn('special_instructions', 'varchar(255)')
-    .addColumn('order_id', 'integer', (col) =>
-        col.references('orders.id').onDelete('cascade')
-      ) 
+    .addColumn('order_id', 'integer', col =>
+      col.references('orders.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
     .execute()

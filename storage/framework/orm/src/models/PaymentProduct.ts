@@ -147,11 +147,11 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     return this.attributes.name
   }
 
-  get description(): number | undefined {
+  get description(): string | undefined {
     return this.attributes.description
   }
 
-  get key(): number {
+  get key(): string {
     return this.attributes.key
   }
 
@@ -187,11 +187,11 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     this.attributes.name = value
   }
 
-  set description(value: number) {
+  set description(value: string) {
     this.attributes.description = value
   }
 
-  set key(value: number) {
+  set key(value: string) {
     this.attributes.key = value
   }
 
@@ -912,14 +912,14 @@ export async function whereName(value: string): Promise<PaymentProductModel[]> {
   return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
 }
 
-export async function whereDescription(value: number): Promise<PaymentProductModel[]> {
+export async function whereDescription(value: string): Promise<PaymentProductModel[]> {
   const query = DB.instance.selectFrom('payment_products').where('description', '=', value)
   const results: PaymentProductJsonResponse = await query.execute()
 
   return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
 }
 
-export async function whereKey(value: number): Promise<PaymentProductModel[]> {
+export async function whereKey(value: string): Promise<PaymentProductModel[]> {
   const query = DB.instance.selectFrom('payment_products').where('key', '=', value)
   const results: PaymentProductJsonResponse = await query.execute()
 

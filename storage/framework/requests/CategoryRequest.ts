@@ -15,6 +15,7 @@ interface RequestDataCategory {
   id: number
   name: string
   description: string
+  slug: string
   image_url: string
   is_active: boolean
   parent_category_id: string
@@ -26,6 +27,7 @@ export class CategoryRequest extends Request<RequestDataCategory> implements Cat
   public id = 1
   public name = ''
   public description = ''
+  public slug = ''
   public image_url = ''
   public is_active = false
   public parent_category_id = ''

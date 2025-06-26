@@ -21,9 +21,9 @@ interface RequestDataWaitlistProduct {
   source: string
   notes: string
   status: string[] | string
-  notified_at: timestamp
-  purchased_at: timestamp
-  cancelled_at: timestamp
+  notified_at: unix
+  purchased_at: unix
+  cancelled_at: unix
   customer_id: number
   product_id: number
   created_at?: string

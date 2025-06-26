@@ -14,9 +14,8 @@ export async function up(db: Database<any>) {
     .addColumn('published_at', 'timestamp')
     .addColumn('status', sql`enum('published', 'draft', 'archived')`, col => col.notNull().defaultTo('draft'))
     .addColumn('is_featured', 'integer')
-    .addColumn('author_id', 'integer', (col) =>
-        col.references('authors.id').onDelete('cascade')
-      ) 
+    .addColumn('author_id', 'integer', col =>
+      col.references('authors.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
     .execute()

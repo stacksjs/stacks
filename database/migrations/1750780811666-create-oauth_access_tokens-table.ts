@@ -10,12 +10,10 @@ export async function up(db: Database<any>) {
     .addColumn('scopes', 'varchar(190)')
     .addColumn('revoked', 'boolean', col => col.notNull())
     .addColumn('expires_at', 'datetime')
-    .addColumn('oauth_client_id', 'integer', (col) =>
-        col.references('oauth_clients.id').onDelete('cascade')
-      ) 
-    .addColumn('user_id', 'integer', (col) =>
-        col.references('users.id').onDelete('cascade')
-      ) 
+    .addColumn('oauth_client_id', 'integer', col =>
+      col.references('oauth_clients.id').onDelete('cascade'))
+    .addColumn('user_id', 'integer', col =>
+      col.references('users.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
     .execute()

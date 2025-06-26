@@ -1,5 +1,6 @@
 {
   "globals": {
+    "AuthComposable": true,
     "Component": true,
     "ComponentPublicInstance": true,
     "ComputedRef": true,

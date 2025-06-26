@@ -161,7 +161,7 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
     return this.attributes.document
   }
 
-  get timestamp(): number {
+  get timestamp(): Date | string {
     return this.attributes.timestamp
   }
 
@@ -205,7 +205,7 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
     this.attributes.document = value
   }
 
-  set timestamp(value: number) {
+  set timestamp(value: Date | string) {
     this.attributes.timestamp = value
   }
 
@@ -999,7 +999,7 @@ export async function whereDocument(value: string): Promise<ReceiptModel[]> {
   return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
 }
 
-export async function whereTimestamp(value: number): Promise<ReceiptModel[]> {
+export async function whereTimestamp(value: Date | string): Promise<ReceiptModel[]> {
   const query = DB.instance.selectFrom('receipts').where('timestamp', '=', value)
   const results: ReceiptJsonResponse = await query.execute()
 

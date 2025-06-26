@@ -25,5 +25,4 @@ export async function up(db: Database<any>) {
     .on('taggables')
     .columns(['taggable_type'])
     .execute()
-
 }

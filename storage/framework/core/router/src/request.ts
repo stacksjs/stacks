@@ -1,7 +1,7 @@
+import type { UserModelType } from '@stacksjs/orm'
 import type { AuthToken, CustomAttributes, HttpMethod, NumericField, RequestData, RequestInstance, RouteParam, RouteParams } from '@stacksjs/types'
 import { getCurrentUser } from '@stacksjs/auth'
 import { customValidate } from '@stacksjs/validation'
-import type { UserModelType } from '@stacksjs/orm'
 import { UploadedFile } from './uploaded-file'
 
 const numericFields = new Set<NumericField>([
@@ -115,7 +115,8 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     for (const [key, fileOrFiles] of Object.entries(files)) {
       if (Array.isArray(fileOrFiles)) {
         this.files[key] = fileOrFiles.map(file => new UploadedFile(file))
-      } else {
+      }
+      else {
         this.files[key] = new UploadedFile(fileOrFiles)
       }
     }
@@ -127,7 +128,7 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
    */
   public async addFilesFromFormData(formData: FormData): Promise<void> {
     const files: Record<string, File | File[]> = {}
-    
+
     for (const [key, value] of formData.entries()) {
       if (value && typeof value === 'object' && 'name' in value && 'size' in value) {
         // Handle single file
@@ -136,15 +137,17 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
           const existing = files[key]
           if (Array.isArray(existing)) {
             existing.push(value as File)
-          } else {
+          }
+          else {
             files[key] = [existing, value as File]
           }
-        } else {
+        }
+        else {
           files[key] = value as File
         }
       }
     }
-    
+
     this.addFiles(files)
   }
 
@@ -308,7 +311,7 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
 
   public file(key: string): UploadedFile | null {
     const fileOrFiles = this.files[key]
-    
+
     if (!fileOrFiles) {
       return null
     }
@@ -322,7 +325,7 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
 
   public getFiles(key: string): UploadedFile[] {
     const fileOrFiles = this.files[key]
-    
+
     if (!fileOrFiles) {
       return []
     }

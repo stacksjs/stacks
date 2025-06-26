@@ -13,9 +13,9 @@ export interface WaitlistProductsTable {
   source: string
   notes?: string
   status: string | string[]
-  notified_at?: Date | string
-  purchased_at?: Date | string
-  cancelled_at?: Date | string
+  notified_at?: unix
+  purchased_at?: unix
+  cancelled_at?: unix
   product_id?: number
   customer_id?: number
   uuid?: string
@@ -65,12 +65,12 @@ export interface WaitlistProductModelType {
   set notes(value: string)
   get status(): string | string[]
   set status(value: string | string[])
-  get notifiedAt(): Date | string | undefined
-  set notifiedAt(value: Date | string)
-  get purchasedAt(): Date | string | undefined
-  set purchasedAt(value: Date | string)
-  get cancelledAt(): Date | string | undefined
-  set cancelledAt(value: Date | string)
+  get notifiedAt(): unix | undefined
+  set notifiedAt(value: unix)
+  get purchasedAt(): unix | undefined
+  set purchasedAt(value: unix)
+  get cancelledAt(): unix | undefined
+  set cancelledAt(value: unix)
   get product_id(): number
   get product(): ProductModelType | undefined
   get customer_id(): number

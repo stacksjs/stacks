@@ -103,13 +103,10 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
     const formattedFieldName = snakeCase(fieldName)
     const field = relationModelInstance.attributes[fieldName]
     // Pass faker to the factory function
-    if (formattedFieldName === 'password') {
-      console.log('password', field?.factory(faker))
+    if (formattedFieldName === 'password')
       record[formattedFieldName] = field?.factory ? await makeHash(field.factory(faker), { algorithm: 'bcrypt' }) : undefined
-    }
-    else {
+    else
       record[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
-    }
   }
 
   for (const fieldName in modelInstance.attributes) {

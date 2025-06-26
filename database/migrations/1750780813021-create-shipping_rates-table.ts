@@ -9,12 +9,10 @@ export async function up(db: Database<any>) {
     .addColumn('weight_from', 'integer', col => col.notNull())
     .addColumn('weight_to', 'integer', col => col.notNull())
     .addColumn('rate', 'integer', col => col.notNull())
-    .addColumn('shipping_zone_id', 'integer', (col) =>
-        col.references('shipping_zones.id').onDelete('cascade')
-      ) 
-    .addColumn('shipping_method_id', 'integer', (col) =>
-        col.references('shipping_methods.id').onDelete('cascade')
-      ) 
+    .addColumn('shipping_zone_id', 'integer', col =>
+      col.references('shipping_zones.id').onDelete('cascade'))
+    .addColumn('shipping_method_id', 'integer', col =>
+      col.references('shipping_methods.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
     .execute()

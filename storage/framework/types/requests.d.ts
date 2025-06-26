@@ -499,6 +499,7 @@ interface RequestDataCategory {
   id: number
   name: string
   description: string
+  slug: string
   image_url: string
   is_active: boolean
   parent_category_id: string
@@ -513,6 +514,7 @@ export interface CategoryRequestType extends Request {
   id: number
   name: string
   description: string
+  slug: string
   image_url: string
   is_active: boolean
   parent_category_id: string
@@ -599,9 +601,9 @@ interface RequestDataWaitlistProduct {
   source: string
   notes: string
   status: string[] | string
-  notified_at: timestamp
-  purchased_at: timestamp
-  cancelled_at: timestamp
+  notified_at: unix
+  purchased_at: unix
+  cancelled_at: unix
   customer_id: number
   product_id: number
   created_at?: string
@@ -620,9 +622,9 @@ export interface WaitlistProductRequestType extends Request {
   source: string
   notes: string
   status: string[] | string
-  notified_at: timestamp
-  purchased_at: timestamp
-  cancelled_at: timestamp
+  notified_at: unix
+  purchased_at: unix
+  cancelled_at: unix
   customer_id: number
   product_id: number
   created_at?: string
@@ -797,7 +799,7 @@ interface RequestDataReceipt {
   id: number
   printer: string
   document: string
-  timestamp: number
+  timestamp: timestamp
   status: string[] | string
   size: number
   pages: number
@@ -814,7 +816,7 @@ export interface ReceiptRequestType extends Request {
   id: number
   printer: string
   document: string
-  timestamp: number
+  timestamp: timestamp
   status: string[] | string
   size: number
   pages: number
@@ -1322,7 +1324,7 @@ interface RequestDataDeliveryRoute {
   stops: number
   delivery_time: number
   total_distance: number
-  last_active: date
+  last_active: timestamp
   driver_id: number
   created_at?: string
   updated_at?: string
@@ -1337,7 +1339,7 @@ export interface DeliveryRouteRequestType extends Request {
   stops: number
   delivery_time: number
   total_distance: number
-  last_active: date
+  last_active: timestamp
   driver_id: number
   created_at?: string
   updated_at?: string
@@ -1384,8 +1386,8 @@ export interface CartItemRequestType extends Request {
 interface RequestDataPaymentProduct {
   id: number
   name: string
-  description: number
-  key: number
+  description: string
+  key: string
   unit_price: number
   status: string
   image: string
@@ -1399,8 +1401,8 @@ export interface PaymentProductRequestType extends Request {
   all: () => RequestDataPaymentProduct
   id: number
   name: string
-  description: number
-  key: number
+  description: string
+  key: string
   unit_price: number
   status: string
   image: string

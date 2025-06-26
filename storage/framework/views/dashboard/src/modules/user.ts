@@ -18,4 +18,4 @@ export function install(ctx: PluginContext) {
   // Also provide it via provide/inject for Composition API (optional)
   ctx.app.provide('user', user)
   ctx.app.provide('isAuthenticated', isAuthenticated)
-} 
+}

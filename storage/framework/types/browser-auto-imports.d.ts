@@ -436,6 +436,9 @@ declare global {
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
+  export type { AuthComposable } from '../defaults/functions/auth'
+  import('../defaults/functions/auth')
+  // @ts-ignore
   export type { SingletonPromiseReturn, ControlledPromise } from '../core/browser/src/utils/promise'
   import('../core/browser/src/utils/promise')
   // @ts-ignore

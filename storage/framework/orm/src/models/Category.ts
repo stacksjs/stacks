@@ -12,7 +12,7 @@ import { BaseOrm } from '../utils/base'
 
 export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, CategoryJsonResponse> {
   private readonly hidden: Array<keyof CategoryJsonResponse> = []
-  private readonly fillable: Array<keyof CategoryJsonResponse> = ['name', 'description', 'image_url', 'is_active', 'parent_category_id', 'display_order', 'uuid']
+  private readonly fillable: Array<keyof CategoryJsonResponse> = ['name', 'description', 'slug', 'image_url', 'is_active', 'parent_category_id', 'display_order', 'uuid']
   private readonly guarded: Array<keyof CategoryJsonResponse> = []
   protected attributes = {} as CategoryJsonResponse
   protected originalAttributes = {} as CategoryJsonResponse
@@ -157,6 +157,10 @@ export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, Categ
     return this.attributes.description
   }
 
+  get slug(): string {
+    return this.attributes.slug
+  }
+
   get image_url(): string | undefined {
     return this.attributes.image_url
   }
@@ -191,6 +195,10 @@ export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, Categ
 
   set description(value: string) {
     this.attributes.description = value
+  }
+
+  set slug(value: string) {
+    this.attributes.slug = value
   }
 
   set image_url(value: string) {
@@ -785,6 +793,14 @@ export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, Categ
     return instance
   }
 
+  static whereSlug(value: string): CategoryModel {
+    const instance = new CategoryModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('slug', '=', value)
+
+    return instance
+  }
+
   static whereImageUrl(value: string): CategoryModel {
     const instance = new CategoryModel(undefined)
 
@@ -854,6 +870,7 @@ export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, Categ
       id: this.id,
       name: this.name,
       description: this.description,
+      slug: this.slug,
       image_url: this.image_url,
       is_active: this.is_active,
       parent_category_id: this.parent_category_id,
@@ -939,6 +956,13 @@ export async function whereName(value: string): Promise<CategoryModel[]> {
 
 export async function whereDescription(value: string): Promise<CategoryModel[]> {
   const query = DB.instance.selectFrom('categories').where('description', '=', value)
+  const results: CategoryJsonResponse = await query.execute()
+
+  return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))
+}
+
+export async function whereSlug(value: string): Promise<CategoryModel[]> {
+  const query = DB.instance.selectFrom('categories').where('slug', '=', value)
   const results: CategoryJsonResponse = await query.execute()
 
   return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))

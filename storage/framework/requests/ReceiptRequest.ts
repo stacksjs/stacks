@@ -15,7 +15,7 @@ interface RequestDataReceipt {
   id: number
   printer: string
   document: string
-  timestamp: number
+  timestamp: timestamp
   status: string[] | string
   size: number
   pages: number
@@ -29,7 +29,7 @@ export class ReceiptRequest extends Request<RequestDataReceipt> implements Recei
   public id = 1
   public printer = ''
   public document = ''
-  public timestamp = 0
+  public timestamp = ''
   public status = []
   public size = 0
   public pages = 0

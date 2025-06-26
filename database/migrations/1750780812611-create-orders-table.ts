@@ -17,15 +17,12 @@ export async function up(db: Database<any>) {
     .addColumn('special_instructions', 'varchar(255)')
     .addColumn('estimated_delivery_time', 'varchar(255)')
     .addColumn('applied_coupon_id', 'varchar(255)')
-    .addColumn('customer_id', 'integer', (col) =>
-        col.references('customers.id').onDelete('cascade')
-      ) 
-    .addColumn('gift_card_id', 'integer', (col) =>
-        col.references('gift_cards.id').onDelete('cascade')
-      ) 
-    .addColumn('coupon_id', 'integer', (col) =>
-        col.references('coupons.id').onDelete('cascade')
-      ) 
+    .addColumn('customer_id', 'integer', col =>
+      col.references('customers.id').onDelete('cascade'))
+    .addColumn('gift_card_id', 'integer', col =>
+      col.references('gift_cards.id').onDelete('cascade'))
+    .addColumn('coupon_id', 'integer', col =>
+      col.references('coupons.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
     .execute()

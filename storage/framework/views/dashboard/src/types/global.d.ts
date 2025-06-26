@@ -1,4 +1,3 @@
-import type { Ref } from 'vue'
 import type { UserData } from '../../../../defaults/types/dashboard'
 
 declare module '@vue/runtime-core' {
@@ -6,4 +5,4 @@ declare module '@vue/runtime-core' {
     $user: UserData | null
     $isAuthenticated: boolean
   }
-} 
+}

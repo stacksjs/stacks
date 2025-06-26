@@ -18,7 +18,7 @@ interface RequestDataDeliveryRoute {
   stops: number
   delivery_time: number
   total_distance: number
-  last_active: date
+  last_active: timestamp
   driver_id: number
   created_at?: string
   updated_at?: string

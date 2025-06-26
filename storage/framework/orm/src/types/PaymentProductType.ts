@@ -4,8 +4,8 @@ import type { Operator } from '@stacksjs/orm'
 export interface PaymentProductsTable {
   id: Generated<number>
   name: string
-  description?: number
-  key: number
+  description?: string
+  key: string
   unit_price?: number
   status?: string
   image?: string
@@ -41,10 +41,10 @@ export interface PaymentProductModelType {
   readonly id: number
   get name(): string
   set name(value: string)
-  get description(): number | undefined
-  set description(value: number)
-  get key(): number
-  set key(value: number)
+  get description(): string | undefined
+  set description(value: string)
+  get key(): string
+  set key(value: string)
   get unitPrice(): number | undefined
   set unitPrice(value: number)
   get status(): string | undefined

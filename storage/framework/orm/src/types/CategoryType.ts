@@ -6,6 +6,7 @@ export interface CategoriesTable {
   id: Generated<number>
   name: string
   description?: string
+  slug: string
   image_url?: string
   is_active?: boolean
   parent_category_id?: string
@@ -45,6 +46,8 @@ export interface CategoryModelType {
   set name(value: string)
   get description(): string | undefined
   set description(value: string)
+  get slug(): string
+  set slug(value: string)
   get imageUrl(): string | undefined
   set imageUrl(value: string)
   get isActive(): boolean | undefined

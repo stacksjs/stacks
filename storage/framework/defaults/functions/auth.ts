@@ -1,6 +1,7 @@
+import type { Ref } from 'vue'
 import type { AuthUser, ErrorResponse, LoginError, LoginResponse, MeResponse, RegisterError, RegisterResponse, UserData } from '../types/dashboard'
 import { useStorage } from '@vueuse/core'
-import { ref, type Ref } from 'vue'
+import { ref } from 'vue'
 
 const token = useStorage('token', '')
 const user = useStorage<UserData | null>('user', null, undefined, {
@@ -9,12 +10,13 @@ const user = useStorage<UserData | null>('user', null, undefined, {
     read: (v: string): UserData | null => {
       try {
         return v ? (JSON.parse(v) as UserData | null) : null
-      } catch {
+      }
+      catch {
         return null
       }
     },
-    write: (v: UserData | null): string => JSON.stringify(v)
-  }
+    write: (v: UserData | null): string => JSON.stringify(v),
+  },
 })
 
 const baseUrl = 'http://localhost:3008'
@@ -33,7 +35,6 @@ export interface AuthComposable {
   getToken: () => string | null
   token: Ref<string | null>
 }
-
 
 export function useAuth(): AuthComposable {
   async function fetchAuthUser(): Promise<UserData | null> {
@@ -56,7 +57,6 @@ export function useAuth(): AuthComposable {
         user.value = null
         return null
       }
-
 
       const { data } = await response.json() as MeResponse
 

@@ -38,6 +38,7 @@ export interface Attributes {
   terminal: string
   last_ping: unix
   print_count: number
+  slug: string
   image_url: string
   is_active: boolean
   parent_category_id: string
@@ -58,9 +59,9 @@ export interface Attributes {
   quantity: number
   notification_preference: string | string[]
   source: string
-  notified_at: Date | string
-  purchased_at: Date | string
-  cancelled_at: Date | string
+  notified_at: unix
+  purchased_at: unix
+  cancelled_at: unix
   download_limit: number
   expiry_days: number
   requires_login: boolean
@@ -83,7 +84,7 @@ export interface Attributes {
   nutritional_info: string
   printer: string
   document: string
-  timestamp: number
+  timestamp: Date | string
   size: number
   pages: number
   duration: number

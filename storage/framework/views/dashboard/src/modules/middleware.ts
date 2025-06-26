@@ -5,7 +5,7 @@ interface PluginContext {
   router: Router
 }
 
-export function install(ctx: PluginContext) {   
+export function install(ctx: PluginContext) {
   const { checkAuthentication } = useAuth()
 
   ctx.router.beforeEach(async (to, from, next) => {
@@ -31,4 +31,4 @@ export function install(ctx: PluginContext) {
       next()
     }
   })
-} 
+}
