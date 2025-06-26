@@ -1619,6 +1619,10 @@ export function formatDate(date: Date): string {
   return date.toISOString().replace('T', ' ').split('.')[0]
 }
 
+export function extractDate(date: Date): string {
+  return date.toISOString().split('T')[0]
+}
+
 /**
  * Format a date to ISO string and remove milliseconds
  * @param date The date to format
