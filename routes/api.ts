@@ -179,6 +179,7 @@ route.group({ prefix: '/commerce' }, async () => {
   route.get('/coupons', 'Actions/Commerce/CouponIndexAction')
   route.post('/coupons', 'Actions/Commerce/CouponStoreAction')
   route.get('/coupons/{id}', 'Actions/Commerce/CouponShowAction')
+  route.delete('/coupons/{id}', 'Actions/Commerce/CouponDestroyAction')
 
   // Tax Rates
   route.get('/tax-rates', 'Actions/Commerce/TaxRateIndexAction')

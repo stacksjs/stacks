@@ -14,6 +14,6 @@ export default new Action({
 
     await coupons.deleteCoupon(id)
 
-    return response.json({ message: 'Coupon deleted successfully' })
+    return response.noContent()
   },
 })

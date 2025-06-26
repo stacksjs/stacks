@@ -119,7 +119,7 @@ const timeRange = ref('Last 30 days')
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Get coupons data and functions from the composable
-const { coupons, createCoupon, fetchCoupons } = useCoupons()
+const { coupons, createCoupon, fetchCoupons, deleteCoupon } = useCoupons()
 
 // Fetch coupons on component mount
 onMounted(async () => {
@@ -187,7 +187,7 @@ const filteredCoupons = computed(() => {
       let comparison = 0
       if (sortBy.value === 'code') {
         comparison = a.code.localeCompare(b.code)
-      } else if (sortBy.value === 'discount_value') {
+    } else if (sortBy.value === 'discount_value') {
         comparison = a.discount_value - b.discount_value
       } else if (sortBy.value === 'usage_count') {
         comparison = a.usage_count - b.usage_count
@@ -238,22 +238,10 @@ function toggleSort(column: string): void {
   }
 }
 
-// Get status badge class
-function getStatusClass(status: string): string {
-  switch (status) {
-    case 'Active':
-      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
-    case 'Expired':
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
-    case 'Scheduled':
-      return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
-    default:
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
-  }
-}
-
 // Modal state
 const showAddModal = ref(false)
+const showDeleteModal = ref(false)
+const couponToDelete = ref<any>(null)
 const today = new Date().toISOString().split('T')[0] as string
 const nextMonth = new Date()
 nextMonth.setMonth(nextMonth.getMonth() + 1)
@@ -351,8 +339,31 @@ function editCoupon(coupon: any): void {
 }
 
 function removeCoupon(coupon: any): void {
-  console.log('Delete coupon:', coupon)
-  // Implement delete coupon logic
+  couponToDelete.value = coupon
+  showDeleteModal.value = true
+}
+
+function closeDeleteModal(): void {
+  showDeleteModal.value = false
+  couponToDelete.value = null
+}
+
+async function confirmDelete(): Promise<void> {
+  if (!couponToDelete.value) return
+
+  const couponId = couponToDelete.value.id
+  
+  // Remove from local state for immediate UI update
+  coupons.value = coupons.value.filter(c => c.id !== couponId)
+  
+  try {
+    await deleteCoupon(couponId)
+    closeDeleteModal()
+  } catch (error) {
+    // If server request fails, restore to local state
+    coupons.value.push(couponToDelete.value)
+    console.error('Failed to delete coupon:', error)
+  }
 }
 </script>
 
@@ -669,6 +680,45 @@ function removeCoupon(coupon: any): void {
             <button
               type="button"
               @click="closeAddModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Coupon Confirmation Modal -->
+    <div v-if="showDeleteModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeDeleteModal"></div>
+
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+          <div>
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
+              <div class="i-hugeicons-alert-triangle h-6 w-6 text-red-600 dark:text-red-400"></div>
+            </div>
+            <div class="mt-3 text-center sm:mt-5">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Delete Coupon</h3>
+              <div class="mt-2">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  Are you sure you want to delete <strong>{{ couponToDelete?.code }}</strong>? This action cannot be undone.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+            <button
+              type="button"
+              @click="confirmDelete"
+              class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:col-start-2"
+            >
+              Delete Coupon
+            </button>
+            <button
+              type="button"
+              @click="closeDeleteModal"
               class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
             >
               Cancel
