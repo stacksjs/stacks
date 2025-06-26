@@ -32,11 +32,10 @@ export default {
 
   attributes: {
     weightFrom: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.number().min(0),
+        rule: schema.number().required().min(0),
         message: {
           min: 'Weight from cannot be negative',
         },
@@ -45,11 +44,10 @@ export default {
     },
 
     weightTo: {
-      required: true,
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.number().min(0),
+        rule: schema.number().required().min(0),
         message: {
           min: 'Weight to cannot be negative',
         },
@@ -58,11 +56,10 @@ export default {
     },
 
     rate: {
-      required: true,
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.number().min(0),
+        rule: schema.number().required().min(0),
         message: {
           min: 'Rate cannot be negative',
         },

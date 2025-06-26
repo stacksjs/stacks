@@ -30,11 +30,10 @@ export default {
 
   attributes: {
     name: {
-      required: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
         message: {
           max: 'Name must have a maximum of 255 characters',
         },
@@ -43,11 +42,10 @@ export default {
     },
 
     email: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().email().max(255),
+        rule: schema.string().required().email().max(255),
         message: {
           max: 'Email must have a maximum of 255 characters',
         },
@@ -56,7 +54,6 @@ export default {
     },
 
     phone: {
-      required: false,
       order: 3,
       fillable: true,
       validation: {
@@ -69,11 +66,10 @@ export default {
     },
 
     quantity: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.number().min(1),
+        rule: schema.number().required().min(1),
         message: {
           min: 'Quantity must be at least 1',
         },
@@ -82,21 +78,19 @@ export default {
     },
 
     notificationPreference: {
-      required: true,
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.enum(['sms', 'email', 'both'] as const),
+        rule: schema.enum(['sms', 'email', 'both'] as const).required(),
       },
       factory: faker => faker.helpers.arrayElement(['sms', 'email', 'both']),
     },
 
     source: {
-      required: true,
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           max: 'Source must have a maximum of 100 characters',
         },
@@ -105,7 +99,6 @@ export default {
     },
 
     notes: {
-      required: false,
       order: 7,
       fillable: true,
       validation: {
@@ -115,18 +108,16 @@ export default {
     },
 
     status: {
-      required: true,
       default: 'waiting',
       order: 8,
       fillable: true,
       validation: {
-        rule: schema.enum(['waiting', 'purchased', 'notified', 'cancelled'] as const),
+        rule: schema.enum(['waiting', 'purchased', 'notified', 'cancelled'] as const).required(),
       },
       factory: faker => faker.helpers.arrayElement(['waiting', 'purchased', 'notified', 'cancelled']),
     },
 
     notifiedAt: {
-      required: false,
       order: 9,
       fillable: true,
       validation: {
@@ -135,7 +126,6 @@ export default {
       factory: faker => faker.date.future().getTime(),
     },
     purchasedAt: {
-      required: false,
       order: 10,
       fillable: true,
       validation: {
@@ -144,7 +134,6 @@ export default {
       factory: faker => faker.date.future().getTime(),
     },
     cancelledAt: {
-      required: false,
       order: 11,
       fillable: true,
       validation: {

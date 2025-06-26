@@ -32,11 +32,10 @@ export default {
 
   attributes: {
     rating: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.number().min(1).max(5),
+        rule: schema.number().required().min(1).max(5),
         message: {
           min: 'Rating must be at least 1',
           max: 'Rating cannot be more than 5',
@@ -46,11 +45,10 @@ export default {
     },
 
     title: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           max: 'Title must have a maximum of 100 characters',
         },
@@ -59,11 +57,10 @@ export default {
     },
 
     content: {
-      required: true,
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string().max(2000),
+        rule: schema.string().required().max(2000),
         message: {
           max: 'Review content must have a maximum of 2000 characters',
         },
@@ -72,7 +69,6 @@ export default {
     },
 
     isVerifiedPurchase: {
-      required: false,
       order: 6,
       fillable: true,
       validation: {
@@ -82,7 +78,6 @@ export default {
     },
 
     isApproved: {
-      required: false,
       order: 7,
       fillable: true,
       validation: {
@@ -92,7 +87,6 @@ export default {
     },
 
     isFeatured: {
-      required: false,
       order: 8,
       fillable: true,
       validation: {
@@ -102,7 +96,6 @@ export default {
     },
 
     helpfulVotes: {
-      required: false,
       order: 9,
       default: 0,
       fillable: true,
@@ -113,7 +106,6 @@ export default {
     },
 
     unhelpfulVotes: {
-      required: false,
       order: 10,
       default: 0,
       fillable: true,
@@ -124,7 +116,6 @@ export default {
     },
 
     purchaseDate: {
-      required: false,
       order: 11,
       fillable: true,
       validation: {
@@ -134,7 +125,6 @@ export default {
     },
 
     images: {
-      required: false,
       order: 12,
       fillable: true,
       validation: {

@@ -32,11 +32,10 @@ export default {
 
   attributes: {
     key: {
-      required: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
         message: {
           pattern: 'License key must be in the format XXXX-XXXX-XXXX-XXXX-XXXX',
         },
@@ -48,21 +47,19 @@ export default {
     },
 
     template: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.enum(['Standard License', 'Premium License', 'Enterprise License'] as const),
+        rule: schema.enum(['Standard License', 'Premium License', 'Enterprise License'] as const).required(),
       },
       factory: faker => faker.helpers.arrayElement(['Standard License', 'Premium License', 'Enterprise License']),
     },
 
     expiryDate: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.timestamp(),
+        rule: schema.timestamp().required(),
         message: {
           timestamp: 'Expiry date must be a valid timestamp',
         },

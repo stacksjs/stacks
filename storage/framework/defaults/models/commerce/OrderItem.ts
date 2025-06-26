@@ -15,12 +15,11 @@ export default {
 
   attributes: {
     quantity: {
-      required: true,
       default: 1,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.number().min(1),
+        rule: schema.number().required().min(1),
         message: {
           min: 'Quantity must be at least 1',
         },
@@ -29,11 +28,10 @@ export default {
     },
 
     price: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.number().min(0),
+        rule: schema.number().required().min(0),
         message: {
           min: 'Price cannot be negative',
         },
@@ -42,7 +40,6 @@ export default {
     },
 
     special_instructions: {
-      required: false,
       order: 5,
       fillable: true,
       validation: {

@@ -32,21 +32,19 @@ export default {
 
   attributes: {
     amount: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.number().min(0.01),
+        rule: schema.number().required().min(0.01),
       },
       factory: faker => Number.parseFloat(faker.commerce.price({ min: 10, max: 500, dec: 2 })),
     },
 
     method: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
       },
       factory: faker => faker.helpers.arrayElement([
         'creditCard',
@@ -60,11 +58,10 @@ export default {
     },
 
     status: {
-      required: true,
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
       },
       factory: faker => faker.helpers.arrayElement([
         'pending',
@@ -77,7 +74,6 @@ export default {
     },
 
     currency: {
-      required: false,
       order: 7,
       fillable: true,
       validation: {
@@ -87,7 +83,6 @@ export default {
     },
 
     referenceNumber: {
-      required: false,
       order: 8,
       fillable: true,
       validation: {
@@ -97,7 +92,6 @@ export default {
     },
 
     cardLastFour: {
-      required: false,
       order: 9,
       fillable: true,
       validation: {
@@ -107,7 +101,6 @@ export default {
     },
 
     cardBrand: {
-      required: false,
       order: 10,
       fillable: true,
       validation: {
@@ -117,7 +110,6 @@ export default {
     },
 
     billingEmail: {
-      required: false,
       order: 11,
       fillable: true,
       validation: {
@@ -127,7 +119,6 @@ export default {
     },
 
     transactionId: {
-      required: false,
       order: 12,
       unique: true,
       fillable: true,
@@ -138,7 +129,6 @@ export default {
     },
 
     paymentProvider: {
-      required: false,
       order: 13,
       fillable: true,
       validation: {
@@ -148,7 +138,6 @@ export default {
     },
 
     refundAmount: {
-      required: false,
       order: 14,
       fillable: true,
       validation: {
@@ -158,7 +147,6 @@ export default {
     },
 
     notes: {
-      required: false,
       order: 15,
       fillable: true,
       validation: {

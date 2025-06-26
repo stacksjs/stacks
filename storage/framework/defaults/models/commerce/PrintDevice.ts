@@ -30,11 +30,10 @@ export default {
 
   attributes: {
     name: {
-      required: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           max: 'Device name must have a maximum of 100 characters',
         },
@@ -43,11 +42,10 @@ export default {
     },
 
     macAddress: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().max(50),
+        rule: schema.string().required().max(50),
         message: {
           max: 'MAC address must have a maximum of 50 characters',
         },
@@ -56,11 +54,10 @@ export default {
     },
 
     location: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           max: 'Location must have a maximum of 100 characters',
         },
@@ -69,11 +66,10 @@ export default {
     },
 
     terminal: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string().max(50),
+        rule: schema.string().required().max(50),
         message: {
           max: 'Terminal must have a maximum of 50 characters',
         },
@@ -82,21 +78,19 @@ export default {
     },
 
     status: {
-      required: true,
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.enum(['online', 'offline', 'warning'] as const),
+        rule: schema.enum(['online', 'offline', 'warning'] as const).required(),
       },
       factory: faker => faker.helpers.arrayElement(['online', 'offline', 'warning']),
     },
 
     lastPing: {
-      required: true,
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.unix(),
+        rule: schema.unix().required(),
         message: {
           invalid: 'Invalid timestamp format',
         },
@@ -105,11 +99,10 @@ export default {
     },
 
     printCount: {
-      required: true,
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.number().min(0),
+        rule: schema.number().required().min(0),
         message: {
           min: 'Print count cannot be negative',
         },
