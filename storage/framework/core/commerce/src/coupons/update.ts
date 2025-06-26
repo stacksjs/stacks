@@ -18,6 +18,11 @@ export async function update(id: number, data: Omit<CouponUpdate, 'id'>): Promis
     throw new Error(`Coupon with ID ${id} not found`)
   }
 
+  console.log({
+    ...data,
+    updated_at: formatDate(new Date()),
+  }) 
+
   try {
     // Update the coupon
     await db
