@@ -7,7 +7,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
-import type { Coupons } from '../../../../types/defaults'
+import type { Coupons, NewCoupon } from '../../../../types/defaults'
 import { useCoupons } from '../../../../functions/commerce/coupons'
 import CouponsTable from '../../../../components/Dashboard/Commerce/CouponsTable.vue'
 import CouponsForm from '../../../../components/Dashboard/Commerce/Forms/CouponsForm.vue'
@@ -121,7 +121,7 @@ const timeRange = ref('Last 30 days')
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Get coupons data and functions from the composable
-const { coupons, createCoupon, fetchCoupons, deleteCoupon } = useCoupons()
+const { coupons, createCoupon, fetchCoupons, deleteCoupon, updateCoupon } = useCoupons()
 
 // Fetch coupons on component mount
 onMounted(async () => {
@@ -265,15 +265,15 @@ function editCoupon(coupon: any): void {
 }
 
 // Form submission handlers
-async function handleFormSubmit(couponData: Partial<Coupons>): Promise<void> {
+async function handleFormSubmit(couponData: NewCoupon): Promise<void> {
   if (formMode.value === 'add') {
     await addCoupon(couponData)
   } else {
-    await updateCoupon(couponData)
+    await doUpdateCoupon(couponData)
   }
 }
 
-async function addCoupon(couponData: Partial<Coupons>): Promise<void> {
+async function addCoupon(couponData: NewCoupon): Promise<void> {
   // First add to local state for immediate UI update
   const id = Math.max(...coupons.value.map(c => c.id || 0)) + 1
   const newCouponData = {
@@ -294,7 +294,7 @@ async function addCoupon(couponData: Partial<Coupons>): Promise<void> {
   }
 }
 
-async function updateCoupon(couponData: Partial<Coupons>): Promise<void> {
+async function doUpdateCoupon(couponData: NewCoupon): Promise<void> {
   if (!couponToEdit.value) return
 
   const couponId = couponToEdit.value.id
@@ -307,7 +307,7 @@ async function updateCoupon(couponData: Partial<Coupons>): Promise<void> {
   
   try {
     // TODO: Implement actual API call to update coupon
-    // await updateCoupon(couponId, couponData)
+    await updateCoupon(couponId, couponData)
     closeFormModal()
   } catch (error) {
     // If server request fails, restore original values

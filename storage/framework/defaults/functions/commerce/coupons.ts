@@ -1,4 +1,4 @@
-import type { Coupons } from '../../types/defaults'
+import type { Coupons, NewCoupon } from '../../types/defaults'
 import { useStorage } from '@vueuse/core'
 
 // Create a persistent coupons array using VueUse's useStorage
@@ -61,9 +61,9 @@ async function createCoupon(coupon: Omit<Coupons, 'id'>) {
   }
 }
 
-async function updateCoupon(coupon: Coupons) {
+async function updateCoupon(id: number, coupon: NewCoupon) {
   try {
-    const response = await fetch(`${baseURL}/commerce/coupons/${coupon.id}`, {
+    const response = await fetch(`${baseURL}/commerce/coupons/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

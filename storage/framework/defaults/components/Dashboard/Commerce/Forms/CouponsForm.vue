@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Coupons } from '../../../../types/defaults'
+import type { Coupons, NewCoupon } from '../../../../types/defaults'
 
 interface Props {
   show: boolean
@@ -9,19 +9,20 @@ interface Props {
 
 interface Emits {
   (e: 'close'): void
-  (e: 'submit', coupon: Partial<Coupons>): void
+  (e: 'submit', coupon: NewCoupon): void
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 // Form data
-const formData = ref<Partial<Coupons>>({
+const formData = ref<NewCoupon>({
   code: '',
   discount_type: 'Percentage',
   discount_value: 10,
   min_order_amount: 0,
   usage_limit: 100,
+  usage_count: 0,
   start_date: '',
   end_date: '',
   status: 'Active'
@@ -47,6 +48,7 @@ watch(() => props.show, (newShow) => {
         discount_value: 10,
         min_order_amount: 0,
         usage_limit: 100,
+        usage_count: 0,
         start_date: today,
         end_date: nextMonthDate,
         status: 'Active'
