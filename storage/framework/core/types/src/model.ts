@@ -214,7 +214,6 @@ export interface Attribute {
   default?: string | number | boolean | Date
   unique?: boolean
   order?: number
-  required?: boolean
   hidden?: boolean
   fillable?: boolean
   guarded?: boolean
