@@ -966,6 +966,7 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
     let uniqueValue = false
     let hiddenValue = false
     let fillableValue = false
+    let requiredValue = false
 
     if (fieldExist) {
       defaultValue = fieldExist || null
@@ -974,13 +975,18 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
       fillableValue = fieldExist.fillable || false
     }
 
+    // Check if the field is required by parsing the validation rule
+    const rule = rules[index] ?? ''
+    requiredValue = isFieldRequired(rule)
+
     return {
       field,
       default: defaultValue,
       unique: uniqueValue,
       hidden: hiddenValue,
       fillable: fillableValue,
-      fieldArray: parseRule(rules[index] ?? ''),
+      required: requiredValue,
+      fieldArray: parseRule(rule),
     }
   }) as ModelElement[]
 
@@ -1011,6 +1017,11 @@ function parseRule(rule: string): FieldArrayElement | null {
       return { entity: field, charValue: value }
     })[0] || null
   )
+}
+
+function isFieldRequired(rule: string): boolean {
+  // Check if the rule contains .required()
+  return rule.includes('.required()')
 }
 
 export async function generateApiRoutes(modelFiles: string[]): Promise<void> {
@@ -1738,9 +1749,14 @@ export interface ${formattedTableName}Table {
 
     if (relationType === 'belongsType' && !relationCount) {
       const relationName = camelCase(relation.relationName || formattedModelRelation)
-      modelTypeInterface += `  get ${relation.modelKey}(): number
-  get ${snakeCase(relationName)}(): ${modelRelation}ModelType | undefined
-`
+      modelTypeInterface += `
+  ${relationName}Belong: () => Promise<${modelRelation}Type>`
+    }
+
+    if (relationType === 'belongsType' && relationCount === 'many') {
+      const relationName = relation.relationName || formattedModelName + plural(pascalCase(modelRelation))
+      modelTypeInterface += `
+  ${relationName}: () => Promise<${modelRelation}Type[]>`
     }
   }
 

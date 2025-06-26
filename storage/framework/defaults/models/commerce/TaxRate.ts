@@ -30,11 +30,10 @@ export default {
 
   attributes: {
     name: {
-      required: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
         message: {
           max: 'Name must have a maximum of 255 characters',
         },
@@ -43,11 +42,10 @@ export default {
     },
 
     rate: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.number().min(0).max(100),
+        rule: schema.number().required().min(0).max(100),
         message: {
           min: 'Rate must be greater than or equal to 0',
           max: 'Rate must be less than or equal to 100',
@@ -57,11 +55,10 @@ export default {
     },
 
     type: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           max: 'Type must have a maximum of 100 characters',
         },
@@ -70,11 +67,10 @@ export default {
     },
 
     country: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           max: 'Country must have a maximum of 100 characters',
         },
@@ -83,7 +79,6 @@ export default {
     },
 
     region: {
-      required: true,
       order: 5,
       fillable: true,
       validation: {
