@@ -1,10 +1,10 @@
-import type { OauthClientJsonResponse, UserModelType } from '@stacksjs/orm'
+import type { OauthClientJsonResponse } from '@stacksjs/orm'
 import type { AuthToken } from './token'
 import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-import { formatDate, User } from '@stacksjs/orm'
+import { formatDate, User, UserModel } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
 import { decrypt, encrypt, makeHash, verifyHash } from '@stacksjs/security'
 import { RateLimiter } from './rate-limiter'
@@ -80,7 +80,7 @@ export class Auth {
     return false
   }
 
-  public static async createToken(user: UserModelType, name: string = config.auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
+  public static async createToken(user: UserModel, name: string = config.auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
     const client = await this.getPersonalAccessClient()
     const clientSecret = await this.getClientSecret()
 
@@ -128,7 +128,7 @@ export class Auth {
     return { token: await this.createToken(this.authUser, 'user-auth-token') }
   }
 
-  public static async login(credentials: Credentials): Promise<{ user: UserModelType, token: AuthToken } | null> {
+  public static async login(credentials: Credentials): Promise<{ user: UserModel, token: AuthToken } | null> {
     const isValid = await this.attempt(credentials)
     if (!isValid || !this.authUser)
       return null
@@ -227,7 +227,7 @@ export class Auth {
     return true
   }
 
-  public static async getUserFromToken(token: string): Promise<UserModelType | undefined> {
+  public static async getUserFromToken(token: string): Promise<UserModel | undefined> {
     const [jwtToken, tokenId] = token.split(':')
     if (!tokenId || !jwtToken)
       return undefined
