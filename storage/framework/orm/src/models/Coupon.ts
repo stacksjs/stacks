@@ -13,7 +13,7 @@ import { BaseOrm } from '../utils/base'
 
 export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonResponse> {
   private readonly hidden: Array<keyof CouponJsonResponse> = []
-  private readonly fillable: Array<keyof CouponJsonResponse> = ['code', 'description', 'discount_type', 'discount_value', 'min_order_amount', 'max_discount_amount', 'free_product_id', 'status', 'usage_limit', 'usage_count', 'start_date', 'end_date', 'applicable_products', 'applicable_categories', 'uuid', 'product_id']
+  private readonly fillable: Array<keyof CouponJsonResponse> = ['code', 'description', 'discount_type', 'discount_value', 'min_order_amount', 'max_discount_amount', 'free_product_id', 'status', 'usage_limit', 'usage_count', 'start_date', 'end_date', 'uuid', 'product_id']
   private readonly guarded: Array<keyof CouponJsonResponse> = []
   protected attributes = {} as CouponJsonResponse
   protected originalAttributes = {} as CouponJsonResponse
@@ -206,14 +206,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return this.attributes.end_date
   }
 
-  get applicable_products(): string | undefined {
-    return this.attributes.applicable_products
-  }
-
-  get applicable_categories(): string | undefined {
-    return this.attributes.applicable_categories
-  }
-
   get created_at(): string | undefined {
     return this.attributes.created_at
   }
@@ -272,14 +264,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
   set end_date(value: Date | string) {
     this.attributes.end_date = value
-  }
-
-  set applicable_products(value: string) {
-    this.attributes.applicable_products = value
-  }
-
-  set applicable_categories(value: string) {
-    this.attributes.applicable_categories = value
   }
 
   set updated_at(value: string) {
@@ -938,22 +922,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return instance
   }
 
-  static whereApplicableProducts(value: string): CouponModel {
-    const instance = new CouponModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('applicable_products', '=', value)
-
-    return instance
-  }
-
-  static whereApplicableCategories(value: string): CouponModel {
-    const instance = new CouponModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('applicable_categories', '=', value)
-
-    return instance
-  }
-
   static whereIn<V = number>(column: keyof CouponsTable, values: V[]): CouponModel {
     const instance = new CouponModel(undefined)
 
@@ -1015,8 +983,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
       usage_count: this.usage_count,
       start_date: this.start_date,
       end_date: this.end_date,
-      applicable_products: this.applicable_products,
-      applicable_categories: this.applicable_categories,
 
       created_at: this.created_at,
 
@@ -1170,20 +1136,6 @@ export async function whereStartDate(value: Date | string): Promise<CouponModel[
 
 export async function whereEndDate(value: Date | string): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('end_date', '=', value)
-  const results: CouponJsonResponse = await query.execute()
-
-  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
-}
-
-export async function whereApplicableProducts(value: string): Promise<CouponModel[]> {
-  const query = DB.instance.selectFrom('coupons').where('applicable_products', '=', value)
-  const results: CouponJsonResponse = await query.execute()
-
-  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
-}
-
-export async function whereApplicableCategories(value: string): Promise<CouponModel[]> {
-  const query = DB.instance.selectFrom('coupons').where('applicable_categories', '=', value)
   const results: CouponJsonResponse = await query.execute()
 
   return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))

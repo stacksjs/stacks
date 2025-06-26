@@ -17,8 +17,6 @@ export interface CouponsTable {
   usage_count?: number
   start_date: Date | string
   end_date: Date | string
-  applicable_products?: string
-  applicable_categories?: string
   product_id?: number
   uuid?: string
   created_at?: string
@@ -75,10 +73,6 @@ export interface CouponModelType {
   set startDate(value: Date | string)
   get endDate(): Date | string
   set endDate(value: Date | string)
-  get applicableProducts(): string | undefined
-  set applicableProducts(value: string)
-  get applicableCategories(): string | undefined
-  set applicableCategories(value: string)
   get order(): OrderModelType[] | []
   get product_id(): number
   get product(): ProductModelType | undefined

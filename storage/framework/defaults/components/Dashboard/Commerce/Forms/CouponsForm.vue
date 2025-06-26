@@ -34,12 +34,24 @@ const nextMonth = new Date()
 nextMonth.setMonth(nextMonth.getMonth() + 1)
 const nextMonthDate = nextMonth.toISOString().split('T')[0] as string
 
+// Format date to yyyy-MM-dd
+function formatDate(date: string | Date): string {
+  if (!date) return ''
+  const d = new Date(date)
+  const parts = d.toISOString().split('T')
+  return parts[0] || ''
+}
+
 // Watch for changes in props to populate form
 watch(() => props.show, (newShow) => {
   if (newShow) {
     if (props.mode === 'edit' && props.coupon) {
       // Edit mode: populate with existing coupon data
-      formData.value = { ...props.coupon }
+      formData.value = { 
+        ...props.coupon,
+        start_date: formatDate(props.coupon.start_date),
+        end_date: formatDate(props.coupon.end_date)
+      }
     } else {
       // Add mode: set default values
       formData.value = {

@@ -1089,8 +1089,6 @@ interface RequestDataCoupon {
   usage_count: number
   start_date: date
   end_date: date
-  applicable_products: string
-  applicable_categories: string
   product_id: number
   created_at?: string
   updated_at?: string
@@ -1112,8 +1110,6 @@ export interface CouponRequestType extends Request {
   usage_count: number
   start_date: date
   end_date: date
-  applicable_products: string
-  applicable_categories: string
   product_id: number
   created_at?: string
   updated_at?: string

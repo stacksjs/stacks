@@ -155,36 +155,6 @@ export default {
       },
       factory: faker => faker.date.future().toISOString().slice(0, 10),
     },
-
-    applicableProducts: {
-      required: false,
-      order: 13,
-      fillable: true,
-      validation: {
-        rule: schema.string(),
-      },
-      factory: (faker) => {
-        // Generate product IDs array and stringify
-        const count = faker.number.int({ min: 0, max: 5 })
-        const productIds = Array.from({ length: count }, () => faker.string.uuid())
-        return JSON.stringify(productIds)
-      },
-    },
-
-    applicableCategories: {
-      required: false,
-      order: 14,
-      fillable: true,
-      validation: {
-        rule: schema.string(),
-      },
-      factory: (faker) => {
-        // Generate category IDs array and stringify
-        const count = faker.number.int({ min: 0, max: 3 })
-        const categoryIds = Array.from({ length: count }, () => faker.string.uuid())
-        return JSON.stringify(categoryIds)
-      },
-    },
   },
 
   dashboard: {

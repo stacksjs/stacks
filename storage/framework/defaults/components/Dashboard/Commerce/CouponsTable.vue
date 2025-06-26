@@ -42,9 +42,19 @@ function handleDeleteCoupon(coupon: Coupons): void {
   emit('deleteCoupon', coupon)
 }
 
+function getStatus(status: string | string[]): string {
+  const statusStr = Array.isArray(status) ? status[0] : status
+
+  if (!statusStr)
+    return 'N/A'
+
+  return statusStr.charAt(0).toUpperCase() + statusStr.slice(1)
+}
+
 // Get status badge class
 function getStatusClass(status: string | string[]): string {
   const statusStr = Array.isArray(status) ? status[0] : status
+  
   switch (statusStr) {
     case 'Active':
       return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
@@ -141,8 +151,8 @@ function getStatusClass(status: string | string[]): string {
             {{ coupon.end_date }}
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm">
-            <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium" :class="getStatusClass(coupon.status)">
-              {{ coupon.status }}
+            <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium" :class="getStatusClass(getStatus(coupon.status))">
+              {{ getStatus(coupon.status) }}
             </span>
           </td>
           <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">

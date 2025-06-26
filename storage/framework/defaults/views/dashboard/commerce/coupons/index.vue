@@ -177,7 +177,7 @@ const filteredCoupons = computed(() => {
   return coupons.value
     .filter(coupon => {
       // Apply search filter
-      const matchesSearch = coupon.code.toLowerCase().includes(searchQuery.value.toLowerCase())
+      const matchesSearch = coupon.code?.toLowerCase().includes(searchQuery.value.toLowerCase()) || false
 
       // Apply status filter
       const matchesStatus = statusFilter.value === 'all' || coupon.status === statusFilter.value
@@ -266,6 +266,8 @@ function editCoupon(coupon: any): void {
 
 // Form submission handlers
 async function handleFormSubmit(couponData: NewCoupon): Promise<void> {
+
+  console.log(couponData)
   if (formMode.value === 'add') {
     await addCoupon(couponData)
   } else {

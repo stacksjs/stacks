@@ -25,8 +25,6 @@ interface RequestDataCoupon {
   usage_count: number
   start_date: date
   end_date: date
-  applicable_products: string
-  applicable_categories: string
   product_id: number
   created_at?: string
   updated_at?: string
@@ -45,8 +43,6 @@ export class CouponRequest extends Request<RequestDataCoupon> implements CouponR
   public usage_count = 0
   public start_date = ''
   public end_date = ''
-  public applicable_products = ''
-  public applicable_categories = ''
   public product_id = 0
   public created_at = ''
   public updated_at = ''

@@ -107,8 +107,6 @@ describe('Coupon Module', () => {
       expect(coupon?.code).toBe(uniqueCode)
       expect(coupon?.discount_type).toBe('percentage')
       expect(coupon?.discount_value).toBe(15)
-      expect(coupon?.applicable_products).toBeDefined() // Should have default JSON string
-      expect(coupon?.applicable_categories).toBeDefined() // Should have default JSON string
     })
   })
 
@@ -142,10 +140,6 @@ describe('Coupon Module', () => {
       expect(fetchedCoupon?.id).toBe(couponId)
       expect(fetchedCoupon?.code).toBe(uniqueCode)
       expect(fetchedCoupon?.discount_value).toBe(10)
-
-      // Check proper JSON parsing of arrays in fetched data
-      expect(Array.isArray(fetchedCoupon?.applicable_products)).toBe(true)
-      expect(Array.isArray(fetchedCoupon?.applicable_categories)).toBe(true)
     })
 
     it('should fetch a coupon by code', async () => {
@@ -280,8 +274,6 @@ describe('Coupon Module', () => {
         description: 'Updated description',
         discount_value: 15,
         is_active: true,
-        applicable_products: JSON.stringify(['product1', 'product2']),
-        applicable_categories: JSON.stringify(['category1']),
       }
 
       const updatedCoupon = await update(couponId, updateData)
@@ -294,8 +286,6 @@ describe('Coupon Module', () => {
       expect(updatedCoupon?.is_active).toBe(true)
 
       // Check JSON arrays are properly parsed
-      expect(updatedCoupon?.applicable_products).toEqual(JSON.stringify(['product1', 'product2']))
-      expect(updatedCoupon?.applicable_categories).toEqual(JSON.stringify(['category1']))
 
       // The original fields should remain unchanged
       expect(updatedCoupon?.code).toBe(uniqueCode)

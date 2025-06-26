@@ -11,16 +11,6 @@ function processCouponData(coupon: CouponJsonResponse): CouponJsonResponse {
   // Create a copy to avoid modifying the original object
   const processed = { ...coupon }
 
-  // Parse applicable_products if it exists and is a string
-  if (processed.applicable_products && typeof processed.applicable_products === 'string') {
-    processed.applicable_products = JSON.parse(processed.applicable_products)
-  }
-
-  // Parse applicable_categories if it exists and is a string
-  if (processed.applicable_categories && typeof processed.applicable_categories === 'string') {
-    processed.applicable_categories = JSON.parse(processed.applicable_categories)
-  }
-
   // Convert is_active to boolean if needed
   if (processed.is_active !== undefined) {
     processed.is_active = Boolean(processed.is_active)

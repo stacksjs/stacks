@@ -144,8 +144,6 @@ export interface Attributes {
   usage_count: number
   start_date: Date | string
   end_date: Date | string
-  applicable_products: string
-  applicable_categories: string
   rate: number
   region: string | string[]
   payment_method: string
