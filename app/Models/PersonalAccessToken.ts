@@ -16,9 +16,8 @@ export default {
   attributes: {
     name: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
         message: {
           string: 'name must be a string',
           required: 'name is required',
@@ -29,7 +28,6 @@ export default {
 
     token: {
       fillable: true,
-      required: true,
       unique: true,
       validation: {
         rule: schema.string().max(512),
@@ -44,9 +42,8 @@ export default {
 
     plainTextToken: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string().max(512),
+        rule: schema.string().required().max(512),
         message: {
           string: 'plainTextToken must be a string',
           required: 'plainTextToken is required',
@@ -58,9 +55,8 @@ export default {
 
     abilities: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
         message: {
           required: 'abilities is required',
           string: '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',
@@ -137,7 +133,7 @@ export default {
     isSingleUse: {
       fillable: true,
       validation: {
-        rule: schema.boolean(),
+        rule: schema.boolean().required(),
         message: {
           boolean: 'isSingleUse must be a boolean',
         },

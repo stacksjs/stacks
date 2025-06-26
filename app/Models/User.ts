@@ -56,11 +56,10 @@ export default {
 
   attributes: {
     name: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().min(5).max(255),
+        rule: schema.string().required().min(5).max(255),
         message: {
           min: 'Name must have a minimum of 3 characters',
           max: 'Name must have a maximum of 255 characters',
@@ -72,11 +71,10 @@ export default {
 
     email: {
       unique: true,
-      required: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().email(),
+        rule: schema.string().required().email(),
         message: {
           email: 'Email must be a valid email address',
         },
@@ -85,12 +83,11 @@ export default {
       factory: faker => faker.internet.email(),
     },
     password: {
-      required: true,
       order: 3,
       hidden: true,
       fillable: true,
       validation: {
-        rule: schema.string().min(6).max(255),
+        rule: schema.string().required().min(6).max(255),
         message: {
           min: 'Password must have a minimum of 6 characters',
           max: 'Password must have a maximum of 255 characters',

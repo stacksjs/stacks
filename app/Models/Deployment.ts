@@ -21,7 +21,6 @@ export default {
   attributes: {
     commitSha: {
       unique: true,
-      required: true,
       fillable: true,
       validation: {
         rule: schema.string().max(255),
@@ -37,7 +36,6 @@ export default {
 
     commitMessage: {
       fillable: true,
-      required: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -51,7 +49,6 @@ export default {
 
     branch: {
       fillable: true,
-      required: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -65,7 +62,6 @@ export default {
 
     status: {
       fillable: true,
-      required: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -79,7 +75,6 @@ export default {
 
     executionTime: {
       fillable: true,
-      required: true,
       // in nanoseconds
       validation: {
         rule: schema.number(),
@@ -94,7 +89,6 @@ export default {
 
     deployScript: {
       fillable: true,
-      required: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -108,7 +102,6 @@ export default {
 
     terminalOutput: {
       fillable: true,
-      required: true,
       validation: {
         rule: schema.string(),
         message: {

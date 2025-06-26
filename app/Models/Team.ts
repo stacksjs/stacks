@@ -23,9 +23,8 @@ export default {
   attributes: {
     name: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
         message: {
           string: 'name must be a string',
           required: 'name is required',
@@ -37,9 +36,8 @@ export default {
 
     companyName: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
         message: {
           string: 'companyName must be a string',
           required: 'companyName is required',
@@ -51,9 +49,8 @@ export default {
 
     email: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string().email(),
+        rule: schema.string().required().email(),
         message: {
           email: 'email must be valid',
           required: 'email is required',
@@ -65,9 +62,8 @@ export default {
 
     billingEmail: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string().email(),
+        rule: schema.string().required().email(),
         message: {
           email: 'billingEmail must be a valid email',
           required: 'billingEmail is required',
@@ -79,9 +75,8 @@ export default {
 
     status: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
         message: {
           string: 'status must be a string',
           required: 'status is required',
@@ -93,9 +88,8 @@ export default {
 
     description: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
         message: {
           string: 'description must be a string',
           required: 'description is required',
@@ -107,9 +101,8 @@ export default {
 
     path: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
         message: {
           string: 'path must be a string',
           required: 'path is required',
@@ -121,9 +114,8 @@ export default {
 
     isPersonal: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.boolean(),
+        rule: schema.boolean().required(),
         message: {
           boolean: 'isPersonal must be a boolean',
           required: 'isPersonal is required',

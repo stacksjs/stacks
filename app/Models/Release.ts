@@ -19,9 +19,8 @@ export default {
 
   attributes: {
     name: {
-      required: true,
       validation: {
-        rule: schema.string().min(3).max(255),
+        rule: schema.string().required().min(3).max(255),
         message: {
           min: 'Name must have a minimum of 3 characters',
           max: 'Name must have a maximum of 255 characters',
@@ -32,7 +31,6 @@ export default {
     },
 
     version: {
-      required: true,
       fillable: true,
       unique: true,
       validation: {

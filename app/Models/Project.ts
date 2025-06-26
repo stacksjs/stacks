@@ -19,9 +19,8 @@ export default {
   attributes: {
     name: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
         message: {
           string: 'name must be a string',
           required: 'name is required',
@@ -33,9 +32,8 @@ export default {
 
     description: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
         message: {
           string: 'description must be a string',
           required: 'description is required',
@@ -47,9 +45,8 @@ export default {
 
     url: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
         message: {
           string: 'url must be a string',
           required: 'url is required',
@@ -61,9 +58,8 @@ export default {
 
     status: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
         message: {
           string: 'status must be a string',
           required: 'status is required',
