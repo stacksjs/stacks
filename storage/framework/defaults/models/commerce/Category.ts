@@ -33,11 +33,10 @@ export default {
 
   attributes: {
     name: {
-      required: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().max(50),
+        rule: schema.string().required().max(50),
         message: {
           max: 'Name must have a maximum of 50 characters',
         },
@@ -46,7 +45,6 @@ export default {
     },
 
     description: {
-      required: false,
       order: 2,
       fillable: true,
       validation: {
@@ -56,17 +54,15 @@ export default {
     },
 
     slug: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
       },
       factory: faker => slug(faker.commerce.department()),
     },
 
     imageUrl: {
-      required: false,
       order: 3,
       fillable: true,
       validation: {
@@ -76,7 +72,6 @@ export default {
     },
 
     isActive: {
-      required: false,
       order: 4,
       fillable: true,
       validation: {
@@ -86,7 +81,6 @@ export default {
     },
 
     parentCategoryId: {
-      required: false,
       order: 5,
       fillable: true,
       validation: {
@@ -96,11 +90,10 @@ export default {
     },
 
     displayOrder: {
-      required: true,
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.number().required(),
       },
       factory: faker => faker.number.int({ min: 1, max: 100 }),
     },

@@ -32,12 +32,11 @@ export default {
 
   attributes: {
     manufacturer: {
-      required: true,
       unique: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           max: 'Manufacturer name must have a maximum of 100 characters',
         },
@@ -46,7 +45,6 @@ export default {
     },
 
     description: {
-      required: false,
       order: 2,
       fillable: true,
       validation: {
@@ -59,11 +57,10 @@ export default {
     },
 
     country: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           max: 'Country must have a maximum of 100 characters',
         },
@@ -72,7 +69,6 @@ export default {
     },
 
     featured: {
-      required: false,
       order: 4,
       fillable: true,
       validation: {

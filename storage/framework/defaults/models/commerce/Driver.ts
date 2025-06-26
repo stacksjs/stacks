@@ -33,11 +33,10 @@ export default {
 
   attributes: {
     name: {
-      required: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
         message: {
           max: 'Name must have a maximum of 255 characters',
         },
@@ -46,11 +45,10 @@ export default {
     },
 
     phone: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
         message: {
           max: 'Phone number must have a maximum of 255 characters',
         },
@@ -59,11 +57,10 @@ export default {
     },
 
     vehicleNumber: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
         message: {
           max: 'Vehicle number must have a maximum of 255 characters',
         },
@@ -72,11 +69,10 @@ export default {
     },
 
     license: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
         message: {
           max: 'License number must have a maximum of 255 characters',
         },

@@ -33,11 +33,10 @@ export default {
 
   attributes: {
     name: {
-      required: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().min(2).max(255),
+        rule: schema.string().required().min(2).max(255),
         message: {
           min: 'Name must have a minimum of 2 characters',
           max: 'Name must have a maximum of 255 characters',
@@ -48,11 +47,10 @@ export default {
 
     email: {
       unique: true,
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().email(),
+        rule: schema.string().required().email(),
         message: {
           email: 'Email must be a valid email address',
         },
@@ -61,11 +59,10 @@ export default {
     },
 
     phone: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().min(10).max(50),
+        rule: schema.string().required().min(10).max(50),
         message: {
           min: 'Phone number must have a minimum of 10 characters',
           max: 'Phone number must have a maximum of 20 characters',
@@ -75,7 +72,6 @@ export default {
     },
 
     totalSpent: {
-      required: false,
       default: 0,
       order: 5,
       fillable: true,
@@ -89,7 +85,6 @@ export default {
     },
 
     lastOrder: {
-      required: false,
       order: 6,
       fillable: true,
       validation: {
@@ -99,12 +94,11 @@ export default {
     },
 
     status: {
-      required: true,
       default: 'Active',
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.enum(['Active', 'Inactive']),
+        rule: schema.enum(['Active', 'Inactive']).required(),
         message: {
           enum: 'Status must be either Active or Inactive',
         },
@@ -113,11 +107,10 @@ export default {
     },
 
     avatar: {
-      required: false,
       order: 8,
       fillable: true,
       validation: {
-        rule: schema.string().url(),
+        rule: schema.string().required().url(),
         message: {
           url: 'Avatar must be a valid URL',
         },

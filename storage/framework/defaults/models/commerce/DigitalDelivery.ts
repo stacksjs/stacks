@@ -30,11 +30,10 @@ export default {
 
   attributes: {
     name: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
         message: {
           max: 'Name must have a maximum of 255 characters',
         },
@@ -43,17 +42,15 @@ export default {
     },
 
     description: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
       },
       factory: faker => faker.commerce.productDescription(),
     },
 
     downloadLimit: {
-      required: false,
       order: 4,
       fillable: true,
       validation: {
@@ -63,11 +60,10 @@ export default {
     },
 
     expiryDays: {
-      required: true,
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.number().required(),
       },
       factory: faker => faker.number.int({ min: 1, max: 365 }),
     },

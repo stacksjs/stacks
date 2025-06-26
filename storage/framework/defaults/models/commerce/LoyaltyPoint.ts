@@ -30,27 +30,24 @@ export default {
 
   attributes: {
     walletId: {
-      required: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
       },
       factory: faker => faker.string.uuid(),
     },
 
     points: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.number().min(1),
+        rule: schema.number().required().min(1),
       },
       factory: faker => faker.number.int({ min: 1, max: 500 }),
     },
 
     source: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
@@ -60,7 +57,6 @@ export default {
     },
 
     sourceReferenceId: {
-      required: false,
       order: 4,
       fillable: true,
       validation: {
@@ -70,7 +66,6 @@ export default {
     },
 
     description: {
-      required: false,
       order: 5,
       fillable: true,
       validation: {
@@ -85,7 +80,6 @@ export default {
     },
 
     expiryDate: {
-      required: false,
       order: 6,
       fillable: true,
       validation: {
@@ -98,7 +92,6 @@ export default {
     },
 
     isUsed: {
-      required: false,
       order: 7,
       fillable: true,
       validation: {

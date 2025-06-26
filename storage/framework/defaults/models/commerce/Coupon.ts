@@ -33,12 +33,11 @@ export default {
 
   attributes: {
     code: {
-      required: true,
       unique: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().max(50),
+        rule: schema.string().required().max(50),
         message: {
           max: 'Code must have a maximum of 50 characters',
         },
@@ -47,7 +46,6 @@ export default {
     },
 
     description: {
-      required: false,
       order: 2,
       fillable: true,
       validation: {
@@ -57,27 +55,24 @@ export default {
     },
 
     discountType: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
       },
       factory: faker => faker.helpers.arrayElement(['PERCENTAGE', 'FIXED_AMOUNT', 'FREE_ITEM']),
     },
 
     discountValue: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.number().min(0.01),
+        rule: schema.number().required().min(0.01),
       },
       factory: faker => faker.number.float({ min: 5, max: 50 }),
     },
 
     minOrderAmount: {
-      required: false,
       order: 5,
       fillable: true,
       validation: {
@@ -87,7 +82,6 @@ export default {
     },
 
     maxDiscountAmount: {
-      required: false,
       order: 6,
       fillable: true,
       validation: {
@@ -97,7 +91,6 @@ export default {
     },
 
     freeProductId: {
-      required: false,
       order: 7,
       fillable: true,
       validation: {
@@ -107,7 +100,6 @@ export default {
     },
 
     status: {
-      required: false,
       order: 8,
       fillable: true,
       validation: {
@@ -117,7 +109,6 @@ export default {
     },
 
     usageLimit: {
-      required: false,
       order: 9,
       fillable: true,
       validation: {
@@ -127,7 +118,6 @@ export default {
     },
 
     usageCount: {
-      required: false,
       order: 10,
       fillable: true,
       validation: {
@@ -137,7 +127,6 @@ export default {
     },
 
     startDate: {
-      required: true,
       order: 11,
       fillable: true,
       validation: {
@@ -147,7 +136,6 @@ export default {
     },
 
     endDate: {
-      required: true,
       order: 12,
       fillable: true,
       validation: {
