@@ -31,6 +31,7 @@ declare module 'vue' {
     ComingSoon: typeof import('./../defaults/components/Marketing/ComingSoon.vue')['default']
     Container: typeof import('./../../../resources/components/Container.vue')['default']
     Counter: typeof import('./../defaults/components/Buttons/Counter.vue')['default']
+    CouponsTable: typeof import('./../defaults/components/Dashboard/Commerce/CouponsTable.vue')['default']
     CustomersTable: typeof import('./../defaults/components/Dashboard/Commerce/CustomersTable.vue')['default']
     CustomerTables: typeof import('./../defaults/components/Dashboard/Commerce/CustomerTables.vue')['default']
     DatabaseForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/DatabaseForm.vue')['default']
