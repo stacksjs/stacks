@@ -41,7 +41,10 @@ const password = ref('')
 // Method to emit submit event with email and password
 function submitLogin() {
   emit('submit', { email: email.value, password: password.value })
-  password.value = '' // Optionally clear password after emit
+
+  setTimeout(() => {
+    password.value = ''
+  }, 1000)
 }
 </script>
 
