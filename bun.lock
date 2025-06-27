@@ -1388,7 +1388,7 @@
       "name": "@stacksjs/validation",
       "version": "0.70.23",
       "dependencies": {
-        "@stacksjs/ts-validation": "^0.3.6",
+        "@stacksjs/ts-validation": "^0.3.7",
         "validator": "^13.15.15",
       },
       "devDependencies": {
@@ -2757,7 +2757,7 @@
 
     "@stacksjs/transition": ["@stacksjs/transition@workspace:storage/framework/core/components/transition"],
 
-    "@stacksjs/ts-validation": ["@stacksjs/ts-validation@0.3.6", "", { "dependencies": { "dompurify": "^3.2.6" } }, "sha512-4WvA1ga1WbTs03+6lb9J/P+3W26HoHXdUTE4KO9CTGpSXAM7FuOGQNRSJSwlxks/WDU6Xx4CYqtwZlWybuv8uw=="],
+    "@stacksjs/ts-validation": ["@stacksjs/ts-validation@0.3.7", "", { "dependencies": { "dompurify": "^3.2.6" } }, "sha512-dHgp+bQYsrSXAc0V4dUhVxLp+X7YNmrW2nY+dPfyt5G+wC2xVMwKt7CNPywLVU1vovtbNE8pKCCrBap1Fx+6hg=="],
 
     "@stacksjs/tunnel": ["@stacksjs/tunnel@workspace:storage/framework/core/tunnel"],
 
@@ -2787,9 +2787,9 @@
 
     "@swc/wasm": ["@swc/wasm@1.12.7", "", {}, "sha512-IAIm4SH7DadWM3T7hgJ83LcOZgtKyIxNWmfbdlaFZgGBgfIxl1zdLzf78UNNKXVRoxciz8Q17s4T0MNhvBVing=="],
 
-    "@tanstack/virtual-core": ["@tanstack/virtual-core@3.13.11", "", {}, "sha512-ORL6UyuZJ0D9X33LDR4TcgcM+K2YiS2j4xbvH1vnhhObwR1Z4dKwPTL/c0kj2Yeb4Yp2lBv1wpyVaqlohk8zpg=="],
+    "@tanstack/virtual-core": ["@tanstack/virtual-core@3.13.12", "", {}, "sha512-1YBOJfRHV4sXUmWsFSf5rQor4Ss82G8dQWLRbnk3GA4jeP8hQt1hxXh0tmflpC0dz3VgEv/1+qwPyLeWkQuPFA=="],
 
-    "@tanstack/vue-virtual": ["@tanstack/vue-virtual@3.13.11", "", { "dependencies": { "@tanstack/virtual-core": "3.13.11" }, "peerDependencies": { "vue": "^2.7.0 || ^3.0.0" } }, "sha512-QPutNYlSATS0a2fmTEbMgaQkk/pe1p+39OJVbmQ5/l1d8Txe1IkOJeeweYXygmF1tnruCh6NKkt1kIIYDKwgVg=="],
+    "@tanstack/vue-virtual": ["@tanstack/vue-virtual@3.13.12", "", { "dependencies": { "@tanstack/virtual-core": "3.13.12" }, "peerDependencies": { "vue": "^2.7.0 || ^3.0.0" } }, "sha512-vhF7kEU9EXWXh+HdAwKJ2m3xaOnTTmgcdXcF2pim8g4GvI7eRrk2YRuV5nUlZnd/NbCIX4/Ja2OZu5EjJL06Ww=="],
 
     "@tauri-apps/api": ["@tauri-apps/api@2.6.0", "", {}, "sha512-hRNcdercfgpzgFrMXWwNDBN0B7vNzOzRepy6ZAmhxi5mDLVPNrTpo9MGg2tN/F7JRugj4d2aF7E1rtPXAHaetg=="],
 
@@ -6080,8 +6080,6 @@
     "archiver-utils/glob/minimatch": ["minimatch@9.0.5", "", { "dependencies": { "brace-expansion": "^2.0.1" } }, "sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow=="],
 
     "archiver-utils/glob/minipass": ["minipass@7.1.2", "", {}, "sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw=="],
-
-    "bl/buffer/ieee754": ["ieee754@1.2.1", "", {}, "sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA=="],
 
     "c12/chokidar/readdirp": ["readdirp@4.1.2", "", {}, "sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg=="],
 

@@ -4,10 +4,6 @@ import type { ModelNames, TableNames } from '@stacksjs/types'
 import type { DeepPartial } from '.'
 import type { SearchOptions } from './search-engine'
 
-export type ValidationType = {
-  [K in keyof ValidationInstance]: ReturnType<ValidationInstance[K]>
-}[keyof ValidationInstance]
-
 export type Model = Partial<ModelOptions>
 
 export interface BaseRelation {
