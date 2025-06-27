@@ -978,7 +978,7 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
     // Check if the field is required by parsing the validation rule
     const rule = rules[index] ?? ''
 
-    requiredValue = isFieldRequired(rule)
+    requiredValue = fieldExist.validation?.rule.isRequired ?? false
 
     return {
       field,
@@ -1018,11 +1018,6 @@ function parseRule(rule: string): FieldArrayElement | null {
       return { entity: field, charValue: value }
     })[0] || null
   )
-}
-
-function isFieldRequired(rule: string): boolean {
-  // Check if the rule contains .required()
-  return rule.includes('.required()')
 }
 
 export async function generateApiRoutes(modelFiles: string[]): Promise<void> {
