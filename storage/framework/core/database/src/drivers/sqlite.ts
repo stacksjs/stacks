@@ -11,7 +11,6 @@ import { snakeCase } from '@stacksjs/strings'
 import {
   arrangeColumns,
   checkPivotMigration,
-  checkIsRequired,
   deleteFrameworkModels,
   deleteMigrationFiles,
   fetchTables,
@@ -198,7 +197,7 @@ async function createTableMigration(modelPath: string) {
     const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule, 'sqlite')
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
-    const isRequired = checkIsRequired(fieldOptions.validation?.rule)
+    const isRequired = fieldOptions.validation?.rule.isRequired
 
     if (isRequired || fieldOptions.unique || fieldOptions.default !== undefined) {
       migrationContent += `, col => col`
@@ -383,7 +382,7 @@ async function createAlterTableMigration(modelPath: string) {
     const options = currentFields[fieldName] as Attribute
     const columnType = mapFieldTypeToColumnType(options.validation?.rule, 'sqlite')
     const formattedFieldName = snakeCase(fieldName)
-    const isRequired = checkIsRequired(options.validation?.rule)
+    const isRequired = options.validation?.rule.isRequired
 
     migrationContent += `    .addColumn('${formattedFieldName}', ${columnType}`
 
