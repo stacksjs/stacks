@@ -1,8 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { CartItemModelType } from './CartItemType'
-import type { CouponModelType } from './CouponType'
-import type { CustomerModelType } from './CustomerType'
 
 export interface CartsTable {
   id: Generated<number>
@@ -14,8 +12,8 @@ export interface CartsTable {
   total?: number
   expires_at: Date | string
   currency?: string
-  notes?: string
-  applied_coupon_id?: string
+  notes: string
+  applied_coupon_id: string
   customer_id?: number
   coupon_id?: number
   uuid?: string
@@ -65,16 +63,14 @@ export interface CartModelType {
   set expiresAt(value: Date | string)
   get currency(): string | undefined
   set currency(value: string)
-  get notes(): string | undefined
+  get notes(): string
   set notes(value: string)
-  get appliedCouponId(): string | undefined
+  get appliedCouponId(): string
   set appliedCouponId(value: string)
   get cart_item(): CartItemModelType[] | []
-  get customer_id(): number
-  get customer(): CustomerModelType | undefined
-  get coupon_id(): number
-  get coupon(): CouponModelType | undefined
 
+  customerBelong: () => Promise<CustomerType>
+  couponBelong: () => Promise<CouponType>
   get uuid(): string | undefined
   set uuid(value: string)
 

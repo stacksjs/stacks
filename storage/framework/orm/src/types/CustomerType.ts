@@ -5,7 +5,6 @@ import type { LicenseKeyModelType } from './LicenseKeyType'
 import type { OrderModelType } from './OrderType'
 import type { PaymentModelType } from './PaymentType'
 import type { ReviewModelType } from './ReviewType'
-import type { UserModelType } from './UserType'
 import type { WaitlistProductModelType } from './WaitlistProductType'
 import type { WaitlistRestaurantModelType } from './WaitlistRestaurantType'
 
@@ -17,7 +16,7 @@ export interface CustomersTable {
   total_spent?: number
   last_order?: string
   status: string | string[]
-  avatar?: string
+  avatar: string
   user_id?: number
   uuid?: string
   created_at?: string
@@ -62,7 +61,7 @@ export interface CustomerModelType {
   set lastOrder(value: string)
   get status(): string | string[]
   set status(value: string | string[])
-  get avatar(): string | undefined
+  get avatar(): string
   set avatar(value: string)
   get order(): OrderModelType[] | []
   get gift_card(): GiftCardModelType[] | []
@@ -71,9 +70,8 @@ export interface CustomerModelType {
   get license_key(): LicenseKeyModelType[] | []
   get waitlist_product(): WaitlistProductModelType[] | []
   get waitlist_restaurant(): WaitlistRestaurantModelType[] | []
-  get user_id(): number
-  get user(): UserModelType | undefined
 
+  userBelong: () => Promise<UserType>
   get uuid(): string | undefined
   set uuid(value: string)
 

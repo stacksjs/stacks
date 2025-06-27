@@ -224,7 +224,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return this.attributes.status
   }
 
-  get avatar(): string | undefined {
+  get avatar(): string {
     return this.attributes.avatar
   }
 

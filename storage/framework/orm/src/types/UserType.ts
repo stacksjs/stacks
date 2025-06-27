@@ -50,6 +50,7 @@ export interface UserModelType {
   get oauth_access_token(): OauthAccessTokenModelType[] | []
   get customer(): CustomerModelType[] | []
 
+  userTeams: () => Promise<TeamType[]>
   get uuid(): string | undefined
   set uuid(value: string)
 

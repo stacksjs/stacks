@@ -1,13 +1,12 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { OauthAccessTokenModelType } from './OauthAccessTokenType'
-import type { UserModelType } from './UserType'
 
 export interface OauthClientsTable {
   id: Generated<number>
   name: string
   secret: string
-  provider?: string
+  provider: string
   redirect: string
   personal_access_client: boolean
   password_client: boolean
@@ -47,7 +46,7 @@ export interface OauthClientModelType {
   set name(value: string)
   get secret(): string
   set secret(value: string)
-  get provider(): string | undefined
+  get provider(): string
   set provider(value: string)
   get redirect(): string
   set redirect(value: string)
@@ -58,9 +57,8 @@ export interface OauthClientModelType {
   get revoked(): boolean
   set revoked(value: boolean)
   get oauth_access_token(): OauthAccessTokenModelType[] | []
-  get user_id(): number
-  get user(): UserModelType | undefined
 
+  userBelong: () => Promise<UserType>
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)

@@ -3,10 +3,10 @@ import type { Operator } from '@stacksjs/orm'
 
 export interface ErrorsTable {
   id: Generated<number>
-  type: string
-  message: string
+  type?: string
+  message?: string
   stack?: string
-  status: number
+  status?: number
   additional_info?: string
   created_at?: string
   updated_at?: string
@@ -38,13 +38,13 @@ export type ErrorUpdate = Updateable<ErrorWrite>
 export interface ErrorModelType {
   // Properties
   readonly id: number
-  get type(): string
+  get type(): string | undefined
   set type(value: string)
-  get message(): string
+  get message(): string | undefined
   set message(value: string)
   get stack(): string | undefined
   set stack(value: string)
-  get status(): number
+  get status(): number | undefined
   set status(value: number)
   get additionalInfo(): string | undefined
   set additionalInfo(value: string)

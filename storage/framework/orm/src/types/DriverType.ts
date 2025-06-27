@@ -1,7 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { DeliveryRouteModelType } from './DeliveryRouteType'
-import type { UserModelType } from './UserType'
 
 export interface DriversTable {
   id: Generated<number>
@@ -53,9 +52,8 @@ export interface DriverModelType {
   get status(): string | string[] | undefined
   set status(value: string | string[])
   get delivery_route(): DeliveryRouteModelType[] | []
-  get user_id(): number
-  get user(): UserModelType | undefined
 
+  userBelong: () => Promise<UserType>
   get uuid(): string | undefined
   set uuid(value: string)
 

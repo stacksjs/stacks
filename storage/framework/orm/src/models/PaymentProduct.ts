@@ -143,7 +143,7 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     return this.attributes.uuid
   }
 
-  get name(): string {
+  get name(): string | undefined {
     return this.attributes.name
   }
 
@@ -151,7 +151,7 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     return this.attributes.description
   }
 
-  get key(): string {
+  get key(): string | undefined {
     return this.attributes.key
   }
 

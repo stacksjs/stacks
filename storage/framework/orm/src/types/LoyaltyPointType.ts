@@ -5,7 +5,7 @@ export interface LoyaltyPointsTable {
   id: Generated<number>
   wallet_id: string
   points: number
-  source: string
+  source?: string
   source_reference_id?: string
   description?: string
   expiry_date?: Date | string
@@ -45,7 +45,7 @@ export interface LoyaltyPointModelType {
   set walletId(value: string)
   get points(): number
   set points(value: number)
-  get source(): string
+  get source(): string | undefined
   set source(value: string)
   get sourceReferenceId(): string | undefined
   set sourceReferenceId(value: string)

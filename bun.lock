@@ -1388,7 +1388,7 @@
       "name": "@stacksjs/validation",
       "version": "0.70.23",
       "dependencies": {
-        "@stacksjs/ts-validation": "^0.3.5",
+        "@stacksjs/ts-validation": "^0.3.6",
         "validator": "^13.15.15",
       },
       "devDependencies": {
@@ -2757,7 +2757,7 @@
 
     "@stacksjs/transition": ["@stacksjs/transition@workspace:storage/framework/core/components/transition"],
 
-    "@stacksjs/ts-validation": ["@stacksjs/ts-validation@0.3.5", "", { "dependencies": { "dompurify": "^3.2.6" } }, "sha512-yAOpAoCRouBYS/eZlaBuk74XZZ4jxM1bgvARp1jlogosNehh4cAnrqob4jxmbBB7qftFWNEqSeQqjJP4bRBGTg=="],
+    "@stacksjs/ts-validation": ["@stacksjs/ts-validation@0.3.6", "", { "dependencies": { "dompurify": "^3.2.6" } }, "sha512-4WvA1ga1WbTs03+6lb9J/P+3W26HoHXdUTE4KO9CTGpSXAM7FuOGQNRSJSwlxks/WDU6Xx4CYqtwZlWybuv8uw=="],
 
     "@stacksjs/tunnel": ["@stacksjs/tunnel@workspace:storage/framework/core/tunnel"],
 
@@ -6080,6 +6080,8 @@
     "archiver-utils/glob/minimatch": ["minimatch@9.0.5", "", { "dependencies": { "brace-expansion": "^2.0.1" } }, "sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow=="],
 
     "archiver-utils/glob/minipass": ["minipass@7.1.2", "", {}, "sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw=="],
+
+    "bl/buffer/ieee754": ["ieee754@1.2.1", "", {}, "sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA=="],
 
     "c12/chokidar/readdirp": ["readdirp@4.1.2", "", {}, "sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg=="],
 

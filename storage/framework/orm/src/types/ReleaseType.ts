@@ -4,7 +4,7 @@ import type { Operator } from '@stacksjs/orm'
 export interface ReleasesTable {
   id: Generated<number>
   name: string
-  version: string
+  version?: string
   created_at?: string
   updated_at?: string
 }
@@ -37,7 +37,7 @@ export interface ReleaseModelType {
   readonly id: number
   get name(): string
   set name(value: string)
-  get version(): string
+  get version(): string | undefined
   set version(value: string)
 
   get created_at(): string | undefined

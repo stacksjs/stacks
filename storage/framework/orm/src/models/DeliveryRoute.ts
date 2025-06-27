@@ -164,7 +164,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
     return this.attributes.total_distance
   }
 
-  get last_active(): Date | string | undefined {
+  get last_active(): Date | string {
     return this.attributes.last_active
   }
 

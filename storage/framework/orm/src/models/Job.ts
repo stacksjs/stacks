@@ -138,11 +138,11 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return this.attributes.id
   }
 
-  get queue(): string {
+  get queue(): string | undefined {
     return this.attributes.queue
   }
 
-  get payload(): string {
+  get payload(): string | undefined {
     return this.attributes.payload
   }
 

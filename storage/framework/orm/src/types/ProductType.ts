@@ -1,9 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CategoryModelType } from './CategoryType'
 import type { CouponModelType } from './CouponType'
 import type { LicenseKeyModelType } from './LicenseKeyType'
-import type { ManufacturerModelType } from './ManufacturerType'
 import type { ProductUnitModelType } from './ProductUnitType'
 import type { ProductVariantModelType } from './ProductVariantType'
 import type { ReviewModelType } from './ReviewType'
@@ -77,11 +75,9 @@ export interface ProductModelType {
   get license_key(): LicenseKeyModelType[] | []
   get waitlist_product(): WaitlistProductModelType[] | []
   get coupon(): CouponModelType[] | []
-  get category_id(): number
-  get category(): CategoryModelType | undefined
-  get manufacturer_id(): number
-  get manufacturer(): ManufacturerModelType | undefined
 
+  categoryBelong: () => Promise<CategoryType>
+  manufacturerBelong: () => Promise<ManufacturerType>
   get uuid(): string | undefined
   set uuid(value: string)
 

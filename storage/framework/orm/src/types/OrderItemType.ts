@@ -1,7 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { OrderModelType } from './OrderType'
-import type { ProductModelType } from './ProductType'
 
 export interface OrderItemsTable {
   id: Generated<number>
@@ -46,11 +44,9 @@ export interface OrderItemModelType {
   set price(value: number)
   get specialInstructions(): string | undefined
   set specialInstructions(value: string)
-  get order_id(): number
-  get order(): OrderModelType | undefined
-  get product_id(): number
-  get product(): ProductModelType | undefined
 
+  orderBelong: () => Promise<OrderType>
+  productBelong: () => Promise<ProductType>
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)

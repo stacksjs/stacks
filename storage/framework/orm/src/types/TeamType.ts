@@ -60,6 +60,7 @@ export interface TeamModelType {
   set isPersonal(value: boolean)
   get personal_access_token(): PersonalAccessTokenModelType[] | []
 
+  teamUsers: () => Promise<UserType[]>
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)

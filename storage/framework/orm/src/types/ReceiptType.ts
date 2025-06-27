@@ -1,10 +1,9 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { PrintDeviceModelType } from './PrintDeviceType'
 
 export interface ReceiptsTable {
   id: Generated<number>
-  printer: string
+  printer?: string
   document: string
   timestamp: Date | string
   status: string | string[]
@@ -44,7 +43,7 @@ export type ReceiptUpdate = Updateable<ReceiptWrite>
 export interface ReceiptModelType {
   // Properties
   readonly id: number
-  get printer(): string
+  get printer(): string | undefined
   set printer(value: string)
   get document(): string
   set document(value: string)
@@ -60,9 +59,8 @@ export interface ReceiptModelType {
   set duration(value: number)
   get metadata(): string | undefined
   set metadata(value: string)
-  get print_device_id(): number
-  get print_device(): PrintDeviceModelType | undefined
 
+  printDeviceBelong: () => Promise<PrintDeviceType>
   get uuid(): string | undefined
   set uuid(value: string)
 

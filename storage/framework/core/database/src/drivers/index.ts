@@ -1,3 +1,4 @@
+import type { ValidationType } from '@stacksjs/ts-validation'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
@@ -307,8 +308,8 @@ export function prepareNumberColumnType(validator: Validator, driver = 'mysql'):
 }
 
 // Add new function for enum column types
-export function prepareEnumColumnType(validator: Validator, driver = 'mysql'): string {
-  if (!validator.allowedValues)
+export function prepareEnumColumnType(validator: ValidationType, driver = 'mysql'): string {
+  if (!validator)
     throw new Error('Enum rule found but no allowedValues defined')
 
   const enumStructure = validator.allowedValues.map(value => `'${value}'`).join(', ')
@@ -319,29 +320,30 @@ export function prepareEnumColumnType(validator: Validator, driver = 'mysql'): s
   return `sql\`enum(${enumStructure})\`` // MySQL supports native ENUM
 }
 
-export function mapFieldTypeToColumnType(validator: Validator, driver = 'mysql'): string {
+export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'mysql'): string {
   // Check for enum type
-  const enumRule = validator.rules.find(r => r.name === 'enum')
+  const enumRule = validator.name === 'enum'
+
   if (enumRule)
     return prepareEnumColumnType(validator, driver)
 
   // Check for base types
-  if (validator.rules.some(r => r.name === 'string'))
+  if (validator.name === 'string')
     return prepareTextColumnType(validator, driver)
 
-  if (validator.rules.some(r => r.name === 'number'))
+  if (validator.name === 'number')
     return prepareNumberColumnType(validator, driver)
 
-  if (validator.rules.some(r => r.name === 'boolean'))
+  if (validator.name === 'boolean')
     return `'boolean'` // Use boolean type for both MySQL and SQLite
 
   // Handle date types
-  const dateType = validator.rules.find(r => ['date', 'datetime', 'unix', 'timestamp'].includes(r.name))?.name
+  const dateType = ['date', 'datetime', 'unix', 'timestamp'].includes(validator.name)
   if (dateType)
     return prepareDateTimeColumnType(validator, driver)
 
   // Handle array/object types
-  if (validator.rules.some(r => ['array', 'object'].includes(r.name)))
+  if (['array', 'object'].includes(validator.name))
     return driver === 'sqlite' ? `'text'` : `'json'`
 
   if (driver === 'sqlite')

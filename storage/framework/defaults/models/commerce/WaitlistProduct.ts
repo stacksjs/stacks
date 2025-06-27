@@ -81,7 +81,7 @@ export default {
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.enum(['sms', 'email', 'both'] as const).required(),
+        rule: schema.enum(['sms', 'email', 'both']).required(),
       },
       factory: faker => faker.helpers.arrayElement(['sms', 'email', 'both']),
     },
@@ -112,7 +112,7 @@ export default {
       order: 8,
       fillable: true,
       validation: {
-        rule: schema.enum(['waiting', 'purchased', 'notified', 'cancelled'] as const).required(),
+        rule: schema.enum(['waiting', 'purchased', 'notified', 'cancelled']).required(),
       },
       factory: faker => faker.helpers.arrayElement(['waiting', 'purchased', 'notified', 'cancelled']),
     },

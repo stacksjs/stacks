@@ -37,7 +37,7 @@ export default {
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.enum(['active', 'abandoned', 'converted', 'expired'] as const),
+        rule: schema.enum(['active', 'abandoned', 'converted', 'expired']),
       },
       factory: faker => faker.helpers.arrayElement(['active', 'abandoned', 'converted', 'expired']),
     },

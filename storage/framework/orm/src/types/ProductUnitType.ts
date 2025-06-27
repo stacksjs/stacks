@@ -1,6 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { ProductModelType } from './ProductType'
 
 export interface ProductUnitsTable {
   id: Generated<number>
@@ -51,9 +50,8 @@ export interface ProductUnitModelType {
   set description(value: string)
   get isDefault(): boolean | undefined
   set isDefault(value: boolean)
-  get product_id(): number
-  get product(): ProductModelType | undefined
 
+  productBelong: () => Promise<ProductType>
   get uuid(): string | undefined
   set uuid(value: string)
 

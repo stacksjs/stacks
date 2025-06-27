@@ -166,7 +166,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return this.attributes.description
   }
 
-  get discount_type(): string {
+  get discount_type(): string | string[] {
     return this.attributes.discount_type
   }
 
@@ -198,11 +198,11 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return this.attributes.usage_count
   }
 
-  get start_date(): Date | string {
+  get start_date(): Date | string | undefined {
     return this.attributes.start_date
   }
 
-  get end_date(): Date | string {
+  get end_date(): Date | string | undefined {
     return this.attributes.end_date
   }
 
@@ -226,7 +226,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     this.attributes.description = value
   }
 
-  set discount_type(value: string) {
+  set discount_type(value: string | string[]) {
     this.attributes.discount_type = value
   }
 
@@ -1071,7 +1071,7 @@ export async function whereDescription(value: string): Promise<CouponModel[]> {
   return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
-export async function whereDiscountType(value: string): Promise<CouponModel[]> {
+export async function whereDiscountType(value: string | string[]): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('discount_type', '=', value)
   const results: CouponJsonResponse = await query.execute()
 

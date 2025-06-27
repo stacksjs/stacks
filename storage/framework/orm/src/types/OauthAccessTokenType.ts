@@ -1,7 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { OauthClientModelType } from './OauthClientType'
-import type { UserModelType } from './UserType'
 
 export interface OauthAccessTokensTable {
   id: Generated<number>
@@ -52,11 +50,9 @@ export interface OauthAccessTokenModelType {
   set revoked(value: boolean)
   get expiresAt(): Date | string | undefined
   set expiresAt(value: Date | string)
-  get user_id(): number
-  get user(): UserModelType | undefined
-  get oauth_client_id(): number
-  get oauth_client(): OauthClientModelType | undefined
 
+  userBelong: () => Promise<UserType>
+  oauthClientBelong: () => Promise<OauthClientType>
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)

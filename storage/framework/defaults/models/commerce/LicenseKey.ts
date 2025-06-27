@@ -50,7 +50,7 @@ export default {
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.enum(['Standard License', 'Premium License', 'Enterprise License'] as const).required(),
+        rule: schema.enum(['Standard License', 'Premium License', 'Enterprise License']).required(),
       },
       factory: faker => faker.helpers.arrayElement(['Standard License', 'Premium License', 'Enterprise License']),
     },
@@ -75,7 +75,7 @@ export default {
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.enum(['active', 'inactive', 'unassigned'] as const),
+        rule: schema.enum(['active', 'inactive', 'unassigned']),
       },
       factory: faker => faker.helpers.arrayElement(['active', 'inactive', 'unassigned']),
     },

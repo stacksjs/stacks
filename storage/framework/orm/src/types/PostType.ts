@@ -1,16 +1,15 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { AuthorModelType } from './AuthorType'
 
 export interface PostsTable {
   id: Generated<number>
-  title: string
+  title?: string
   poster?: string
-  content: string
+  content?: string
   excerpt?: string
   views?: number
   published_at?: Date | string
-  status: string | string[]
+  status?: string | string[]
   is_featured?: number
   author_id?: number
   uuid?: string
@@ -44,11 +43,11 @@ export type PostUpdate = Updateable<PostWrite>
 export interface PostModelType {
   // Properties
   readonly id: number
-  get title(): string
+  get title(): string | undefined
   set title(value: string)
   get poster(): string | undefined
   set poster(value: string)
-  get content(): string
+  get content(): string | undefined
   set content(value: string)
   get excerpt(): string | undefined
   set excerpt(value: string)
@@ -56,13 +55,12 @@ export interface PostModelType {
   set views(value: number)
   get publishedAt(): Date | string | undefined
   set publishedAt(value: Date | string)
-  get status(): string | string[]
+  get status(): string | string[] | undefined
   set status(value: string | string[])
   get isFeatured(): number | undefined
   set isFeatured(value: number)
-  get author_id(): number
-  get author(): AuthorModelType | undefined
 
+  authorBelong: () => Promise<AuthorType>
   get uuid(): string | undefined
   set uuid(value: string)
 

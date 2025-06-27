@@ -1,14 +1,12 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { PaymentMethodModelType } from './PaymentMethodType'
-import type { UserModelType } from './UserType'
 
 export interface PaymentTransactionsTable {
   id: Generated<number>
-  name: string
+  name?: string
   description?: string
-  amount: number
-  type: string
+  amount?: number
+  type?: string
   provider_id?: string
   user_id?: number
   payment_method_id?: number
@@ -41,21 +39,19 @@ export type PaymentTransactionUpdate = Updateable<PaymentTransactionWrite>
 export interface PaymentTransactionModelType {
   // Properties
   readonly id: number
-  get name(): string
+  get name(): string | undefined
   set name(value: string)
   get description(): string | undefined
   set description(value: string)
-  get amount(): number
+  get amount(): number | undefined
   set amount(value: number)
-  get type(): string
+  get type(): string | undefined
   set type(value: string)
   get providerId(): string | undefined
   set providerId(value: string)
-  get user_id(): number
-  get user(): UserModelType | undefined
-  get payment_method_id(): number
-  get payment_method(): PaymentMethodModelType | undefined
 
+  userBelong: () => Promise<UserType>
+  paymentMethodBelong: () => Promise<PaymentMethodType>
   get uuid(): string | undefined
   set uuid(value: string)
 

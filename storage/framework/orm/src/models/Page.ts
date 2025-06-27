@@ -152,11 +152,11 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
     return this.attributes.uuid
   }
 
-  get title(): string {
+  get title(): string | undefined {
     return this.attributes.title
   }
 
-  get template(): string {
+  get template(): string | undefined {
     return this.attributes.template
   }
 

@@ -1,6 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CartModelType } from './CartType'
 
 export interface CartItemsTable {
   id: Generated<number>
@@ -69,9 +68,8 @@ export interface CartItemModelType {
   set productImage(value: string)
   get notes(): string | undefined
   set notes(value: string)
-  get cart_id(): number
-  get cart(): CartModelType | undefined
 
+  cartBelong: () => Promise<CartType>
   get uuid(): string | undefined
   set uuid(value: string)
 

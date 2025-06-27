@@ -1,6 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CustomerModelType } from './CustomerType'
 
 export interface WaitlistRestaurantsTable {
   id: Generated<number>
@@ -75,9 +74,8 @@ export interface WaitlistRestaurantModelType {
   set noShowAt(value: Date | string)
   get cancelledAt(): Date | string | undefined
   set cancelledAt(value: Date | string)
-  get customer_id(): number
-  get customer(): CustomerModelType | undefined
 
+  customerBelong: () => Promise<CustomerType>
   get uuid(): string | undefined
   set uuid(value: string)
 

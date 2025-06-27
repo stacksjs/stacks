@@ -1,6 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CustomerModelType } from './CustomerType'
 import type { OrderModelType } from './OrderType'
 
 export interface GiftCardsTable {
@@ -83,9 +82,8 @@ export interface GiftCardModelType {
   get templateId(): string | undefined
   set templateId(value: string)
   get order(): OrderModelType[] | []
-  get customer_id(): number
-  get customer(): CustomerModelType | undefined
 
+  customerBelong: () => Promise<CustomerType>
   get uuid(): string | undefined
   set uuid(value: string)
 

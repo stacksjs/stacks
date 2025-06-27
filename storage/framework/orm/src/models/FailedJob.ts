@@ -138,19 +138,19 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     return this.attributes.id
   }
 
-  get connection(): string {
+  get connection(): string | undefined {
     return this.attributes.connection
   }
 
-  get queue(): string {
+  get queue(): string | undefined {
     return this.attributes.queue
   }
 
-  get payload(): string {
+  get payload(): string | undefined {
     return this.attributes.payload
   }
 
-  get exception(): string {
+  get exception(): string | undefined {
     return this.attributes.exception
   }
 

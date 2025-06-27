@@ -152,31 +152,31 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     return this.attributes.uuid
   }
 
-  get commit_sha(): string {
+  get commit_sha(): string | undefined {
     return this.attributes.commit_sha
   }
 
-  get commit_message(): string {
+  get commit_message(): string | undefined {
     return this.attributes.commit_message
   }
 
-  get branch(): string {
+  get branch(): string | undefined {
     return this.attributes.branch
   }
 
-  get status(): string {
+  get status(): string | undefined {
     return this.attributes.status
   }
 
-  get execution_time(): number {
+  get execution_time(): number | undefined {
     return this.attributes.execution_time
   }
 
-  get deploy_script(): string {
+  get deploy_script(): string | undefined {
     return this.attributes.deploy_script
   }
 
-  get terminal_output(): string {
+  get terminal_output(): string | undefined {
     return this.attributes.terminal_output
   }
 

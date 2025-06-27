@@ -138,11 +138,11 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     return this.attributes.id
   }
 
-  get type(): string {
+  get type(): string | undefined {
     return this.attributes.type
   }
 
-  get message(): string {
+  get message(): string | undefined {
     return this.attributes.message
   }
 
@@ -150,7 +150,7 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     return this.attributes.stack
   }
 
-  get status(): number {
+  get status(): number | undefined {
     return this.attributes.status
   }
 

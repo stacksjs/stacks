@@ -1,16 +1,15 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { UserModelType } from './UserType'
 
 export interface DeploymentsTable {
   id: Generated<number>
-  commit_sha: string
-  commit_message: string
-  branch: string
-  status: string
-  execution_time: number
-  deploy_script: string
-  terminal_output: string
+  commit_sha?: string
+  commit_message?: string
+  branch?: string
+  status?: string
+  execution_time?: number
+  deploy_script?: string
+  terminal_output?: string
   user_id?: number
   uuid?: string
   created_at?: string
@@ -43,23 +42,22 @@ export type DeploymentUpdate = Updateable<DeploymentWrite>
 export interface DeploymentModelType {
   // Properties
   readonly id: number
-  get commitSha(): string
+  get commitSha(): string | undefined
   set commitSha(value: string)
-  get commitMessage(): string
+  get commitMessage(): string | undefined
   set commitMessage(value: string)
-  get branch(): string
+  get branch(): string | undefined
   set branch(value: string)
-  get status(): string
+  get status(): string | undefined
   set status(value: string)
-  get executionTime(): number
+  get executionTime(): number | undefined
   set executionTime(value: number)
-  get deployScript(): string
+  get deployScript(): string | undefined
   set deployScript(value: string)
-  get terminalOutput(): string
+  get terminalOutput(): string | undefined
   set terminalOutput(value: string)
-  get user_id(): number
-  get user(): UserModelType | undefined
 
+  userBelong: () => Promise<UserType>
   get uuid(): string | undefined
   set uuid(value: string)
 

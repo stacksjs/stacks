@@ -160,7 +160,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
     return this.attributes.country
   }
 
-  get region(): string | string[] {
+  get region(): string | string[] | undefined {
     return this.attributes.region
   }
 

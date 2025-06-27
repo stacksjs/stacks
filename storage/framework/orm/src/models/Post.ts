@@ -153,7 +153,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return this.attributes.uuid
   }
 
-  get title(): string {
+  get title(): string | undefined {
     return this.attributes.title
   }
 
@@ -161,7 +161,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return this.attributes.poster
   }
 
-  get content(): string {
+  get content(): string | undefined {
     return this.attributes.content
   }
 
@@ -177,7 +177,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return this.attributes.published_at
   }
 
-  get status(): string | string[] {
+  get status(): string | string[] | undefined {
     return this.attributes.status
   }
 

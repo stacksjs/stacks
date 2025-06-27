@@ -1,6 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { ShippingMethodModelType } from './ShippingMethodType'
 import type { ShippingRateModelType } from './ShippingRateType'
 
 export interface ShippingZonesTable {
@@ -53,9 +52,8 @@ export interface ShippingZoneModelType {
   get status(): string | string[]
   set status(value: string | string[])
   get shipping_rate(): ShippingRateModelType[] | []
-  get shipping_method_id(): number
-  get shipping_method(): ShippingMethodModelType | undefined
 
+  shippingMethodBelong: () => Promise<ShippingMethodType>
   get uuid(): string | undefined
   set uuid(value: string)
 

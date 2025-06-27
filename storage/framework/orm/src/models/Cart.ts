@@ -200,11 +200,11 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
     return this.attributes.currency
   }
 
-  get notes(): string | undefined {
+  get notes(): string {
     return this.attributes.notes
   }
 
-  get applied_coupon_id(): string | undefined {
+  get applied_coupon_id(): string {
     return this.attributes.applied_coupon_id
   }
 

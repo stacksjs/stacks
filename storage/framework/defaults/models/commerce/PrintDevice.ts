@@ -81,7 +81,7 @@ export default {
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.enum(['online', 'offline', 'warning'] as const).required(),
+        rule: schema.enum(['online', 'offline', 'warning']).required(),
       },
       factory: faker => faker.helpers.arrayElement(['online', 'offline', 'warning']),
     },

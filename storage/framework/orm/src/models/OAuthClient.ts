@@ -160,7 +160,7 @@ export class OauthClientModel extends BaseOrm<OauthClientModel, OauthClientsTabl
     return this.attributes.secret
   }
 
-  get provider(): string | undefined {
+  get provider(): string {
     return this.attributes.provider
   }
 

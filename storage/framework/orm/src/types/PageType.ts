@@ -1,11 +1,10 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { AuthorModelType } from './AuthorType'
 
 export interface PagesTable {
   id: Generated<number>
-  title: string
-  template: string
+  title?: string
+  template?: string
   views?: number
   published_at?: Date | string
   conversions?: number
@@ -41,9 +40,9 @@ export type PageUpdate = Updateable<PageWrite>
 export interface PageModelType {
   // Properties
   readonly id: number
-  get title(): string
+  get title(): string | undefined
   set title(value: string)
-  get template(): string
+  get template(): string | undefined
   set template(value: string)
   get views(): number | undefined
   set views(value: number)
@@ -51,9 +50,8 @@ export interface PageModelType {
   set publishedAt(value: Date | string)
   get conversions(): number | undefined
   set conversions(value: number)
-  get author_id(): number
-  get author(): AuthorModelType | undefined
 
+  authorBelong: () => Promise<AuthorType>
   get uuid(): string | undefined
   set uuid(value: string)
 

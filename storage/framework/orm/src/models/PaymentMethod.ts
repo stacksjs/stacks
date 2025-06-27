@@ -158,23 +158,23 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     return this.attributes.uuid
   }
 
-  get type(): string {
+  get type(): string | undefined {
     return this.attributes.type
   }
 
-  get last_four(): number {
+  get last_four(): number | undefined {
     return this.attributes.last_four
   }
 
-  get brand(): string {
+  get brand(): string | undefined {
     return this.attributes.brand
   }
 
-  get exp_month(): number {
+  get exp_month(): number | undefined {
     return this.attributes.exp_month
   }
 
-  get exp_year(): number {
+  get exp_year(): number | undefined {
     return this.attributes.exp_year
   }
 

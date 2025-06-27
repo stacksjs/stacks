@@ -151,7 +151,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
     return this.attributes.name
   }
 
-  get token(): string {
+  get token(): string | undefined {
     return this.attributes.token
   }
 
@@ -183,7 +183,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
     return this.attributes.device_name
   }
 
-  get is_single_use(): boolean | undefined {
+  get is_single_use(): boolean {
     return this.attributes.is_single_use
   }
 

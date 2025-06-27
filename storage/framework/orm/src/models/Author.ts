@@ -162,11 +162,11 @@ export class AuthorModel extends BaseOrm<AuthorModel, AuthorsTable, AuthorJsonRe
     return this.attributes.public_passkey
   }
 
-  get name(): string {
+  get name(): string | undefined {
     return this.attributes.name
   }
 
-  get email(): string {
+  get email(): string | undefined {
     return this.attributes.email
   }
 

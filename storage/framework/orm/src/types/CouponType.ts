@@ -1,13 +1,12 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { OrderModelType } from './OrderType'
-import type { ProductModelType } from './ProductType'
 
 export interface CouponsTable {
   id: Generated<number>
   code: string
   description?: string
-  discount_type: string
+  discount_type: string | string[]
   discount_value: number
   min_order_amount?: number
   max_discount_amount?: number
@@ -15,8 +14,8 @@ export interface CouponsTable {
   status?: string | string[]
   usage_limit?: number
   usage_count?: number
-  start_date: Date | string
-  end_date: Date | string
+  start_date?: Date | string
+  end_date?: Date | string
   product_id?: number
   uuid?: string
   created_at?: string
@@ -53,8 +52,8 @@ export interface CouponModelType {
   set code(value: string)
   get description(): string | undefined
   set description(value: string)
-  get discountType(): string
-  set discountType(value: string)
+  get discountType(): string | string[]
+  set discountType(value: string | string[])
   get discountValue(): number
   set discountValue(value: number)
   get minOrderAmount(): number | undefined
@@ -69,14 +68,13 @@ export interface CouponModelType {
   set usageLimit(value: number)
   get usageCount(): number | undefined
   set usageCount(value: number)
-  get startDate(): Date | string
+  get startDate(): Date | string | undefined
   set startDate(value: Date | string)
-  get endDate(): Date | string
+  get endDate(): Date | string | undefined
   set endDate(value: Date | string)
   get order(): OrderModelType[] | []
-  get product_id(): number
-  get product(): ProductModelType | undefined
 
+  productBelong: () => Promise<ProductType>
   get uuid(): string | undefined
   set uuid(value: string)
 

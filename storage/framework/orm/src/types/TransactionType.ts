@@ -1,6 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { OrderModelType } from './OrderType'
 
 export interface TransactionsTable {
   id: Generated<number>
@@ -57,9 +56,8 @@ export interface TransactionModelType {
   set loyaltyPointsEarned(value: number)
   get loyaltyPointsRedeemed(): number | undefined
   set loyaltyPointsRedeemed(value: number)
-  get order_id(): number
-  get order(): OrderModelType | undefined
 
+  orderBelong: () => Promise<OrderType>
   get uuid(): string | undefined
   set uuid(value: string)
 

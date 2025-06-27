@@ -1,7 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CustomerModelType } from './CustomerType'
-import type { ProductModelType } from './ProductType'
 
 export interface ReviewsTable {
   id: Generated<number>
@@ -68,11 +66,9 @@ export interface ReviewModelType {
   set purchaseDate(value: string)
   get images(): string | undefined
   set images(value: string)
-  get product_id(): number
-  get product(): ProductModelType | undefined
-  get customer_id(): number
-  get customer(): CustomerModelType | undefined
 
+  productBelong: () => Promise<ProductType>
+  customerBelong: () => Promise<CustomerType>
   get uuid(): string | undefined
   set uuid(value: string)
 

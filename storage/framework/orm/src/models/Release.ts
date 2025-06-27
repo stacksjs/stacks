@@ -143,7 +143,7 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     return this.attributes.name
   }
 
-  get version(): string {
+  get version(): string | undefined {
     return this.attributes.version
   }
 

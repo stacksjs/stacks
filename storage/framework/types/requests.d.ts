@@ -1079,7 +1079,7 @@ interface RequestDataCoupon {
   id: number
   code: string
   description: string
-  discount_type: string
+  discount_type: string[] | string
   discount_value: number
   min_order_amount: number
   max_discount_amount: number
@@ -1100,7 +1100,7 @@ export interface CouponRequestType extends Request {
   id: number
   code: string
   description: string
-  discount_type: string
+  discount_type: string[] | string
   discount_value: number
   min_order_amount: number
   max_discount_amount: number

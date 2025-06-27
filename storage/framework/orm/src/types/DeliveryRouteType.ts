@@ -8,7 +8,7 @@ export interface DeliveryRoutesTable {
   stops: number
   delivery_time: number
   total_distance: number
-  last_active?: Date | string
+  last_active: Date | string
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -50,7 +50,7 @@ export interface DeliveryRouteModelType {
   set deliveryTime(value: number)
   get totalDistance(): number
   set totalDistance(value: number)
-  get lastActive(): Date | string | undefined
+  get lastActive(): Date | string
   set lastActive(value: Date | string)
 
   get uuid(): string | undefined

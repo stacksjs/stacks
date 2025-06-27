@@ -1,11 +1,10 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { UserModelType } from './UserType'
 
 export interface PersonalAccessTokensTable {
   id: Generated<number>
   name: string
-  token: string
+  token?: string
   plain_text_token: string
   abilities: string
   last_used_at?: Date | string
@@ -13,7 +12,7 @@ export interface PersonalAccessTokensTable {
   revoked_at?: Date | string
   ip_address?: string
   device_name?: string
-  is_single_use?: boolean
+  is_single_use: boolean
   user_id?: number
   created_at?: string
   updated_at?: string
@@ -47,7 +46,7 @@ export interface PersonalAccessTokenModelType {
   readonly id: number
   get name(): string
   set name(value: string)
-  get token(): string
+  get token(): string | undefined
   set token(value: string)
   get plainTextToken(): string
   set plainTextToken(value: string)
@@ -63,11 +62,10 @@ export interface PersonalAccessTokenModelType {
   set ipAddress(value: string)
   get deviceName(): string | undefined
   set deviceName(value: string)
-  get isSingleUse(): boolean | undefined
+  get isSingleUse(): boolean
   set isSingleUse(value: boolean)
-  get user_id(): number
-  get user(): UserModelType | undefined
 
+  userBelong: () => Promise<UserType>
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)

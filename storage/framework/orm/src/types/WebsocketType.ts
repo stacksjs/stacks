@@ -3,10 +3,10 @@ import type { Operator } from '@stacksjs/orm'
 
 export interface WebsocketsTable {
   id: Generated<number>
-  type: string | string[]
-  socket: string
-  details: string
-  time: number
+  type?: string | string[]
+  socket?: string
+  details?: string
+  time?: number
   created_at?: string
   updated_at?: string
 }
@@ -37,13 +37,13 @@ export type WebsocketUpdate = Updateable<WebsocketWrite>
 export interface WebsocketModelType {
   // Properties
   readonly id: number
-  get type(): string | string[]
+  get type(): string | string[] | undefined
   set type(value: string | string[])
-  get socket(): string
+  get socket(): string | undefined
   set socket(value: string)
-  get details(): string
+  get details(): string | undefined
   set details(value: string)
-  get time(): number
+  get time(): number | undefined
   set time(value: number)
 
   get created_at(): string | undefined

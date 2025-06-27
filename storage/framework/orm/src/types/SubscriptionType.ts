@@ -1,15 +1,14 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { UserModelType } from './UserType'
 
 export interface SubscriptionsTable {
   id: Generated<number>
-  type: string
+  type?: string
   plan?: string
-  provider_id: string
-  provider_status: string
+  provider_id?: string
+  provider_status?: string
   unit_price?: number
-  provider_type: string
+  provider_type?: string
   provider_price_id?: string
   quantity?: number
   trial_ends_at?: Date | string
@@ -45,17 +44,17 @@ export type SubscriptionUpdate = Updateable<SubscriptionWrite>
 export interface SubscriptionModelType {
   // Properties
   readonly id: number
-  get type(): string
+  get type(): string | undefined
   set type(value: string)
   get plan(): string | undefined
   set plan(value: string)
-  get providerId(): string
+  get providerId(): string | undefined
   set providerId(value: string)
-  get providerStatus(): string
+  get providerStatus(): string | undefined
   set providerStatus(value: string)
   get unitPrice(): number | undefined
   set unitPrice(value: number)
-  get providerType(): string
+  get providerType(): string | undefined
   set providerType(value: string)
   get providerPriceId(): string | undefined
   set providerPriceId(value: string)
@@ -67,9 +66,8 @@ export interface SubscriptionModelType {
   set endsAt(value: Date | string)
   get lastUsedAt(): Date | string | undefined
   set lastUsedAt(value: Date | string)
-  get user_id(): number
-  get user(): UserModelType | undefined
 
+  userBelong: () => Promise<UserType>
   get uuid(): string | undefined
   set uuid(value: string)
 

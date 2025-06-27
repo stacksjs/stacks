@@ -15,7 +15,7 @@ interface RequestDataCoupon {
   id: number
   code: string
   description: string
-  discount_type: string
+  discount_type: string[] | string
   discount_value: number
   min_order_amount: number
   max_discount_amount: number
@@ -33,7 +33,7 @@ export class CouponRequest extends Request<RequestDataCoupon> implements CouponR
   public id = 1
   public code = ''
   public description = ''
-  public discount_type = ''
+  public discount_type = []
   public discount_value = 0
   public min_order_amount = 0
   public max_discount_amount = 0

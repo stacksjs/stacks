@@ -153,7 +153,7 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
     return this.attributes.uuid
   }
 
-  get printer(): string {
+  get printer(): string | undefined {
     return this.attributes.printer
   }
 

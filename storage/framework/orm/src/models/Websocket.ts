@@ -139,19 +139,19 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
     return this.attributes.id
   }
 
-  get type(): string | string[] {
+  get type(): string | string[] | undefined {
     return this.attributes.type
   }
 
-  get socket(): string {
+  get socket(): string | undefined {
     return this.attributes.socket
   }
 
-  get details(): string {
+  get details(): string | undefined {
     return this.attributes.details
   }
 
-  get time(): number {
+  get time(): number | undefined {
     return this.attributes.time
   }
 

@@ -1,8 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CustomerModelType } from './CustomerType'
-import type { OrderModelType } from './OrderType'
-import type { ProductModelType } from './ProductType'
 
 export interface LicenseKeysTable {
   id: Generated<number>
@@ -52,13 +49,10 @@ export interface LicenseKeyModelType {
   set expiryDate(value: Date | string)
   get status(): string | string[] | undefined
   set status(value: string | string[])
-  get customer_id(): number
-  get customer(): CustomerModelType | undefined
-  get product_id(): number
-  get product(): ProductModelType | undefined
-  get order_id(): number
-  get order(): OrderModelType | undefined
 
+  customerBelong: () => Promise<CustomerType>
+  productBelong: () => Promise<ProductType>
+  orderBelong: () => Promise<OrderType>
   get uuid(): string | undefined
   set uuid(value: string)
 

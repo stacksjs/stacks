@@ -1,8 +1,12 @@
 import type { Faker } from '@stacksjs/faker'
+import type { ValidationInstance } from '@stacksjs/ts-validation'
 import type { ModelNames, TableNames } from '@stacksjs/types'
-import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
-import type { DeepPartial, Nullable } from '.'
+import type { DeepPartial } from '.'
 import type { SearchOptions } from './search-engine'
+
+export type ValidationType = {
+  [K in keyof ValidationInstance]: ReturnType<ValidationInstance[K]>
+}[keyof ValidationInstance]
 
 export type Model = Partial<ModelOptions>
 
@@ -84,7 +88,6 @@ export type ApiRoutes = 'index' | 'show' | 'store' | 'update' | 'destroy'
 
 export type SocialProviders = 'google' | 'github' | 'twitter' | 'facebook'
 
-export type VineType = VineString | VineNumber | VineBoolean | Date | Nullable<any>
 export interface SeedOptions {
   count: number
 }
@@ -219,7 +222,7 @@ export interface Attribute {
   guarded?: boolean
   factory?: (faker: Faker) => any
   validation?: {
-    rule: VineType
+    rule: ValidationType
     message?: ValidatorMessage
   }
 }

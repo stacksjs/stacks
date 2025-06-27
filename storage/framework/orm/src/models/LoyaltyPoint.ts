@@ -152,7 +152,7 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return this.attributes.points
   }
 
-  get source(): string {
+  get source(): string | undefined {
     return this.attributes.source
   }
 

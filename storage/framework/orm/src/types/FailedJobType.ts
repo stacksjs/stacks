@@ -3,10 +3,10 @@ import type { Operator } from '@stacksjs/orm'
 
 export interface FailedJobsTable {
   id: Generated<number>
-  connection: string
-  queue: string
-  payload: string
-  exception: string
+  connection?: string
+  queue?: string
+  payload?: string
+  exception?: string
   failed_at?: Date | string
   created_at?: string
   updated_at?: string
@@ -38,13 +38,13 @@ export type FailedJobUpdate = Updateable<FailedJobWrite>
 export interface FailedJobModelType {
   // Properties
   readonly id: number
-  get connection(): string
+  get connection(): string | undefined
   set connection(value: string)
-  get queue(): string
+  get queue(): string | undefined
   set queue(value: string)
-  get payload(): string
+  get payload(): string | undefined
   set payload(value: string)
-  get exception(): string
+  get exception(): string | undefined
   set exception(value: string)
   get failedAt(): Date | string | undefined
   set failedAt(value: Date | string)

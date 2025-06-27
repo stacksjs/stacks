@@ -1,6 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { ProductModelType } from './ProductType'
 
 export interface LoyaltyRewardsTable {
   id: Generated<number>
@@ -63,9 +62,8 @@ export interface LoyaltyRewardModelType {
   set expiryDays(value: number)
   get imageUrl(): string | undefined
   set imageUrl(value: string)
-  get product_id(): number
-  get product(): ProductModelType | undefined
 
+  productBelong: () => Promise<ProductType>
   get uuid(): string | undefined
   set uuid(value: string)
 

@@ -7,7 +7,7 @@ export interface TaxRatesTable {
   rate: number
   type: string
   country: string
-  region: string | string[]
+  region?: string | string[]
   status?: string | string[]
   is_default?: boolean
   uuid?: string
@@ -49,7 +49,7 @@ export interface TaxRateModelType {
   set type(value: string)
   get country(): string
   set country(value: string)
-  get region(): string | string[]
+  get region(): string | string[] | undefined
   set region(value: string | string[])
   get status(): string | string[] | undefined
   set status(value: string | string[])
