@@ -16,8 +16,8 @@ export async function up(db: Database<any>) {
     .addColumn('status', sql`enum('Active', 'Scheduled', 'Expired')`)
     .addColumn('usage_limit', 'integer')
     .addColumn('usage_count', 'integer')
-    .addColumn('start_date', 'date')
-    .addColumn('end_date', 'date')
+    .addColumn('start_date', date)
+    .addColumn('end_date', date)
     .addColumn('product_id', 'integer', col =>
       col.references('products.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))

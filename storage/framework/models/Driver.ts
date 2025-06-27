@@ -85,7 +85,7 @@ export default {
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.enum(['active', 'on_delivery', 'on_break'] as const),
+        rule: schema.enum(['active', 'on_delivery', 'on_break']),
       },
       factory: faker => faker.helpers.arrayElement(['active', 'on_delivery', 'on_break']),
     },

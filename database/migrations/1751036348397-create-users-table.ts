@@ -8,7 +8,7 @@ export async function up(db: Database<any>) {
     .addColumn('uuid', 'varchar(255)')
     .addColumn('github_id', 'varchar(255)')
     .addColumn('email', 'varchar(255)', col => col.notNull().unique())
-    .addColumn('name', 'varchar(255)', col => col.notNull())
+    .addColumn('name', 'varchar(100)', col => col.notNull())
     .addColumn('password', 'varchar(255)', col => col.notNull())
     .addColumn('team_id', 'integer', col =>
       col.references('teams.id').onDelete('cascade'))

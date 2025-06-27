@@ -12,7 +12,7 @@ export async function up(db: Database<any>) {
     .addColumn('tax_amount', 'integer', col => col.defaultTo(0))
     .addColumn('discount_amount', 'integer', col => col.defaultTo(0))
     .addColumn('total', 'integer', col => col.defaultTo(0))
-    .addColumn('expires_at', 'timestamp', col => col.notNull())
+    .addColumn('expires_at', timestamp, col => col.notNull())
     .addColumn('currency', 'varchar(3)', col => col.defaultTo('USD'))
     .addColumn('notes', 'varchar(1000)', col => col.notNull())
     .addColumn('applied_coupon_id', 'varchar(255)', col => col.notNull())

@@ -9,7 +9,7 @@ export async function up(db: Database<any>) {
     .addColumn('name', 'varchar(512)')
     .addColumn('scopes', 'varchar(190)')
     .addColumn('revoked', 'boolean', col => col.notNull())
-    .addColumn('expires_at', 'datetime')
+    .addColumn('expires_at', datetime)
     .addColumn('oauth_client_id', 'integer', col =>
       col.references('oauth_clients.id').onDelete('cascade'))
     .addColumn('user_id', 'integer', col =>

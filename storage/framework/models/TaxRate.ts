@@ -82,7 +82,7 @@ export default {
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.enum(['North America', 'South America', 'Europe', 'Asia', 'Africa', 'Oceania', 'Antarctica'] as const),
+        rule: schema.enum(['North America', 'South America', 'Europe', 'Asia', 'Africa', 'Oceania', 'Antarctica']),
       },
       factory: faker => faker.helpers.arrayElement(['North America', 'South America', 'Europe', 'Asia', 'Africa', 'Oceania', 'Antarctica']),
     },
@@ -92,7 +92,7 @@ export default {
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.enum(['active', 'inactive'] as const),
+        rule: schema.enum(['active', 'inactive']),
       },
       factory: faker => faker.helpers.arrayElement(['active', 'inactive']),
     },

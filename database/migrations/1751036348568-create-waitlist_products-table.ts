@@ -14,9 +14,9 @@ export async function up(db: Database<any>) {
     .addColumn('source', 'varchar(100)', col => col.notNull())
     .addColumn('notes', 'varchar(255)')
     .addColumn('status', sql`enum('waiting', 'purchased', 'notified', 'cancelled')`, col => col.notNull().defaultTo('waiting'))
-    .addColumn('notified_at', 'bigint')
-    .addColumn('purchased_at', 'bigint')
-    .addColumn('cancelled_at', 'bigint')
+    .addColumn('notified_at', bigint)
+    .addColumn('purchased_at', bigint)
+    .addColumn('cancelled_at', bigint)
     .addColumn('customer_id', 'integer', col =>
       col.references('customers.id').onDelete('cascade'))
     .addColumn('product_id', 'integer', col =>

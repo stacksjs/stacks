@@ -1,11 +1,12 @@
 import type { Ok } from '@stacksjs/error-handling'
+import type { Validator } from '@stacksjs/ts-validation'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
 import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '@stacksjs/orm'
-import { path } from '@stacksjs/path'
 
+import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
 import {
@@ -22,9 +23,8 @@ import {
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
-import { dropCommonTables } from './defaults/traits'
 
-import type { Validator } from '@stacksjs/ts-validation'
+import { dropCommonTables } from './defaults/traits'
 
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await dropMysqlTables()
@@ -167,9 +167,9 @@ async function createTableMigration(modelPath: string): Promise<void> {
     const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
-    const isRequired = 'isRequired' in (fieldOptions.validation?.rule ?? {}) 
-    ? (fieldOptions.validation?.rule as Validator<any>).isRequired 
-    : false
+    const isRequired = 'isRequired' in (fieldOptions.validation?.rule ?? {})
+      ? (fieldOptions.validation?.rule as Validator<any>).isRequired
+      : false
 
     // Check if there are configurations that require the lambda function
     if (isRequired || fieldOptions.unique || fieldOptions.default !== undefined) {

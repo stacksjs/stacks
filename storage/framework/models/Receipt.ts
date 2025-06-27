@@ -72,7 +72,7 @@ export default {
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.enum(['success', 'failed', 'warning'] as const).required(),
+        rule: schema.enum(['success', 'failed', 'warning']).required(),
       },
       factory: faker => faker.helpers.arrayElement(['success', 'failed', 'warning']),
     },

@@ -93,7 +93,7 @@ export default {
       order: 8,
       fillable: true,
       validation: {
-        rule: schema.enum(['active', 'inactive'] as const),
+        rule: schema.enum(['active', 'inactive']),
       },
       factory: faker => faker.helpers.arrayElement(['active', 'inactive']),
     },

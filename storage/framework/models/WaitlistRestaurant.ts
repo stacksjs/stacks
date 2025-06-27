@@ -93,7 +93,7 @@ export default {
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.enum(['indoor', 'bar', 'booth', 'no_preference'] as const).required(),
+        rule: schema.enum(['indoor', 'bar', 'booth', 'no_preference']).required(),
       },
       factory: faker => faker.helpers.arrayElement(['indoor', 'bar', 'booth', 'no_preference']),
     },
@@ -103,7 +103,7 @@ export default {
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.enum(['waiting', 'seated', 'cancelled', 'no_show'] as const).required(),
+        rule: schema.enum(['waiting', 'seated', 'cancelled', 'no_show']).required(),
       },
       factory: faker => faker.helpers.arrayElement(['waiting', 'seated', 'cancelled', 'no_show']),
     },

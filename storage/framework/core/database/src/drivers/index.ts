@@ -1,4 +1,4 @@
-import type { BooleanValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, ValidationType, Validator } from '@stacksjs/ts-validation'
+import type { BooleanValidatorType, DatetimeValidatorType, DateValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, TimestampValidatorType, UnixValidatorType, ValidationType } from '@stacksjs/ts-validation'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
@@ -105,7 +105,7 @@ function findCharacterLength(validator: ValidationType): number {
 
     return maxLengthRule?.params?.length || maxLengthRule?.params?.max || 255
   }
-  
+
   return 255
 }
 
@@ -114,11 +114,6 @@ export function prepareTextColumnType(validator: StringValidatorType, driver = '
   if (driver === 'sqlite')
     return `'text'`
 
-  // Check for format-specific types first
-  const formatType = validator.name
-  if (formatType)
-    return `'varchar(255)'`
-
   // Get length and choose appropriate MySQL type
   const maxLength = findCharacterLength(validator)
 
@@ -126,23 +121,18 @@ export function prepareTextColumnType(validator: StringValidatorType, driver = '
 }
 
 // Add new function for date/time column types
-export function prepareDateTimeColumnType(validator: ValidationType, driver = 'mysql'): string {
+export function prepareDateTimeColumnType(validator: DateValidatorType, driver = 'mysql'): string {
   if (driver === 'sqlite')
     return `'text'` // SQLite uses TEXT for dates
 
   const name = validator.name
   // Try to determine specific date type
-    if (name === 'date')
-      return `'date'`
-    if (name === 'datetime')
-      return `'datetime'`
-    if (name === 'unix')
-      return `'bigint'`
-    if (name === 'timestamp')
-      return `'timestamp'`
+
+  if (name === 'unix')
+    return `'bigint'`
 
   // Default to datetime
-  return `'date'`
+  return name || 'date'
 }
 
 export function compareRanges(range1: Range, range2: Range): boolean {
@@ -278,15 +268,15 @@ export function prepareNumberColumnType(validator: NumberValidatorType, driver =
 export function prepareEnumColumnType(validator: EnumValidatorType<string | number>, driver = 'mysql'): string {
   const allowedValues = validator.getAllowedValues()
 
-  if (!allowedValues) 
+  if (!allowedValues)
     throw new Error('Enum rule found but no allowedValues defined')
 
-    const enumStructure = allowedValues.map((value: any) => `'${value}'`).join(', ')
+  const enumStructure = allowedValues.map((value: any) => `'${value}'`).join(', ')
 
-    if (driver === 'sqlite')
-      return `'text'` // SQLite doesn't support ENUM, but we'll enforce values at app level
+  if (driver === 'sqlite')
+    return `'text'` // SQLite doesn't support ENUM, but we'll enforce values at app level
 
-    return `sql\`enum(${enumStructure})\`` // MySQL supports native ENUM
+  return `sql\`enum(${enumStructure})\`` // MySQL supports native ENUM
 }
 
 export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'mysql'): string {
@@ -304,9 +294,18 @@ export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'my
     return `'boolean'` // Use boolean type for both MySQL and SQLite
 
   // Handle date types
-  const dateType = ['date', 'datetime', 'unix', 'timestamp'].includes(validator.name)
-  if (dateType)
-    return prepareDateTimeColumnType(validator, driver)
+
+  if (isDateValidator(validator))
+    return 'date'
+
+  if (isDatetimeValidator(validator))
+    return 'datetime'
+
+  if (isUnixValidator(validator))
+    return 'bigint'
+
+  if (isTimestampValidator(validator))
+    return 'timestamp'
 
   // Handle array/object types
   if (['array', 'object'].includes(validator.name))
@@ -337,4 +336,20 @@ function enumValidator(v: ValidationType): v is EnumValidatorType<string | numbe
 
 function isBooleanValidator(v: ValidationType): v is BooleanValidatorType {
   return v.name === 'boolean'
+}
+
+function isDateValidator(v: ValidationType): v is DateValidatorType {
+  return v.name === 'date'
+}
+
+function isUnixValidator(v: ValidationType): v is UnixValidatorType {
+  return v.name === 'unix'
+}
+
+function isDatetimeValidator(v: ValidationType): v is DatetimeValidatorType {
+  return v.name === 'datetime'
+}
+
+function isTimestampValidator(v: ValidationType): v is TimestampValidatorType {
+  return v.name === 'timestamp'
 }

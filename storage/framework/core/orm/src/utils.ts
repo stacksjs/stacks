@@ -978,7 +978,6 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
     // Check if the field is required by parsing the validation rule
     const rule = rules[index] ?? ''
 
-    console.log(fieldExist.validation?.rule.isRequired)
     requiredValue = isFieldRequired(rule)
 
     return {

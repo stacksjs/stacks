@@ -8,7 +8,7 @@ export async function up(db: Database<any>) {
     .addColumn('uuid', 'varchar(255)')
     .addColumn('printer', 'varchar(100)')
     .addColumn('document', 'varchar(100)', col => col.notNull())
-    .addColumn('timestamp', 'timestamp', col => col.notNull())
+    .addColumn('timestamp', timestamp, col => col.notNull())
     .addColumn('status', sql`enum('success', 'failed', 'warning')`, col => col.notNull())
     .addColumn('size', 'integer')
     .addColumn('pages', 'integer')

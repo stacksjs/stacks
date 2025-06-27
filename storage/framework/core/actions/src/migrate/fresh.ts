@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { generateMigrations, resetDatabase, runDatabaseMigration } from '@stacksjs/database'
+import { generateMigrations, resetDatabase } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 
 // first, reset the database, if it exists
@@ -15,6 +15,6 @@ if (result?.isErr()) {
 await generateMigrations()
 
 // finally, migrate the database
-await runDatabaseMigration()
+// await runDatabaseMigration()
 
 process.exit(0)
