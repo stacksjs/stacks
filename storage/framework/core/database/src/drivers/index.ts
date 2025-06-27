@@ -1,4 +1,4 @@
-import type { ValidationType } from '@stacksjs/ts-validation'
+import type { NumberValidatorType, StringValidatorType, ValidationType, Validator } from '@stacksjs/ts-validation'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
@@ -14,43 +14,6 @@ export * from './sqlite'
 interface Range {
   min: number
   max: number
-}
-
-interface Validator {
-  rules: Rule[]
-  isRequired: boolean
-  fieldName: string
-  min: () => any
-  max: () => any
-  length: () => any
-  email: () => any
-  url: () => any
-  matches: () => any
-  alphanumeric: () => any
-  alpha: () => any
-  numeric: () => any
-  custom: () => any
-  required: () => any
-  optional: () => any
-  field: () => any
-  addRule: () => any
-  validate: () => any
-  test: () => any
-  formatMessage: () => any
-  allowedValues?: string[]
-}
-
-interface Rule {
-  name: string
-  test: () => any
-  message: string
-  params?: {
-    length: number
-    min?: number
-    max?: number
-    precision?: number
-    scale?: number
-  }
 }
 
 export async function deleteMigrationFiles(): Promise<void> {
@@ -135,20 +98,23 @@ export async function getExecutedMigrations(): Promise<{ name: string }[]> {
   }
 }
 
-function findCharacterLength(validator: Validator): number {
+function findCharacterLength(validator: ValidationType): number {
   // Check for max length constraint
-  const maxLengthRule = validator.rules.find(r => r.name === 'max')
-
-  return maxLengthRule?.params?.length || 255
+  if ('getRules' in validator) {
+    const maxLengthRule = validator.getRules().find((rule: any) => rule.name === 'max')
+    return maxLengthRule?.params?.length || 255
+  }
+  
+  return 255
 }
 
-export function prepareTextColumnType(validator: Validator, driver = 'mysql'): string {
+export function prepareTextColumnType(validator: StringValidatorType, driver = 'mysql'): string {
   // SQLite uses TEXT for all string types
   if (driver === 'sqlite')
     return `'text'`
 
   // Check for format-specific types first
-  const formatType = validator.rules.find(r => ['email', 'url', 'uuid'].includes(r.name))?.name
+  const formatType = validator.name
   if (formatType)
     return `'varchar(255)'`
 
@@ -159,21 +125,20 @@ export function prepareTextColumnType(validator: Validator, driver = 'mysql'): s
 }
 
 // Add new function for date/time column types
-export function prepareDateTimeColumnType(validator: Validator, driver = 'mysql'): string {
+export function prepareDateTimeColumnType(validator: ValidationType, driver = 'mysql'): string {
   if (driver === 'sqlite')
     return `'text'` // SQLite uses TEXT for dates
 
+  const name = validator.name
   // Try to determine specific date type
-  for (const rule of validator.rules) {
-    if (rule.name === 'date')
+    if (name === 'date')
       return `'date'`
-    if (rule.name === 'datetime')
+    if (name === 'datetime')
       return `'datetime'`
-    if (rule.name === 'unix')
+    if (name === 'unix')
       return `'bigint'`
-    if (rule.name === 'timestamp')
+    if (name === 'timestamp')
       return `'timestamp'`
-  }
 
   // Default to datetime
   return `'date'`
@@ -289,22 +254,23 @@ export function getUpvoteTableName(model: Model, tableName: string): string | un
     : undefined
 }
 
-export function prepareNumberColumnType(validator: Validator, driver = 'mysql'): string {
+export function prepareNumberColumnType(validator: NumberValidatorType, driver = 'mysql'): string {
   // SQLite uses integer for all numbers
   if (driver === 'sqlite')
     return `'integer'`
 
   // Check for integer types
-  if (validator.rules.some(r => r.name === 'integer')) {
-    const minRule = validator.rules.find(r => r.name === 'min')
-    const maxRule = validator.rules.find(r => r.name === 'max')
+  if ('getRules' in validator) {
+    const minRule = validator.getRules().find((rule: any) => rule.name === 'min')
+    const maxRule = validator.getRules().find((rule: any) => rule.name === 'max')
+
     const min = minRule?.params?.min ?? -2147483648
     const max = maxRule?.params?.max ?? 2147483647
 
     return min >= -2147483648 && max <= 2147483647 ? `'integer'` : `'bigint'`
   }
 
-  return `'integer'` // Use decimal for precise decimal numbers
+  return `'integer'`
 }
 
 // Add new function for enum column types
@@ -312,12 +278,22 @@ export function prepareEnumColumnType(validator: ValidationType, driver = 'mysql
   if (!validator)
     throw new Error('Enum rule found but no allowedValues defined')
 
-  const enumStructure = validator.allowedValues.map(value => `'${value}'`).join(', ')
+  // For enum validators, use the getAllowedValues method
+  if (validator.name === 'enum' && 'getAllowedValues' in validator) {
+    const allowedValues = (validator as any).getAllowedValues()
+    const enumStructure = allowedValues.map((value: any) => `'${value}'`).join(', ')
 
+    if (driver === 'sqlite')
+      return `'text'` // SQLite doesn't support ENUM, but we'll enforce values at app level
+
+    return `sql\`enum(${enumStructure})\`` // MySQL supports native ENUM
+  }
+
+  // Fallback for other cases
   if (driver === 'sqlite')
-    return `'text'` // SQLite doesn't support ENUM, but we'll enforce values at app level
+    return `'text'`
 
-  return `sql\`enum(${enumStructure})\`` // MySQL supports native ENUM
+  return `'varchar(255)'`
 }
 
 export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'mysql'): string {
@@ -328,10 +304,10 @@ export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'my
     return prepareEnumColumnType(validator, driver)
 
   // Check for base types
-  if (validator.name === 'string')
+  if (isStringValidator(validator))
     return prepareTextColumnType(validator, driver)
 
-  if (validator.name === 'number')
+  if (isNumberValidator(validator))
     return prepareNumberColumnType(validator, driver)
 
   if (validator.name === 'boolean')
@@ -355,4 +331,12 @@ export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'my
 export function checkIsRequired(rule: string): boolean {
   // Check if the rule contains .required()
   return rule.includes('.required()')
+}
+
+function isStringValidator(v: ValidationType): v is StringValidatorType {
+  return v.name === 'string'
+}
+
+function isNumberValidator(v: ValidationType): v is NumberValidatorType {
+  return v.name === 'number'
 }

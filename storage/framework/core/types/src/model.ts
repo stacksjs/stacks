@@ -1,5 +1,5 @@
 import type { Faker } from '@stacksjs/faker'
-import type { ValidationInstance } from '@stacksjs/ts-validation'
+import type { ValidationType } from '@stacksjs/ts-validation'
 import type { ModelNames, TableNames } from '@stacksjs/types'
 import type { DeepPartial } from '.'
 import type { SearchOptions } from './search-engine'
@@ -217,7 +217,7 @@ export interface Attribute {
   fillable?: boolean
   guarded?: boolean
   factory?: (faker: Faker) => any
-  validation?: {
+  validation: {
     rule: ValidationType
     message?: ValidatorMessage
   }

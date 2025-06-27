@@ -24,6 +24,8 @@ import {
 } from '.'
 import { dropCommonTables } from './defaults/traits'
 
+import type { Validator } from '@stacksjs/ts-validation'
+
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await dropMysqlTables()
   await deleteFrameworkModels()
@@ -165,8 +167,10 @@ async function createTableMigration(modelPath: string): Promise<void> {
     const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
-    console.log(fieldOptions.validation?.rule)
-    const isRequired = fieldOptions.validation?.rule.isRequired
+    const isRequired = 'isRequired' in (fieldOptions.validation?.rule ?? {}) 
+    ? (fieldOptions.validation?.rule as Validator<any>).isRequired 
+    : false
+
     // Check if there are configurations that require the lambda function
     if (isRequired || fieldOptions.unique || fieldOptions.default !== undefined) {
       migrationContent += `, col => col`
