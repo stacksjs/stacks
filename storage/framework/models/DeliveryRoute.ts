@@ -30,61 +30,55 @@ export default {
 
   attributes: {
     driver: {
-      required: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
       },
       factory: faker => faker.person.fullName(),
     },
 
     vehicle: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
       },
       factory: faker => faker.vehicle.vehicle(),
     },
 
     stops: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.number().min(0),
+        rule: schema.number().required().min(0),
       },
       factory: faker => faker.number.int({ min: 1, max: 20 }),
     },
 
     deliveryTime: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.number().min(0),
+        rule: schema.number().required().min(0),
       },
       factory: faker => faker.number.int({ min: 30, max: 480 }), // 30 minutes to 8 hours
     },
 
     totalDistance: {
-      required: true,
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.number().min(0),
+        rule: schema.number().required().min(0),
       },
       factory: faker => faker.number.int({ min: 5, max: 200 }), // 5 to 200 miles
     },
 
     lastActive: {
-      required: false,
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.timestamp(),
+        rule: schema.timestamp().required(),
       },
       factory: (faker) => {
         const date = faker.date.recent()

@@ -30,11 +30,10 @@ export default {
 
   attributes: {
     name: {
-      required: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
         message: {
           max: 'Name must have a maximum of 255 characters',
         },
@@ -43,11 +42,10 @@ export default {
     },
 
     email: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().email().max(255),
+        rule: schema.string().required().email().max(255),
         message: {
           max: 'Email must have a maximum of 255 characters',
         },
@@ -56,7 +54,6 @@ export default {
     },
 
     phone: {
-      required: false,
       order: 3,
       fillable: true,
       validation: {
@@ -69,11 +66,10 @@ export default {
     },
 
     partySize: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.number().min(1),
+        rule: schema.number().required().min(1),
         message: {
           min: 'Party size must be at least 1',
         },
@@ -82,11 +78,10 @@ export default {
     },
 
     checkInTime: {
-      required: true,
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.timestamp(),
+        rule: schema.timestamp().required(),
       },
       factory: (faker) => {
         const date = faker.date.future()
@@ -95,32 +90,29 @@ export default {
     },
 
     tablePreference: {
-      required: true,
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.enum(['indoor', 'bar', 'booth', 'no_preference'] as const),
+        rule: schema.enum(['indoor', 'bar', 'booth', 'no_preference'] as const).required(),
       },
       factory: faker => faker.helpers.arrayElement(['indoor', 'bar', 'booth', 'no_preference']),
     },
 
     status: {
-      required: true,
       default: 'waiting',
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.enum(['waiting', 'seated', 'cancelled', 'no_show'] as const),
+        rule: schema.enum(['waiting', 'seated', 'cancelled', 'no_show'] as const).required(),
       },
       factory: faker => faker.helpers.arrayElement(['waiting', 'seated', 'cancelled', 'no_show']),
     },
 
     quoted_wait_time: {
-      required: true,
       order: 8,
       fillable: true,
       validation: {
-        rule: schema.number().min(0),
+        rule: schema.number().required().min(0),
         message: {
           min: 'Quoted wait time must be at least 0 minutes',
         },
@@ -129,7 +121,6 @@ export default {
     },
 
     actual_wait_time: {
-      required: false,
       order: 9,
       fillable: true,
       validation: {
@@ -142,7 +133,6 @@ export default {
     },
 
     queue_position: {
-      required: false,
       order: 10,
       fillable: true,
       validation: {
@@ -155,7 +145,6 @@ export default {
     },
 
     seatedAt: {
-      required: false,
       order: 11,
       fillable: true,
       validation: {
@@ -168,7 +157,6 @@ export default {
     },
 
     noShowAt: {
-      required: false,
       order: 12,
       fillable: true,
       validation: {
@@ -181,7 +169,6 @@ export default {
     },
 
     cancelledAt: {
-      required: false,
       order: 13,
       fillable: true,
       validation: {

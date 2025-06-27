@@ -33,27 +33,24 @@ export default {
 
   attributes: {
     status: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
       },
       factory: faker => faker.helpers.arrayElement(['PENDING', 'PREPARING', 'READY', 'DELIVERED', 'CANCELED']),
     },
 
     totalAmount: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.number().min(0),
+        rule: schema.number().required().min(0),
       },
       factory: faker => Number.parseFloat(faker.commerce.price({ min: 10, max: 200, dec: 2 })),
     },
 
     taxAmount: {
-      required: false,
       order: 4,
       fillable: true,
       validation: {
@@ -63,7 +60,6 @@ export default {
     },
 
     discountAmount: {
-      required: false,
       order: 5,
       fillable: true,
       validation: {
@@ -73,7 +69,6 @@ export default {
     },
 
     deliveryFee: {
-      required: false,
       order: 6,
       fillable: true,
       validation: {
@@ -83,7 +78,6 @@ export default {
     },
 
     tipAmount: {
-      required: false,
       order: 7,
       fillable: true,
       validation: {
@@ -93,17 +87,15 @@ export default {
     },
 
     orderType: {
-      required: true,
       order: 8,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
       },
       factory: faker => faker.helpers.arrayElement(['DINE_IN', 'TAKEOUT', 'DELIVERY']),
     },
 
     deliveryAddress: {
-      required: false,
       order: 9,
       fillable: true,
       validation: {
@@ -113,7 +105,6 @@ export default {
     },
 
     specialInstructions: {
-      required: false,
       order: 10,
       fillable: true,
       validation: {
@@ -123,7 +114,6 @@ export default {
     },
 
     estimatedDeliveryTime: {
-      required: false,
       order: 11,
       fillable: true,
       validation: {
@@ -137,7 +127,6 @@ export default {
     },
 
     appliedCouponId: {
-      required: false,
       order: 12,
       fillable: true,
       validation: {

@@ -30,7 +30,6 @@ export default {
 
   attributes: {
     printer: {
-      required: true,
       order: 1,
       fillable: true,
       validation: {
@@ -43,11 +42,10 @@ export default {
     },
 
     document: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           max: 'Document name must have a maximum of 100 characters',
         },
@@ -56,11 +54,10 @@ export default {
     },
 
     timestamp: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.timestamp(),
+        rule: schema.timestamp().required(),
         message: {
           invalid: 'Invalid date format',
         },
@@ -72,17 +69,15 @@ export default {
     },
 
     status: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.enum(['success', 'failed', 'warning'] as const),
+        rule: schema.enum(['success', 'failed', 'warning'] as const).required(),
       },
       factory: faker => faker.helpers.arrayElement(['success', 'failed', 'warning']),
     },
 
     size: {
-      required: false,
       order: 5,
       fillable: true,
       validation: {
@@ -95,7 +90,6 @@ export default {
     },
 
     pages: {
-      required: false,
       order: 6,
       fillable: true,
       validation: {
@@ -108,7 +102,6 @@ export default {
     },
 
     duration: {
-      required: false,
       order: 7,
       fillable: true,
       validation: {
@@ -120,7 +113,6 @@ export default {
       factory: faker => faker.number.int({ min: 1, max: 50 }),
     },
     metadata: {
-      required: false,
       order: 8,
       fillable: true,
       validation: {

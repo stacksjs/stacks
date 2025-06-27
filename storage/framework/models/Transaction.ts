@@ -32,37 +32,33 @@ export default {
 
   attributes: {
     amount: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.number().min(0.01),
+        rule: schema.number().required().min(0.01),
       },
       factory: faker => Number.parseFloat(faker.commerce.price({ min: 5, max: 500, dec: 2 })),
     },
 
     status: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
       },
       factory: faker => faker.helpers.arrayElement(['PENDING', 'COMPLETED', 'FAILED', 'REFUNDED']),
     },
 
     paymentMethod: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
       },
       factory: faker => faker.helpers.arrayElement(['CREDIT_CARD', 'DEBIT_CARD', 'CASH', 'WALLET']),
     },
 
     paymentDetails: {
-      required: false,
       order: 5,
       fillable: true,
       hidden: true,
@@ -97,7 +93,6 @@ export default {
     },
 
     transactionReference: {
-      required: false,
       order: 6,
       fillable: true,
       validation: {
@@ -107,7 +102,6 @@ export default {
     },
 
     loyaltyPointsEarned: {
-      required: false,
       order: 7,
       fillable: true,
       validation: {
@@ -117,7 +111,6 @@ export default {
     },
 
     loyaltyPointsRedeemed: {
-      required: false,
       order: 8,
       fillable: true,
       validation: {

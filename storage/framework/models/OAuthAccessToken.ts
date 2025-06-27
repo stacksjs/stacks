@@ -23,9 +23,8 @@ export default {
   attributes: {
     token: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string().max(512),
+        rule: schema.string().required().max(512),
         message: {
           string: 'token must be a string',
           required: 'token is required',
@@ -55,9 +54,8 @@ export default {
 
     revoked: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.boolean(),
+        rule: schema.boolean().required(),
         message: {
           boolean: 'revoked must be a boolean',
           required: 'revoked is required',

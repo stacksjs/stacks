@@ -93,11 +93,10 @@ export default {
     },
 
     expiresAt: {
-      required: true,
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.timestamp(),
+        rule: schema.timestamp().required(),
       },
       factory: (faker) => {
         const date = faker.date.past()
@@ -116,21 +115,19 @@ export default {
     },
 
     notes: {
-      required: false,
       order: 9,
       fillable: true,
       validation: {
-        rule: schema.string().max(1000),
+        rule: schema.string().required().max(1000),
       },
       factory: faker => faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.3 }),
     },
 
     appliedCouponId: {
-      required: false,
       order: 10,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
       },
       factory: faker => faker.helpers.maybe(() => faker.string.uuid(), { probability: 0.2 }),
     },

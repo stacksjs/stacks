@@ -32,11 +32,10 @@ export default {
 
   attributes: {
     variant: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           max: 'Variant name must have a maximum of 100 characters',
         },
@@ -45,11 +44,10 @@ export default {
     },
 
     type: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string().max(50),
+        rule: schema.string().required().max(50),
         message: {
           max: 'Type must have a maximum of 50 characters',
         },
@@ -58,7 +56,6 @@ export default {
     },
 
     description: {
-      required: false,
       order: 5,
       fillable: true,
       validation: {
@@ -68,7 +65,6 @@ export default {
     },
 
     options: {
-      required: false,
       order: 6,
       fillable: true,
       validation: {
@@ -92,11 +88,10 @@ export default {
     },
 
     status: {
-      required: true,
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.enum(['active', 'inactive', 'draft']),
+        rule: schema.enum(['active', 'inactive', 'draft']).required(),
         message: {
           enum: 'Status must be one of: active, inactive, draft',
         },

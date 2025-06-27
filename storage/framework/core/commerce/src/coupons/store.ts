@@ -8,15 +8,11 @@ import { db } from '@stacksjs/database'
  * @returns The newly created coupon record
  */
 export async function store(data: NewCoupon): Promise<CouponJsonResponse | undefined> {
-  const couponData: NewCoupon = data
-
-  console.log(couponData)
-
   try {
     // Insert the coupon record
     const createdCoupon = await db
       .insertInto('coupons')
-      .values(couponData)
+      .values(data)
       .executeTakeFirst()
 
     const couponId = Number(createdCoupon.insertId) || Number(createdCoupon.numInsertedOrUpdatedRows)

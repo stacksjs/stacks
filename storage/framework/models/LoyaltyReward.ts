@@ -32,11 +32,10 @@ export default {
 
   attributes: {
     name: {
-      required: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
       },
       factory: faker => faker.helpers.arrayElement([
         `10% discount on your order`,
@@ -47,7 +46,6 @@ export default {
     },
 
     description: {
-      required: false,
       order: 2,
       fillable: true,
       validation: {
@@ -57,27 +55,24 @@ export default {
     },
 
     pointsRequired: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.number().min(1),
+        rule: schema.number().required().min(1),
       },
       factory: faker => faker.number.int({ min: 100, max: 5000 }),
     },
 
     rewardType: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
       },
       factory: faker => faker.helpers.arrayElement(['DISCOUNT', 'FREE_ITEM', 'PRIORITY_SERVICE']),
     },
 
     discountPercentage: {
-      required: false,
       order: 5,
       fillable: true,
       validation: {
@@ -87,7 +82,6 @@ export default {
     },
 
     freeProductId: {
-      required: false,
       order: 6,
       fillable: true,
       validation: {
@@ -97,7 +91,6 @@ export default {
     },
 
     isActive: {
-      required: false,
       order: 7,
       fillable: true,
       validation: {
@@ -107,7 +100,6 @@ export default {
     },
 
     expiryDays: {
-      required: false,
       order: 8,
       fillable: true,
       validation: {
@@ -117,7 +109,6 @@ export default {
     },
 
     imageUrl: {
-      required: false,
       order: 9,
       fillable: true,
       validation: {

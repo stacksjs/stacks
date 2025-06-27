@@ -32,11 +32,10 @@ export default {
 
   attributes: {
     name: {
-      required: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           max: 'Name must have a maximum of 100 characters',
         },
@@ -48,11 +47,10 @@ export default {
     },
 
     abbreviation: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().max(10),
+        rule: schema.string().required().max(10),
         message: {
           max: 'Abbreviation must have a maximum of 10 characters',
         },
@@ -64,11 +62,10 @@ export default {
     },
 
     type: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
         message: {
           string: 'Type must be a string',
         },
@@ -80,7 +77,6 @@ export default {
     },
 
     description: {
-      required: false,
       order: 4,
       fillable: true,
       validation: {
@@ -93,7 +89,6 @@ export default {
     },
 
     isDefault: {
-      required: false,
       order: 5,
       fillable: true,
       validation: {

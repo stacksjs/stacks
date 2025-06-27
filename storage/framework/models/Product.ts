@@ -34,11 +34,10 @@ export default {
 
   attributes: {
     name: {
-      required: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           max: 'Name must have a maximum of 100 characters',
         },
@@ -47,7 +46,6 @@ export default {
     },
 
     description: {
-      required: false,
       order: 2,
       fillable: true,
       validation: {
@@ -57,11 +55,10 @@ export default {
     },
 
     price: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.number().min(0.01),
+        rule: schema.number().required().min(0.01),
         message: {
           min: 'Price must be at least 0.01',
         },
@@ -70,7 +67,6 @@ export default {
     },
 
     imageUrl: {
-      required: false,
       order: 4,
       fillable: true,
       validation: {
@@ -83,7 +79,6 @@ export default {
     },
 
     isAvailable: {
-      required: false,
       order: 5,
       fillable: true,
       validation: {
@@ -93,7 +88,6 @@ export default {
     },
 
     inventoryCount: {
-      required: false,
       order: 6,
       fillable: true,
       validation: {
@@ -106,11 +100,10 @@ export default {
     },
 
     preparationTime: {
-      required: true,
       order: 8,
       fillable: true,
       validation: {
-        rule: schema.number().min(1),
+        rule: schema.number().required().min(1),
         message: {
           min: 'Preparation time must be at least 1 minute',
         },
@@ -119,7 +112,6 @@ export default {
     },
 
     allergens: {
-      required: false,
       order: 9,
       fillable: true,
       validation: {
@@ -134,7 +126,6 @@ export default {
     },
 
     nutritionalInfo: {
-      required: false,
       order: 10,
       fillable: true,
       validation: {

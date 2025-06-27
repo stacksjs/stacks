@@ -58,9 +58,9 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().required(),
+        rule: schema.enum(['fixed_amount', 'percentage']).required(),
       },
-      factory: faker => faker.helpers.arrayElement(['PERCENTAGE', 'FIXED_AMOUNT', 'FREE_ITEM']),
+      factory: faker => faker.helpers.arrayElement(['fixed_amount', 'percentage']),
     },
 
     discountValue: {

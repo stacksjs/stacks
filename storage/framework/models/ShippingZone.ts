@@ -32,11 +32,10 @@ export default {
   hasMany: ['ShippingRate'],
   attributes: {
     name: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           max: 'Name must have a maximum of 100 characters',
         },
@@ -45,7 +44,6 @@ export default {
     },
 
     countries: {
-      required: false,
       order: 3,
       fillable: true,
       validation: {
@@ -62,7 +60,6 @@ export default {
     },
 
     regions: {
-      required: false,
       order: 4,
       fillable: true,
       validation: {
@@ -80,7 +77,6 @@ export default {
     },
 
     postalCodes: {
-      required: false,
       order: 5,
       fillable: true,
       validation: {
@@ -100,11 +96,10 @@ export default {
     },
 
     status: {
-      required: true,
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.enum(['active', 'inactive', 'draft']),
+        rule: schema.enum(['active', 'inactive', 'draft']).required(),
       },
       factory: faker => faker.helpers.arrayElement(['active', 'inactive', 'draft']),
     },

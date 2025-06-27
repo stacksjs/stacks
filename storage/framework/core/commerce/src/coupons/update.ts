@@ -11,17 +11,11 @@ import { fetchById } from './fetch'
  * @returns The updated coupon record
  */
 export async function update(id: number, data: Omit<CouponUpdate, 'id'>): Promise<CouponJsonResponse | undefined> {
-  
   // Check if coupon exists
   const existingCoupon = await fetchById(id)
   if (!existingCoupon) {
     throw new Error(`Coupon with ID ${id} not found`)
   }
-
-  console.log({
-    ...data,
-    updated_at: formatDate(new Date()),
-  }) 
 
   try {
     // Update the coupon

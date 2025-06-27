@@ -16,9 +16,8 @@ export default {
   attributes: {
     name: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string().max(191),
+        rule: schema.string().required().max(191),
         message: {
           string: 'name must be a string',
           required: 'name is required',
@@ -29,9 +28,8 @@ export default {
 
     secret: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           string: 'secret must be a string',
           required: 'secret is required',
@@ -43,7 +41,7 @@ export default {
     provider: {
       fillable: true,
       validation: {
-        rule: schema.string().max(191),
+        rule: schema.string().required().max(191),
         message: {
           string: 'provider must be a string',
           max: 'provider must have a maximum of 191 characters',
@@ -53,9 +51,8 @@ export default {
 
     redirect: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.string().max(191),
+        rule: schema.string().required().max(191),
         message: {
           string: 'redirect must be a string',
           required: 'redirect is required',
@@ -66,9 +63,8 @@ export default {
 
     personalAccessClient: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.boolean(),
+        rule: schema.boolean().required(),
         message: {
           boolean: 'personalAccessClient must be a boolean',
           required: 'personalAccessClient is required',
@@ -79,9 +75,8 @@ export default {
 
     passwordClient: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.boolean(),
+        rule: schema.boolean().required(),
         message: {
           boolean: 'passwordClient must be a boolean',
           required: 'passwordClient is required',
@@ -92,9 +87,8 @@ export default {
 
     revoked: {
       fillable: true,
-      required: true,
       validation: {
-        rule: schema.boolean(),
+        rule: schema.boolean().required(),
         message: {
           boolean: 'revoked must be a boolean',
           required: 'revoked is required',

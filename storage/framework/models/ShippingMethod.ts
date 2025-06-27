@@ -32,11 +32,10 @@ export default {
 
   attributes: {
     name: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           max: 'Name must have a maximum of 100 characters',
         },
@@ -45,7 +44,6 @@ export default {
     },
 
     description: {
-      required: false,
       order: 3,
       fillable: true,
       validation: {
@@ -58,11 +56,10 @@ export default {
     },
 
     baseRate: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.number().min(0),
+        rule: schema.number().required().min(0),
         message: {
           min: 'Base rate cannot be negative',
         },
@@ -85,11 +82,10 @@ export default {
     },
 
     status: {
-      required: true,
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.enum(['active', 'inactive', 'draft']),
+        rule: schema.enum(['active', 'inactive', 'draft']).required(),
       },
       factory: faker => faker.helpers.arrayElement(['active', 'inactive', 'draft']),
     },

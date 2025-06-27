@@ -18,7 +18,7 @@ export default {
   attributes: {
     subscribed: {
       fillable: true,
-        validation: {
+      validation: {
         rule: schema.boolean().required(),
         message: {
           boolean: 'subscribed must be a boolean',
