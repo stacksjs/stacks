@@ -1,4 +1,4 @@
-import type { NumberValidatorType, StringValidatorType, ValidationType, Validator } from '@stacksjs/ts-validation'
+import type { BooleanValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, ValidationType, Validator } from '@stacksjs/ts-validation'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
@@ -102,7 +102,8 @@ function findCharacterLength(validator: ValidationType): number {
   // Check for max length constraint
   if ('getRules' in validator) {
     const maxLengthRule = validator.getRules().find((rule: any) => rule.name === 'max')
-    return maxLengthRule?.params?.length || 255
+
+    return maxLengthRule?.params?.length || maxLengthRule?.params?.max || 255
   }
   
   return 255
@@ -274,33 +275,22 @@ export function prepareNumberColumnType(validator: NumberValidatorType, driver =
 }
 
 // Add new function for enum column types
-export function prepareEnumColumnType(validator: ValidationType, driver = 'mysql'): string {
-  if (!validator)
+export function prepareEnumColumnType(validator: EnumValidatorType<string | number>, driver = 'mysql'): string {
+  const allowedValues = validator.getAllowedValues()
+
+  if (!allowedValues) 
     throw new Error('Enum rule found but no allowedValues defined')
 
-  // For enum validators, use the getAllowedValues method
-  if (validator.name === 'enum' && 'getAllowedValues' in validator) {
-    const allowedValues = (validator as any).getAllowedValues()
     const enumStructure = allowedValues.map((value: any) => `'${value}'`).join(', ')
 
     if (driver === 'sqlite')
       return `'text'` // SQLite doesn't support ENUM, but we'll enforce values at app level
 
     return `sql\`enum(${enumStructure})\`` // MySQL supports native ENUM
-  }
-
-  // Fallback for other cases
-  if (driver === 'sqlite')
-    return `'text'`
-
-  return `'varchar(255)'`
 }
 
 export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'mysql'): string {
-  // Check for enum type
-  const enumRule = validator.name === 'enum'
-
-  if (enumRule)
+  if (enumValidator(validator))
     return prepareEnumColumnType(validator, driver)
 
   // Check for base types
@@ -310,7 +300,7 @@ export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'my
   if (isNumberValidator(validator))
     return prepareNumberColumnType(validator, driver)
 
-  if (validator.name === 'boolean')
+  if (isBooleanValidator(validator))
     return `'boolean'` // Use boolean type for both MySQL and SQLite
 
   // Handle date types
@@ -339,4 +329,12 @@ function isStringValidator(v: ValidationType): v is StringValidatorType {
 
 function isNumberValidator(v: ValidationType): v is NumberValidatorType {
   return v.name === 'number'
+}
+
+function enumValidator(v: ValidationType): v is EnumValidatorType<string | number> {
+  return v.name === 'enum'
+}
+
+function isBooleanValidator(v: ValidationType): v is BooleanValidatorType {
+  return v.name === 'boolean'
 }
