@@ -20,6 +20,7 @@ import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { camelCase, kebabCase, pascalCase, plural, singular, slugify, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
+import { type Validator } from '@stacksjs/ts-validation'
 import { globSync } from 'tinyglobby'
 import { generateModelString } from './generate'
 import { generateTraitRequestTypes, generateTraitTableInterfaces, traitInterfaces } from './generated/table-traits'
@@ -978,7 +979,7 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
     // Check if the field is required by parsing the validation rule
     const rule = rules[index] ?? ''
 
-    requiredValue = fieldExist.validation?.rule.isRequired ?? false
+    requiredValue = (fieldExist.validation?.rule as Validator<any>).isRequired ?? false
 
     return {
       field,
