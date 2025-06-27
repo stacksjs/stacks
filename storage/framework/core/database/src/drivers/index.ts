@@ -349,3 +349,8 @@ export function mapFieldTypeToColumnType(validator: Validator, driver = 'mysql')
 
   return driver === 'mysql' ? `'varchar(255)'` : `'text'`
 }
+
+export function checkIsRequired(rule: string): boolean {
+  // Check if the rule contains .required()
+  return rule.includes('.required()')
+}

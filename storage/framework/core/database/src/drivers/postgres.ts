@@ -10,6 +10,7 @@ import { snakeCase } from '@stacksjs/strings'
 import {
   arrangeColumns,
   checkPivotMigration,
+  checkIsRequired,
   deleteFrameworkModels,
   deleteMigrationFiles,
   getLastMigrationFields,
@@ -154,15 +155,17 @@ async function createTableMigration(modelPath: string) {
     const fieldOptions = options as Attribute
     const fieldNameFormatted = snakeCase(fieldName)
     const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
+    const isRequired = checkIsRequired(fieldOptions.validation?.rule)
+    
     migrationContent += `    .addColumn('${fieldNameFormatted}', '${columnType}'`
 
     // Check if there are configurations that require the lambda function
-    if (fieldOptions.unique || fieldOptions.validation?.rule?.required || fieldOptions.default !== undefined) {
+    if (isRequired || fieldOptions.unique || fieldOptions.default !== undefined) {
       migrationContent += `, col => col`
+      if (isRequired)
+        migrationContent += `.notNull()`
       if (fieldOptions.unique)
         migrationContent += `.unique()`
-      if (fieldOptions.validation?.rule?.required)
-        migrationContent += `.notNull()`
       if (fieldOptions.default !== undefined) {
         if (typeof fieldOptions.default === 'string')
           migrationContent += `.defaultTo('${fieldOptions.default}')`
@@ -304,16 +307,17 @@ async function createAlterTableMigration(modelPath: string) {
     const options = currentFields[fieldName] as Attribute
     const columnType = mapFieldTypeToColumnType(options.validation?.rule, 'postgres')
     const formattedFieldName = snakeCase(fieldName)
+    const isRequired = checkIsRequired(options.validation?.rule)
 
     migrationContent += `    .addColumn('${formattedFieldName}', '${columnType}'`
 
     // Check if there are configurations that require the lambda function
-    if (options.unique || options.validation?.rule?.required || options.default !== undefined) {
+    if (isRequired || options.unique || options.default !== undefined) {
       migrationContent += `, col => col`
+      if (isRequired)
+        migrationContent += `.notNull()`
       if (options.unique)
         migrationContent += `.unique()`
-      if (options.validation?.rule?.required)
-        migrationContent += `.notNull()`
       if (options.default !== undefined) {
         if (typeof options.default === 'string')
           migrationContent += `.defaultTo('${options.default}')`
