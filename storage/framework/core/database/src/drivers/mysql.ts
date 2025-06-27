@@ -11,7 +11,6 @@ import { snakeCase } from '@stacksjs/strings'
 import {
   arrangeColumns,
   checkPivotMigration,
-  checkIsRequired,
   deleteFrameworkModels,
   deleteMigrationFiles,
   fetchTables,
@@ -166,7 +165,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
     const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
-    const isRequired = checkIsRequired(fieldOptions.validation?.rule)
+    const isRequired = fieldOptions.validation?.rule.isRequired
 
     // Check if there are configurations that require the lambda function
     if (isRequired || fieldOptions.unique || fieldOptions.default !== undefined) {
