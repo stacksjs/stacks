@@ -50,7 +50,7 @@ export class Action {
     path,
     method,
     requestFile,
-    model
+    model,
   }: ActionOptions) {
     // log.debug(`Action ${name} created`) // TODO: this does not yet work because the cloud does not yet have proper file system (efs) access
 

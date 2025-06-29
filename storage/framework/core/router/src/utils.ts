@@ -86,7 +86,7 @@ export async function findRequestInstanceFromAction(model: string): Promise<Mode
   const requestInstance = await import(requestPath)
 
   const requestIndex = `${camelCase(model)}Request`
-  
+
   return requestInstance[requestIndex]
 }
 

@@ -299,13 +299,13 @@ export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'my
     return 'date'
 
   if (isDatetimeValidator(validator))
-    return 'datetime'
+    return `'datetime'`
 
   if (isUnixValidator(validator))
-    return 'bigint'
+    return `'bigint'`
 
   if (isTimestampValidator(validator))
-    return 'timestamp'
+    return `'timestamp'`
 
   // Handle array/object types
   if (['array', 'object'].includes(validator.name))

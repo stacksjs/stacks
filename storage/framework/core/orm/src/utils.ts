@@ -1,3 +1,4 @@
+import type { Validator } from '@stacksjs/ts-validation'
 import type {
   Attribute,
   AttributesElements,
@@ -20,7 +21,6 @@ import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { camelCase, kebabCase, pascalCase, plural, singular, slugify, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
-import { type Validator } from '@stacksjs/ts-validation'
 import { globSync } from 'tinyglobby'
 import { generateModelString } from './generate'
 import { generateTraitRequestTypes, generateTraitTableInterfaces, traitInterfaces } from './generated/table-traits'

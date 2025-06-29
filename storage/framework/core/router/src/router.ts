@@ -8,7 +8,7 @@ import { kebabCase, pascalCase } from '@stacksjs/strings'
 import { customValidate, isObject, isObjectNotEmpty } from '@stacksjs/validation'
 import { staticRoute } from './'
 import { response } from './response'
-import { extractDefaultRequest, findRequestInstance, findRequestInstanceFromAction } from './utils'
+import { extractDefaultRequest, findRequestInstanceFromAction } from './utils'
 
 type ActionPath = string
 
