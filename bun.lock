@@ -1419,7 +1419,7 @@
         "markdown-it-shiki": "^0.9.0",
         "unplugin-auto-import": "^19.3.0",
         "unplugin-vue-components": "^28.7.0",
-        "unplugin-vue-markdown": "^28.3.1",
+        "unplugin-vue-markdown": "^29.0.0",
         "vite": "npm:rolldown-vite@latest",
         "vite-plugin-full-reload": "^1.2.0",
         "vite-plugin-inspect": "^11.2.0",
@@ -1449,7 +1449,7 @@
         "markdown-it-shiki": "^0.9.0",
         "unplugin-auto-import": "^19.3.0",
         "unplugin-vue-components": "^28.7.0",
-        "unplugin-vue-markdown": "^28.3.1",
+        "unplugin-vue-markdown": "^29.0.0",
         "vite": "npm:rolldown-vite@latest",
         "vite-plugin-full-reload": "^1.2.0",
         "vite-plugin-inspect": "^11.2.0",
@@ -1590,7 +1590,7 @@
         "unocss": "66.2.3",
         "unplugin-auto-import": "^19.3.0",
         "unplugin-vue-components": "^28.7.0",
-        "unplugin-vue-markdown": "^28.3.1",
+        "unplugin-vue-markdown": "^29.0.0",
         "unplugin-vue-router": "^0.12.0",
         "vite": "npm:rolldown-vite@latest",
         "vite-bundle-visualizer": "^1.2.1",
@@ -5207,7 +5207,7 @@
 
     "unplugin-vue-components": ["unplugin-vue-components@28.7.0", "", { "dependencies": { "chokidar": "^3.6.0", "debug": "^4.4.1", "local-pkg": "^1.1.1", "magic-string": "^0.30.17", "mlly": "^1.7.4", "tinyglobby": "^0.2.14", "unplugin": "^2.3.4", "unplugin-utils": "^0.2.4" }, "peerDependencies": { "@babel/parser": "^7.15.8", "@nuxt/kit": "^3.2.2", "vue": "2 || 3" }, "optionalPeers": ["@babel/parser", "@nuxt/kit"] }, "sha512-3SuWAHlTjOiZckqRBGXRdN/k6IMmKyt2Ch5/+DKwYaT321H0ItdZDvW4r8/YkEKQpN9TN3F/SZ0W342gQROC3Q=="],
 
-    "unplugin-vue-markdown": ["unplugin-vue-markdown@28.3.1", "", { "dependencies": { "@mdit-vue/plugin-component": "^2.1.3", "@mdit-vue/plugin-frontmatter": "^2.1.3", "@mdit-vue/types": "^2.1.0", "@types/markdown-it": "^14.1.2", "markdown-it": "^14.1.0", "markdown-it-async": "^2.0.0", "unplugin": "^2.2.0", "unplugin-utils": "^0.2.4" }, "peerDependencies": { "vite": "^2.0.0 || ^3.0.0-0 || ^4.0.0-0 || ^5.0.0-0 || ^6.0.0" } }, "sha512-t+vhR2QbTba/NabOkonzdaRngM/hHiDH059L4wZPPMeysTp8ZxQ5gv8QoXEqkSMoM+uKUWVZOiIWpDhYcCXR/Q=="],
+    "unplugin-vue-markdown": ["unplugin-vue-markdown@29.0.0", "", { "dependencies": { "@mdit-vue/plugin-component": "^2.1.4", "@mdit-vue/plugin-frontmatter": "^2.1.4", "@mdit-vue/types": "^2.1.4", "@types/markdown-it": "^14.1.2", "markdown-it": "^14.1.0", "markdown-it-async": "^2.2.0", "unplugin": "^2.3.5", "unplugin-utils": "^0.2.4" }, "peerDependencies": { "vite": "^2.0.0 || ^3.0.0-0 || ^4.0.0-0 || ^5.0.0-0 || ^6.0.0" } }, "sha512-zU1vKebJT7c5lyNtJhtBchCdmcVq83H3CTDbFb+TNqFrMkYxTbFlFIAWR4MuIAwU5zl2wBTyLkc+lAs64t6vRw=="],
 
     "unplugin-vue-router": ["unplugin-vue-router@0.12.0", "", { "dependencies": { "@babel/types": "^7.26.8", "@vue-macros/common": "^1.16.1", "ast-walker-scope": "^0.6.2", "chokidar": "^4.0.3", "fast-glob": "^3.3.3", "json5": "^2.2.3", "local-pkg": "^1.0.0", "magic-string": "^0.30.17", "micromatch": "^4.0.8", "mlly": "^1.7.4", "pathe": "^2.0.2", "scule": "^1.3.0", "unplugin": "^2.2.0", "unplugin-utils": "^0.2.3", "yaml": "^2.7.0" }, "peerDependencies": { "vue-router": "^4.4.0" }, "optionalPeers": ["vue-router"] }, "sha512-xjgheKU0MegvXQcy62GVea0LjyOdMxN0/QH+ijN29W62ZlMhG7o7K+0AYqfpprvPwpWtuRjiyC5jnV2SxWye2w=="],
 
