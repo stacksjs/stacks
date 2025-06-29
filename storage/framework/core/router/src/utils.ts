@@ -2,7 +2,7 @@ import type { Ok } from '@stacksjs/error-handling'
 import type { ModelRequest, RequestInstance } from '@stacksjs/types'
 import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
-import { camelCase } from '@stacksjs/strings'
+import { camelCase, pascalCase, snakeCase } from '@stacksjs/strings'
 import { route } from './router'
 
 export async function listRoutes(): Promise<Ok<string, any>> {
@@ -76,10 +76,28 @@ export async function findRequestInstanceFromAction(model: string): Promise<Mode
   const requestPath = path.frameworkPath(`requests/${model}Request.ts`)
   const requestInstance = await import(requestPath)
 
-  console.log(requestInstance)
   const requestIndex = `${camelCase(model)}Request`
 
   return requestInstance[requestIndex]
+}
+
+export function getActionName(actionPath: string): string {
+  const baseName = path.basename(actionPath)
+
+  return baseName.replace(/\.ts$/, '')
+}
+
+export function getModelFromAction(action: string): string {
+  const actionName = getActionName(action)
+  
+  let modelName = actionName
+    .replace(/Action$/, '')
+    .replace(/Orm$/, '')
+    .replace(/(Store|Update|Edit|Index|Show|Destroy|Create|Delete)/g, '')
+    .replace(/\s+/g, '')
+    .trim()
+  
+  return modelName
 }
 
 export async function extractDefaultRequest(): Promise<RequestInstance> {
