@@ -351,14 +351,12 @@ export class Router implements RouterInterface {
       else
         actionModule = await import(importPathFunction(modulePath))
 
-      console.log(getModelFromAction(modulePath))
-
       // Use custom path from action module if available
       const newPath = actionModule.default.path ?? originalPath
       this.updatePathIfNeeded(newPath, originalPath)
 
       if (actionModule.default.model)
-        requestInstance = await findRequestInstanceFromAction(actionModule.default.model)
+        requestInstance = await findRequestInstanceFromAction(getModelFromAction(modulePath))
 
       if (isObjectNotEmpty(actionModule.default.validations) && requestInstance)
         await customValidate(actionModule.default.validations, requestInstance.all())
