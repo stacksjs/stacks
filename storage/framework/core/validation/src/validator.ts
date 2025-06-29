@@ -1,5 +1,5 @@
-import type { ValidationInstance, Validator } from '@stacksjs/ts-validation'
-import type { Model, VineType } from '@stacksjs/types'
+import type { ValidationInstance, ValidationType, Validator } from '@stacksjs/ts-validation'
+import type { Model } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
@@ -11,7 +11,7 @@ interface RequestData {
 }
 
 interface ValidationField {
-  rule: VineType
+  rule: ValidationType
   message: Record<string, string>
 }
 
@@ -83,14 +83,14 @@ export async function validateField(modelFile: string, params: RequestData): Pro
 }
 
 export async function customValidate(attributes: CustomAttributes, params: RequestData): Promise<any> {
-  const ruleObject: Record<string, ValidationInstance> = {}
+  const ruleObject: Record<string, Validator<any>> = {}
   const messageObject: Record<string, string> = {}
 
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
       const rule = attributes[key]?.rule
       if (rule)
-        ruleObject[key] = rule as ValidationInstance
+        ruleObject[key] = rule as Validator<any>
 
       const validatorMessages = attributes[key]?.message
 
