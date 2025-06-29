@@ -8,7 +8,7 @@ export default new Action({
   name: 'Page Update',
   description: 'Page Update ORM Action',
   method: 'PATCH',
-  requestFile: 'PageRequest',
+  model: 'Page',
   async handle(request: PageRequestType) {
     await request.validate()
 

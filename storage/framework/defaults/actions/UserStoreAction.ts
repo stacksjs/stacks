@@ -6,7 +6,7 @@ export default new Action({
   name: 'UserStoreAction',
   description: 'Store User Data',
   method: 'POST',
-  requestFile: 'UserRequest',
+  model: 'User',
   async handle(request: UserRequestType) {
     await request.validate()
 

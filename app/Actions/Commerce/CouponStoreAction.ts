@@ -9,7 +9,7 @@ export default new Action({
   name: 'Coupon Store',
   description: 'Coupon Store ORM Action',
   method: 'POST',
-  requestFile: 'CouponRequest',
+  model: 'Coupon',
   async handle(request: CouponRequestType) {
     await request.validate()
 

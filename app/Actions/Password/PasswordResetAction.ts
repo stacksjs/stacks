@@ -8,7 +8,7 @@ export default new Action({
   name: 'PasswordResetAction',
   description: 'Password Reset',
   method: 'POST',
-  requestFile: 'PasswordResetRequest',
+  model: 'PasswordResets',
   async handle(request: RequestInstance) {
     const token = request.get('token')
     const password = request.get('password')

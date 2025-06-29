@@ -81,6 +81,15 @@ export async function findRequestInstance(requestInstance: string): Promise<Mode
   return reqInstance[camelCase(requestInstance)]
 }
 
+export async function findRequestInstanceFromAction(model: string): Promise<ModelRequest> {
+  const requestPath = path.frameworkPath(`requests/${model}Request.ts`)
+  const requestInstance = await import(requestPath)
+
+  const requestIndex = `${camelCase(model)}Request`
+  
+  return requestInstance[requestIndex]
+}
+
 export async function extractDefaultRequest(): Promise<RequestInstance> {
   const requestPath = path.frameworkPath(`core/router/src/request.ts`)
   const requestInstance = await import(requestPath)

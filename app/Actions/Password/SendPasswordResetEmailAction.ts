@@ -8,7 +8,7 @@ export default new Action({
   name: 'SendPasswordResetEmailAction',
   description: 'Send Password Reset Email',
   method: 'POST',
-  requestFile: 'PasswordResetRequest',
+  model: 'PasswordResets',
   async handle(request: PasswordResetsRequestType) {
     const email = request.get('email')
 

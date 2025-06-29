@@ -21,6 +21,7 @@ interface ActionOptions {
   enabled?: JobOptions['enabled']
   path?: string
   requestFile?: string
+  model?: string
   handle: (options?: Request) => Promise<any> | string | number | boolean
 }
 
@@ -36,7 +37,7 @@ export class Action {
   validations?: ActionOptions['validations']
   requestFile?: string
   handle: ActionOptions['handle']
-
+  model?: ActionOptions['model']
   constructor({
     name,
     description,
@@ -49,6 +50,7 @@ export class Action {
     path,
     method,
     requestFile,
+    model
   }: ActionOptions) {
     // log.debug(`Action ${name} created`) // TODO: this does not yet work because the cloud does not yet have proper file system (efs) access
 
@@ -63,5 +65,6 @@ export class Action {
     this.method = method
     this.handle = handle
     this.requestFile = requestFile
+    this.model = model
   }
 }

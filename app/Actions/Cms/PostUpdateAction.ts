@@ -10,7 +10,7 @@ export default new Action({
   name: 'Post Update',
   description: 'Post Update ORM Action',
   method: 'PATCH',
-  requestFile: 'PostRequest',
+  model: 'Post',
   async handle(request: PostRequestType) {
     await request.validate()
 

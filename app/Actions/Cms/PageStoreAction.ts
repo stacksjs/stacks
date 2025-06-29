@@ -7,7 +7,7 @@ export default new Action({
   name: 'Page Store',
   description: 'Page Store ORM Action',
   method: 'POST',
-  requestFile: 'PageRequest',
+  model: 'Page',
   async handle(request: PageRequestType) {
     await request.validate()
 

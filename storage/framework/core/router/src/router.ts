@@ -8,7 +8,7 @@ import { kebabCase, pascalCase } from '@stacksjs/strings'
 import { customValidate, isObject, isObjectNotEmpty } from '@stacksjs/validation'
 import { staticRoute } from './'
 import { response } from './response'
-import { extractDefaultRequest, findRequestInstance } from './utils'
+import { extractDefaultRequest, findRequestInstance, findRequestInstanceFromAction } from './utils'
 
 type ActionPath = string
 
@@ -355,8 +355,8 @@ export class Router implements RouterInterface {
       const newPath = actionModule.default.path ?? originalPath
       this.updatePathIfNeeded(newPath, originalPath)
 
-      if (actionModule.default.requestFile)
-        requestInstance = await findRequestInstance(actionModule.default.requestFile)
+      if (actionModule.default.model)
+        requestInstance = await findRequestInstanceFromAction(actionModule.default.model)
 
       if (isObjectNotEmpty(actionModule.default.validations) && requestInstance)
         await customValidate(actionModule.default.validations, requestInstance.all())
