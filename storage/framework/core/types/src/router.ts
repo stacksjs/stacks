@@ -1,6 +1,7 @@
 import type { Action } from '@stacksjs/actions'
 import type { Request } from '@stacksjs/router'
-import type { VineType } from '@stacksjs/types'
+import type { ValidationType } from '@stacksjs/ts-validation'
+import type { HttpMethod } from './request'
 
 type ActionPath = string
 // need to refactor before, after, view to be a part of some other type
@@ -11,7 +12,7 @@ export interface RequestData {
 }
 
 export interface ValidationField {
-  rule: VineType
+  rule: ValidationType
   message: Record<string, string>
 }
 

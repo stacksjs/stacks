@@ -296,7 +296,7 @@ export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'my
   // Handle date types
 
   if (isDateValidator(validator))
-    return 'date'
+    return `'date'`
 
   if (isDatetimeValidator(validator))
     return `'datetime'`

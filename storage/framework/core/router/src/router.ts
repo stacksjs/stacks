@@ -356,6 +356,8 @@ export class Router implements RouterInterface {
       this.updatePathIfNeeded(newPath, originalPath)
 
       if (actionModule.default.model)
+        requestInstance = await findRequestInstanceFromAction(actionModule.default.model)
+      else
         requestInstance = await findRequestInstanceFromAction(getModelFromAction(modulePath))
 
       if (isObjectNotEmpty(actionModule.default.validations) && requestInstance)
