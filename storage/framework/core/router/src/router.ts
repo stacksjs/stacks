@@ -355,6 +355,7 @@ export class Router implements RouterInterface {
       const newPath = actionModule.default.path ?? originalPath
       this.updatePathIfNeeded(newPath, originalPath)
 
+      console.log(actionModule)
       if (actionModule.default.model)
         requestInstance = await findRequestInstanceFromAction(actionModule.default.model)
 

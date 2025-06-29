@@ -72,19 +72,11 @@ export async function extractModelRequest(action: string): Promise<RequestInstan
   return requestInstance[requestIndex]
 }
 
-export async function findRequestInstance(requestInstance: string): Promise<ModelRequest> {
-  const frameworkDirectory = path.storagePath('framework/requests')
-  const filePath = path.join(frameworkDirectory, `${requestInstance}.ts`)
-
-  const reqInstance = await import(filePath)
-
-  return reqInstance[camelCase(requestInstance)]
-}
-
 export async function findRequestInstanceFromAction(model: string): Promise<ModelRequest> {
   const requestPath = path.frameworkPath(`requests/${model}Request.ts`)
   const requestInstance = await import(requestPath)
 
+  console.log(requestInstance)
   const requestIndex = `${camelCase(model)}Request`
 
   return requestInstance[requestIndex]
