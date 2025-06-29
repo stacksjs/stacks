@@ -1,4 +1,4 @@
-import type { ValidationInstance } from '@stacksjs/ts-validation'
+import type { ValidationInstance, Validator } from '@stacksjs/ts-validation'
 import type { Model, VineType } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
@@ -36,16 +36,24 @@ export async function validateField(modelFile: string, params: RequestData): Pro
   const model = (await import(modelPath)).default as Model
   const attributes = model.attributes
 
-  const ruleObject: Record<string, ValidationInstance> = {}
+  const ruleObject: Record<string, Validator<any>> = {}
   const messageObject: Record<string, string> = {}
 
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
+
+      const attributeKey = attributes[key]
+
+      const isRequired = 'isRequired' in (attributeKey.validation?.rule ?? {})
+      ? (attributeKey.validation?.rule as Validator<any>).isRequired
+      : false
+
       // Skip validation if the attribute has a default value or is required
-      if (attributes[key]?.default !== undefined || attributes[key]?.required === false)
+      if (attributeKey.default !== undefined || isRequired === false)
         continue
 
-      ruleObject[snakeCase(key)] = attributes[key]?.validation?.rule
+      ruleObject[snakeCase(key)] = attributeKey.validation?.rule as Validator<any>
+      
       const validatorMessages = attributes[key]?.validation?.message
 
       if (validatorMessages) {
