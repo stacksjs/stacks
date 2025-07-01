@@ -118,9 +118,9 @@ export default {
       order: 9,
       fillable: true,
       validation: {
-        rule: schema.string().required().max(1000),
+        rule: schema.string().max(1000),
       },
-      factory: faker => faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.3 }),
+      factory: faker => faker.lorem.sentence(),
     },
 
     appliedCouponId: {

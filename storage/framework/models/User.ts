@@ -74,7 +74,7 @@ export default {
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().required().email(),
+        rule: schema.string().email(),
         message: {
           email: 'Email must be a valid email address',
         },
