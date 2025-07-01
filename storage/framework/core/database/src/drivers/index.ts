@@ -6,8 +6,9 @@ import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'
-import { enumValidator, isBooleanValidator, isDatetimeValidator, isDateValidator, isFloatValidator, isNumberValidator, isStringValidator, isTimestampValidator, isUnixValidator } from '../validators'
-import type { DateValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, ValidationType } from '@stacksjs/ts-validation'
+import { checkValidator, findCharacterLength } from '../validators'
+import type { ValidationType } from '@stacksjs/ts-validation'
+
 export * from './mysql'
 export * from './postgres'
 export * from './sqlite'
@@ -97,43 +98,6 @@ export async function getExecutedMigrations(): Promise<{ name: string }[]> {
 
     return []
   }
-}
-
-function findCharacterLength(validator: ValidationType): number {
-  // Check for max length constraint
-  if ('getRules' in validator) {
-    const maxLengthRule = validator.getRules().find((rule: any) => rule.name === 'max')
-
-    return maxLengthRule?.params?.length || maxLengthRule?.params?.max || 255
-  }
-
-  return 255
-}
-
-export function prepareTextColumnType(validator: StringValidatorType, driver = 'mysql'): string {
-  // SQLite uses TEXT for all string types
-  if (driver === 'sqlite')
-    return `'text'`
-
-  // Get length and choose appropriate MySQL type
-  const maxLength = findCharacterLength(validator)
-
-  return `'varchar(${maxLength})'`
-}
-
-// Add new function for date/time column types
-export function prepareDateTimeColumnType(validator: DateValidatorType, driver = 'mysql'): string {
-  if (driver === 'sqlite')
-    return `'text'` // SQLite uses TEXT for dates
-
-  const name = validator.name
-  // Try to determine specific date type
-
-  if (name === 'unix')
-    return `'bigint'`
-
-  // Default to datetime
-  return name || 'date'
 }
 
 export function compareRanges(range1: Range, range2: Range): boolean {
@@ -246,70 +210,12 @@ export function getUpvoteTableName(model: Model, tableName: string): string | un
     : undefined
 }
 
-export function prepareNumberColumnType(validator: NumberValidatorType, driver = 'mysql'): string {
-  // SQLite uses integer for all numbers
-  if (driver === 'sqlite')
-    return `'integer'`
-
-  // Check for integer types
-  if ('getRules' in validator) {
-    const minRule = validator.getRules().find((rule: any) => rule.name === 'min')
-    const maxRule = validator.getRules().find((rule: any) => rule.name === 'max')
-
-    const min = minRule?.params?.min ?? -2147483648
-    const max = maxRule?.params?.max ?? 2147483647
-
-    return min >= -2147483648 && max <= 2147483647 ? `'integer'` : `'bigint'`
-  }
-
-  return `'integer'`
-}
-
-// Add new function for enum column types
-export function prepareEnumColumnType(validator: EnumValidatorType<string | number>, driver = 'mysql'): string {
-  const allowedValues = validator.getAllowedValues()
-
-  if (!allowedValues)
-    throw new Error('Enum rule found but no allowedValues defined')
-
-  const enumStructure = allowedValues.map((value: any) => `'${value}'`).join(', ')
-
-  if (driver === 'sqlite')
-    return `'text'` // SQLite doesn't support ENUM, but we'll enforce values at app level
-
-  return `sql\`enum(${enumStructure})\`` // MySQL supports native ENUM
-}
 
 export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'mysql'): string {
-  if (enumValidator(validator))
-    return prepareEnumColumnType(validator, driver)
+  const type = checkValidator(validator, driver)
 
-  // Check for base types
-  if (isStringValidator(validator))
-    return prepareTextColumnType(validator, driver)
-
-  if (isNumberValidator(validator))
-    return prepareNumberColumnType(validator, driver)
-
-  if (isBooleanValidator(validator))
-    return `'boolean'` // Use boolean type for both MySQL and SQLite
-
-  // Handle date types
-
-  if (isDateValidator(validator))
-    return `'date'`
-
-  if (isDatetimeValidator(validator))
-    return `'datetime'`
-
-  if (isUnixValidator(validator))
-    return `'bigint'`
-
-  if (isTimestampValidator(validator))
-    return `'timestamp'`
-
-  if (isFloatValidator(validator))
-    return `'double'`
+  if (type !== '')
+    return type
 
   // Handle array/object types
   if (['array', 'object'].includes(validator.name))
