@@ -66,10 +66,10 @@ export async function validateField(modelFile: string, params: RequestData): Pro
   }
 
   try {
+    setCustomMessages(new MessageProvider(messageObject))
+    
     const validator = schema.object(ruleObject)
     const result = await validator.validate(params)
-    
-    setCustomMessages(new MessageProvider(messageObject))
 
     if (!result.valid) {
       reportError(result.errors)
