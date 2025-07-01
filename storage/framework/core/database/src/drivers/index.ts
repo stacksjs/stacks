@@ -346,6 +346,10 @@ function isUnixValidator(v: ValidationType): v is UnixValidatorType {
   return v.name === 'unix'
 }
 
+function isDoubleValidator(v: ValidationType): v is DoubleValidatorType {
+  return v.name === 'double'
+}
+
 function isDatetimeValidator(v: ValidationType): v is DatetimeValidatorType {
   return v.name === 'datetime'
 }
