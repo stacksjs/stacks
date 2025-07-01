@@ -1,4 +1,4 @@
-import type { ValidationInstance, ValidationType, Validator } from '@stacksjs/ts-validation'
+import { MessageProvider, setCustomMessages, type ValidationInstance, type ValidationType, type Validator } from '@stacksjs/ts-validation'
 import type { Model } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
@@ -66,8 +66,10 @@ export async function validateField(modelFile: string, params: RequestData): Pro
   }
 
   try {
-    const validator = schema.object().shape(ruleObject)
+    const validator = schema.object(ruleObject)
     const result = await validator.validate(params)
+    
+    setCustomMessages(new MessageProvider(messageObject))
 
     if (!result.valid) {
       reportError(result.errors)
