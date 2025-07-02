@@ -1,4 +1,4 @@
-import type { ActivitiesTable } from '../src/types/ActivityType'
+import type { Generated } from 'kysely'
 import type { AuthorsTable } from '../src/types/AuthorType'
 import type { CartItemsTable } from '../src/types/CartItemType'
 import type { CartsTable } from '../src/types/CartType'
@@ -6,6 +6,7 @@ import type { CategoriesTable } from '../src/types/CategoryType'
 import type { CouponsTable } from '../src/types/CouponType'
 import type { CustomersTable } from '../src/types/CustomerType'
 import type { DeliveryRoutesTable } from '../src/types/DeliveryRouteType'
+import type { DeploymentsTable } from '../src/types/DeploymentType'
 import type { DigitalDeliveriesTable } from '../src/types/DigitalDeliveryType'
 import type { DriversTable } from '../src/types/DriverType'
 import type { ErrorsTable } from '../src/types/ErrorType'
@@ -32,19 +33,36 @@ import type { PrintDevicesTable } from '../src/types/PrintDeviceType'
 import type { ProductsTable } from '../src/types/ProductType'
 import type { ProductUnitsTable } from '../src/types/ProductUnitType'
 import type { ProductVariantsTable } from '../src/types/ProductVariantType'
+import type { ProjectsTable } from '../src/types/ProjectType'
 import type { ReceiptsTable } from '../src/types/ReceiptType'
+import type { ReleasesTable } from '../src/types/ReleaseType'
 import type { RequestsTable } from '../src/types/RequestType'
 import type { ReviewsTable } from '../src/types/ReviewType'
 import type { ShippingMethodsTable } from '../src/types/ShippingMethodType'
 import type { ShippingRatesTable } from '../src/types/ShippingRateType'
 import type { ShippingZonesTable } from '../src/types/ShippingZoneType'
+import type { SubscriberEmailsTable } from '../src/types/SubscriberEmailType'
+import type { SubscribersTable } from '../src/types/SubscriberType'
 import type { SubscriptionsTable } from '../src/types/SubscriptionType'
 import type { TaxRatesTable } from '../src/types/TaxRateType'
+import type { TeamsTable } from '../src/types/TeamType'
 import type { TransactionsTable } from '../src/types/TransactionType'
 import type { UsersTable } from '../src/types/UserType'
 import type { WaitlistProductsTable } from '../src/types/WaitlistProductType'
 import type { WaitlistRestaurantsTable } from '../src/types/WaitlistRestaurantType'
 import type { WebsocketsTable } from '../src/types/WebsocketType'
+
+export interface TeamsUsersTable {
+  id: Generated<number>
+  team_id: number
+  user_id: number
+}
+
+export interface TeamsUsersTable {
+  id: Generated<number>
+  user_id: number
+  team_id: number
+}
 
 export interface MigrationsTable {
   name: string
@@ -160,9 +178,15 @@ export interface QueryLogsTable {
   optimization_suggestions?: string
 }
 export interface Database {
+  projects: ProjectsTable
+  subscriber_emails: SubscriberEmailsTable
   oauth_access_tokens: OauthAccessTokensTable
   oauth_clients: OauthClientsTable
-  activities: ActivitiesTable
+  teams_users: TeamsUsersTable
+  teams: TeamsTable
+  subscribers: SubscribersTable
+  deployments: DeploymentsTable
+  releases: ReleasesTable
   users: UsersTable
   personal_access_tokens: PersonalAccessTokensTable
   print_devices: PrintDevicesTable

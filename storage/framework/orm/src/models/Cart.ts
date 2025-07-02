@@ -200,7 +200,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
     return this.attributes.currency
   }
 
-  get notes(): string {
+  get notes(): string | undefined {
     return this.attributes.notes
   }
 

@@ -12,7 +12,7 @@ export interface CartsTable {
   total?: number
   expires_at: Date | string
   currency?: string
-  notes: string
+  notes?: string
   applied_coupon_id: string
   customer_id?: number
   coupon_id?: number
@@ -63,7 +63,7 @@ export interface CartModelType {
   set expiresAt(value: Date | string)
   get currency(): string | undefined
   set currency(value: string)
-  get notes(): string
+  get notes(): string | undefined
   set notes(value: string)
   get appliedCouponId(): string
   set appliedCouponId(value: string)

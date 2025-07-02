@@ -1,9 +1,9 @@
-import type { BooleanValidatorType, DatetimeValidatorType, DateValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, TimestampValidatorType, UnixValidatorType, ValidationType, FloatValidatorType, TimestampTzValidatorType, DecimalValidatorType, SmallintValidatorType, IntegerValidatorType, BigintValidatorType, BinaryValidatorType, BlobValidatorType, JsonValidatorType } from '@stacksjs/ts-validation'
+import type { BigintValidatorType, BinaryValidatorType, BlobValidatorType, BooleanValidatorType, DatetimeValidatorType, DateValidatorType, DecimalValidatorType, EnumValidatorType, FloatValidatorType, IntegerValidatorType, JsonValidatorType, NumberValidatorType, SmallintValidatorType, StringValidatorType, TimestampTzValidatorType, TimestampValidatorType, UnixValidatorType, ValidationType } from '@stacksjs/ts-validation'
 
 export function isStringValidator(v: ValidationType): v is StringValidatorType {
   return v.name === 'string'
 }
-  
+
 export function isNumberValidator(v: ValidationType): v is NumberValidatorType {
   return v.name === 'number'
 }
@@ -43,7 +43,7 @@ export function isTimestampTzValidator(v: ValidationType): v is TimestampTzValid
 export function isDecimalValidator(v: ValidationType): v is DecimalValidatorType {
   return v.name === 'decimal'
 }
-    
+
 export function isSmallintValidator(v: ValidationType): v is SmallintValidatorType {
   return v.name === 'smallint'
 }
@@ -69,7 +69,6 @@ export function isJsonValidator(v: ValidationType): v is JsonValidatorType {
 }
 
 export function checkValidator(validator: ValidationType, driver: string): string {
-
   if (enumValidator(validator))
     return prepareEnumColumnType(validator, driver)
 
@@ -79,7 +78,7 @@ export function checkValidator(validator: ValidationType, driver: string): strin
 
   if (isNumberValidator(validator))
     return prepareNumberColumnType(validator, driver)
-  
+
   if (isBooleanValidator(validator))
     return `'boolean'` // Use boolean type for both MySQL and SQLite
 
@@ -104,8 +103,8 @@ export function checkValidator(validator: ValidationType, driver: string): strin
   if (isSmallintValidator(validator))
     return `'smallint'`
 
-    if (isDecimalValidator(validator))
-      return `'decimal'`
+  if (isDecimalValidator(validator))
+    return `'decimal'`
 
   if (isIntegerValidator(validator))
     return `'integer'`
@@ -118,7 +117,6 @@ export function checkValidator(validator: ValidationType, driver: string): strin
 
   return ''
 }
-
 
 export function prepareNumberColumnType(validator: NumberValidatorType, driver = 'mysql'): string {
   // SQLite uses integer for all numbers
@@ -153,7 +151,6 @@ export function prepareEnumColumnType(validator: EnumValidatorType<string | numb
 
   return `sql\`enum(${enumStructure})\`` // MySQL supports native ENUM
 }
-
 
 export function prepareTextColumnType(validator: StringValidatorType, driver = 'mysql'): string {
   // SQLite uses TEXT for all string types

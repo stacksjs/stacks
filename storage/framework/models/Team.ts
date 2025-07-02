@@ -1,7 +1,6 @@
 import type { Model } from '@stacksjs/types'
 import { collect } from '@stacksjs/collections'
 import { schema } from '@stacksjs/validation'
-import type { ValidationType } from '@stacksjs/ts-validation'
 
 export default {
   name: 'Team', // defaults to the sanitized file name

@@ -1,4 +1,4 @@
-
+import type { DateValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, ValidationType } from '@stacksjs/ts-validation'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
@@ -7,7 +7,7 @@ import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'
 import { enumValidator, isBooleanValidator, isDatetimeValidator, isDateValidator, isFloatValidator, isNumberValidator, isStringValidator, isTimestampValidator, isUnixValidator } from '../validators'
-import type { DateValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, ValidationType } from '@stacksjs/ts-validation'
+
 export * from './mysql'
 export * from './postgres'
 export * from './sqlite'
