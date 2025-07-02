@@ -54,7 +54,7 @@
     "@types/crypto-js": "^4.2.2",
     "@types/fs-extra": "^11.0.4",
     "@types/markdown-it-link-attributes": "^3.0.5",
-    "@types/minimatch": "^5.1.2",
+    "@types/minimatch": "^6.0.0",
     "@types/nprogress": "^0.2.3",
     "@vinejs/vine": "^3.0.1",
     "aws-cdk-lib": "^2.201.0",
