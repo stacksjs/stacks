@@ -1,4 +1,4 @@
-import type { ValidationType, Validator } from '@stacksjs/ts-validation'
+import { MessageProvider, setCustomMessages, type ValidationInstance, type ValidationType, type Validator } from '@stacksjs/ts-validation'
 import type { Model } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
@@ -41,18 +41,19 @@ export async function validateField(modelFile: string, params: RequestData): Pro
 
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
+
       const attributeKey = attributes[key]
 
       const isRequired = 'isRequired' in (attributeKey.validation?.rule ?? {})
-        ? (attributeKey.validation?.rule as Validator<any>).isRequired
-        : false
+      ? (attributeKey.validation?.rule as Validator<any>).isRequired
+      : false
 
       // Skip validation if the attribute has a default value or is required
       if (attributeKey.default !== undefined || isRequired === false)
         continue
 
       ruleObject[snakeCase(key)] = attributeKey.validation?.rule as Validator<any>
-
+      
       const validatorMessages = attributes[key]?.validation?.message
 
       if (validatorMessages) {
@@ -65,7 +66,9 @@ export async function validateField(modelFile: string, params: RequestData): Pro
   }
 
   try {
-    const validator = schema.object().shape(ruleObject)
+    setCustomMessages(new MessageProvider(messageObject))
+    
+    const validator = schema.object(ruleObject)
     const result = await validator.validate(params)
 
     if (!result.valid) {

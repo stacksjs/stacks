@@ -56,7 +56,7 @@ export default {
 
   attributes: {
     name: {
-      order: 2,
+    order: 2,
       fillable: true,
       validation: {
         rule: schema.string().required().min(5).max(100),
@@ -76,6 +76,7 @@ export default {
       validation: {
         rule: schema.string().email().required(),
         message: {
+          required: 'Email is required',
           email: 'Email must be a valid email address',
         },
       },
@@ -89,6 +90,7 @@ export default {
       validation: {
         rule: schema.string().required().min(6).max(255),
         message: {
+          required: 'Password is required',
           min: 'Password must have a minimum of 6 characters',
           max: 'Password must have a maximum of 255 characters',
         },

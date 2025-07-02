@@ -174,7 +174,7 @@ export function prepareDateTimeColumnType(validator: DateValidatorType, driver =
   if (name === 'unix')
     return `'bigint'`
 
-  // Default to datetime
+// Default to datetime
   return name || 'date'
 }
 
