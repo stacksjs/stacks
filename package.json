@@ -17,7 +17,7 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "scripts": {
-    "build:reset": "rm -rf node_modules bun.lock && bun install && cd storage/framework && bun run build && cd ../../",
+    "build:reset": "rm -rf node_modules bun.lock && bun install && ./buddy generate:model-files && ./buddy generate:model-files/buddy generate:model-files/buddy lint:fix && cd storage/framework && bun run build && cd ../../",
     "buddy": "bun ./storage/framework/core/buddy/src/cli.ts",
     "stacks": "./buddy",
     "setup": "./storage/framework/scripts/setup.sh",

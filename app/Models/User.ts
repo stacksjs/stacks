@@ -56,7 +56,7 @@ export default {
 
   attributes: {
     name: {
-    order: 2,
+      order: 2,
       fillable: true,
       validation: {
         rule: schema.string().required().min(5).max(100),

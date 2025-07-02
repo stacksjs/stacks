@@ -117,7 +117,7 @@ export default {
       fillable: true,
       validation: {
         rule: schema.enum(['Active', 'Scheduled', 'Expired']),
-        message: {  
+        message: {
           required: 'Status is required',
         },
       },
