@@ -1,17 +1,17 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { NewUser, UserJsonResponse, UsersTable, UserUpdate } from '../types/UserType'
+import type { ActivityModel } from './Activity'
 import type { AuthorModel } from './Author'
-import type { CustomerModel } from './Customer'
 import type { DriverModel } from './Driver'
 import type { OauthAccessTokenModel } from './OauthAccessToken'
 import type { PersonalAccessTokenModel } from './PersonalAccessToken'
-import type { SubscriberModel } from './Subscriber'
 import { randomUUIDv7 } from 'bun'
-
 import { sql } from '@stacksjs/database'
 
 import { HttpError } from '@stacksjs/error-handling'
+
+import { dispatch } from '@stacksjs/events'
 
 import { DB } from '@stacksjs/orm'
 
@@ -23,7 +23,7 @@ import { BaseOrm } from '../utils/base'
 
 export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> {
   private readonly hidden: Array<keyof UserJsonResponse> = ['password']
-  private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'password', 'uuid', 'two_factor_secret', 'public_key', 'team_id']
+  private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'password', 'uuid', 'two_factor_secret', 'public_key']
   private readonly guarded: Array<keyof UserJsonResponse> = []
   protected attributes = {} as UserJsonResponse
   protected originalAttributes = {} as UserJsonResponse
@@ -160,10 +160,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     }
   }
 
-  get subscriber(): SubscriberModel | undefined {
-    return this.attributes.subscriber
-  }
-
   get driver(): DriverModel | undefined {
     return this.attributes.driver
   }
@@ -180,8 +176,8 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return this.attributes.oauth_access_tokens
   }
 
-  get customers(): CustomerModel[] | [] {
-    return this.attributes.customers
+  get activities(): ActivityModel[] | [] {
+    return this.attributes.activities
   }
 
   get id(): number {
@@ -196,20 +192,16 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return this.attributes.public_passkey
   }
 
-  get name(): string {
+  get name(): string | undefined {
     return this.attributes.name
   }
 
-  get email(): string {
+  get email(): string | undefined {
     return this.attributes.email
   }
 
-  get password(): string {
+  get password(): string | undefined {
     return this.attributes.password
-  }
-
-  get github_id(): string | undefined {
-    return this.attributes.github_id
   }
 
   get created_at(): string | undefined {
@@ -238,10 +230,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
   set password(value: string) {
     this.attributes.password = value
-  }
-
-  set github_id(value: string) {
-    this.attributes.github_id = value
   }
 
   set updated_at(value: string) {
@@ -562,6 +550,8 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       throw new HttpError(500, 'Failed to retrieve created User')
     }
 
+    if (model)
+      dispatch('user:created', model)
     return this.createInstance(model)
   }
 
@@ -654,6 +644,8 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve updated User')
       }
 
+      if (model)
+        dispatch('user:updated', model)
       return this.createInstance(model)
     }
 
@@ -677,6 +669,8 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve updated User')
       }
 
+      if (this)
+        dispatch('user:updated', model)
       return this.createInstance(model)
     }
 
@@ -702,6 +696,8 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve updated User')
       }
 
+      if (this)
+        dispatch('user:updated', model)
       return this.createInstance(model)
     }
     else {
@@ -720,6 +716,8 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve created User')
       }
 
+      if (this)
+        dispatch('user:created', model)
       return this.createInstance(model)
     }
   }
@@ -759,6 +757,9 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       throw new HttpError(500, 'Failed to retrieve created User')
     }
 
+    if (model)
+      dispatch('user:created', model)
+
     return instance.createInstance(model)
   }
 
@@ -766,6 +767,10 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
   async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
+    const model = await this.find(Number(this.id))
+
+    if (model)
+      dispatch('user:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('users')
       .where('id', '=', this.id)
@@ -775,6 +780,13 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
   }
 
   static async remove(id: number): Promise<any> {
+    const instance = new UserModel(undefined)
+
+    const model = await instance.find(Number(id))
+
+    if (model)
+      dispatch('user:deleted', model)
+
     return await DB.instance.deleteFrom('users')
       .where('id', '=', id)
       .execute()
@@ -808,25 +820,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     const instance = new UserModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
-  }
-
-  async userTeams() {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const results = await DB.instance.selectFrom('teams')
-      .where('team_id', '=', this.id)
-      .selectAll()
-      .execute()
-
-    const tableRelationIds = results.map((result: { team_id: number }) => result.team_id)
-
-    if (!tableRelationIds.length)
-      throw new HttpError(500, 'Relation Error!')
-
-    const relationResults = await Team.whereIn('id', tableRelationIds).get()
-
-    return relationResults
   }
 
   toSearchableObject(): Partial<UserJsonResponse> {
@@ -864,9 +857,8 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
       personal_access_tokens: this.personal_access_tokens,
       oauth_access_tokens: this.oauth_access_tokens,
-      customers: this.customers,
+      activities: this.activities,
       ...this.customColumns,
-      github_id: this.github_id,
       public_passkey: this.public_passkey,
     }
 

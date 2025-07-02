@@ -168,7 +168,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
     const isRequired = 'isRequired' in (fieldOptions.validation?.rule ?? {})
-      ? (fieldOptions.validation?.rule).isRequired
+      ? (fieldOptions.validation?.rule as Validator<any>).isRequired
       : false
 
     // Check if there are configurations that require the lambda function

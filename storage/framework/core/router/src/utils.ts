@@ -2,7 +2,7 @@ import type { Ok } from '@stacksjs/error-handling'
 import type { ModelRequest, RequestInstance } from '@stacksjs/types'
 import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
-import { camelCase, pascalCase, snakeCase } from '@stacksjs/strings'
+import { camelCase } from '@stacksjs/strings'
 import { route } from './router'
 
 export async function listRoutes(): Promise<Ok<string, any>> {
@@ -89,14 +89,14 @@ export function getActionName(actionPath: string): string {
 
 export function getModelFromAction(action: string): string {
   const actionName = getActionName(action)
-  
-  let modelName = actionName
+
+  const modelName = actionName
     .replace(/Action$/, '')
     .replace(/Orm$/, '')
     .replace(/(Store|Update|Edit|Index|Show|Destroy|Create|Delete)/g, '')
     .replace(/\s+/g, '')
     .trim()
-  
+
   return modelName
 }
 
