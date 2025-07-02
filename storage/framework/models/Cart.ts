@@ -129,7 +129,7 @@ export default {
       validation: {
         rule: schema.string().required(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.string.uuid(), { probability: 0.2 }),
+      factory: () => 'test-coupon-id',
     },
   },
 

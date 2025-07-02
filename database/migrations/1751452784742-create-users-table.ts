@@ -7,7 +7,7 @@ export async function up(db: Database<any>) {
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'varchar(255)')
     .addColumn('github_id', 'varchar(255)')
-    .addColumn('email', 'varchar(255)', col => col.unique())
+    .addColumn('email', 'varchar(255)', col => col.notNull().unique())
     .addColumn('name', 'varchar(100)', col => col.notNull())
     .addColumn('password', 'varchar(255)', col => col.notNull())
     .addColumn('team_id', 'integer', (col) =>

@@ -1,193 +1,116 @@
-import type { BooleanValidatorType, DatetimeValidatorType, DateValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, TimestampValidatorType, UnixValidatorType, ValidationType, FloatValidatorType, TimestampTzValidatorType, DecimalValidatorType, SmallintValidatorType, IntegerValidatorType, BigintValidatorType, BinaryValidatorType, BlobValidatorType, JsonValidatorType } from '@stacksjs/ts-validation'
+import type { ValidationType, Validator } from '@stacksjs/ts-validation'
+import type { Model } from '@stacksjs/types'
+import { HttpError } from '@stacksjs/error-handling'
+import { path } from '@stacksjs/path'
+import { globSync } from '@stacksjs/storage'
+import { snakeCase } from '@stacksjs/strings'
+import { reportError, schema } from './'
 
-export function isStringValidator(v: ValidationType): v is StringValidatorType {
-  return v.name === 'string'
-}
-  
-export function isNumberValidator(v: ValidationType): v is NumberValidatorType {
-  return v.name === 'number'
-}
-
-export function enumValidator(v: ValidationType): v is EnumValidatorType<string | number> {
-  return v.name === 'enum'
+interface RequestData {
+  [key: string]: any
 }
 
-export function isBooleanValidator(v: ValidationType): v is BooleanValidatorType {
-  return v.name === 'boolean'
+interface ValidationField {
+  rule: ValidationType
+  message: Record<string, string>
 }
 
-export function isDateValidator(v: ValidationType): v is DateValidatorType {
-  return v.name === 'date'
+interface CustomAttributes {
+  [key: string]: ValidationField
 }
 
-export function isUnixValidator(v: ValidationType): v is UnixValidatorType {
-  return v.name === 'unix'
+export function isObjectNotEmpty(obj: object | undefined): boolean {
+  if (obj === undefined)
+    return false
+
+  return Object.keys(obj).length > 0
 }
 
-export function isFloatValidator(v: ValidationType): v is FloatValidatorType {
-  return v.name === 'float'
-}
+export async function validateField(modelFile: string, params: RequestData): Promise<any> {
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+  const modelPath = modelFiles.find(file => file.endsWith(`${modelFile}.ts`))
 
-export function isDatetimeValidator(v: ValidationType): v is DatetimeValidatorType {
-  return v.name === 'datetime'
-}
+  if (!modelPath)
+    throw new HttpError(500, `Model ${modelFile} not found`)
 
-export function isTimestampValidator(v: ValidationType): v is TimestampValidatorType {
-  return v.name === 'timestamp'
-}
+  const model = (await import(modelPath)).default as Model
+  const attributes = model.attributes
 
-export function isTimestampTzValidator(v: ValidationType): v is TimestampTzValidatorType {
-  return v.name === 'timestampTz'
-}
+  const ruleObject: Record<string, Validator<any>> = {}
+  const messageObject: Record<string, string> = {}
 
-export function isDecimalValidator(v: ValidationType): v is DecimalValidatorType {
-  return v.name === 'decimal'
-}
-    
-export function isSmallintValidator(v: ValidationType): v is SmallintValidatorType {
-  return v.name === 'smallint'
-}
+  for (const key in attributes) {
+    if (Object.prototype.hasOwnProperty.call(attributes, key)) {
+      const attributeKey = attributes[key]
 
-export function isIntegerValidator(v: ValidationType): v is IntegerValidatorType {
-  return v.name === 'integer'
-}
+      const isRequired = 'isRequired' in (attributeKey.validation?.rule ?? {})
+        ? (attributeKey.validation?.rule as Validator<any>).isRequired
+        : false
 
-export function isBigintValidator(v: ValidationType): v is BigintValidatorType {
-  return v.name === 'bigint'
-}
+      // Skip validation if the attribute has a default value or is required
+      if (attributeKey.default !== undefined || isRequired === false)
+        continue
 
-export function isBinaryValidator(v: ValidationType): v is BinaryValidatorType {
-  return v.name === 'binary'
-}
+      ruleObject[snakeCase(key)] = attributeKey.validation?.rule as Validator<any>
 
-export function isBlobValidator(v: ValidationType): v is BlobValidatorType {
-  return v.name === 'blob'
-}
+      const validatorMessages = attributes[key]?.validation?.message
 
-export function isJsonValidator(v: ValidationType): v is JsonValidatorType {
-  return v.name === 'json'
-}
-
-export function checkValidator(validator: ValidationType, driver: string): string {
-
-  if (enumValidator(validator))
-    return prepareEnumColumnType(validator, driver)
-
-  // Check for base types
-  if (isStringValidator(validator))
-    return prepareTextColumnType(validator, driver)
-
-  if (isNumberValidator(validator))
-    return prepareNumberColumnType(validator, driver)
-  
-  if (isBooleanValidator(validator))
-    return `'boolean'` // Use boolean type for both MySQL and SQLite
-
-  if (isDateValidator(validator))
-    return `'date'`
-
-  if (isDatetimeValidator(validator))
-    return `'datetime'`
-
-  if (isUnixValidator(validator))
-    return `'bigint'`
-
-  if (isTimestampValidator(validator))
-    return `'timestamp'`
-
-  if (isTimestampTzValidator(validator))
-    return `'timestamp'`
-
-  if (isFloatValidator(validator))
-    return `'float'`
-
-  if (isSmallintValidator(validator))
-    return `'smallint'`
-
-    if (isDecimalValidator(validator))
-      return `'decimal'`
-
-  if (isIntegerValidator(validator))
-    return `'integer'`
-
-  if (isBigintValidator(validator))
-    return `'bigint'`
-
-  if (isBinaryValidator(validator))
-    return `'binary'`
-
-  return ''
-}
-
-
-export function prepareNumberColumnType(validator: NumberValidatorType, driver = 'mysql'): string {
-  // SQLite uses integer for all numbers
-  if (driver === 'sqlite')
-    return `'integer'`
-
-  // Check for integer types
-  if ('getRules' in validator) {
-    const minRule = validator.getRules().find((rule: any) => rule.name === 'min')
-    const maxRule = validator.getRules().find((rule: any) => rule.name === 'max')
-
-    const min = minRule?.params?.min ?? -2147483648
-    const max = maxRule?.params?.max ?? 2147483647
-
-    return min >= -2147483648 && max <= 2147483647 ? `'integer'` : `'bigint'`
+      if (validatorMessages) {
+        for (const validatorMessageKey in validatorMessages) {
+          const validatorMessageString = `${key}.${validatorMessageKey}`
+          messageObject[validatorMessageString] = validatorMessages[validatorMessageKey] || ''
+        }
+      }
+    }
   }
 
-  return `'integer'`
+  try {
+    const validator = schema.object().shape(ruleObject)
+    const result = await validator.validate(params)
+
+    if (!result.valid) {
+      reportError(result.errors)
+      throw new HttpError(422, JSON.stringify(result.errors))
+    }
+
+    return result
+  }
+  catch (error: any) {
+    if (error instanceof HttpError)
+      throw error
+  }
 }
 
-// Add new function for enum column types
-export function prepareEnumColumnType(validator: EnumValidatorType<string | number>, driver = 'mysql'): string {
-  const allowedValues = validator.getAllowedValues()
+export async function customValidate(attributes: CustomAttributes, params: RequestData): Promise<any> {
+  const ruleObject: Record<string, Validator<any>> = {}
+  const messageObject: Record<string, string> = {}
 
-  if (!allowedValues)
-    throw new Error('Enum rule found but no allowedValues defined')
+  for (const key in attributes) {
+    if (Object.prototype.hasOwnProperty.call(attributes, key)) {
+      const rule = attributes[key]?.rule
+      if (rule)
+        ruleObject[key] = rule as Validator<any>
 
-  const enumStructure = allowedValues.map((value: any) => `'${value}'`).join(', ')
+      const validatorMessages = attributes[key]?.message
 
-  if (driver === 'sqlite')
-    return `'text'` // SQLite doesn't support ENUM, but we'll enforce values at app level
-
-  return `sql\`enum(${enumStructure})\`` // MySQL supports native ENUM
-}
-
-
-export function prepareTextColumnType(validator: StringValidatorType, driver = 'mysql'): string {
-  // SQLite uses TEXT for all string types
-  if (driver === 'sqlite')
-    return `'text'`
-
-  // Get length and choose appropriate MySQL type
-  const maxLength = findCharacterLength(validator)
-
-  return `'varchar(${maxLength})'`
-}
-
-// Add new function for date/time column types
-export function prepareDateTimeColumnType(validator: DateValidatorType, driver = 'mysql'): string {
-  if (driver === 'sqlite')
-    return `'text'` // SQLite uses TEXT for dates
-
-  const name = validator.name
-  // Try to determine specific date type
-
-  if (name === 'unix')
-    return `'bigint'`
-
-  // Default to datetime
-  return name || 'date'
-}
-
-export function findCharacterLength(validator: ValidationType): number {
-  // Check for max length constraint
-  if ('getRules' in validator) {
-    const maxLengthRule = validator.getRules().find((rule: any) => rule.name === 'max')
-
-    return maxLengthRule?.params?.length || maxLengthRule?.params?.max || 255
+      for (const validatorMessageKey in validatorMessages) {
+        const validatorMessageString = `${key}.${validatorMessageKey}`
+        messageObject[validatorMessageString] = attributes[key]?.message[validatorMessageKey] || ''
+      }
+    }
   }
 
-  return 255
+  try {
+    const validator = schema.object().shape(ruleObject)
+    const result = await validator.validate(params)
+
+    if (!result.valid)
+      throw new HttpError(422, JSON.stringify(result.errors))
+
+    return result
+  }
+  catch (error: any) {
+    if (error instanceof HttpError)
+      throw error
+  }
 }
