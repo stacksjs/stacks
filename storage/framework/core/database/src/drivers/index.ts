@@ -1,4 +1,4 @@
-import type { BooleanValidatorType, DatetimeValidatorType, DateValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, TimestampValidatorType, UnixValidatorType, ValidationType } from '@stacksjs/ts-validation'
+
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
@@ -6,7 +6,8 @@ import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'
-
+import { enumValidator, isBooleanValidator, isDatetimeValidator, isDateValidator, isFloatValidator, isNumberValidator, isStringValidator, isTimestampValidator, isUnixValidator } from '../validators'
+import type { DateValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, ValidationType } from '@stacksjs/ts-validation'
 export * from './mysql'
 export * from './postgres'
 export * from './sqlite'
@@ -307,6 +308,9 @@ export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'my
   if (isTimestampValidator(validator))
     return `'timestamp'`
 
+  if (isFloatValidator(validator))
+    return `'double'`
+
   // Handle array/object types
   if (['array', 'object'].includes(validator.name))
     return driver === 'sqlite' ? `'text'` : `'json'`
@@ -320,36 +324,4 @@ export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'my
 export function checkIsRequired(rule: string): boolean {
   // Check if the rule contains .required()
   return rule.includes('.required()')
-}
-
-function isStringValidator(v: ValidationType): v is StringValidatorType {
-  return v.name === 'string'
-}
-
-function isNumberValidator(v: ValidationType): v is NumberValidatorType {
-  return v.name === 'number'
-}
-
-function enumValidator(v: ValidationType): v is EnumValidatorType<string | number> {
-  return v.name === 'enum'
-}
-
-function isBooleanValidator(v: ValidationType): v is BooleanValidatorType {
-  return v.name === 'boolean'
-}
-
-function isDateValidator(v: ValidationType): v is DateValidatorType {
-  return v.name === 'date'
-}
-
-function isUnixValidator(v: ValidationType): v is UnixValidatorType {
-  return v.name === 'unix'
-}
-
-function isDatetimeValidator(v: ValidationType): v is DatetimeValidatorType {
-  return v.name === 'datetime'
-}
-
-function isTimestampValidator(v: ValidationType): v is TimestampValidatorType {
-  return v.name === 'timestamp'
 }
