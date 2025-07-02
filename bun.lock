@@ -1048,7 +1048,7 @@
         "@stacksjs/config": "workspace:*",
         "@stacksjs/development": "workspace:*",
         "@stacksjs/utils": "workspace:*",
-        "@stripe/stripe-js": "^6.1.0",
+        "@stripe/stripe-js": "^7.4.0",
         "@vue-stripe/vue-stripe": "^4.5.0",
         "stripe": "^17.7.0",
       },
@@ -2777,7 +2777,7 @@
 
     "@stacksjs/x-ray": ["@stacksjs/x-ray@workspace:storage/framework/core/x-ray"],
 
-    "@stripe/stripe-js": ["@stripe/stripe-js@6.1.0", "", {}, "sha512-/5zxRol+MU4I7fjZXPxP2M6E1nuHOxAzoc0tOEC/TLnC31Gzc+5EE93mIjoAnu28O1Sqpl7/BkceDHwnGmn75A=="],
+    "@stripe/stripe-js": ["@stripe/stripe-js@7.4.0", "", {}, "sha512-lQHQPfXPTBeh0XFjq6PqSBAyR7umwcJbvJhXV77uGCUDD6ymXJU/f2164ydLMLCCceNuPlbV9b+1smx98efwWQ=="],
 
     "@stylistic/eslint-plugin": ["@stylistic/eslint-plugin@4.4.1", "", { "dependencies": { "@typescript-eslint/utils": "^8.32.1", "eslint-visitor-keys": "^4.2.0", "espree": "^10.3.0", "estraverse": "^5.3.0", "picomatch": "^4.0.2" }, "peerDependencies": { "eslint": ">=9.0.0" } }, "sha512-CEigAk7eOLyHvdgmpZsKFwtiqS2wFwI1fn4j09IU9GmD4euFM4jEBAViWeCqaNLlbX2k2+A/Fq9cje4HQBXuJQ=="],
 
