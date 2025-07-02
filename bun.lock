@@ -1315,7 +1315,7 @@
         "vite": "npm:rolldown-vite@latest",
         "vite-plugin-inspect": "^11.2.0",
         "vite-plugin-pwa": "^1.0.0",
-        "vite-ssg": "^27.0.1",
+        "vite-ssg": "^28.0.0",
         "vitepress": "1.6.3",
         "vue": "^3.5.17",
       },
@@ -1425,7 +1425,7 @@
         "vite-plugin-inspect": "^11.2.0",
         "vite-plugin-local": "^0.5.0",
         "vite-plugin-pwa": "^1.0.0",
-        "vite-ssg": "^27.0.1",
+        "vite-ssg": "^28.0.0",
         "vite-ssg-sitemap": "^0.9.0",
       },
     },
@@ -1454,7 +1454,7 @@
         "vite-plugin-full-reload": "^1.2.0",
         "vite-plugin-inspect": "^11.2.0",
         "vite-plugin-pwa": "^1.0.0",
-        "vite-ssg": "^27.0.1",
+        "vite-ssg": "^28.0.0",
         "vite-ssg-sitemap": "^0.9.0",
       },
     },
@@ -1542,7 +1542,7 @@
         "@stacksjs/development": "workspace:*",
         "@stacksjs/notification": "workspace:*",
         "@stacksjs/popover": "workspace:*",
-        "vite-ssg": "^27.0.1",
+        "vite-ssg": "^28.0.0",
       },
     },
     "storage/framework/views/desktop": {
@@ -1597,7 +1597,7 @@
         "vite-plugin-inspect": "^11.2.0",
         "vite-plugin-pwa": "^1.0.0",
         "vite-plugin-vue-devtools": "^7.7.7",
-        "vite-ssg": "^27.0.1",
+        "vite-ssg": "^28.0.0",
         "vite-ssg-sitemap": "^0.9.0",
         "vue-tsc": "^2.2.10",
       },
@@ -5259,7 +5259,7 @@
 
     "vite-plugin-vue-inspector": ["vite-plugin-vue-inspector@5.3.2", "", { "dependencies": { "@babel/core": "^7.23.0", "@babel/plugin-proposal-decorators": "^7.23.0", "@babel/plugin-syntax-import-attributes": "^7.22.5", "@babel/plugin-syntax-import-meta": "^7.10.4", "@babel/plugin-transform-typescript": "^7.22.15", "@vue/babel-plugin-jsx": "^1.1.5", "@vue/compiler-dom": "^3.3.4", "kolorist": "^1.8.0", "magic-string": "^0.30.4" }, "peerDependencies": { "vite": "^3.0.0-0 || ^4.0.0-0 || ^5.0.0-0 || ^6.0.0-0 || ^7.0.0-0" } }, "sha512-YvEKooQcSiBTAs0DoYLfefNja9bLgkFM7NI2b07bE2SruuvX0MEa9cMaxjKVMkeCp5Nz9FRIdcN1rOdFVBeL6Q=="],
 
-    "vite-ssg": ["vite-ssg@27.1.0", "", { "dependencies": { "@unhead/dom": "^2.0.11", "@unhead/vue": "^2.0.11", "ansis": "^4.1.0", "cac": "^6.7.14", "html-minifier-terser": "^7.2.0", "html5parser": "^2.0.2", "jsdom": "^26.1.0" }, "peerDependencies": { "beasties": "^0.2.0", "prettier": "^3.3.0", "vite": "^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0-0 || ^6.0.0 || ^7.0.0-0", "vue": "^3.2.10", "vue-router": "^4.0.1" }, "optionalPeers": ["beasties", "prettier", "vue-router"], "bin": { "vite-ssg": "bin/vite-ssg.js" } }, "sha512-Nq2cdNXJAPLuY8Ko071KCwQt0xf6bao+TRZmtEMlHAQBF5OJctlC4nqyABupkexXKASg+bO+dGCijGO3Z+h8/Q=="],
+    "vite-ssg": ["vite-ssg@28.0.0", "", { "dependencies": { "@unhead/dom": "^2.0.11", "@unhead/vue": "^2.0.11", "ansis": "^4.1.0", "cac": "^6.7.14", "html-minifier-terser": "^7.2.0", "html5parser": "^2.0.2", "jsdom": "^26.1.0" }, "peerDependencies": { "beasties": "^0.2.0", "prettier": "^3.3.0", "vite": "^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0-0 || ^6.0.0 || ^7.0.0-0", "vue": "^3.2.10", "vue-router": "^4.0.1" }, "optionalPeers": ["beasties", "prettier", "vue-router"], "bin": { "vite-ssg": "bin/vite-ssg.js" } }, "sha512-idYdFXRi1XdiE4fd1g6n/NIpGn6KzMX4Lzrq2Ynr+j2FTd0UMuBlMJh6Z4kB6ux4lBonTOU2tTV2hhL/ubQ/1w=="],
 
     "vite-ssg-sitemap": ["vite-ssg-sitemap@0.9.0", "", {}, "sha512-C5XCa+oPET2w/re92L9o7je4LMsKJDOC/TI6klo0xAi72nlgQKa7rt9cOYMZxgAsAJUhk+c6RYPTRc73xvn1vw=="],
 
