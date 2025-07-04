@@ -35,14 +35,14 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@iconify-json/carbon": "^1.2.9",
-    "@shikijs/vitepress-twoslash": "^3.6.0",
+    "@iconify-json/carbon": "^1.2.10",
+    "@shikijs/vitepress-twoslash": "^3.7.0",
     "@vite-pwa/assets-generator": "^1.0.0",
     "@vite-pwa/vitepress": "^1.0.0",
-    "unocss": "^66.2.3",
+    "unocss": "^66.3.2",
     "unplugin-icons": "^22.1.0",
-    "unplugin-vue-components": "^28.7.0",
-    "vite-plugin-pwa": "^1.0.0",
+    "unplugin-vue-components": "^28.8.0",
+    "vite-plugin-pwa": "^1.0.1",
     "vitepress": "1.6.3"
   },
   "devDependencies": {
