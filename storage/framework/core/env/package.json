@@ -34,7 +34,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.45.2"
+    "@dotenvx/dotenvx": "^1.47.3"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
