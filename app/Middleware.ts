@@ -13,5 +13,12 @@ export default {
   api: 'Api',
   team: 'Team',
   logger: 'Logger',
+  env: 'Env',
+  'env:local': 'EnvLocal',
+  'env:development': 'EnvDevelopment',
+  'env:dev': 'EnvDevelopment',
+  'env:staging': 'EnvStaging',
+  'env:production': 'EnvProduction',
+  'env:prod': 'EnvProduction',
   // Add more middleware aliases here
 } satisfies Middleware
