@@ -20,11 +20,6 @@ export default {
   'env:staging': 'EnvStaging',
   'env:production': 'EnvProduction',
   'env:prod': 'EnvProduction',
-  '!env:local': 'EnvNotLocal',
-  '!env:development': 'EnvNotDevelopment',
-  '!env:dev': 'EnvNotDevelopment',
-  '!env:staging': 'EnvNotStaging',
-  '!env:production': 'EnvNotProduction',
-  '!env:prod': 'EnvNotProduction',
   // Add more middleware aliases here
+  // Note: Use ! prefix for negation (e.g., '!auth', '!env:development')
 } satisfies Middleware

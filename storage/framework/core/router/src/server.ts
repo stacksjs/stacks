@@ -309,18 +309,44 @@ async function executeMiddleware(route: Route): Promise<any> {
     return middlewarePath
   }
 
-  // Helper function to execute a single middleware
+  // Helper function to execute a single middleware with negation support
   async function executeSingleMiddleware(middlewareName: string) {
     try {
-      const middlewarePath = await resolveMiddlewarePath(middlewareName)
+      let isNegated = false
+      let actualMiddlewareName = middlewareName
+
+      // Check if middleware is negated (starts with !)
+      if (middlewareName.startsWith('!')) {
+        isNegated = true
+        actualMiddlewareName = middlewareName.slice(1) // Remove the ! prefix
+      }
+
+      const middlewarePath = await resolveMiddlewarePath(actualMiddlewareName)
       const middlewareInstance = (await import(middlewarePath)).default
 
       if (!middlewareInstance?.handle)
-        throw new Error(`Middleware "${middlewareName}" does not have a handle method`)
+        throw new Error(`Middleware "${actualMiddlewareName}" does not have a handle method`)
 
+      // Execute the middleware
       await middlewareInstance.handle(RequestParam)
+
+      // If negated, we want the opposite behavior
+      // If the original middleware didn't throw an error (allowed access),
+      // then the negated version should throw an error (deny access)
+      if (isNegated) {
+        return {
+          status: 403,
+          message: `Access denied by negated middleware "${actualMiddlewareName}"`,
+        }
+      }
     }
     catch (error: any) {
+      // If negated and the original middleware threw an error (denied access),
+      // then the negated version should allow access (don't throw)
+      if (middlewareName.startsWith('!')) {
+        return null // Allow access for negated middleware
+      }
+
       return {
         status: error.status || 500,
         message: error.message || 'Internal Server Error',
