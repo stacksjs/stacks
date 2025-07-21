@@ -290,6 +290,7 @@ export type MakeBooleanOption =
   | 'model'
   | 'notification'
   | 'stack'
+  | 'middleware'
 export type MakeOptions = {
   [key in MakeBooleanOption]: boolean
 } & {

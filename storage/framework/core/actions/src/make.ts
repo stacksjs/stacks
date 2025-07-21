@@ -7,7 +7,30 @@ import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { frameworkPath, path as p, resolve } from '@stacksjs/path'
 import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
+import { template } from '@stacksjs/strings'
 import { runAction } from './helpers'
+import { CODE_TEMPLATES, type TemplateKey } from './templates'
+
+/**
+ * Helper function to generate code from templates
+ */
+function generateCode(templateKey: TemplateKey, ...args: any[]): string {
+  return template(CODE_TEMPLATES[templateKey], ...args)
+}
+
+/**
+ * Helper function to create a file with generated code
+ */
+async function createFileWithTemplate(
+  path: string,
+  templateKey: TemplateKey,
+  ...args: any[]
+): Promise<void> {
+  await writeTextFile({
+    path,
+    data: generateCode(templateKey, ...args),
+  })
+}
 
 export async function invoke(options: MakeOptions): Promise<void> {
   if (options.component)
@@ -18,6 +41,9 @@ export async function invoke(options: MakeOptions): Promise<void> {
     await makeFunction(options)
   if (options.language)
     await makeLanguage(options)
+
+  if (options.middleware)
+    await createMiddleware(options)
 
   // if (options.migration)
   //   await migration(options)
@@ -62,37 +88,12 @@ export async function makeComponent(options: MakeOptions): Promise<void> {
 
 export async function createAction(options: MakeOptions): Promise<void> {
   const name = options.name
-  await writeTextFile({
-    path: p.userActionsPath(name),
-    data: `import { Action } from '@stacksjs/actions'
-
-export default new Action({
-  name: '${name}',
-  description: '${name} action',
-
-  handle() {
-    return 'Hello World action'
-  },
-})
-`,
-  })
+  await createFileWithTemplate(p.userActionsPath(name), 'action', name)
 }
 
 export async function createComponent(options: MakeOptions): Promise<void> {
   const name = options.name
-  await writeTextFile({
-    path: p.userComponentsPath(`${name}.vue`),
-    data: `<script setup lang="ts">
-console.log('Hello World component created')
-</script>
-
-<template>
-  <div>
-    Some HTML block
-  </div>
-</template>
-`,
-  })
+  await createFileWithTemplate(p.userComponentsPath(`${name}.vue`), 'component', name)
 }
 
 export function makeDatabase(options: MakeOptions): void {
@@ -157,19 +158,7 @@ export async function makePage(options: MakeOptions): Promise<void> {
 
 export async function createPage(options: MakeOptions): Promise<void> {
   const name = options.name
-  await writeTextFile({
-    path: p.userViewsPath(`${name}.vue`),
-    data: `<script setup lang="ts">
-console.log('Hello World page created')
-</script>
-
-<template>
-  <div>
-    Visit http://127.0.0.1/${name}
-  </div>
-</template>
-`,
-  })
+  await createFileWithTemplate(p.userViewsPath(`${name}.vue`), 'page', name)
 }
 
 export async function makeFunction(options: MakeOptions): Promise<void> {
@@ -187,22 +176,7 @@ export async function makeFunction(options: MakeOptions): Promise<void> {
 
 export async function createFunction(options: MakeOptions): Promise<void> {
   const name = options.name
-  await writeTextFile({
-    path: p.userFunctionsPath(`${name}.ts`),
-    data: `// reactive state
-const ${name} = ref(0)
-
-// functions that mutate state and trigger updates
-function increment() {
-  ${name}.value++
-}
-
-export {
-  ${name},
-  increment,
-}
-`,
-  })
+  await createFileWithTemplate(p.userFunctionsPath(`${name}.ts`), 'function', name)
 }
 
 export async function makeLanguage(options: MakeOptions): Promise<void> {
@@ -220,12 +194,7 @@ export async function makeLanguage(options: MakeOptions): Promise<void> {
 
 export async function createLanguage(options: MakeOptions): Promise<void> {
   const name = options.name
-  await writeTextFile({
-    path: p.resourcesPath(`lang/${name}.yml`),
-    data: `button:
-  text: Copy
-`,
-  })
+  await createFileWithTemplate(p.resourcesPath(`lang/${name}.yml`), 'language', name)
 }
 
 export function makeStack(options: MakeOptions): void {
@@ -258,20 +227,7 @@ export async function createNotification(options: MakeOptions): Promise<boolean>
     if (options.sms)
       importOption = 'SMSOptions'
 
-    await writeTextFile({
-      path: p.userNotificationsPath(`${name}.ts`),
-      data: `import type { ${importOption} } from \'@stacksjs/types\'
-
-function content(): string {
-  return 'example'
-}
-
-function send(): ${importOption} {
-  return {
-    content: content(),
-  }
-}`,
-    })
+    await createFileWithTemplate(p.userNotificationsPath(`${name}.ts`), 'notification', importOption)
 
     return true
   }
@@ -293,17 +249,7 @@ export async function createMigration(options: MakeOptions): Promise<void> {
   const path = frameworkPath(`database/migrations/${name}.ts`)
 
   try {
-    await writeTextFile({
-      path: `${path}`,
-      data: `import { Kysely } from 'kysely'
-
-export async function up(db: Kysely<any>): Promise<void> {
-  await db.schema
-    .createTable('${table}')
-    .addColumn('id', 'integer', col => col.autoIncrement().primaryKey())
-    .execute()
-}`,
-    })
+    await createFileWithTemplate(path, 'migration', table)
 
     log.success(`Successfully created your migration file at stacks/database/migrations/${name}.ts`)
   }
@@ -344,32 +290,16 @@ export async function createModel(options: MakeOptions): Promise<void> {
   const path = p.userModelsPath(`${name}.ts`)
 
   try {
-    await writeTextFile({
-      path: `${path}`,
-      data: `import { faker } from '@stacksjs/faker'
-import { schema } from '@stacksjs/validation'
-import type { Model } from '@stacksjs/types'
-
-export default {
-  name: '${name}',
-
-  traits: {
-    useTimestamps: true,
-
-    useSeeder: {
-      count: 10,
-    },
-  },
-
-  attributes: {
-    // your attributes here
-  },
-} satisfies Model`,
-    })
+    await createFileWithTemplate(path, 'model', name)
 
     log.success(`Model created: ${italic(`app/Models/${name}.ts`)}`)
   }
   catch (error: any) {
     log.error(error)
   }
+}
+
+export async function createMiddleware(options: MakeOptions): Promise<void> {
+  const name = options.name
+  await createFileWithTemplate(p.userMiddlewarePath(`${name}.ts`), 'middleware', name)
 }

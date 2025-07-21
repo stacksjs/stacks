@@ -3,6 +3,7 @@ import process from 'node:process'
 import {
   createMigration,
   createModel,
+  createMiddleware,
   createNotification,
   createPage,
   invoke,
@@ -25,6 +26,7 @@ export function make(buddy: CLI): void {
   const descriptions = {
     action: 'Create a new action',
     model: 'Create a new model',
+    middleware: 'Create a new middleware',
     component: 'Create a new component',
     page: 'Create a new page',
     function: 'Create a new function',
@@ -51,6 +53,7 @@ export function make(buddy: CLI): void {
     .option('-f, --function [function]', descriptions.function, { default: false })
     .option('-l, --language [language]', descriptions.language, { default: false })
     .option('-m, --model [model]', descriptions.model, { default: false })
+    .option('-mw, --middleware [middleware]', descriptions.middleware, { default: false })
     .option('-p, --page [page]', descriptions.page, { default: false })
     .option('-m, --migration [migration]', descriptions.migration, { default: false })
     .option('-n, --notification [notification]', descriptions.notification, { default: false })
@@ -61,6 +64,8 @@ export function make(buddy: CLI): void {
       log.debug('Running `buddy make` ...', options)
 
       const name = buddy.args[0]
+
+      console.log(buddy.args)
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
@@ -91,6 +96,9 @@ export function make(buddy: CLI): void {
             break
           case 'migration':
             await createMigration(options)
+            break
+          case 'middleware':
+            await createMiddleware(options)
             break
           case 'model':
             await createModel(options)

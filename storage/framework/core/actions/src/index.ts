@@ -15,6 +15,7 @@ export {
   createLanguage,
   createMigration,
   createModel,
+  createMiddleware,
   createNotification,
   createPage,
   makeAction,
