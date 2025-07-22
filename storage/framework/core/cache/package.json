@@ -45,7 +45,7 @@
     "@aws-sdk/client-dynamodb": "^3.848.0",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*",
-    "bentocache": "^1.4.0",
+    "bentocache": "^1.5.0",
     "dynamodb-tooling": "^0.3.2",
     "ioredis": "^5.6.1"
   }

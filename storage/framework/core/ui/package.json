@@ -71,7 +71,7 @@
     "pinia": "^3.0.3",
     "unhead": "^2.0.12",
     "unocss": "66.3.3",
-    "unocss-preset-primitives": "0.0.2-beta.1",
+    "unocss-preset-primitives": "0.0.2-beta.2",
     "vue": "^3.5.17",
     "vue-chartjs": "^5.3.2",
     "vue-tsc": "^3.0.3"
