@@ -102,6 +102,7 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
   try {
     log.info('Generating migrations...')
 
+  
     // Create framework tables first
     if (getDriver() === 'postgres') {
       // PostgreSQL has its own specific table creation functions

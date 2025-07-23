@@ -27,7 +27,7 @@ let dbConfig = {
     postgres: {
       name: 'stacks',
       host: '127.0.0.1',
-      username: '',
+      username: 'glennmichaeltorregosa',
       password: '',
       port: 5432,
       prefix: '',

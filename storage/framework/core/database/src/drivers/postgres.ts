@@ -39,16 +39,17 @@ export async function dropPostgresTables(): Promise<void> {
 }
 
 export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
+  console.log('here')
   await dropPostgresTables()
-  await deleteFrameworkModels()
-  await deleteMigrationFiles()
+  // await deleteFrameworkModels()
+  // await deleteMigrationFiles()
 
-  await db.schema.createTable('migrations').ifNotExists().execute()
-  await db.schema.createTable('migration_locks').ifNotExists().execute()
-  await createPostgresPasskeyMigration()
-  await createPostgresCategorizableTable()
-  await createPostgresCommenteableTable()
-  await db.schema.createTable('activities').ifNotExists().execute()
+  // await db.schema.createTable('migrations').ifNotExists().execute()
+  // await db.schema.createTable('migration_locks').ifNotExists().execute()
+  // await createPostgresPasskeyMigration()
+  // await createPostgresCategorizableTable()
+  // await createPostgresCommenteableTable()
+  // await db.schema.createTable('activities').ifNotExists().execute()
 
   return ok('All tables dropped successfully!')
 }
@@ -459,7 +460,8 @@ function generateForeignKeyIndexSQL(tableName: string, foreignKey: string): stri
 }
 
 export async function fetchPostgresTables(): Promise<string[]> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')])
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+
   const tables: string[] = []
 
   for (const modelPath of modelFiles) {
