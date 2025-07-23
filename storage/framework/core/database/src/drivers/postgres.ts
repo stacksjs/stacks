@@ -39,17 +39,16 @@ export async function dropPostgresTables(): Promise<void> {
 }
 
 export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
-  console.log('here')
   await dropPostgresTables()
-  // await deleteFrameworkModels()
-  // await deleteMigrationFiles()
+  await deleteFrameworkModels()
+  await deleteMigrationFiles()
 
-  // await db.schema.createTable('migrations').ifNotExists().execute()
-  // await db.schema.createTable('migration_locks').ifNotExists().execute()
+  await db.schema.createTable('migrations').ifNotExists().execute()
+  await db.schema.createTable('migration_locks').ifNotExists().execute()
   // await createPostgresPasskeyMigration()
   // await createPostgresCategorizableTable()
   // await createPostgresCommenteableTable()
-  // await db.schema.createTable('activities').ifNotExists().execute()
+  await db.schema.createTable('activities').ifNotExists().execute()
 
   return ok('All tables dropped successfully!')
 }
@@ -128,6 +127,8 @@ async function createTableMigration(modelPath: string) {
 
   const model = (await import(modelPath)).default as Model
   const modelName = getModelName(model, modelPath)
+
+  if (modelName !== 'User') return
   const tableName = getTableName(model, modelPath)
 
   const twoFactorEnabled
@@ -173,7 +174,7 @@ async function createTableMigration(modelPath: string) {
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
     const fieldNameFormatted = snakeCase(fieldName)
-    const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
+    const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule, 'postgres')
     const isRequired = 'isRequired' in (fieldOptions.validation?.rule ?? {})
       ? (fieldOptions.validation?.rule as Validator<any>).isRequired
       : false
@@ -201,16 +202,16 @@ async function createTableMigration(modelPath: string) {
     migrationContent += `)\n`
   }
 
-  if (otherModelRelations?.length) {
-    for (const modelRelation of otherModelRelations) {
-      if (!modelRelation.foreignKey)
-        continue
+  // if (otherModelRelations?.length) {
+  //   for (const modelRelation of otherModelRelations) {
+  //     if (!modelRelation.foreignKey)
+  //       continue
 
-      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
-        col.references('${modelRelation.relationTable}.id').onDelete('cascade')
-      ) \n`
-    }
-  }
+  //     migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
+  //       col.references('${modelRelation.relationTable}.id').onDelete('cascade')
+  //     ) \n`
+  //   }
+  // }
 
   if (twoFactorEnabled !== false && twoFactorEnabled)
     migrationContent += `    .addColumn('two_factor_secret', 'text')\n`

@@ -118,7 +118,7 @@ export function prepareTextColumnType(validator: StringValidatorType, driver = '
   // Get length and choose appropriate MySQL type
   const maxLength = findCharacterLength(validator)
 
-  return `'varchar(${maxLength})'`
+  return `varchar(${maxLength})`
 }
 
 // Add new function for date/time column types

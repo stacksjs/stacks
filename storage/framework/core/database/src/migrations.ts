@@ -106,14 +106,14 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
     // Create framework tables first
     if (getDriver() === 'postgres') {
       // PostgreSQL has its own specific table creation functions
-      await createPostgresCategorizableTable()
-      await createPostgresCommenteableTable()
-      await createPostgresTaggableTable()
-      await createPostgresCommentUpvoteMigration()
-      await createPostgresPasskeyMigration()
-      await createCategorizableModelsTable()
-      await createPostgresQueryLogsTable()
-      await createPasswordResetsTable()
+      // await createPostgresCategorizableTable()
+      // await createPostgresCommenteableTable()
+      // await createPostgresTaggableTable()
+      // await createPostgresCommentUpvoteMigration()
+      // await createPostgresPasskeyMigration()
+      // await createCategorizableModelsTable()
+      // await createPostgresQueryLogsTable()
+      // await createPasswordResetsTable()
     }
     else {
       // SQLite and MySQL use the same table creation functions
