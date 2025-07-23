@@ -9,7 +9,7 @@ import { Pool } from 'pg'
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
 let appEnv = 'local'
-let dbDriver = 'mysql'
+let dbDriver = 'postgres'
 let dbConfig = {
   connections: {
     sqlite: {
@@ -27,7 +27,7 @@ let dbConfig = {
     postgres: {
       name: 'stacks',
       host: '127.0.0.1',
-      username: '',
+      username: 'glennmichaeltorregosa',
       password: '',
       port: 5432,
       prefix: '',

@@ -9,7 +9,7 @@ import { env } from '@stacksjs/env'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  default: env.DB_CONNECTION || 'mysql',
+  default: env.DB_CONNECTION || 'postgres',
 
   connections: {
     sqlite: {
@@ -28,7 +28,7 @@ export default {
     mysql: {
       name: env.DB_DATABASE || 'stacks',
       host: env.DB_HOST || '127.0.0.1',
-      port: env.DB_PORT || 3306,
+      port: Number(env.DB_PORT) || 3306,
       username: env.DB_USERNAME || 'root',
       password: env.DB_PASSWORD || '',
       prefix: '',
@@ -37,7 +37,7 @@ export default {
     postgres: {
       name: env.DB_DATABASE || 'stacks',
       host: env.DB_HOST || '127.0.0.1',
-      port: env.DB_PORT || 3306,
+      port: Number(env.DB_PORT) || 3306,
       username: env.DB_USERNAME || '',
       password: env.DB_PASSWORD || '',
       prefix: '',
