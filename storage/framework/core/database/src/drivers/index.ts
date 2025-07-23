@@ -266,7 +266,7 @@ export function prepareNumberColumnType(validator: NumberValidatorType, driver =
 }
 
 // Add new function for enum column types
-export function prepareEnumColumnType(validator: EnumValidatorType<string | number>, driver = 'mysql'): string {
+export function prepareEnumColumnType(validator: EnumValidatorType, driver = 'mysql'): string {
   const allowedValues = validator.getAllowedValues()
 
   if (!allowedValues)
