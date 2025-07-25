@@ -6,20 +6,13 @@ import { err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { FileMigrationProvider, Migrator } from 'kysely'
-import { generateMysqlMigration, generatePostgresMigration, generateSqliteMigration, resetMysqlDatabase, resetPostgresDatabase, resetSqliteDatabase } from './drivers'
+import { generateMysqlMigration, generatePostgresMigration, generateSqliteMigration, generateTraitMigrations, resetMysqlDatabase, resetPostgresDatabase, resetSqliteDatabase } from './drivers'
 import { createPasswordResetsTable } from './drivers/defaults/passwords'
 import {
-  createCategorizableModelsTable,
   createCategorizableTable,
   createCommentablesTable,
   createCommentUpvoteMigration,
   createPasskeyMigration,
-  createPostgresCategorizableTable,
-  createPostgresCommenteableTable,
-  createPostgresCommentUpvoteMigration,
-  createPostgresPasskeyMigration,
-  createPostgresQueryLogsTable,
-  createPostgresTaggableTable,
   createQueryLogsTable,
   createTaggableTable,
 } from './drivers/defaults/traits'
@@ -106,15 +99,7 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
   
     // Create framework tables first
     if (getDriver() === 'postgres') {
-      // PostgreSQL has its own specific table creation functions
-      // await createPostgresCategorizableTable()
-      // await createPostgresCommenteableTable()
-      // await createPostgresTaggableTable()
-      // await createPostgresCommentUpvoteMigration()
-      // await createPostgresPasskeyMigration()
-      // await createCategorizableModelsTable()
-      // await createPostgresQueryLogsTable()
-      // await createPasswordResetsTable()
+      await generateTraitMigrations()
     }
     else {
       // SQLite and MySQL use the same table creation functions

@@ -2,7 +2,7 @@ import type { Ok } from '@stacksjs/error-handling'
 import type { Validator } from '@stacksjs/ts-validation'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
-import { db } from '@stacksjs/database'
+import { createPasswordResetsTable, db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
 import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
@@ -22,7 +22,15 @@ import {
   pluckChanges,
 } from '.'
 
-import { createPostgresCategorizableTable, createPostgresCommenteableTable, createPostgresPasskeyMigration, dropCommonTables } from './defaults/traits'
+import {
+  createPostgresCategorizableTable,
+  createPostgresCommenteableTable,
+  createPostgresCommentUpvoteMigration,
+  createPostgresPasskeyMigration,
+  createPostgresQueryLogsTable,
+  createPostgresTaggableTable,
+  dropCommonTables,
+} from './defaults/traits'
 
 export async function dropPostgresTables(): Promise<void> {
   const tables = await fetchPostgresTables()
@@ -37,6 +45,17 @@ export async function dropPostgresTables(): Promise<void> {
     for (const pivotTable of pivotTables) await db.schema.dropTable(pivotTable.table).ifExists().execute()
   }
 }
+
+export async function generateTraitMigrations(): Promise<void> {
+  await createPostgresCategorizableTable()
+  await createPostgresCommenteableTable()
+  await createPostgresTaggableTable()
+  await createPostgresCommentUpvoteMigration()
+  await createPostgresPasskeyMigration()
+  await createPostgresQueryLogsTable()
+  await createPasswordResetsTable()
+}
+
 
 export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   await dropPostgresTables()
@@ -150,23 +169,14 @@ async function createTableMigration(modelPath: string) {
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
   migrationContent += `    .createTable('${tableName}')\n`
-  migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
 
+  // Add primary key column
   if (useUuid)
-    migrationContent += `    .addColumn('uuid', 'text')\n`
+    migrationContent += `    .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql.raw('gen_random_uuid()')))\n`
+  else
+    migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
 
-  if (useSocials) {
-    const socials = model.traits?.useSocials || []
-    if (socials.includes('google'))
-      migrationContent += `    .addColumn('google_id', 'text')\n`
-    if (socials.includes('github'))
-      migrationContent += `    .addColumn('github_id', 'text')\n`
-    if (socials.includes('twitter'))
-      migrationContent += `    .addColumn('twitter_id', 'text')\n`
-    if (socials.includes('facebook'))
-      migrationContent += `    .addColumn('facebook_id', 'text')\n`
-  }
-
+  // Add model attributes
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
     const fieldNameFormatted = snakeCase(fieldName)
@@ -198,14 +208,24 @@ async function createTableMigration(modelPath: string) {
     migrationContent += `)\n`
   }
 
-  if (otherModelRelations?.length) {
-    for (const modelRelation of otherModelRelations) {
-      if (!modelRelation.foreignKey)
-        continue
+  // Add social fields if useSocials is enabled
+  if (useSocials) {
+    const socials = model.traits?.useSocials || []
+    if (socials.includes('google'))
+      migrationContent += `    .addColumn('google_id', 'text')\n`
+    if (socials.includes('github'))
+      migrationContent += `    .addColumn('github_id', 'text')\n`
+    if (socials.includes('twitter'))
+      migrationContent += `    .addColumn('twitter_id', 'text')\n`
+    if (socials.includes('facebook'))
+      migrationContent += `    .addColumn('facebook_id', 'text')\n`
+  }
 
-      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
-        col.references('${modelRelation.relationTable}.id').onDelete('cascade')
-      ) \n`
+  // Add likeable fields if useLikeable is enabled
+  if (useLikeable) {
+    const likeables = Array.isArray(model.traits?.likeable) ? model.traits.likeable : []
+    for (const likeable of likeables) {
+      migrationContent += `    .addColumn('${likeable}_count', 'integer', (col) => col.defaultTo(0))\n`
     }
   }
 
@@ -231,21 +251,21 @@ async function createTableMigration(modelPath: string) {
   migrationContent += `    .execute()\n`
 
   // Add composite indexes if defined
-  if (model.indexes?.length) {
-    migrationContent += '\n'
-    for (const index of model.indexes) {
-      migrationContent += generateIndexCreationSQL(tableName, index.name, index.columns)
-    }
-  }
+  // if (model.indexes?.length) {
+  //   migrationContent += '\n'
+  //   for (const index of model.indexes) {
+  //     migrationContent += generateIndexCreationSQL(tableName, index.name, index.columns)
+  //   }
+  // }
 
-  if (otherModelRelations?.length) {
-    for (const modelRelation of otherModelRelations) {
-      if (!modelRelation.foreignKey)
-        continue
+  // if (otherModelRelations?.length) {
+  //   for (const modelRelation of otherModelRelations) {
+  //     if (!modelRelation.foreignKey)
+  //       continue
 
-      migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
-    }
-  }
+  //     migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
+  //   }
+  // }
 
   migrationContent += generatePrimaryKeyIndexSQL(tableName)
 
@@ -279,6 +299,37 @@ async function createTableMigration(modelPath: string) {
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
+}
+
+async function createForeignKeyMigrations(tableName: string, otherModelRelations: any[]) {
+  const foreignKeyRelations = otherModelRelations.filter(relation => relation.foreignKey)
+  
+  if (!foreignKeyRelations.length) {
+    return
+  }
+
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .alterTable('${tableName}')\n`
+
+  for (const modelRelation of foreignKeyRelations) {
+    migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
+      col.references('${modelRelation.relationTable}.id').onDelete('cascade')
+    ) \n`
+  }
+
+  migrationContent += `    .execute()\n`
+  migrationContent += `}\n`
+
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-add-foreign-keys-to-${tableName}-table.ts`
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  Bun.write(migrationFilePath, migrationContent)
+
+  log.success(`Created foreign key migration: ${italic(migrationFileName)}`)
 }
 
 async function createPivotTableMigration(model: Model, modelPath: string) {

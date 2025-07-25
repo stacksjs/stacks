@@ -274,6 +274,9 @@ export function prepareEnumColumnType(validator: EnumValidatorType, driver = 'my
 
   const enumStructure = allowedValues.map((value: any) => `'${value}'`).join(', ')
 
+  if (driver === 'postgres')
+    return `'varchar(255)'`
+
   if (driver === 'sqlite')
     return `'text'` // SQLite doesn't support ENUM, but we'll enforce values at app level
 
