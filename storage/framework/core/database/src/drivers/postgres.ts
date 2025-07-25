@@ -125,7 +125,6 @@ async function createTableMigration(modelPath: string) {
   const model = (await import(modelPath)).default as Model
   const modelName = getModelName(model, modelPath)
 
-  if (modelName !== 'User') return
   const tableName = getTableName(model, modelPath)
 
   const twoFactorEnabled
@@ -176,7 +175,7 @@ async function createTableMigration(modelPath: string) {
       ? (fieldOptions.validation?.rule as Validator<any>).isRequired
       : false
 
-    migrationContent += `    .addColumn('${fieldNameFormatted}', '${columnType}'`
+    migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
     // Check if there are configurations that require the lambda function
     if (isRequired || fieldOptions.unique || fieldOptions.default !== undefined) {
@@ -199,16 +198,16 @@ async function createTableMigration(modelPath: string) {
     migrationContent += `)\n`
   }
 
-  // if (otherModelRelations?.length) {
-  //   for (const modelRelation of otherModelRelations) {
-  //     if (!modelRelation.foreignKey)
-  //       continue
+  if (otherModelRelations?.length) {
+    for (const modelRelation of otherModelRelations) {
+      if (!modelRelation.foreignKey)
+        continue
 
-  //     migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
-  //       col.references('${modelRelation.relationTable}.id').onDelete('cascade')
-  //     ) \n`
-  //   }
-  // }
+      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
+        col.references('${modelRelation.relationTable}.id').onDelete('cascade')
+      ) \n`
+    }
+  }
 
   if (twoFactorEnabled !== false && twoFactorEnabled)
     migrationContent += `    .addColumn('two_factor_secret', 'text')\n`

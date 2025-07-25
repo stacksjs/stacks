@@ -118,7 +118,7 @@ export function prepareTextColumnType(validator: StringValidatorType, driver = '
   // Get length and choose appropriate MySQL type
   const maxLength = findCharacterLength(validator)
 
-  return `varchar(${maxLength})`
+  return `'varchar(${maxLength})'`
 }
 
 // Add new function for date/time column types
@@ -300,7 +300,7 @@ export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'my
     return `'date'`
 
   if (isDatetimeValidator(validator))
-    return `'datetime'`
+    return driver === 'postgres' ? `'timestamp'` : `'datetime'`
 
   if (isUnixValidator(validator))
     return `'bigint'`

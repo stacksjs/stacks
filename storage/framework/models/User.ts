@@ -48,12 +48,8 @@ export default {
 
   hasMany: [
     'PersonalAccessToken',
-    'OauthAccessToken',
     'Customer',
   ],
-
-  belongsToMany: ['Team'],
-
   attributes: {
     name: {
       order: 2,
