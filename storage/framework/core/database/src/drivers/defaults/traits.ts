@@ -1,5 +1,5 @@
 import { italic, log } from '@stacksjs/cli'
-import { db } from '@stacksjs/database'
+import { db, sql } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
 import { hasMigrationBeenCreated } from '../index'
 
@@ -72,8 +72,8 @@ export async function createPostgresPasskeyMigration(): Promise<void> {
   migrationContent += `    .addColumn('backup_eligible', 'boolean', col => col.defaultTo(false))\n`
   migrationContent += `    .addColumn('backup_status', 'boolean', col => col.defaultTo(false))\n`
   migrationContent += `    .addColumn('transports', 'varchar(255)')\n`
-  migrationContent += `    .addColumn('last_used_at', 'timestamp with time zone')\n`
-  migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('last_used_at', 'timestamp')\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .execute()\n\n`
   migrationContent += `  await db.schema.createIndex('idx_passkeys_user_id').on('passkeys').column('user_id').execute()\n`
   migrationContent += `}\n`
@@ -252,8 +252,8 @@ export async function createPostgresCategorizableTable(): Promise<void> {
   migrationContent += `    .addColumn('order', 'integer', col => col.defaultTo(0))\n`
   migrationContent += `    .addColumn('is_active', 'boolean', col => col.defaultTo(true))\n`
   migrationContent += `    .addColumn('categorizable_type', 'varchar(255)', col => col.notNull())\n`
-  migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-  migrationContent += `    .addColumn('updated_at', 'timestamp with time zone')\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
@@ -369,8 +369,8 @@ export async function createPostgresCommenteableTable(): Promise<void> {
   migrationContent += `    .addColumn('rejected_at', 'integer')\n`
   migrationContent += `    .addColumn('commentables_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('commentables_type', 'varchar(255)', col => col.notNull())\n`
-  migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-  migrationContent += `    .addColumn('updated_at', 'timestamp with time zone')\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
   migrationContent += `    .execute()\n\n`
   migrationContent += `  await db.schema.createIndex('idx_commenteable_status').on('commentables').column('status').execute()\n`
   migrationContent += `  await db.schema.createIndex('idx_commenteable_commentables').on('commentables').columns(['commentables_id', 'commentables_type']).execute()\n`
@@ -432,8 +432,6 @@ export async function down(db: Database<any>) {
 }
 
 export async function dropCommonTables(): Promise<void> {
-  await db.schema.dropTable('migrations').ifExists().execute()
-  await db.schema.dropTable('migration_locks').ifExists().execute()
   await db.schema.dropTable('passkeys').ifExists().execute()
   await db.schema.dropTable('password_resets').ifExists().execute()
   await db.schema.dropTable('query_logs').ifExists().execute()
@@ -445,6 +443,11 @@ export async function dropCommonTables(): Promise<void> {
   await db.schema.dropTable('commentables').ifExists().execute()
   await db.schema.dropTable('categories_models').ifExists().execute()
   await db.schema.dropTable('activities').ifExists().execute()
+}
+
+export async function truncateMigrationTables(): Promise<void> {
+  await sql`TRUNCATE TABLE migrations`.execute(db)
+  await sql`TRUNCATE TABLE migration_locks`.execute(db)
 }
 
 export async function createCommentUpvoteMigration(): Promise<void> {
@@ -490,7 +493,7 @@ export async function createPostgresCommentUpvoteMigration(): Promise<void> {
   migrationContent += `    .addColumn('user_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('upvoteable_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('upvoteable_type', 'varchar(255)', col => col.notNull())\n`
-  migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .execute()\n\n`
   migrationContent += `  await db.schema.createIndex('idx_commenteable_upvotes_user').on('commenteable_upvotes').column('user_id').execute()\n`
   migrationContent += `  await db.schema.createIndex('idx_commenteable_upvotes_upvoteable').on('commenteable_upvotes').columns(['upvoteable_id', 'upvoteable_type']).execute()\n`
@@ -569,8 +572,8 @@ export async function createPostgresTaggableModelsTable(): Promise<void> {
   migrationContent += `    .addColumn('tag_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('taggable_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('taggable_type', 'varchar(255)', col => col.notNull())\n`
-  migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-  migrationContent += `    .addColumn('updated_at', 'timestamp with time zone')\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
@@ -669,8 +672,8 @@ export async function createPostgresCategorizableModelsTable(): Promise<void> {
   migrationContent += `    .addColumn('category_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('categorizable_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('categorizable_type', 'varchar(255)', col => col.notNull())\n`
-  migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-  migrationContent += `    .addColumn('updated_at', 'timestamp with time zone')\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
@@ -781,7 +784,7 @@ export async function createPostgresQueryLogsTable(): Promise<void> {
   migrationContent += `    .addColumn('duration', 'integer')\n`
   migrationContent += `    .addColumn('connection', 'varchar(255)')\n`
   migrationContent += `    .addColumn('status', 'varchar(50)')\n`
-  migrationContent += `    .addColumn('executed_at', 'timestamp with time zone', col => col.notNull())\n`
+  migrationContent += `    .addColumn('executed_at', 'timestamp', col => col.notNull())\n`
   migrationContent += `    .addColumn('model', 'varchar(255)')\n`
   migrationContent += `    .addColumn('method', 'varchar(255)')\n`
   migrationContent += `    .addColumn('rows_affected', 'integer')\n`
@@ -791,8 +794,8 @@ export async function createPostgresQueryLogsTable(): Promise<void> {
   migrationContent += `    .addColumn('missing_indexes', 'jsonb')\n`
   migrationContent += `    .addColumn('tags', 'jsonb')\n`
   migrationContent += `    .addColumn('bindings', 'jsonb')\n`
-  migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-  migrationContent += `    .addColumn('updated_at', 'timestamp with time zone')\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`

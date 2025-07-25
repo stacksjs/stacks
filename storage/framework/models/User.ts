@@ -46,12 +46,13 @@ export default {
 
   hasOne: ['Subscriber', 'Driver', 'Author'],
 
-  // hasMany: [
-  //   'PersonalAccessToken',
-  //   'OauthAccessToken',
-  //   'Customer',
-  // ],
+  hasMany: [
+    'PersonalAccessToken',
+    'OauthAccessToken',
+    'Customer',
+  ],
 
+  belongsToMany: ['Team'],
 
   attributes: {
     name: {

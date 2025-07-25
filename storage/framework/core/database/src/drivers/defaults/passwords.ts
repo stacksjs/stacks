@@ -55,7 +55,7 @@ export async function createPostgresPasswordResetsTable(): Promise<void> {
   migrationContent += `    .createTable('password_resets')\n`
   migrationContent += `    .addColumn('email', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('token', 'varchar(255)', col => col.notNull())\n`
-  migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`

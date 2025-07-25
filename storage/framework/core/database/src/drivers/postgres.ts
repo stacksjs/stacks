@@ -45,9 +45,6 @@ export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
 
   await db.schema.createTable('migrations').ifNotExists().execute()
   await db.schema.createTable('migration_locks').ifNotExists().execute()
-  // await createPostgresPasskeyMigration()
-  // await createPostgresCategorizableTable()
-  // await createPostgresCommenteableTable()
   await db.schema.createTable('activities').ifNotExists().execute()
 
   return ok('All tables dropped successfully!')
@@ -313,14 +310,13 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
     migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
     migrationContent += `    .addColumn('${pivotTable.firstForeignKey}', 'integer', (col) => col.notNull())\n`
     migrationContent += `    .addColumn('${pivotTable.secondForeignKey}', 'integer', (col) => col.notNull())\n`
-    migrationContent += `    .addColumn('created_at', 'timestamp with time zone', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+    migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
     migrationContent += `    .execute()\n\n`
 
     // Add foreign key constraints
     migrationContent += `  await db.schema\n`
     migrationContent += `    .alterTable('${pivotTable.table}')\n`
     migrationContent += `    .addForeignKeyConstraint('${pivotTable.table}_${pivotTable.firstForeignKey}_fkey', ['${pivotTable.firstForeignKey}'], '${pivotTable.table.split('_')[0]}', ['id'], (cb) => cb.onDelete('cascade'))\n`
-    migrationContent += `    .addForeignKeyConstraint('${pivotTable.table}_${pivotTable.secondForeignKey}_fkey', ['${pivotTable.secondForeignKey}'], '${pivotTable.table.split('_')[1]}', ['id'], (cb) => cb.onDelete('cascade'))\n`
     migrationContent += `    .execute()\n\n`
 
     // Add unique constraint to prevent duplicate relationships

@@ -59,10 +59,11 @@ export function migrator(): Migrator {
 export async function runDatabaseMigration(): Promise<Result<MigrationResult[] | string, Error>> {
   try {
     log.info('Migrating database...')
-
+    
     const { error, results } = await migrator().migrateToLatest()
 
     if (error) {
+      console.error('Migration error:', error)
       return err(handleError(error))
     }
 
