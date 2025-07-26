@@ -42,7 +42,7 @@
     "unocss": "^66.3.3",
     "unplugin-icons": "^22.1.0",
     "unplugin-vue-components": "^28.8.0",
-    "vite-plugin-pwa": "^1.0.1",
+    "vite-plugin-pwa": "^1.0.2",
     "vitepress": "1.6.3"
   },
   "devDependencies": {

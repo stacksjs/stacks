@@ -60,6 +60,6 @@
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "markdown-it": "^14.1.0",
-    "vue-component-meta": "^3.0.3"
+    "vue-component-meta": "^3.0.4"
   }
 }
