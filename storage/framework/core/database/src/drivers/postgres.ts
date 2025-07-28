@@ -250,22 +250,7 @@ async function createTableMigration(modelPath: string) {
 
   migrationContent += `    .execute()\n`
 
-  // Add composite indexes if defined
-  // if (model.indexes?.length) {
-  //   migrationContent += '\n'
-  //   for (const index of model.indexes) {
-  //     migrationContent += generateIndexCreationSQL(tableName, index.name, index.columns)
-  //   }
-  // }
 
-  // if (otherModelRelations?.length) {
-  //   for (const modelRelation of otherModelRelations) {
-  //     if (!modelRelation.foreignKey)
-  //       continue
-
-  //     migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
-  //   }
-  // }
 
   migrationContent += generatePrimaryKeyIndexSQL(tableName)
 
@@ -301,7 +286,12 @@ async function createTableMigration(modelPath: string) {
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
 
-async function createForeignKeyMigrations(tableName: string, otherModelRelations: any[]) {
+export async function createPostgresForeignKeyMigrations(modelPath: string): Promise<void> {
+  const model = (await import(modelPath)).default as Model
+  const modelName = getModelName(model, modelPath)
+  const tableName = getTableName(model, modelPath)
+  const otherModelRelations = await fetchOtherModelRelations(modelName)
+  
   const foreignKeyRelations = otherModelRelations.filter(relation => relation.foreignKey)
   
   if (!foreignKeyRelations.length) {
@@ -330,6 +320,25 @@ async function createForeignKeyMigrations(tableName: string, otherModelRelations
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created foreign key migration: ${italic(migrationFileName)}`)
+}
+
+async function createCompositeIndexMigration(tableName: string, indexes: any[]) {
+  // Add composite indexes if defined
+  // if (model.indexes?.length) {
+  //   migrationContent += '\n'
+  //   for (const index of model.indexes) {
+  //     migrationContent += generateIndexCreationSQL(tableName, index.name, index.columns)
+  //   }
+  // }
+
+  // if (otherModelRelations?.length) {
+  //   for (const modelRelation of otherModelRelations) {
+  //     if (!modelRelation.foreignKey)
+  //       continue
+
+  //     migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
+  //   }
+  // }
 }
 
 async function createPivotTableMigration(model: Model, modelPath: string) {

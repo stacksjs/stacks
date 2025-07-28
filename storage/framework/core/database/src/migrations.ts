@@ -6,7 +6,7 @@ import { err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { FileMigrationProvider, Migrator } from 'kysely'
-import { generateMysqlMigration, generatePostgresMigration, generateSqliteMigration, generateTraitMigrations, resetMysqlDatabase, resetPostgresDatabase, resetSqliteDatabase } from './drivers'
+import { createMysqlForeignKeyMigrations, createPostgresForeignKeyMigrations, createSqliteForeignKeyMigrations, generateMysqlMigration, generatePostgresMigration, generateSqliteMigration, generateTraitMigrations, resetMysqlDatabase, resetPostgresDatabase, resetSqliteDatabase } from './drivers'
 import { createPasswordResetsTable } from './drivers/defaults/passwords'
 import {
   createCategorizableTable,
@@ -118,6 +118,7 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
       log.debug('Generating migration for:', file)
 
       await generateMigration(file)
+      await generateForeignKeyMigration(file)
     }
 
     log.success('Migrations generated')
@@ -137,6 +138,17 @@ export async function generateMigration(modelPath: string): Promise<void> {
 
   if (getDriver() === 'postgres')
     await generatePostgresMigration(modelPath)
+}
+
+export async function generateForeignKeyMigration(modelPath: string): Promise<void> {
+  if (getDriver() === 'sqlite')
+    await createSqliteForeignKeyMigrations(modelPath)
+
+  if (getDriver() === 'mysql')
+    await createMysqlForeignKeyMigrations(modelPath)
+
+  if (getDriver() === 'postgres')
+    await createPostgresForeignKeyMigrations(modelPath)
 }
 
 export async function haveModelFieldsChangedSinceLastMigration(modelPath: string): Promise<boolean> {

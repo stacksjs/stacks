@@ -112,6 +112,42 @@ export async function generateMysqlMigration(modelPath: string): Promise<void> {
   else await createTableMigration(modelPath)
 }
 
+export async function createMysqlForeignKeyMigrations(modelPath: string): Promise<void> {
+  const model = (await import(modelPath)).default as Model
+  const modelName = getModelName(model, modelPath)
+  const tableName = getTableName(model, modelPath)
+  const otherModelRelations = await fetchOtherModelRelations(modelName)
+  
+  const foreignKeyRelations = otherModelRelations.filter(relation => relation.foreignKey)
+  
+  if (!foreignKeyRelations.length) {
+    return
+  }
+
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .alterTable('${tableName}')\n`
+
+  for (const modelRelation of foreignKeyRelations) {
+    migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
+      col.references('${modelRelation.relationTable}.id').onDelete('cascade')
+    ) \n`
+  }
+
+  migrationContent += `    .execute()\n`
+  migrationContent += `}\n`
+
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-add-foreign-keys-to-${tableName}-table.ts`
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  Bun.write(migrationFilePath, migrationContent)
+
+  log.success(`Created foreign key migration: ${italic(migrationFileName)}`)
+}
+
 async function createTableMigration(modelPath: string): Promise<void> {
   log.debug('createTableMigration modelPath:', modelPath)
 
