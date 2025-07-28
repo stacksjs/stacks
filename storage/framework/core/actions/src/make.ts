@@ -1,4 +1,5 @@
 import type { MakeOptions } from '@stacksjs/types'
+import type { TemplateKey } from './templates'
 import process from 'node:process'
 import { italic, runCommand } from '@stacksjs/cli'
 import { localUrl } from '@stacksjs/config'
@@ -9,7 +10,7 @@ import { frameworkPath, path as p, resolve } from '@stacksjs/path'
 import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
 import { template } from '@stacksjs/strings'
 import { runAction } from './helpers'
-import { CODE_TEMPLATES, type TemplateKey } from './templates'
+import { CODE_TEMPLATES } from './templates'
 
 /**
  * Helper function to generate code from templates

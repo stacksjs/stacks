@@ -117,9 +117,9 @@ export async function createMysqlForeignKeyMigrations(modelPath: string): Promis
   const modelName = getModelName(model, modelPath)
   const tableName = getTableName(model, modelPath)
   const otherModelRelations = await fetchOtherModelRelations(modelName)
-  
+
   const foreignKeyRelations = otherModelRelations.filter(relation => relation.foreignKey)
-  
+
   if (!foreignKeyRelations.length) {
     return
   }

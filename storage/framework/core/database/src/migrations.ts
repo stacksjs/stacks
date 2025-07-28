@@ -52,7 +52,7 @@ export function migrator(): Migrator {
 export async function runDatabaseMigration(): Promise<Result<MigrationResult[] | string, Error>> {
   try {
     log.info('Migrating database...')
-    
+
     const { error, results } = await migrator().migrateToLatest()
 
     if (error) {
@@ -96,7 +96,6 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
   try {
     log.info('Generating migrations...')
 
-  
     // Create framework tables first
     if (getDriver() === 'postgres') {
       await generateTraitMigrations()
@@ -118,6 +117,9 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
       log.debug('Generating migration for:', file)
 
       await generateMigration(file)
+    }
+
+    for (const file of modelFiles) {
       await generateForeignKeyMigration(file)
     }
 

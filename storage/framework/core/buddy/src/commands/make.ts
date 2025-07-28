@@ -1,9 +1,9 @@
 import type { CLI, MakeOptions } from '@stacksjs/types'
 import process from 'node:process'
 import {
+  createMiddleware,
   createMigration,
   createModel,
-  createMiddleware,
   createNotification,
   createPage,
   invoke,

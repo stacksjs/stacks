@@ -1,6 +1,6 @@
 /**
  * Code generation templates for the make command
- * 
+ *
  * These templates use the {0}, {1}, etc. format for template substitution
  * which works with the @stacksjs/strings template function
  */
@@ -155,4 +155,4 @@ export default new Command({
 })`,
 } as const
 
-export type TemplateKey = keyof typeof CODE_TEMPLATES 
+export type TemplateKey = keyof typeof CODE_TEMPLATES

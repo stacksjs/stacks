@@ -56,7 +56,6 @@ export async function generateTraitMigrations(): Promise<void> {
   await createPasswordResetsTable()
 }
 
-
 export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   await dropPostgresTables()
   await deleteFrameworkModels()
@@ -150,7 +149,6 @@ async function createTableMigration(modelPath: string) {
     = model.traits?.useAuth && typeof model.traits.useAuth !== 'boolean' ? model.traits.useAuth.useTwoFactor : false
 
   await createPivotTableMigration(model, modelPath)
-  const otherModelRelations = await fetchOtherModelRelations(modelName)
 
   const useTimestamps = model.traits?.useTimestamps ?? model.traits?.timestampable ?? true
   const useSocials = model?.traits?.useSocials && Array.isArray(model.traits.useSocials) && model.traits.useSocials.length > 0
@@ -170,11 +168,10 @@ async function createTableMigration(modelPath: string) {
   migrationContent += `  await db.schema\n`
   migrationContent += `    .createTable('${tableName}')\n`
 
-  // Add primary key column
+  migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
+
   if (useUuid)
-    migrationContent += `    .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql.raw('gen_random_uuid()')))\n`
-  else
-    migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
+    migrationContent += `    .addColumn('uuid', 'uuid', (col) => col.defaultTo(sql.raw('gen_random_uuid()')))\n`
 
   // Add model attributes
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
@@ -250,8 +247,6 @@ async function createTableMigration(modelPath: string) {
 
   migrationContent += `    .execute()\n`
 
-
-
   migrationContent += generatePrimaryKeyIndexSQL(tableName)
 
   // Add upvote table if useLikeable is enabled
@@ -291,9 +286,9 @@ export async function createPostgresForeignKeyMigrations(modelPath: string): Pro
   const modelName = getModelName(model, modelPath)
   const tableName = getTableName(model, modelPath)
   const otherModelRelations = await fetchOtherModelRelations(modelName)
-  
+
   const foreignKeyRelations = otherModelRelations.filter(relation => relation.foreignKey)
-  
+
   if (!foreignKeyRelations.length) {
     return
   }
@@ -311,6 +306,7 @@ export async function createPostgresForeignKeyMigrations(modelPath: string): Pro
   }
 
   migrationContent += `    .execute()\n`
+  migrationContent += await createCompositeIndexMigration(model, modelPath)
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
@@ -322,23 +318,31 @@ export async function createPostgresForeignKeyMigrations(modelPath: string): Pro
   log.success(`Created foreign key migration: ${italic(migrationFileName)}`)
 }
 
-async function createCompositeIndexMigration(tableName: string, indexes: any[]) {
+async function createCompositeIndexMigration(model: Model, modelPath: string): Promise<string> {
+  const tableName = getTableName(model, modelPath)
+  const modelName = getModelName(model, modelPath)
+  const otherModelRelations = await fetchOtherModelRelations(modelName)
+
+  let migrationContent = ''
+
   // Add composite indexes if defined
-  // if (model.indexes?.length) {
-  //   migrationContent += '\n'
-  //   for (const index of model.indexes) {
-  //     migrationContent += generateIndexCreationSQL(tableName, index.name, index.columns)
-  //   }
-  // }
+  if (model.indexes?.length) {
+    migrationContent += '\n'
+    for (const index of model.indexes) {
+      migrationContent += generateIndexCreationSQL(tableName, index.name, index.columns)
+    }
+  }
 
-  // if (otherModelRelations?.length) {
-  //   for (const modelRelation of otherModelRelations) {
-  //     if (!modelRelation.foreignKey)
-  //       continue
+  if (otherModelRelations?.length) {
+    for (const modelRelation of otherModelRelations) {
+      if (!modelRelation.foreignKey)
+        continue
 
-  //     migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
-  //   }
-  // }
+      migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
+    }
+  }
+
+  return migrationContent
 }
 
 async function createPivotTableMigration(model: Model, modelPath: string) {
