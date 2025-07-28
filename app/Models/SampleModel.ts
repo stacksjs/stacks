@@ -1,5 +1,3 @@
-import { faker } from '@stacksjs/faker'
-import { schema } from '@stacksjs/validation'
 import type { Model } from '@stacksjs/types'
 
 export default {
