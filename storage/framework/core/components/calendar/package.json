@@ -35,7 +35,7 @@
     "highlight.js": "^11.11.1"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.52.8",
+    "@microsoft/api-extractor": "^7.52.9",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@vue/tsconfig": "^0.7.0",
