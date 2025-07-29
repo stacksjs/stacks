@@ -1,4 +1,3 @@
-
 import { config } from '@stacksjs/config'
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'

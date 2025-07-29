@@ -36,13 +36,13 @@ export async function dropPostgresTables(): Promise<void> {
   const tables = await fetchPostgresTables()
   const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
-  for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
+  for (const table of tables) await db.schema.dropTable(table).cascade().ifExists().execute()
   await dropCommonTables()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
     const pivotTables = await getPivotTables(userModelPath, userModel)
-    for (const pivotTable of pivotTables) await db.schema.dropTable(pivotTable.table).ifExists().execute()
+    for (const pivotTable of pivotTables) await db.schema.dropTable(pivotTable.table).cascade().ifExists().execute()
   }
 }
 
@@ -141,7 +141,6 @@ async function createTableMigration(modelPath: string) {
   log.debug('createTableMigration modelPath:', modelPath)
 
   const model = (await import(modelPath)).default as Model
-  const modelName = getModelName(model, modelPath)
 
   const tableName = getTableName(model, modelPath)
 

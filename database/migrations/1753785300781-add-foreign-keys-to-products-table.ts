@@ -8,4 +8,7 @@ export async function up(db: Database<any>) {
     .addColumn('manufacturer_id', 'integer', col =>
       col.references('manufacturers.id').onDelete('cascade'))
     .execute()
+  await db.schema.createIndex('products_category_id_index').on('products').column('category_id').execute()
+
+  await db.schema.createIndex('products_manufacturer_id_index').on('products').column('manufacturer_id').execute()
 }

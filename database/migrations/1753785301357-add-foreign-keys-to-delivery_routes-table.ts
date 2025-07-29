@@ -6,4 +6,5 @@ export async function up(db: Database<any>) {
     .addColumn('driver_id', 'integer', col =>
       col.references('drivers.id').onDelete('cascade'))
     .execute()
+  await db.schema.createIndex('delivery_routes_driver_id_index').on('delivery_routes').column('driver_id').execute()
 }

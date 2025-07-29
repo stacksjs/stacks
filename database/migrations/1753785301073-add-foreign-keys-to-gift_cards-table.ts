@@ -2,12 +2,9 @@ import type { Database } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .alterTable('orders')
+    .alterTable('gift_cards')
     .addColumn('customer_id', 'integer', col =>
       col.references('customers.id').onDelete('cascade'))
-    .addColumn('gift_card_id', 'integer', col =>
-      col.references('gift_cards.id').onDelete('cascade'))
-    .addColumn('coupon_id', 'integer', col =>
-      col.references('coupons.id').onDelete('cascade'))
     .execute()
+  await db.schema.createIndex('gift_cards_customer_id_index').on('gift_cards').column('customer_id').execute()
 }

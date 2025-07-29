@@ -1,5 +1,3 @@
-import type { Request } from '@stacksjs/router'
-
 import { config } from '@stacksjs/config'
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
@@ -7,7 +5,7 @@ import { Middleware } from '@stacksjs/router'
 export default new Middleware({
   name: 'EnvStaging',
   priority: 1,
-  async handle(request: Request) {
+  async handle() {
     const currentEnv = config.app.env || 'local'
 
     // Only allow access in staging environment

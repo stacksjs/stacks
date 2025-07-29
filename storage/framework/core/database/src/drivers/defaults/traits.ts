@@ -226,8 +226,6 @@ export async function createCategorizableTable(): Promise<void> {
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
-
-  await createCategorizableModelsTable()
 }
 
 // PostgreSQL version
@@ -379,17 +377,17 @@ export async function createPostgresCommenteableTable(): Promise<void> {
 }
 
 export async function dropCommonTables(): Promise<void> {
-  await db.schema.dropTable('passkeys').ifExists().execute()
-  await db.schema.dropTable('password_resets').ifExists().execute()
-  await db.schema.dropTable('query_logs').ifExists().execute()
-  await db.schema.dropTable('categorizables').ifExists().execute()
-  await db.schema.dropTable('commenteable_upvotes').ifExists().execute()
-  await db.schema.dropTable('taggables').ifExists().execute()
-  await db.schema.dropTable('taggable_models').ifExists().execute()
-  await db.schema.dropTable('categorizable_models').ifExists().execute()
-  await db.schema.dropTable('commentables').ifExists().execute()
-  await db.schema.dropTable('categories_models').ifExists().execute()
-  await db.schema.dropTable('activities').ifExists().execute()
+  await db.schema.dropTable('passkeys').cascade().ifExists().execute()
+  await db.schema.dropTable('password_resets').cascade().ifExists().execute()
+  await db.schema.dropTable('query_logs').cascade().ifExists().execute()
+  await db.schema.dropTable('categorizables').cascade().ifExists().execute()
+  await db.schema.dropTable('commenteable_upvotes').cascade().ifExists().execute()
+  await db.schema.dropTable('taggables').cascade().ifExists().execute()
+  await db.schema.dropTable('taggable_models').cascade().ifExists().execute()
+  await db.schema.dropTable('categorizable_models').cascade().ifExists().execute()
+  await db.schema.dropTable('commentables').cascade().ifExists().execute()
+  await db.schema.dropTable('categories_models').cascade().ifExists().execute()
+  await db.schema.dropTable('activities').cascade().ifExists().execute()
 }
 
 export async function truncateMigrationTables(): Promise<void> {

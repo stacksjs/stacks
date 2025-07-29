@@ -6,4 +6,5 @@ export async function up(db: Database<any>) {
     .addColumn('print_device_id', 'integer', col =>
       col.references('print_devices.id').onDelete('cascade'))
     .execute()
+  await db.schema.createIndex('receipts_print_device_id_index').on('receipts').column('print_device_id').execute()
 }
