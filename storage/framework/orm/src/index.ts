@@ -36,10 +36,6 @@ export { default as LoyaltyReward, LoyaltyRewardModel } from './models/LoyaltyRe
 
 export { default as Manufacturer, ManufacturerModel } from './models/Manufacturer'
 
-export { default as OauthAccessToken, OauthAccessTokenModel } from './models/OauthAccessToken'
-
-export { default as OauthClient, OauthClientModel } from './models/OauthClient'
-
 export { default as Order, OrderModel } from './models/Order'
 
 export { default as OrderItem, OrderItemModel } from './models/OrderItem'
@@ -75,6 +71,8 @@ export { default as Release, ReleaseModel } from './models/Release'
 export { default as Request, RequestModel } from './models/Request'
 
 export { default as Review, ReviewModel } from './models/Review'
+
+export { default as SampleModel, SampleModelModel } from './models/SampleModel'
 
 export { default as ShippingMethod, ShippingMethodModel } from './models/ShippingMethod'
 
@@ -140,10 +138,6 @@ export { type LoyaltyRewardJsonResponse, type LoyaltyRewardModelType, type Loyal
 
 export { type ManufacturerJsonResponse, type ManufacturerModelType, type ManufacturersTable, type ManufacturerUpdate, type NewManufacturer } from './types/ManufacturerType'
 
-export { type NewOauthAccessToken, type OauthAccessTokenJsonResponse, type OauthAccessTokenModelType, type OauthAccessTokensTable, type OauthAccessTokenUpdate } from './types/OauthAccessTokenType'
-
-export { type NewOauthClient, type OauthClientJsonResponse, type OauthClientModelType, type OauthClientsTable, type OauthClientUpdate } from './types/OauthClientType'
-
 export { type NewOrderItem, type OrderItemJsonResponse, type OrderItemModelType, type OrderItemsTable, type OrderItemUpdate } from './types/OrderItemType'
 
 export { type NewOrder, type OrderJsonResponse, type OrderModelType, type OrdersTable, type OrderUpdate } from './types/OrderType'
@@ -179,6 +173,8 @@ export { type NewRelease, type ReleaseJsonResponse, type ReleaseModelType, type 
 export { type NewRequest, type RequestJsonResponse, type RequestModelType, type RequestsTable, type RequestUpdate } from './types/RequestType'
 
 export { type NewReview, type ReviewJsonResponse, type ReviewModelType, type ReviewsTable, type ReviewUpdate } from './types/ReviewType'
+
+export { type NewSampleModel, type SampleModelJsonResponse, type SampleModelModelType, type SampleModelsTable, type SampleModelUpdate } from './types/SampleModelType'
 
 export { type NewShippingMethod, type ShippingMethodJsonResponse, type ShippingMethodModelType, type ShippingMethodsTable, type ShippingMethodUpdate } from './types/ShippingMethodType'
 

@@ -23,12 +23,18 @@ import {
 } from '.'
 
 import {
+  createCategorizableTable,
+  createCommentablesTable,
+  createCommentUpvoteMigration,
+  createPasskeyMigration,
   createPostgresCategorizableTable,
   createPostgresCommenteableTable,
   createPostgresCommentUpvoteMigration,
   createPostgresPasskeyMigration,
   createPostgresQueryLogsTable,
   createPostgresTaggableTable,
+  createQueryLogsTable,
+  createTaggableTable,
   dropCommonTables,
 } from './defaults/traits'
 
@@ -46,14 +52,28 @@ export async function dropPostgresTables(): Promise<void> {
   }
 }
 
-export async function generateTraitMigrations(): Promise<void> {
-  await createPostgresCategorizableTable()
-  await createPostgresCommenteableTable()
-  await createPostgresTaggableTable()
-  await createPostgresCommentUpvoteMigration()
-  await createPostgresPasskeyMigration()
-  await createPostgresQueryLogsTable()
-  await createPasswordResetsTable()
+export async function generatePostgresTraitMigrations(): Promise<void> {
+  Promise.all([
+    await createPostgresCategorizableTable(),
+    await createPostgresCommenteableTable(),
+    await createPostgresTaggableTable(),
+    await createPostgresCommentUpvoteMigration(),
+    await createPostgresPasskeyMigration(),
+    await createPostgresQueryLogsTable(),
+    await createPasswordResetsTable(),
+  ])
+}
+
+export async function generateMysqlTraitMigrations(): Promise<void> {
+  Promise.all([
+    await createCategorizableTable(),
+    await createCommentablesTable(),
+    await createTaggableTable(),
+    await createPasswordResetsTable(),
+    await createPasskeyMigration(),
+    await createQueryLogsTable(),
+    await createCommentUpvoteMigration(),
+  ])
 }
 
 export async function resetPostgresDatabase(): Promise<Ok<string, never>> {

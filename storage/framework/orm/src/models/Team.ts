@@ -4,14 +4,13 @@ import type { NewTeam, TeamJsonResponse, TeamsTable, TeamUpdate } from '../types
 import type { PersonalAccessTokenModel } from './PersonalAccessToken'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
 export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> {
   private readonly hidden: Array<keyof TeamJsonResponse> = []
-  private readonly fillable: Array<keyof TeamJsonResponse> = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'user_id']
+  private readonly fillable: Array<keyof TeamJsonResponse> = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal']
   private readonly guarded: Array<keyof TeamJsonResponse> = []
   protected attributes = {} as TeamJsonResponse
   protected originalAttributes = {} as TeamJsonResponse
@@ -816,25 +815,6 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     const instance = new TeamModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
-  }
-
-  async teamUsers() {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const results = await DB.instance.selectFrom('users')
-      .where('user_id', '=', this.id)
-      .selectAll()
-      .execute()
-
-    const tableRelationIds = results.map((result: { user_id: number }) => result.user_id)
-
-    if (!tableRelationIds.length)
-      throw new HttpError(500, 'Relation Error!')
-
-    const relationResults = await User.whereIn('id', tableRelationIds).get()
-
-    return relationResults
   }
 
   static distinct(column: keyof TeamJsonResponse): TeamModel {

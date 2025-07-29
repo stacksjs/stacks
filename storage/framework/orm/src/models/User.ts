@@ -4,11 +4,9 @@ import type { NewUser, UserJsonResponse, UsersTable, UserUpdate } from '../types
 import type { AuthorModel } from './Author'
 import type { CustomerModel } from './Customer'
 import type { DriverModel } from './Driver'
-import type { OauthAccessTokenModel } from './OauthAccessToken'
 import type { PersonalAccessTokenModel } from './PersonalAccessToken'
 import type { SubscriberModel } from './Subscriber'
 import { randomUUIDv7 } from 'bun'
-
 import { sql } from '@stacksjs/database'
 
 import { HttpError } from '@stacksjs/error-handling'
@@ -23,7 +21,7 @@ import { BaseOrm } from '../utils/base'
 
 export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> {
   private readonly hidden: Array<keyof UserJsonResponse> = ['password']
-  private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'password', 'uuid', 'two_factor_secret', 'public_key', 'team_id']
+  private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'password', 'uuid', 'two_factor_secret', 'public_key']
   private readonly guarded: Array<keyof UserJsonResponse> = []
   protected attributes = {} as UserJsonResponse
   protected originalAttributes = {} as UserJsonResponse
@@ -174,10 +172,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
   get personal_access_tokens(): PersonalAccessTokenModel[] | [] {
     return this.attributes.personal_access_tokens
-  }
-
-  get oauth_access_tokens(): OauthAccessTokenModel[] | [] {
-    return this.attributes.oauth_access_tokens
   }
 
   get customers(): CustomerModel[] | [] {
@@ -810,25 +804,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return instance.applyWhereIn<V>(column, values)
   }
 
-  async userTeams() {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const results = await DB.instance.selectFrom('teams')
-      .where('team_id', '=', this.id)
-      .selectAll()
-      .execute()
-
-    const tableRelationIds = results.map((result: { team_id: number }) => result.team_id)
-
-    if (!tableRelationIds.length)
-      throw new HttpError(500, 'Relation Error!')
-
-    const relationResults = await Team.whereIn('id', tableRelationIds).get()
-
-    return relationResults
-  }
-
   toSearchableObject(): Partial<UserJsonResponse> {
     return {
       id: this.id,
@@ -863,7 +838,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       updated_at: this.updated_at,
 
       personal_access_tokens: this.personal_access_tokens,
-      oauth_access_tokens: this.oauth_access_tokens,
       customers: this.customers,
       ...this.customColumns,
       github_id: this.github_id,

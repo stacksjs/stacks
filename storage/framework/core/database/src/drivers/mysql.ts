@@ -137,6 +137,7 @@ export async function createMysqlForeignKeyMigrations(modelPath: string): Promis
   }
 
   migrationContent += `    .execute()\n`
+  migrationContent += await createCompositeIndexMigration(model, modelPath)
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
@@ -146,6 +147,33 @@ export async function createMysqlForeignKeyMigrations(modelPath: string): Promis
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created foreign key migration: ${italic(migrationFileName)}`)
+}
+
+async function createCompositeIndexMigration(model: Model, modelPath: string): Promise<string> {
+  const tableName = getTableName(model, modelPath)
+  const modelName = getModelName(model, modelPath)
+  const otherModelRelations = await fetchOtherModelRelations(modelName)
+
+  let migrationContent = ''
+
+  // Add composite indexes if defined
+  if (model.indexes?.length) {
+    migrationContent += '\n'
+    for (const index of model.indexes) {
+      migrationContent += generateIndexCreationSQL(tableName, index.name, index.columns)
+    }
+  }
+
+  if (otherModelRelations?.length) {
+    for (const modelRelation of otherModelRelations) {
+      if (!modelRelation.foreignKey)
+        continue
+
+      migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
+    }
+  }
+
+  return migrationContent
 }
 
 async function createTableMigration(modelPath: string): Promise<void> {
@@ -228,16 +256,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
     migrationContent += `)\n`
   }
 
-  if (otherModelRelations?.length) {
-    for (const modelRelation of otherModelRelations) {
-      if (!modelRelation.foreignKey)
-        continue
 
-      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
-        col.references('${modelRelation.relationTable}.id').onDelete('cascade')
-      ) \n`
-    }
-  }
 
   if (twoFactorEnabled !== false && twoFactorEnabled)
     migrationContent += `    .addColumn('two_factor_secret', 'varchar(255)')\n`
@@ -260,22 +279,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
 
   migrationContent += `    .execute()\n`
 
-  // Add composite indexes if defined
-  if (model.indexes?.length) {
-    migrationContent += '\n'
-    for (const index of model.indexes) {
-      migrationContent += generateIndexCreationSQL(tableName, index.name, index.columns)
-    }
-  }
 
-  if (otherModelRelations?.length) {
-    for (const modelRelation of otherModelRelations) {
-      if (!modelRelation.foreignKey)
-        continue
-
-      migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
-    }
-  }
 
   migrationContent += generatePrimaryKeyIndexSQL(tableName)
 

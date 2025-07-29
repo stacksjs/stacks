@@ -21,7 +21,6 @@ interface RequestDataTeam {
   description: string
   path: string
   is_personal: boolean
-  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -35,7 +34,6 @@ export class TeamRequest extends Request<RequestDataTeam> implements TeamRequest
   public description = ''
   public path = ''
   public is_personal = false
-  public user_id = 0
   public created_at = ''
   public updated_at = ''
 

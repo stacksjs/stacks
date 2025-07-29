@@ -1,4 +1,3 @@
-import type { Generated } from 'kysely'
 import type { AuthorsTable } from '../src/types/AuthorType'
 import type { CartItemsTable } from '../src/types/CartItemType'
 import type { CartsTable } from '../src/types/CartType'
@@ -18,8 +17,6 @@ import type { LogsTable } from '../src/types/LogType'
 import type { LoyaltyPointsTable } from '../src/types/LoyaltyPointType'
 import type { LoyaltyRewardsTable } from '../src/types/LoyaltyRewardType'
 import type { ManufacturersTable } from '../src/types/ManufacturerType'
-import type { OauthAccessTokensTable } from '../src/types/OauthAccessTokenType'
-import type { OauthClientsTable } from '../src/types/OauthClientType'
 import type { OrderItemsTable } from '../src/types/OrderItemType'
 import type { OrdersTable } from '../src/types/OrderType'
 import type { PagesTable } from '../src/types/PageType'
@@ -38,6 +35,7 @@ import type { ReceiptsTable } from '../src/types/ReceiptType'
 import type { ReleasesTable } from '../src/types/ReleaseType'
 import type { RequestsTable } from '../src/types/RequestType'
 import type { ReviewsTable } from '../src/types/ReviewType'
+import type { SampleModelsTable } from '../src/types/SampleModelType'
 import type { ShippingMethodsTable } from '../src/types/ShippingMethodType'
 import type { ShippingRatesTable } from '../src/types/ShippingRateType'
 import type { ShippingZonesTable } from '../src/types/ShippingZoneType'
@@ -51,18 +49,6 @@ import type { UsersTable } from '../src/types/UserType'
 import type { WaitlistProductsTable } from '../src/types/WaitlistProductType'
 import type { WaitlistRestaurantsTable } from '../src/types/WaitlistRestaurantType'
 import type { WebsocketsTable } from '../src/types/WebsocketType'
-
-export interface TeamsUsersTable {
-  id: Generated<number>
-  team_id: number
-  user_id: number
-}
-
-export interface TeamsUsersTable {
-  id: Generated<number>
-  user_id: number
-  team_id: number
-}
 
 export interface MigrationsTable {
   name: string
@@ -180,14 +166,12 @@ export interface QueryLogsTable {
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
-  oauth_access_tokens: OauthAccessTokensTable
-  oauth_clients: OauthClientsTable
-  teams_users: TeamsUsersTable
   teams: TeamsTable
   subscribers: SubscribersTable
   deployments: DeploymentsTable
   releases: ReleasesTable
   users: UsersTable
+  sample_models: SampleModelsTable
   personal_access_tokens: PersonalAccessTokensTable
   print_devices: PrintDevicesTable
   categories: CategoriesTable

@@ -6,7 +6,18 @@ import { err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { FileMigrationProvider, Migrator } from 'kysely'
-import { createMysqlForeignKeyMigrations, createPostgresForeignKeyMigrations, createSqliteForeignKeyMigrations, generateMysqlMigration, generatePostgresMigration, generateSqliteMigration, generateTraitMigrations, resetMysqlDatabase, resetPostgresDatabase, resetSqliteDatabase } from './drivers'
+import { createMysqlForeignKeyMigrations,
+  createPostgresForeignKeyMigrations,
+  createSqliteForeignKeyMigrations,
+  generateMysqlMigration,
+  generateMysqlTraitMigrations,
+  generatePostgresMigration,
+  generatePostgresTraitMigrations,
+  generateSqliteMigration,
+  resetMysqlDatabase,
+  resetPostgresDatabase,
+  resetSqliteDatabase,
+} from './drivers'
 import { createPasswordResetsTable } from './drivers/defaults/passwords'
 import {
   createCategorizableTable,
@@ -98,17 +109,10 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
 
     // Create framework tables first
     if (getDriver() === 'postgres') {
-      await generateTraitMigrations()
+      await generatePostgresTraitMigrations()
     }
     else {
-      // SQLite and MySQL use the same table creation functions
-      await createCategorizableTable()
-      await createCommentablesTable()
-      await createTaggableTable()
-      await createPasswordResetsTable()
-      await createPasskeyMigration()
-      await createQueryLogsTable()
-      await createCommentUpvoteMigration()
+      await generateMysqlTraitMigrations()
     }
 
     const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
