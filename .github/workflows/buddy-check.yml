@@ -1,0 +1,76 @@
+name: Buddy Check
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # Check every 15 minutes
+  workflow_dispatch: # Manual trigger
+    inputs:
+      dry_run:
+        description: Dry run (preview only)
+        required: false
+        default: false
+        type: boolean
+
+env:
+  GITHUB_TOKEN: ${{ secrets.BUDDY_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: write
+
+jobs:
+  update-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.BUDDY_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup PHP and Composer (if needed)
+        if: ${{ hashFiles('composer.json') != '' }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer
+          coverage: none
+
+      - name: Install Composer dependencies (if needed)
+        if: ${{ hashFiles('composer.json') != '' }}
+        run: composer install --prefer-dist --optimize-autoloader
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build buddy-bot
+        run: bun run build
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "buddy-bot[bot]"
+          git config --global user.email "buddy-bot[bot]@users.noreply.github.com"
+
+      - name: Check for rebase requests
+        run: |
+          echo "🔍 Checking for PRs with rebase checkbox enabled..."
+
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            echo "📋 Running in DRY RUN mode..."
+            bunx buddy-bot update-check --dry-run --verbose
+          else
+            echo "🔄 Running in LIVE mode..."
+            bunx buddy-bot update-check --verbose
+          fi
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.BUDDY_BOT_TOKEN || secrets.GITHUB_TOKEN }}
