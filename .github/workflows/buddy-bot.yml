@@ -295,12 +295,6 @@ jobs:
           echo "Repository: ${{ github.repository }}"
           echo "Branch: ${{ github.ref_name }}"
 
-      - name: Create minimal .env file
-        run: |
-          # Create minimal .env to prevent dotenvx warnings
-          echo "# Generated for CI" > .env
-          echo "NODE_ENV=ci" >> .env
-
       - name: Run Buddy dependency scan
         run: |
           STRATEGY="${{ github.event.inputs.strategy || 'patch' }}"
@@ -331,13 +325,6 @@ jobs:
 
         env:
           GITHUB_TOKEN: ${{ secrets.BUDDY_BOT_TOKEN || secrets.GITHUB_TOKEN }}
-
-      - name: Create minimal .env file for updates
-        if: ${{ github.event.inputs.dry_run != 'true' }}
-        run: |
-          # Create minimal .env to prevent dotenvx warnings
-          echo "# Generated for CI" > .env
-          echo "NODE_ENV=ci" >> .env
 
       - name: Run Buddy dependency updates
         if: ${{ github.event.inputs.dry_run != 'true' }}
