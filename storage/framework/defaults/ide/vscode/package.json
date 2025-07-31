@@ -57,6 +57,6 @@
     "vue.volar"
   ],
   "devDependencies": {
-    "@vscode/vsce": "^3.6.0"
+    "@vscode/vsce": "^3.6.1-2"
   }
 }
