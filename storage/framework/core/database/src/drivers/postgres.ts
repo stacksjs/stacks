@@ -64,18 +64,6 @@ export async function generatePostgresTraitMigrations(): Promise<void> {
   ])
 }
 
-export async function generateMysqlTraitMigrations(): Promise<void> {
-  Promise.all([
-    await createCategorizableTable(),
-    await createCommentablesTable(),
-    await createTaggableTable(),
-    await createPasswordResetsTable(),
-    await createPasskeyMigration(),
-    await createQueryLogsTable(),
-    await createCommentUpvoteMigration(),
-  ])
-}
-
 export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   await dropPostgresTables()
   await deleteFrameworkModels()

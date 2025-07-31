@@ -18,15 +18,7 @@ import { createMysqlForeignKeyMigrations,
   resetPostgresDatabase,
   resetSqliteDatabase,
 } from './drivers'
-import { createPasswordResetsTable } from './drivers/defaults/passwords'
-import {
-  createCategorizableTable,
-  createCommentablesTable,
-  createCommentUpvoteMigration,
-  createPasskeyMigration,
-  createQueryLogsTable,
-  createTaggableTable,
-} from './drivers/defaults/traits'
+
 import { db } from './utils'
 
 function getDriver(): string {
@@ -114,6 +106,7 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
     else {
       await generateMysqlTraitMigrations()
     }
+    
 
     const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 

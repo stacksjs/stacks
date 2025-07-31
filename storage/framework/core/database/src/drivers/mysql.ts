@@ -2,7 +2,7 @@ import type { Ok } from '@stacksjs/error-handling'
 import type { Validator } from '@stacksjs/ts-validation'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
-import { db } from '@stacksjs/database'
+import { createPasswordResetsTable, db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
 import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '@stacksjs/orm'
 
@@ -24,7 +24,7 @@ import {
   pluckChanges,
 } from '.'
 
-import { dropCommonTables } from './defaults/traits'
+import { createCategorizableTable, createCommentablesTable, createCommentUpvoteMigration, createPasskeyMigration, createQueryLogsTable, createTaggableTable, dropCommonTables } from './defaults/traits'
 
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await dropMysqlTables()
@@ -111,6 +111,20 @@ export async function generateMysqlMigration(modelPath: string): Promise<void> {
     await createAlterTableMigration(modelPath)
   else await createTableMigration(modelPath)
 }
+
+
+export async function generateMysqlTraitMigrations(): Promise<void> {
+  Promise.all([
+    await createCategorizableTable(),
+    await createCommentablesTable(),
+    await createTaggableTable(),
+    await createPasswordResetsTable(),
+    await createPasskeyMigration(),
+    await createQueryLogsTable(),
+    await createCommentUpvoteMigration(),
+  ])
+}
+
 
 export async function createMysqlForeignKeyMigrations(modelPath: string): Promise<void> {
   const model = (await import(modelPath)).default as Model
