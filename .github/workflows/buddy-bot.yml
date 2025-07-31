@@ -149,7 +149,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-  # Rebase check job (formerly buddy-check.yml)
+  # Rebase check job
   rebase-check:
     runs-on: ubuntu-latest
     needs: [determine-jobs, setup]
@@ -231,7 +231,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "📋 View detailed logs above for rebase results." >> $GITHUB_STEP_SUMMARY
 
-  # Dependency update job (formerly buddy-update.yml)
+  # Dependency update job
   dependency-update:
     runs-on: ubuntu-latest
     needs: [determine-jobs, setup]
@@ -341,7 +341,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "📊 View detailed logs above for scan and update results." >> $GITHUB_STEP_SUMMARY
 
-  # Dashboard update job (formerly buddy-dashboard.yml)
+  # Dashboard update job
   dashboard-update:
     runs-on: ubuntu-latest
     needs: [determine-jobs, setup, dependency-update]
