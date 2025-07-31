@@ -33,7 +33,7 @@
     "@types/markdown-it-link-attributes": "^3.0.5",
     "@types/nprogress": "^0.2.3",
     "@vitejs/plugin-vue": "^6.0.1",
-    "@vue-macros/volar": "^0.30.15",
+    "@vue-macros/volar": "^3.0.0-beta.19",
     "@vue/test-utils": "^2.4.6",
     "markdown-it-link-attributes": "^4.0.1",
     "rollup": "^4.46.1",
