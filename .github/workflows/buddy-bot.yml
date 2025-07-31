@@ -37,11 +37,6 @@ on:
         required: false
         type: string
       # Dashboard job inputs
-      pin:
-        description: Pin the dashboard issue
-        required: false
-        default: true
-        type: boolean
       title:
         description: Custom dashboard title
         required: false
