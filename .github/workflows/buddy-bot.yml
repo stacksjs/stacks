@@ -149,18 +149,6 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Cache dependencies
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            node_modules
-            storage/framework/node_modules
-            storage/framework/*/node_modules
-            bun.lockb
-            storage/framework/bun.lockb
-            storage/framework/*/bun.lockb
-          key: buddy-bot-deps-${{ runner.os }}-${{ hashFiles('**/bun.lockb', '**/package.json') }}
-
   # Rebase check job (formerly buddy-check.yml)
   rebase-check:
     runs-on: ubuntu-latest
@@ -191,15 +179,13 @@ jobs:
       - name: Check token permissions
         run: |
           if [ -z "${{ secrets.BUDDY_BOT_TOKEN }}" ]; then
-            echo "⚠️ Using GITHUB_TOKEN (limited permissions for workflows)"
+            echo "⚠️ Using GITHUB_TOKEN (limited permissions)"
             echo "💡 For full workflow file update support:"
             echo "   1. Create a Personal Access Token with 'repo' and 'workflow' scopes"
             echo "   2. Add it as repository secret 'BUDDY_BOT_TOKEN'"
             echo "   3. Re-run this workflow"
-            echo "   Note: Buddy-bot will automatically handle workflow updates when BUDDY_BOT_TOKEN is available"
           else
-            echo "✅ Using BUDDY_BOT_TOKEN (full permissions including workflows)"
-            echo "   Workflow files will be updated when outdated GitHub Actions are detected"
+            echo "✅ Using BUDDY_BOT_TOKEN (full permissions)"
           fi
 
       - name: Check for rebase requests
@@ -294,37 +280,6 @@ jobs:
           echo "Triggered by: ${{ github.event_name }}"
           echo "Repository: ${{ github.repository }}"
           echo "Branch: ${{ github.ref_name }}"
-
-      - name: Run Buddy dependency scan
-        run: |
-          STRATEGY="${{ github.event.inputs.strategy || 'patch' }}"
-          PACKAGES="${{ github.event.inputs.packages }}"
-          VERBOSE="${{ github.event.inputs.verbose || 'true' }}"
-
-          echo "🔍 Scanning for dependency updates..."
-          echo "Strategy: $STRATEGY"
-          echo "Packages: ${PACKAGES:-all}"
-          echo "Verbose: $VERBOSE"
-          echo ""
-
-          set -e  # Exit on any error
-
-          if [ "$PACKAGES" != "" ]; then
-            if [ "$VERBOSE" = "true" ]; then
-              bunx buddy-bot scan --packages "$PACKAGES" --verbose
-            else
-              bunx buddy-bot scan --packages "$PACKAGES"
-            fi
-          else
-            if [ "$VERBOSE" = "true" ]; then
-              bunx buddy-bot scan --strategy "$STRATEGY" --verbose
-            else
-              bunx buddy-bot scan --strategy "$STRATEGY"
-            fi
-          fi
-
-        env:
-          GITHUB_TOKEN: ${{ secrets.BUDDY_BOT_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Run Buddy dependency updates
         if: ${{ github.event.inputs.dry_run != 'true' }}
