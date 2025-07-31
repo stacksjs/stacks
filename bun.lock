@@ -7,7 +7,7 @@
         "stacks": "workspace:*",
       },
       "devDependencies": {
-        "buddy-bot": "0.5.11",
+        "buddy-bot": "0.5.12",
         "typescript": "5.8.3",
       },
     },
@@ -3358,7 +3358,7 @@
 
     "browserslist": ["browserslist@4.25.1", "", { "dependencies": { "caniuse-lite": "^1.0.30001726", "electron-to-chromium": "^1.5.173", "node-releases": "^2.0.19", "update-browserslist-db": "^1.1.3" }, "bin": { "browserslist": "cli.js" } }, "sha512-KGj0KoOMXLpSNkkEI6Z6mShmQy0bc1I+T7K9N81k4WWMrfz+6fQ6es80B/YLAeRoKvjYE1YSHHOW1qe9xIVzHw=="],
 
-    "buddy-bot": ["buddy-bot@0.5.11", "", { "dependencies": { "@types/prompts": "^2.4.9", "bunfig": "^0.10.1", "cac": "6.7.13", "prompts": "^2.4.2", "ts-pkgx": "0.4.4" }, "bin": { "buddy-bot": "dist/bin/cli.js" } }, "sha512-fFDmIh6ouEiS8fDjeDYiVk8dMarxAeFVgP+csWunXMdl3TSBQFTYjgQ+PHCcp0L/HeyfNvTQUivmq9a5P27swQ=="],
+    "buddy-bot": ["buddy-bot@0.5.12", "", { "dependencies": { "@types/prompts": "^2.4.9", "bunfig": "^0.10.1", "cac": "6.7.13", "prompts": "^2.4.2", "ts-pkgx": "0.4.4" }, "bin": { "buddy-bot": "dist/bin/cli.js" } }, "sha512-vfH1CbnVGFAi0mF9FOfyoWyNFVv/QjXMBhHGjf0jMgu3eSV1G7yY1JDmpvKyDE8XUHLQXweSpCOyuZJ0VUkn3w=="],
 
     "buffer": ["buffer@4.9.2", "", { "dependencies": { "base64-js": "^1.0.2", "ieee754": "^1.1.4", "isarray": "^1.0.0" } }, "sha512-xq+q3SRMOxGivLhBNaUdC64hDTQwejJ+H0T/NB1XMtTVEwNTrfFF3gAxiyW0Bu/xWEGhjVKgUcMhCrUy2+uCWg=="],
 
