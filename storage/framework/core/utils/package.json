@@ -63,7 +63,7 @@
     "@vueuse/shared": "^13.6.0",
     "ace-builds": "^1.43.2",
     "bun-plugin-dotenvx": "^0.6.4",
-    "bun-plugin-yml": "^0.3.1",
+    "bun-plugin-yml": "^0.58.73",
     "defu": "^6.1.4",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.1",
