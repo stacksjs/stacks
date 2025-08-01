@@ -36,11 +36,11 @@
   },
   "dependencies": {
     "@iconify-json/carbon": "^1.2.11",
-    "@shikijs/vitepress-twoslash": "^3.8.1",
+    "@shikijs/vitepress-twoslash": "^3.9.1",
     "@vite-pwa/assets-generator": "^1.0.0",
     "@vite-pwa/vitepress": "^1.0.0",
     "unocss": "^66.3.3",
-    "unplugin-icons": "^22.1.0",
+    "unplugin-icons": "^22.2.0",
     "unplugin-vue-components": "^28.8.0",
     "vite-plugin-pwa": "^1.0.2",
     "vitepress": "1.6.3"
