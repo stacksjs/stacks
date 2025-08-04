@@ -40,7 +40,7 @@ export async function dropPostgresTables(): Promise<void> {
   await truncateMigrationTables()
 
   for (const table of tables) await db.schema.dropTable(table).cascade().ifExists().execute()
-  await dropCommonTables()
+  await dropCommonPostgresTables()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
@@ -48,6 +48,14 @@ export async function dropPostgresTables(): Promise<void> {
     for (const pivotTable of pivotTables) await db.schema.dropTable(pivotTable.table).cascade().ifExists().execute()
   }
 }
+
+async function dropCommonPostgresTables(): Promise<void> {
+  await db.schema.dropTable('passkeys').cascade().ifExists().execute()
+  await db.schema.dropTable('password_resets').cascade().ifExists().execute()
+  await db.schema.dropTable('query_logs').cascade().ifExists().execute()
+  await db.schema.dropTable('categorizables').cascade().ifExists().execute()
+  await db.schema.dropTable('commenteable_upvotes').cascade().ifExists().execute()
+} 
 
 export async function generatePostgresTraitMigrations(): Promise<void> {
   Promise.all([
