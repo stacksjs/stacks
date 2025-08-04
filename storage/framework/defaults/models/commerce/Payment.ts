@@ -37,7 +37,7 @@ export default {
       validation: {
         rule: schema.number().required().min(0.01),
       },
-      factory: faker => Number.parseFloat(faker.commerce.price({ min: 10, max: 500, dec: 2 })),
+      factory: faker => Number.parseInt(faker.commerce.price({ min: 10, max: 500, dec: 2 })),
     },
 
     method: {
@@ -143,7 +143,7 @@ export default {
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => faker.helpers.maybe(() => Number.parseFloat(faker.commerce.price({ min: 5, max: 100, dec: 2 })), { probability: 0.2 }),
+      factory: faker => faker.helpers.maybe(() => Number.parseInt(faker.commerce.price({ min: 5, max: 100, dec: 2 })), { probability: 0.2 }),
     },
 
     notes: {

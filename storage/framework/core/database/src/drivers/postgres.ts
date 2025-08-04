@@ -23,24 +23,21 @@ import {
 } from '.'
 
 import {
-  createCategorizableTable,
-  createCommentablesTable,
-  createCommentUpvoteMigration,
-  createPasskeyMigration,
   createPostgresCategorizableTable,
   createPostgresCommenteableTable,
   createPostgresCommentUpvoteMigration,
   createPostgresPasskeyMigration,
   createPostgresQueryLogsTable,
   createPostgresTaggableTable,
-  createQueryLogsTable,
-  createTaggableTable,
   dropCommonTables,
+  truncateMigrationTables,
 } from './defaults/traits'
 
 export async function dropPostgresTables(): Promise<void> {
   const tables = await fetchPostgresTables()
   const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+
+  await truncateMigrationTables()
 
   for (const table of tables) await db.schema.dropTable(table).cascade().ifExists().execute()
   await dropCommonTables()
