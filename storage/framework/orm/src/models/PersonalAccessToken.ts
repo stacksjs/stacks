@@ -1,20 +1,37 @@
-import type { RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
-import type { NewPersonalAccessToken, PersonalAccessTokenJsonResponse, PersonalAccessTokensTable, PersonalAccessTokenUpdate } from '../types/PersonalAccessTokenType'
-import type { UserModel } from './User'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
+import Stripe from 'stripe'
 import { sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
-
 import { BaseOrm } from '../utils/base'
+import type { Operator } from '@stacksjs/orm'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import { HttpError } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { randomUUIDv7 } from 'bun'
+import type { PersonalAccessTokenModelType, PersonalAccessTokenJsonResponse, NewPersonalAccessToken, PersonalAccessTokenUpdate, PersonalAccessTokensTable } from '../types/PersonalAccessTokenType'
+
+import type {UserModel} from './User'
+
+
+
+
+import type { Model } from '@stacksjs/types';
+import { collect } from '@stacksjs/collections';
+import { schema } from '@stacksjs/validation';
+
+
+
 
 export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, PersonalAccessTokensTable, PersonalAccessTokenJsonResponse> {
   private readonly hidden: Array<keyof PersonalAccessTokenJsonResponse> = []
-  private readonly fillable: Array<keyof PersonalAccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'last_used_at', 'expires_at', 'revoked_at', 'ip_address', 'device_name', 'is_single_use', 'team_id', 'user_id']
+  private readonly fillable: Array<keyof PersonalAccessTokenJsonResponse> = ["name","token","plain_text_token","abilities","last_used_at","expires_at","revoked_at","ip_address","device_name","is_single_use","team_id","user_id"]
   private readonly guarded: Array<keyof PersonalAccessTokenJsonResponse> = []
   protected attributes = {} as PersonalAccessTokenJsonResponse
   protected originalAttributes = {} as PersonalAccessTokenJsonResponse
-
+  
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -32,12 +49,13 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
   constructor(personalAccessToken: PersonalAccessTokenJsonResponse | undefined) {
     super('personal_access_tokens')
     if (personalAccessToken) {
+
       this.attributes = { ...personalAccessToken }
       this.originalAttributes = { ...personalAccessToken }
 
-      Object.keys(personalAccessToken).forEach((key) => {
+      Object.keys(personalAccessToken).forEach(key => {
         if (!(key in this)) {
-          this.customColumns[key] = (personalAccessToken as PersonalAccessTokenJsonResponse)[key]
+           this.customColumns[key] = (personalAccessToken as PersonalAccessTokenJsonResponse)[key]
         }
       })
     }
@@ -52,8 +70,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
   protected async loadRelations(models: PersonalAccessTokenJsonResponse | PersonalAccessTokenJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length)
-      return
+    if (!modelArray.length) return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -73,8 +90,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      }
-      else {
+      } else {
         const records = relatedRecords.filter((record: { personalAccessToken_id: number }) => {
           return record.personalAccessToken_id === models.id
         })
@@ -95,10 +111,12 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
 
     if (Array.isArray(data)) {
       data.map((model: PersonalAccessTokenJsonResponse) => {
+
         const customGetter = {
           default: () => {
           },
 
+          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -107,14 +125,14 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
 
         return model
       })
-    }
-    else {
+    } else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
+        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -128,116 +146,120 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
       default: () => {
       },
 
+      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      (model as any)[key] = await fn()
+        (model as any)[key] = await fn()
     }
   }
 
   get user_id(): number {
-    return this.attributes.user_id
-  }
+        return this.attributes.user_id
+      }
 
-  get user(): UserModel | undefined {
-    return this.attributes.user
-  }
+get user(): UserModel | undefined {
+        return this.attributes.user
+      }
 
-  get id(): number {
+get id(): number {
     return this.attributes.id
   }
 
-  get name(): string {
-    return this.attributes.name
-  }
+get name(): string {
+      return this.attributes.name
+    }
 
-  get token(): string | undefined {
-    return this.attributes.token
-  }
+get token(): string | undefined {
+      return this.attributes.token
+    }
 
-  get plain_text_token(): string {
-    return this.attributes.plain_text_token
-  }
+get plain_text_token(): string {
+      return this.attributes.plain_text_token
+    }
 
-  get abilities(): string {
-    return this.attributes.abilities
-  }
+get abilities(): string {
+      return this.attributes.abilities
+    }
 
-  get last_used_at(): Date | string | undefined {
-    return this.attributes.last_used_at
-  }
+get last_used_at(): Date | string | undefined {
+      return this.attributes.last_used_at
+    }
 
-  get expires_at(): Date | string | undefined {
-    return this.attributes.expires_at
-  }
+get expires_at(): Date | string | undefined {
+      return this.attributes.expires_at
+    }
 
-  get revoked_at(): Date | string | undefined {
-    return this.attributes.revoked_at
-  }
+get revoked_at(): Date | string | undefined {
+      return this.attributes.revoked_at
+    }
 
-  get ip_address(): string | undefined {
-    return this.attributes.ip_address
-  }
+get ip_address(): string | undefined {
+      return this.attributes.ip_address
+    }
 
-  get device_name(): string | undefined {
-    return this.attributes.device_name
-  }
+get device_name(): string | undefined {
+      return this.attributes.device_name
+    }
 
-  get is_single_use(): boolean {
-    return this.attributes.is_single_use
-  }
+get is_single_use(): boolean {
+      return this.attributes.is_single_use
+    }
 
-  get created_at(): string | undefined {
-    return this.attributes.created_at
-  }
+get created_at(): string | undefined {
+      return this.attributes.created_at
+    }
 
-  get updated_at(): string | undefined {
-    return this.attributes.updated_at
-  }
+    get updated_at(): string | undefined {
+      return this.attributes.updated_at
+    }
+
 
   set name(value: string) {
-    this.attributes.name = value
-  }
+      this.attributes.name = value
+    }
 
-  set token(value: string) {
-    this.attributes.token = value
-  }
+set token(value: string) {
+      this.attributes.token = value
+    }
 
-  set plain_text_token(value: string) {
-    this.attributes.plain_text_token = value
-  }
+set plain_text_token(value: string) {
+      this.attributes.plain_text_token = value
+    }
 
-  set abilities(value: string) {
-    this.attributes.abilities = value
-  }
+set abilities(value: string) {
+      this.attributes.abilities = value
+    }
 
-  set last_used_at(value: Date | string) {
-    this.attributes.last_used_at = value
-  }
+set last_used_at(value: Date | string) {
+      this.attributes.last_used_at = value
+    }
 
-  set expires_at(value: Date | string) {
-    this.attributes.expires_at = value
-  }
+set expires_at(value: Date | string) {
+      this.attributes.expires_at = value
+    }
 
-  set revoked_at(value: Date | string) {
-    this.attributes.revoked_at = value
-  }
+set revoked_at(value: Date | string) {
+      this.attributes.revoked_at = value
+    }
 
-  set ip_address(value: string) {
-    this.attributes.ip_address = value
-  }
+set ip_address(value: string) {
+      this.attributes.ip_address = value
+    }
 
-  set device_name(value: string) {
-    this.attributes.device_name = value
-  }
+set device_name(value: string) {
+      this.attributes.device_name = value
+    }
 
-  set is_single_use(value: boolean) {
-    this.attributes.is_single_use = value
-  }
+set is_single_use(value: boolean) {
+      this.attributes.is_single_use = value
+    }
 
-  set updated_at(value: string) {
-    this.attributes.updated_at = value
-  }
+set updated_at(value: string) {
+      this.attributes.updated_at = value
+    }
+
+
 
   static select(params: (keyof PersonalAccessTokenJsonResponse)[] | RawBuilder<string> | string): PersonalAccessTokenModel {
     const instance = new PersonalAccessTokenModel(undefined)
@@ -247,12 +269,11 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
 
   // Method to find a PersonalAccessToken by ID
   static async find(id: number): Promise<PersonalAccessTokenModel | undefined> {
-    const query = DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
+    let query = DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     const instance = new PersonalAccessTokenModel(undefined)
     return instance.createInstance(model)
@@ -273,8 +294,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
 
     const model = await instance.applyLast()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new PersonalAccessTokenModel(model)
   }
@@ -307,7 +327,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
 
   static async findMany(ids: number[]): Promise<PersonalAccessTokenModel[]> {
     const instance = new PersonalAccessTokenModel(undefined)
-
+     
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: PersonalAccessTokenJsonResponse) => instance.parseResult(new PersonalAccessTokenModel(modelItem)))
@@ -322,8 +342,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new PersonalAccessTokenModel(model)
   }
@@ -337,8 +356,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new PersonalAccessTokenModel(model)
   }
@@ -505,12 +523,12 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: PersonalAccessTokenModel[]
+    data: PersonalAccessTokenModel[],
     paging: {
-      total_records: number
-      page: number
+      total_records: number,
+      page: number,
       total_pages: number
-    }
+    },
     next_cursor: number | null
   }> {
     const instance = new PersonalAccessTokenModel(undefined)
@@ -520,7 +538,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
     return {
       data: result.data.map((item: PersonalAccessTokenJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor,
+      next_cursor: result.next_cursor
     }
   }
 
@@ -532,11 +550,13 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
   async applyCreate(newPersonalAccessToken: NewPersonalAccessToken): Promise<PersonalAccessTokenModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPersonalAccessToken).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as NewPersonalAccessToken
 
     await this.mapCustomSetters(filteredValues)
+
+    
 
     const result = await DB.instance.insertInto('personal_access_tokens')
       .values(filteredValues)
@@ -551,6 +571,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
       throw new HttpError(500, 'Failed to retrieve created PersonalAccessToken')
     }
 
+    
     return this.createInstance(model)
   }
 
@@ -619,7 +640,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
   async update(newPersonalAccessToken: PersonalAccessTokenUpdate): Promise<PersonalAccessTokenModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPersonalAccessToken).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as PersonalAccessTokenUpdate
 
@@ -643,6 +664,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
         throw new HttpError(500, 'Failed to retrieve updated PersonalAccessToken')
       }
 
+      
       return this.createInstance(model)
     }
 
@@ -666,6 +688,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
         throw new HttpError(500, 'Failed to retrieve updated PersonalAccessToken')
       }
 
+      
       return this.createInstance(model)
     }
 
@@ -691,9 +714,9 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
         throw new HttpError(500, 'Failed to retrieve updated PersonalAccessToken')
       }
 
+      
       return this.createInstance(model)
-    }
-    else {
+    } else {
       // Create new record
       const result = await DB.instance.insertInto('personal_access_tokens')
         .values(this.attributes as NewPersonalAccessToken)
@@ -709,6 +732,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
         throw new HttpError(500, 'Failed to retrieve created PersonalAccessToken')
       }
 
+      
       return this.createInstance(model)
     }
   }
@@ -722,6 +746,8 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewPersonalAccessToken
+
+      
 
       return filteredValues
     })
@@ -746,6 +772,8 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
       throw new HttpError(500, 'Failed to retrieve created PersonalAccessToken')
     }
 
+    
+
     return instance.createInstance(model)
   }
 
@@ -753,6 +781,9 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
   async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
+    
+    
+    
 
     const deleted = await DB.instance.deleteFrom('personal_access_tokens')
       .where('id', '=', this.id)
@@ -762,90 +793,100 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
   }
 
   static async remove(id: number): Promise<any> {
+    
+
+    
+
+    
+
+    
+
     return await DB.instance.deleteFrom('personal_access_tokens')
       .where('id', '=', id)
       .execute()
   }
 
   static whereName(value: string): PersonalAccessTokenModel {
-    const instance = new PersonalAccessTokenModel(undefined)
+          const instance = new PersonalAccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereToken(value: string): PersonalAccessTokenModel {
-    const instance = new PersonalAccessTokenModel(undefined)
+static whereToken(value: string): PersonalAccessTokenModel {
+          const instance = new PersonalAccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('token', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('token', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static wherePlainTextToken(value: string): PersonalAccessTokenModel {
-    const instance = new PersonalAccessTokenModel(undefined)
+static wherePlainTextToken(value: string): PersonalAccessTokenModel {
+          const instance = new PersonalAccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('plain_text_token', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('plain_text_token', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereAbilities(value: string): PersonalAccessTokenModel {
-    const instance = new PersonalAccessTokenModel(undefined)
+static whereAbilities(value: string): PersonalAccessTokenModel {
+          const instance = new PersonalAccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('abilities', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('abilities', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereLastUsedAt(value: string): PersonalAccessTokenModel {
-    const instance = new PersonalAccessTokenModel(undefined)
+static whereLastUsedAt(value: string): PersonalAccessTokenModel {
+          const instance = new PersonalAccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('last_used_at', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('last_used_at', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereExpiresAt(value: string): PersonalAccessTokenModel {
-    const instance = new PersonalAccessTokenModel(undefined)
+static whereExpiresAt(value: string): PersonalAccessTokenModel {
+          const instance = new PersonalAccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('expires_at', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('expires_at', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereRevokedAt(value: string): PersonalAccessTokenModel {
-    const instance = new PersonalAccessTokenModel(undefined)
+static whereRevokedAt(value: string): PersonalAccessTokenModel {
+          const instance = new PersonalAccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('revoked_at', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('revoked_at', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereIpAddress(value: string): PersonalAccessTokenModel {
-    const instance = new PersonalAccessTokenModel(undefined)
+static whereIpAddress(value: string): PersonalAccessTokenModel {
+          const instance = new PersonalAccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('ip_address', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('ip_address', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereDeviceName(value: string): PersonalAccessTokenModel {
-    const instance = new PersonalAccessTokenModel(undefined)
+static whereDeviceName(value: string): PersonalAccessTokenModel {
+          const instance = new PersonalAccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('device_name', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('device_name', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereIsSingleUse(value: string): PersonalAccessTokenModel {
-    const instance = new PersonalAccessTokenModel(undefined)
+static whereIsSingleUse(value: string): PersonalAccessTokenModel {
+          const instance = new PersonalAccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('is_single_use', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('is_single_use', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
+
+
 
   static whereIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): PersonalAccessTokenModel {
     const instance = new PersonalAccessTokenModel(undefined)
@@ -853,19 +894,28 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
     return instance.applyWhereIn<V>(column, values)
   }
 
-  async userBelong(): Promise<UserModel> {
-    if (this.user_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
+  
+        async userBelong(): Promise<UserModel> {
+          if (this.user_id === undefined)
+            throw new HttpError(500, 'Relation Error!')
 
-    const model = await User
-      .where('id', '=', this.user_id)
-      .first()
+          const model = await User
+            .where('id', '=', this.user_id)
+            .first()
 
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
+          if (! model)
+            throw new HttpError(500, 'Model Relation Not Found!')
 
-    return model
-  }
+          return model
+        }
+
+
+
+  
+
+  
+
+  
 
   static distinct(column: keyof PersonalAccessTokenJsonResponse): PersonalAccessTokenModel {
     const instance = new PersonalAccessTokenModel(undefined)
@@ -882,26 +932,26 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
   toJSON(): PersonalAccessTokenJsonResponse {
     const output = {
 
-      id: this.id,
-      name: this.name,
-      token: this.token,
-      plain_text_token: this.plain_text_token,
-      abilities: this.abilities,
-      last_used_at: this.last_used_at,
-      expires_at: this.expires_at,
-      revoked_at: this.revoked_at,
-      ip_address: this.ip_address,
-      device_name: this.device_name,
-      is_single_use: this.is_single_use,
+id: this.id,
+name: this.name,
+   token: this.token,
+   plain_text_token: this.plain_text_token,
+   abilities: this.abilities,
+   last_used_at: this.last_used_at,
+   expires_at: this.expires_at,
+   revoked_at: this.revoked_at,
+   ip_address: this.ip_address,
+   device_name: this.device_name,
+   is_single_use: this.is_single_use,
+   
+        created_at: this.created_at,
 
-      created_at: this.created_at,
-
-      updated_at: this.updated_at,
+        updated_at: this.updated_at,
 
       user_id: this.user_id,
-      user: this.user,
-      ...this.customColumns,
-    }
+   user: this.user,
+...this.customColumns,
+}
 
     return output
   }
@@ -913,6 +963,8 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
 
     return model
   }
+
+  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<PersonalAccessTokenModel | undefined> {
@@ -931,15 +983,16 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
+
+  
 }
 
 export async function find(id: number): Promise<PersonalAccessTokenModel | undefined> {
-  const query = DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
+  let query = DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model)
-    return undefined
+  if (!model) return undefined
 
   const instance = new PersonalAccessTokenModel(undefined)
   return instance.createInstance(model)
@@ -967,74 +1020,76 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<PersonalAccessTokenModel[]> {
-  const query = DB.instance.selectFrom('personal_access_tokens').where('name', '=', value)
-  const results: PersonalAccessTokenJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('personal_access_tokens').where('name', '=', value)
+          const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
-}
+          return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
+        } 
 
 export async function whereToken(value: string): Promise<PersonalAccessTokenModel[]> {
-  const query = DB.instance.selectFrom('personal_access_tokens').where('token', '=', value)
-  const results: PersonalAccessTokenJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('personal_access_tokens').where('token', '=', value)
+          const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
-}
+          return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
+        } 
 
 export async function wherePlainTextToken(value: string): Promise<PersonalAccessTokenModel[]> {
-  const query = DB.instance.selectFrom('personal_access_tokens').where('plain_text_token', '=', value)
-  const results: PersonalAccessTokenJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('personal_access_tokens').where('plain_text_token', '=', value)
+          const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
-}
+          return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
+        } 
 
 export async function whereAbilities(value: string): Promise<PersonalAccessTokenModel[]> {
-  const query = DB.instance.selectFrom('personal_access_tokens').where('abilities', '=', value)
-  const results: PersonalAccessTokenJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('personal_access_tokens').where('abilities', '=', value)
+          const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
-}
+          return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
+        } 
 
 export async function whereLastUsedAt(value: Date | string): Promise<PersonalAccessTokenModel[]> {
-  const query = DB.instance.selectFrom('personal_access_tokens').where('last_used_at', '=', value)
-  const results: PersonalAccessTokenJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('personal_access_tokens').where('last_used_at', '=', value)
+          const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
-}
+          return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
+        } 
 
 export async function whereExpiresAt(value: Date | string): Promise<PersonalAccessTokenModel[]> {
-  const query = DB.instance.selectFrom('personal_access_tokens').where('expires_at', '=', value)
-  const results: PersonalAccessTokenJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('personal_access_tokens').where('expires_at', '=', value)
+          const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
-}
+          return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
+        } 
 
 export async function whereRevokedAt(value: Date | string): Promise<PersonalAccessTokenModel[]> {
-  const query = DB.instance.selectFrom('personal_access_tokens').where('revoked_at', '=', value)
-  const results: PersonalAccessTokenJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('personal_access_tokens').where('revoked_at', '=', value)
+          const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
-}
+          return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
+        } 
 
 export async function whereIpAddress(value: string): Promise<PersonalAccessTokenModel[]> {
-  const query = DB.instance.selectFrom('personal_access_tokens').where('ip_address', '=', value)
-  const results: PersonalAccessTokenJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('personal_access_tokens').where('ip_address', '=', value)
+          const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
-}
+          return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
+        } 
 
 export async function whereDeviceName(value: string): Promise<PersonalAccessTokenModel[]> {
-  const query = DB.instance.selectFrom('personal_access_tokens').where('device_name', '=', value)
-  const results: PersonalAccessTokenJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('personal_access_tokens').where('device_name', '=', value)
+          const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
-}
+          return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
+        } 
 
 export async function whereIsSingleUse(value: boolean): Promise<PersonalAccessTokenModel[]> {
-  const query = DB.instance.selectFrom('personal_access_tokens').where('is_single_use', '=', value)
-  const results: PersonalAccessTokenJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('personal_access_tokens').where('is_single_use', '=', value)
+          const results: PersonalAccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
-}
+          return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
+        } 
+
+
 
 export const PersonalAccessToken = PersonalAccessTokenModel
 

@@ -1,21 +1,34 @@
-import type { RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
-import type { NewTaxRate, TaxRateJsonResponse, TaxRatesTable, TaxRateUpdate } from '../types/TaxRateType'
-import { randomUUIDv7 } from 'bun'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
+import Stripe from 'stripe'
 import { sql } from '@stacksjs/database'
+import { DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
+import type { Operator } from '@stacksjs/orm'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { DB } from '@stacksjs/orm'
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { randomUUIDv7 } from 'bun'
+import type { TaxRateModelType, TaxRateJsonResponse, NewTaxRate, TaxRateUpdate, TaxRatesTable } from '../types/TaxRateType'
 
-import { BaseOrm } from '../utils/base'
+
+
+
+import type { Model } from '@stacksjs/types';
+import { schema } from '@stacksjs/validation';
+
+
+
 
 export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJsonResponse> {
   private readonly hidden: Array<keyof TaxRateJsonResponse> = []
-  private readonly fillable: Array<keyof TaxRateJsonResponse> = ['name', 'rate', 'type', 'country', 'region', 'status', 'is_default', 'uuid']
+  private readonly fillable: Array<keyof TaxRateJsonResponse> = ["name","rate","type","country","region","status","is_default","uuid"]
   private readonly guarded: Array<keyof TaxRateJsonResponse> = []
   protected attributes = {} as TaxRateJsonResponse
   protected originalAttributes = {} as TaxRateJsonResponse
-
+  
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -33,12 +46,13 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
   constructor(taxRate: TaxRateJsonResponse | undefined) {
     super('tax_rates')
     if (taxRate) {
+
       this.attributes = { ...taxRate }
       this.originalAttributes = { ...taxRate }
 
-      Object.keys(taxRate).forEach((key) => {
+      Object.keys(taxRate).forEach(key => {
         if (!(key in this)) {
-          this.customColumns[key] = (taxRate as TaxRateJsonResponse)[key]
+           this.customColumns[key] = (taxRate as TaxRateJsonResponse)[key]
         }
       })
     }
@@ -53,8 +67,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
   protected async loadRelations(models: TaxRateJsonResponse | TaxRateJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length)
-      return
+    if (!modelArray.length) return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -74,8 +87,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      }
-      else {
+      } else {
         const records = relatedRecords.filter((record: { taxRate_id: number }) => {
           return record.taxRate_id === models.id
         })
@@ -96,10 +108,12 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
 
     if (Array.isArray(data)) {
       data.map((model: TaxRateJsonResponse) => {
+
         const customGetter = {
           default: () => {
           },
 
+          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -108,14 +122,14 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
 
         return model
       })
-    }
-    else {
+    } else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
+        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -129,10 +143,11 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
       default: () => {
       },
 
+      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      (model as any)[key] = await fn()
+        (model as any)[key] = await fn()
     }
   }
 
@@ -140,81 +155,84 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
-    return this.attributes.uuid
-  }
+get uuid(): string | undefined {
+      return this.attributes.uuid
+    }
 
-  get name(): string {
-    return this.attributes.name
-  }
+get name(): string {
+      return this.attributes.name
+    }
 
-  get rate(): number {
-    return this.attributes.rate
-  }
+get rate(): number {
+      return this.attributes.rate
+    }
 
-  get type(): string {
-    return this.attributes.type
-  }
+get type(): string {
+      return this.attributes.type
+    }
 
-  get country(): string {
-    return this.attributes.country
-  }
+get country(): string {
+      return this.attributes.country
+    }
 
-  get region(): string | string[] | undefined {
-    return this.attributes.region
-  }
+get region(): string | string[] | undefined {
+      return this.attributes.region
+    }
 
-  get status(): string | string[] | undefined {
-    return this.attributes.status
-  }
+get status(): string | string[] | undefined {
+      return this.attributes.status
+    }
 
-  get is_default(): boolean | undefined {
-    return this.attributes.is_default
-  }
+get is_default(): boolean | undefined {
+      return this.attributes.is_default
+    }
 
-  get created_at(): string | undefined {
-    return this.attributes.created_at
-  }
+get created_at(): string | undefined {
+      return this.attributes.created_at
+    }
 
-  get updated_at(): string | undefined {
-    return this.attributes.updated_at
-  }
+    get updated_at(): string | undefined {
+      return this.attributes.updated_at
+    }
+
 
   set uuid(value: string) {
-    this.attributes.uuid = value
-  }
+      this.attributes.uuid = value
+    }
 
-  set name(value: string) {
-    this.attributes.name = value
-  }
+set name(value: string) {
+      this.attributes.name = value
+    }
 
-  set rate(value: number) {
-    this.attributes.rate = value
-  }
+set rate(value: number) {
+      this.attributes.rate = value
+    }
 
-  set type(value: string) {
-    this.attributes.type = value
-  }
+set type(value: string) {
+      this.attributes.type = value
+    }
 
-  set country(value: string) {
-    this.attributes.country = value
-  }
+set country(value: string) {
+      this.attributes.country = value
+    }
 
-  set region(value: string | string[]) {
-    this.attributes.region = value
-  }
+set region(value: string | string[]) {
+      this.attributes.region = value
+    }
 
-  set status(value: string | string[]) {
-    this.attributes.status = value
-  }
+set status(value: string | string[]) {
+      this.attributes.status = value
+    }
 
-  set is_default(value: boolean) {
-    this.attributes.is_default = value
-  }
+set is_default(value: boolean) {
+      this.attributes.is_default = value
+    }
 
-  set updated_at(value: string) {
-    this.attributes.updated_at = value
-  }
+set updated_at(value: string) {
+      this.attributes.updated_at = value
+    }
+
+
 
   static select(params: (keyof TaxRateJsonResponse)[] | RawBuilder<string> | string): TaxRateModel {
     const instance = new TaxRateModel(undefined)
@@ -224,12 +242,11 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
 
   // Method to find a TaxRate by ID
   static async find(id: number): Promise<TaxRateModel | undefined> {
-    const query = DB.instance.selectFrom('tax_rates').where('id', '=', id).selectAll()
+    let query = DB.instance.selectFrom('tax_rates').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     const instance = new TaxRateModel(undefined)
     return instance.createInstance(model)
@@ -250,8 +267,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
 
     const model = await instance.applyLast()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new TaxRateModel(model)
   }
@@ -284,7 +300,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
 
   static async findMany(ids: number[]): Promise<TaxRateModel[]> {
     const instance = new TaxRateModel(undefined)
-
+     
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: TaxRateJsonResponse) => instance.parseResult(new TaxRateModel(modelItem)))
@@ -299,8 +315,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new TaxRateModel(model)
   }
@@ -314,8 +329,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new TaxRateModel(model)
   }
@@ -482,12 +496,12 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: TaxRateModel[]
+    data: TaxRateModel[],
     paging: {
-      total_records: number
-      page: number
+      total_records: number,
+      page: number,
       total_pages: number
-    }
+    },
     next_cursor: number | null
   }> {
     const instance = new TaxRateModel(undefined)
@@ -497,7 +511,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
     return {
       data: result.data.map((item: TaxRateJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor,
+      next_cursor: result.next_cursor
     }
   }
 
@@ -509,13 +523,13 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
   async applyCreate(newTaxRate: NewTaxRate): Promise<TaxRateModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newTaxRate).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as NewTaxRate
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues.uuid = randomUUIDv7()
+    filteredValues['uuid'] = randomUUIDv7()
 
     const result = await DB.instance.insertInto('tax_rates')
       .values(filteredValues)
@@ -531,7 +545,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
     }
 
     if (model)
-      dispatch('taxRate:created', model)
+ dispatch('taxRate:created', model)
     return this.createInstance(model)
   }
 
@@ -600,7 +614,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
   async update(newTaxRate: TaxRateUpdate): Promise<TaxRateModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newTaxRate).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as TaxRateUpdate
 
@@ -625,7 +639,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
       }
 
       if (model)
-        dispatch('taxRate:updated', model)
+ dispatch('taxRate:updated', model)
       return this.createInstance(model)
     }
 
@@ -650,7 +664,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
       }
 
       if (this)
-        dispatch('taxRate:updated', model)
+ dispatch('taxRate:updated', model)
       return this.createInstance(model)
     }
 
@@ -677,10 +691,9 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
       }
 
       if (this)
-        dispatch('taxRate:updated', model)
+ dispatch('taxRate:updated', model)
       return this.createInstance(model)
-    }
-    else {
+    } else {
       // Create new record
       const result = await DB.instance.insertInto('tax_rates')
         .values(this.attributes as NewTaxRate)
@@ -697,7 +710,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
       }
 
       if (this)
-        dispatch('taxRate:created', model)
+ dispatch('taxRate:created', model)
       return this.createInstance(model)
     }
   }
@@ -712,7 +725,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
         ),
       ) as NewTaxRate
 
-      filteredValues.uuid = randomUUIDv7()
+      filteredValues['uuid'] = randomUUIDv7()
 
       return filteredValues
     })
@@ -738,7 +751,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
     }
 
     if (model)
-      dispatch('taxRate:created', model)
+ dispatch('taxRate:created', model)
 
     return instance.createInstance(model)
   }
@@ -748,9 +761,9 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-
+    
     if (model)
-      dispatch('taxRate:deleted', model)
+ dispatch('taxRate:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('tax_rates')
       .where('id', '=', this.id)
@@ -764,8 +777,10 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
 
     const model = await instance.find(Number(id))
 
+    
+
     if (model)
-      dispatch('taxRate:deleted', model)
+ dispatch('taxRate:deleted', model)
 
     return await DB.instance.deleteFrom('tax_rates')
       .where('id', '=', id)
@@ -773,60 +788,62 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
   }
 
   static whereName(value: string): TaxRateModel {
-    const instance = new TaxRateModel(undefined)
+          const instance = new TaxRateModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereRate(value: string): TaxRateModel {
-    const instance = new TaxRateModel(undefined)
+static whereRate(value: string): TaxRateModel {
+          const instance = new TaxRateModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('rate', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('rate', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereType(value: string): TaxRateModel {
-    const instance = new TaxRateModel(undefined)
+static whereType(value: string): TaxRateModel {
+          const instance = new TaxRateModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereCountry(value: string): TaxRateModel {
-    const instance = new TaxRateModel(undefined)
+static whereCountry(value: string): TaxRateModel {
+          const instance = new TaxRateModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('country', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('country', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereRegion(value: string): TaxRateModel {
-    const instance = new TaxRateModel(undefined)
+static whereRegion(value: string): TaxRateModel {
+          const instance = new TaxRateModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('region', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('region', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereStatus(value: string): TaxRateModel {
-    const instance = new TaxRateModel(undefined)
+static whereStatus(value: string): TaxRateModel {
+          const instance = new TaxRateModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereIsDefault(value: string): TaxRateModel {
-    const instance = new TaxRateModel(undefined)
+static whereIsDefault(value: string): TaxRateModel {
+          const instance = new TaxRateModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('is_default', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('is_default', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
+
+
 
   static whereIn<V = number>(column: keyof TaxRatesTable, values: V[]): TaxRateModel {
     const instance = new TaxRateModel(undefined)
@@ -834,18 +851,26 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
     return instance.applyWhereIn<V>(column, values)
   }
 
-  toSearchableObject(): Partial<TaxRateJsonResponse> {
-    return {
-      id: this.id,
-      name: this.name,
-      rate: this.rate,
-      type: this.type,
-      country: this.country,
-      region: this.region,
-      status: this.status,
-      is_default: this.is_default,
-    }
-  }
+  
+
+  
+      toSearchableObject(): Partial<TaxRateJsonResponse> {
+        return {
+          id: this.id,
+name: this.name,
+rate: this.rate,
+type: this.type,
+country: this.country,
+region: this.region,
+status: this.status,
+is_default: this.is_default
+        }
+      }
+    
+
+  
+
+  
 
   static distinct(column: keyof TaxRateJsonResponse): TaxRateModel {
     const instance = new TaxRateModel(undefined)
@@ -862,23 +887,23 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
   toJSON(): TaxRateJsonResponse {
     const output = {
 
-      uuid: this.uuid,
+ uuid: this.uuid,
 
-      id: this.id,
-      name: this.name,
-      rate: this.rate,
-      type: this.type,
-      country: this.country,
-      region: this.region,
-      status: this.status,
-      is_default: this.is_default,
+id: this.id,
+name: this.name,
+   rate: this.rate,
+   type: this.type,
+   country: this.country,
+   region: this.region,
+   status: this.status,
+   is_default: this.is_default,
+   
+        created_at: this.created_at,
 
-      created_at: this.created_at,
-
-      updated_at: this.updated_at,
+        updated_at: this.updated_at,
 
       ...this.customColumns,
-    }
+}
 
     return output
   }
@@ -890,6 +915,8 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
 
     return model
   }
+
+  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<TaxRateModel | undefined> {
@@ -908,15 +935,16 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
+
+  
 }
 
 export async function find(id: number): Promise<TaxRateModel | undefined> {
-  const query = DB.instance.selectFrom('tax_rates').where('id', '=', id).selectAll()
+  let query = DB.instance.selectFrom('tax_rates').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model)
-    return undefined
+  if (!model) return undefined
 
   const instance = new TaxRateModel(undefined)
   return instance.createInstance(model)
@@ -944,53 +972,55 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<TaxRateModel[]> {
-  const query = DB.instance.selectFrom('tax_rates').where('name', '=', value)
-  const results: TaxRateJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('tax_rates').where('name', '=', value)
+          const results: TaxRateJsonResponse = await query.execute()
 
-  return results.map((modelItem: TaxRateJsonResponse) => new TaxRateModel(modelItem))
-}
+          return results.map((modelItem: TaxRateJsonResponse) => new TaxRateModel(modelItem))
+        } 
 
 export async function whereRate(value: number): Promise<TaxRateModel[]> {
-  const query = DB.instance.selectFrom('tax_rates').where('rate', '=', value)
-  const results: TaxRateJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('tax_rates').where('rate', '=', value)
+          const results: TaxRateJsonResponse = await query.execute()
 
-  return results.map((modelItem: TaxRateJsonResponse) => new TaxRateModel(modelItem))
-}
+          return results.map((modelItem: TaxRateJsonResponse) => new TaxRateModel(modelItem))
+        } 
 
 export async function whereType(value: string): Promise<TaxRateModel[]> {
-  const query = DB.instance.selectFrom('tax_rates').where('type', '=', value)
-  const results: TaxRateJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('tax_rates').where('type', '=', value)
+          const results: TaxRateJsonResponse = await query.execute()
 
-  return results.map((modelItem: TaxRateJsonResponse) => new TaxRateModel(modelItem))
-}
+          return results.map((modelItem: TaxRateJsonResponse) => new TaxRateModel(modelItem))
+        } 
 
 export async function whereCountry(value: string): Promise<TaxRateModel[]> {
-  const query = DB.instance.selectFrom('tax_rates').where('country', '=', value)
-  const results: TaxRateJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('tax_rates').where('country', '=', value)
+          const results: TaxRateJsonResponse = await query.execute()
 
-  return results.map((modelItem: TaxRateJsonResponse) => new TaxRateModel(modelItem))
-}
+          return results.map((modelItem: TaxRateJsonResponse) => new TaxRateModel(modelItem))
+        } 
 
 export async function whereRegion(value: string | string[]): Promise<TaxRateModel[]> {
-  const query = DB.instance.selectFrom('tax_rates').where('region', '=', value)
-  const results: TaxRateJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('tax_rates').where('region', '=', value)
+          const results: TaxRateJsonResponse = await query.execute()
 
-  return results.map((modelItem: TaxRateJsonResponse) => new TaxRateModel(modelItem))
-}
+          return results.map((modelItem: TaxRateJsonResponse) => new TaxRateModel(modelItem))
+        } 
 
 export async function whereStatus(value: string | string[]): Promise<TaxRateModel[]> {
-  const query = DB.instance.selectFrom('tax_rates').where('status', '=', value)
-  const results: TaxRateJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('tax_rates').where('status', '=', value)
+          const results: TaxRateJsonResponse = await query.execute()
 
-  return results.map((modelItem: TaxRateJsonResponse) => new TaxRateModel(modelItem))
-}
+          return results.map((modelItem: TaxRateJsonResponse) => new TaxRateModel(modelItem))
+        } 
 
 export async function whereIsDefault(value: boolean): Promise<TaxRateModel[]> {
-  const query = DB.instance.selectFrom('tax_rates').where('is_default', '=', value)
-  const results: TaxRateJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('tax_rates').where('is_default', '=', value)
+          const results: TaxRateJsonResponse = await query.execute()
 
-  return results.map((modelItem: TaxRateJsonResponse) => new TaxRateModel(modelItem))
-}
+          return results.map((modelItem: TaxRateJsonResponse) => new TaxRateModel(modelItem))
+        } 
+
+
 
 export const TaxRate = TaxRateModel
 

@@ -6,18 +6,7 @@ import { err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { FileMigrationProvider, Migrator } from 'kysely'
-import { createMysqlForeignKeyMigrations,
-  createPostgresForeignKeyMigrations,
-  createSqliteForeignKeyMigrations,
-  generateMysqlMigration,
-  generateMysqlTraitMigrations,
-  generatePostgresMigration,
-  generatePostgresTraitMigrations,
-  generateSqliteMigration,
-  resetMysqlDatabase,
-  resetPostgresDatabase,
-  resetSqliteDatabase,
-} from './drivers'
+import { createMysqlForeignKeyMigrations, createPostgresForeignKeyMigrations, createSqliteForeignKeyMigrations, generateMysqlMigration, generateMysqlTraitMigrations, generatePostgresMigration, generatePostgresTraitMigrations, generateSqliteMigration, resetMysqlDatabase, resetPostgresDatabase, resetSqliteDatabase } from './drivers'
 
 import { db } from './utils'
 
@@ -106,7 +95,6 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
     else {
       await generateMysqlTraitMigrations()
     }
-    
 
     const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 

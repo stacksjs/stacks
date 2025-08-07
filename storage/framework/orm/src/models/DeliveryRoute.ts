@@ -1,21 +1,34 @@
-import type { RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
-import type { DeliveryRouteJsonResponse, DeliveryRoutesTable, DeliveryRouteUpdate, NewDeliveryRoute } from '../types/DeliveryRouteType'
-import { randomUUIDv7 } from 'bun'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
+import Stripe from 'stripe'
 import { sql } from '@stacksjs/database'
+import { DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
+import type { Operator } from '@stacksjs/orm'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { DB } from '@stacksjs/orm'
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { randomUUIDv7 } from 'bun'
+import type { DeliveryRouteModelType, DeliveryRouteJsonResponse, NewDeliveryRoute, DeliveryRouteUpdate, DeliveryRoutesTable } from '../types/DeliveryRouteType'
 
-import { BaseOrm } from '../utils/base'
+
+
+
+import type { Model } from '@stacksjs/types';
+import { schema } from '@stacksjs/validation';
+
+
+
 
 export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRoutesTable, DeliveryRouteJsonResponse> {
   private readonly hidden: Array<keyof DeliveryRouteJsonResponse> = []
-  private readonly fillable: Array<keyof DeliveryRouteJsonResponse> = ['driver', 'vehicle', 'stops', 'delivery_time', 'total_distance', 'last_active', 'uuid', 'driver_id']
+  private readonly fillable: Array<keyof DeliveryRouteJsonResponse> = ["driver","vehicle","stops","delivery_time","total_distance","last_active","uuid","driver_id"]
   private readonly guarded: Array<keyof DeliveryRouteJsonResponse> = []
   protected attributes = {} as DeliveryRouteJsonResponse
   protected originalAttributes = {} as DeliveryRouteJsonResponse
-
+  
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -33,12 +46,13 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
   constructor(deliveryRoute: DeliveryRouteJsonResponse | undefined) {
     super('delivery_routes')
     if (deliveryRoute) {
+
       this.attributes = { ...deliveryRoute }
       this.originalAttributes = { ...deliveryRoute }
 
-      Object.keys(deliveryRoute).forEach((key) => {
+      Object.keys(deliveryRoute).forEach(key => {
         if (!(key in this)) {
-          this.customColumns[key] = (deliveryRoute as DeliveryRouteJsonResponse)[key]
+           this.customColumns[key] = (deliveryRoute as DeliveryRouteJsonResponse)[key]
         }
       })
     }
@@ -53,8 +67,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
   protected async loadRelations(models: DeliveryRouteJsonResponse | DeliveryRouteJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length)
-      return
+    if (!modelArray.length) return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -74,8 +87,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      }
-      else {
+      } else {
         const records = relatedRecords.filter((record: { deliveryRoute_id: number }) => {
           return record.deliveryRoute_id === models.id
         })
@@ -96,10 +108,12 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
 
     if (Array.isArray(data)) {
       data.map((model: DeliveryRouteJsonResponse) => {
+
         const customGetter = {
           default: () => {
           },
 
+          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -108,14 +122,14 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
 
         return model
       })
-    }
-    else {
+    } else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
+        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -129,10 +143,11 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
       default: () => {
       },
 
+      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      (model as any)[key] = await fn()
+        (model as any)[key] = await fn()
     }
   }
 
@@ -140,73 +155,76 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
-    return this.attributes.uuid
-  }
+get uuid(): string | undefined {
+      return this.attributes.uuid
+    }
 
-  get driver(): string {
-    return this.attributes.driver
-  }
+get driver(): string {
+      return this.attributes.driver
+    }
 
-  get vehicle(): string {
-    return this.attributes.vehicle
-  }
+get vehicle(): string {
+      return this.attributes.vehicle
+    }
 
-  get stops(): number {
-    return this.attributes.stops
-  }
+get stops(): number {
+      return this.attributes.stops
+    }
 
-  get delivery_time(): number {
-    return this.attributes.delivery_time
-  }
+get delivery_time(): number {
+      return this.attributes.delivery_time
+    }
 
-  get total_distance(): number {
-    return this.attributes.total_distance
-  }
+get total_distance(): number {
+      return this.attributes.total_distance
+    }
 
-  get last_active(): Date | string {
-    return this.attributes.last_active
-  }
+get last_active(): Date | string {
+      return this.attributes.last_active
+    }
 
-  get created_at(): string | undefined {
-    return this.attributes.created_at
-  }
+get created_at(): string | undefined {
+      return this.attributes.created_at
+    }
 
-  get updated_at(): string | undefined {
-    return this.attributes.updated_at
-  }
+    get updated_at(): string | undefined {
+      return this.attributes.updated_at
+    }
+
 
   set uuid(value: string) {
-    this.attributes.uuid = value
-  }
+      this.attributes.uuid = value
+    }
 
-  set driver(value: string) {
-    this.attributes.driver = value
-  }
+set driver(value: string) {
+      this.attributes.driver = value
+    }
 
-  set vehicle(value: string) {
-    this.attributes.vehicle = value
-  }
+set vehicle(value: string) {
+      this.attributes.vehicle = value
+    }
 
-  set stops(value: number) {
-    this.attributes.stops = value
-  }
+set stops(value: number) {
+      this.attributes.stops = value
+    }
 
-  set delivery_time(value: number) {
-    this.attributes.delivery_time = value
-  }
+set delivery_time(value: number) {
+      this.attributes.delivery_time = value
+    }
 
-  set total_distance(value: number) {
-    this.attributes.total_distance = value
-  }
+set total_distance(value: number) {
+      this.attributes.total_distance = value
+    }
 
-  set last_active(value: Date | string) {
-    this.attributes.last_active = value
-  }
+set last_active(value: Date | string) {
+      this.attributes.last_active = value
+    }
 
-  set updated_at(value: string) {
-    this.attributes.updated_at = value
-  }
+set updated_at(value: string) {
+      this.attributes.updated_at = value
+    }
+
+
 
   static select(params: (keyof DeliveryRouteJsonResponse)[] | RawBuilder<string> | string): DeliveryRouteModel {
     const instance = new DeliveryRouteModel(undefined)
@@ -216,12 +234,11 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
 
   // Method to find a DeliveryRoute by ID
   static async find(id: number): Promise<DeliveryRouteModel | undefined> {
-    const query = DB.instance.selectFrom('delivery_routes').where('id', '=', id).selectAll()
+    let query = DB.instance.selectFrom('delivery_routes').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     const instance = new DeliveryRouteModel(undefined)
     return instance.createInstance(model)
@@ -242,8 +259,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
 
     const model = await instance.applyLast()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new DeliveryRouteModel(model)
   }
@@ -276,7 +292,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
 
   static async findMany(ids: number[]): Promise<DeliveryRouteModel[]> {
     const instance = new DeliveryRouteModel(undefined)
-
+     
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: DeliveryRouteJsonResponse) => instance.parseResult(new DeliveryRouteModel(modelItem)))
@@ -291,8 +307,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new DeliveryRouteModel(model)
   }
@@ -306,8 +321,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new DeliveryRouteModel(model)
   }
@@ -474,12 +488,12 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: DeliveryRouteModel[]
+    data: DeliveryRouteModel[],
     paging: {
-      total_records: number
-      page: number
+      total_records: number,
+      page: number,
       total_pages: number
-    }
+    },
     next_cursor: number | null
   }> {
     const instance = new DeliveryRouteModel(undefined)
@@ -489,7 +503,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
     return {
       data: result.data.map((item: DeliveryRouteJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor,
+      next_cursor: result.next_cursor
     }
   }
 
@@ -501,13 +515,13 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
   async applyCreate(newDeliveryRoute: NewDeliveryRoute): Promise<DeliveryRouteModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newDeliveryRoute).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as NewDeliveryRoute
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues.uuid = randomUUIDv7()
+    filteredValues['uuid'] = randomUUIDv7()
 
     const result = await DB.instance.insertInto('delivery_routes')
       .values(filteredValues)
@@ -523,7 +537,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
     }
 
     if (model)
-      dispatch('deliveryRoute:created', model)
+ dispatch('deliveryRoute:created', model)
     return this.createInstance(model)
   }
 
@@ -592,7 +606,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
   async update(newDeliveryRoute: DeliveryRouteUpdate): Promise<DeliveryRouteModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newDeliveryRoute).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as DeliveryRouteUpdate
 
@@ -617,7 +631,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
       }
 
       if (model)
-        dispatch('deliveryRoute:updated', model)
+ dispatch('deliveryRoute:updated', model)
       return this.createInstance(model)
     }
 
@@ -642,7 +656,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
       }
 
       if (this)
-        dispatch('deliveryRoute:updated', model)
+ dispatch('deliveryRoute:updated', model)
       return this.createInstance(model)
     }
 
@@ -669,10 +683,9 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
       }
 
       if (this)
-        dispatch('deliveryRoute:updated', model)
+ dispatch('deliveryRoute:updated', model)
       return this.createInstance(model)
-    }
-    else {
+    } else {
       // Create new record
       const result = await DB.instance.insertInto('delivery_routes')
         .values(this.attributes as NewDeliveryRoute)
@@ -689,7 +702,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
       }
 
       if (this)
-        dispatch('deliveryRoute:created', model)
+ dispatch('deliveryRoute:created', model)
       return this.createInstance(model)
     }
   }
@@ -704,7 +717,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
         ),
       ) as NewDeliveryRoute
 
-      filteredValues.uuid = randomUUIDv7()
+      filteredValues['uuid'] = randomUUIDv7()
 
       return filteredValues
     })
@@ -730,7 +743,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
     }
 
     if (model)
-      dispatch('deliveryRoute:created', model)
+ dispatch('deliveryRoute:created', model)
 
     return instance.createInstance(model)
   }
@@ -740,9 +753,9 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-
+    
     if (model)
-      dispatch('deliveryRoute:deleted', model)
+ dispatch('deliveryRoute:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('delivery_routes')
       .where('id', '=', this.id)
@@ -756,8 +769,10 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
 
     const model = await instance.find(Number(id))
 
+    
+
     if (model)
-      dispatch('deliveryRoute:deleted', model)
+ dispatch('deliveryRoute:deleted', model)
 
     return await DB.instance.deleteFrom('delivery_routes')
       .where('id', '=', id)
@@ -765,52 +780,54 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
   }
 
   static whereDriver(value: string): DeliveryRouteModel {
-    const instance = new DeliveryRouteModel(undefined)
+          const instance = new DeliveryRouteModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('driver', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('driver', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereVehicle(value: string): DeliveryRouteModel {
-    const instance = new DeliveryRouteModel(undefined)
+static whereVehicle(value: string): DeliveryRouteModel {
+          const instance = new DeliveryRouteModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('vehicle', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('vehicle', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereStops(value: string): DeliveryRouteModel {
-    const instance = new DeliveryRouteModel(undefined)
+static whereStops(value: string): DeliveryRouteModel {
+          const instance = new DeliveryRouteModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('stops', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('stops', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereDeliveryTime(value: string): DeliveryRouteModel {
-    const instance = new DeliveryRouteModel(undefined)
+static whereDeliveryTime(value: string): DeliveryRouteModel {
+          const instance = new DeliveryRouteModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('delivery_time', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('delivery_time', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereTotalDistance(value: string): DeliveryRouteModel {
-    const instance = new DeliveryRouteModel(undefined)
+static whereTotalDistance(value: string): DeliveryRouteModel {
+          const instance = new DeliveryRouteModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('total_distance', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('total_distance', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereLastActive(value: string): DeliveryRouteModel {
-    const instance = new DeliveryRouteModel(undefined)
+static whereLastActive(value: string): DeliveryRouteModel {
+          const instance = new DeliveryRouteModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('last_active', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('last_active', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
+
+
 
   static whereIn<V = number>(column: keyof DeliveryRoutesTable, values: V[]): DeliveryRouteModel {
     const instance = new DeliveryRouteModel(undefined)
@@ -818,17 +835,25 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
     return instance.applyWhereIn<V>(column, values)
   }
 
-  toSearchableObject(): Partial<DeliveryRouteJsonResponse> {
-    return {
-      id: this.id,
-      driver: this.driver,
-      vehicle: this.vehicle,
-      stops: this.stops,
-      delivery_time: this.delivery_time,
-      total_distance: this.total_distance,
-      last_active: this.last_active,
-    }
-  }
+  
+
+  
+      toSearchableObject(): Partial<DeliveryRouteJsonResponse> {
+        return {
+          id: this.id,
+driver: this.driver,
+vehicle: this.vehicle,
+stops: this.stops,
+delivery_time: this.delivery_time,
+total_distance: this.total_distance,
+last_active: this.last_active
+        }
+      }
+    
+
+  
+
+  
 
   static distinct(column: keyof DeliveryRouteJsonResponse): DeliveryRouteModel {
     const instance = new DeliveryRouteModel(undefined)
@@ -845,22 +870,22 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
   toJSON(): DeliveryRouteJsonResponse {
     const output = {
 
-      uuid: this.uuid,
+ uuid: this.uuid,
 
-      id: this.id,
-      driver: this.driver,
-      vehicle: this.vehicle,
-      stops: this.stops,
-      delivery_time: this.delivery_time,
-      total_distance: this.total_distance,
-      last_active: this.last_active,
+id: this.id,
+driver: this.driver,
+   vehicle: this.vehicle,
+   stops: this.stops,
+   delivery_time: this.delivery_time,
+   total_distance: this.total_distance,
+   last_active: this.last_active,
+   
+        created_at: this.created_at,
 
-      created_at: this.created_at,
-
-      updated_at: this.updated_at,
+        updated_at: this.updated_at,
 
       ...this.customColumns,
-    }
+}
 
     return output
   }
@@ -872,6 +897,8 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
 
     return model
   }
+
+  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<DeliveryRouteModel | undefined> {
@@ -890,15 +917,16 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
+
+  
 }
 
 export async function find(id: number): Promise<DeliveryRouteModel | undefined> {
-  const query = DB.instance.selectFrom('delivery_routes').where('id', '=', id).selectAll()
+  let query = DB.instance.selectFrom('delivery_routes').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model)
-    return undefined
+  if (!model) return undefined
 
   const instance = new DeliveryRouteModel(undefined)
   return instance.createInstance(model)
@@ -926,46 +954,48 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereDriver(value: string): Promise<DeliveryRouteModel[]> {
-  const query = DB.instance.selectFrom('delivery_routes').where('driver', '=', value)
-  const results: DeliveryRouteJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('delivery_routes').where('driver', '=', value)
+          const results: DeliveryRouteJsonResponse = await query.execute()
 
-  return results.map((modelItem: DeliveryRouteJsonResponse) => new DeliveryRouteModel(modelItem))
-}
+          return results.map((modelItem: DeliveryRouteJsonResponse) => new DeliveryRouteModel(modelItem))
+        } 
 
 export async function whereVehicle(value: string): Promise<DeliveryRouteModel[]> {
-  const query = DB.instance.selectFrom('delivery_routes').where('vehicle', '=', value)
-  const results: DeliveryRouteJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('delivery_routes').where('vehicle', '=', value)
+          const results: DeliveryRouteJsonResponse = await query.execute()
 
-  return results.map((modelItem: DeliveryRouteJsonResponse) => new DeliveryRouteModel(modelItem))
-}
+          return results.map((modelItem: DeliveryRouteJsonResponse) => new DeliveryRouteModel(modelItem))
+        } 
 
 export async function whereStops(value: number): Promise<DeliveryRouteModel[]> {
-  const query = DB.instance.selectFrom('delivery_routes').where('stops', '=', value)
-  const results: DeliveryRouteJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('delivery_routes').where('stops', '=', value)
+          const results: DeliveryRouteJsonResponse = await query.execute()
 
-  return results.map((modelItem: DeliveryRouteJsonResponse) => new DeliveryRouteModel(modelItem))
-}
+          return results.map((modelItem: DeliveryRouteJsonResponse) => new DeliveryRouteModel(modelItem))
+        } 
 
 export async function whereDeliveryTime(value: number): Promise<DeliveryRouteModel[]> {
-  const query = DB.instance.selectFrom('delivery_routes').where('delivery_time', '=', value)
-  const results: DeliveryRouteJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('delivery_routes').where('delivery_time', '=', value)
+          const results: DeliveryRouteJsonResponse = await query.execute()
 
-  return results.map((modelItem: DeliveryRouteJsonResponse) => new DeliveryRouteModel(modelItem))
-}
+          return results.map((modelItem: DeliveryRouteJsonResponse) => new DeliveryRouteModel(modelItem))
+        } 
 
 export async function whereTotalDistance(value: number): Promise<DeliveryRouteModel[]> {
-  const query = DB.instance.selectFrom('delivery_routes').where('total_distance', '=', value)
-  const results: DeliveryRouteJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('delivery_routes').where('total_distance', '=', value)
+          const results: DeliveryRouteJsonResponse = await query.execute()
 
-  return results.map((modelItem: DeliveryRouteJsonResponse) => new DeliveryRouteModel(modelItem))
-}
+          return results.map((modelItem: DeliveryRouteJsonResponse) => new DeliveryRouteModel(modelItem))
+        } 
 
 export async function whereLastActive(value: Date | string): Promise<DeliveryRouteModel[]> {
-  const query = DB.instance.selectFrom('delivery_routes').where('last_active', '=', value)
-  const results: DeliveryRouteJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('delivery_routes').where('last_active', '=', value)
+          const results: DeliveryRouteJsonResponse = await query.execute()
 
-  return results.map((modelItem: DeliveryRouteJsonResponse) => new DeliveryRouteModel(modelItem))
-}
+          return results.map((modelItem: DeliveryRouteJsonResponse) => new DeliveryRouteModel(modelItem))
+        } 
+
+
 
 export const DeliveryRoute = DeliveryRouteModel
 

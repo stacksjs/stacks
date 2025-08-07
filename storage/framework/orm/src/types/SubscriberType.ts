@@ -1,6 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 
+
 export interface SubscribersTable {
   id: Generated<number>
   subscribed: boolean

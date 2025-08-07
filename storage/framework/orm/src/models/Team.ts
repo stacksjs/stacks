@@ -1,20 +1,37 @@
-import type { RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
-import type { NewTeam, TeamJsonResponse, TeamsTable, TeamUpdate } from '../types/TeamType'
-import type { PersonalAccessTokenModel } from './PersonalAccessToken'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
+import Stripe from 'stripe'
 import { sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
-
 import { BaseOrm } from '../utils/base'
+import type { Operator } from '@stacksjs/orm'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import { HttpError } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { randomUUIDv7 } from 'bun'
+import type { TeamModelType, TeamJsonResponse, NewTeam, TeamUpdate, TeamsTable } from '../types/TeamType'
+
+import type {PersonalAccessTokenModel} from './PersonalAccessToken'
+
+
+
+
+import type { Model } from '@stacksjs/types';
+import { collect } from '@stacksjs/collections';
+import { schema } from '@stacksjs/validation';
+
+
+
 
 export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> {
   private readonly hidden: Array<keyof TeamJsonResponse> = []
-  private readonly fillable: Array<keyof TeamJsonResponse> = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal']
+  private readonly fillable: Array<keyof TeamJsonResponse> = ["name","company_name","email","billing_email","status","description","path","is_personal"]
   private readonly guarded: Array<keyof TeamJsonResponse> = []
   protected attributes = {} as TeamJsonResponse
   protected originalAttributes = {} as TeamJsonResponse
-
+  
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -32,12 +49,13 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
   constructor(team: TeamJsonResponse | undefined) {
     super('teams')
     if (team) {
+
       this.attributes = { ...team }
       this.originalAttributes = { ...team }
 
-      Object.keys(team).forEach((key) => {
+      Object.keys(team).forEach(key => {
         if (!(key in this)) {
-          this.customColumns[key] = (team as TeamJsonResponse)[key]
+           this.customColumns[key] = (team as TeamJsonResponse)[key]
         }
       })
     }
@@ -52,8 +70,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
   protected async loadRelations(models: TeamJsonResponse | TeamJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length)
-      return
+    if (!modelArray.length) return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -73,8 +90,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      }
-      else {
+      } else {
         const records = relatedRecords.filter((record: { team_id: number }) => {
           return record.team_id === models.id
         })
@@ -95,10 +111,12 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
     if (Array.isArray(data)) {
       data.map((model: TeamJsonResponse) => {
+
         const customGetter = {
           default: () => {
           },
 
+          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -107,14 +125,14 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
         return model
       })
-    }
-    else {
+    } else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
+        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -128,96 +146,100 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
       default: () => {
       },
 
+      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      (model as any)[key] = await fn()
+        (model as any)[key] = await fn()
     }
   }
 
-  get personal_access_tokens(): PersonalAccessTokenModel[] | [] {
-    return this.attributes.personal_access_tokens
-  }
+  get personal_access_tokens():PersonalAccessTokenModel[] | [] {
+        return this.attributes.personal_access_tokens
+      }
 
-  get id(): number {
+get id(): number {
     return this.attributes.id
   }
 
-  get name(): string {
-    return this.attributes.name
-  }
+get name(): string {
+      return this.attributes.name
+    }
 
-  get company_name(): string {
-    return this.attributes.company_name
-  }
+get company_name(): string {
+      return this.attributes.company_name
+    }
 
-  get email(): string {
-    return this.attributes.email
-  }
+get email(): string {
+      return this.attributes.email
+    }
 
-  get billing_email(): string {
-    return this.attributes.billing_email
-  }
+get billing_email(): string {
+      return this.attributes.billing_email
+    }
 
-  get status(): string {
-    return this.attributes.status
-  }
+get status(): string {
+      return this.attributes.status
+    }
 
-  get description(): string {
-    return this.attributes.description
-  }
+get description(): string {
+      return this.attributes.description
+    }
 
-  get path(): string {
-    return this.attributes.path
-  }
+get path(): string {
+      return this.attributes.path
+    }
 
-  get is_personal(): boolean {
-    return this.attributes.is_personal
-  }
+get is_personal(): boolean {
+      return this.attributes.is_personal
+    }
 
-  get created_at(): string | undefined {
-    return this.attributes.created_at
-  }
+get created_at(): string | undefined {
+      return this.attributes.created_at
+    }
 
-  get updated_at(): string | undefined {
-    return this.attributes.updated_at
-  }
+    get updated_at(): string | undefined {
+      return this.attributes.updated_at
+    }
+
 
   set name(value: string) {
-    this.attributes.name = value
-  }
+      this.attributes.name = value
+    }
 
-  set company_name(value: string) {
-    this.attributes.company_name = value
-  }
+set company_name(value: string) {
+      this.attributes.company_name = value
+    }
 
-  set email(value: string) {
-    this.attributes.email = value
-  }
+set email(value: string) {
+      this.attributes.email = value
+    }
 
-  set billing_email(value: string) {
-    this.attributes.billing_email = value
-  }
+set billing_email(value: string) {
+      this.attributes.billing_email = value
+    }
 
-  set status(value: string) {
-    this.attributes.status = value
-  }
+set status(value: string) {
+      this.attributes.status = value
+    }
 
-  set description(value: string) {
-    this.attributes.description = value
-  }
+set description(value: string) {
+      this.attributes.description = value
+    }
 
-  set path(value: string) {
-    this.attributes.path = value
-  }
+set path(value: string) {
+      this.attributes.path = value
+    }
 
-  set is_personal(value: boolean) {
-    this.attributes.is_personal = value
-  }
+set is_personal(value: boolean) {
+      this.attributes.is_personal = value
+    }
 
-  set updated_at(value: string) {
-    this.attributes.updated_at = value
-  }
+set updated_at(value: string) {
+      this.attributes.updated_at = value
+    }
+
+
 
   static select(params: (keyof TeamJsonResponse)[] | RawBuilder<string> | string): TeamModel {
     const instance = new TeamModel(undefined)
@@ -227,12 +249,11 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
   // Method to find a Team by ID
   static async find(id: number): Promise<TeamModel | undefined> {
-    const query = DB.instance.selectFrom('teams').where('id', '=', id).selectAll()
+    let query = DB.instance.selectFrom('teams').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     const instance = new TeamModel(undefined)
     return instance.createInstance(model)
@@ -253,8 +274,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
     const model = await instance.applyLast()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new TeamModel(model)
   }
@@ -287,7 +307,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
   static async findMany(ids: number[]): Promise<TeamModel[]> {
     const instance = new TeamModel(undefined)
-
+     
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: TeamJsonResponse) => instance.parseResult(new TeamModel(modelItem)))
@@ -302,8 +322,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new TeamModel(model)
   }
@@ -317,8 +336,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new TeamModel(model)
   }
@@ -485,12 +503,12 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: TeamModel[]
+    data: TeamModel[],
     paging: {
-      total_records: number
-      page: number
+      total_records: number,
+      page: number,
       total_pages: number
-    }
+    },
     next_cursor: number | null
   }> {
     const instance = new TeamModel(undefined)
@@ -500,7 +518,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     return {
       data: result.data.map((item: TeamJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor,
+      next_cursor: result.next_cursor
     }
   }
 
@@ -512,11 +530,13 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
   async applyCreate(newTeam: NewTeam): Promise<TeamModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newTeam).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as NewTeam
 
     await this.mapCustomSetters(filteredValues)
+
+    
 
     const result = await DB.instance.insertInto('teams')
       .values(filteredValues)
@@ -531,6 +551,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
       throw new HttpError(500, 'Failed to retrieve created Team')
     }
 
+    
     return this.createInstance(model)
   }
 
@@ -599,7 +620,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
   async update(newTeam: TeamUpdate): Promise<TeamModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newTeam).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as TeamUpdate
 
@@ -623,6 +644,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve updated Team')
       }
 
+      
       return this.createInstance(model)
     }
 
@@ -646,6 +668,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve updated Team')
       }
 
+      
       return this.createInstance(model)
     }
 
@@ -671,9 +694,9 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve updated Team')
       }
 
+      
       return this.createInstance(model)
-    }
-    else {
+    } else {
       // Create new record
       const result = await DB.instance.insertInto('teams')
         .values(this.attributes as NewTeam)
@@ -689,6 +712,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve created Team')
       }
 
+      
       return this.createInstance(model)
     }
   }
@@ -702,6 +726,8 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewTeam
+
+      
 
       return filteredValues
     })
@@ -726,6 +752,8 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
       throw new HttpError(500, 'Failed to retrieve created Team')
     }
 
+    
+
     return instance.createInstance(model)
   }
 
@@ -733,6 +761,9 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
   async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
+    
+    
+    
 
     const deleted = await DB.instance.deleteFrom('teams')
       .where('id', '=', this.id)
@@ -742,80 +773,98 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
   }
 
   static async remove(id: number): Promise<any> {
+    
+
+    
+
+    
+
+    
+
     return await DB.instance.deleteFrom('teams')
       .where('id', '=', id)
       .execute()
   }
 
   static whereName(value: string): TeamModel {
-    const instance = new TeamModel(undefined)
+          const instance = new TeamModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereCompanyName(value: string): TeamModel {
-    const instance = new TeamModel(undefined)
+static whereCompanyName(value: string): TeamModel {
+          const instance = new TeamModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('company_name', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('company_name', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereEmail(value: string): TeamModel {
-    const instance = new TeamModel(undefined)
+static whereEmail(value: string): TeamModel {
+          const instance = new TeamModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereBillingEmail(value: string): TeamModel {
-    const instance = new TeamModel(undefined)
+static whereBillingEmail(value: string): TeamModel {
+          const instance = new TeamModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('billing_email', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('billing_email', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereStatus(value: string): TeamModel {
-    const instance = new TeamModel(undefined)
+static whereStatus(value: string): TeamModel {
+          const instance = new TeamModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereDescription(value: string): TeamModel {
-    const instance = new TeamModel(undefined)
+static whereDescription(value: string): TeamModel {
+          const instance = new TeamModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static wherePath(value: string): TeamModel {
-    const instance = new TeamModel(undefined)
+static wherePath(value: string): TeamModel {
+          const instance = new TeamModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('path', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('path', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereIsPersonal(value: string): TeamModel {
-    const instance = new TeamModel(undefined)
+static whereIsPersonal(value: string): TeamModel {
+          const instance = new TeamModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('is_personal', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('is_personal', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
+
+
 
   static whereIn<V = number>(column: keyof TeamsTable, values: V[]): TeamModel {
     const instance = new TeamModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
+
+  
+
+  
+
+  
+
+  
 
   static distinct(column: keyof TeamJsonResponse): TeamModel {
     const instance = new TeamModel(undefined)
@@ -832,23 +881,23 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
   toJSON(): TeamJsonResponse {
     const output = {
 
-      id: this.id,
-      name: this.name,
-      company_name: this.company_name,
-      email: this.email,
-      billing_email: this.billing_email,
-      status: this.status,
-      description: this.description,
-      path: this.path,
-      is_personal: this.is_personal,
+id: this.id,
+name: this.name,
+   company_name: this.company_name,
+   email: this.email,
+   billing_email: this.billing_email,
+   status: this.status,
+   description: this.description,
+   path: this.path,
+   is_personal: this.is_personal,
+   
+        created_at: this.created_at,
 
-      created_at: this.created_at,
-
-      updated_at: this.updated_at,
+        updated_at: this.updated_at,
 
       personal_access_tokens: this.personal_access_tokens,
-      ...this.customColumns,
-    }
+...this.customColumns,
+}
 
     return output
   }
@@ -860,6 +909,8 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
     return model
   }
+
+  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<TeamModel | undefined> {
@@ -878,15 +929,16 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
+
+  
 }
 
 export async function find(id: number): Promise<TeamModel | undefined> {
-  const query = DB.instance.selectFrom('teams').where('id', '=', id).selectAll()
+  let query = DB.instance.selectFrom('teams').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model)
-    return undefined
+  if (!model) return undefined
 
   const instance = new TeamModel(undefined)
   return instance.createInstance(model)
@@ -914,60 +966,62 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<TeamModel[]> {
-  const query = DB.instance.selectFrom('teams').where('name', '=', value)
-  const results: TeamJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('teams').where('name', '=', value)
+          const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
-}
+          return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
+        } 
 
 export async function whereCompanyName(value: string): Promise<TeamModel[]> {
-  const query = DB.instance.selectFrom('teams').where('company_name', '=', value)
-  const results: TeamJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('teams').where('company_name', '=', value)
+          const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
-}
+          return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
+        } 
 
 export async function whereEmail(value: string): Promise<TeamModel[]> {
-  const query = DB.instance.selectFrom('teams').where('email', '=', value)
-  const results: TeamJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('teams').where('email', '=', value)
+          const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
-}
+          return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
+        } 
 
 export async function whereBillingEmail(value: string): Promise<TeamModel[]> {
-  const query = DB.instance.selectFrom('teams').where('billing_email', '=', value)
-  const results: TeamJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('teams').where('billing_email', '=', value)
+          const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
-}
+          return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
+        } 
 
 export async function whereStatus(value: string): Promise<TeamModel[]> {
-  const query = DB.instance.selectFrom('teams').where('status', '=', value)
-  const results: TeamJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('teams').where('status', '=', value)
+          const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
-}
+          return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
+        } 
 
 export async function whereDescription(value: string): Promise<TeamModel[]> {
-  const query = DB.instance.selectFrom('teams').where('description', '=', value)
-  const results: TeamJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('teams').where('description', '=', value)
+          const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
-}
+          return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
+        } 
 
 export async function wherePath(value: string): Promise<TeamModel[]> {
-  const query = DB.instance.selectFrom('teams').where('path', '=', value)
-  const results: TeamJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('teams').where('path', '=', value)
+          const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
-}
+          return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
+        } 
 
 export async function whereIsPersonal(value: boolean): Promise<TeamModel[]> {
-  const query = DB.instance.selectFrom('teams').where('is_personal', '=', value)
-  const results: TeamJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('teams').where('is_personal', '=', value)
+          const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
-}
+          return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
+        } 
+
+
 
 export const Team = TeamModel
 

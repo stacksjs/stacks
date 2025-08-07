@@ -1,22 +1,39 @@
-import type { RawBuilder } from '@stacksjs/database'
-import type { CategorizableTable, CommentablesTable, Operator, TaggableTable } from '@stacksjs/orm'
-import type { NewPost, PostJsonResponse, PostsTable, PostUpdate } from '../types/PostType'
-import type { AuthorModel } from './Author'
-import { randomUUIDv7 } from 'bun'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
+import Stripe from 'stripe'
 import { sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
-
 import { DB } from '@stacksjs/orm'
-
 import { BaseOrm } from '../utils/base'
+import type { Operator } from '@stacksjs/orm'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import { HttpError } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { randomUUIDv7 } from 'bun'
+import type { PostModelType, PostJsonResponse, NewPost, PostUpdate, PostsTable } from '../types/PostType'
+
+import type {AuthorModel} from './Author'
+
+
+import type { CategorizableTable } from '@stacksjs/orm'
+
+import type { CommentablesTable } from '@stacksjs/orm'
+
+import type { Model } from '@stacksjs/types';
+import { schema } from '@stacksjs/validation';
+
+
+import type { TaggableTable } from '@stacksjs/orm'
+
 
 export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
-  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'poster', 'content', 'excerpt', 'views', 'published_at', 'status', 'is_featured', 'uuid', 'author_id']
+  private readonly fillable: Array<keyof PostJsonResponse> = ["title","poster","content","excerpt","views","published_at","status","is_featured","uuid","author_id"]
   private readonly guarded: Array<keyof PostJsonResponse> = []
   protected attributes = {} as PostJsonResponse
   protected originalAttributes = {} as PostJsonResponse
-
+  
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -34,12 +51,13 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
   constructor(post: PostJsonResponse | undefined) {
     super('posts')
     if (post) {
+
       this.attributes = { ...post }
       this.originalAttributes = { ...post }
 
-      Object.keys(post).forEach((key) => {
+      Object.keys(post).forEach(key => {
         if (!(key in this)) {
-          this.customColumns[key] = (post as PostJsonResponse)[key]
+           this.customColumns[key] = (post as PostJsonResponse)[key]
         }
       })
     }
@@ -54,8 +72,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
   protected async loadRelations(models: PostJsonResponse | PostJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length)
-      return
+    if (!modelArray.length) return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -75,8 +92,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      }
-      else {
+      } else {
         const records = relatedRecords.filter((record: { post_id: number }) => {
           return record.post_id === models.id
         })
@@ -97,10 +113,12 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
     if (Array.isArray(data)) {
       data.map((model: PostJsonResponse) => {
+
         const customGetter = {
           default: () => {
           },
 
+          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -109,14 +127,14 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
         return model
       })
-    }
-    else {
+    } else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
+        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -130,108 +148,112 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       default: () => {
       },
 
+      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      (model as any)[key] = await fn()
+        (model as any)[key] = await fn()
     }
   }
 
   get author_id(): number {
-    return this.attributes.author_id
-  }
+        return this.attributes.author_id
+      }
 
-  get author(): AuthorModel | undefined {
-    return this.attributes.author
-  }
+get author(): AuthorModel | undefined {
+        return this.attributes.author
+      }
 
-  get id(): number {
+get id(): number {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
-    return this.attributes.uuid
-  }
+get uuid(): string | undefined {
+      return this.attributes.uuid
+    }
 
-  get title(): string | undefined {
-    return this.attributes.title
-  }
+get title(): string | undefined {
+      return this.attributes.title
+    }
 
-  get poster(): string | undefined {
-    return this.attributes.poster
-  }
+get poster(): string | undefined {
+      return this.attributes.poster
+    }
 
-  get content(): string | undefined {
-    return this.attributes.content
-  }
+get content(): string | undefined {
+      return this.attributes.content
+    }
 
-  get excerpt(): string | undefined {
-    return this.attributes.excerpt
-  }
+get excerpt(): string | undefined {
+      return this.attributes.excerpt
+    }
 
-  get views(): number | undefined {
-    return this.attributes.views
-  }
+get views(): number | undefined {
+      return this.attributes.views
+    }
 
-  get published_at(): Date | string | undefined {
-    return this.attributes.published_at
-  }
+get published_at(): Date | string | undefined {
+      return this.attributes.published_at
+    }
 
-  get status(): string | string[] | undefined {
-    return this.attributes.status
-  }
+get status(): string | string[] | undefined {
+      return this.attributes.status
+    }
 
-  get is_featured(): number | undefined {
-    return this.attributes.is_featured
-  }
+get is_featured(): number | undefined {
+      return this.attributes.is_featured
+    }
 
-  get created_at(): string | undefined {
-    return this.attributes.created_at
-  }
+get created_at(): string | undefined {
+      return this.attributes.created_at
+    }
 
-  get updated_at(): string | undefined {
-    return this.attributes.updated_at
-  }
+    get updated_at(): string | undefined {
+      return this.attributes.updated_at
+    }
+
 
   set uuid(value: string) {
-    this.attributes.uuid = value
-  }
+      this.attributes.uuid = value
+    }
 
-  set title(value: string) {
-    this.attributes.title = value
-  }
+set title(value: string) {
+      this.attributes.title = value
+    }
 
-  set poster(value: string) {
-    this.attributes.poster = value
-  }
+set poster(value: string) {
+      this.attributes.poster = value
+    }
 
-  set content(value: string) {
-    this.attributes.content = value
-  }
+set content(value: string) {
+      this.attributes.content = value
+    }
 
-  set excerpt(value: string) {
-    this.attributes.excerpt = value
-  }
+set excerpt(value: string) {
+      this.attributes.excerpt = value
+    }
 
-  set views(value: number) {
-    this.attributes.views = value
-  }
+set views(value: number) {
+      this.attributes.views = value
+    }
 
-  set published_at(value: Date | string) {
-    this.attributes.published_at = value
-  }
+set published_at(value: Date | string) {
+      this.attributes.published_at = value
+    }
 
-  set status(value: string | string[]) {
-    this.attributes.status = value
-  }
+set status(value: string | string[]) {
+      this.attributes.status = value
+    }
 
-  set is_featured(value: number) {
-    this.attributes.is_featured = value
-  }
+set is_featured(value: number) {
+      this.attributes.is_featured = value
+    }
 
-  set updated_at(value: string) {
-    this.attributes.updated_at = value
-  }
+set updated_at(value: string) {
+      this.attributes.updated_at = value
+    }
+
+
 
   static select(params: (keyof PostJsonResponse)[] | RawBuilder<string> | string): PostModel {
     const instance = new PostModel(undefined)
@@ -241,12 +263,11 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
   // Method to find a Post by ID
   static async find(id: number): Promise<PostModel | undefined> {
-    const query = DB.instance.selectFrom('posts').where('id', '=', id).selectAll()
+    let query = DB.instance.selectFrom('posts').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     const instance = new PostModel(undefined)
     return instance.createInstance(model)
@@ -267,8 +288,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
     const model = await instance.applyLast()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new PostModel(model)
   }
@@ -301,7 +321,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
   static async findMany(ids: number[]): Promise<PostModel[]> {
     const instance = new PostModel(undefined)
-
+     
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: PostJsonResponse) => instance.parseResult(new PostModel(modelItem)))
@@ -316,8 +336,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new PostModel(model)
   }
@@ -331,8 +350,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new PostModel(model)
   }
@@ -499,12 +517,12 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: PostModel[]
+    data: PostModel[],
     paging: {
-      total_records: number
-      page: number
+      total_records: number,
+      page: number,
       total_pages: number
-    }
+    },
     next_cursor: number | null
   }> {
     const instance = new PostModel(undefined)
@@ -514,7 +532,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return {
       data: result.data.map((item: PostJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor,
+      next_cursor: result.next_cursor
     }
   }
 
@@ -526,13 +544,13 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
   async applyCreate(newPost: NewPost): Promise<PostModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPost).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as NewPost
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues.uuid = randomUUIDv7()
+    filteredValues['uuid'] = randomUUIDv7()
 
     const result = await DB.instance.insertInto('posts')
       .values(filteredValues)
@@ -547,6 +565,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       throw new HttpError(500, 'Failed to retrieve created Post')
     }
 
+    
     return this.createInstance(model)
   }
 
@@ -615,7 +634,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
   async update(newPost: PostUpdate): Promise<PostModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPost).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as PostUpdate
 
@@ -639,6 +658,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve updated Post')
       }
 
+      
       return this.createInstance(model)
     }
 
@@ -662,6 +682,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve updated Post')
       }
 
+      
       return this.createInstance(model)
     }
 
@@ -687,9 +708,9 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve updated Post')
       }
 
+      
       return this.createInstance(model)
-    }
-    else {
+    } else {
       // Create new record
       const result = await DB.instance.insertInto('posts')
         .values(this.attributes as NewPost)
@@ -705,6 +726,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve created Post')
       }
 
+      
       return this.createInstance(model)
     }
   }
@@ -719,7 +741,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
         ),
       ) as NewPost
 
-      filteredValues.uuid = randomUUIDv7()
+      filteredValues['uuid'] = randomUUIDv7()
 
       return filteredValues
     })
@@ -744,6 +766,8 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       throw new HttpError(500, 'Failed to retrieve created Post')
     }
 
+    
+
     return instance.createInstance(model)
   }
 
@@ -751,6 +775,9 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
   async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
+    
+    
+    
 
     const deleted = await DB.instance.deleteFrom('posts')
       .where('id', '=', this.id)
@@ -760,74 +787,84 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
   }
 
   static async remove(id: number): Promise<any> {
+    
+
+    
+
+    
+
+    
+
     return await DB.instance.deleteFrom('posts')
       .where('id', '=', id)
       .execute()
   }
 
   static whereTitle(value: string): PostModel {
-    const instance = new PostModel(undefined)
+          const instance = new PostModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('title', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('title', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static wherePoster(value: string): PostModel {
-    const instance = new PostModel(undefined)
+static wherePoster(value: string): PostModel {
+          const instance = new PostModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('poster', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('poster', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereContent(value: string): PostModel {
-    const instance = new PostModel(undefined)
+static whereContent(value: string): PostModel {
+          const instance = new PostModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('content', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('content', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereExcerpt(value: string): PostModel {
-    const instance = new PostModel(undefined)
+static whereExcerpt(value: string): PostModel {
+          const instance = new PostModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('excerpt', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('excerpt', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereViews(value: string): PostModel {
-    const instance = new PostModel(undefined)
+static whereViews(value: string): PostModel {
+          const instance = new PostModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('views', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('views', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static wherePublishedAt(value: string): PostModel {
-    const instance = new PostModel(undefined)
+static wherePublishedAt(value: string): PostModel {
+          const instance = new PostModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('published_at', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('published_at', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereStatus(value: string): PostModel {
-    const instance = new PostModel(undefined)
+static whereStatus(value: string): PostModel {
+          const instance = new PostModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereIsFeatured(value: string): PostModel {
-    const instance = new PostModel(undefined)
+static whereIsFeatured(value: string): PostModel {
+          const instance = new PostModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('is_featured', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('is_featured', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
+
+
 
   static whereIn<V = number>(column: keyof PostsTable, values: V[]): PostModel {
     const instance = new PostModel(undefined)
@@ -835,102 +872,111 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance.applyWhereIn<V>(column, values)
   }
 
-  async comments(id: number): Promise<CommentablesTable[]> {
-    return await this.baseComments(id)
-  }
+  
+      async comments(id: number): Promise<CommentablesTable[]> {
+        return await this.baseComments(id)
+      }
 
-  async commentCount(id: number): Promise<number> {
-    return await this.baseCommentCount(id)
-  }
+      async commentCount(id: number): Promise<number> {
+        return await this.baseCommentCount(id)
+      }
 
-  async addComment(id: number, comment: { title: string, body: string }): Promise<any> {
-    return await this.baseAddComment(id, comment)
-  }
+      async addComment(id: number, comment: { title: string, body: string }): Promise<any> {
+        return await this.baseAddComment(id, comment)
+      }
 
-  async approvedComments(id: number): Promise<CommentablesTable[]> {
-    return await this.baseApprovedComments(id)
-  }
+      async approvedComments(id: number): Promise<CommentablesTable[]> {
+        return await this.baseApprovedComments(id)
+      }
 
-  async pendingComments(id: number): Promise<CommentablesTable[]> {
-    return await this.basePendingComments(id)
-  }
+      async pendingComments(id: number): Promise<CommentablesTable[]> {
+        return await this.basePendingComments(id)
+      }
 
-  async rejectedComments(id: number): Promise<CommentablesTable[]> {
-    return await this.baseRejectedComments(id)
-  }
+      async rejectedComments(id: number): Promise<CommentablesTable[]> {
+        return await this.baseRejectedComments(id)
+      }
+    
+      async tags(id: number): Promise<TaggableTable[]> {
+        return await this.baseTags(id)
+      }
 
-  async tags(id: number): Promise<TaggableTable[]> {
-    return await this.baseTags(id)
-  }
+      async tagCount(id: number): Promise<number> {
+        return await this.baseTagCount(id)
+      }
 
-  async tagCount(id: number): Promise<number> {
-    return await this.baseTagCount(id)
-  }
+      async addTag(id: number, tag: { name: string, description?: string }): Promise<TaggableTable> {
+        return await this.baseAddTag(id, tag)
+      }
 
-  async addTag(id: number, tag: { name: string, description?: string }): Promise<TaggableTable> {
-    return await this.baseAddTag(id, tag)
-  }
+      async activeTags(id: number): Promise<TaggableTable[]> {
+        return await this.baseActiveTags(id)
+      }
 
-  async activeTags(id: number): Promise<TaggableTable[]> {
-    return await this.baseActiveTags(id)
-  }
+      async inactiveTags(id: number): Promise<TaggableTable[]> {
+        return await this.baseInactiveTags(id)
+      }
 
-  async inactiveTags(id: number): Promise<TaggableTable[]> {
-    return await this.baseInactiveTags(id)
-  }
+      async removeTag(id: number, tagId: number): Promise<void> {
+        await this.baseRemoveTag(id, tagId)
+      }
+    
+      async categories(id: number): Promise<CategorizableTable[]> {
+        return await this.baseCategories(id)
+      }
 
-  async removeTag(id: number, tagId: number): Promise<void> {
-    await this.baseRemoveTag(id, tagId)
-  }
+      async categoryCount(id: number): Promise<number> {
+        return await this.baseCategoryCount(id)
+      }
 
-  async categories(id: number): Promise<CategorizableTable[]> {
-    return await this.baseCategories(id)
-  }
+      async addCategory(id: number, category: { name: string, description?: string, parent_id?: number }): Promise<CategorizableTable> {
+        return await this.baseAddCategory(id, category)
+      }
 
-  async categoryCount(id: number): Promise<number> {
-    return await this.baseCategoryCount(id)
-  }
+      async activeCategories(id: number): Promise<CategorizableTable[]> {
+        return await this.baseActiveCategories(id)
+      }
 
-  async addCategory(id: number, category: { name: string, description?: string, parent_id?: number }): Promise<CategorizableTable> {
-    return await this.baseAddCategory(id, category)
-  }
+      async inactiveCategories(id: number): Promise<CategorizableTable[]> {
+        return await this.baseInactiveCategories(id)
+      }
 
-  async activeCategories(id: number): Promise<CategorizableTable[]> {
-    return await this.baseActiveCategories(id)
-  }
+      async removeCategory(categoryId: number): Promise<void> {
+        await this.baseRemoveCategory(categoryId)
+      }
+    
+        async authorBelong(): Promise<AuthorModel> {
+          if (this.author_id === undefined)
+            throw new HttpError(500, 'Relation Error!')
 
-  async inactiveCategories(id: number): Promise<CategorizableTable[]> {
-    return await this.baseInactiveCategories(id)
-  }
+          const model = await Author
+            .where('id', '=', this.author_id)
+            .first()
 
-  async removeCategory(categoryId: number): Promise<void> {
-    await this.baseRemoveCategory(categoryId)
-  }
+          if (! model)
+            throw new HttpError(500, 'Model Relation Not Found!')
 
-  async authorBelong(): Promise<AuthorModel> {
-    if (this.author_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
+          return model
+        }
 
-    const model = await Author
-      .where('id', '=', this.author_id)
-      .first()
 
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
 
-    return model
-  }
+  
+      toSearchableObject(): Partial<PostJsonResponse> {
+        return {
+          id: this.id,
+title: this.title,
+author: this.author,
+views: this.views,
+status: this.status,
+poster: this.poster
+        }
+      }
+    
 
-  toSearchableObject(): Partial<PostJsonResponse> {
-    return {
-      id: this.id,
-      title: this.title,
-      author: this.author,
-      views: this.views,
-      status: this.status,
-      poster: this.poster,
-    }
-  }
+  
+
+  
 
   static distinct(column: keyof PostJsonResponse): PostModel {
     const instance = new PostModel(undefined)
@@ -947,26 +993,26 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
   toJSON(): PostJsonResponse {
     const output = {
 
-      uuid: this.uuid,
+ uuid: this.uuid,
 
-      id: this.id,
-      title: this.title,
-      poster: this.poster,
-      content: this.content,
-      excerpt: this.excerpt,
-      views: this.views,
-      published_at: this.published_at,
-      status: this.status,
-      is_featured: this.is_featured,
+id: this.id,
+title: this.title,
+   poster: this.poster,
+   content: this.content,
+   excerpt: this.excerpt,
+   views: this.views,
+   published_at: this.published_at,
+   status: this.status,
+   is_featured: this.is_featured,
+   
+        created_at: this.created_at,
 
-      created_at: this.created_at,
-
-      updated_at: this.updated_at,
+        updated_at: this.updated_at,
 
       author_id: this.author_id,
-      author: this.author,
-      ...this.customColumns,
-    }
+   author: this.author,
+...this.customColumns,
+}
 
     return output
   }
@@ -978,6 +1024,8 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
     return model
   }
+
+  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<PostModel | undefined> {
@@ -996,15 +1044,16 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
+
+  
 }
 
 export async function find(id: number): Promise<PostModel | undefined> {
-  const query = DB.instance.selectFrom('posts').where('id', '=', id).selectAll()
+  let query = DB.instance.selectFrom('posts').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model)
-    return undefined
+  if (!model) return undefined
 
   const instance = new PostModel(undefined)
   return instance.createInstance(model)
@@ -1032,60 +1081,62 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereTitle(value: string): Promise<PostModel[]> {
-  const query = DB.instance.selectFrom('posts').where('title', '=', value)
-  const results: PostJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('posts').where('title', '=', value)
+          const results: PostJsonResponse = await query.execute()
 
-  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
-}
+          return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+        } 
 
 export async function wherePoster(value: string): Promise<PostModel[]> {
-  const query = DB.instance.selectFrom('posts').where('poster', '=', value)
-  const results: PostJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('posts').where('poster', '=', value)
+          const results: PostJsonResponse = await query.execute()
 
-  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
-}
+          return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+        } 
 
 export async function whereContent(value: string): Promise<PostModel[]> {
-  const query = DB.instance.selectFrom('posts').where('content', '=', value)
-  const results: PostJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('posts').where('content', '=', value)
+          const results: PostJsonResponse = await query.execute()
 
-  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
-}
+          return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+        } 
 
 export async function whereExcerpt(value: string): Promise<PostModel[]> {
-  const query = DB.instance.selectFrom('posts').where('excerpt', '=', value)
-  const results: PostJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('posts').where('excerpt', '=', value)
+          const results: PostJsonResponse = await query.execute()
 
-  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
-}
+          return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+        } 
 
 export async function whereViews(value: number): Promise<PostModel[]> {
-  const query = DB.instance.selectFrom('posts').where('views', '=', value)
-  const results: PostJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('posts').where('views', '=', value)
+          const results: PostJsonResponse = await query.execute()
 
-  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
-}
+          return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+        } 
 
 export async function wherePublishedAt(value: Date | string): Promise<PostModel[]> {
-  const query = DB.instance.selectFrom('posts').where('published_at', '=', value)
-  const results: PostJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('posts').where('published_at', '=', value)
+          const results: PostJsonResponse = await query.execute()
 
-  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
-}
+          return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+        } 
 
 export async function whereStatus(value: string | string[]): Promise<PostModel[]> {
-  const query = DB.instance.selectFrom('posts').where('status', '=', value)
-  const results: PostJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('posts').where('status', '=', value)
+          const results: PostJsonResponse = await query.execute()
 
-  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
-}
+          return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+        } 
 
 export async function whereIsFeatured(value: number): Promise<PostModel[]> {
-  const query = DB.instance.selectFrom('posts').where('is_featured', '=', value)
-  const results: PostJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('posts').where('is_featured', '=', value)
+          const results: PostJsonResponse = await query.execute()
 
-  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
-}
+          return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
+        } 
+
+
 
 export const Post = PostModel
 

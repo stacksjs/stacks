@@ -112,7 +112,6 @@ export async function generateMysqlMigration(modelPath: string): Promise<void> {
   else await createTableMigration(modelPath)
 }
 
-
 export async function generateMysqlTraitMigrations(): Promise<void> {
   Promise.all([
     await createCategorizableTable(),
@@ -124,7 +123,6 @@ export async function generateMysqlTraitMigrations(): Promise<void> {
     await createCommentUpvoteMigration(),
   ])
 }
-
 
 export async function createMysqlForeignKeyMigrations(modelPath: string): Promise<void> {
   const model = (await import(modelPath)).default as Model
@@ -201,7 +199,6 @@ async function createTableMigration(modelPath: string): Promise<void> {
     = model.traits?.useAuth && typeof model.traits.useAuth !== 'boolean' ? model.traits.useAuth.useTwoFactor : false
 
   await createPivotTableMigration(model, modelPath)
-  const otherModelRelations = await fetchOtherModelRelations(modelName)
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSocials = model?.traits?.useSocials && Array.isArray(model.traits.useSocials) && model.traits.useSocials.length > 0
@@ -270,8 +267,6 @@ async function createTableMigration(modelPath: string): Promise<void> {
     migrationContent += `)\n`
   }
 
-
-
   if (twoFactorEnabled !== false && twoFactorEnabled)
     migrationContent += `    .addColumn('two_factor_secret', 'varchar(255)')\n`
 
@@ -292,8 +287,6 @@ async function createTableMigration(modelPath: string): Promise<void> {
     migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
 
   migrationContent += `    .execute()\n`
-
-
 
   migrationContent += generatePrimaryKeyIndexSQL(tableName)
 

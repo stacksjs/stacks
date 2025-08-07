@@ -1,22 +1,36 @@
-import type { RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
-import type { CartItemJsonResponse, CartItemsTable, CartItemUpdate, NewCartItem } from '../types/CartItemType'
-import type { CartModel } from './Cart'
-import { randomUUIDv7 } from 'bun'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
+import Stripe from 'stripe'
 import { sql } from '@stacksjs/database'
+import { DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
+import type { Operator } from '@stacksjs/orm'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { DB } from '@stacksjs/orm'
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { randomUUIDv7 } from 'bun'
+import type { CartItemModelType, CartItemJsonResponse, NewCartItem, CartItemUpdate, CartItemsTable } from '../types/CartItemType'
 
-import { BaseOrm } from '../utils/base'
+import type {CartModel} from './Cart'
+
+
+
+
+import type { Model } from '@stacksjs/types';
+import { schema } from '@stacksjs/validation';
+
+
+
 
 export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartItemJsonResponse> {
   private readonly hidden: Array<keyof CartItemJsonResponse> = []
-  private readonly fillable: Array<keyof CartItemJsonResponse> = ['quantity', 'unit_price', 'total_price', 'tax_rate', 'tax_amount', 'discount_percentage', 'discount_amount', 'product_name', 'product_sku', 'product_image', 'notes', 'uuid', 'cart_id']
+  private readonly fillable: Array<keyof CartItemJsonResponse> = ["quantity","unit_price","total_price","tax_rate","tax_amount","discount_percentage","discount_amount","product_name","product_sku","product_image","notes","uuid","cart_id"]
   private readonly guarded: Array<keyof CartItemJsonResponse> = []
   protected attributes = {} as CartItemJsonResponse
   protected originalAttributes = {} as CartItemJsonResponse
-
+  
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -34,12 +48,13 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
   constructor(cartItem: CartItemJsonResponse | undefined) {
     super('cart_items')
     if (cartItem) {
+
       this.attributes = { ...cartItem }
       this.originalAttributes = { ...cartItem }
 
-      Object.keys(cartItem).forEach((key) => {
+      Object.keys(cartItem).forEach(key => {
         if (!(key in this)) {
-          this.customColumns[key] = (cartItem as CartItemJsonResponse)[key]
+           this.customColumns[key] = (cartItem as CartItemJsonResponse)[key]
         }
       })
     }
@@ -54,8 +69,7 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
   protected async loadRelations(models: CartItemJsonResponse | CartItemJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length)
-      return
+    if (!modelArray.length) return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -75,8 +89,7 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      }
-      else {
+      } else {
         const records = relatedRecords.filter((record: { cartItem_id: number }) => {
           return record.cartItem_id === models.id
         })
@@ -97,10 +110,12 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
 
     if (Array.isArray(data)) {
       data.map((model: CartItemJsonResponse) => {
+
         const customGetter = {
           default: () => {
           },
 
+          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -109,14 +124,14 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
 
         return model
       })
-    }
-    else {
+    } else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
+        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -130,132 +145,136 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
       default: () => {
       },
 
+      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      (model as any)[key] = await fn()
+        (model as any)[key] = await fn()
     }
   }
 
   get cart_id(): number {
-    return this.attributes.cart_id
-  }
+        return this.attributes.cart_id
+      }
 
-  get cart(): CartModel | undefined {
-    return this.attributes.cart
-  }
+get cart(): CartModel | undefined {
+        return this.attributes.cart
+      }
 
-  get id(): number {
+get id(): number {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
-    return this.attributes.uuid
-  }
+get uuid(): string | undefined {
+      return this.attributes.uuid
+    }
 
-  get quantity(): number {
-    return this.attributes.quantity
-  }
+get quantity(): number {
+      return this.attributes.quantity
+    }
 
-  get unit_price(): number {
-    return this.attributes.unit_price
-  }
+get unit_price(): number {
+      return this.attributes.unit_price
+    }
 
-  get total_price(): number {
-    return this.attributes.total_price
-  }
+get total_price(): number {
+      return this.attributes.total_price
+    }
 
-  get tax_rate(): number | undefined {
-    return this.attributes.tax_rate
-  }
+get tax_rate(): number | undefined {
+      return this.attributes.tax_rate
+    }
 
-  get tax_amount(): number | undefined {
-    return this.attributes.tax_amount
-  }
+get tax_amount(): number | undefined {
+      return this.attributes.tax_amount
+    }
 
-  get discount_percentage(): number | undefined {
-    return this.attributes.discount_percentage
-  }
+get discount_percentage(): number | undefined {
+      return this.attributes.discount_percentage
+    }
 
-  get discount_amount(): number | undefined {
-    return this.attributes.discount_amount
-  }
+get discount_amount(): number | undefined {
+      return this.attributes.discount_amount
+    }
 
-  get product_name(): string {
-    return this.attributes.product_name
-  }
+get product_name(): string {
+      return this.attributes.product_name
+    }
 
-  get product_sku(): string | undefined {
-    return this.attributes.product_sku
-  }
+get product_sku(): string | undefined {
+      return this.attributes.product_sku
+    }
 
-  get product_image(): string | undefined {
-    return this.attributes.product_image
-  }
+get product_image(): string | undefined {
+      return this.attributes.product_image
+    }
 
-  get notes(): string | undefined {
-    return this.attributes.notes
-  }
+get notes(): string | undefined {
+      return this.attributes.notes
+    }
 
-  get created_at(): string | undefined {
-    return this.attributes.created_at
-  }
+get created_at(): string | undefined {
+      return this.attributes.created_at
+    }
 
-  get updated_at(): string | undefined {
-    return this.attributes.updated_at
-  }
+    get updated_at(): string | undefined {
+      return this.attributes.updated_at
+    }
+
 
   set uuid(value: string) {
-    this.attributes.uuid = value
-  }
+      this.attributes.uuid = value
+    }
 
-  set quantity(value: number) {
-    this.attributes.quantity = value
-  }
+set quantity(value: number) {
+      this.attributes.quantity = value
+    }
 
-  set unit_price(value: number) {
-    this.attributes.unit_price = value
-  }
+set unit_price(value: number) {
+      this.attributes.unit_price = value
+    }
 
-  set total_price(value: number) {
-    this.attributes.total_price = value
-  }
+set total_price(value: number) {
+      this.attributes.total_price = value
+    }
 
-  set tax_rate(value: number) {
-    this.attributes.tax_rate = value
-  }
+set tax_rate(value: number) {
+      this.attributes.tax_rate = value
+    }
 
-  set tax_amount(value: number) {
-    this.attributes.tax_amount = value
-  }
+set tax_amount(value: number) {
+      this.attributes.tax_amount = value
+    }
 
-  set discount_percentage(value: number) {
-    this.attributes.discount_percentage = value
-  }
+set discount_percentage(value: number) {
+      this.attributes.discount_percentage = value
+    }
 
-  set discount_amount(value: number) {
-    this.attributes.discount_amount = value
-  }
+set discount_amount(value: number) {
+      this.attributes.discount_amount = value
+    }
 
-  set product_name(value: string) {
-    this.attributes.product_name = value
-  }
+set product_name(value: string) {
+      this.attributes.product_name = value
+    }
 
-  set product_sku(value: string) {
-    this.attributes.product_sku = value
-  }
+set product_sku(value: string) {
+      this.attributes.product_sku = value
+    }
 
-  set product_image(value: string) {
-    this.attributes.product_image = value
-  }
+set product_image(value: string) {
+      this.attributes.product_image = value
+    }
 
-  set notes(value: string) {
-    this.attributes.notes = value
-  }
+set notes(value: string) {
+      this.attributes.notes = value
+    }
 
-  set updated_at(value: string) {
-    this.attributes.updated_at = value
-  }
+set updated_at(value: string) {
+      this.attributes.updated_at = value
+    }
+
+
 
   static select(params: (keyof CartItemJsonResponse)[] | RawBuilder<string> | string): CartItemModel {
     const instance = new CartItemModel(undefined)
@@ -265,12 +284,11 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
 
   // Method to find a CartItem by ID
   static async find(id: number): Promise<CartItemModel | undefined> {
-    const query = DB.instance.selectFrom('cart_items').where('id', '=', id).selectAll()
+    let query = DB.instance.selectFrom('cart_items').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     const instance = new CartItemModel(undefined)
     return instance.createInstance(model)
@@ -291,8 +309,7 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
 
     const model = await instance.applyLast()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new CartItemModel(model)
   }
@@ -325,7 +342,7 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
 
   static async findMany(ids: number[]): Promise<CartItemModel[]> {
     const instance = new CartItemModel(undefined)
-
+     
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: CartItemJsonResponse) => instance.parseResult(new CartItemModel(modelItem)))
@@ -340,8 +357,7 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new CartItemModel(model)
   }
@@ -355,8 +371,7 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new CartItemModel(model)
   }
@@ -523,12 +538,12 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: CartItemModel[]
+    data: CartItemModel[],
     paging: {
-      total_records: number
-      page: number
+      total_records: number,
+      page: number,
       total_pages: number
-    }
+    },
     next_cursor: number | null
   }> {
     const instance = new CartItemModel(undefined)
@@ -538,7 +553,7 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
     return {
       data: result.data.map((item: CartItemJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor,
+      next_cursor: result.next_cursor
     }
   }
 
@@ -550,13 +565,13 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
   async applyCreate(newCartItem: NewCartItem): Promise<CartItemModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newCartItem).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as NewCartItem
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues.uuid = randomUUIDv7()
+    filteredValues['uuid'] = randomUUIDv7()
 
     const result = await DB.instance.insertInto('cart_items')
       .values(filteredValues)
@@ -572,7 +587,7 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
     }
 
     if (model)
-      dispatch('cartItem:created', model)
+ dispatch('cartItem:created', model)
     return this.createInstance(model)
   }
 
@@ -641,7 +656,7 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
   async update(newCartItem: CartItemUpdate): Promise<CartItemModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newCartItem).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as CartItemUpdate
 
@@ -666,7 +681,7 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
       }
 
       if (model)
-        dispatch('cartItem:updated', model)
+ dispatch('cartItem:updated', model)
       return this.createInstance(model)
     }
 
@@ -691,7 +706,7 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
       }
 
       if (this)
-        dispatch('cartItem:updated', model)
+ dispatch('cartItem:updated', model)
       return this.createInstance(model)
     }
 
@@ -718,10 +733,9 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
       }
 
       if (this)
-        dispatch('cartItem:updated', model)
+ dispatch('cartItem:updated', model)
       return this.createInstance(model)
-    }
-    else {
+    } else {
       // Create new record
       const result = await DB.instance.insertInto('cart_items')
         .values(this.attributes as NewCartItem)
@@ -738,7 +752,7 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
       }
 
       if (this)
-        dispatch('cartItem:created', model)
+ dispatch('cartItem:created', model)
       return this.createInstance(model)
     }
   }
@@ -753,7 +767,7 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
         ),
       ) as NewCartItem
 
-      filteredValues.uuid = randomUUIDv7()
+      filteredValues['uuid'] = randomUUIDv7()
 
       return filteredValues
     })
@@ -779,7 +793,7 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
     }
 
     if (model)
-      dispatch('cartItem:created', model)
+ dispatch('cartItem:created', model)
 
     return instance.createInstance(model)
   }
@@ -789,9 +803,9 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-
+    
     if (model)
-      dispatch('cartItem:deleted', model)
+ dispatch('cartItem:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('cart_items')
       .where('id', '=', this.id)
@@ -805,8 +819,10 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
 
     const model = await instance.find(Number(id))
 
+    
+
     if (model)
-      dispatch('cartItem:deleted', model)
+ dispatch('cartItem:deleted', model)
 
     return await DB.instance.deleteFrom('cart_items')
       .where('id', '=', id)
@@ -814,92 +830,94 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
   }
 
   static whereQuantity(value: string): CartItemModel {
-    const instance = new CartItemModel(undefined)
+          const instance = new CartItemModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('quantity', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('quantity', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereUnitPrice(value: string): CartItemModel {
-    const instance = new CartItemModel(undefined)
+static whereUnitPrice(value: string): CartItemModel {
+          const instance = new CartItemModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('unit_price', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('unit_price', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereTotalPrice(value: string): CartItemModel {
-    const instance = new CartItemModel(undefined)
+static whereTotalPrice(value: string): CartItemModel {
+          const instance = new CartItemModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('total_price', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('total_price', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereTaxRate(value: string): CartItemModel {
-    const instance = new CartItemModel(undefined)
+static whereTaxRate(value: string): CartItemModel {
+          const instance = new CartItemModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('tax_rate', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('tax_rate', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereTaxAmount(value: string): CartItemModel {
-    const instance = new CartItemModel(undefined)
+static whereTaxAmount(value: string): CartItemModel {
+          const instance = new CartItemModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('tax_amount', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('tax_amount', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereDiscountPercentage(value: string): CartItemModel {
-    const instance = new CartItemModel(undefined)
+static whereDiscountPercentage(value: string): CartItemModel {
+          const instance = new CartItemModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('discount_percentage', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('discount_percentage', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereDiscountAmount(value: string): CartItemModel {
-    const instance = new CartItemModel(undefined)
+static whereDiscountAmount(value: string): CartItemModel {
+          const instance = new CartItemModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('discount_amount', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('discount_amount', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereProductName(value: string): CartItemModel {
-    const instance = new CartItemModel(undefined)
+static whereProductName(value: string): CartItemModel {
+          const instance = new CartItemModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('product_name', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('product_name', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereProductSku(value: string): CartItemModel {
-    const instance = new CartItemModel(undefined)
+static whereProductSku(value: string): CartItemModel {
+          const instance = new CartItemModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('product_sku', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('product_sku', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereProductImage(value: string): CartItemModel {
-    const instance = new CartItemModel(undefined)
+static whereProductImage(value: string): CartItemModel {
+          const instance = new CartItemModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('product_image', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('product_image', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereNotes(value: string): CartItemModel {
-    const instance = new CartItemModel(undefined)
+static whereNotes(value: string): CartItemModel {
+          const instance = new CartItemModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('notes', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('notes', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
+
+
 
   static whereIn<V = number>(column: keyof CartItemsTable, values: V[]): CartItemModel {
     const instance = new CartItemModel(undefined)
@@ -907,30 +925,39 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
     return instance.applyWhereIn<V>(column, values)
   }
 
-  async cartBelong(): Promise<CartModel> {
-    if (this.cart_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
+  
+        async cartBelong(): Promise<CartModel> {
+          if (this.cart_id === undefined)
+            throw new HttpError(500, 'Relation Error!')
 
-    const model = await Cart
-      .where('id', '=', this.cart_id)
-      .first()
+          const model = await Cart
+            .where('id', '=', this.cart_id)
+            .first()
 
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
+          if (! model)
+            throw new HttpError(500, 'Model Relation Not Found!')
 
-    return model
-  }
+          return model
+        }
 
-  toSearchableObject(): Partial<CartItemJsonResponse> {
-    return {
-      id: this.id,
-      cart_id: this.cart_id,
-      product_id: this.product_id,
-      quantity: this.quantity,
-      unit_price: this.unit_price,
-      total_price: this.total_price,
-    }
-  }
+
+
+  
+      toSearchableObject(): Partial<CartItemJsonResponse> {
+        return {
+          id: this.id,
+cart_id: this.cart_id,
+product_id: this.product_id,
+quantity: this.quantity,
+unit_price: this.unit_price,
+total_price: this.total_price
+        }
+      }
+    
+
+  
+
+  
 
   static distinct(column: keyof CartItemJsonResponse): CartItemModel {
     const instance = new CartItemModel(undefined)
@@ -947,29 +974,29 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
   toJSON(): CartItemJsonResponse {
     const output = {
 
-      uuid: this.uuid,
+ uuid: this.uuid,
 
-      id: this.id,
-      quantity: this.quantity,
-      unit_price: this.unit_price,
-      total_price: this.total_price,
-      tax_rate: this.tax_rate,
-      tax_amount: this.tax_amount,
-      discount_percentage: this.discount_percentage,
-      discount_amount: this.discount_amount,
-      product_name: this.product_name,
-      product_sku: this.product_sku,
-      product_image: this.product_image,
-      notes: this.notes,
+id: this.id,
+quantity: this.quantity,
+   unit_price: this.unit_price,
+   total_price: this.total_price,
+   tax_rate: this.tax_rate,
+   tax_amount: this.tax_amount,
+   discount_percentage: this.discount_percentage,
+   discount_amount: this.discount_amount,
+   product_name: this.product_name,
+   product_sku: this.product_sku,
+   product_image: this.product_image,
+   notes: this.notes,
+   
+        created_at: this.created_at,
 
-      created_at: this.created_at,
-
-      updated_at: this.updated_at,
+        updated_at: this.updated_at,
 
       cart_id: this.cart_id,
-      cart: this.cart,
-      ...this.customColumns,
-    }
+   cart: this.cart,
+...this.customColumns,
+}
 
     return output
   }
@@ -981,6 +1008,8 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
 
     return model
   }
+
+  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<CartItemModel | undefined> {
@@ -999,15 +1028,16 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
+
+  
 }
 
 export async function find(id: number): Promise<CartItemModel | undefined> {
-  const query = DB.instance.selectFrom('cart_items').where('id', '=', id).selectAll()
+  let query = DB.instance.selectFrom('cart_items').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model)
-    return undefined
+  if (!model) return undefined
 
   const instance = new CartItemModel(undefined)
   return instance.createInstance(model)
@@ -1035,81 +1065,83 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereQuantity(value: number): Promise<CartItemModel[]> {
-  const query = DB.instance.selectFrom('cart_items').where('quantity', '=', value)
-  const results: CartItemJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('cart_items').where('quantity', '=', value)
+          const results: CartItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
-}
+          return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
+        } 
 
 export async function whereUnitPrice(value: number): Promise<CartItemModel[]> {
-  const query = DB.instance.selectFrom('cart_items').where('unit_price', '=', value)
-  const results: CartItemJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('cart_items').where('unit_price', '=', value)
+          const results: CartItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
-}
+          return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
+        } 
 
 export async function whereTotalPrice(value: number): Promise<CartItemModel[]> {
-  const query = DB.instance.selectFrom('cart_items').where('total_price', '=', value)
-  const results: CartItemJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('cart_items').where('total_price', '=', value)
+          const results: CartItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
-}
+          return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
+        } 
 
 export async function whereTaxRate(value: number): Promise<CartItemModel[]> {
-  const query = DB.instance.selectFrom('cart_items').where('tax_rate', '=', value)
-  const results: CartItemJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('cart_items').where('tax_rate', '=', value)
+          const results: CartItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
-}
+          return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
+        } 
 
 export async function whereTaxAmount(value: number): Promise<CartItemModel[]> {
-  const query = DB.instance.selectFrom('cart_items').where('tax_amount', '=', value)
-  const results: CartItemJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('cart_items').where('tax_amount', '=', value)
+          const results: CartItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
-}
+          return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
+        } 
 
 export async function whereDiscountPercentage(value: number): Promise<CartItemModel[]> {
-  const query = DB.instance.selectFrom('cart_items').where('discount_percentage', '=', value)
-  const results: CartItemJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('cart_items').where('discount_percentage', '=', value)
+          const results: CartItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
-}
+          return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
+        } 
 
 export async function whereDiscountAmount(value: number): Promise<CartItemModel[]> {
-  const query = DB.instance.selectFrom('cart_items').where('discount_amount', '=', value)
-  const results: CartItemJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('cart_items').where('discount_amount', '=', value)
+          const results: CartItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
-}
+          return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
+        } 
 
 export async function whereProductName(value: string): Promise<CartItemModel[]> {
-  const query = DB.instance.selectFrom('cart_items').where('product_name', '=', value)
-  const results: CartItemJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('cart_items').where('product_name', '=', value)
+          const results: CartItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
-}
+          return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
+        } 
 
 export async function whereProductSku(value: string): Promise<CartItemModel[]> {
-  const query = DB.instance.selectFrom('cart_items').where('product_sku', '=', value)
-  const results: CartItemJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('cart_items').where('product_sku', '=', value)
+          const results: CartItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
-}
+          return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
+        } 
 
 export async function whereProductImage(value: string): Promise<CartItemModel[]> {
-  const query = DB.instance.selectFrom('cart_items').where('product_image', '=', value)
-  const results: CartItemJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('cart_items').where('product_image', '=', value)
+          const results: CartItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
-}
+          return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
+        } 
 
 export async function whereNotes(value: string): Promise<CartItemModel[]> {
-  const query = DB.instance.selectFrom('cart_items').where('notes', '=', value)
-  const results: CartItemJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('cart_items').where('notes', '=', value)
+          const results: CartItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
-}
+          return results.map((modelItem: CartItemJsonResponse) => new CartItemModel(modelItem))
+        } 
+
+
 
 export const CartItem = CartItemModel
 

@@ -1,23 +1,38 @@
-import type { RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
-import type { CouponJsonResponse, CouponsTable, CouponUpdate, NewCoupon } from '../types/CouponType'
-import type { OrderModel } from './Order'
-import type { ProductModel } from './Product'
-import { randomUUIDv7 } from 'bun'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
+import Stripe from 'stripe'
 import { sql } from '@stacksjs/database'
+import { DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
+import type { Operator } from '@stacksjs/orm'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { DB } from '@stacksjs/orm'
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { randomUUIDv7 } from 'bun'
+import type { CouponModelType, CouponJsonResponse, NewCoupon, CouponUpdate, CouponsTable } from '../types/CouponType'
 
-import { BaseOrm } from '../utils/base'
+import type {OrderModel} from './Order'
+
+import type {ProductModel} from './Product'
+
+
+
+
+import type { Model } from '@stacksjs/types';
+import { schema } from '@stacksjs/validation';
+
+
+
 
 export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonResponse> {
   private readonly hidden: Array<keyof CouponJsonResponse> = []
-  private readonly fillable: Array<keyof CouponJsonResponse> = ['code', 'description', 'discount_type', 'discount_value', 'min_order_amount', 'max_discount_amount', 'free_product_id', 'status', 'usage_limit', 'usage_count', 'start_date', 'end_date', 'uuid', 'product_id']
+  private readonly fillable: Array<keyof CouponJsonResponse> = ["code","description","discount_type","discount_value","min_order_amount","max_discount_amount","free_product_id","status","usage_limit","usage_count","start_date","end_date","uuid","product_id"]
   private readonly guarded: Array<keyof CouponJsonResponse> = []
   protected attributes = {} as CouponJsonResponse
   protected originalAttributes = {} as CouponJsonResponse
-
+  
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -35,12 +50,13 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
   constructor(coupon: CouponJsonResponse | undefined) {
     super('coupons')
     if (coupon) {
+
       this.attributes = { ...coupon }
       this.originalAttributes = { ...coupon }
 
-      Object.keys(coupon).forEach((key) => {
+      Object.keys(coupon).forEach(key => {
         if (!(key in this)) {
-          this.customColumns[key] = (coupon as CouponJsonResponse)[key]
+           this.customColumns[key] = (coupon as CouponJsonResponse)[key]
         }
       })
     }
@@ -55,8 +71,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
   protected async loadRelations(models: CouponJsonResponse | CouponJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length)
-      return
+    if (!modelArray.length) return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -76,8 +91,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      }
-      else {
+      } else {
         const records = relatedRecords.filter((record: { coupon_id: number }) => {
           return record.coupon_id === models.id
         })
@@ -98,10 +112,12 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
     if (Array.isArray(data)) {
       data.map((model: CouponJsonResponse) => {
+
         const customGetter = {
           default: () => {
           },
 
+          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -110,14 +126,14 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
         return model
       })
-    }
-    else {
+    } else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
+        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -131,144 +147,148 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
       default: () => {
       },
 
+      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      (model as any)[key] = await fn()
+        (model as any)[key] = await fn()
     }
   }
 
-  get orders(): OrderModel[] | [] {
-    return this.attributes.orders
-  }
+  get orders():OrderModel[] | [] {
+        return this.attributes.orders
+      }
 
-  get product_id(): number {
-    return this.attributes.product_id
-  }
+get product_id(): number {
+        return this.attributes.product_id
+      }
 
-  get product(): ProductModel | undefined {
-    return this.attributes.product
-  }
+get product(): ProductModel | undefined {
+        return this.attributes.product
+      }
 
-  get id(): number {
+get id(): number {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
-    return this.attributes.uuid
-  }
+get uuid(): string | undefined {
+      return this.attributes.uuid
+    }
 
-  get code(): string {
-    return this.attributes.code
-  }
+get code(): string {
+      return this.attributes.code
+    }
 
-  get description(): string | undefined {
-    return this.attributes.description
-  }
+get description(): string | undefined {
+      return this.attributes.description
+    }
 
-  get discount_type(): string | string[] {
-    return this.attributes.discount_type
-  }
+get discount_type(): string | string[] {
+      return this.attributes.discount_type
+    }
 
-  get discount_value(): number {
-    return this.attributes.discount_value
-  }
+get discount_value(): number {
+      return this.attributes.discount_value
+    }
 
-  get min_order_amount(): number | undefined {
-    return this.attributes.min_order_amount
-  }
+get min_order_amount(): number | undefined {
+      return this.attributes.min_order_amount
+    }
 
-  get max_discount_amount(): number | undefined {
-    return this.attributes.max_discount_amount
-  }
+get max_discount_amount(): number | undefined {
+      return this.attributes.max_discount_amount
+    }
 
-  get free_product_id(): string | undefined {
-    return this.attributes.free_product_id
-  }
+get free_product_id(): string | undefined {
+      return this.attributes.free_product_id
+    }
 
-  get status(): string | string[] | undefined {
-    return this.attributes.status
-  }
+get status(): string | string[] | undefined {
+      return this.attributes.status
+    }
 
-  get usage_limit(): number | undefined {
-    return this.attributes.usage_limit
-  }
+get usage_limit(): number | undefined {
+      return this.attributes.usage_limit
+    }
 
-  get usage_count(): number | undefined {
-    return this.attributes.usage_count
-  }
+get usage_count(): number | undefined {
+      return this.attributes.usage_count
+    }
 
-  get start_date(): Date | string | undefined {
-    return this.attributes.start_date
-  }
+get start_date(): Date | string | undefined {
+      return this.attributes.start_date
+    }
 
-  get end_date(): Date | string | undefined {
-    return this.attributes.end_date
-  }
+get end_date(): Date | string | undefined {
+      return this.attributes.end_date
+    }
 
-  get created_at(): string | undefined {
-    return this.attributes.created_at
-  }
+get created_at(): string | undefined {
+      return this.attributes.created_at
+    }
 
-  get updated_at(): string | undefined {
-    return this.attributes.updated_at
-  }
+    get updated_at(): string | undefined {
+      return this.attributes.updated_at
+    }
+
 
   set uuid(value: string) {
-    this.attributes.uuid = value
-  }
+      this.attributes.uuid = value
+    }
 
-  set code(value: string) {
-    this.attributes.code = value
-  }
+set code(value: string) {
+      this.attributes.code = value
+    }
 
-  set description(value: string) {
-    this.attributes.description = value
-  }
+set description(value: string) {
+      this.attributes.description = value
+    }
 
-  set discount_type(value: string | string[]) {
-    this.attributes.discount_type = value
-  }
+set discount_type(value: string | string[]) {
+      this.attributes.discount_type = value
+    }
 
-  set discount_value(value: number) {
-    this.attributes.discount_value = value
-  }
+set discount_value(value: number) {
+      this.attributes.discount_value = value
+    }
 
-  set min_order_amount(value: number) {
-    this.attributes.min_order_amount = value
-  }
+set min_order_amount(value: number) {
+      this.attributes.min_order_amount = value
+    }
 
-  set max_discount_amount(value: number) {
-    this.attributes.max_discount_amount = value
-  }
+set max_discount_amount(value: number) {
+      this.attributes.max_discount_amount = value
+    }
 
-  set free_product_id(value: string) {
-    this.attributes.free_product_id = value
-  }
+set free_product_id(value: string) {
+      this.attributes.free_product_id = value
+    }
 
-  set status(value: string | string[]) {
-    this.attributes.status = value
-  }
+set status(value: string | string[]) {
+      this.attributes.status = value
+    }
 
-  set usage_limit(value: number) {
-    this.attributes.usage_limit = value
-  }
+set usage_limit(value: number) {
+      this.attributes.usage_limit = value
+    }
 
-  set usage_count(value: number) {
-    this.attributes.usage_count = value
-  }
+set usage_count(value: number) {
+      this.attributes.usage_count = value
+    }
 
-  set start_date(value: Date | string) {
-    this.attributes.start_date = value
-  }
+set start_date(value: Date | string) {
+      this.attributes.start_date = value
+    }
 
-  set end_date(value: Date | string) {
-    this.attributes.end_date = value
-  }
+set end_date(value: Date | string) {
+      this.attributes.end_date = value
+    }
 
-  set updated_at(value: string) {
-    this.attributes.updated_at = value
-  }
+set updated_at(value: string) {
+      this.attributes.updated_at = value
+    }
+
+
 
   static select(params: (keyof CouponJsonResponse)[] | RawBuilder<string> | string): CouponModel {
     const instance = new CouponModel(undefined)
@@ -278,12 +298,11 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
   // Method to find a Coupon by ID
   static async find(id: number): Promise<CouponModel | undefined> {
-    const query = DB.instance.selectFrom('coupons').where('id', '=', id).selectAll()
+    let query = DB.instance.selectFrom('coupons').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     const instance = new CouponModel(undefined)
     return instance.createInstance(model)
@@ -304,8 +323,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
     const model = await instance.applyLast()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new CouponModel(model)
   }
@@ -338,7 +356,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
   static async findMany(ids: number[]): Promise<CouponModel[]> {
     const instance = new CouponModel(undefined)
-
+     
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: CouponJsonResponse) => instance.parseResult(new CouponModel(modelItem)))
@@ -353,8 +371,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new CouponModel(model)
   }
@@ -368,8 +385,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new CouponModel(model)
   }
@@ -536,12 +552,12 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: CouponModel[]
+    data: CouponModel[],
     paging: {
-      total_records: number
-      page: number
+      total_records: number,
+      page: number,
       total_pages: number
-    }
+    },
     next_cursor: number | null
   }> {
     const instance = new CouponModel(undefined)
@@ -551,7 +567,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return {
       data: result.data.map((item: CouponJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor,
+      next_cursor: result.next_cursor
     }
   }
 
@@ -563,13 +579,13 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
   async applyCreate(newCoupon: NewCoupon): Promise<CouponModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newCoupon).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as NewCoupon
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues.uuid = randomUUIDv7()
+    filteredValues['uuid'] = randomUUIDv7()
 
     const result = await DB.instance.insertInto('coupons')
       .values(filteredValues)
@@ -585,7 +601,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     }
 
     if (model)
-      dispatch('coupon:created', model)
+ dispatch('coupon:created', model)
     return this.createInstance(model)
   }
 
@@ -654,7 +670,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
   async update(newCoupon: CouponUpdate): Promise<CouponModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newCoupon).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as CouponUpdate
 
@@ -679,7 +695,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
       }
 
       if (model)
-        dispatch('coupon:updated', model)
+ dispatch('coupon:updated', model)
       return this.createInstance(model)
     }
 
@@ -704,7 +720,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
       }
 
       if (this)
-        dispatch('coupon:updated', model)
+ dispatch('coupon:updated', model)
       return this.createInstance(model)
     }
 
@@ -731,10 +747,9 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
       }
 
       if (this)
-        dispatch('coupon:updated', model)
+ dispatch('coupon:updated', model)
       return this.createInstance(model)
-    }
-    else {
+    } else {
       // Create new record
       const result = await DB.instance.insertInto('coupons')
         .values(this.attributes as NewCoupon)
@@ -751,7 +766,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
       }
 
       if (this)
-        dispatch('coupon:created', model)
+ dispatch('coupon:created', model)
       return this.createInstance(model)
     }
   }
@@ -766,7 +781,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
         ),
       ) as NewCoupon
 
-      filteredValues.uuid = randomUUIDv7()
+      filteredValues['uuid'] = randomUUIDv7()
 
       return filteredValues
     })
@@ -792,7 +807,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     }
 
     if (model)
-      dispatch('coupon:created', model)
+ dispatch('coupon:created', model)
 
     return instance.createInstance(model)
   }
@@ -802,9 +817,9 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-
+    
     if (model)
-      dispatch('coupon:deleted', model)
+ dispatch('coupon:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('coupons')
       .where('id', '=', this.id)
@@ -818,8 +833,10 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
     const model = await instance.find(Number(id))
 
+    
+
     if (model)
-      dispatch('coupon:deleted', model)
+ dispatch('coupon:deleted', model)
 
     return await DB.instance.deleteFrom('coupons')
       .where('id', '=', id)
@@ -827,100 +844,102 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
   }
 
   static whereCode(value: string): CouponModel {
-    const instance = new CouponModel(undefined)
+          const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('code', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('code', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereDescription(value: string): CouponModel {
-    const instance = new CouponModel(undefined)
+static whereDescription(value: string): CouponModel {
+          const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereDiscountType(value: string): CouponModel {
-    const instance = new CouponModel(undefined)
+static whereDiscountType(value: string): CouponModel {
+          const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('discount_type', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('discount_type', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereDiscountValue(value: string): CouponModel {
-    const instance = new CouponModel(undefined)
+static whereDiscountValue(value: string): CouponModel {
+          const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('discount_value', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('discount_value', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereMinOrderAmount(value: string): CouponModel {
-    const instance = new CouponModel(undefined)
+static whereMinOrderAmount(value: string): CouponModel {
+          const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('min_order_amount', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('min_order_amount', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereMaxDiscountAmount(value: string): CouponModel {
-    const instance = new CouponModel(undefined)
+static whereMaxDiscountAmount(value: string): CouponModel {
+          const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('max_discount_amount', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('max_discount_amount', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereFreeProductId(value: string): CouponModel {
-    const instance = new CouponModel(undefined)
+static whereFreeProductId(value: string): CouponModel {
+          const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('free_product_id', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('free_product_id', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereStatus(value: string): CouponModel {
-    const instance = new CouponModel(undefined)
+static whereStatus(value: string): CouponModel {
+          const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereUsageLimit(value: string): CouponModel {
-    const instance = new CouponModel(undefined)
+static whereUsageLimit(value: string): CouponModel {
+          const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('usage_limit', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('usage_limit', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereUsageCount(value: string): CouponModel {
-    const instance = new CouponModel(undefined)
+static whereUsageCount(value: string): CouponModel {
+          const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('usage_count', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('usage_count', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereStartDate(value: string): CouponModel {
-    const instance = new CouponModel(undefined)
+static whereStartDate(value: string): CouponModel {
+          const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('start_date', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('start_date', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereEndDate(value: string): CouponModel {
-    const instance = new CouponModel(undefined)
+static whereEndDate(value: string): CouponModel {
+          const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('end_date', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('end_date', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
+
+
 
   static whereIn<V = number>(column: keyof CouponsTable, values: V[]): CouponModel {
     const instance = new CouponModel(undefined)
@@ -928,30 +947,39 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return instance.applyWhereIn<V>(column, values)
   }
 
-  async productBelong(): Promise<ProductModel> {
-    if (this.product_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
+  
+        async productBelong(): Promise<ProductModel> {
+          if (this.product_id === undefined)
+            throw new HttpError(500, 'Relation Error!')
 
-    const model = await Product
-      .where('id', '=', this.product_id)
-      .first()
+          const model = await Product
+            .where('id', '=', this.product_id)
+            .first()
 
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
+          if (! model)
+            throw new HttpError(500, 'Model Relation Not Found!')
 
-    return model
-  }
+          return model
+        }
 
-  toSearchableObject(): Partial<CouponJsonResponse> {
-    return {
-      id: this.id,
-      code: this.code,
-      discount_type: this.discount_type,
-      discount_value: this.discount_value,
-      start_date: this.start_date,
-      end_date: this.end_date,
-    }
-  }
+
+
+  
+      toSearchableObject(): Partial<CouponJsonResponse> {
+        return {
+          id: this.id,
+code: this.code,
+discount_type: this.discount_type,
+discount_value: this.discount_value,
+start_date: this.start_date,
+end_date: this.end_date
+        }
+      }
+    
+
+  
+
+  
 
   static distinct(column: keyof CouponJsonResponse): CouponModel {
     const instance = new CouponModel(undefined)
@@ -968,31 +996,31 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
   toJSON(): CouponJsonResponse {
     const output = {
 
-      uuid: this.uuid,
+ uuid: this.uuid,
 
-      id: this.id,
-      code: this.code,
-      description: this.description,
-      discount_type: this.discount_type,
-      discount_value: this.discount_value,
-      min_order_amount: this.min_order_amount,
-      max_discount_amount: this.max_discount_amount,
-      free_product_id: this.free_product_id,
-      status: this.status,
-      usage_limit: this.usage_limit,
-      usage_count: this.usage_count,
-      start_date: this.start_date,
-      end_date: this.end_date,
+id: this.id,
+code: this.code,
+   description: this.description,
+   discount_type: this.discount_type,
+   discount_value: this.discount_value,
+   min_order_amount: this.min_order_amount,
+   max_discount_amount: this.max_discount_amount,
+   free_product_id: this.free_product_id,
+   status: this.status,
+   usage_limit: this.usage_limit,
+   usage_count: this.usage_count,
+   start_date: this.start_date,
+   end_date: this.end_date,
+   
+        created_at: this.created_at,
 
-      created_at: this.created_at,
-
-      updated_at: this.updated_at,
+        updated_at: this.updated_at,
 
       orders: this.orders,
-      product_id: this.product_id,
-      product: this.product,
-      ...this.customColumns,
-    }
+product_id: this.product_id,
+   product: this.product,
+...this.customColumns,
+}
 
     return output
   }
@@ -1004,6 +1032,8 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
     return model
   }
+
+  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<CouponModel | undefined> {
@@ -1022,15 +1052,16 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
+
+  
 }
 
 export async function find(id: number): Promise<CouponModel | undefined> {
-  const query = DB.instance.selectFrom('coupons').where('id', '=', id).selectAll()
+  let query = DB.instance.selectFrom('coupons').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model)
-    return undefined
+  if (!model) return undefined
 
   const instance = new CouponModel(undefined)
   return instance.createInstance(model)
@@ -1058,88 +1089,90 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereCode(value: string): Promise<CouponModel[]> {
-  const query = DB.instance.selectFrom('coupons').where('code', '=', value)
-  const results: CouponJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('coupons').where('code', '=', value)
+          const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
-}
+          return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
+        } 
 
 export async function whereDescription(value: string): Promise<CouponModel[]> {
-  const query = DB.instance.selectFrom('coupons').where('description', '=', value)
-  const results: CouponJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('coupons').where('description', '=', value)
+          const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
-}
+          return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
+        } 
 
 export async function whereDiscountType(value: string | string[]): Promise<CouponModel[]> {
-  const query = DB.instance.selectFrom('coupons').where('discount_type', '=', value)
-  const results: CouponJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('coupons').where('discount_type', '=', value)
+          const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
-}
+          return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
+        } 
 
 export async function whereDiscountValue(value: number): Promise<CouponModel[]> {
-  const query = DB.instance.selectFrom('coupons').where('discount_value', '=', value)
-  const results: CouponJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('coupons').where('discount_value', '=', value)
+          const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
-}
+          return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
+        } 
 
 export async function whereMinOrderAmount(value: number): Promise<CouponModel[]> {
-  const query = DB.instance.selectFrom('coupons').where('min_order_amount', '=', value)
-  const results: CouponJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('coupons').where('min_order_amount', '=', value)
+          const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
-}
+          return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
+        } 
 
 export async function whereMaxDiscountAmount(value: number): Promise<CouponModel[]> {
-  const query = DB.instance.selectFrom('coupons').where('max_discount_amount', '=', value)
-  const results: CouponJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('coupons').where('max_discount_amount', '=', value)
+          const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
-}
+          return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
+        } 
 
 export async function whereFreeProductId(value: string): Promise<CouponModel[]> {
-  const query = DB.instance.selectFrom('coupons').where('free_product_id', '=', value)
-  const results: CouponJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('coupons').where('free_product_id', '=', value)
+          const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
-}
+          return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
+        } 
 
 export async function whereStatus(value: string | string[]): Promise<CouponModel[]> {
-  const query = DB.instance.selectFrom('coupons').where('status', '=', value)
-  const results: CouponJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('coupons').where('status', '=', value)
+          const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
-}
+          return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
+        } 
 
 export async function whereUsageLimit(value: number): Promise<CouponModel[]> {
-  const query = DB.instance.selectFrom('coupons').where('usage_limit', '=', value)
-  const results: CouponJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('coupons').where('usage_limit', '=', value)
+          const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
-}
+          return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
+        } 
 
 export async function whereUsageCount(value: number): Promise<CouponModel[]> {
-  const query = DB.instance.selectFrom('coupons').where('usage_count', '=', value)
-  const results: CouponJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('coupons').where('usage_count', '=', value)
+          const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
-}
+          return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
+        } 
 
 export async function whereStartDate(value: Date | string): Promise<CouponModel[]> {
-  const query = DB.instance.selectFrom('coupons').where('start_date', '=', value)
-  const results: CouponJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('coupons').where('start_date', '=', value)
+          const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
-}
+          return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
+        } 
 
 export async function whereEndDate(value: Date | string): Promise<CouponModel[]> {
-  const query = DB.instance.selectFrom('coupons').where('end_date', '=', value)
-  const results: CouponJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('coupons').where('end_date', '=', value)
+          const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
-}
+          return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
+        } 
+
+
 
 export const Coupon = CouponModel
 

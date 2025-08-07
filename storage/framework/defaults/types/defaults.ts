@@ -322,7 +322,7 @@ export interface ProductVariants {
 
 export type NewProductVariant = Omit<ProductVariants, 'id'>
 
-export interface Taggables {
+export interface Tags {
   id: number
   name: string
   slug: string
@@ -335,8 +335,8 @@ export interface Taggables {
   updated_at: string
 }
 
-export type PostTaggable = Omit<Taggables, 'taggable_id' | 'taggable_type' | 'is_active'>
-export type NewTaggable = Omit<Taggables, 'id'>
+export type PostTag = Omit<Tags, 'is_active'>
+export type NewTag = Omit<Tags, 'id'>
 
 export interface Categorizables {
   id: number

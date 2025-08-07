@@ -1,54 +1,56 @@
-import type { AuthorsTable } from '../src/types/AuthorType'
-import type { CartItemsTable } from '../src/types/CartItemType'
-import type { CartsTable } from '../src/types/CartType'
-import type { CategoriesTable } from '../src/types/CategoryType'
-import type { CouponsTable } from '../src/types/CouponType'
-import type { CustomersTable } from '../src/types/CustomerType'
-import type { DeliveryRoutesTable } from '../src/types/DeliveryRouteType'
+import type { ProjectsTable } from '../src/types/ProjectType'
+import type { SubscriberEmailsTable } from '../src/types/SubscriberEmailType'
+import type { TeamsTable } from '../src/types/TeamType'
+import type { SubscribersTable } from '../src/types/SubscriberType'
 import type { DeploymentsTable } from '../src/types/DeploymentType'
-import type { DigitalDeliveriesTable } from '../src/types/DigitalDeliveryType'
+import type { ReleasesTable } from '../src/types/ReleaseType'
+import type { UsersTable } from '../src/types/UserType'
+import type { SampleModelsTable } from '../src/types/SampleModelType'
+import type { PersonalAccessTokensTable } from '../src/types/PersonalAccessTokenType'
+import type { PrintDevicesTable } from '../src/types/PrintDeviceType'
+import type { CategoriesTable } from '../src/types/CategoryType'
+import type { PaymentsTable } from '../src/types/PaymentType'
 import type { DriversTable } from '../src/types/DriverType'
-import type { ErrorsTable } from '../src/types/ErrorType'
-import type { FailedJobsTable } from '../src/types/FailedJobType'
-import type { GiftCardsTable } from '../src/types/GiftCardType'
-import type { JobsTable } from '../src/types/JobType'
-import type { LicenseKeysTable } from '../src/types/LicenseKeyType'
-import type { LogsTable } from '../src/types/LogType'
-import type { LoyaltyPointsTable } from '../src/types/LoyaltyPointType'
-import type { LoyaltyRewardsTable } from '../src/types/LoyaltyRewardType'
+import type { WaitlistProductsTable } from '../src/types/WaitlistProductType'
+import type { DigitalDeliveriesTable } from '../src/types/DigitalDeliveryType'
 import type { ManufacturersTable } from '../src/types/ManufacturerType'
 import type { OrderItemsTable } from '../src/types/OrderItemType'
-import type { OrdersTable } from '../src/types/OrderType'
-import type { PagesTable } from '../src/types/PageType'
-import type { PaymentMethodsTable } from '../src/types/PaymentMethodType'
-import type { PaymentProductsTable } from '../src/types/PaymentProductType'
-import type { PaymentTransactionsTable } from '../src/types/PaymentTransactionType'
-import type { PaymentsTable } from '../src/types/PaymentType'
-import type { PersonalAccessTokensTable } from '../src/types/PersonalAccessTokenType'
-import type { PostsTable } from '../src/types/PostType'
-import type { PrintDevicesTable } from '../src/types/PrintDeviceType'
+import type { ShippingZonesTable } from '../src/types/ShippingZoneType'
+import type { CustomersTable } from '../src/types/CustomerType'
 import type { ProductsTable } from '../src/types/ProductType'
-import type { ProductUnitsTable } from '../src/types/ProductUnitType'
-import type { ProductVariantsTable } from '../src/types/ProductVariantType'
-import type { ProjectsTable } from '../src/types/ProjectType'
 import type { ReceiptsTable } from '../src/types/ReceiptType'
-import type { ReleasesTable } from '../src/types/ReleaseType'
-import type { RequestsTable } from '../src/types/RequestType'
+import type { ProductVariantsTable } from '../src/types/ProductVariantType'
+import type { LicenseKeysTable } from '../src/types/LicenseKeyType'
+import type { WaitlistRestaurantsTable } from '../src/types/WaitlistRestaurantType'
 import type { ReviewsTable } from '../src/types/ReviewType'
-import type { SampleModelsTable } from '../src/types/SampleModelType'
+import type { ProductUnitsTable } from '../src/types/ProductUnitType'
+import type { GiftCardsTable } from '../src/types/GiftCardType'
+import type { OrdersTable } from '../src/types/OrderType'
+import type { CouponsTable } from '../src/types/CouponType'
+import type { TaxRatesTable } from '../src/types/TaxRateType'
+import type { TransactionsTable } from '../src/types/TransactionType'
+import type { LoyaltyPointsTable } from '../src/types/LoyaltyPointType'
+import type { LoyaltyRewardsTable } from '../src/types/LoyaltyRewardType'
 import type { ShippingMethodsTable } from '../src/types/ShippingMethodType'
 import type { ShippingRatesTable } from '../src/types/ShippingRateType'
-import type { ShippingZonesTable } from '../src/types/ShippingZoneType'
-import type { SubscriberEmailsTable } from '../src/types/SubscriberEmailType'
-import type { SubscribersTable } from '../src/types/SubscriberType'
-import type { SubscriptionsTable } from '../src/types/SubscriptionType'
-import type { TaxRatesTable } from '../src/types/TaxRateType'
-import type { TeamsTable } from '../src/types/TeamType'
-import type { TransactionsTable } from '../src/types/TransactionType'
-import type { UsersTable } from '../src/types/UserType'
-import type { WaitlistProductsTable } from '../src/types/WaitlistProductType'
-import type { WaitlistRestaurantsTable } from '../src/types/WaitlistRestaurantType'
+import type { CartsTable } from '../src/types/CartType'
+import type { DeliveryRoutesTable } from '../src/types/DeliveryRouteType'
+import type { CartItemsTable } from '../src/types/CartItemType'
+import type { PaymentProductsTable } from '../src/types/PaymentProductType'
+import type { FailedJobsTable } from '../src/types/FailedJobType'
+import type { PaymentMethodsTable } from '../src/types/PaymentMethodType'
+import type { PagesTable } from '../src/types/PageType'
+import type { AuthorsTable } from '../src/types/AuthorType'
+import type { PostsTable } from '../src/types/PostType'
+import type { PaymentTransactionsTable } from '../src/types/PaymentTransactionType'
 import type { WebsocketsTable } from '../src/types/WebsocketType'
+import type { RequestsTable } from '../src/types/RequestType'
+import type { JobsTable } from '../src/types/JobType'
+import type { LogsTable } from '../src/types/LogType'
+import type { SubscriptionsTable } from '../src/types/SubscriptionType'
+import type { ErrorsTable } from '../src/types/ErrorType'
+import type { Generated } from 'kysely'
+
 
 export interface MigrationsTable {
   name: string
@@ -79,25 +81,16 @@ export interface PasskeysTable {
 
 export interface CommentablesTable {
   id?: number
-  comment_id: number
-  commentable_id: number
-  commentable_type: string
-  created_at?: string
-  updated_at?: string
-}
-
-export interface CommentsTable {
-  id?: number
   title: string
   body: string
   status: string
-  approved_at?: number | null
-  rejected_at?: number | null
-  user_id?: number | null
-  reports_count?: number
-  reported_at?: number | null
+  approved_at: number | null
+  rejected_at: number | null
+  commentables_id: number
+  commentables_type: string
+  user_id: number | null
   created_at?: string
-  updated_at?: string
+  updated_at?: string | null
 }
 
 export interface CommentableUpvotesTable {
@@ -108,72 +101,70 @@ export interface CommentableUpvotesTable {
   created_at?: string
 }
 
-export interface CategorizableTable {
-  id?: number
-  name: string
-  slug: string
-  description?: string
-  is_active: boolean
-  categorizable_type: string
-  created_at?: string
-  updated_at?: string
-}
+  export interface CategorizableTable {
+    id?: number
+    name: string
+    slug: string
+    description?: string
+    is_active: boolean
+    categorizable_type: string
+    created_at?: string
+    updated_at?: string
+  }
 
-export interface TaggableTable {
-  id?: number
-  name: string
-  slug: string
-  type?: string
-  color?: string
-  description?: string
-  is_active: boolean
-  created_at?: string
-  updated_at?: string
-}
+  export interface TaggableTable {
+    id?: number
+    name: string
+    slug: string
+    description?: string
+    is_active: boolean
+    taggable_type: string
+    created_at?: string
+    updated_at?: string
+  }
 
-export interface TaggableModelsTable {
-  id?: number
-  tag_id: number
-  taggable_id: number
-  taggable_type: string
-  created_at?: string
-  updated_at?: string
-}
+  export interface TaggableModelsTable {
+    id?: number
+    tag_id: number
+    taggable_type: string
+    created_at?: string
+    updated_at?: string
+  }
 
-export interface CategorizableModelsTable {
-  id?: number
-  category_id: number
-  categorizable_type: string
-  categorizable_id: number
-  created_at?: string
-  updated_at?: string
-}
+  export interface CategorizableModelsTable {
+    id?: number
+    category_id: number
+    categorizable_type: string
+    categorizable_id: number
+    created_at?: string
+    updated_at?: string
+  }
 
-export interface QueryLogsTable {
-  id?: number
-  query: string
-  normalized_query: string
-  duration: number
-  connection: string
-  status: 'completed' | 'failed' | 'slow'
-  error?: string
-  executed_at?: string
-  bindings?: string
-  trace?: string
-  model?: string
-  method?: string
-  file?: string
-  line?: number
-  memory_usage?: number
-  rows_affected?: number
-  transaction_id?: string
-  tags?: string
-  affected_tables?: string
-  indexes_used?: string
-  missing_indexes?: string
-  explain_plan?: string
-  optimization_suggestions?: string
-}
+  export interface QueryLogsTable {
+    id?: number
+    query: string
+    normalized_query: string
+    duration: number
+    connection: string
+    status: 'completed' | 'failed' | 'slow'
+    error?: string
+    executed_at?: string
+    bindings?: string
+    trace?: string
+    model?: string
+    method?: string
+    file?: string
+    line?: number
+    memory_usage?: number
+    rows_affected?: number
+    transaction_id?: string
+    tags?: string
+    affected_tables?: string
+    indexes_used?: string
+    missing_indexes?: string
+    explain_plan?: string
+    optimization_suggestions?: string
+  }
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
@@ -230,7 +221,7 @@ export interface Database {
   passkeys: PasskeysTable
   commentables: CommentablesTable
   comments: CommentsTable
-  taggables: TaggableTable
+  tags: TagsTable
   commentable_upvotes: CommentableUpvotesTable
   categorizables: CategorizableTable
   categorizable_models: CategorizableModelsTable

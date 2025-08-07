@@ -40,7 +40,7 @@ async function seedModel(name: string, modelPath: string, model: Model) {
   const useUuid = modelInstance?.traits?.useUuid || false
 
   for (let i = 0; i < seedCount; i++) {
-    const record: any = {}
+    const record: Record<string, any> = {}
 
     for (const fieldName in model.attributes) {
       const formattedFieldName = snakeCase(fieldName)
@@ -55,26 +55,23 @@ async function seedModel(name: string, modelPath: string, model: Model) {
       }
     }
 
-    console.log(record)
+    if (otherRelations?.length) {
+      for (let j = 0; j < otherRelations.length; j++) {
+        const relationElement = otherRelations[j] as RelationConfig
 
-    // if (otherRelations?.length) {
-    //   for (let j = 0; j < otherRelations.length; j++) {
-    //     const relationElement = otherRelations[j] as RelationConfig
+        const relationType = getRelationType(relationElement.relationship)
 
-    //     const relationType = getRelationType(relationElement.relationship)
+        if (relationElement.relationship === 'belongsToMany') {
+          await seedPivotRelation(relationElement)
+        }
 
-    //     if (relationElement.relationship === 'belongsToMany') {
-    //       await seedPivotRelation(relationElement)
-    //     }
-
-    //     if (relationType === 'hasType')
-    //       record[relationElement?.foreignKey] = await seedModelRelation(relationElement?.relationModel as string)
-    //   }
-    // }
+        if (relationType === 'hasType')
+          record[relationElement?.foreignKey] = await seedModelRelation(relationElement?.relationModel as string)
+      }
+    }
 
     if (useUuid)
       record.uuid = Bun.randomUUIDv7()
-
 
     if (Object.keys(record).length > 0)
       await db.insertInto(tableName).values(record).executeTakeFirstOrThrow()
@@ -84,9 +81,9 @@ async function seedModel(name: string, modelPath: string, model: Model) {
 }
 
 async function seedPivotRelation(relation: RelationConfig): Promise<any> {
-  const record: any = {}
-  const record2: any = {}
-  const pivotRecord: any = {}
+  const record: Record<string, any> = {}
+  const record2: Record<string, any> = {}
+  const pivotRecord: Record<string, any> = {}
   const modelInstance = await getModelInstance(relation?.model)
 
   const relationModelInstance = (await import(path.userModelsPath(`${relation?.relationModel}.ts`))).default

@@ -1,8 +1,11 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { LicenseKeyModelType } from './LicenseKeyType'
 import type { OrderItemModelType } from './OrderItemType'
 import type { PaymentModelType } from './PaymentType'
+import type { LicenseKeyModelType } from './LicenseKeyType'
+import type { CustomerModelType } from './CustomerType'
+import type { CouponModelType } from './CouponType'
+
 
 export interface OrdersTable {
   id: Generated<number>

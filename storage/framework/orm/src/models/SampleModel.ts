@@ -1,11 +1,25 @@
-import type { RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
-import type { NewSampleModel, SampleModelJsonResponse, SampleModelsTable, SampleModelUpdate } from '../types/SampleModelType'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
+import Stripe from 'stripe'
 import { sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
-
 import { BaseOrm } from '../utils/base'
+import type { Operator } from '@stacksjs/orm'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import { HttpError } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { randomUUIDv7 } from 'bun'
+import type { SampleModelModelType, SampleModelJsonResponse, NewSampleModel, SampleModelUpdate, SampleModelsTable } from '../types/SampleModelType'
+
+
+
+
+import type { Model } from '@stacksjs/types';
+
+
+
 
 export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTable, SampleModelJsonResponse> {
   private readonly hidden: Array<keyof SampleModelJsonResponse> = []
@@ -13,7 +27,7 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
   private readonly guarded: Array<keyof SampleModelJsonResponse> = []
   protected attributes = {} as SampleModelJsonResponse
   protected originalAttributes = {} as SampleModelJsonResponse
-
+  
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -31,12 +45,13 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
   constructor(sampleModel: SampleModelJsonResponse | undefined) {
     super('sample_models')
     if (sampleModel) {
+
       this.attributes = { ...sampleModel }
       this.originalAttributes = { ...sampleModel }
 
-      Object.keys(sampleModel).forEach((key) => {
+      Object.keys(sampleModel).forEach(key => {
         if (!(key in this)) {
-          this.customColumns[key] = (sampleModel as SampleModelJsonResponse)[key]
+           this.customColumns[key] = (sampleModel as SampleModelJsonResponse)[key]
         }
       })
     }
@@ -51,8 +66,7 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
   protected async loadRelations(models: SampleModelJsonResponse | SampleModelJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length)
-      return
+    if (!modelArray.length) return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -72,8 +86,7 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      }
-      else {
+      } else {
         const records = relatedRecords.filter((record: { sampleModel_id: number }) => {
           return record.sampleModel_id === models.id
         })
@@ -94,10 +107,12 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
 
     if (Array.isArray(data)) {
       data.map((model: SampleModelJsonResponse) => {
+
         const customGetter = {
           default: () => {
           },
 
+          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -106,14 +121,14 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
 
         return model
       })
-    }
-    else {
+    } else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
+        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -127,10 +142,11 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
       default: () => {
       },
 
+      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      (model as any)[key] = await fn()
+        (model as any)[key] = await fn()
     }
   }
 
@@ -138,17 +154,20 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
     return this.attributes.id
   }
 
-  get created_at(): string | undefined {
-    return this.attributes.created_at
-  }
+get created_at(): string | undefined {
+      return this.attributes.created_at
+    }
 
-  get updated_at(): string | undefined {
-    return this.attributes.updated_at
-  }
+    get updated_at(): string | undefined {
+      return this.attributes.updated_at
+    }
+
 
   set updated_at(value: string) {
-    this.attributes.updated_at = value
-  }
+      this.attributes.updated_at = value
+    }
+
+
 
   static select(params: (keyof SampleModelJsonResponse)[] | RawBuilder<string> | string): SampleModelModel {
     const instance = new SampleModelModel(undefined)
@@ -158,12 +177,11 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
 
   // Method to find a SampleModel by ID
   static async find(id: number): Promise<SampleModelModel | undefined> {
-    const query = DB.instance.selectFrom('sample_models').where('id', '=', id).selectAll()
+    let query = DB.instance.selectFrom('sample_models').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     const instance = new SampleModelModel(undefined)
     return instance.createInstance(model)
@@ -184,8 +202,7 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
 
     const model = await instance.applyLast()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new SampleModelModel(model)
   }
@@ -218,7 +235,7 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
 
   static async findMany(ids: number[]): Promise<SampleModelModel[]> {
     const instance = new SampleModelModel(undefined)
-
+     
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: SampleModelJsonResponse) => instance.parseResult(new SampleModelModel(modelItem)))
@@ -233,8 +250,7 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new SampleModelModel(model)
   }
@@ -248,8 +264,7 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new SampleModelModel(model)
   }
@@ -416,12 +431,12 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: SampleModelModel[]
+    data: SampleModelModel[],
     paging: {
-      total_records: number
-      page: number
+      total_records: number,
+      page: number,
       total_pages: number
-    }
+    },
     next_cursor: number | null
   }> {
     const instance = new SampleModelModel(undefined)
@@ -431,7 +446,7 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
     return {
       data: result.data.map((item: SampleModelJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor,
+      next_cursor: result.next_cursor
     }
   }
 
@@ -443,11 +458,13 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
   async applyCreate(newSampleModel: NewSampleModel): Promise<SampleModelModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newSampleModel).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as NewSampleModel
 
     await this.mapCustomSetters(filteredValues)
+
+    
 
     const result = await DB.instance.insertInto('sample_models')
       .values(filteredValues)
@@ -462,6 +479,7 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
       throw new HttpError(500, 'Failed to retrieve created SampleModel')
     }
 
+    
     return this.createInstance(model)
   }
 
@@ -530,7 +548,7 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
   async update(newSampleModel: SampleModelUpdate): Promise<SampleModelModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newSampleModel).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as SampleModelUpdate
 
@@ -554,6 +572,7 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
         throw new HttpError(500, 'Failed to retrieve updated SampleModel')
       }
 
+      
       return this.createInstance(model)
     }
 
@@ -577,6 +596,7 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
         throw new HttpError(500, 'Failed to retrieve updated SampleModel')
       }
 
+      
       return this.createInstance(model)
     }
 
@@ -602,9 +622,9 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
         throw new HttpError(500, 'Failed to retrieve updated SampleModel')
       }
 
+      
       return this.createInstance(model)
-    }
-    else {
+    } else {
       // Create new record
       const result = await DB.instance.insertInto('sample_models')
         .values(this.attributes as NewSampleModel)
@@ -620,6 +640,7 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
         throw new HttpError(500, 'Failed to retrieve created SampleModel')
       }
 
+      
       return this.createInstance(model)
     }
   }
@@ -633,6 +654,8 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewSampleModel
+
+      
 
       return filteredValues
     })
@@ -657,6 +680,8 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
       throw new HttpError(500, 'Failed to retrieve created SampleModel')
     }
 
+    
+
     return instance.createInstance(model)
   }
 
@@ -664,6 +689,9 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
   async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
+    
+    
+    
 
     const deleted = await DB.instance.deleteFrom('sample_models')
       .where('id', '=', this.id)
@@ -673,16 +701,34 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
   }
 
   static async remove(id: number): Promise<any> {
+    
+
+    
+
+    
+
+    
+
     return await DB.instance.deleteFrom('sample_models')
       .where('id', '=', id)
       .execute()
   }
+
+  
 
   static whereIn<V = number>(column: keyof SampleModelsTable, values: V[]): SampleModelModel {
     const instance = new SampleModelModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
+
+  
+
+  
+
+  
+
+  
 
   static distinct(column: keyof SampleModelJsonResponse): SampleModelModel {
     const instance = new SampleModelModel(undefined)
@@ -699,14 +745,14 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
   toJSON(): SampleModelJsonResponse {
     const output = {
 
-      id: this.id,
+id: this.id,
 
-      created_at: this.created_at,
+        created_at: this.created_at,
 
-      updated_at: this.updated_at,
+        updated_at: this.updated_at,
 
       ...this.customColumns,
-    }
+}
 
     return output
   }
@@ -718,6 +764,8 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
 
     return model
   }
+
+  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<SampleModelModel | undefined> {
@@ -736,15 +784,16 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
+
+  
 }
 
 export async function find(id: number): Promise<SampleModelModel | undefined> {
-  const query = DB.instance.selectFrom('sample_models').where('id', '=', id).selectAll()
+  let query = DB.instance.selectFrom('sample_models').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model)
-    return undefined
+  if (!model) return undefined
 
   const instance = new SampleModelModel(undefined)
   return instance.createInstance(model)
@@ -770,6 +819,8 @@ export async function remove(id: number): Promise<void> {
     .where('id', '=', id)
     .execute()
 }
+
+
 
 export const SampleModel = SampleModelModel
 

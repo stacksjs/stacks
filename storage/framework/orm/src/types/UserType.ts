@@ -1,7 +1,11 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CustomerModelType } from './CustomerType'
+import type { SubscriberModelType } from './SubscriberType'
+import type { DriverModelType } from './DriverType'
+import type { AuthorModelType } from './AuthorType'
 import type { PersonalAccessTokenModelType } from './PersonalAccessTokenType'
+import type { CustomerModelType } from './CustomerType'
+
 
 export interface UsersTable {
   id: Generated<number>

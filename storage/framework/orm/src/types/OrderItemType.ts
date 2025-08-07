@@ -1,5 +1,8 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { OrderModelType } from './OrderType'
+import type { ProductModelType } from './ProductType'
+
 
 export interface OrderItemsTable {
   id: Generated<number>

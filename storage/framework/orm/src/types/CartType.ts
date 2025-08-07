@@ -1,6 +1,9 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { CartItemModelType } from './CartItemType'
+import type { CustomerModelType } from './CustomerType'
+import type { CouponModelType } from './CouponType'
+
 
 export interface CartsTable {
   id: Generated<number>

@@ -1,21 +1,38 @@
-import type { RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
-import type { NewOrderItem, OrderItemJsonResponse, OrderItemsTable, OrderItemUpdate } from '../types/OrderItemType'
-import type { OrderModel } from './Order'
-import type { ProductModel } from './Product'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
+import Stripe from 'stripe'
 import { sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
-
 import { BaseOrm } from '../utils/base'
+import type { Operator } from '@stacksjs/orm'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import { HttpError } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { randomUUIDv7 } from 'bun'
+import type { OrderItemModelType, OrderItemJsonResponse, NewOrderItem, OrderItemUpdate, OrderItemsTable } from '../types/OrderItemType'
+
+import type {OrderModel} from './Order'
+
+import type {ProductModel} from './Product'
+
+
+
+
+import type { Model } from '@stacksjs/types';
+import { schema } from '@stacksjs/validation';
+
+
+
 
 export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, OrderItemJsonResponse> {
   private readonly hidden: Array<keyof OrderItemJsonResponse> = []
-  private readonly fillable: Array<keyof OrderItemJsonResponse> = ['quantity', 'price', 'special_instructions', 'order_id']
+  private readonly fillable: Array<keyof OrderItemJsonResponse> = ["quantity","price","special_instructions","order_id"]
   private readonly guarded: Array<keyof OrderItemJsonResponse> = []
   protected attributes = {} as OrderItemJsonResponse
   protected originalAttributes = {} as OrderItemJsonResponse
-
+  
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -33,12 +50,13 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
   constructor(orderItem: OrderItemJsonResponse | undefined) {
     super('order_items')
     if (orderItem) {
+
       this.attributes = { ...orderItem }
       this.originalAttributes = { ...orderItem }
 
-      Object.keys(orderItem).forEach((key) => {
+      Object.keys(orderItem).forEach(key => {
         if (!(key in this)) {
-          this.customColumns[key] = (orderItem as OrderItemJsonResponse)[key]
+           this.customColumns[key] = (orderItem as OrderItemJsonResponse)[key]
         }
       })
     }
@@ -53,8 +71,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
   protected async loadRelations(models: OrderItemJsonResponse | OrderItemJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length)
-      return
+    if (!modelArray.length) return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -74,8 +91,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      }
-      else {
+      } else {
         const records = relatedRecords.filter((record: { orderItem_id: number }) => {
           return record.orderItem_id === models.id
         })
@@ -96,10 +112,12 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
 
     if (Array.isArray(data)) {
       data.map((model: OrderItemJsonResponse) => {
+
         const customGetter = {
           default: () => {
           },
 
+          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -108,14 +126,14 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
 
         return model
       })
-    }
-    else {
+    } else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
+        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -129,68 +147,72 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
       default: () => {
       },
 
+      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      (model as any)[key] = await fn()
+        (model as any)[key] = await fn()
     }
   }
 
   get order_id(): number {
-    return this.attributes.order_id
-  }
+        return this.attributes.order_id
+      }
 
-  get order(): OrderModel | undefined {
-    return this.attributes.order
-  }
+get order(): OrderModel | undefined {
+        return this.attributes.order
+      }
 
-  get product_id(): number {
-    return this.attributes.product_id
-  }
+get product_id(): number {
+        return this.attributes.product_id
+      }
 
-  get product(): ProductModel | undefined {
-    return this.attributes.product
-  }
+get product(): ProductModel | undefined {
+        return this.attributes.product
+      }
 
-  get id(): number {
+get id(): number {
     return this.attributes.id
   }
 
-  get quantity(): number {
-    return this.attributes.quantity
-  }
+get quantity(): number {
+      return this.attributes.quantity
+    }
 
-  get price(): number {
-    return this.attributes.price
-  }
+get price(): number {
+      return this.attributes.price
+    }
 
-  get special_instructions(): string | undefined {
-    return this.attributes.special_instructions
-  }
+get special_instructions(): string | undefined {
+      return this.attributes.special_instructions
+    }
 
-  get created_at(): string | undefined {
-    return this.attributes.created_at
-  }
+get created_at(): string | undefined {
+      return this.attributes.created_at
+    }
 
-  get updated_at(): string | undefined {
-    return this.attributes.updated_at
-  }
+    get updated_at(): string | undefined {
+      return this.attributes.updated_at
+    }
+
 
   set quantity(value: number) {
-    this.attributes.quantity = value
-  }
+      this.attributes.quantity = value
+    }
 
-  set price(value: number) {
-    this.attributes.price = value
-  }
+set price(value: number) {
+      this.attributes.price = value
+    }
 
-  set special_instructions(value: string) {
-    this.attributes.special_instructions = value
-  }
+set special_instructions(value: string) {
+      this.attributes.special_instructions = value
+    }
 
-  set updated_at(value: string) {
-    this.attributes.updated_at = value
-  }
+set updated_at(value: string) {
+      this.attributes.updated_at = value
+    }
+
+
 
   static select(params: (keyof OrderItemJsonResponse)[] | RawBuilder<string> | string): OrderItemModel {
     const instance = new OrderItemModel(undefined)
@@ -200,12 +222,11 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
 
   // Method to find a OrderItem by ID
   static async find(id: number): Promise<OrderItemModel | undefined> {
-    const query = DB.instance.selectFrom('order_items').where('id', '=', id).selectAll()
+    let query = DB.instance.selectFrom('order_items').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     const instance = new OrderItemModel(undefined)
     return instance.createInstance(model)
@@ -226,8 +247,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
 
     const model = await instance.applyLast()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new OrderItemModel(model)
   }
@@ -260,7 +280,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
 
   static async findMany(ids: number[]): Promise<OrderItemModel[]> {
     const instance = new OrderItemModel(undefined)
-
+     
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: OrderItemJsonResponse) => instance.parseResult(new OrderItemModel(modelItem)))
@@ -275,8 +295,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new OrderItemModel(model)
   }
@@ -290,8 +309,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new OrderItemModel(model)
   }
@@ -458,12 +476,12 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: OrderItemModel[]
+    data: OrderItemModel[],
     paging: {
-      total_records: number
-      page: number
+      total_records: number,
+      page: number,
       total_pages: number
-    }
+    },
     next_cursor: number | null
   }> {
     const instance = new OrderItemModel(undefined)
@@ -473,7 +491,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     return {
       data: result.data.map((item: OrderItemJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor,
+      next_cursor: result.next_cursor
     }
   }
 
@@ -485,11 +503,13 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
   async applyCreate(newOrderItem: NewOrderItem): Promise<OrderItemModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newOrderItem).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as NewOrderItem
 
     await this.mapCustomSetters(filteredValues)
+
+    
 
     const result = await DB.instance.insertInto('order_items')
       .values(filteredValues)
@@ -504,6 +524,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
       throw new HttpError(500, 'Failed to retrieve created OrderItem')
     }
 
+    
     return this.createInstance(model)
   }
 
@@ -572,7 +593,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
   async update(newOrderItem: OrderItemUpdate): Promise<OrderItemModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newOrderItem).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as OrderItemUpdate
 
@@ -596,6 +617,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
         throw new HttpError(500, 'Failed to retrieve updated OrderItem')
       }
 
+      
       return this.createInstance(model)
     }
 
@@ -619,6 +641,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
         throw new HttpError(500, 'Failed to retrieve updated OrderItem')
       }
 
+      
       return this.createInstance(model)
     }
 
@@ -644,9 +667,9 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
         throw new HttpError(500, 'Failed to retrieve updated OrderItem')
       }
 
+      
       return this.createInstance(model)
-    }
-    else {
+    } else {
       // Create new record
       const result = await DB.instance.insertInto('order_items')
         .values(this.attributes as NewOrderItem)
@@ -662,6 +685,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
         throw new HttpError(500, 'Failed to retrieve created OrderItem')
       }
 
+      
       return this.createInstance(model)
     }
   }
@@ -675,6 +699,8 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewOrderItem
+
+      
 
       return filteredValues
     })
@@ -699,6 +725,8 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
       throw new HttpError(500, 'Failed to retrieve created OrderItem')
     }
 
+    
+
     return instance.createInstance(model)
   }
 
@@ -706,6 +734,9 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
   async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
+    
+    
+    
 
     const deleted = await DB.instance.deleteFrom('order_items')
       .where('id', '=', this.id)
@@ -715,34 +746,44 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
   }
 
   static async remove(id: number): Promise<any> {
+    
+
+    
+
+    
+
+    
+
     return await DB.instance.deleteFrom('order_items')
       .where('id', '=', id)
       .execute()
   }
 
   static whereQuantity(value: string): OrderItemModel {
-    const instance = new OrderItemModel(undefined)
+          const instance = new OrderItemModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('quantity', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('quantity', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static wherePrice(value: string): OrderItemModel {
-    const instance = new OrderItemModel(undefined)
+static wherePrice(value: string): OrderItemModel {
+          const instance = new OrderItemModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('price', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('price', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereSpecialInstructions(value: string): OrderItemModel {
-    const instance = new OrderItemModel(undefined)
+static whereSpecialInstructions(value: string): OrderItemModel {
+          const instance = new OrderItemModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('special_instructions', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('special_instructions', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
+
+
 
   static whereIn<V = number>(column: keyof OrderItemsTable, values: V[]): OrderItemModel {
     const instance = new OrderItemModel(undefined)
@@ -750,33 +791,43 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     return instance.applyWhereIn<V>(column, values)
   }
 
-  async orderBelong(): Promise<OrderModel> {
-    if (this.order_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
+  
+        async orderBelong(): Promise<OrderModel> {
+          if (this.order_id === undefined)
+            throw new HttpError(500, 'Relation Error!')
 
-    const model = await Order
-      .where('id', '=', this.order_id)
-      .first()
+          const model = await Order
+            .where('id', '=', this.order_id)
+            .first()
 
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
+          if (! model)
+            throw new HttpError(500, 'Model Relation Not Found!')
 
-    return model
-  }
+          return model
+        }
 
-  async productBelong(): Promise<ProductModel> {
-    if (this.product_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
 
-    const model = await Product
-      .where('id', '=', this.product_id)
-      .first()
+        async productBelong(): Promise<ProductModel> {
+          if (this.product_id === undefined)
+            throw new HttpError(500, 'Relation Error!')
 
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
+          const model = await Product
+            .where('id', '=', this.product_id)
+            .first()
 
-    return model
-  }
+          if (! model)
+            throw new HttpError(500, 'Model Relation Not Found!')
+
+          return model
+        }
+
+
+
+  
+
+  
+
+  
 
   static distinct(column: keyof OrderItemJsonResponse): OrderItemModel {
     const instance = new OrderItemModel(undefined)
@@ -793,21 +844,21 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
   toJSON(): OrderItemJsonResponse {
     const output = {
 
-      id: this.id,
-      quantity: this.quantity,
-      price: this.price,
-      special_instructions: this.special_instructions,
+id: this.id,
+quantity: this.quantity,
+   price: this.price,
+   special_instructions: this.special_instructions,
+   
+        created_at: this.created_at,
 
-      created_at: this.created_at,
-
-      updated_at: this.updated_at,
+        updated_at: this.updated_at,
 
       order_id: this.order_id,
-      order: this.order,
-      product_id: this.product_id,
-      product: this.product,
-      ...this.customColumns,
-    }
+   order: this.order,
+product_id: this.product_id,
+   product: this.product,
+...this.customColumns,
+}
 
     return output
   }
@@ -819,6 +870,8 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
 
     return model
   }
+
+  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<OrderItemModel | undefined> {
@@ -837,15 +890,16 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
+
+  
 }
 
 export async function find(id: number): Promise<OrderItemModel | undefined> {
-  const query = DB.instance.selectFrom('order_items').where('id', '=', id).selectAll()
+  let query = DB.instance.selectFrom('order_items').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model)
-    return undefined
+  if (!model) return undefined
 
   const instance = new OrderItemModel(undefined)
   return instance.createInstance(model)
@@ -873,25 +927,27 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereQuantity(value: number): Promise<OrderItemModel[]> {
-  const query = DB.instance.selectFrom('order_items').where('quantity', '=', value)
-  const results: OrderItemJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('order_items').where('quantity', '=', value)
+          const results: OrderItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderItemJsonResponse) => new OrderItemModel(modelItem))
-}
+          return results.map((modelItem: OrderItemJsonResponse) => new OrderItemModel(modelItem))
+        } 
 
 export async function wherePrice(value: number): Promise<OrderItemModel[]> {
-  const query = DB.instance.selectFrom('order_items').where('price', '=', value)
-  const results: OrderItemJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('order_items').where('price', '=', value)
+          const results: OrderItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderItemJsonResponse) => new OrderItemModel(modelItem))
-}
+          return results.map((modelItem: OrderItemJsonResponse) => new OrderItemModel(modelItem))
+        } 
 
 export async function whereSpecialInstructions(value: string): Promise<OrderItemModel[]> {
-  const query = DB.instance.selectFrom('order_items').where('special_instructions', '=', value)
-  const results: OrderItemJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('order_items').where('special_instructions', '=', value)
+          const results: OrderItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderItemJsonResponse) => new OrderItemModel(modelItem))
-}
+          return results.map((modelItem: OrderItemJsonResponse) => new OrderItemModel(modelItem))
+        } 
+
+
 
 export const OrderItem = OrderItemModel
 

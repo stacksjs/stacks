@@ -1,19 +1,34 @@
-import type { RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
-import type { LogJsonResponse, LogsTable, LogUpdate, NewLog } from '../types/LogType'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
+import Stripe from 'stripe'
 import { sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
-
 import { BaseOrm } from '../utils/base'
+import type { Operator } from '@stacksjs/orm'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import { HttpError } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { randomUUIDv7 } from 'bun'
+import type { LogModelType, LogJsonResponse, NewLog, LogUpdate, LogsTable } from '../types/LogType'
+
+
+
+
+import type { Model } from '@stacksjs/types';
+import { schema } from '@stacksjs/validation';
+
+
+
 
 export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
   private readonly hidden: Array<keyof LogJsonResponse> = []
-  private readonly fillable: Array<keyof LogJsonResponse> = ['timestamp', 'type', 'source', 'message', 'project', 'stacktrace', 'file']
+  private readonly fillable: Array<keyof LogJsonResponse> = ["timestamp","type","source","message","project","stacktrace","file"]
   private readonly guarded: Array<keyof LogJsonResponse> = []
   protected attributes = {} as LogJsonResponse
   protected originalAttributes = {} as LogJsonResponse
-
+  
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -31,12 +46,13 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
   constructor(log: LogJsonResponse | undefined) {
     super('logs')
     if (log) {
+
       this.attributes = { ...log }
       this.originalAttributes = { ...log }
 
-      Object.keys(log).forEach((key) => {
+      Object.keys(log).forEach(key => {
         if (!(key in this)) {
-          this.customColumns[key] = (log as LogJsonResponse)[key]
+           this.customColumns[key] = (log as LogJsonResponse)[key]
         }
       })
     }
@@ -51,8 +67,7 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
   protected async loadRelations(models: LogJsonResponse | LogJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length)
-      return
+    if (!modelArray.length) return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -72,8 +87,7 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      }
-      else {
+      } else {
         const records = relatedRecords.filter((record: { log_id: number }) => {
           return record.log_id === models.id
         })
@@ -94,10 +108,12 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
 
     if (Array.isArray(data)) {
       data.map((model: LogJsonResponse) => {
+
         const customGetter = {
           default: () => {
           },
 
+          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -106,14 +122,14 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
 
         return model
       })
-    }
-    else {
+    } else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
+        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -127,10 +143,11 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
       default: () => {
       },
 
+      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      (model as any)[key] = await fn()
+        (model as any)[key] = await fn()
     }
   }
 
@@ -138,73 +155,76 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
     return this.attributes.id
   }
 
-  get timestamp(): number | undefined {
-    return this.attributes.timestamp
-  }
+get timestamp(): number | undefined {
+      return this.attributes.timestamp
+    }
 
-  get type(): string | string[] | undefined {
-    return this.attributes.type
-  }
+get type(): string | string[] | undefined {
+      return this.attributes.type
+    }
 
-  get source(): string | string[] | undefined {
-    return this.attributes.source
-  }
+get source(): string | string[] | undefined {
+      return this.attributes.source
+    }
 
-  get message(): string | undefined {
-    return this.attributes.message
-  }
+get message(): string | undefined {
+      return this.attributes.message
+    }
 
-  get project(): string | undefined {
-    return this.attributes.project
-  }
+get project(): string | undefined {
+      return this.attributes.project
+    }
 
-  get stacktrace(): string | undefined {
-    return this.attributes.stacktrace
-  }
+get stacktrace(): string | undefined {
+      return this.attributes.stacktrace
+    }
 
-  get file(): string | undefined {
-    return this.attributes.file
-  }
+get file(): string | undefined {
+      return this.attributes.file
+    }
 
-  get created_at(): string | undefined {
-    return this.attributes.created_at
-  }
+get created_at(): string | undefined {
+      return this.attributes.created_at
+    }
 
-  get updated_at(): string | undefined {
-    return this.attributes.updated_at
-  }
+    get updated_at(): string | undefined {
+      return this.attributes.updated_at
+    }
+
 
   set timestamp(value: number) {
-    this.attributes.timestamp = value
-  }
+      this.attributes.timestamp = value
+    }
 
-  set type(value: string | string[]) {
-    this.attributes.type = value
-  }
+set type(value: string | string[]) {
+      this.attributes.type = value
+    }
 
-  set source(value: string | string[]) {
-    this.attributes.source = value
-  }
+set source(value: string | string[]) {
+      this.attributes.source = value
+    }
 
-  set message(value: string) {
-    this.attributes.message = value
-  }
+set message(value: string) {
+      this.attributes.message = value
+    }
 
-  set project(value: string) {
-    this.attributes.project = value
-  }
+set project(value: string) {
+      this.attributes.project = value
+    }
 
-  set stacktrace(value: string) {
-    this.attributes.stacktrace = value
-  }
+set stacktrace(value: string) {
+      this.attributes.stacktrace = value
+    }
 
-  set file(value: string) {
-    this.attributes.file = value
-  }
+set file(value: string) {
+      this.attributes.file = value
+    }
 
-  set updated_at(value: string) {
-    this.attributes.updated_at = value
-  }
+set updated_at(value: string) {
+      this.attributes.updated_at = value
+    }
+
+
 
   static select(params: (keyof LogJsonResponse)[] | RawBuilder<string> | string): LogModel {
     const instance = new LogModel(undefined)
@@ -214,12 +234,11 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
 
   // Method to find a Log by ID
   static async find(id: number): Promise<LogModel | undefined> {
-    const query = DB.instance.selectFrom('logs').where('id', '=', id).selectAll()
+    let query = DB.instance.selectFrom('logs').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     const instance = new LogModel(undefined)
     return instance.createInstance(model)
@@ -240,8 +259,7 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
 
     const model = await instance.applyLast()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new LogModel(model)
   }
@@ -274,7 +292,7 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
 
   static async findMany(ids: number[]): Promise<LogModel[]> {
     const instance = new LogModel(undefined)
-
+     
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: LogJsonResponse) => instance.parseResult(new LogModel(modelItem)))
@@ -289,8 +307,7 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new LogModel(model)
   }
@@ -304,8 +321,7 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new LogModel(model)
   }
@@ -472,12 +488,12 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: LogModel[]
+    data: LogModel[],
     paging: {
-      total_records: number
-      page: number
+      total_records: number,
+      page: number,
       total_pages: number
-    }
+    },
     next_cursor: number | null
   }> {
     const instance = new LogModel(undefined)
@@ -487,7 +503,7 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
     return {
       data: result.data.map((item: LogJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor,
+      next_cursor: result.next_cursor
     }
   }
 
@@ -499,11 +515,13 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
   async applyCreate(newLog: NewLog): Promise<LogModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newLog).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as NewLog
 
     await this.mapCustomSetters(filteredValues)
+
+    
 
     const result = await DB.instance.insertInto('logs')
       .values(filteredValues)
@@ -518,6 +536,7 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
       throw new HttpError(500, 'Failed to retrieve created Log')
     }
 
+    
     return this.createInstance(model)
   }
 
@@ -586,7 +605,7 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
   async update(newLog: LogUpdate): Promise<LogModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newLog).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as LogUpdate
 
@@ -610,6 +629,7 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
         throw new HttpError(500, 'Failed to retrieve updated Log')
       }
 
+      
       return this.createInstance(model)
     }
 
@@ -633,6 +653,7 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
         throw new HttpError(500, 'Failed to retrieve updated Log')
       }
 
+      
       return this.createInstance(model)
     }
 
@@ -658,9 +679,9 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
         throw new HttpError(500, 'Failed to retrieve updated Log')
       }
 
+      
       return this.createInstance(model)
-    }
-    else {
+    } else {
       // Create new record
       const result = await DB.instance.insertInto('logs')
         .values(this.attributes as NewLog)
@@ -676,6 +697,7 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
         throw new HttpError(500, 'Failed to retrieve created Log')
       }
 
+      
       return this.createInstance(model)
     }
   }
@@ -689,6 +711,8 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewLog
+
+      
 
       return filteredValues
     })
@@ -713,6 +737,8 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
       throw new HttpError(500, 'Failed to retrieve created Log')
     }
 
+    
+
     return instance.createInstance(model)
   }
 
@@ -720,6 +746,9 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
   async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
+    
+    
+    
 
     const deleted = await DB.instance.deleteFrom('logs')
       .where('id', '=', this.id)
@@ -729,66 +758,76 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
   }
 
   static async remove(id: number): Promise<any> {
+    
+
+    
+
+    
+
+    
+
     return await DB.instance.deleteFrom('logs')
       .where('id', '=', id)
       .execute()
   }
 
   static whereTimestamp(value: string): LogModel {
-    const instance = new LogModel(undefined)
+          const instance = new LogModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('timestamp', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('timestamp', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereType(value: string): LogModel {
-    const instance = new LogModel(undefined)
+static whereType(value: string): LogModel {
+          const instance = new LogModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereSource(value: string): LogModel {
-    const instance = new LogModel(undefined)
+static whereSource(value: string): LogModel {
+          const instance = new LogModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('source', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('source', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereMessage(value: string): LogModel {
-    const instance = new LogModel(undefined)
+static whereMessage(value: string): LogModel {
+          const instance = new LogModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('message', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('message', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereProject(value: string): LogModel {
-    const instance = new LogModel(undefined)
+static whereProject(value: string): LogModel {
+          const instance = new LogModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('project', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('project', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereStacktrace(value: string): LogModel {
-    const instance = new LogModel(undefined)
+static whereStacktrace(value: string): LogModel {
+          const instance = new LogModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('stacktrace', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('stacktrace', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereFile(value: string): LogModel {
-    const instance = new LogModel(undefined)
+static whereFile(value: string): LogModel {
+          const instance = new LogModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('file', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('file', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
+
+
 
   static whereIn<V = number>(column: keyof LogsTable, values: V[]): LogModel {
     const instance = new LogModel(undefined)
@@ -796,16 +835,24 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  toSearchableObject(): Partial<LogJsonResponse> {
-    return {
-      id: this.id,
-      type: this.type,
-      source: this.source,
-      message: this.message,
-      project: this.project,
-      timestamp: this.timestamp,
-    }
-  }
+  
+
+  
+      toSearchableObject(): Partial<LogJsonResponse> {
+        return {
+          id: this.id,
+type: this.type,
+source: this.source,
+message: this.message,
+project: this.project,
+timestamp: this.timestamp
+        }
+      }
+    
+
+  
+
+  
 
   static distinct(column: keyof LogJsonResponse): LogModel {
     const instance = new LogModel(undefined)
@@ -822,21 +869,21 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
   toJSON(): LogJsonResponse {
     const output = {
 
-      id: this.id,
-      timestamp: this.timestamp,
-      type: this.type,
-      source: this.source,
-      message: this.message,
-      project: this.project,
-      stacktrace: this.stacktrace,
-      file: this.file,
+id: this.id,
+timestamp: this.timestamp,
+   type: this.type,
+   source: this.source,
+   message: this.message,
+   project: this.project,
+   stacktrace: this.stacktrace,
+   file: this.file,
+   
+        created_at: this.created_at,
 
-      created_at: this.created_at,
-
-      updated_at: this.updated_at,
+        updated_at: this.updated_at,
 
       ...this.customColumns,
-    }
+}
 
     return output
   }
@@ -848,6 +895,8 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
 
     return model
   }
+
+  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<LogModel | undefined> {
@@ -866,15 +915,16 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
+
+  
 }
 
 export async function find(id: number): Promise<LogModel | undefined> {
-  const query = DB.instance.selectFrom('logs').where('id', '=', id).selectAll()
+  let query = DB.instance.selectFrom('logs').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model)
-    return undefined
+  if (!model) return undefined
 
   const instance = new LogModel(undefined)
   return instance.createInstance(model)
@@ -902,53 +952,55 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereTimestamp(value: number): Promise<LogModel[]> {
-  const query = DB.instance.selectFrom('logs').where('timestamp', '=', value)
-  const results: LogJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('logs').where('timestamp', '=', value)
+          const results: LogJsonResponse = await query.execute()
 
-  return results.map((modelItem: LogJsonResponse) => new LogModel(modelItem))
-}
+          return results.map((modelItem: LogJsonResponse) => new LogModel(modelItem))
+        } 
 
 export async function whereType(value: string | string[]): Promise<LogModel[]> {
-  const query = DB.instance.selectFrom('logs').where('type', '=', value)
-  const results: LogJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('logs').where('type', '=', value)
+          const results: LogJsonResponse = await query.execute()
 
-  return results.map((modelItem: LogJsonResponse) => new LogModel(modelItem))
-}
+          return results.map((modelItem: LogJsonResponse) => new LogModel(modelItem))
+        } 
 
 export async function whereSource(value: string | string[]): Promise<LogModel[]> {
-  const query = DB.instance.selectFrom('logs').where('source', '=', value)
-  const results: LogJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('logs').where('source', '=', value)
+          const results: LogJsonResponse = await query.execute()
 
-  return results.map((modelItem: LogJsonResponse) => new LogModel(modelItem))
-}
+          return results.map((modelItem: LogJsonResponse) => new LogModel(modelItem))
+        } 
 
 export async function whereMessage(value: string): Promise<LogModel[]> {
-  const query = DB.instance.selectFrom('logs').where('message', '=', value)
-  const results: LogJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('logs').where('message', '=', value)
+          const results: LogJsonResponse = await query.execute()
 
-  return results.map((modelItem: LogJsonResponse) => new LogModel(modelItem))
-}
+          return results.map((modelItem: LogJsonResponse) => new LogModel(modelItem))
+        } 
 
 export async function whereProject(value: string): Promise<LogModel[]> {
-  const query = DB.instance.selectFrom('logs').where('project', '=', value)
-  const results: LogJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('logs').where('project', '=', value)
+          const results: LogJsonResponse = await query.execute()
 
-  return results.map((modelItem: LogJsonResponse) => new LogModel(modelItem))
-}
+          return results.map((modelItem: LogJsonResponse) => new LogModel(modelItem))
+        } 
 
 export async function whereStacktrace(value: string): Promise<LogModel[]> {
-  const query = DB.instance.selectFrom('logs').where('stacktrace', '=', value)
-  const results: LogJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('logs').where('stacktrace', '=', value)
+          const results: LogJsonResponse = await query.execute()
 
-  return results.map((modelItem: LogJsonResponse) => new LogModel(modelItem))
-}
+          return results.map((modelItem: LogJsonResponse) => new LogModel(modelItem))
+        } 
 
 export async function whereFile(value: string): Promise<LogModel[]> {
-  const query = DB.instance.selectFrom('logs').where('file', '=', value)
-  const results: LogJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('logs').where('file', '=', value)
+          const results: LogJsonResponse = await query.execute()
 
-  return results.map((modelItem: LogJsonResponse) => new LogModel(modelItem))
-}
+          return results.map((modelItem: LogJsonResponse) => new LogModel(modelItem))
+        } 
+
+
 
 export const Log = LogModel
 
