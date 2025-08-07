@@ -76,7 +76,7 @@ export default {
           min: 'Discount value must be greater than 0.01',
         },
       },
-      factory: faker => faker.number.float({ min: 5, max: 50 }),
+      factory: faker => faker.number.int({ min: 5, max: 50 }),
     },
 
     minOrderAmount: {
@@ -88,7 +88,7 @@ export default {
           min: 'Min order amount must be greater than 0',
         },
       },
-      factory: faker => Number.parseFloat(faker.commerce.price({ min: 0, max: 50, dec: 2 })),
+      factory: faker => faker.number.int({ min: 0, max: 50 }),
     },
 
     maxDiscountAmount: {
@@ -100,7 +100,7 @@ export default {
           min: 'Max discount amount must be greater than 0',
         },
       },
-      factory: faker => faker.helpers.maybe(() => Number.parseFloat(faker.commerce.price({ min: 5, max: 100, dec: 2 })), { probability: 0.7 }),
+      factory: faker => faker.number.int({ min: 5, max: 100 }),
     },
 
     freeProductId: {
@@ -109,7 +109,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.string.uuid(), { probability: 0.3 }),
+      factory: faker => faker.string.uuid(),
     },
 
     status: {
@@ -133,7 +133,7 @@ export default {
           min: 'Usage limit must be greater than 1',
         },
       },
-      factory: faker => faker.helpers.maybe(() => faker.number.int({ min: 1, max: 100 }), { probability: 0.6 }),
+      factory: faker => faker.number.int({ min: 1, max: 100 }),
     },
 
     usageCount: {

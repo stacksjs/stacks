@@ -36,7 +36,7 @@ export default {
           min: 'Price cannot be negative',
         },
       },
-      factory: faker => faker.number.float({ min: 5, max: 50 }),
+      factory: faker => faker.number.int({ min: 5, max: 50 }),
     },
 
     special_instructions: {
@@ -45,7 +45,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.2 }),
+      factory: faker => faker.lorem.sentence(),
     },
   },
 } satisfies Model

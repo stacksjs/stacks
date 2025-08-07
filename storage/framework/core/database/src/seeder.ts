@@ -73,8 +73,6 @@ async function seedModel(name: string, modelPath: string, model: Model) {
     if (useUuid)
       record.uuid = Bun.randomUUIDv7()
 
-    console.log(record)
-    console.log(tableName)
     if (Object.keys(record).length > 0)
       await db.insertInto(tableName).values(record).executeTakeFirstOrThrow()
   }

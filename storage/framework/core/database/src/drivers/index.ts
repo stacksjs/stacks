@@ -312,7 +312,7 @@ export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'my
     return `'timestamp'`
 
   if (isFloatValidator(validator))
-    return `'double'`
+    return `'float4'`
 
   // Handle array/object types
   if (['array', 'object'].includes(validator.name))

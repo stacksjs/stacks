@@ -59,7 +59,7 @@ export default {
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => Number.parseFloat(faker.commerce.price({ min: 0, max: 1000, dec: 2 })),
+      factory: faker => faker.number.int({ min: 0, max: 1000 }),
     },
 
     taxAmount: {
@@ -69,7 +69,7 @@ export default {
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => Number.parseFloat(faker.commerce.price({ min: 0, max: 200, dec: 2 })),
+      factory: faker => faker.number.int({ min: 0, max: 200 }),
     },
 
     discountAmount: {
@@ -79,7 +79,7 @@ export default {
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => Number.parseFloat(faker.commerce.price({ min: 0, max: 100, dec: 2 })),
+      factory: faker => faker.number.int({ min: 0, max: 100 }),
     },
 
     total: {
@@ -89,7 +89,7 @@ export default {
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => Number.parseFloat(faker.commerce.price({ min: 0, max: 1200, dec: 2 })),
+      factory: faker => faker.number.int({ min: 0, max: 1200 }),
     },
 
     expiresAt: {

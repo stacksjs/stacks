@@ -51,7 +51,7 @@ export default {
           max: 'Rate must be less than or equal to 100',
         },
       },
-      factory: faker => faker.number.float({ min: 0, max: 100, fractionDigits: 2 }),
+      factory: faker => faker.number.int({ min: 0, max: 100 }),
     },
 
     type: {

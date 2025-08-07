@@ -67,12 +67,12 @@ export async function generatePostgresTraitMigrations(): Promise<void> {
     await createPostgresCategorizableTable(),
     await createPostgresCommentsTable(),
     await createPostgresTagsTable(),
-    await createPostgresTaggablesTable(),
     await createPostgresCommentUpvoteMigration(),
     await createPostgresPasskeyMigration(),
     await createPostgresQueryLogsTable(),
     await createPasswordResetsTable(),
     await createPostgresCommentablesPivotTable(),
+    await createPostgresTaggablesTable(),
   ])
 }
 

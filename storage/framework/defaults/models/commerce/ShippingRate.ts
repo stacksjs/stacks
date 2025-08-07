@@ -35,24 +35,24 @@ export default {
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.number().required().min(0),
+        rule: schema.float().required().min(0),
         message: {
           min: 'Weight from cannot be negative',
         },
       },
-      factory: faker => faker.number.float({ min: 0, max: 10, fractionDigits: 2 }),
+      factory: faker => faker.number.float({ min: 0, max: 10 }),
     },
 
     weightTo: {
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.number().required().min(0),
+        rule: schema.float().required().min(0),
         message: {
           min: 'Weight to cannot be negative',
         },
       },
-      factory: faker => faker.number.float({ min: 10, max: 50, fractionDigits: 2 }),
+      factory: faker => faker.number.float({ min: 10, max: 50 }),
     },
 
     rate: {
