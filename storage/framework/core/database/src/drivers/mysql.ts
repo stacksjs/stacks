@@ -24,7 +24,7 @@ import {
   pluckChanges,
 } from '.'
 
-import { createCategorizableTable, createCommentablesTable, createCommentUpvoteMigration, createPasskeyMigration, createQueryLogsTable, createTaggableTable, dropCommonTables } from './defaults/traits'
+import { createCategorizableTable, createCommentablesTable, createCommentUpvoteMigration, createPasskeyMigration, createQueryLogsTable, createTaggableTable, createTaggablesTable, dropCommonTables } from './defaults/traits'
 
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await dropMysqlTables()
@@ -117,6 +117,7 @@ export async function generateMysqlTraitMigrations(): Promise<void> {
     await createCategorizableTable(),
     await createCommentablesTable(),
     await createTaggableTable(),
+    await createTaggablesTable(),
     await createPasswordResetsTable(),
     await createPasskeyMigration(),
     await createQueryLogsTable(),

@@ -6,7 +6,7 @@ import { hasMigrationBeenCreated } from '../index'
 export function getTraitTables(): string[] {
   return [
     'tags',
-    'taggable_models',
+    'taggables',
     'categorizables',
     'comments',
     'commentables',
@@ -87,7 +87,7 @@ export async function createPostgresPasskeyMigration(): Promise<void> {
 }
 
 export async function createTaggableTable(): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('taggable')
+  const hasBeenMigrated = await hasMigrationBeenCreated('tags')
 
   if (hasBeenMigrated)
     return
@@ -109,19 +109,19 @@ export async function createTaggableTable(): Promise<void> {
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_tag_slug')\n`
+  migrationContent += `    .createIndex('idx_tags_slug')\n`
   migrationContent += `    .on('tags')\n`
   migrationContent += `    .column('slug')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_tag_type')\n`
+  migrationContent += `    .createIndex('idx_tags_type')\n`
   migrationContent += `    .on('tags')\n`
   migrationContent += `    .column('type')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_tag_name')\n`
+  migrationContent += `    .createIndex('idx_tags_name')\n`
   migrationContent += `    .on('tags')\n`
   migrationContent += `    .column('name')\n`
   migrationContent += `    .execute()\n\n`
@@ -136,11 +136,11 @@ export async function createTaggableTable(): Promise<void> {
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 
-  await createTaggableModelsTable()
+  await createTaggablesTable()
 }
 
 export async function createPostgresTaggableTable(): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('taggable')
+  const hasBeenMigrated = await hasMigrationBeenCreated('tags')
 
   if (hasBeenMigrated)
     return
@@ -188,6 +188,8 @@ export async function createPostgresTaggableTable(): Promise<void> {
   Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
+
+  await createPostgresTaggablesTable()
 }
 
 // SQLite/MySQL version
@@ -399,7 +401,7 @@ export async function dropCommonTables(): Promise<void> {
   await db.schema.dropTable('categorizables').ifExists().execute()
   await db.schema.dropTable('commenteable_upvotes').ifExists().execute()
   await db.schema.dropTable('tags').ifExists().execute()
-  await db.schema.dropTable('taggable_models').ifExists().execute()
+  await db.schema.dropTable('taggables').ifExists().execute()
   await db.schema.dropTable('categorizable_models').ifExists().execute()
   await db.schema.dropTable('commentables').ifExists().execute()
   await db.schema.dropTable('comments').ifExists().execute()
@@ -576,8 +578,8 @@ export async function createPostgresCommentablesPivotTable(): Promise<void> {
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
 
-export async function createTaggableModelsTable(): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('taggable_models')
+export async function createTaggablesTable(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('taggables')
 
   if (hasBeenMigrated)
     return
@@ -586,7 +588,7 @@ export async function createTaggableModelsTable(): Promise<void> {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('taggable_models')\n`
+  migrationContent += `    .createTable('taggables')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
   migrationContent += `    .addColumn('tag_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('taggable_id', 'integer', col => col.notNull())\n`
@@ -597,25 +599,25 @@ export async function createTaggableModelsTable(): Promise<void> {
 
   // Add foreign key constraint to tags table
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .alterTable('taggable_models')\n`
-  migrationContent += `    .addForeignKeyConstraint('taggable_models_tag_id_foreign', ['tag_id'], 'tags', ['id'], (cb) => cb.onDelete('cascade'))\n`
+  migrationContent += `    .alterTable('taggables')\n`
+  migrationContent += `    .addForeignKeyConstraint('taggables_tag_id_foreign', ['tag_id'], 'tags', ['id'], (cb) => cb.onDelete('cascade'))\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_taggable_models_tag')\n`
-  migrationContent += `    .on('taggable_models')\n`
+  migrationContent += `    .createIndex('idx_taggables_tag')\n`
+  migrationContent += `    .on('taggables')\n`
   migrationContent += `    .column('tag_id')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_taggable_models_polymorphic')\n`
-  migrationContent += `    .on('taggable_models')\n`
+  migrationContent += `    .createIndex('idx_taggables_polymorphic')\n`
+  migrationContent += `    .on('taggables')\n`
   migrationContent += `    .columns(['taggable_id', 'taggable_type'])\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_taggable_models_unique')\n`
-  migrationContent += `    .on('taggable_models')\n`
+  migrationContent += `    .createIndex('idx_taggables_unique')\n`
+  migrationContent += `    .on('taggables')\n`
   migrationContent += `    .columns(['tag_id', 'taggable_id', 'taggable_type'])\n`
   migrationContent += `    .unique()\n`
   migrationContent += `    .execute()\n\n`
@@ -623,7 +625,7 @@ export async function createTaggableModelsTable(): Promise<void> {
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-taggable-models-table.ts`
+  const migrationFileName = `${timestamp}-create-taggables-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
@@ -631,8 +633,8 @@ export async function createTaggableModelsTable(): Promise<void> {
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
 
-export async function createPostgresTaggableModelsTable(): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('taggable_models')
+export async function createPostgresTaggablesTable(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('taggables')
 
   if (hasBeenMigrated)
     return
@@ -641,7 +643,7 @@ export async function createPostgresTaggableModelsTable(): Promise<void> {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('taggable_models')\n`
+  migrationContent += `    .createTable('taggables')\n`
   migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
   migrationContent += `    .addColumn('tag_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('taggable_id', 'integer', col => col.notNull())\n`
@@ -652,25 +654,25 @@ export async function createPostgresTaggableModelsTable(): Promise<void> {
 
   // Add foreign key constraint to tags table
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .alterTable('taggable_models')\n`
-  migrationContent += `    .addForeignKeyConstraint('taggable_models_tag_id_foreign', ['tag_id'], 'tags', ['id'], (cb) => cb.onDelete('cascade'))\n`
+  migrationContent += `    .alterTable('taggables')\n`
+  migrationContent += `    .addForeignKeyConstraint('taggables_tag_id_foreign', ['tag_id'], 'tags', ['id'], (cb) => cb.onDelete('cascade'))\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_taggable_models_tag')\n`
-  migrationContent += `    .on('taggable_models')\n`
+  migrationContent += `    .createIndex('idx_taggables_tag')\n`
+  migrationContent += `    .on('taggables')\n`
   migrationContent += `    .column('tag_id')\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_taggable_models_polymorphic')\n`
-  migrationContent += `    .on('taggable_models')\n`
+  migrationContent += `    .createIndex('idx_taggables_polymorphic')\n`
+  migrationContent += `    .on('taggables')\n`
   migrationContent += `    .columns(['taggable_id', 'taggable_type'])\n`
   migrationContent += `    .execute()\n\n`
 
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createIndex('idx_taggable_models_unique')\n`
-  migrationContent += `    .on('taggable_models')\n`
+  migrationContent += `    .createIndex('idx_taggables_unique')\n`
+  migrationContent += `    .on('taggables')\n`
   migrationContent += `    .columns(['tag_id', 'taggable_id', 'taggable_type'])\n`
   migrationContent += `    .unique()\n`
   migrationContent += `    .execute()\n\n`
@@ -678,7 +680,7 @@ export async function createPostgresTaggableModelsTable(): Promise<void> {
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-taggable-models-table.ts`
+  const migrationFileName = `${timestamp}-create-taggables-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
