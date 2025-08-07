@@ -49,9 +49,9 @@ export default {
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.number().required().min(0.01),
+        rule: schema.number().required().min(1),
       },
-      factory: faker => Number.parseFloat(faker.commerce.price({ min: 10, max: 200, dec: 2 })),
+      factory: faker => faker.number.int({ min: 100, max: 2000 }),
     },
 
     currentBalance: {

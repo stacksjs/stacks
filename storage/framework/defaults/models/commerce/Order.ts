@@ -47,7 +47,7 @@ export default {
       validation: {
         rule: schema.number().required().min(0),
       },
-      factory: faker => Number.parseFloat(faker.commerce.price({ min: 10, max: 200, dec: 2 })),
+      factory: faker => faker.number.int({ min: 100, max: 2000 }),
     },
 
     taxAmount: {
@@ -56,7 +56,7 @@ export default {
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => Number.parseFloat(faker.commerce.price({ min: 1, max: 20, dec: 2 })),
+      factory: faker => faker.number.int({ min: 10, max: 200 }),
     },
 
     discountAmount: {
@@ -65,7 +65,7 @@ export default {
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => Number.parseFloat(faker.commerce.price({ min: 0, max: 15, dec: 2 })),
+      factory: faker => faker.number.int({ min: 0, max: 150 }),
     },
 
     deliveryFee: {
@@ -74,7 +74,7 @@ export default {
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => Number.parseFloat(faker.commerce.price({ min: 0, max: 10, dec: 2 })),
+      factory: faker => faker.number.int({ min: 0, max: 100 }),
     },
 
     tipAmount: {
@@ -83,7 +83,7 @@ export default {
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => Number.parseFloat(faker.commerce.price({ min: 0, max: 20, dec: 2 })),
+      factory: faker => faker.number.int({ min: 0, max: 200 }),
     },
 
     orderType: {

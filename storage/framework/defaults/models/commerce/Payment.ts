@@ -35,7 +35,7 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.number().required().min(0.01),
+        rule: schema.number().required().min(1),
       },
       factory: faker => faker.number.int({ min: 1000, max: 50000 }),
     },

@@ -58,12 +58,12 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.number().required().min(0.01),
+        rule: schema.number().required().min(1),
         message: {
-          min: 'Price must be at least 0.01',
+          min: 'Price must be at least 1',
         },
       },
-      factory: faker => Number.parseFloat(faker.commerce.price({ min: 0.01, max: 1000, dec: 2 })),
+      factory: faker => faker.number.int({ min: 100, max: 10000 }),
     },
 
     imageUrl: {

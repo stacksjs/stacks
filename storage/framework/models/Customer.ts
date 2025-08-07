@@ -81,7 +81,7 @@ export default {
           min: 'Total spent cannot be negative',
         },
       },
-      factory: faker => faker.number.float({ min: 0, max: 2000 }),
+      factory: faker => faker.number.int({ min: 0, max: 2000 }),
     },
 
     lastOrder: {
