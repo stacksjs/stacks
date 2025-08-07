@@ -114,9 +114,10 @@ export interface TaggableTable {
   id?: number
   name: string
   slug: string
+  type?: string
+  color?: string
   description?: string
   is_active: boolean
-  taggable_type: string
   created_at?: string
   updated_at?: string
 }
@@ -124,6 +125,7 @@ export interface TaggableTable {
 export interface TaggableModelsTable {
   id?: number
   tag_id: number
+  taggable_id: number
   taggable_type: string
   created_at?: string
   updated_at?: string

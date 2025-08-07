@@ -326,10 +326,10 @@ export interface Taggables {
   id: number
   name: string
   slug: string
+  type?: string
+  color?: string
   description: string
   is_active: boolean
-  taggable_id: number
-  taggable_type: string
   postCount: number
   created_at: string
   updated_at: string
