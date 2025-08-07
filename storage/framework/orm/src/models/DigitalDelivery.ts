@@ -1,34 +1,21 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
-import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
-import { BaseOrm } from '../utils/base'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import type { DigitalDeliveriesTable, DigitalDeliveryJsonResponse, DigitalDeliveryUpdate, NewDigitalDelivery } from '../types/DigitalDeliveryType'
+import { randomUUIDv7 } from 'bun'
+import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { randomUUIDv7 } from 'bun'
-import type { DigitalDeliveryModelType, DigitalDeliveryJsonResponse, NewDigitalDelivery, DigitalDeliveryUpdate, DigitalDeliveriesTable } from '../types/DigitalDeliveryType'
+import { DB } from '@stacksjs/orm'
 
-
-
-
-import type { Model } from '@stacksjs/types';
-import { schema } from '@stacksjs/validation';
-
-
-
+import { BaseOrm } from '../utils/base'
 
 export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalDeliveriesTable, DigitalDeliveryJsonResponse> {
   private readonly hidden: Array<keyof DigitalDeliveryJsonResponse> = []
-  private readonly fillable: Array<keyof DigitalDeliveryJsonResponse> = ["name","description","download_limit","expiry_days","requires_login","automatic_delivery","status","uuid"]
+  private readonly fillable: Array<keyof DigitalDeliveryJsonResponse> = ['name', 'description', 'download_limit', 'expiry_days', 'requires_login', 'automatic_delivery', 'status', 'uuid']
   private readonly guarded: Array<keyof DigitalDeliveryJsonResponse> = []
   protected attributes = {} as DigitalDeliveryJsonResponse
   protected originalAttributes = {} as DigitalDeliveryJsonResponse
-  
+
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -46,13 +33,12 @@ export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalD
   constructor(digitalDelivery: DigitalDeliveryJsonResponse | undefined) {
     super('digital_deliveries')
     if (digitalDelivery) {
-
       this.attributes = { ...digitalDelivery }
       this.originalAttributes = { ...digitalDelivery }
 
-      Object.keys(digitalDelivery).forEach(key => {
+      Object.keys(digitalDelivery).forEach((key) => {
         if (!(key in this)) {
-           this.customColumns[key] = (digitalDelivery as DigitalDeliveryJsonResponse)[key]
+          this.customColumns[key] = (digitalDelivery as DigitalDeliveryJsonResponse)[key]
         }
       })
     }
@@ -67,7 +53,8 @@ export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalD
   protected async loadRelations(models: DigitalDeliveryJsonResponse | DigitalDeliveryJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length) return
+    if (!modelArray.length)
+      return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -87,7 +74,8 @@ export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalD
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      } else {
+      }
+      else {
         const records = relatedRecords.filter((record: { digitalDelivery_id: number }) => {
           return record.digitalDelivery_id === models.id
         })
@@ -108,12 +96,10 @@ export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalD
 
     if (Array.isArray(data)) {
       data.map((model: DigitalDeliveryJsonResponse) => {
-
         const customGetter = {
           default: () => {
           },
 
-          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -122,14 +108,14 @@ export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalD
 
         return model
       })
-    } else {
+    }
+    else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
-        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -143,11 +129,10 @@ export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalD
       default: () => {
       },
 
-      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-        (model as any)[key] = await fn()
+      (model as any)[key] = await fn()
     }
   }
 
@@ -155,84 +140,81 @@ export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalD
     return this.attributes.id
   }
 
-get uuid(): string | undefined {
-      return this.attributes.uuid
-    }
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
 
-get name(): string {
-      return this.attributes.name
-    }
+  get name(): string {
+    return this.attributes.name
+  }
 
-get description(): string {
-      return this.attributes.description
-    }
+  get description(): string {
+    return this.attributes.description
+  }
 
-get download_limit(): number | undefined {
-      return this.attributes.download_limit
-    }
+  get download_limit(): number | undefined {
+    return this.attributes.download_limit
+  }
 
-get expiry_days(): number {
-      return this.attributes.expiry_days
-    }
+  get expiry_days(): number {
+    return this.attributes.expiry_days
+  }
 
-get requires_login(): boolean | undefined {
-      return this.attributes.requires_login
-    }
+  get requires_login(): boolean | undefined {
+    return this.attributes.requires_login
+  }
 
-get automatic_delivery(): boolean | undefined {
-      return this.attributes.automatic_delivery
-    }
+  get automatic_delivery(): boolean | undefined {
+    return this.attributes.automatic_delivery
+  }
 
-get status(): string | string[] | undefined {
-      return this.attributes.status
-    }
+  get status(): string | string[] | undefined {
+    return this.attributes.status
+  }
 
-get created_at(): string | undefined {
-      return this.attributes.created_at
-    }
+  get created_at(): string | undefined {
+    return this.attributes.created_at
+  }
 
-    get updated_at(): string | undefined {
-      return this.attributes.updated_at
-    }
-
+  get updated_at(): string | undefined {
+    return this.attributes.updated_at
+  }
 
   set uuid(value: string) {
-      this.attributes.uuid = value
-    }
+    this.attributes.uuid = value
+  }
 
-set name(value: string) {
-      this.attributes.name = value
-    }
+  set name(value: string) {
+    this.attributes.name = value
+  }
 
-set description(value: string) {
-      this.attributes.description = value
-    }
+  set description(value: string) {
+    this.attributes.description = value
+  }
 
-set download_limit(value: number) {
-      this.attributes.download_limit = value
-    }
+  set download_limit(value: number) {
+    this.attributes.download_limit = value
+  }
 
-set expiry_days(value: number) {
-      this.attributes.expiry_days = value
-    }
+  set expiry_days(value: number) {
+    this.attributes.expiry_days = value
+  }
 
-set requires_login(value: boolean) {
-      this.attributes.requires_login = value
-    }
+  set requires_login(value: boolean) {
+    this.attributes.requires_login = value
+  }
 
-set automatic_delivery(value: boolean) {
-      this.attributes.automatic_delivery = value
-    }
+  set automatic_delivery(value: boolean) {
+    this.attributes.automatic_delivery = value
+  }
 
-set status(value: string | string[]) {
-      this.attributes.status = value
-    }
+  set status(value: string | string[]) {
+    this.attributes.status = value
+  }
 
-set updated_at(value: string) {
-      this.attributes.updated_at = value
-    }
-
-
+  set updated_at(value: string) {
+    this.attributes.updated_at = value
+  }
 
   static select(params: (keyof DigitalDeliveryJsonResponse)[] | RawBuilder<string> | string): DigitalDeliveryModel {
     const instance = new DigitalDeliveryModel(undefined)
@@ -242,11 +224,12 @@ set updated_at(value: string) {
 
   // Method to find a DigitalDelivery by ID
   static async find(id: number): Promise<DigitalDeliveryModel | undefined> {
-    let query = DB.instance.selectFrom('digital_deliveries').where('id', '=', id).selectAll()
+    const query = DB.instance.selectFrom('digital_deliveries').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     const instance = new DigitalDeliveryModel(undefined)
     return instance.createInstance(model)
@@ -267,7 +250,8 @@ set updated_at(value: string) {
 
     const model = await instance.applyLast()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new DigitalDeliveryModel(model)
   }
@@ -300,7 +284,7 @@ set updated_at(value: string) {
 
   static async findMany(ids: number[]): Promise<DigitalDeliveryModel[]> {
     const instance = new DigitalDeliveryModel(undefined)
-     
+
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: DigitalDeliveryJsonResponse) => instance.parseResult(new DigitalDeliveryModel(modelItem)))
@@ -315,7 +299,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new DigitalDeliveryModel(model)
   }
@@ -329,7 +314,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new DigitalDeliveryModel(model)
   }
@@ -496,12 +482,12 @@ set updated_at(value: string) {
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: DigitalDeliveryModel[],
+    data: DigitalDeliveryModel[]
     paging: {
-      total_records: number,
-      page: number,
+      total_records: number
+      page: number
       total_pages: number
-    },
+    }
     next_cursor: number | null
   }> {
     const instance = new DigitalDeliveryModel(undefined)
@@ -511,7 +497,7 @@ set updated_at(value: string) {
     return {
       data: result.data.map((item: DigitalDeliveryJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor
+      next_cursor: result.next_cursor,
     }
   }
 
@@ -523,13 +509,13 @@ set updated_at(value: string) {
   async applyCreate(newDigitalDelivery: NewDigitalDelivery): Promise<DigitalDeliveryModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newDigitalDelivery).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewDigitalDelivery
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues['uuid'] = randomUUIDv7()
+    filteredValues.uuid = randomUUIDv7()
 
     const result = await DB.instance.insertInto('digital_deliveries')
       .values(filteredValues)
@@ -545,7 +531,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('digitalDelivery:created', model)
+      dispatch('digitalDelivery:created', model)
     return this.createInstance(model)
   }
 
@@ -614,7 +600,7 @@ set updated_at(value: string) {
   async update(newDigitalDelivery: DigitalDeliveryUpdate): Promise<DigitalDeliveryModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newDigitalDelivery).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as DigitalDeliveryUpdate
 
@@ -639,7 +625,7 @@ set updated_at(value: string) {
       }
 
       if (model)
- dispatch('digitalDelivery:updated', model)
+        dispatch('digitalDelivery:updated', model)
       return this.createInstance(model)
     }
 
@@ -664,7 +650,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('digitalDelivery:updated', model)
+        dispatch('digitalDelivery:updated', model)
       return this.createInstance(model)
     }
 
@@ -691,9 +677,10 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('digitalDelivery:updated', model)
+        dispatch('digitalDelivery:updated', model)
       return this.createInstance(model)
-    } else {
+    }
+    else {
       // Create new record
       const result = await DB.instance.insertInto('digital_deliveries')
         .values(this.attributes as NewDigitalDelivery)
@@ -710,7 +697,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('digitalDelivery:created', model)
+        dispatch('digitalDelivery:created', model)
       return this.createInstance(model)
     }
   }
@@ -725,7 +712,7 @@ set updated_at(value: string) {
         ),
       ) as NewDigitalDelivery
 
-      filteredValues['uuid'] = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
 
       return filteredValues
     })
@@ -751,7 +738,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('digitalDelivery:created', model)
+      dispatch('digitalDelivery:created', model)
 
     return instance.createInstance(model)
   }
@@ -761,9 +748,9 @@ set updated_at(value: string) {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-    
+
     if (model)
- dispatch('digitalDelivery:deleted', model)
+      dispatch('digitalDelivery:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('digital_deliveries')
       .where('id', '=', this.id)
@@ -777,10 +764,8 @@ set updated_at(value: string) {
 
     const model = await instance.find(Number(id))
 
-    
-
     if (model)
- dispatch('digitalDelivery:deleted', model)
+      dispatch('digitalDelivery:deleted', model)
 
     return await DB.instance.deleteFrom('digital_deliveries')
       .where('id', '=', id)
@@ -788,62 +773,60 @@ set updated_at(value: string) {
   }
 
   static whereName(value: string): DigitalDeliveryModel {
-          const instance = new DigitalDeliveryModel(undefined)
+    const instance = new DigitalDeliveryModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereDescription(value: string): DigitalDeliveryModel {
-          const instance = new DigitalDeliveryModel(undefined)
+  static whereDescription(value: string): DigitalDeliveryModel {
+    const instance = new DigitalDeliveryModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereDownloadLimit(value: string): DigitalDeliveryModel {
-          const instance = new DigitalDeliveryModel(undefined)
+  static whereDownloadLimit(value: string): DigitalDeliveryModel {
+    const instance = new DigitalDeliveryModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('download_limit', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('download_limit', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereExpiryDays(value: string): DigitalDeliveryModel {
-          const instance = new DigitalDeliveryModel(undefined)
+  static whereExpiryDays(value: string): DigitalDeliveryModel {
+    const instance = new DigitalDeliveryModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('expiry_days', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('expiry_days', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereRequiresLogin(value: string): DigitalDeliveryModel {
-          const instance = new DigitalDeliveryModel(undefined)
+  static whereRequiresLogin(value: string): DigitalDeliveryModel {
+    const instance = new DigitalDeliveryModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('requires_login', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('requires_login', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereAutomaticDelivery(value: string): DigitalDeliveryModel {
-          const instance = new DigitalDeliveryModel(undefined)
+  static whereAutomaticDelivery(value: string): DigitalDeliveryModel {
+    const instance = new DigitalDeliveryModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('automatic_delivery', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('automatic_delivery', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereStatus(value: string): DigitalDeliveryModel {
-          const instance = new DigitalDeliveryModel(undefined)
+  static whereStatus(value: string): DigitalDeliveryModel {
+    const instance = new DigitalDeliveryModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
-          return instance
-        } 
-
-
+    return instance
+  }
 
   static whereIn<V = number>(column: keyof DigitalDeliveriesTable, values: V[]): DigitalDeliveryModel {
     const instance = new DigitalDeliveryModel(undefined)
@@ -851,24 +834,16 @@ static whereStatus(value: string): DigitalDeliveryModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  
-
-  
-      toSearchableObject(): Partial<DigitalDeliveryJsonResponse> {
-        return {
-          id: this.id,
-name: this.name,
-description: this.description,
-download_limit: this.download_limit,
-expiry_days: this.expiry_days,
-status: this.status
-        }
-      }
-    
-
-  
-
-  
+  toSearchableObject(): Partial<DigitalDeliveryJsonResponse> {
+    return {
+      id: this.id,
+      name: this.name,
+      description: this.description,
+      download_limit: this.download_limit,
+      expiry_days: this.expiry_days,
+      status: this.status,
+    }
+  }
 
   static distinct(column: keyof DigitalDeliveryJsonResponse): DigitalDeliveryModel {
     const instance = new DigitalDeliveryModel(undefined)
@@ -885,23 +860,23 @@ status: this.status
   toJSON(): DigitalDeliveryJsonResponse {
     const output = {
 
- uuid: this.uuid,
+      uuid: this.uuid,
 
-id: this.id,
-name: this.name,
-   description: this.description,
-   download_limit: this.download_limit,
-   expiry_days: this.expiry_days,
-   requires_login: this.requires_login,
-   automatic_delivery: this.automatic_delivery,
-   status: this.status,
-   
-        created_at: this.created_at,
+      id: this.id,
+      name: this.name,
+      description: this.description,
+      download_limit: this.download_limit,
+      expiry_days: this.expiry_days,
+      requires_login: this.requires_login,
+      automatic_delivery: this.automatic_delivery,
+      status: this.status,
 
-        updated_at: this.updated_at,
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
 
       ...this.customColumns,
-}
+    }
 
     return output
   }
@@ -913,8 +888,6 @@ name: this.name,
 
     return model
   }
-
-  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<DigitalDeliveryModel | undefined> {
@@ -933,16 +906,15 @@ name: this.name,
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
-
-  
 }
 
 export async function find(id: number): Promise<DigitalDeliveryModel | undefined> {
-  let query = DB.instance.selectFrom('digital_deliveries').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('digital_deliveries').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   const instance = new DigitalDeliveryModel(undefined)
   return instance.createInstance(model)
@@ -970,55 +942,53 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<DigitalDeliveryModel[]> {
-          const query = DB.instance.selectFrom('digital_deliveries').where('name', '=', value)
-          const results: DigitalDeliveryJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('digital_deliveries').where('name', '=', value)
+  const results: DigitalDeliveryJsonResponse = await query.execute()
 
-          return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
-        } 
+  return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
+}
 
 export async function whereDescription(value: string): Promise<DigitalDeliveryModel[]> {
-          const query = DB.instance.selectFrom('digital_deliveries').where('description', '=', value)
-          const results: DigitalDeliveryJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('digital_deliveries').where('description', '=', value)
+  const results: DigitalDeliveryJsonResponse = await query.execute()
 
-          return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
-        } 
+  return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
+}
 
 export async function whereDownloadLimit(value: number): Promise<DigitalDeliveryModel[]> {
-          const query = DB.instance.selectFrom('digital_deliveries').where('download_limit', '=', value)
-          const results: DigitalDeliveryJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('digital_deliveries').where('download_limit', '=', value)
+  const results: DigitalDeliveryJsonResponse = await query.execute()
 
-          return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
-        } 
+  return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
+}
 
 export async function whereExpiryDays(value: number): Promise<DigitalDeliveryModel[]> {
-          const query = DB.instance.selectFrom('digital_deliveries').where('expiry_days', '=', value)
-          const results: DigitalDeliveryJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('digital_deliveries').where('expiry_days', '=', value)
+  const results: DigitalDeliveryJsonResponse = await query.execute()
 
-          return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
-        } 
+  return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
+}
 
 export async function whereRequiresLogin(value: boolean): Promise<DigitalDeliveryModel[]> {
-          const query = DB.instance.selectFrom('digital_deliveries').where('requires_login', '=', value)
-          const results: DigitalDeliveryJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('digital_deliveries').where('requires_login', '=', value)
+  const results: DigitalDeliveryJsonResponse = await query.execute()
 
-          return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
-        } 
+  return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
+}
 
 export async function whereAutomaticDelivery(value: boolean): Promise<DigitalDeliveryModel[]> {
-          const query = DB.instance.selectFrom('digital_deliveries').where('automatic_delivery', '=', value)
-          const results: DigitalDeliveryJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('digital_deliveries').where('automatic_delivery', '=', value)
+  const results: DigitalDeliveryJsonResponse = await query.execute()
 
-          return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
-        } 
+  return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
+}
 
 export async function whereStatus(value: string | string[]): Promise<DigitalDeliveryModel[]> {
-          const query = DB.instance.selectFrom('digital_deliveries').where('status', '=', value)
-          const results: DigitalDeliveryJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('digital_deliveries').where('status', '=', value)
+  const results: DigitalDeliveryJsonResponse = await query.execute()
 
-          return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
-        } 
-
-
+  return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
+}
 
 export const DigitalDelivery = DigitalDeliveryModel
 

@@ -192,7 +192,6 @@ async function createTableMigration(modelPath: string): Promise<void> {
   log.debug('createTableMigration modelPath:', modelPath)
 
   const model = (await import(modelPath)).default as Model
-  const modelName = getModelName(model, modelPath)
   const tableName = getTableName(model, modelPath)
 
   const twoFactorEnabled

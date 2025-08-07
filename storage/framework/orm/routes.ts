@@ -1,6 +1,5 @@
 import { route } from '@stacksjs/router'
 
-
 route.get('users', 'UserIndexOrmAction')
 
 route.post('users', 'UserStoreOrmAction')
@@ -38,4 +37,3 @@ route.post('requests', 'storage/framework/actions/src/RequestStoreOrmAction.ts')
 route.patch('requests/{id}', 'storage/framework/actions/src/RequestUpdateOrmAction.ts')
 
 route.delete('requests/{id}', 'storage/framework/actions/src/RequestDestroyOrmAction.ts')
-

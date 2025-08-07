@@ -1,20 +1,18 @@
+import type { AuthorRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
- import { response } from '@stacksjs/router'
 
-  import type { AuthorRequestType } from '@stacksjs/orm'
- import { Author } from '@stacksjs/orm'
- import { response } from '@stacksjs/router'
+import { Author } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 
 export default new Action({
-      name: 'Author Show',
-      description: 'Author Show ORM Action',
-      method: 'GET',
-      async handle(request: AuthorRequestType) {
-        const id = request.getParam('id')
+  name: 'Author Show',
+  description: 'Author Show ORM Action',
+  method: 'GET',
+  async handle(request: AuthorRequestType) {
+    const id = request.getParam('id')
 
-        const model = await Author.findOrFail(id)
+    const model = await Author.findOrFail(id)
 
-        return response.json(model)
-      },
-    })
-  
+    return response.json(model)
+  },
+})

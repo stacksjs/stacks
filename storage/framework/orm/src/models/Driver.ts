@@ -1,38 +1,23 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
-import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
-import { BaseOrm } from '../utils/base'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import type { DriverJsonResponse, DriversTable, DriverUpdate, NewDriver } from '../types/DriverType'
+import type { DeliveryRouteModel } from './DeliveryRoute'
+import type { UserModel } from './User'
+import { randomUUIDv7 } from 'bun'
+import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { randomUUIDv7 } from 'bun'
-import type { DriverModelType, DriverJsonResponse, NewDriver, DriverUpdate, DriversTable } from '../types/DriverType'
+import { DB } from '@stacksjs/orm'
 
-import type {DeliveryRouteModel} from './DeliveryRoute'
-
-import type {UserModel} from './User'
-
-
-
-
-import type { Model } from '@stacksjs/types';
-import { schema } from '@stacksjs/validation';
-
-
-
+import { BaseOrm } from '../utils/base'
 
 export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonResponse> {
   private readonly hidden: Array<keyof DriverJsonResponse> = []
-  private readonly fillable: Array<keyof DriverJsonResponse> = ["name","phone","vehicle_number","license","status","uuid","user_id"]
+  private readonly fillable: Array<keyof DriverJsonResponse> = ['name', 'phone', 'vehicle_number', 'license', 'status', 'uuid', 'user_id']
   private readonly guarded: Array<keyof DriverJsonResponse> = []
   protected attributes = {} as DriverJsonResponse
   protected originalAttributes = {} as DriverJsonResponse
-  
+
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -50,13 +35,12 @@ export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonRe
   constructor(driver: DriverJsonResponse | undefined) {
     super('drivers')
     if (driver) {
-
       this.attributes = { ...driver }
       this.originalAttributes = { ...driver }
 
-      Object.keys(driver).forEach(key => {
+      Object.keys(driver).forEach((key) => {
         if (!(key in this)) {
-           this.customColumns[key] = (driver as DriverJsonResponse)[key]
+          this.customColumns[key] = (driver as DriverJsonResponse)[key]
         }
       })
     }
@@ -71,7 +55,8 @@ export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonRe
   protected async loadRelations(models: DriverJsonResponse | DriverJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length) return
+    if (!modelArray.length)
+      return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -91,7 +76,8 @@ export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonRe
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      } else {
+      }
+      else {
         const records = relatedRecords.filter((record: { driver_id: number }) => {
           return record.driver_id === models.id
         })
@@ -112,12 +98,10 @@ export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonRe
 
     if (Array.isArray(data)) {
       data.map((model: DriverJsonResponse) => {
-
         const customGetter = {
           default: () => {
           },
 
-          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -126,14 +110,14 @@ export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonRe
 
         return model
       })
-    } else {
+    }
+    else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
-        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -147,92 +131,88 @@ export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonRe
       default: () => {
       },
 
-      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-        (model as any)[key] = await fn()
+      (model as any)[key] = await fn()
     }
   }
 
-  get delivery_routes():DeliveryRouteModel[] | [] {
-        return this.attributes.delivery_routes
-      }
+  get delivery_routes(): DeliveryRouteModel[] | [] {
+    return this.attributes.delivery_routes
+  }
 
-get user_id(): number {
-        return this.attributes.user_id
-      }
+  get user_id(): number {
+    return this.attributes.user_id
+  }
 
-get user(): UserModel | undefined {
-        return this.attributes.user
-      }
+  get user(): UserModel | undefined {
+    return this.attributes.user
+  }
 
-get id(): number {
+  get id(): number {
     return this.attributes.id
   }
 
-get uuid(): string | undefined {
-      return this.attributes.uuid
-    }
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
 
-get name(): string {
-      return this.attributes.name
-    }
+  get name(): string {
+    return this.attributes.name
+  }
 
-get phone(): string {
-      return this.attributes.phone
-    }
+  get phone(): string {
+    return this.attributes.phone
+  }
 
-get vehicle_number(): string {
-      return this.attributes.vehicle_number
-    }
+  get vehicle_number(): string {
+    return this.attributes.vehicle_number
+  }
 
-get license(): string {
-      return this.attributes.license
-    }
+  get license(): string {
+    return this.attributes.license
+  }
 
-get status(): string | string[] | undefined {
-      return this.attributes.status
-    }
+  get status(): string | string[] | undefined {
+    return this.attributes.status
+  }
 
-get created_at(): string | undefined {
-      return this.attributes.created_at
-    }
+  get created_at(): string | undefined {
+    return this.attributes.created_at
+  }
 
-    get updated_at(): string | undefined {
-      return this.attributes.updated_at
-    }
-
+  get updated_at(): string | undefined {
+    return this.attributes.updated_at
+  }
 
   set uuid(value: string) {
-      this.attributes.uuid = value
-    }
+    this.attributes.uuid = value
+  }
 
-set name(value: string) {
-      this.attributes.name = value
-    }
+  set name(value: string) {
+    this.attributes.name = value
+  }
 
-set phone(value: string) {
-      this.attributes.phone = value
-    }
+  set phone(value: string) {
+    this.attributes.phone = value
+  }
 
-set vehicle_number(value: string) {
-      this.attributes.vehicle_number = value
-    }
+  set vehicle_number(value: string) {
+    this.attributes.vehicle_number = value
+  }
 
-set license(value: string) {
-      this.attributes.license = value
-    }
+  set license(value: string) {
+    this.attributes.license = value
+  }
 
-set status(value: string | string[]) {
-      this.attributes.status = value
-    }
+  set status(value: string | string[]) {
+    this.attributes.status = value
+  }
 
-set updated_at(value: string) {
-      this.attributes.updated_at = value
-    }
-
-
+  set updated_at(value: string) {
+    this.attributes.updated_at = value
+  }
 
   static select(params: (keyof DriverJsonResponse)[] | RawBuilder<string> | string): DriverModel {
     const instance = new DriverModel(undefined)
@@ -242,11 +222,12 @@ set updated_at(value: string) {
 
   // Method to find a Driver by ID
   static async find(id: number): Promise<DriverModel | undefined> {
-    let query = DB.instance.selectFrom('drivers').where('id', '=', id).selectAll()
+    const query = DB.instance.selectFrom('drivers').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     const instance = new DriverModel(undefined)
     return instance.createInstance(model)
@@ -267,7 +248,8 @@ set updated_at(value: string) {
 
     const model = await instance.applyLast()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new DriverModel(model)
   }
@@ -300,7 +282,7 @@ set updated_at(value: string) {
 
   static async findMany(ids: number[]): Promise<DriverModel[]> {
     const instance = new DriverModel(undefined)
-     
+
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: DriverJsonResponse) => instance.parseResult(new DriverModel(modelItem)))
@@ -315,7 +297,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new DriverModel(model)
   }
@@ -329,7 +312,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new DriverModel(model)
   }
@@ -496,12 +480,12 @@ set updated_at(value: string) {
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: DriverModel[],
+    data: DriverModel[]
     paging: {
-      total_records: number,
-      page: number,
+      total_records: number
+      page: number
       total_pages: number
-    },
+    }
     next_cursor: number | null
   }> {
     const instance = new DriverModel(undefined)
@@ -511,7 +495,7 @@ set updated_at(value: string) {
     return {
       data: result.data.map((item: DriverJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor
+      next_cursor: result.next_cursor,
     }
   }
 
@@ -523,13 +507,13 @@ set updated_at(value: string) {
   async applyCreate(newDriver: NewDriver): Promise<DriverModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newDriver).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewDriver
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues['uuid'] = randomUUIDv7()
+    filteredValues.uuid = randomUUIDv7()
 
     const result = await DB.instance.insertInto('drivers')
       .values(filteredValues)
@@ -545,7 +529,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('driver:created', model)
+      dispatch('driver:created', model)
     return this.createInstance(model)
   }
 
@@ -614,7 +598,7 @@ set updated_at(value: string) {
   async update(newDriver: DriverUpdate): Promise<DriverModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newDriver).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as DriverUpdate
 
@@ -639,7 +623,7 @@ set updated_at(value: string) {
       }
 
       if (model)
- dispatch('driver:updated', model)
+        dispatch('driver:updated', model)
       return this.createInstance(model)
     }
 
@@ -664,7 +648,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('driver:updated', model)
+        dispatch('driver:updated', model)
       return this.createInstance(model)
     }
 
@@ -691,9 +675,10 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('driver:updated', model)
+        dispatch('driver:updated', model)
       return this.createInstance(model)
-    } else {
+    }
+    else {
       // Create new record
       const result = await DB.instance.insertInto('drivers')
         .values(this.attributes as NewDriver)
@@ -710,7 +695,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('driver:created', model)
+        dispatch('driver:created', model)
       return this.createInstance(model)
     }
   }
@@ -725,7 +710,7 @@ set updated_at(value: string) {
         ),
       ) as NewDriver
 
-      filteredValues['uuid'] = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
 
       return filteredValues
     })
@@ -751,7 +736,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('driver:created', model)
+      dispatch('driver:created', model)
 
     return instance.createInstance(model)
   }
@@ -761,9 +746,9 @@ set updated_at(value: string) {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-    
+
     if (model)
- dispatch('driver:deleted', model)
+      dispatch('driver:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('drivers')
       .where('id', '=', this.id)
@@ -777,10 +762,8 @@ set updated_at(value: string) {
 
     const model = await instance.find(Number(id))
 
-    
-
     if (model)
- dispatch('driver:deleted', model)
+      dispatch('driver:deleted', model)
 
     return await DB.instance.deleteFrom('drivers')
       .where('id', '=', id)
@@ -788,46 +771,44 @@ set updated_at(value: string) {
   }
 
   static whereName(value: string): DriverModel {
-          const instance = new DriverModel(undefined)
+    const instance = new DriverModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static wherePhone(value: string): DriverModel {
-          const instance = new DriverModel(undefined)
+  static wherePhone(value: string): DriverModel {
+    const instance = new DriverModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('phone', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('phone', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereVehicleNumber(value: string): DriverModel {
-          const instance = new DriverModel(undefined)
+  static whereVehicleNumber(value: string): DriverModel {
+    const instance = new DriverModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('vehicle_number', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('vehicle_number', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereLicense(value: string): DriverModel {
-          const instance = new DriverModel(undefined)
+  static whereLicense(value: string): DriverModel {
+    const instance = new DriverModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('license', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('license', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereStatus(value: string): DriverModel {
-          const instance = new DriverModel(undefined)
+  static whereStatus(value: string): DriverModel {
+    const instance = new DriverModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
-          return instance
-        } 
-
-
+    return instance
+  }
 
   static whereIn<V = number>(column: keyof DriversTable, values: V[]): DriverModel {
     const instance = new DriverModel(undefined)
@@ -835,39 +816,30 @@ static whereStatus(value: string): DriverModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  
-        async userBelong(): Promise<UserModel> {
-          if (this.user_id === undefined)
-            throw new HttpError(500, 'Relation Error!')
+  async userBelong(): Promise<UserModel> {
+    if (this.user_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
 
-          const model = await User
-            .where('id', '=', this.user_id)
-            .first()
+    const model = await User
+      .where('id', '=', this.user_id)
+      .first()
 
-          if (! model)
-            throw new HttpError(500, 'Model Relation Not Found!')
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
 
-          return model
-        }
+    return model
+  }
 
-
-
-  
-      toSearchableObject(): Partial<DriverJsonResponse> {
-        return {
-          id: this.id,
-name: this.name,
-phone: this.phone,
-vehicle_number: this.vehicle_number,
-license: this.license,
-status: this.status
-        }
-      }
-    
-
-  
-
-  
+  toSearchableObject(): Partial<DriverJsonResponse> {
+    return {
+      id: this.id,
+      name: this.name,
+      phone: this.phone,
+      vehicle_number: this.vehicle_number,
+      license: this.license,
+      status: this.status,
+    }
+  }
 
   static distinct(column: keyof DriverJsonResponse): DriverModel {
     const instance = new DriverModel(undefined)
@@ -884,24 +856,24 @@ status: this.status
   toJSON(): DriverJsonResponse {
     const output = {
 
- uuid: this.uuid,
+      uuid: this.uuid,
 
-id: this.id,
-name: this.name,
-   phone: this.phone,
-   vehicle_number: this.vehicle_number,
-   license: this.license,
-   status: this.status,
-   
-        created_at: this.created_at,
+      id: this.id,
+      name: this.name,
+      phone: this.phone,
+      vehicle_number: this.vehicle_number,
+      license: this.license,
+      status: this.status,
 
-        updated_at: this.updated_at,
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
 
       delivery_routes: this.delivery_routes,
-user_id: this.user_id,
-   user: this.user,
-...this.customColumns,
-}
+      user_id: this.user_id,
+      user: this.user,
+      ...this.customColumns,
+    }
 
     return output
   }
@@ -913,8 +885,6 @@ user_id: this.user_id,
 
     return model
   }
-
-  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<DriverModel | undefined> {
@@ -933,16 +903,15 @@ user_id: this.user_id,
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
-
-  
 }
 
 export async function find(id: number): Promise<DriverModel | undefined> {
-  let query = DB.instance.selectFrom('drivers').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('drivers').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   const instance = new DriverModel(undefined)
   return instance.createInstance(model)
@@ -970,41 +939,39 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<DriverModel[]> {
-          const query = DB.instance.selectFrom('drivers').where('name', '=', value)
-          const results: DriverJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('drivers').where('name', '=', value)
+  const results: DriverJsonResponse = await query.execute()
 
-          return results.map((modelItem: DriverJsonResponse) => new DriverModel(modelItem))
-        } 
+  return results.map((modelItem: DriverJsonResponse) => new DriverModel(modelItem))
+}
 
 export async function wherePhone(value: string): Promise<DriverModel[]> {
-          const query = DB.instance.selectFrom('drivers').where('phone', '=', value)
-          const results: DriverJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('drivers').where('phone', '=', value)
+  const results: DriverJsonResponse = await query.execute()
 
-          return results.map((modelItem: DriverJsonResponse) => new DriverModel(modelItem))
-        } 
+  return results.map((modelItem: DriverJsonResponse) => new DriverModel(modelItem))
+}
 
 export async function whereVehicleNumber(value: string): Promise<DriverModel[]> {
-          const query = DB.instance.selectFrom('drivers').where('vehicle_number', '=', value)
-          const results: DriverJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('drivers').where('vehicle_number', '=', value)
+  const results: DriverJsonResponse = await query.execute()
 
-          return results.map((modelItem: DriverJsonResponse) => new DriverModel(modelItem))
-        } 
+  return results.map((modelItem: DriverJsonResponse) => new DriverModel(modelItem))
+}
 
 export async function whereLicense(value: string): Promise<DriverModel[]> {
-          const query = DB.instance.selectFrom('drivers').where('license', '=', value)
-          const results: DriverJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('drivers').where('license', '=', value)
+  const results: DriverJsonResponse = await query.execute()
 
-          return results.map((modelItem: DriverJsonResponse) => new DriverModel(modelItem))
-        } 
+  return results.map((modelItem: DriverJsonResponse) => new DriverModel(modelItem))
+}
 
 export async function whereStatus(value: string | string[]): Promise<DriverModel[]> {
-          const query = DB.instance.selectFrom('drivers').where('status', '=', value)
-          const results: DriverJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('drivers').where('status', '=', value)
+  const results: DriverJsonResponse = await query.execute()
 
-          return results.map((modelItem: DriverJsonResponse) => new DriverModel(modelItem))
-        } 
-
-
+  return results.map((modelItem: DriverJsonResponse) => new DriverModel(modelItem))
+}
 
 export const Driver = DriverModel
 

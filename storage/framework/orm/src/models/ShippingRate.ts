@@ -1,38 +1,23 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
-import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
-import { BaseOrm } from '../utils/base'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import type { NewShippingRate, ShippingRateJsonResponse, ShippingRatesTable, ShippingRateUpdate } from '../types/ShippingRateType'
+import type { ShippingMethodModel } from './ShippingMethod'
+import type { ShippingZoneModel } from './ShippingZone'
+import { randomUUIDv7 } from 'bun'
+import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { randomUUIDv7 } from 'bun'
-import type { ShippingRateModelType, ShippingRateJsonResponse, NewShippingRate, ShippingRateUpdate, ShippingRatesTable } from '../types/ShippingRateType'
+import { DB } from '@stacksjs/orm'
 
-import type {ShippingMethodModel} from './ShippingMethod'
-
-import type {ShippingZoneModel} from './ShippingZone'
-
-
-
-
-import type { Model } from '@stacksjs/types';
-import { schema } from '@stacksjs/validation';
-
-
-
+import { BaseOrm } from '../utils/base'
 
 export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesTable, ShippingRateJsonResponse> {
   private readonly hidden: Array<keyof ShippingRateJsonResponse> = []
-  private readonly fillable: Array<keyof ShippingRateJsonResponse> = ["weight_from","weight_to","rate","uuid","shipping_zone_id","shipping_method_id"]
+  private readonly fillable: Array<keyof ShippingRateJsonResponse> = ['weight_from', 'weight_to', 'rate', 'uuid', 'shipping_zone_id', 'shipping_method_id']
   private readonly guarded: Array<keyof ShippingRateJsonResponse> = []
   protected attributes = {} as ShippingRateJsonResponse
   protected originalAttributes = {} as ShippingRateJsonResponse
-  
+
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -50,13 +35,12 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
   constructor(shippingRate: ShippingRateJsonResponse | undefined) {
     super('shipping_rates')
     if (shippingRate) {
-
       this.attributes = { ...shippingRate }
       this.originalAttributes = { ...shippingRate }
 
-      Object.keys(shippingRate).forEach(key => {
+      Object.keys(shippingRate).forEach((key) => {
         if (!(key in this)) {
-           this.customColumns[key] = (shippingRate as ShippingRateJsonResponse)[key]
+          this.customColumns[key] = (shippingRate as ShippingRateJsonResponse)[key]
         }
       })
     }
@@ -71,7 +55,8 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
   protected async loadRelations(models: ShippingRateJsonResponse | ShippingRateJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length) return
+    if (!modelArray.length)
+      return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -91,7 +76,8 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      } else {
+      }
+      else {
         const records = relatedRecords.filter((record: { shippingRate_id: number }) => {
           return record.shippingRate_id === models.id
         })
@@ -112,12 +98,10 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
 
     if (Array.isArray(data)) {
       data.map((model: ShippingRateJsonResponse) => {
-
         const customGetter = {
           default: () => {
           },
 
-          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -126,14 +110,14 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
 
         return model
       })
-    } else {
+    }
+    else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
-        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -147,80 +131,76 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
       default: () => {
       },
 
-      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-        (model as any)[key] = await fn()
+      (model as any)[key] = await fn()
     }
   }
 
   get shipping_method_id(): number {
-        return this.attributes.shipping_method_id
-      }
+    return this.attributes.shipping_method_id
+  }
 
-get shipping_method(): ShippingMethodModel | undefined {
-        return this.attributes.shipping_method
-      }
+  get shipping_method(): ShippingMethodModel | undefined {
+    return this.attributes.shipping_method
+  }
 
-get shipping_zone_id(): number {
-        return this.attributes.shipping_zone_id
-      }
+  get shipping_zone_id(): number {
+    return this.attributes.shipping_zone_id
+  }
 
-get shipping_zone(): ShippingZoneModel | undefined {
-        return this.attributes.shipping_zone
-      }
+  get shipping_zone(): ShippingZoneModel | undefined {
+    return this.attributes.shipping_zone
+  }
 
-get id(): number {
+  get id(): number {
     return this.attributes.id
   }
 
-get uuid(): string | undefined {
-      return this.attributes.uuid
-    }
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
 
-get weight_from(): number {
-      return this.attributes.weight_from
-    }
+  get weight_from(): number {
+    return this.attributes.weight_from
+  }
 
-get weight_to(): number {
-      return this.attributes.weight_to
-    }
+  get weight_to(): number {
+    return this.attributes.weight_to
+  }
 
-get rate(): number {
-      return this.attributes.rate
-    }
+  get rate(): number {
+    return this.attributes.rate
+  }
 
-get created_at(): string | undefined {
-      return this.attributes.created_at
-    }
+  get created_at(): string | undefined {
+    return this.attributes.created_at
+  }
 
-    get updated_at(): string | undefined {
-      return this.attributes.updated_at
-    }
-
+  get updated_at(): string | undefined {
+    return this.attributes.updated_at
+  }
 
   set uuid(value: string) {
-      this.attributes.uuid = value
-    }
+    this.attributes.uuid = value
+  }
 
-set weight_from(value: number) {
-      this.attributes.weight_from = value
-    }
+  set weight_from(value: number) {
+    this.attributes.weight_from = value
+  }
 
-set weight_to(value: number) {
-      this.attributes.weight_to = value
-    }
+  set weight_to(value: number) {
+    this.attributes.weight_to = value
+  }
 
-set rate(value: number) {
-      this.attributes.rate = value
-    }
+  set rate(value: number) {
+    this.attributes.rate = value
+  }
 
-set updated_at(value: string) {
-      this.attributes.updated_at = value
-    }
-
-
+  set updated_at(value: string) {
+    this.attributes.updated_at = value
+  }
 
   static select(params: (keyof ShippingRateJsonResponse)[] | RawBuilder<string> | string): ShippingRateModel {
     const instance = new ShippingRateModel(undefined)
@@ -230,11 +210,12 @@ set updated_at(value: string) {
 
   // Method to find a ShippingRate by ID
   static async find(id: number): Promise<ShippingRateModel | undefined> {
-    let query = DB.instance.selectFrom('shipping_rates').where('id', '=', id).selectAll()
+    const query = DB.instance.selectFrom('shipping_rates').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     const instance = new ShippingRateModel(undefined)
     return instance.createInstance(model)
@@ -255,7 +236,8 @@ set updated_at(value: string) {
 
     const model = await instance.applyLast()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new ShippingRateModel(model)
   }
@@ -288,7 +270,7 @@ set updated_at(value: string) {
 
   static async findMany(ids: number[]): Promise<ShippingRateModel[]> {
     const instance = new ShippingRateModel(undefined)
-     
+
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: ShippingRateJsonResponse) => instance.parseResult(new ShippingRateModel(modelItem)))
@@ -303,7 +285,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new ShippingRateModel(model)
   }
@@ -317,7 +300,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new ShippingRateModel(model)
   }
@@ -484,12 +468,12 @@ set updated_at(value: string) {
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: ShippingRateModel[],
+    data: ShippingRateModel[]
     paging: {
-      total_records: number,
-      page: number,
+      total_records: number
+      page: number
       total_pages: number
-    },
+    }
     next_cursor: number | null
   }> {
     const instance = new ShippingRateModel(undefined)
@@ -499,7 +483,7 @@ set updated_at(value: string) {
     return {
       data: result.data.map((item: ShippingRateJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor
+      next_cursor: result.next_cursor,
     }
   }
 
@@ -511,13 +495,13 @@ set updated_at(value: string) {
   async applyCreate(newShippingRate: NewShippingRate): Promise<ShippingRateModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newShippingRate).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewShippingRate
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues['uuid'] = randomUUIDv7()
+    filteredValues.uuid = randomUUIDv7()
 
     const result = await DB.instance.insertInto('shipping_rates')
       .values(filteredValues)
@@ -533,7 +517,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('shippingRate:created', model)
+      dispatch('shippingRate:created', model)
     return this.createInstance(model)
   }
 
@@ -602,7 +586,7 @@ set updated_at(value: string) {
   async update(newShippingRate: ShippingRateUpdate): Promise<ShippingRateModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newShippingRate).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as ShippingRateUpdate
 
@@ -627,7 +611,7 @@ set updated_at(value: string) {
       }
 
       if (model)
- dispatch('shippingRate:updated', model)
+        dispatch('shippingRate:updated', model)
       return this.createInstance(model)
     }
 
@@ -652,7 +636,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('shippingRate:updated', model)
+        dispatch('shippingRate:updated', model)
       return this.createInstance(model)
     }
 
@@ -679,9 +663,10 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('shippingRate:updated', model)
+        dispatch('shippingRate:updated', model)
       return this.createInstance(model)
-    } else {
+    }
+    else {
       // Create new record
       const result = await DB.instance.insertInto('shipping_rates')
         .values(this.attributes as NewShippingRate)
@@ -698,7 +683,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('shippingRate:created', model)
+        dispatch('shippingRate:created', model)
       return this.createInstance(model)
     }
   }
@@ -713,7 +698,7 @@ set updated_at(value: string) {
         ),
       ) as NewShippingRate
 
-      filteredValues['uuid'] = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
 
       return filteredValues
     })
@@ -739,7 +724,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('shippingRate:created', model)
+      dispatch('shippingRate:created', model)
 
     return instance.createInstance(model)
   }
@@ -749,9 +734,9 @@ set updated_at(value: string) {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-    
+
     if (model)
- dispatch('shippingRate:deleted', model)
+      dispatch('shippingRate:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('shipping_rates')
       .where('id', '=', this.id)
@@ -765,10 +750,8 @@ set updated_at(value: string) {
 
     const model = await instance.find(Number(id))
 
-    
-
     if (model)
- dispatch('shippingRate:deleted', model)
+      dispatch('shippingRate:deleted', model)
 
     return await DB.instance.deleteFrom('shipping_rates')
       .where('id', '=', id)
@@ -776,30 +759,28 @@ set updated_at(value: string) {
   }
 
   static whereWeightFrom(value: string): ShippingRateModel {
-          const instance = new ShippingRateModel(undefined)
+    const instance = new ShippingRateModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('weight_from', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('weight_from', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereWeightTo(value: string): ShippingRateModel {
-          const instance = new ShippingRateModel(undefined)
+  static whereWeightTo(value: string): ShippingRateModel {
+    const instance = new ShippingRateModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('weight_to', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('weight_to', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereRate(value: string): ShippingRateModel {
-          const instance = new ShippingRateModel(undefined)
+  static whereRate(value: string): ShippingRateModel {
+    const instance = new ShippingRateModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('rate', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('rate', '=', value)
 
-          return instance
-        } 
-
-
+    return instance
+  }
 
   static whereIn<V = number>(column: keyof ShippingRatesTable, values: V[]): ShippingRateModel {
     const instance = new ShippingRateModel(undefined)
@@ -807,54 +788,44 @@ static whereRate(value: string): ShippingRateModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  
-        async shippingMethodBelong(): Promise<ShippingMethodModel> {
-          if (this.shipping_method_id === undefined)
-            throw new HttpError(500, 'Relation Error!')
+  async shippingMethodBelong(): Promise<ShippingMethodModel> {
+    if (this.shipping_method_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
 
-          const model = await ShippingMethod
-            .where('id', '=', this.shipping_method_id)
-            .first()
+    const model = await ShippingMethod
+      .where('id', '=', this.shipping_method_id)
+      .first()
 
-          if (! model)
-            throw new HttpError(500, 'Model Relation Not Found!')
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
 
-          return model
-        }
+    return model
+  }
 
+  async shippingZoneBelong(): Promise<ShippingZoneModel> {
+    if (this.shipping_zone_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
 
-        async shippingZoneBelong(): Promise<ShippingZoneModel> {
-          if (this.shipping_zone_id === undefined)
-            throw new HttpError(500, 'Relation Error!')
+    const model = await ShippingZone
+      .where('id', '=', this.shipping_zone_id)
+      .first()
 
-          const model = await ShippingZone
-            .where('id', '=', this.shipping_zone_id)
-            .first()
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
 
-          if (! model)
-            throw new HttpError(500, 'Model Relation Not Found!')
+    return model
+  }
 
-          return model
-        }
-
-
-
-  
-      toSearchableObject(): Partial<ShippingRateJsonResponse> {
-        return {
-          id: this.id,
-method: this.method,
-zone: this.zone,
-weight_from: this.weight_from,
-weight_to: this.weight_to,
-rate: this.rate
-        }
-      }
-    
-
-  
-
-  
+  toSearchableObject(): Partial<ShippingRateJsonResponse> {
+    return {
+      id: this.id,
+      method: this.method,
+      zone: this.zone,
+      weight_from: this.weight_from,
+      weight_to: this.weight_to,
+      rate: this.rate,
+    }
+  }
 
   static distinct(column: keyof ShippingRateJsonResponse): ShippingRateModel {
     const instance = new ShippingRateModel(undefined)
@@ -871,23 +842,23 @@ rate: this.rate
   toJSON(): ShippingRateJsonResponse {
     const output = {
 
- uuid: this.uuid,
+      uuid: this.uuid,
 
-id: this.id,
-weight_from: this.weight_from,
-   weight_to: this.weight_to,
-   rate: this.rate,
-   
-        created_at: this.created_at,
+      id: this.id,
+      weight_from: this.weight_from,
+      weight_to: this.weight_to,
+      rate: this.rate,
 
-        updated_at: this.updated_at,
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
 
       shipping_method_id: this.shipping_method_id,
-   shipping_method: this.shipping_method,
-shipping_zone_id: this.shipping_zone_id,
-   shipping_zone: this.shipping_zone,
-...this.customColumns,
-}
+      shipping_method: this.shipping_method,
+      shipping_zone_id: this.shipping_zone_id,
+      shipping_zone: this.shipping_zone,
+      ...this.customColumns,
+    }
 
     return output
   }
@@ -899,8 +870,6 @@ shipping_zone_id: this.shipping_zone_id,
 
     return model
   }
-
-  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<ShippingRateModel | undefined> {
@@ -919,16 +888,15 @@ shipping_zone_id: this.shipping_zone_id,
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
-
-  
 }
 
 export async function find(id: number): Promise<ShippingRateModel | undefined> {
-  let query = DB.instance.selectFrom('shipping_rates').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('shipping_rates').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   const instance = new ShippingRateModel(undefined)
   return instance.createInstance(model)
@@ -956,27 +924,25 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereWeightFrom(value: number): Promise<ShippingRateModel[]> {
-          const query = DB.instance.selectFrom('shipping_rates').where('weight_from', '=', value)
-          const results: ShippingRateJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('shipping_rates').where('weight_from', '=', value)
+  const results: ShippingRateJsonResponse = await query.execute()
 
-          return results.map((modelItem: ShippingRateJsonResponse) => new ShippingRateModel(modelItem))
-        } 
+  return results.map((modelItem: ShippingRateJsonResponse) => new ShippingRateModel(modelItem))
+}
 
 export async function whereWeightTo(value: number): Promise<ShippingRateModel[]> {
-          const query = DB.instance.selectFrom('shipping_rates').where('weight_to', '=', value)
-          const results: ShippingRateJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('shipping_rates').where('weight_to', '=', value)
+  const results: ShippingRateJsonResponse = await query.execute()
 
-          return results.map((modelItem: ShippingRateJsonResponse) => new ShippingRateModel(modelItem))
-        } 
+  return results.map((modelItem: ShippingRateJsonResponse) => new ShippingRateModel(modelItem))
+}
 
 export async function whereRate(value: number): Promise<ShippingRateModel[]> {
-          const query = DB.instance.selectFrom('shipping_rates').where('rate', '=', value)
-          const results: ShippingRateJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('shipping_rates').where('rate', '=', value)
+  const results: ShippingRateJsonResponse = await query.execute()
 
-          return results.map((modelItem: ShippingRateJsonResponse) => new ShippingRateModel(modelItem))
-        } 
-
-
+  return results.map((modelItem: ShippingRateJsonResponse) => new ShippingRateModel(modelItem))
+}
 
 export const ShippingRate = ShippingRateModel
 

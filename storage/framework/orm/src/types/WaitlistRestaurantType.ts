@@ -1,7 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CustomerModelType } from './CustomerType'
-
 
 export interface WaitlistRestaurantsTable {
   id: Generated<number>

@@ -1,8 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { DeliveryRouteModelType } from './DeliveryRouteType'
-import type { UserModelType } from './UserType'
-
 
 export interface DriversTable {
   id: Generated<number>

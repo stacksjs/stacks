@@ -1,36 +1,22 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
-import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
-import { BaseOrm } from '../utils/base'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import type { NewTransaction, TransactionJsonResponse, TransactionsTable, TransactionUpdate } from '../types/TransactionType'
+import type { OrderModel } from './Order'
+import { randomUUIDv7 } from 'bun'
+import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { randomUUIDv7 } from 'bun'
-import type { TransactionModelType, TransactionJsonResponse, NewTransaction, TransactionUpdate, TransactionsTable } from '../types/TransactionType'
+import { DB } from '@stacksjs/orm'
 
-import type {OrderModel} from './Order'
-
-
-
-
-import type { Model } from '@stacksjs/types';
-import { schema } from '@stacksjs/validation';
-
-
-
+import { BaseOrm } from '../utils/base'
 
 export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTable, TransactionJsonResponse> {
-  private readonly hidden: Array<keyof TransactionJsonResponse> = ["paymentDetails"]
-  private readonly fillable: Array<keyof TransactionJsonResponse> = ["amount","status","payment_method","payment_details","transaction_reference","loyalty_points_earned","loyalty_points_redeemed","uuid"]
+  private readonly hidden: Array<keyof TransactionJsonResponse> = ['paymentDetails']
+  private readonly fillable: Array<keyof TransactionJsonResponse> = ['amount', 'status', 'payment_method', 'payment_details', 'transaction_reference', 'loyalty_points_earned', 'loyalty_points_redeemed', 'uuid']
   private readonly guarded: Array<keyof TransactionJsonResponse> = []
   protected attributes = {} as TransactionJsonResponse
   protected originalAttributes = {} as TransactionJsonResponse
-  
+
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -48,13 +34,12 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
   constructor(transaction: TransactionJsonResponse | undefined) {
     super('transactions')
     if (transaction) {
-
       this.attributes = { ...transaction }
       this.originalAttributes = { ...transaction }
 
-      Object.keys(transaction).forEach(key => {
+      Object.keys(transaction).forEach((key) => {
         if (!(key in this)) {
-           this.customColumns[key] = (transaction as TransactionJsonResponse)[key]
+          this.customColumns[key] = (transaction as TransactionJsonResponse)[key]
         }
       })
     }
@@ -69,7 +54,8 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
   protected async loadRelations(models: TransactionJsonResponse | TransactionJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length) return
+    if (!modelArray.length)
+      return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -89,7 +75,8 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      } else {
+      }
+      else {
         const records = relatedRecords.filter((record: { transaction_id: number }) => {
           return record.transaction_id === models.id
         })
@@ -110,12 +97,10 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
 
     if (Array.isArray(data)) {
       data.map((model: TransactionJsonResponse) => {
-
         const customGetter = {
           default: () => {
           },
 
-          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -124,14 +109,14 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
 
         return model
       })
-    } else {
+    }
+    else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
-        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -145,104 +130,100 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
       default: () => {
       },
 
-      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-        (model as any)[key] = await fn()
+      (model as any)[key] = await fn()
     }
   }
 
   get order_id(): number {
-        return this.attributes.order_id
-      }
+    return this.attributes.order_id
+  }
 
-get order(): OrderModel | undefined {
-        return this.attributes.order
-      }
+  get order(): OrderModel | undefined {
+    return this.attributes.order
+  }
 
-get id(): number {
+  get id(): number {
     return this.attributes.id
   }
 
-get uuid(): string | undefined {
-      return this.attributes.uuid
-    }
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
 
-get amount(): number {
-      return this.attributes.amount
-    }
+  get amount(): number {
+    return this.attributes.amount
+  }
 
-get status(): string {
-      return this.attributes.status
-    }
+  get status(): string {
+    return this.attributes.status
+  }
 
-get payment_method(): string {
-      return this.attributes.payment_method
-    }
+  get payment_method(): string {
+    return this.attributes.payment_method
+  }
 
-get payment_details(): string | undefined {
-      return this.attributes.payment_details
-    }
+  get payment_details(): string | undefined {
+    return this.attributes.payment_details
+  }
 
-get transaction_reference(): string | undefined {
-      return this.attributes.transaction_reference
-    }
+  get transaction_reference(): string | undefined {
+    return this.attributes.transaction_reference
+  }
 
-get loyalty_points_earned(): number | undefined {
-      return this.attributes.loyalty_points_earned
-    }
+  get loyalty_points_earned(): number | undefined {
+    return this.attributes.loyalty_points_earned
+  }
 
-get loyalty_points_redeemed(): number | undefined {
-      return this.attributes.loyalty_points_redeemed
-    }
+  get loyalty_points_redeemed(): number | undefined {
+    return this.attributes.loyalty_points_redeemed
+  }
 
-get created_at(): string | undefined {
-      return this.attributes.created_at
-    }
+  get created_at(): string | undefined {
+    return this.attributes.created_at
+  }
 
-    get updated_at(): string | undefined {
-      return this.attributes.updated_at
-    }
-
+  get updated_at(): string | undefined {
+    return this.attributes.updated_at
+  }
 
   set uuid(value: string) {
-      this.attributes.uuid = value
-    }
+    this.attributes.uuid = value
+  }
 
-set amount(value: number) {
-      this.attributes.amount = value
-    }
+  set amount(value: number) {
+    this.attributes.amount = value
+  }
 
-set status(value: string) {
-      this.attributes.status = value
-    }
+  set status(value: string) {
+    this.attributes.status = value
+  }
 
-set payment_method(value: string) {
-      this.attributes.payment_method = value
-    }
+  set payment_method(value: string) {
+    this.attributes.payment_method = value
+  }
 
-set payment_details(value: string) {
-      this.attributes.payment_details = value
-    }
+  set payment_details(value: string) {
+    this.attributes.payment_details = value
+  }
 
-set transaction_reference(value: string) {
-      this.attributes.transaction_reference = value
-    }
+  set transaction_reference(value: string) {
+    this.attributes.transaction_reference = value
+  }
 
-set loyalty_points_earned(value: number) {
-      this.attributes.loyalty_points_earned = value
-    }
+  set loyalty_points_earned(value: number) {
+    this.attributes.loyalty_points_earned = value
+  }
 
-set loyalty_points_redeemed(value: number) {
-      this.attributes.loyalty_points_redeemed = value
-    }
+  set loyalty_points_redeemed(value: number) {
+    this.attributes.loyalty_points_redeemed = value
+  }
 
-set updated_at(value: string) {
-      this.attributes.updated_at = value
-    }
-
-
+  set updated_at(value: string) {
+    this.attributes.updated_at = value
+  }
 
   static select(params: (keyof TransactionJsonResponse)[] | RawBuilder<string> | string): TransactionModel {
     const instance = new TransactionModel(undefined)
@@ -252,11 +233,12 @@ set updated_at(value: string) {
 
   // Method to find a Transaction by ID
   static async find(id: number): Promise<TransactionModel | undefined> {
-    let query = DB.instance.selectFrom('transactions').where('id', '=', id).selectAll()
+    const query = DB.instance.selectFrom('transactions').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     const instance = new TransactionModel(undefined)
     return instance.createInstance(model)
@@ -277,7 +259,8 @@ set updated_at(value: string) {
 
     const model = await instance.applyLast()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new TransactionModel(model)
   }
@@ -310,7 +293,7 @@ set updated_at(value: string) {
 
   static async findMany(ids: number[]): Promise<TransactionModel[]> {
     const instance = new TransactionModel(undefined)
-     
+
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: TransactionJsonResponse) => instance.parseResult(new TransactionModel(modelItem)))
@@ -325,7 +308,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new TransactionModel(model)
   }
@@ -339,7 +323,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new TransactionModel(model)
   }
@@ -506,12 +491,12 @@ set updated_at(value: string) {
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: TransactionModel[],
+    data: TransactionModel[]
     paging: {
-      total_records: number,
-      page: number,
+      total_records: number
+      page: number
       total_pages: number
-    },
+    }
     next_cursor: number | null
   }> {
     const instance = new TransactionModel(undefined)
@@ -521,7 +506,7 @@ set updated_at(value: string) {
     return {
       data: result.data.map((item: TransactionJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor
+      next_cursor: result.next_cursor,
     }
   }
 
@@ -533,13 +518,13 @@ set updated_at(value: string) {
   async applyCreate(newTransaction: NewTransaction): Promise<TransactionModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newTransaction).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewTransaction
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues['uuid'] = randomUUIDv7()
+    filteredValues.uuid = randomUUIDv7()
 
     const result = await DB.instance.insertInto('transactions')
       .values(filteredValues)
@@ -555,7 +540,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('transaction:created', model)
+      dispatch('transaction:created', model)
     return this.createInstance(model)
   }
 
@@ -624,7 +609,7 @@ set updated_at(value: string) {
   async update(newTransaction: TransactionUpdate): Promise<TransactionModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newTransaction).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as TransactionUpdate
 
@@ -649,7 +634,7 @@ set updated_at(value: string) {
       }
 
       if (model)
- dispatch('transaction:updated', model)
+        dispatch('transaction:updated', model)
       return this.createInstance(model)
     }
 
@@ -674,7 +659,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('transaction:updated', model)
+        dispatch('transaction:updated', model)
       return this.createInstance(model)
     }
 
@@ -701,9 +686,10 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('transaction:updated', model)
+        dispatch('transaction:updated', model)
       return this.createInstance(model)
-    } else {
+    }
+    else {
       // Create new record
       const result = await DB.instance.insertInto('transactions')
         .values(this.attributes as NewTransaction)
@@ -720,7 +706,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('transaction:created', model)
+        dispatch('transaction:created', model)
       return this.createInstance(model)
     }
   }
@@ -735,7 +721,7 @@ set updated_at(value: string) {
         ),
       ) as NewTransaction
 
-      filteredValues['uuid'] = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
 
       return filteredValues
     })
@@ -761,7 +747,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('transaction:created', model)
+      dispatch('transaction:created', model)
 
     return instance.createInstance(model)
   }
@@ -771,9 +757,9 @@ set updated_at(value: string) {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-    
+
     if (model)
- dispatch('transaction:deleted', model)
+      dispatch('transaction:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('transactions')
       .where('id', '=', this.id)
@@ -787,10 +773,8 @@ set updated_at(value: string) {
 
     const model = await instance.find(Number(id))
 
-    
-
     if (model)
- dispatch('transaction:deleted', model)
+      dispatch('transaction:deleted', model)
 
     return await DB.instance.deleteFrom('transactions')
       .where('id', '=', id)
@@ -798,62 +782,60 @@ set updated_at(value: string) {
   }
 
   static whereAmount(value: string): TransactionModel {
-          const instance = new TransactionModel(undefined)
+    const instance = new TransactionModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('amount', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('amount', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereStatus(value: string): TransactionModel {
-          const instance = new TransactionModel(undefined)
+  static whereStatus(value: string): TransactionModel {
+    const instance = new TransactionModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static wherePaymentMethod(value: string): TransactionModel {
-          const instance = new TransactionModel(undefined)
+  static wherePaymentMethod(value: string): TransactionModel {
+    const instance = new TransactionModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('payment_method', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('payment_method', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static wherePaymentDetails(value: string): TransactionModel {
-          const instance = new TransactionModel(undefined)
+  static wherePaymentDetails(value: string): TransactionModel {
+    const instance = new TransactionModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('payment_details', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('payment_details', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereTransactionReference(value: string): TransactionModel {
-          const instance = new TransactionModel(undefined)
+  static whereTransactionReference(value: string): TransactionModel {
+    const instance = new TransactionModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('transaction_reference', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('transaction_reference', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereLoyaltyPointsEarned(value: string): TransactionModel {
-          const instance = new TransactionModel(undefined)
+  static whereLoyaltyPointsEarned(value: string): TransactionModel {
+    const instance = new TransactionModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('loyalty_points_earned', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('loyalty_points_earned', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereLoyaltyPointsRedeemed(value: string): TransactionModel {
-          const instance = new TransactionModel(undefined)
+  static whereLoyaltyPointsRedeemed(value: string): TransactionModel {
+    const instance = new TransactionModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('loyalty_points_redeemed', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('loyalty_points_redeemed', '=', value)
 
-          return instance
-        } 
-
-
+    return instance
+  }
 
   static whereIn<V = number>(column: keyof TransactionsTable, values: V[]): TransactionModel {
     const instance = new TransactionModel(undefined)
@@ -861,39 +843,30 @@ static whereLoyaltyPointsRedeemed(value: string): TransactionModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  
-        async orderBelong(): Promise<OrderModel> {
-          if (this.order_id === undefined)
-            throw new HttpError(500, 'Relation Error!')
+  async orderBelong(): Promise<OrderModel> {
+    if (this.order_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
 
-          const model = await Order
-            .where('id', '=', this.order_id)
-            .first()
+    const model = await Order
+      .where('id', '=', this.order_id)
+      .first()
 
-          if (! model)
-            throw new HttpError(500, 'Model Relation Not Found!')
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
 
-          return model
-        }
+    return model
+  }
 
-
-
-  
-      toSearchableObject(): Partial<TransactionJsonResponse> {
-        return {
-          id: this.id,
-order_id: this.order_id,
-amount: this.amount,
-status: this.status,
-payment_method: this.payment_method,
-created_at: this.created_at
-        }
-      }
-    
-
-  
-
-  
+  toSearchableObject(): Partial<TransactionJsonResponse> {
+    return {
+      id: this.id,
+      order_id: this.order_id,
+      amount: this.amount,
+      status: this.status,
+      payment_method: this.payment_method,
+      created_at: this.created_at,
+    }
+  }
 
   static distinct(column: keyof TransactionJsonResponse): TransactionModel {
     const instance = new TransactionModel(undefined)
@@ -910,24 +883,24 @@ created_at: this.created_at
   toJSON(): TransactionJsonResponse {
     const output = {
 
- uuid: this.uuid,
+      uuid: this.uuid,
 
-id: this.id,
-amount: this.amount,
-   status: this.status,
-   payment_method: this.payment_method,
-   transaction_reference: this.transaction_reference,
-   loyalty_points_earned: this.loyalty_points_earned,
-   loyalty_points_redeemed: this.loyalty_points_redeemed,
-   
-        created_at: this.created_at,
+      id: this.id,
+      amount: this.amount,
+      status: this.status,
+      payment_method: this.payment_method,
+      transaction_reference: this.transaction_reference,
+      loyalty_points_earned: this.loyalty_points_earned,
+      loyalty_points_redeemed: this.loyalty_points_redeemed,
 
-        updated_at: this.updated_at,
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
 
       order_id: this.order_id,
-   order: this.order,
-...this.customColumns,
-}
+      order: this.order,
+      ...this.customColumns,
+    }
 
     return output
   }
@@ -939,8 +912,6 @@ amount: this.amount,
 
     return model
   }
-
-  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<TransactionModel | undefined> {
@@ -959,16 +930,15 @@ amount: this.amount,
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
-
-  
 }
 
 export async function find(id: number): Promise<TransactionModel | undefined> {
-  let query = DB.instance.selectFrom('transactions').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('transactions').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   const instance = new TransactionModel(undefined)
   return instance.createInstance(model)
@@ -996,55 +966,53 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereAmount(value: number): Promise<TransactionModel[]> {
-          const query = DB.instance.selectFrom('transactions').where('amount', '=', value)
-          const results: TransactionJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('transactions').where('amount', '=', value)
+  const results: TransactionJsonResponse = await query.execute()
 
-          return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
-        } 
+  return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
+}
 
 export async function whereStatus(value: string): Promise<TransactionModel[]> {
-          const query = DB.instance.selectFrom('transactions').where('status', '=', value)
-          const results: TransactionJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('transactions').where('status', '=', value)
+  const results: TransactionJsonResponse = await query.execute()
 
-          return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
-        } 
+  return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
+}
 
 export async function wherePaymentMethod(value: string): Promise<TransactionModel[]> {
-          const query = DB.instance.selectFrom('transactions').where('payment_method', '=', value)
-          const results: TransactionJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('transactions').where('payment_method', '=', value)
+  const results: TransactionJsonResponse = await query.execute()
 
-          return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
-        } 
+  return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
+}
 
 export async function wherePaymentDetails(value: string): Promise<TransactionModel[]> {
-          const query = DB.instance.selectFrom('transactions').where('payment_details', '=', value)
-          const results: TransactionJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('transactions').where('payment_details', '=', value)
+  const results: TransactionJsonResponse = await query.execute()
 
-          return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
-        } 
+  return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
+}
 
 export async function whereTransactionReference(value: string): Promise<TransactionModel[]> {
-          const query = DB.instance.selectFrom('transactions').where('transaction_reference', '=', value)
-          const results: TransactionJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('transactions').where('transaction_reference', '=', value)
+  const results: TransactionJsonResponse = await query.execute()
 
-          return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
-        } 
+  return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
+}
 
 export async function whereLoyaltyPointsEarned(value: number): Promise<TransactionModel[]> {
-          const query = DB.instance.selectFrom('transactions').where('loyalty_points_earned', '=', value)
-          const results: TransactionJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('transactions').where('loyalty_points_earned', '=', value)
+  const results: TransactionJsonResponse = await query.execute()
 
-          return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
-        } 
+  return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
+}
 
 export async function whereLoyaltyPointsRedeemed(value: number): Promise<TransactionModel[]> {
-          const query = DB.instance.selectFrom('transactions').where('loyalty_points_redeemed', '=', value)
-          const results: TransactionJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('transactions').where('loyalty_points_redeemed', '=', value)
+  const results: TransactionJsonResponse = await query.execute()
 
-          return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
-        } 
-
-
+  return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
+}
 
 export const Transaction = TransactionModel
 

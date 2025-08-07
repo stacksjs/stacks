@@ -2,7 +2,6 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { ProductModelType } from './ProductType'
 
-
 export interface ManufacturersTable {
   id: Generated<number>
   manufacturer: string

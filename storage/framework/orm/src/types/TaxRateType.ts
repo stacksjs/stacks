@@ -1,7 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 
-
 export interface TaxRatesTable {
   id: Generated<number>
   name: string

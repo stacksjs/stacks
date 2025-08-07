@@ -1,14 +1,11 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { ReviewModelType } from './ReviewType'
+import type { CouponModelType } from './CouponType'
+import type { LicenseKeyModelType } from './LicenseKeyType'
 import type { ProductUnitModelType } from './ProductUnitType'
 import type { ProductVariantModelType } from './ProductVariantType'
-import type { LicenseKeyModelType } from './LicenseKeyType'
+import type { ReviewModelType } from './ReviewType'
 import type { WaitlistProductModelType } from './WaitlistProductType'
-import type { CouponModelType } from './CouponType'
-import type { CategoryModelType } from './CategoryType'
-import type { ManufacturerModelType } from './ManufacturerType'
-
 
 export interface ProductsTable {
   id: Generated<number>

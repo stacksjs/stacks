@@ -1,7 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CartModelType } from './CartType'
-
 
 export interface CartItemsTable {
   id: Generated<number>

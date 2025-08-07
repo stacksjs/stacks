@@ -1,34 +1,20 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
-import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
-import { BaseOrm } from '../utils/base'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
-import { HttpError } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
+import type { NewPaymentProduct, PaymentProductJsonResponse, PaymentProductsTable, PaymentProductUpdate } from '../types/PaymentProductType'
 import { randomUUIDv7 } from 'bun'
-import type { PaymentProductModelType, PaymentProductJsonResponse, NewPaymentProduct, PaymentProductUpdate, PaymentProductsTable } from '../types/PaymentProductType'
+import { sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
+import { DB } from '@stacksjs/orm'
 
-
-
-
-import type { Model } from '@stacksjs/types';
-import { schema } from '@stacksjs/validation';
-
-
-
+import { BaseOrm } from '../utils/base'
 
 export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentProductsTable, PaymentProductJsonResponse> {
   private readonly hidden: Array<keyof PaymentProductJsonResponse> = []
-  private readonly fillable: Array<keyof PaymentProductJsonResponse> = ["name","description","key","unit_price","status","image","provider_id","uuid"]
+  private readonly fillable: Array<keyof PaymentProductJsonResponse> = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
   private readonly guarded: Array<keyof PaymentProductJsonResponse> = []
   protected attributes = {} as PaymentProductJsonResponse
   protected originalAttributes = {} as PaymentProductJsonResponse
-  
+
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -46,13 +32,12 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
   constructor(paymentProduct: PaymentProductJsonResponse | undefined) {
     super('payment_products')
     if (paymentProduct) {
-
       this.attributes = { ...paymentProduct }
       this.originalAttributes = { ...paymentProduct }
 
-      Object.keys(paymentProduct).forEach(key => {
+      Object.keys(paymentProduct).forEach((key) => {
         if (!(key in this)) {
-           this.customColumns[key] = (paymentProduct as PaymentProductJsonResponse)[key]
+          this.customColumns[key] = (paymentProduct as PaymentProductJsonResponse)[key]
         }
       })
     }
@@ -67,7 +52,8 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
   protected async loadRelations(models: PaymentProductJsonResponse | PaymentProductJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length) return
+    if (!modelArray.length)
+      return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -87,7 +73,8 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      } else {
+      }
+      else {
         const records = relatedRecords.filter((record: { paymentProduct_id: number }) => {
           return record.paymentProduct_id === models.id
         })
@@ -108,12 +95,10 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
 
     if (Array.isArray(data)) {
       data.map((model: PaymentProductJsonResponse) => {
-
         const customGetter = {
           default: () => {
           },
 
-          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -122,14 +107,14 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
 
         return model
       })
-    } else {
+    }
+    else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
-        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -143,11 +128,10 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
       default: () => {
       },
 
-      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-        (model as any)[key] = await fn()
+      (model as any)[key] = await fn()
     }
   }
 
@@ -155,84 +139,81 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     return this.attributes.id
   }
 
-get uuid(): string | undefined {
-      return this.attributes.uuid
-    }
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
 
-get name(): string | undefined {
-      return this.attributes.name
-    }
+  get name(): string | undefined {
+    return this.attributes.name
+  }
 
-get description(): string | undefined {
-      return this.attributes.description
-    }
+  get description(): string | undefined {
+    return this.attributes.description
+  }
 
-get key(): string | undefined {
-      return this.attributes.key
-    }
+  get key(): string | undefined {
+    return this.attributes.key
+  }
 
-get unit_price(): number | undefined {
-      return this.attributes.unit_price
-    }
+  get unit_price(): number | undefined {
+    return this.attributes.unit_price
+  }
 
-get status(): string | undefined {
-      return this.attributes.status
-    }
+  get status(): string | undefined {
+    return this.attributes.status
+  }
 
-get image(): string | undefined {
-      return this.attributes.image
-    }
+  get image(): string | undefined {
+    return this.attributes.image
+  }
 
-get provider_id(): string | undefined {
-      return this.attributes.provider_id
-    }
+  get provider_id(): string | undefined {
+    return this.attributes.provider_id
+  }
 
-get created_at(): string | undefined {
-      return this.attributes.created_at
-    }
+  get created_at(): string | undefined {
+    return this.attributes.created_at
+  }
 
-    get updated_at(): string | undefined {
-      return this.attributes.updated_at
-    }
-
+  get updated_at(): string | undefined {
+    return this.attributes.updated_at
+  }
 
   set uuid(value: string) {
-      this.attributes.uuid = value
-    }
+    this.attributes.uuid = value
+  }
 
-set name(value: string) {
-      this.attributes.name = value
-    }
+  set name(value: string) {
+    this.attributes.name = value
+  }
 
-set description(value: string) {
-      this.attributes.description = value
-    }
+  set description(value: string) {
+    this.attributes.description = value
+  }
 
-set key(value: string) {
-      this.attributes.key = value
-    }
+  set key(value: string) {
+    this.attributes.key = value
+  }
 
-set unit_price(value: number) {
-      this.attributes.unit_price = value
-    }
+  set unit_price(value: number) {
+    this.attributes.unit_price = value
+  }
 
-set status(value: string) {
-      this.attributes.status = value
-    }
+  set status(value: string) {
+    this.attributes.status = value
+  }
 
-set image(value: string) {
-      this.attributes.image = value
-    }
+  set image(value: string) {
+    this.attributes.image = value
+  }
 
-set provider_id(value: string) {
-      this.attributes.provider_id = value
-    }
+  set provider_id(value: string) {
+    this.attributes.provider_id = value
+  }
 
-set updated_at(value: string) {
-      this.attributes.updated_at = value
-    }
-
-
+  set updated_at(value: string) {
+    this.attributes.updated_at = value
+  }
 
   static select(params: (keyof PaymentProductJsonResponse)[] | RawBuilder<string> | string): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
@@ -242,11 +223,12 @@ set updated_at(value: string) {
 
   // Method to find a PaymentProduct by ID
   static async find(id: number): Promise<PaymentProductModel | undefined> {
-    let query = DB.instance.selectFrom('payment_products').where('id', '=', id).selectAll()
+    const query = DB.instance.selectFrom('payment_products').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     const instance = new PaymentProductModel(undefined)
     return instance.createInstance(model)
@@ -267,7 +249,8 @@ set updated_at(value: string) {
 
     const model = await instance.applyLast()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new PaymentProductModel(model)
   }
@@ -300,7 +283,7 @@ set updated_at(value: string) {
 
   static async findMany(ids: number[]): Promise<PaymentProductModel[]> {
     const instance = new PaymentProductModel(undefined)
-     
+
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: PaymentProductJsonResponse) => instance.parseResult(new PaymentProductModel(modelItem)))
@@ -315,7 +298,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new PaymentProductModel(model)
   }
@@ -329,7 +313,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new PaymentProductModel(model)
   }
@@ -496,12 +481,12 @@ set updated_at(value: string) {
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: PaymentProductModel[],
+    data: PaymentProductModel[]
     paging: {
-      total_records: number,
-      page: number,
+      total_records: number
+      page: number
       total_pages: number
-    },
+    }
     next_cursor: number | null
   }> {
     const instance = new PaymentProductModel(undefined)
@@ -511,7 +496,7 @@ set updated_at(value: string) {
     return {
       data: result.data.map((item: PaymentProductJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor
+      next_cursor: result.next_cursor,
     }
   }
 
@@ -523,13 +508,13 @@ set updated_at(value: string) {
   async applyCreate(newPaymentProduct: NewPaymentProduct): Promise<PaymentProductModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPaymentProduct).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewPaymentProduct
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues['uuid'] = randomUUIDv7()
+    filteredValues.uuid = randomUUIDv7()
 
     const result = await DB.instance.insertInto('payment_products')
       .values(filteredValues)
@@ -544,7 +529,6 @@ set updated_at(value: string) {
       throw new HttpError(500, 'Failed to retrieve created PaymentProduct')
     }
 
-    
     return this.createInstance(model)
   }
 
@@ -613,7 +597,7 @@ set updated_at(value: string) {
   async update(newPaymentProduct: PaymentProductUpdate): Promise<PaymentProductModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPaymentProduct).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as PaymentProductUpdate
 
@@ -637,7 +621,6 @@ set updated_at(value: string) {
         throw new HttpError(500, 'Failed to retrieve updated PaymentProduct')
       }
 
-      
       return this.createInstance(model)
     }
 
@@ -661,7 +644,6 @@ set updated_at(value: string) {
         throw new HttpError(500, 'Failed to retrieve updated PaymentProduct')
       }
 
-      
       return this.createInstance(model)
     }
 
@@ -687,9 +669,9 @@ set updated_at(value: string) {
         throw new HttpError(500, 'Failed to retrieve updated PaymentProduct')
       }
 
-      
       return this.createInstance(model)
-    } else {
+    }
+    else {
       // Create new record
       const result = await DB.instance.insertInto('payment_products')
         .values(this.attributes as NewPaymentProduct)
@@ -705,7 +687,6 @@ set updated_at(value: string) {
         throw new HttpError(500, 'Failed to retrieve created PaymentProduct')
       }
 
-      
       return this.createInstance(model)
     }
   }
@@ -720,7 +701,7 @@ set updated_at(value: string) {
         ),
       ) as NewPaymentProduct
 
-      filteredValues['uuid'] = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
 
       return filteredValues
     })
@@ -745,8 +726,6 @@ set updated_at(value: string) {
       throw new HttpError(500, 'Failed to retrieve created PaymentProduct')
     }
 
-    
-
     return instance.createInstance(model)
   }
 
@@ -754,9 +733,6 @@ set updated_at(value: string) {
   async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
-    
-    
-    
 
     const deleted = await DB.instance.deleteFrom('payment_products')
       .where('id', '=', this.id)
@@ -766,90 +742,72 @@ set updated_at(value: string) {
   }
 
   static async remove(id: number): Promise<any> {
-    
-
-    
-
-    
-
-    
-
     return await DB.instance.deleteFrom('payment_products')
       .where('id', '=', id)
       .execute()
   }
 
   static whereName(value: string): PaymentProductModel {
-          const instance = new PaymentProductModel(undefined)
+    const instance = new PaymentProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereDescription(value: string): PaymentProductModel {
-          const instance = new PaymentProductModel(undefined)
+  static whereDescription(value: string): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereKey(value: string): PaymentProductModel {
-          const instance = new PaymentProductModel(undefined)
+  static whereKey(value: string): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('key', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('key', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereUnitPrice(value: string): PaymentProductModel {
-          const instance = new PaymentProductModel(undefined)
+  static whereUnitPrice(value: string): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('unit_price', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('unit_price', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereStatus(value: string): PaymentProductModel {
-          const instance = new PaymentProductModel(undefined)
+  static whereStatus(value: string): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereImage(value: string): PaymentProductModel {
-          const instance = new PaymentProductModel(undefined)
+  static whereImage(value: string): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('image', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('image', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereProviderId(value: string): PaymentProductModel {
-          const instance = new PaymentProductModel(undefined)
+  static whereProviderId(value: string): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('provider_id', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('provider_id', '=', value)
 
-          return instance
-        } 
-
-
+    return instance
+  }
 
   static whereIn<V = number>(column: keyof PaymentProductsTable, values: V[]): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
-
-  
-
-  
-
-  
-
-  
 
   static distinct(column: keyof PaymentProductJsonResponse): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
@@ -866,23 +824,23 @@ static whereProviderId(value: string): PaymentProductModel {
   toJSON(): PaymentProductJsonResponse {
     const output = {
 
- uuid: this.uuid,
+      uuid: this.uuid,
 
-id: this.id,
-name: this.name,
-   description: this.description,
-   key: this.key,
-   unit_price: this.unit_price,
-   status: this.status,
-   image: this.image,
-   provider_id: this.provider_id,
-   
-        created_at: this.created_at,
+      id: this.id,
+      name: this.name,
+      description: this.description,
+      key: this.key,
+      unit_price: this.unit_price,
+      status: this.status,
+      image: this.image,
+      provider_id: this.provider_id,
 
-        updated_at: this.updated_at,
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
 
       ...this.customColumns,
-}
+    }
 
     return output
   }
@@ -894,8 +852,6 @@ name: this.name,
 
     return model
   }
-
-  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<PaymentProductModel | undefined> {
@@ -914,16 +870,15 @@ name: this.name,
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
-
-  
 }
 
 export async function find(id: number): Promise<PaymentProductModel | undefined> {
-  let query = DB.instance.selectFrom('payment_products').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('payment_products').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   const instance = new PaymentProductModel(undefined)
   return instance.createInstance(model)
@@ -951,55 +906,53 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<PaymentProductModel[]> {
-          const query = DB.instance.selectFrom('payment_products').where('name', '=', value)
-          const results: PaymentProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('payment_products').where('name', '=', value)
+  const results: PaymentProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
-        } 
+  return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
+}
 
 export async function whereDescription(value: string): Promise<PaymentProductModel[]> {
-          const query = DB.instance.selectFrom('payment_products').where('description', '=', value)
-          const results: PaymentProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('payment_products').where('description', '=', value)
+  const results: PaymentProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
-        } 
+  return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
+}
 
 export async function whereKey(value: string): Promise<PaymentProductModel[]> {
-          const query = DB.instance.selectFrom('payment_products').where('key', '=', value)
-          const results: PaymentProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('payment_products').where('key', '=', value)
+  const results: PaymentProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
-        } 
+  return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
+}
 
 export async function whereUnitPrice(value: number): Promise<PaymentProductModel[]> {
-          const query = DB.instance.selectFrom('payment_products').where('unit_price', '=', value)
-          const results: PaymentProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('payment_products').where('unit_price', '=', value)
+  const results: PaymentProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
-        } 
+  return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
+}
 
 export async function whereStatus(value: string): Promise<PaymentProductModel[]> {
-          const query = DB.instance.selectFrom('payment_products').where('status', '=', value)
-          const results: PaymentProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('payment_products').where('status', '=', value)
+  const results: PaymentProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
-        } 
+  return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
+}
 
 export async function whereImage(value: string): Promise<PaymentProductModel[]> {
-          const query = DB.instance.selectFrom('payment_products').where('image', '=', value)
-          const results: PaymentProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('payment_products').where('image', '=', value)
+  const results: PaymentProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
-        } 
+  return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
+}
 
 export async function whereProviderId(value: string): Promise<PaymentProductModel[]> {
-          const query = DB.instance.selectFrom('payment_products').where('provider_id', '=', value)
-          const results: PaymentProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('payment_products').where('provider_id', '=', value)
+  const results: PaymentProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
-        } 
-
-
+  return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
+}
 
 export const PaymentProduct = PaymentProductModel
 

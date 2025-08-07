@@ -14,7 +14,7 @@ export async function up(db: Database<any>) {
 
   await db.schema
     .alterTable('taggable_models')
-    .addForeignKeyConstraint('taggable_models_tag_id_foreign', ['tag_id'], 'tags', ['id'], (cb) => cb.onDelete('cascade'))
+    .addForeignKeyConstraint('taggable_models_tag_id_foreign', ['tag_id'], 'tags', ['id'], cb => cb.onDelete('cascade'))
     .execute()
 
   await db.schema
@@ -35,5 +35,4 @@ export async function up(db: Database<any>) {
     .columns(['tag_id', 'taggable_id', 'taggable_type'])
     .unique()
     .execute()
-
 }

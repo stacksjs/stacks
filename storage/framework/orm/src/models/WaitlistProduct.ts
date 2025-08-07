@@ -1,38 +1,23 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
-import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
-import { BaseOrm } from '../utils/base'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import type { NewWaitlistProduct, WaitlistProductJsonResponse, WaitlistProductsTable, WaitlistProductUpdate } from '../types/WaitlistProductType'
+import type { CustomerModel } from './Customer'
+import type { ProductModel } from './Product'
+import { randomUUIDv7 } from 'bun'
+import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { randomUUIDv7 } from 'bun'
-import type { WaitlistProductModelType, WaitlistProductJsonResponse, NewWaitlistProduct, WaitlistProductUpdate, WaitlistProductsTable } from '../types/WaitlistProductType'
+import { DB } from '@stacksjs/orm'
 
-import type {ProductModel} from './Product'
-
-import type {CustomerModel} from './Customer'
-
-
-
-
-import type { Model } from '@stacksjs/types';
-import { schema } from '@stacksjs/validation';
-
-
-
+import { BaseOrm } from '../utils/base'
 
 export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitlistProductsTable, WaitlistProductJsonResponse> {
   private readonly hidden: Array<keyof WaitlistProductJsonResponse> = []
-  private readonly fillable: Array<keyof WaitlistProductJsonResponse> = ["name","email","phone","quantity","notification_preference","source","notes","status","notified_at","purchased_at","cancelled_at","uuid","customer_id","product_id"]
+  private readonly fillable: Array<keyof WaitlistProductJsonResponse> = ['name', 'email', 'phone', 'quantity', 'notification_preference', 'source', 'notes', 'status', 'notified_at', 'purchased_at', 'cancelled_at', 'uuid', 'customer_id', 'product_id']
   private readonly guarded: Array<keyof WaitlistProductJsonResponse> = []
   protected attributes = {} as WaitlistProductJsonResponse
   protected originalAttributes = {} as WaitlistProductJsonResponse
-  
+
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -50,13 +35,12 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, Waitlist
   constructor(waitlistProduct: WaitlistProductJsonResponse | undefined) {
     super('waitlist_products')
     if (waitlistProduct) {
-
       this.attributes = { ...waitlistProduct }
       this.originalAttributes = { ...waitlistProduct }
 
-      Object.keys(waitlistProduct).forEach(key => {
+      Object.keys(waitlistProduct).forEach((key) => {
         if (!(key in this)) {
-           this.customColumns[key] = (waitlistProduct as WaitlistProductJsonResponse)[key]
+          this.customColumns[key] = (waitlistProduct as WaitlistProductJsonResponse)[key]
         }
       })
     }
@@ -71,7 +55,8 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, Waitlist
   protected async loadRelations(models: WaitlistProductJsonResponse | WaitlistProductJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length) return
+    if (!modelArray.length)
+      return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -91,7 +76,8 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, Waitlist
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      } else {
+      }
+      else {
         const records = relatedRecords.filter((record: { waitlistProduct_id: number }) => {
           return record.waitlistProduct_id === models.id
         })
@@ -112,12 +98,10 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, Waitlist
 
     if (Array.isArray(data)) {
       data.map((model: WaitlistProductJsonResponse) => {
-
         const customGetter = {
           default: () => {
           },
 
-          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -126,14 +110,14 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, Waitlist
 
         return model
       })
-    } else {
+    }
+    else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
-        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -147,144 +131,140 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, Waitlist
       default: () => {
       },
 
-      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-        (model as any)[key] = await fn()
+      (model as any)[key] = await fn()
     }
   }
 
   get product_id(): number {
-        return this.attributes.product_id
-      }
+    return this.attributes.product_id
+  }
 
-get product(): ProductModel | undefined {
-        return this.attributes.product
-      }
+  get product(): ProductModel | undefined {
+    return this.attributes.product
+  }
 
-get customer_id(): number {
-        return this.attributes.customer_id
-      }
+  get customer_id(): number {
+    return this.attributes.customer_id
+  }
 
-get customer(): CustomerModel | undefined {
-        return this.attributes.customer
-      }
+  get customer(): CustomerModel | undefined {
+    return this.attributes.customer
+  }
 
-get id(): number {
+  get id(): number {
     return this.attributes.id
   }
 
-get uuid(): string | undefined {
-      return this.attributes.uuid
-    }
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
 
-get name(): string {
-      return this.attributes.name
-    }
+  get name(): string {
+    return this.attributes.name
+  }
 
-get email(): string {
-      return this.attributes.email
-    }
+  get email(): string {
+    return this.attributes.email
+  }
 
-get phone(): string | undefined {
-      return this.attributes.phone
-    }
+  get phone(): string | undefined {
+    return this.attributes.phone
+  }
 
-get quantity(): number {
-      return this.attributes.quantity
-    }
+  get quantity(): number {
+    return this.attributes.quantity
+  }
 
-get notification_preference(): string | string[] {
-      return this.attributes.notification_preference
-    }
+  get notification_preference(): string | string[] {
+    return this.attributes.notification_preference
+  }
 
-get source(): string {
-      return this.attributes.source
-    }
+  get source(): string {
+    return this.attributes.source
+  }
 
-get notes(): string | undefined {
-      return this.attributes.notes
-    }
+  get notes(): string | undefined {
+    return this.attributes.notes
+  }
 
-get status(): string | string[] {
-      return this.attributes.status
-    }
+  get status(): string | string[] {
+    return this.attributes.status
+  }
 
-get notified_at(): unix | undefined {
-      return this.attributes.notified_at
-    }
+  get notified_at(): unix | undefined {
+    return this.attributes.notified_at
+  }
 
-get purchased_at(): unix | undefined {
-      return this.attributes.purchased_at
-    }
+  get purchased_at(): unix | undefined {
+    return this.attributes.purchased_at
+  }
 
-get cancelled_at(): unix | undefined {
-      return this.attributes.cancelled_at
-    }
+  get cancelled_at(): unix | undefined {
+    return this.attributes.cancelled_at
+  }
 
-get created_at(): string | undefined {
-      return this.attributes.created_at
-    }
+  get created_at(): string | undefined {
+    return this.attributes.created_at
+  }
 
-    get updated_at(): string | undefined {
-      return this.attributes.updated_at
-    }
-
+  get updated_at(): string | undefined {
+    return this.attributes.updated_at
+  }
 
   set uuid(value: string) {
-      this.attributes.uuid = value
-    }
+    this.attributes.uuid = value
+  }
 
-set name(value: string) {
-      this.attributes.name = value
-    }
+  set name(value: string) {
+    this.attributes.name = value
+  }
 
-set email(value: string) {
-      this.attributes.email = value
-    }
+  set email(value: string) {
+    this.attributes.email = value
+  }
 
-set phone(value: string) {
-      this.attributes.phone = value
-    }
+  set phone(value: string) {
+    this.attributes.phone = value
+  }
 
-set quantity(value: number) {
-      this.attributes.quantity = value
-    }
+  set quantity(value: number) {
+    this.attributes.quantity = value
+  }
 
-set notification_preference(value: string | string[]) {
-      this.attributes.notification_preference = value
-    }
+  set notification_preference(value: string | string[]) {
+    this.attributes.notification_preference = value
+  }
 
-set source(value: string) {
-      this.attributes.source = value
-    }
+  set source(value: string) {
+    this.attributes.source = value
+  }
 
-set notes(value: string) {
-      this.attributes.notes = value
-    }
+  set notes(value: string) {
+    this.attributes.notes = value
+  }
 
-set status(value: string | string[]) {
-      this.attributes.status = value
-    }
+  set status(value: string | string[]) {
+    this.attributes.status = value
+  }
 
-set notified_at(value: unix) {
-      this.attributes.notified_at = value
-    }
+  set notified_at(value: unix) {
+    this.attributes.notified_at = value
+  }
 
-set purchased_at(value: unix) {
-      this.attributes.purchased_at = value
-    }
+  set purchased_at(value: unix) {
+    this.attributes.purchased_at = value
+  }
 
-set cancelled_at(value: unix) {
-      this.attributes.cancelled_at = value
-    }
+  set cancelled_at(value: unix) {
+    this.attributes.cancelled_at = value
+  }
 
-set updated_at(value: string) {
-      this.attributes.updated_at = value
-    }
-
-
+  set updated_at(value: string) {
+    this.attributes.updated_at = value
+  }
 
   static select(params: (keyof WaitlistProductJsonResponse)[] | RawBuilder<string> | string): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
@@ -294,11 +274,12 @@ set updated_at(value: string) {
 
   // Method to find a WaitlistProduct by ID
   static async find(id: number): Promise<WaitlistProductModel | undefined> {
-    let query = DB.instance.selectFrom('waitlist_products').where('id', '=', id).selectAll()
+    const query = DB.instance.selectFrom('waitlist_products').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     const instance = new WaitlistProductModel(undefined)
     return instance.createInstance(model)
@@ -319,7 +300,8 @@ set updated_at(value: string) {
 
     const model = await instance.applyLast()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new WaitlistProductModel(model)
   }
@@ -352,7 +334,7 @@ set updated_at(value: string) {
 
   static async findMany(ids: number[]): Promise<WaitlistProductModel[]> {
     const instance = new WaitlistProductModel(undefined)
-     
+
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: WaitlistProductJsonResponse) => instance.parseResult(new WaitlistProductModel(modelItem)))
@@ -367,7 +349,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new WaitlistProductModel(model)
   }
@@ -381,7 +364,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new WaitlistProductModel(model)
   }
@@ -548,12 +532,12 @@ set updated_at(value: string) {
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: WaitlistProductModel[],
+    data: WaitlistProductModel[]
     paging: {
-      total_records: number,
-      page: number,
+      total_records: number
+      page: number
       total_pages: number
-    },
+    }
     next_cursor: number | null
   }> {
     const instance = new WaitlistProductModel(undefined)
@@ -563,7 +547,7 @@ set updated_at(value: string) {
     return {
       data: result.data.map((item: WaitlistProductJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor
+      next_cursor: result.next_cursor,
     }
   }
 
@@ -575,13 +559,13 @@ set updated_at(value: string) {
   async applyCreate(newWaitlistProduct: NewWaitlistProduct): Promise<WaitlistProductModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newWaitlistProduct).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewWaitlistProduct
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues['uuid'] = randomUUIDv7()
+    filteredValues.uuid = randomUUIDv7()
 
     const result = await DB.instance.insertInto('waitlist_products')
       .values(filteredValues)
@@ -597,7 +581,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('waitlistProduct:created', model)
+      dispatch('waitlistProduct:created', model)
     return this.createInstance(model)
   }
 
@@ -666,7 +650,7 @@ set updated_at(value: string) {
   async update(newWaitlistProduct: WaitlistProductUpdate): Promise<WaitlistProductModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newWaitlistProduct).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as WaitlistProductUpdate
 
@@ -691,7 +675,7 @@ set updated_at(value: string) {
       }
 
       if (model)
- dispatch('waitlistProduct:updated', model)
+        dispatch('waitlistProduct:updated', model)
       return this.createInstance(model)
     }
 
@@ -716,7 +700,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('waitlistProduct:updated', model)
+        dispatch('waitlistProduct:updated', model)
       return this.createInstance(model)
     }
 
@@ -743,9 +727,10 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('waitlistProduct:updated', model)
+        dispatch('waitlistProduct:updated', model)
       return this.createInstance(model)
-    } else {
+    }
+    else {
       // Create new record
       const result = await DB.instance.insertInto('waitlist_products')
         .values(this.attributes as NewWaitlistProduct)
@@ -762,7 +747,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('waitlistProduct:created', model)
+        dispatch('waitlistProduct:created', model)
       return this.createInstance(model)
     }
   }
@@ -777,7 +762,7 @@ set updated_at(value: string) {
         ),
       ) as NewWaitlistProduct
 
-      filteredValues['uuid'] = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
 
       return filteredValues
     })
@@ -803,7 +788,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('waitlistProduct:created', model)
+      dispatch('waitlistProduct:created', model)
 
     return instance.createInstance(model)
   }
@@ -813,9 +798,9 @@ set updated_at(value: string) {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-    
+
     if (model)
- dispatch('waitlistProduct:deleted', model)
+      dispatch('waitlistProduct:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('waitlist_products')
       .where('id', '=', this.id)
@@ -829,10 +814,8 @@ set updated_at(value: string) {
 
     const model = await instance.find(Number(id))
 
-    
-
     if (model)
- dispatch('waitlistProduct:deleted', model)
+      dispatch('waitlistProduct:deleted', model)
 
     return await DB.instance.deleteFrom('waitlist_products')
       .where('id', '=', id)
@@ -840,94 +823,92 @@ set updated_at(value: string) {
   }
 
   static whereName(value: string): WaitlistProductModel {
-          const instance = new WaitlistProductModel(undefined)
+    const instance = new WaitlistProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereEmail(value: string): WaitlistProductModel {
-          const instance = new WaitlistProductModel(undefined)
+  static whereEmail(value: string): WaitlistProductModel {
+    const instance = new WaitlistProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static wherePhone(value: string): WaitlistProductModel {
-          const instance = new WaitlistProductModel(undefined)
+  static wherePhone(value: string): WaitlistProductModel {
+    const instance = new WaitlistProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('phone', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('phone', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereQuantity(value: string): WaitlistProductModel {
-          const instance = new WaitlistProductModel(undefined)
+  static whereQuantity(value: string): WaitlistProductModel {
+    const instance = new WaitlistProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('quantity', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('quantity', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereNotificationPreference(value: string): WaitlistProductModel {
-          const instance = new WaitlistProductModel(undefined)
+  static whereNotificationPreference(value: string): WaitlistProductModel {
+    const instance = new WaitlistProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('notification_preference', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('notification_preference', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereSource(value: string): WaitlistProductModel {
-          const instance = new WaitlistProductModel(undefined)
+  static whereSource(value: string): WaitlistProductModel {
+    const instance = new WaitlistProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('source', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('source', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereNotes(value: string): WaitlistProductModel {
-          const instance = new WaitlistProductModel(undefined)
+  static whereNotes(value: string): WaitlistProductModel {
+    const instance = new WaitlistProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('notes', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('notes', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereStatus(value: string): WaitlistProductModel {
-          const instance = new WaitlistProductModel(undefined)
+  static whereStatus(value: string): WaitlistProductModel {
+    const instance = new WaitlistProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereNotifiedAt(value: string): WaitlistProductModel {
-          const instance = new WaitlistProductModel(undefined)
+  static whereNotifiedAt(value: string): WaitlistProductModel {
+    const instance = new WaitlistProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('notified_at', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('notified_at', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static wherePurchasedAt(value: string): WaitlistProductModel {
-          const instance = new WaitlistProductModel(undefined)
+  static wherePurchasedAt(value: string): WaitlistProductModel {
+    const instance = new WaitlistProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('purchased_at', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('purchased_at', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereCancelledAt(value: string): WaitlistProductModel {
-          const instance = new WaitlistProductModel(undefined)
+  static whereCancelledAt(value: string): WaitlistProductModel {
+    const instance = new WaitlistProductModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('cancelled_at', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('cancelled_at', '=', value)
 
-          return instance
-        } 
-
-
+    return instance
+  }
 
   static whereIn<V = number>(column: keyof WaitlistProductsTable, values: V[]): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
@@ -935,57 +916,47 @@ static whereCancelledAt(value: string): WaitlistProductModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  
-        async productBelong(): Promise<ProductModel> {
-          if (this.product_id === undefined)
-            throw new HttpError(500, 'Relation Error!')
+  async productBelong(): Promise<ProductModel> {
+    if (this.product_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
 
-          const model = await Product
-            .where('id', '=', this.product_id)
-            .first()
+    const model = await Product
+      .where('id', '=', this.product_id)
+      .first()
 
-          if (! model)
-            throw new HttpError(500, 'Model Relation Not Found!')
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
 
-          return model
-        }
+    return model
+  }
 
+  async customerBelong(): Promise<CustomerModel> {
+    if (this.customer_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
 
-        async customerBelong(): Promise<CustomerModel> {
-          if (this.customer_id === undefined)
-            throw new HttpError(500, 'Relation Error!')
+    const model = await Customer
+      .where('id', '=', this.customer_id)
+      .first()
 
-          const model = await Customer
-            .where('id', '=', this.customer_id)
-            .first()
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
 
-          if (! model)
-            throw new HttpError(500, 'Model Relation Not Found!')
+    return model
+  }
 
-          return model
-        }
-
-
-
-  
-      toSearchableObject(): Partial<WaitlistProductJsonResponse> {
-        return {
-          id: this.id,
-name: this.name,
-email: this.email,
-phone: this.phone,
-party_size: this.party_size,
-notification_preference: this.notification_preference,
-source: this.source,
-notes: this.notes,
-status: this.status
-        }
-      }
-    
-
-  
-
-  
+  toSearchableObject(): Partial<WaitlistProductJsonResponse> {
+    return {
+      id: this.id,
+      name: this.name,
+      email: this.email,
+      phone: this.phone,
+      party_size: this.party_size,
+      notification_preference: this.notification_preference,
+      source: this.source,
+      notes: this.notes,
+      status: this.status,
+    }
+  }
 
   static distinct(column: keyof WaitlistProductJsonResponse): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
@@ -1002,31 +973,31 @@ status: this.status
   toJSON(): WaitlistProductJsonResponse {
     const output = {
 
- uuid: this.uuid,
+      uuid: this.uuid,
 
-id: this.id,
-name: this.name,
-   email: this.email,
-   phone: this.phone,
-   quantity: this.quantity,
-   notification_preference: this.notification_preference,
-   source: this.source,
-   notes: this.notes,
-   status: this.status,
-   notified_at: this.notified_at,
-   purchased_at: this.purchased_at,
-   cancelled_at: this.cancelled_at,
-   
-        created_at: this.created_at,
+      id: this.id,
+      name: this.name,
+      email: this.email,
+      phone: this.phone,
+      quantity: this.quantity,
+      notification_preference: this.notification_preference,
+      source: this.source,
+      notes: this.notes,
+      status: this.status,
+      notified_at: this.notified_at,
+      purchased_at: this.purchased_at,
+      cancelled_at: this.cancelled_at,
 
-        updated_at: this.updated_at,
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
 
       product_id: this.product_id,
-   product: this.product,
-customer_id: this.customer_id,
-   customer: this.customer,
-...this.customColumns,
-}
+      product: this.product,
+      customer_id: this.customer_id,
+      customer: this.customer,
+      ...this.customColumns,
+    }
 
     return output
   }
@@ -1038,8 +1009,6 @@ customer_id: this.customer_id,
 
     return model
   }
-
-  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<WaitlistProductModel | undefined> {
@@ -1058,16 +1027,15 @@ customer_id: this.customer_id,
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
-
-  
 }
 
 export async function find(id: number): Promise<WaitlistProductModel | undefined> {
-  let query = DB.instance.selectFrom('waitlist_products').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('waitlist_products').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   const instance = new WaitlistProductModel(undefined)
   return instance.createInstance(model)
@@ -1095,83 +1063,81 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<WaitlistProductModel[]> {
-          const query = DB.instance.selectFrom('waitlist_products').where('name', '=', value)
-          const results: WaitlistProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('waitlist_products').where('name', '=', value)
+  const results: WaitlistProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
-        } 
+  return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
+}
 
 export async function whereEmail(value: string): Promise<WaitlistProductModel[]> {
-          const query = DB.instance.selectFrom('waitlist_products').where('email', '=', value)
-          const results: WaitlistProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('waitlist_products').where('email', '=', value)
+  const results: WaitlistProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
-        } 
+  return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
+}
 
 export async function wherePhone(value: string): Promise<WaitlistProductModel[]> {
-          const query = DB.instance.selectFrom('waitlist_products').where('phone', '=', value)
-          const results: WaitlistProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('waitlist_products').where('phone', '=', value)
+  const results: WaitlistProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
-        } 
+  return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
+}
 
 export async function whereQuantity(value: number): Promise<WaitlistProductModel[]> {
-          const query = DB.instance.selectFrom('waitlist_products').where('quantity', '=', value)
-          const results: WaitlistProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('waitlist_products').where('quantity', '=', value)
+  const results: WaitlistProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
-        } 
+  return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
+}
 
 export async function whereNotificationPreference(value: string | string[]): Promise<WaitlistProductModel[]> {
-          const query = DB.instance.selectFrom('waitlist_products').where('notification_preference', '=', value)
-          const results: WaitlistProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('waitlist_products').where('notification_preference', '=', value)
+  const results: WaitlistProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
-        } 
+  return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
+}
 
 export async function whereSource(value: string): Promise<WaitlistProductModel[]> {
-          const query = DB.instance.selectFrom('waitlist_products').where('source', '=', value)
-          const results: WaitlistProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('waitlist_products').where('source', '=', value)
+  const results: WaitlistProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
-        } 
+  return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
+}
 
 export async function whereNotes(value: string): Promise<WaitlistProductModel[]> {
-          const query = DB.instance.selectFrom('waitlist_products').where('notes', '=', value)
-          const results: WaitlistProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('waitlist_products').where('notes', '=', value)
+  const results: WaitlistProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
-        } 
+  return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
+}
 
 export async function whereStatus(value: string | string[]): Promise<WaitlistProductModel[]> {
-          const query = DB.instance.selectFrom('waitlist_products').where('status', '=', value)
-          const results: WaitlistProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('waitlist_products').where('status', '=', value)
+  const results: WaitlistProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
-        } 
+  return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
+}
 
 export async function whereNotifiedAt(value: unix): Promise<WaitlistProductModel[]> {
-          const query = DB.instance.selectFrom('waitlist_products').where('notified_at', '=', value)
-          const results: WaitlistProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('waitlist_products').where('notified_at', '=', value)
+  const results: WaitlistProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
-        } 
+  return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
+}
 
 export async function wherePurchasedAt(value: unix): Promise<WaitlistProductModel[]> {
-          const query = DB.instance.selectFrom('waitlist_products').where('purchased_at', '=', value)
-          const results: WaitlistProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('waitlist_products').where('purchased_at', '=', value)
+  const results: WaitlistProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
-        } 
+  return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
+}
 
 export async function whereCancelledAt(value: unix): Promise<WaitlistProductModel[]> {
-          const query = DB.instance.selectFrom('waitlist_products').where('cancelled_at', '=', value)
-          const results: WaitlistProductJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('waitlist_products').where('cancelled_at', '=', value)
+  const results: WaitlistProductJsonResponse = await query.execute()
 
-          return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
-        } 
-
-
+  return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
+}
 
 export const WaitlistProduct = WaitlistProductModel
 

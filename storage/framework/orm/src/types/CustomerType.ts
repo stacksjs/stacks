@@ -1,14 +1,12 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { OrderModelType } from './OrderType'
 import type { GiftCardModelType } from './GiftCardType'
-import type { ReviewModelType } from './ReviewType'
-import type { PaymentModelType } from './PaymentType'
 import type { LicenseKeyModelType } from './LicenseKeyType'
+import type { OrderModelType } from './OrderType'
+import type { PaymentModelType } from './PaymentType'
+import type { ReviewModelType } from './ReviewType'
 import type { WaitlistProductModelType } from './WaitlistProductType'
 import type { WaitlistRestaurantModelType } from './WaitlistRestaurantType'
-import type { UserModelType } from './UserType'
-
 
 export interface CustomersTable {
   id: Generated<number>

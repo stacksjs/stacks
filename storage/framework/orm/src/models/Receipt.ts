@@ -1,36 +1,22 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
-import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
-import { BaseOrm } from '../utils/base'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import type { NewReceipt, ReceiptJsonResponse, ReceiptsTable, ReceiptUpdate } from '../types/ReceiptType'
+import type { PrintDeviceModel } from './PrintDevice'
+import { randomUUIDv7 } from 'bun'
+import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { randomUUIDv7 } from 'bun'
-import type { ReceiptModelType, ReceiptJsonResponse, NewReceipt, ReceiptUpdate, ReceiptsTable } from '../types/ReceiptType'
+import { DB } from '@stacksjs/orm'
 
-import type {PrintDeviceModel} from './PrintDevice'
-
-
-
-
-import type { Model } from '@stacksjs/types';
-import { schema } from '@stacksjs/validation';
-
-
-
+import { BaseOrm } from '../utils/base'
 
 export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJsonResponse> {
   private readonly hidden: Array<keyof ReceiptJsonResponse> = []
-  private readonly fillable: Array<keyof ReceiptJsonResponse> = ["printer","document","timestamp","status","size","pages","duration","metadata","uuid","print_device_id"]
+  private readonly fillable: Array<keyof ReceiptJsonResponse> = ['printer', 'document', 'timestamp', 'status', 'size', 'pages', 'duration', 'metadata', 'uuid', 'print_device_id']
   private readonly guarded: Array<keyof ReceiptJsonResponse> = []
   protected attributes = {} as ReceiptJsonResponse
   protected originalAttributes = {} as ReceiptJsonResponse
-  
+
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -48,13 +34,12 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
   constructor(receipt: ReceiptJsonResponse | undefined) {
     super('receipts')
     if (receipt) {
-
       this.attributes = { ...receipt }
       this.originalAttributes = { ...receipt }
 
-      Object.keys(receipt).forEach(key => {
+      Object.keys(receipt).forEach((key) => {
         if (!(key in this)) {
-           this.customColumns[key] = (receipt as ReceiptJsonResponse)[key]
+          this.customColumns[key] = (receipt as ReceiptJsonResponse)[key]
         }
       })
     }
@@ -69,7 +54,8 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
   protected async loadRelations(models: ReceiptJsonResponse | ReceiptJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length) return
+    if (!modelArray.length)
+      return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -89,7 +75,8 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      } else {
+      }
+      else {
         const records = relatedRecords.filter((record: { receipt_id: number }) => {
           return record.receipt_id === models.id
         })
@@ -110,12 +97,10 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
 
     if (Array.isArray(data)) {
       data.map((model: ReceiptJsonResponse) => {
-
         const customGetter = {
           default: () => {
           },
 
-          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -124,14 +109,14 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
 
         return model
       })
-    } else {
+    }
+    else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
-        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -145,112 +130,108 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
       default: () => {
       },
 
-      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-        (model as any)[key] = await fn()
+      (model as any)[key] = await fn()
     }
   }
 
   get print_device_id(): number {
-        return this.attributes.print_device_id
-      }
+    return this.attributes.print_device_id
+  }
 
-get print_device(): PrintDeviceModel | undefined {
-        return this.attributes.print_device
-      }
+  get print_device(): PrintDeviceModel | undefined {
+    return this.attributes.print_device
+  }
 
-get id(): number {
+  get id(): number {
     return this.attributes.id
   }
 
-get uuid(): string | undefined {
-      return this.attributes.uuid
-    }
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
 
-get printer(): string | undefined {
-      return this.attributes.printer
-    }
+  get printer(): string | undefined {
+    return this.attributes.printer
+  }
 
-get document(): string {
-      return this.attributes.document
-    }
+  get document(): string {
+    return this.attributes.document
+  }
 
-get timestamp(): Date | string {
-      return this.attributes.timestamp
-    }
+  get timestamp(): Date | string {
+    return this.attributes.timestamp
+  }
 
-get status(): string | string[] {
-      return this.attributes.status
-    }
+  get status(): string | string[] {
+    return this.attributes.status
+  }
 
-get size(): number | undefined {
-      return this.attributes.size
-    }
+  get size(): number | undefined {
+    return this.attributes.size
+  }
 
-get pages(): number | undefined {
-      return this.attributes.pages
-    }
+  get pages(): number | undefined {
+    return this.attributes.pages
+  }
 
-get duration(): number | undefined {
-      return this.attributes.duration
-    }
+  get duration(): number | undefined {
+    return this.attributes.duration
+  }
 
-get metadata(): string | undefined {
-      return this.attributes.metadata
-    }
+  get metadata(): string | undefined {
+    return this.attributes.metadata
+  }
 
-get created_at(): string | undefined {
-      return this.attributes.created_at
-    }
+  get created_at(): string | undefined {
+    return this.attributes.created_at
+  }
 
-    get updated_at(): string | undefined {
-      return this.attributes.updated_at
-    }
-
+  get updated_at(): string | undefined {
+    return this.attributes.updated_at
+  }
 
   set uuid(value: string) {
-      this.attributes.uuid = value
-    }
+    this.attributes.uuid = value
+  }
 
-set printer(value: string) {
-      this.attributes.printer = value
-    }
+  set printer(value: string) {
+    this.attributes.printer = value
+  }
 
-set document(value: string) {
-      this.attributes.document = value
-    }
+  set document(value: string) {
+    this.attributes.document = value
+  }
 
-set timestamp(value: Date | string) {
-      this.attributes.timestamp = value
-    }
+  set timestamp(value: Date | string) {
+    this.attributes.timestamp = value
+  }
 
-set status(value: string | string[]) {
-      this.attributes.status = value
-    }
+  set status(value: string | string[]) {
+    this.attributes.status = value
+  }
 
-set size(value: number) {
-      this.attributes.size = value
-    }
+  set size(value: number) {
+    this.attributes.size = value
+  }
 
-set pages(value: number) {
-      this.attributes.pages = value
-    }
+  set pages(value: number) {
+    this.attributes.pages = value
+  }
 
-set duration(value: number) {
-      this.attributes.duration = value
-    }
+  set duration(value: number) {
+    this.attributes.duration = value
+  }
 
-set metadata(value: string) {
-      this.attributes.metadata = value
-    }
+  set metadata(value: string) {
+    this.attributes.metadata = value
+  }
 
-set updated_at(value: string) {
-      this.attributes.updated_at = value
-    }
-
-
+  set updated_at(value: string) {
+    this.attributes.updated_at = value
+  }
 
   static select(params: (keyof ReceiptJsonResponse)[] | RawBuilder<string> | string): ReceiptModel {
     const instance = new ReceiptModel(undefined)
@@ -260,11 +241,12 @@ set updated_at(value: string) {
 
   // Method to find a Receipt by ID
   static async find(id: number): Promise<ReceiptModel | undefined> {
-    let query = DB.instance.selectFrom('receipts').where('id', '=', id).selectAll()
+    const query = DB.instance.selectFrom('receipts').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     const instance = new ReceiptModel(undefined)
     return instance.createInstance(model)
@@ -285,7 +267,8 @@ set updated_at(value: string) {
 
     const model = await instance.applyLast()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new ReceiptModel(model)
   }
@@ -318,7 +301,7 @@ set updated_at(value: string) {
 
   static async findMany(ids: number[]): Promise<ReceiptModel[]> {
     const instance = new ReceiptModel(undefined)
-     
+
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: ReceiptJsonResponse) => instance.parseResult(new ReceiptModel(modelItem)))
@@ -333,7 +316,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new ReceiptModel(model)
   }
@@ -347,7 +331,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new ReceiptModel(model)
   }
@@ -514,12 +499,12 @@ set updated_at(value: string) {
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: ReceiptModel[],
+    data: ReceiptModel[]
     paging: {
-      total_records: number,
-      page: number,
+      total_records: number
+      page: number
       total_pages: number
-    },
+    }
     next_cursor: number | null
   }> {
     const instance = new ReceiptModel(undefined)
@@ -529,7 +514,7 @@ set updated_at(value: string) {
     return {
       data: result.data.map((item: ReceiptJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor
+      next_cursor: result.next_cursor,
     }
   }
 
@@ -541,13 +526,13 @@ set updated_at(value: string) {
   async applyCreate(newReceipt: NewReceipt): Promise<ReceiptModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newReceipt).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewReceipt
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues['uuid'] = randomUUIDv7()
+    filteredValues.uuid = randomUUIDv7()
 
     const result = await DB.instance.insertInto('receipts')
       .values(filteredValues)
@@ -563,7 +548,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('receipt:created', model)
+      dispatch('receipt:created', model)
     return this.createInstance(model)
   }
 
@@ -632,7 +617,7 @@ set updated_at(value: string) {
   async update(newReceipt: ReceiptUpdate): Promise<ReceiptModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newReceipt).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as ReceiptUpdate
 
@@ -657,7 +642,7 @@ set updated_at(value: string) {
       }
 
       if (model)
- dispatch('receipt:updated', model)
+        dispatch('receipt:updated', model)
       return this.createInstance(model)
     }
 
@@ -682,7 +667,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('receipt:updated', model)
+        dispatch('receipt:updated', model)
       return this.createInstance(model)
     }
 
@@ -709,9 +694,10 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('receipt:updated', model)
+        dispatch('receipt:updated', model)
       return this.createInstance(model)
-    } else {
+    }
+    else {
       // Create new record
       const result = await DB.instance.insertInto('receipts')
         .values(this.attributes as NewReceipt)
@@ -728,7 +714,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('receipt:created', model)
+        dispatch('receipt:created', model)
       return this.createInstance(model)
     }
   }
@@ -743,7 +729,7 @@ set updated_at(value: string) {
         ),
       ) as NewReceipt
 
-      filteredValues['uuid'] = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
 
       return filteredValues
     })
@@ -769,7 +755,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('receipt:created', model)
+      dispatch('receipt:created', model)
 
     return instance.createInstance(model)
   }
@@ -779,9 +765,9 @@ set updated_at(value: string) {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-    
+
     if (model)
- dispatch('receipt:deleted', model)
+      dispatch('receipt:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('receipts')
       .where('id', '=', this.id)
@@ -795,10 +781,8 @@ set updated_at(value: string) {
 
     const model = await instance.find(Number(id))
 
-    
-
     if (model)
- dispatch('receipt:deleted', model)
+      dispatch('receipt:deleted', model)
 
     return await DB.instance.deleteFrom('receipts')
       .where('id', '=', id)
@@ -806,70 +790,68 @@ set updated_at(value: string) {
   }
 
   static wherePrinter(value: string): ReceiptModel {
-          const instance = new ReceiptModel(undefined)
+    const instance = new ReceiptModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('printer', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('printer', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereDocument(value: string): ReceiptModel {
-          const instance = new ReceiptModel(undefined)
+  static whereDocument(value: string): ReceiptModel {
+    const instance = new ReceiptModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('document', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('document', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereTimestamp(value: string): ReceiptModel {
-          const instance = new ReceiptModel(undefined)
+  static whereTimestamp(value: string): ReceiptModel {
+    const instance = new ReceiptModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('timestamp', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('timestamp', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereStatus(value: string): ReceiptModel {
-          const instance = new ReceiptModel(undefined)
+  static whereStatus(value: string): ReceiptModel {
+    const instance = new ReceiptModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereSize(value: string): ReceiptModel {
-          const instance = new ReceiptModel(undefined)
+  static whereSize(value: string): ReceiptModel {
+    const instance = new ReceiptModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('size', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('size', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static wherePages(value: string): ReceiptModel {
-          const instance = new ReceiptModel(undefined)
+  static wherePages(value: string): ReceiptModel {
+    const instance = new ReceiptModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('pages', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('pages', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereDuration(value: string): ReceiptModel {
-          const instance = new ReceiptModel(undefined)
+  static whereDuration(value: string): ReceiptModel {
+    const instance = new ReceiptModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('duration', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('duration', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereMetadata(value: string): ReceiptModel {
-          const instance = new ReceiptModel(undefined)
+  static whereMetadata(value: string): ReceiptModel {
+    const instance = new ReceiptModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('metadata', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('metadata', '=', value)
 
-          return instance
-        } 
-
-
+    return instance
+  }
 
   static whereIn<V = number>(column: keyof ReceiptsTable, values: V[]): ReceiptModel {
     const instance = new ReceiptModel(undefined)
@@ -877,41 +859,32 @@ static whereMetadata(value: string): ReceiptModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  
-        async printDeviceBelong(): Promise<PrintDeviceModel> {
-          if (this.print_device_id === undefined)
-            throw new HttpError(500, 'Relation Error!')
+  async printDeviceBelong(): Promise<PrintDeviceModel> {
+    if (this.print_device_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
 
-          const model = await PrintDevice
-            .where('id', '=', this.print_device_id)
-            .first()
+    const model = await PrintDevice
+      .where('id', '=', this.print_device_id)
+      .first()
 
-          if (! model)
-            throw new HttpError(500, 'Model Relation Not Found!')
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
 
-          return model
-        }
+    return model
+  }
 
-
-
-  
-      toSearchableObject(): Partial<ReceiptJsonResponse> {
-        return {
-          id: this.id,
-printer: this.printer,
-document: this.document,
-timestamp: this.timestamp,
-status: this.status,
-size: this.size,
-pages: this.pages,
-duration: this.duration
-        }
-      }
-    
-
-  
-
-  
+  toSearchableObject(): Partial<ReceiptJsonResponse> {
+    return {
+      id: this.id,
+      printer: this.printer,
+      document: this.document,
+      timestamp: this.timestamp,
+      status: this.status,
+      size: this.size,
+      pages: this.pages,
+      duration: this.duration,
+    }
+  }
 
   static distinct(column: keyof ReceiptJsonResponse): ReceiptModel {
     const instance = new ReceiptModel(undefined)
@@ -928,26 +901,26 @@ duration: this.duration
   toJSON(): ReceiptJsonResponse {
     const output = {
 
- uuid: this.uuid,
+      uuid: this.uuid,
 
-id: this.id,
-printer: this.printer,
-   document: this.document,
-   timestamp: this.timestamp,
-   status: this.status,
-   size: this.size,
-   pages: this.pages,
-   duration: this.duration,
-   metadata: this.metadata,
-   
-        created_at: this.created_at,
+      id: this.id,
+      printer: this.printer,
+      document: this.document,
+      timestamp: this.timestamp,
+      status: this.status,
+      size: this.size,
+      pages: this.pages,
+      duration: this.duration,
+      metadata: this.metadata,
 
-        updated_at: this.updated_at,
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
 
       print_device_id: this.print_device_id,
-   print_device: this.print_device,
-...this.customColumns,
-}
+      print_device: this.print_device,
+      ...this.customColumns,
+    }
 
     return output
   }
@@ -959,8 +932,6 @@ printer: this.printer,
 
     return model
   }
-
-  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<ReceiptModel | undefined> {
@@ -979,16 +950,15 @@ printer: this.printer,
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
-
-  
 }
 
 export async function find(id: number): Promise<ReceiptModel | undefined> {
-  let query = DB.instance.selectFrom('receipts').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('receipts').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   const instance = new ReceiptModel(undefined)
   return instance.createInstance(model)
@@ -1016,62 +986,60 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function wherePrinter(value: string): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('printer', '=', value)
-          const results: ReceiptJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('receipts').where('printer', '=', value)
+  const results: ReceiptJsonResponse = await query.execute()
 
-          return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
-        } 
+  return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
+}
 
 export async function whereDocument(value: string): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('document', '=', value)
-          const results: ReceiptJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('receipts').where('document', '=', value)
+  const results: ReceiptJsonResponse = await query.execute()
 
-          return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
-        } 
+  return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
+}
 
 export async function whereTimestamp(value: Date | string): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('timestamp', '=', value)
-          const results: ReceiptJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('receipts').where('timestamp', '=', value)
+  const results: ReceiptJsonResponse = await query.execute()
 
-          return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
-        } 
+  return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
+}
 
 export async function whereStatus(value: string | string[]): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('status', '=', value)
-          const results: ReceiptJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('receipts').where('status', '=', value)
+  const results: ReceiptJsonResponse = await query.execute()
 
-          return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
-        } 
+  return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
+}
 
 export async function whereSize(value: number): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('size', '=', value)
-          const results: ReceiptJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('receipts').where('size', '=', value)
+  const results: ReceiptJsonResponse = await query.execute()
 
-          return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
-        } 
+  return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
+}
 
 export async function wherePages(value: number): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('pages', '=', value)
-          const results: ReceiptJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('receipts').where('pages', '=', value)
+  const results: ReceiptJsonResponse = await query.execute()
 
-          return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
-        } 
+  return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
+}
 
 export async function whereDuration(value: number): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('duration', '=', value)
-          const results: ReceiptJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('receipts').where('duration', '=', value)
+  const results: ReceiptJsonResponse = await query.execute()
 
-          return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
-        } 
+  return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
+}
 
 export async function whereMetadata(value: string): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('metadata', '=', value)
-          const results: ReceiptJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('receipts').where('metadata', '=', value)
+  const results: ReceiptJsonResponse = await query.execute()
 
-          return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
-        } 
-
-
+  return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
+}
 
 export const Receipt = ReceiptModel
 

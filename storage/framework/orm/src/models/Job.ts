@@ -1,34 +1,19 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
-import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
-import { BaseOrm } from '../utils/base'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import type { JobJsonResponse, JobsTable, JobUpdate, NewJob } from '../types/JobType'
+import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { randomUUIDv7 } from 'bun'
-import type { JobModelType, JobJsonResponse, NewJob, JobUpdate, JobsTable } from '../types/JobType'
+import { DB } from '@stacksjs/orm'
 
-
-
-
-import type { Model } from '@stacksjs/types';
-import { schema } from '@stacksjs/validation';
-
-
-
+import { BaseOrm } from '../utils/base'
 
 export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
   private readonly hidden: Array<keyof JobJsonResponse> = []
-  private readonly fillable: Array<keyof JobJsonResponse> = ["queue","payload","attempts","available_at","reserved_at"]
+  private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at']
   private readonly guarded: Array<keyof JobJsonResponse> = []
   protected attributes = {} as JobJsonResponse
   protected originalAttributes = {} as JobJsonResponse
-  
+
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -46,13 +31,12 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
   constructor(job: JobJsonResponse | undefined) {
     super('jobs')
     if (job) {
-
       this.attributes = { ...job }
       this.originalAttributes = { ...job }
 
-      Object.keys(job).forEach(key => {
+      Object.keys(job).forEach((key) => {
         if (!(key in this)) {
-           this.customColumns[key] = (job as JobJsonResponse)[key]
+          this.customColumns[key] = (job as JobJsonResponse)[key]
         }
       })
     }
@@ -67,7 +51,8 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
   protected async loadRelations(models: JobJsonResponse | JobJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length) return
+    if (!modelArray.length)
+      return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -87,7 +72,8 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      } else {
+      }
+      else {
         const records = relatedRecords.filter((record: { job_id: number }) => {
           return record.job_id === models.id
         })
@@ -108,12 +94,10 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
 
     if (Array.isArray(data)) {
       data.map((model: JobJsonResponse) => {
-
         const customGetter = {
           default: () => {
           },
 
-          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -122,14 +106,14 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
 
         return model
       })
-    } else {
+    }
+    else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
-        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -143,11 +127,10 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
       default: () => {
       },
 
-      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-        (model as any)[key] = await fn()
+      (model as any)[key] = await fn()
     }
   }
 
@@ -155,60 +138,57 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return this.attributes.id
   }
 
-get queue(): string | undefined {
-      return this.attributes.queue
-    }
+  get queue(): string | undefined {
+    return this.attributes.queue
+  }
 
-get payload(): string | undefined {
-      return this.attributes.payload
-    }
+  get payload(): string | undefined {
+    return this.attributes.payload
+  }
 
-get attempts(): number | undefined {
-      return this.attributes.attempts
-    }
+  get attempts(): number | undefined {
+    return this.attributes.attempts
+  }
 
-get available_at(): number | undefined {
-      return this.attributes.available_at
-    }
+  get available_at(): number | undefined {
+    return this.attributes.available_at
+  }
 
-get reserved_at(): Date | string | undefined {
-      return this.attributes.reserved_at
-    }
+  get reserved_at(): Date | string | undefined {
+    return this.attributes.reserved_at
+  }
 
-get created_at(): string | undefined {
-      return this.attributes.created_at
-    }
+  get created_at(): string | undefined {
+    return this.attributes.created_at
+  }
 
-    get updated_at(): string | undefined {
-      return this.attributes.updated_at
-    }
-
+  get updated_at(): string | undefined {
+    return this.attributes.updated_at
+  }
 
   set queue(value: string) {
-      this.attributes.queue = value
-    }
+    this.attributes.queue = value
+  }
 
-set payload(value: string) {
-      this.attributes.payload = value
-    }
+  set payload(value: string) {
+    this.attributes.payload = value
+  }
 
-set attempts(value: number) {
-      this.attributes.attempts = value
-    }
+  set attempts(value: number) {
+    this.attributes.attempts = value
+  }
 
-set available_at(value: number) {
-      this.attributes.available_at = value
-    }
+  set available_at(value: number) {
+    this.attributes.available_at = value
+  }
 
-set reserved_at(value: Date | string) {
-      this.attributes.reserved_at = value
-    }
+  set reserved_at(value: Date | string) {
+    this.attributes.reserved_at = value
+  }
 
-set updated_at(value: string) {
-      this.attributes.updated_at = value
-    }
-
-
+  set updated_at(value: string) {
+    this.attributes.updated_at = value
+  }
 
   static select(params: (keyof JobJsonResponse)[] | RawBuilder<string> | string): JobModel {
     const instance = new JobModel(undefined)
@@ -218,11 +198,12 @@ set updated_at(value: string) {
 
   // Method to find a Job by ID
   static async find(id: number): Promise<JobModel | undefined> {
-    let query = DB.instance.selectFrom('jobs').where('id', '=', id).selectAll()
+    const query = DB.instance.selectFrom('jobs').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     const instance = new JobModel(undefined)
     return instance.createInstance(model)
@@ -243,7 +224,8 @@ set updated_at(value: string) {
 
     const model = await instance.applyLast()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new JobModel(model)
   }
@@ -276,7 +258,7 @@ set updated_at(value: string) {
 
   static async findMany(ids: number[]): Promise<JobModel[]> {
     const instance = new JobModel(undefined)
-     
+
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: JobJsonResponse) => instance.parseResult(new JobModel(modelItem)))
@@ -291,7 +273,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new JobModel(model)
   }
@@ -305,7 +288,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new JobModel(model)
   }
@@ -472,12 +456,12 @@ set updated_at(value: string) {
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: JobModel[],
+    data: JobModel[]
     paging: {
-      total_records: number,
-      page: number,
+      total_records: number
+      page: number
       total_pages: number
-    },
+    }
     next_cursor: number | null
   }> {
     const instance = new JobModel(undefined)
@@ -487,7 +471,7 @@ set updated_at(value: string) {
     return {
       data: result.data.map((item: JobJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor
+      next_cursor: result.next_cursor,
     }
   }
 
@@ -499,13 +483,11 @@ set updated_at(value: string) {
   async applyCreate(newJob: NewJob): Promise<JobModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newJob).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewJob
 
     await this.mapCustomSetters(filteredValues)
-
-    
 
     const result = await DB.instance.insertInto('jobs')
       .values(filteredValues)
@@ -520,7 +502,6 @@ set updated_at(value: string) {
       throw new HttpError(500, 'Failed to retrieve created Job')
     }
 
-    
     return this.createInstance(model)
   }
 
@@ -589,7 +570,7 @@ set updated_at(value: string) {
   async update(newJob: JobUpdate): Promise<JobModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newJob).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as JobUpdate
 
@@ -613,7 +594,6 @@ set updated_at(value: string) {
         throw new HttpError(500, 'Failed to retrieve updated Job')
       }
 
-      
       return this.createInstance(model)
     }
 
@@ -637,7 +617,6 @@ set updated_at(value: string) {
         throw new HttpError(500, 'Failed to retrieve updated Job')
       }
 
-      
       return this.createInstance(model)
     }
 
@@ -663,9 +642,9 @@ set updated_at(value: string) {
         throw new HttpError(500, 'Failed to retrieve updated Job')
       }
 
-      
       return this.createInstance(model)
-    } else {
+    }
+    else {
       // Create new record
       const result = await DB.instance.insertInto('jobs')
         .values(this.attributes as NewJob)
@@ -681,7 +660,6 @@ set updated_at(value: string) {
         throw new HttpError(500, 'Failed to retrieve created Job')
       }
 
-      
       return this.createInstance(model)
     }
   }
@@ -695,8 +673,6 @@ set updated_at(value: string) {
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewJob
-
-      
 
       return filteredValues
     })
@@ -721,8 +697,6 @@ set updated_at(value: string) {
       throw new HttpError(500, 'Failed to retrieve created Job')
     }
 
-    
-
     return instance.createInstance(model)
   }
 
@@ -730,9 +704,6 @@ set updated_at(value: string) {
   async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
-    
-    
-    
 
     const deleted = await DB.instance.deleteFrom('jobs')
       .where('id', '=', this.id)
@@ -742,74 +713,56 @@ set updated_at(value: string) {
   }
 
   static async remove(id: number): Promise<any> {
-    
-
-    
-
-    
-
-    
-
     return await DB.instance.deleteFrom('jobs')
       .where('id', '=', id)
       .execute()
   }
 
   static whereQueue(value: string): JobModel {
-          const instance = new JobModel(undefined)
+    const instance = new JobModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('queue', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('queue', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static wherePayload(value: string): JobModel {
-          const instance = new JobModel(undefined)
+  static wherePayload(value: string): JobModel {
+    const instance = new JobModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('payload', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('payload', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereAttempts(value: string): JobModel {
-          const instance = new JobModel(undefined)
+  static whereAttempts(value: string): JobModel {
+    const instance = new JobModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('attempts', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('attempts', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereAvailableAt(value: string): JobModel {
-          const instance = new JobModel(undefined)
+  static whereAvailableAt(value: string): JobModel {
+    const instance = new JobModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('available_at', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('available_at', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereReservedAt(value: string): JobModel {
-          const instance = new JobModel(undefined)
+  static whereReservedAt(value: string): JobModel {
+    const instance = new JobModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('reserved_at', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('reserved_at', '=', value)
 
-          return instance
-        } 
-
-
+    return instance
+  }
 
   static whereIn<V = number>(column: keyof JobsTable, values: V[]): JobModel {
     const instance = new JobModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
-
-  
-
-  
-
-  
-
-  
 
   static distinct(column: keyof JobJsonResponse): JobModel {
     const instance = new JobModel(undefined)
@@ -826,19 +779,19 @@ static whereReservedAt(value: string): JobModel {
   toJSON(): JobJsonResponse {
     const output = {
 
-id: this.id,
-queue: this.queue,
-   payload: this.payload,
-   attempts: this.attempts,
-   available_at: this.available_at,
-   reserved_at: this.reserved_at,
-   
-        created_at: this.created_at,
+      id: this.id,
+      queue: this.queue,
+      payload: this.payload,
+      attempts: this.attempts,
+      available_at: this.available_at,
+      reserved_at: this.reserved_at,
 
-        updated_at: this.updated_at,
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
 
       ...this.customColumns,
-}
+    }
 
     return output
   }
@@ -850,8 +803,6 @@ queue: this.queue,
 
     return model
   }
-
-  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<JobModel | undefined> {
@@ -870,16 +821,15 @@ queue: this.queue,
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
-
-  
 }
 
 export async function find(id: number): Promise<JobModel | undefined> {
-  let query = DB.instance.selectFrom('jobs').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('jobs').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   const instance = new JobModel(undefined)
   return instance.createInstance(model)
@@ -907,41 +857,39 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereQueue(value: string): Promise<JobModel[]> {
-          const query = DB.instance.selectFrom('jobs').where('queue', '=', value)
-          const results: JobJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('jobs').where('queue', '=', value)
+  const results: JobJsonResponse = await query.execute()
 
-          return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
-        } 
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
+}
 
 export async function wherePayload(value: string): Promise<JobModel[]> {
-          const query = DB.instance.selectFrom('jobs').where('payload', '=', value)
-          const results: JobJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('jobs').where('payload', '=', value)
+  const results: JobJsonResponse = await query.execute()
 
-          return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
-        } 
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
+}
 
 export async function whereAttempts(value: number): Promise<JobModel[]> {
-          const query = DB.instance.selectFrom('jobs').where('attempts', '=', value)
-          const results: JobJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('jobs').where('attempts', '=', value)
+  const results: JobJsonResponse = await query.execute()
 
-          return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
-        } 
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
+}
 
 export async function whereAvailableAt(value: number): Promise<JobModel[]> {
-          const query = DB.instance.selectFrom('jobs').where('available_at', '=', value)
-          const results: JobJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('jobs').where('available_at', '=', value)
+  const results: JobJsonResponse = await query.execute()
 
-          return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
-        } 
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
+}
 
 export async function whereReservedAt(value: Date | string): Promise<JobModel[]> {
-          const query = DB.instance.selectFrom('jobs').where('reserved_at', '=', value)
-          const results: JobJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('jobs').where('reserved_at', '=', value)
+  const results: JobJsonResponse = await query.execute()
 
-          return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
-        } 
-
-
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
+}
 
 export const Job = JobModel
 

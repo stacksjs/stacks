@@ -2,7 +2,6 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { ReceiptModelType } from './ReceiptType'
 
-
 export interface PrintDevicesTable {
   id: Generated<number>
   name: string

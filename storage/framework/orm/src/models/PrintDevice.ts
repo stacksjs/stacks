@@ -1,36 +1,22 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
-import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
-import { BaseOrm } from '../utils/base'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import type { NewPrintDevice, PrintDeviceJsonResponse, PrintDevicesTable, PrintDeviceUpdate } from '../types/PrintDeviceType'
+import type { ReceiptModel } from './Receipt'
+import { randomUUIDv7 } from 'bun'
+import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { randomUUIDv7 } from 'bun'
-import type { PrintDeviceModelType, PrintDeviceJsonResponse, NewPrintDevice, PrintDeviceUpdate, PrintDevicesTable } from '../types/PrintDeviceType'
+import { DB } from '@stacksjs/orm'
 
-import type {ReceiptModel} from './Receipt'
-
-
-
-
-import type { Model } from '@stacksjs/types';
-import { schema } from '@stacksjs/validation';
-
-
-
+import { BaseOrm } from '../utils/base'
 
 export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTable, PrintDeviceJsonResponse> {
   private readonly hidden: Array<keyof PrintDeviceJsonResponse> = []
-  private readonly fillable: Array<keyof PrintDeviceJsonResponse> = ["name","mac_address","location","terminal","status","last_ping","print_count","uuid"]
+  private readonly fillable: Array<keyof PrintDeviceJsonResponse> = ['name', 'mac_address', 'location', 'terminal', 'status', 'last_ping', 'print_count', 'uuid']
   private readonly guarded: Array<keyof PrintDeviceJsonResponse> = []
   protected attributes = {} as PrintDeviceJsonResponse
   protected originalAttributes = {} as PrintDeviceJsonResponse
-  
+
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -48,13 +34,12 @@ export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTabl
   constructor(printDevice: PrintDeviceJsonResponse | undefined) {
     super('print_devices')
     if (printDevice) {
-
       this.attributes = { ...printDevice }
       this.originalAttributes = { ...printDevice }
 
-      Object.keys(printDevice).forEach(key => {
+      Object.keys(printDevice).forEach((key) => {
         if (!(key in this)) {
-           this.customColumns[key] = (printDevice as PrintDeviceJsonResponse)[key]
+          this.customColumns[key] = (printDevice as PrintDeviceJsonResponse)[key]
         }
       })
     }
@@ -69,7 +54,8 @@ export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTabl
   protected async loadRelations(models: PrintDeviceJsonResponse | PrintDeviceJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length) return
+    if (!modelArray.length)
+      return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -89,7 +75,8 @@ export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTabl
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      } else {
+      }
+      else {
         const records = relatedRecords.filter((record: { printDevice_id: number }) => {
           return record.printDevice_id === models.id
         })
@@ -110,12 +97,10 @@ export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTabl
 
     if (Array.isArray(data)) {
       data.map((model: PrintDeviceJsonResponse) => {
-
         const customGetter = {
           default: () => {
           },
 
-          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -124,14 +109,14 @@ export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTabl
 
         return model
       })
-    } else {
+    }
+    else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
-        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -145,100 +130,96 @@ export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTabl
       default: () => {
       },
 
-      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-        (model as any)[key] = await fn()
+      (model as any)[key] = await fn()
     }
   }
 
-  get receipts():ReceiptModel[] | [] {
-        return this.attributes.receipts
-      }
+  get receipts(): ReceiptModel[] | [] {
+    return this.attributes.receipts
+  }
 
-get id(): number {
+  get id(): number {
     return this.attributes.id
   }
 
-get uuid(): string | undefined {
-      return this.attributes.uuid
-    }
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
 
-get name(): string {
-      return this.attributes.name
-    }
+  get name(): string {
+    return this.attributes.name
+  }
 
-get mac_address(): string {
-      return this.attributes.mac_address
-    }
+  get mac_address(): string {
+    return this.attributes.mac_address
+  }
 
-get location(): string {
-      return this.attributes.location
-    }
+  get location(): string {
+    return this.attributes.location
+  }
 
-get terminal(): string {
-      return this.attributes.terminal
-    }
+  get terminal(): string {
+    return this.attributes.terminal
+  }
 
-get status(): string | string[] {
-      return this.attributes.status
-    }
+  get status(): string | string[] {
+    return this.attributes.status
+  }
 
-get last_ping(): unix {
-      return this.attributes.last_ping
-    }
+  get last_ping(): unix {
+    return this.attributes.last_ping
+  }
 
-get print_count(): number {
-      return this.attributes.print_count
-    }
+  get print_count(): number {
+    return this.attributes.print_count
+  }
 
-get created_at(): string | undefined {
-      return this.attributes.created_at
-    }
+  get created_at(): string | undefined {
+    return this.attributes.created_at
+  }
 
-    get updated_at(): string | undefined {
-      return this.attributes.updated_at
-    }
-
+  get updated_at(): string | undefined {
+    return this.attributes.updated_at
+  }
 
   set uuid(value: string) {
-      this.attributes.uuid = value
-    }
+    this.attributes.uuid = value
+  }
 
-set name(value: string) {
-      this.attributes.name = value
-    }
+  set name(value: string) {
+    this.attributes.name = value
+  }
 
-set mac_address(value: string) {
-      this.attributes.mac_address = value
-    }
+  set mac_address(value: string) {
+    this.attributes.mac_address = value
+  }
 
-set location(value: string) {
-      this.attributes.location = value
-    }
+  set location(value: string) {
+    this.attributes.location = value
+  }
 
-set terminal(value: string) {
-      this.attributes.terminal = value
-    }
+  set terminal(value: string) {
+    this.attributes.terminal = value
+  }
 
-set status(value: string | string[]) {
-      this.attributes.status = value
-    }
+  set status(value: string | string[]) {
+    this.attributes.status = value
+  }
 
-set last_ping(value: unix) {
-      this.attributes.last_ping = value
-    }
+  set last_ping(value: unix) {
+    this.attributes.last_ping = value
+  }
 
-set print_count(value: number) {
-      this.attributes.print_count = value
-    }
+  set print_count(value: number) {
+    this.attributes.print_count = value
+  }
 
-set updated_at(value: string) {
-      this.attributes.updated_at = value
-    }
-
-
+  set updated_at(value: string) {
+    this.attributes.updated_at = value
+  }
 
   static select(params: (keyof PrintDeviceJsonResponse)[] | RawBuilder<string> | string): PrintDeviceModel {
     const instance = new PrintDeviceModel(undefined)
@@ -248,11 +229,12 @@ set updated_at(value: string) {
 
   // Method to find a PrintDevice by ID
   static async find(id: number): Promise<PrintDeviceModel | undefined> {
-    let query = DB.instance.selectFrom('print_devices').where('id', '=', id).selectAll()
+    const query = DB.instance.selectFrom('print_devices').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     const instance = new PrintDeviceModel(undefined)
     return instance.createInstance(model)
@@ -273,7 +255,8 @@ set updated_at(value: string) {
 
     const model = await instance.applyLast()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new PrintDeviceModel(model)
   }
@@ -306,7 +289,7 @@ set updated_at(value: string) {
 
   static async findMany(ids: number[]): Promise<PrintDeviceModel[]> {
     const instance = new PrintDeviceModel(undefined)
-     
+
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: PrintDeviceJsonResponse) => instance.parseResult(new PrintDeviceModel(modelItem)))
@@ -321,7 +304,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new PrintDeviceModel(model)
   }
@@ -335,7 +319,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new PrintDeviceModel(model)
   }
@@ -502,12 +487,12 @@ set updated_at(value: string) {
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: PrintDeviceModel[],
+    data: PrintDeviceModel[]
     paging: {
-      total_records: number,
-      page: number,
+      total_records: number
+      page: number
       total_pages: number
-    },
+    }
     next_cursor: number | null
   }> {
     const instance = new PrintDeviceModel(undefined)
@@ -517,7 +502,7 @@ set updated_at(value: string) {
     return {
       data: result.data.map((item: PrintDeviceJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor
+      next_cursor: result.next_cursor,
     }
   }
 
@@ -529,13 +514,13 @@ set updated_at(value: string) {
   async applyCreate(newPrintDevice: NewPrintDevice): Promise<PrintDeviceModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPrintDevice).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewPrintDevice
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues['uuid'] = randomUUIDv7()
+    filteredValues.uuid = randomUUIDv7()
 
     const result = await DB.instance.insertInto('print_devices')
       .values(filteredValues)
@@ -551,7 +536,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('printDevice:created', model)
+      dispatch('printDevice:created', model)
     return this.createInstance(model)
   }
 
@@ -620,7 +605,7 @@ set updated_at(value: string) {
   async update(newPrintDevice: PrintDeviceUpdate): Promise<PrintDeviceModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPrintDevice).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as PrintDeviceUpdate
 
@@ -645,7 +630,7 @@ set updated_at(value: string) {
       }
 
       if (model)
- dispatch('printDevice:updated', model)
+        dispatch('printDevice:updated', model)
       return this.createInstance(model)
     }
 
@@ -670,7 +655,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('printDevice:updated', model)
+        dispatch('printDevice:updated', model)
       return this.createInstance(model)
     }
 
@@ -697,9 +682,10 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('printDevice:updated', model)
+        dispatch('printDevice:updated', model)
       return this.createInstance(model)
-    } else {
+    }
+    else {
       // Create new record
       const result = await DB.instance.insertInto('print_devices')
         .values(this.attributes as NewPrintDevice)
@@ -716,7 +702,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('printDevice:created', model)
+        dispatch('printDevice:created', model)
       return this.createInstance(model)
     }
   }
@@ -731,7 +717,7 @@ set updated_at(value: string) {
         ),
       ) as NewPrintDevice
 
-      filteredValues['uuid'] = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
 
       return filteredValues
     })
@@ -757,7 +743,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('printDevice:created', model)
+      dispatch('printDevice:created', model)
 
     return instance.createInstance(model)
   }
@@ -767,9 +753,9 @@ set updated_at(value: string) {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-    
+
     if (model)
- dispatch('printDevice:deleted', model)
+      dispatch('printDevice:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('print_devices')
       .where('id', '=', this.id)
@@ -783,10 +769,8 @@ set updated_at(value: string) {
 
     const model = await instance.find(Number(id))
 
-    
-
     if (model)
- dispatch('printDevice:deleted', model)
+      dispatch('printDevice:deleted', model)
 
     return await DB.instance.deleteFrom('print_devices')
       .where('id', '=', id)
@@ -794,62 +778,60 @@ set updated_at(value: string) {
   }
 
   static whereName(value: string): PrintDeviceModel {
-          const instance = new PrintDeviceModel(undefined)
+    const instance = new PrintDeviceModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereMacAddress(value: string): PrintDeviceModel {
-          const instance = new PrintDeviceModel(undefined)
+  static whereMacAddress(value: string): PrintDeviceModel {
+    const instance = new PrintDeviceModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('mac_address', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('mac_address', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereLocation(value: string): PrintDeviceModel {
-          const instance = new PrintDeviceModel(undefined)
+  static whereLocation(value: string): PrintDeviceModel {
+    const instance = new PrintDeviceModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('location', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('location', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereTerminal(value: string): PrintDeviceModel {
-          const instance = new PrintDeviceModel(undefined)
+  static whereTerminal(value: string): PrintDeviceModel {
+    const instance = new PrintDeviceModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('terminal', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('terminal', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereStatus(value: string): PrintDeviceModel {
-          const instance = new PrintDeviceModel(undefined)
+  static whereStatus(value: string): PrintDeviceModel {
+    const instance = new PrintDeviceModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereLastPing(value: string): PrintDeviceModel {
-          const instance = new PrintDeviceModel(undefined)
+  static whereLastPing(value: string): PrintDeviceModel {
+    const instance = new PrintDeviceModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('last_ping', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('last_ping', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static wherePrintCount(value: string): PrintDeviceModel {
-          const instance = new PrintDeviceModel(undefined)
+  static wherePrintCount(value: string): PrintDeviceModel {
+    const instance = new PrintDeviceModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('print_count', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('print_count', '=', value)
 
-          return instance
-        } 
-
-
+    return instance
+  }
 
   static whereIn<V = number>(column: keyof PrintDevicesTable, values: V[]): PrintDeviceModel {
     const instance = new PrintDeviceModel(undefined)
@@ -857,26 +839,18 @@ static wherePrintCount(value: string): PrintDeviceModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  
-
-  
-      toSearchableObject(): Partial<PrintDeviceJsonResponse> {
-        return {
-          id: this.id,
-name: this.name,
-mac_address: this.mac_address,
-location: this.location,
-terminal: this.terminal,
-status: this.status,
-last_ping: this.last_ping,
-print_count: this.print_count
-        }
-      }
-    
-
-  
-
-  
+  toSearchableObject(): Partial<PrintDeviceJsonResponse> {
+    return {
+      id: this.id,
+      name: this.name,
+      mac_address: this.mac_address,
+      location: this.location,
+      terminal: this.terminal,
+      status: this.status,
+      last_ping: this.last_ping,
+      print_count: this.print_count,
+    }
+  }
 
   static distinct(column: keyof PrintDeviceJsonResponse): PrintDeviceModel {
     const instance = new PrintDeviceModel(undefined)
@@ -893,24 +867,24 @@ print_count: this.print_count
   toJSON(): PrintDeviceJsonResponse {
     const output = {
 
- uuid: this.uuid,
+      uuid: this.uuid,
 
-id: this.id,
-name: this.name,
-   mac_address: this.mac_address,
-   location: this.location,
-   terminal: this.terminal,
-   status: this.status,
-   last_ping: this.last_ping,
-   print_count: this.print_count,
-   
-        created_at: this.created_at,
+      id: this.id,
+      name: this.name,
+      mac_address: this.mac_address,
+      location: this.location,
+      terminal: this.terminal,
+      status: this.status,
+      last_ping: this.last_ping,
+      print_count: this.print_count,
 
-        updated_at: this.updated_at,
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
 
       receipts: this.receipts,
-...this.customColumns,
-}
+      ...this.customColumns,
+    }
 
     return output
   }
@@ -922,8 +896,6 @@ name: this.name,
 
     return model
   }
-
-  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<PrintDeviceModel | undefined> {
@@ -942,16 +914,15 @@ name: this.name,
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
-
-  
 }
 
 export async function find(id: number): Promise<PrintDeviceModel | undefined> {
-  let query = DB.instance.selectFrom('print_devices').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('print_devices').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   const instance = new PrintDeviceModel(undefined)
   return instance.createInstance(model)
@@ -979,55 +950,53 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<PrintDeviceModel[]> {
-          const query = DB.instance.selectFrom('print_devices').where('name', '=', value)
-          const results: PrintDeviceJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('print_devices').where('name', '=', value)
+  const results: PrintDeviceJsonResponse = await query.execute()
 
-          return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
-        } 
+  return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
+}
 
 export async function whereMacAddress(value: string): Promise<PrintDeviceModel[]> {
-          const query = DB.instance.selectFrom('print_devices').where('mac_address', '=', value)
-          const results: PrintDeviceJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('print_devices').where('mac_address', '=', value)
+  const results: PrintDeviceJsonResponse = await query.execute()
 
-          return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
-        } 
+  return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
+}
 
 export async function whereLocation(value: string): Promise<PrintDeviceModel[]> {
-          const query = DB.instance.selectFrom('print_devices').where('location', '=', value)
-          const results: PrintDeviceJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('print_devices').where('location', '=', value)
+  const results: PrintDeviceJsonResponse = await query.execute()
 
-          return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
-        } 
+  return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
+}
 
 export async function whereTerminal(value: string): Promise<PrintDeviceModel[]> {
-          const query = DB.instance.selectFrom('print_devices').where('terminal', '=', value)
-          const results: PrintDeviceJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('print_devices').where('terminal', '=', value)
+  const results: PrintDeviceJsonResponse = await query.execute()
 
-          return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
-        } 
+  return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
+}
 
 export async function whereStatus(value: string | string[]): Promise<PrintDeviceModel[]> {
-          const query = DB.instance.selectFrom('print_devices').where('status', '=', value)
-          const results: PrintDeviceJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('print_devices').where('status', '=', value)
+  const results: PrintDeviceJsonResponse = await query.execute()
 
-          return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
-        } 
+  return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
+}
 
 export async function whereLastPing(value: unix): Promise<PrintDeviceModel[]> {
-          const query = DB.instance.selectFrom('print_devices').where('last_ping', '=', value)
-          const results: PrintDeviceJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('print_devices').where('last_ping', '=', value)
+  const results: PrintDeviceJsonResponse = await query.execute()
 
-          return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
-        } 
+  return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
+}
 
 export async function wherePrintCount(value: number): Promise<PrintDeviceModel[]> {
-          const query = DB.instance.selectFrom('print_devices').where('print_count', '=', value)
-          const results: PrintDeviceJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('print_devices').where('print_count', '=', value)
+  const results: PrintDeviceJsonResponse = await query.execute()
 
-          return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
-        } 
-
-
+  return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
+}
 
 export const PrintDevice = PrintDeviceModel
 

@@ -1,34 +1,19 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
-import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
-import { BaseOrm } from '../utils/base'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import type { FailedJobJsonResponse, FailedJobsTable, FailedJobUpdate, NewFailedJob } from '../types/FailedJobType'
+import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { randomUUIDv7 } from 'bun'
-import type { FailedJobModelType, FailedJobJsonResponse, NewFailedJob, FailedJobUpdate, FailedJobsTable } from '../types/FailedJobType'
+import { DB } from '@stacksjs/orm'
 
-
-
-
-import type { Model } from '@stacksjs/types';
-import { schema } from '@stacksjs/validation';
-
-
-
+import { BaseOrm } from '../utils/base'
 
 export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, FailedJobJsonResponse> {
   private readonly hidden: Array<keyof FailedJobJsonResponse> = []
-  private readonly fillable: Array<keyof FailedJobJsonResponse> = ["connection","queue","payload","exception","failed_at"]
+  private readonly fillable: Array<keyof FailedJobJsonResponse> = ['connection', 'queue', 'payload', 'exception', 'failed_at']
   private readonly guarded: Array<keyof FailedJobJsonResponse> = []
   protected attributes = {} as FailedJobJsonResponse
   protected originalAttributes = {} as FailedJobJsonResponse
-  
+
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -46,13 +31,12 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
   constructor(failedJob: FailedJobJsonResponse | undefined) {
     super('failed_jobs')
     if (failedJob) {
-
       this.attributes = { ...failedJob }
       this.originalAttributes = { ...failedJob }
 
-      Object.keys(failedJob).forEach(key => {
+      Object.keys(failedJob).forEach((key) => {
         if (!(key in this)) {
-           this.customColumns[key] = (failedJob as FailedJobJsonResponse)[key]
+          this.customColumns[key] = (failedJob as FailedJobJsonResponse)[key]
         }
       })
     }
@@ -67,7 +51,8 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
   protected async loadRelations(models: FailedJobJsonResponse | FailedJobJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length) return
+    if (!modelArray.length)
+      return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -87,7 +72,8 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      } else {
+      }
+      else {
         const records = relatedRecords.filter((record: { failedJob_id: number }) => {
           return record.failedJob_id === models.id
         })
@@ -108,12 +94,10 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
 
     if (Array.isArray(data)) {
       data.map((model: FailedJobJsonResponse) => {
-
         const customGetter = {
           default: () => {
           },
 
-          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -122,14 +106,14 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
 
         return model
       })
-    } else {
+    }
+    else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
-        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -143,11 +127,10 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
       default: () => {
       },
 
-      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-        (model as any)[key] = await fn()
+      (model as any)[key] = await fn()
     }
   }
 
@@ -155,60 +138,57 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     return this.attributes.id
   }
 
-get connection(): string | undefined {
-      return this.attributes.connection
-    }
+  get connection(): string | undefined {
+    return this.attributes.connection
+  }
 
-get queue(): string | undefined {
-      return this.attributes.queue
-    }
+  get queue(): string | undefined {
+    return this.attributes.queue
+  }
 
-get payload(): string | undefined {
-      return this.attributes.payload
-    }
+  get payload(): string | undefined {
+    return this.attributes.payload
+  }
 
-get exception(): string | undefined {
-      return this.attributes.exception
-    }
+  get exception(): string | undefined {
+    return this.attributes.exception
+  }
 
-get failed_at(): Date | string | undefined {
-      return this.attributes.failed_at
-    }
+  get failed_at(): Date | string | undefined {
+    return this.attributes.failed_at
+  }
 
-get created_at(): string | undefined {
-      return this.attributes.created_at
-    }
+  get created_at(): string | undefined {
+    return this.attributes.created_at
+  }
 
-    get updated_at(): string | undefined {
-      return this.attributes.updated_at
-    }
-
+  get updated_at(): string | undefined {
+    return this.attributes.updated_at
+  }
 
   set connection(value: string) {
-      this.attributes.connection = value
-    }
+    this.attributes.connection = value
+  }
 
-set queue(value: string) {
-      this.attributes.queue = value
-    }
+  set queue(value: string) {
+    this.attributes.queue = value
+  }
 
-set payload(value: string) {
-      this.attributes.payload = value
-    }
+  set payload(value: string) {
+    this.attributes.payload = value
+  }
 
-set exception(value: string) {
-      this.attributes.exception = value
-    }
+  set exception(value: string) {
+    this.attributes.exception = value
+  }
 
-set failed_at(value: Date | string) {
-      this.attributes.failed_at = value
-    }
+  set failed_at(value: Date | string) {
+    this.attributes.failed_at = value
+  }
 
-set updated_at(value: string) {
-      this.attributes.updated_at = value
-    }
-
-
+  set updated_at(value: string) {
+    this.attributes.updated_at = value
+  }
 
   static select(params: (keyof FailedJobJsonResponse)[] | RawBuilder<string> | string): FailedJobModel {
     const instance = new FailedJobModel(undefined)
@@ -218,11 +198,12 @@ set updated_at(value: string) {
 
   // Method to find a FailedJob by ID
   static async find(id: number): Promise<FailedJobModel | undefined> {
-    let query = DB.instance.selectFrom('failed_jobs').where('id', '=', id).selectAll()
+    const query = DB.instance.selectFrom('failed_jobs').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     const instance = new FailedJobModel(undefined)
     return instance.createInstance(model)
@@ -243,7 +224,8 @@ set updated_at(value: string) {
 
     const model = await instance.applyLast()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new FailedJobModel(model)
   }
@@ -276,7 +258,7 @@ set updated_at(value: string) {
 
   static async findMany(ids: number[]): Promise<FailedJobModel[]> {
     const instance = new FailedJobModel(undefined)
-     
+
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: FailedJobJsonResponse) => instance.parseResult(new FailedJobModel(modelItem)))
@@ -291,7 +273,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new FailedJobModel(model)
   }
@@ -305,7 +288,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new FailedJobModel(model)
   }
@@ -472,12 +456,12 @@ set updated_at(value: string) {
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: FailedJobModel[],
+    data: FailedJobModel[]
     paging: {
-      total_records: number,
-      page: number,
+      total_records: number
+      page: number
       total_pages: number
-    },
+    }
     next_cursor: number | null
   }> {
     const instance = new FailedJobModel(undefined)
@@ -487,7 +471,7 @@ set updated_at(value: string) {
     return {
       data: result.data.map((item: FailedJobJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor
+      next_cursor: result.next_cursor,
     }
   }
 
@@ -499,13 +483,11 @@ set updated_at(value: string) {
   async applyCreate(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newFailedJob).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewFailedJob
 
     await this.mapCustomSetters(filteredValues)
-
-    
 
     const result = await DB.instance.insertInto('failed_jobs')
       .values(filteredValues)
@@ -520,7 +502,6 @@ set updated_at(value: string) {
       throw new HttpError(500, 'Failed to retrieve created FailedJob')
     }
 
-    
     return this.createInstance(model)
   }
 
@@ -589,7 +570,7 @@ set updated_at(value: string) {
   async update(newFailedJob: FailedJobUpdate): Promise<FailedJobModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newFailedJob).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as FailedJobUpdate
 
@@ -613,7 +594,6 @@ set updated_at(value: string) {
         throw new HttpError(500, 'Failed to retrieve updated FailedJob')
       }
 
-      
       return this.createInstance(model)
     }
 
@@ -637,7 +617,6 @@ set updated_at(value: string) {
         throw new HttpError(500, 'Failed to retrieve updated FailedJob')
       }
 
-      
       return this.createInstance(model)
     }
 
@@ -663,9 +642,9 @@ set updated_at(value: string) {
         throw new HttpError(500, 'Failed to retrieve updated FailedJob')
       }
 
-      
       return this.createInstance(model)
-    } else {
+    }
+    else {
       // Create new record
       const result = await DB.instance.insertInto('failed_jobs')
         .values(this.attributes as NewFailedJob)
@@ -681,7 +660,6 @@ set updated_at(value: string) {
         throw new HttpError(500, 'Failed to retrieve created FailedJob')
       }
 
-      
       return this.createInstance(model)
     }
   }
@@ -695,8 +673,6 @@ set updated_at(value: string) {
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewFailedJob
-
-      
 
       return filteredValues
     })
@@ -721,8 +697,6 @@ set updated_at(value: string) {
       throw new HttpError(500, 'Failed to retrieve created FailedJob')
     }
 
-    
-
     return instance.createInstance(model)
   }
 
@@ -730,9 +704,6 @@ set updated_at(value: string) {
   async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
-    
-    
-    
 
     const deleted = await DB.instance.deleteFrom('failed_jobs')
       .where('id', '=', this.id)
@@ -742,74 +713,56 @@ set updated_at(value: string) {
   }
 
   static async remove(id: number): Promise<any> {
-    
-
-    
-
-    
-
-    
-
     return await DB.instance.deleteFrom('failed_jobs')
       .where('id', '=', id)
       .execute()
   }
 
   static whereConnection(value: string): FailedJobModel {
-          const instance = new FailedJobModel(undefined)
+    const instance = new FailedJobModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('connection', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('connection', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereQueue(value: string): FailedJobModel {
-          const instance = new FailedJobModel(undefined)
+  static whereQueue(value: string): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('queue', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('queue', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static wherePayload(value: string): FailedJobModel {
-          const instance = new FailedJobModel(undefined)
+  static wherePayload(value: string): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('payload', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('payload', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereException(value: string): FailedJobModel {
-          const instance = new FailedJobModel(undefined)
+  static whereException(value: string): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('exception', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('exception', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereFailedAt(value: string): FailedJobModel {
-          const instance = new FailedJobModel(undefined)
+  static whereFailedAt(value: string): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('failed_at', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('failed_at', '=', value)
 
-          return instance
-        } 
-
-
+    return instance
+  }
 
   static whereIn<V = number>(column: keyof FailedJobsTable, values: V[]): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
-
-  
-
-  
-
-  
-
-  
 
   static distinct(column: keyof FailedJobJsonResponse): FailedJobModel {
     const instance = new FailedJobModel(undefined)
@@ -826,19 +779,19 @@ static whereFailedAt(value: string): FailedJobModel {
   toJSON(): FailedJobJsonResponse {
     const output = {
 
-id: this.id,
-connection: this.connection,
-   queue: this.queue,
-   payload: this.payload,
-   exception: this.exception,
-   failed_at: this.failed_at,
-   
-        created_at: this.created_at,
+      id: this.id,
+      connection: this.connection,
+      queue: this.queue,
+      payload: this.payload,
+      exception: this.exception,
+      failed_at: this.failed_at,
 
-        updated_at: this.updated_at,
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
 
       ...this.customColumns,
-}
+    }
 
     return output
   }
@@ -850,8 +803,6 @@ connection: this.connection,
 
     return model
   }
-
-  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<FailedJobModel | undefined> {
@@ -870,16 +821,15 @@ connection: this.connection,
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
-
-  
 }
 
 export async function find(id: number): Promise<FailedJobModel | undefined> {
-  let query = DB.instance.selectFrom('failed_jobs').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('failed_jobs').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   const instance = new FailedJobModel(undefined)
   return instance.createInstance(model)
@@ -907,41 +857,39 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereConnection(value: string): Promise<FailedJobModel[]> {
-          const query = DB.instance.selectFrom('failed_jobs').where('connection', '=', value)
-          const results: FailedJobJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('failed_jobs').where('connection', '=', value)
+  const results: FailedJobJsonResponse = await query.execute()
 
-          return results.map((modelItem: FailedJobJsonResponse) => new FailedJobModel(modelItem))
-        } 
+  return results.map((modelItem: FailedJobJsonResponse) => new FailedJobModel(modelItem))
+}
 
 export async function whereQueue(value: string): Promise<FailedJobModel[]> {
-          const query = DB.instance.selectFrom('failed_jobs').where('queue', '=', value)
-          const results: FailedJobJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('failed_jobs').where('queue', '=', value)
+  const results: FailedJobJsonResponse = await query.execute()
 
-          return results.map((modelItem: FailedJobJsonResponse) => new FailedJobModel(modelItem))
-        } 
+  return results.map((modelItem: FailedJobJsonResponse) => new FailedJobModel(modelItem))
+}
 
 export async function wherePayload(value: string): Promise<FailedJobModel[]> {
-          const query = DB.instance.selectFrom('failed_jobs').where('payload', '=', value)
-          const results: FailedJobJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('failed_jobs').where('payload', '=', value)
+  const results: FailedJobJsonResponse = await query.execute()
 
-          return results.map((modelItem: FailedJobJsonResponse) => new FailedJobModel(modelItem))
-        } 
+  return results.map((modelItem: FailedJobJsonResponse) => new FailedJobModel(modelItem))
+}
 
 export async function whereException(value: string): Promise<FailedJobModel[]> {
-          const query = DB.instance.selectFrom('failed_jobs').where('exception', '=', value)
-          const results: FailedJobJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('failed_jobs').where('exception', '=', value)
+  const results: FailedJobJsonResponse = await query.execute()
 
-          return results.map((modelItem: FailedJobJsonResponse) => new FailedJobModel(modelItem))
-        } 
+  return results.map((modelItem: FailedJobJsonResponse) => new FailedJobModel(modelItem))
+}
 
 export async function whereFailedAt(value: Date | string): Promise<FailedJobModel[]> {
-          const query = DB.instance.selectFrom('failed_jobs').where('failed_at', '=', value)
-          const results: FailedJobJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('failed_jobs').where('failed_at', '=', value)
+  const results: FailedJobJsonResponse = await query.execute()
 
-          return results.map((modelItem: FailedJobJsonResponse) => new FailedJobModel(modelItem))
-        } 
-
-
+  return results.map((modelItem: FailedJobJsonResponse) => new FailedJobModel(modelItem))
+}
 
 export const FailedJob = FailedJobModel
 

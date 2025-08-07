@@ -1,37 +1,22 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
-import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
-import { BaseOrm } from '../utils/base'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import type { CategoriesTable, CategoryJsonResponse, CategoryUpdate, NewCategory } from '../types/CategoryType'
+import type { ProductModel } from './Product'
+import { randomUUIDv7 } from 'bun'
+import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { generateTwoFactorSecret } from '@stacksjs/auth'
-import { verifyTwoFactorCode } from '@stacksjs/auth'
-import { randomUUIDv7 } from 'bun'
-import type { CategoryModelType, CategoryJsonResponse, NewCategory, CategoryUpdate, CategoriesTable } from '../types/CategoryType'
+import { DB } from '@stacksjs/orm'
 
-import type {ProductModel} from './Product'
-
-
-
-
-import type { Model } from '@stacksjs/types';
-import { slug } from '@stacksjs/strings';
-import { schema } from '@stacksjs/validation';
-
-
-
+import { BaseOrm } from '../utils/base'
 
 export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, CategoryJsonResponse> {
   private readonly hidden: Array<keyof CategoryJsonResponse> = []
-  private readonly fillable: Array<keyof CategoryJsonResponse> = ["name","description","slug","image_url","is_active","parent_category_id","display_order","uuid"]
+  private readonly fillable: Array<keyof CategoryJsonResponse> = ['name', 'description', 'slug', 'image_url', 'is_active', 'parent_category_id', 'display_order', 'uuid']
   private readonly guarded: Array<keyof CategoryJsonResponse> = []
   protected attributes = {} as CategoryJsonResponse
   protected originalAttributes = {} as CategoryJsonResponse
-  
+
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -49,13 +34,12 @@ export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, Categ
   constructor(category: CategoryJsonResponse | undefined) {
     super('categories')
     if (category) {
-
       this.attributes = { ...category }
       this.originalAttributes = { ...category }
 
-      Object.keys(category).forEach(key => {
+      Object.keys(category).forEach((key) => {
         if (!(key in this)) {
-           this.customColumns[key] = (category as CategoryJsonResponse)[key]
+          this.customColumns[key] = (category as CategoryJsonResponse)[key]
         }
       })
     }
@@ -70,7 +54,8 @@ export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, Categ
   protected async loadRelations(models: CategoryJsonResponse | CategoryJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length) return
+    if (!modelArray.length)
+      return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -90,7 +75,8 @@ export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, Categ
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      } else {
+      }
+      else {
         const records = relatedRecords.filter((record: { category_id: number }) => {
           return record.category_id === models.id
         })
@@ -111,12 +97,10 @@ export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, Categ
 
     if (Array.isArray(data)) {
       data.map((model: CategoryJsonResponse) => {
-
         const customGetter = {
           default: () => {
           },
 
-          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -125,14 +109,14 @@ export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, Categ
 
         return model
       })
-    } else {
+    }
+    else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
-        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -146,100 +130,96 @@ export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, Categ
       default: () => {
       },
 
-      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-        (model as any)[key] = await fn()
+      (model as any)[key] = await fn()
     }
   }
 
-  get products():ProductModel[] | [] {
-        return this.attributes.products
-      }
+  get products(): ProductModel[] | [] {
+    return this.attributes.products
+  }
 
-get id(): number {
+  get id(): number {
     return this.attributes.id
   }
 
-get uuid(): string | undefined {
-      return this.attributes.uuid
-    }
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
 
-get name(): string {
-      return this.attributes.name
-    }
+  get name(): string {
+    return this.attributes.name
+  }
 
-get description(): string | undefined {
-      return this.attributes.description
-    }
+  get description(): string | undefined {
+    return this.attributes.description
+  }
 
-get slug(): string {
-      return this.attributes.slug
-    }
+  get slug(): string {
+    return this.attributes.slug
+  }
 
-get image_url(): string | undefined {
-      return this.attributes.image_url
-    }
+  get image_url(): string | undefined {
+    return this.attributes.image_url
+  }
 
-get is_active(): boolean | undefined {
-      return this.attributes.is_active
-    }
+  get is_active(): boolean | undefined {
+    return this.attributes.is_active
+  }
 
-get parent_category_id(): string | undefined {
-      return this.attributes.parent_category_id
-    }
+  get parent_category_id(): string | undefined {
+    return this.attributes.parent_category_id
+  }
 
-get display_order(): number {
-      return this.attributes.display_order
-    }
+  get display_order(): number {
+    return this.attributes.display_order
+  }
 
-get created_at(): string | undefined {
-      return this.attributes.created_at
-    }
+  get created_at(): string | undefined {
+    return this.attributes.created_at
+  }
 
-    get updated_at(): string | undefined {
-      return this.attributes.updated_at
-    }
-
+  get updated_at(): string | undefined {
+    return this.attributes.updated_at
+  }
 
   set uuid(value: string) {
-      this.attributes.uuid = value
-    }
+    this.attributes.uuid = value
+  }
 
-set name(value: string) {
-      this.attributes.name = value
-    }
+  set name(value: string) {
+    this.attributes.name = value
+  }
 
-set description(value: string) {
-      this.attributes.description = value
-    }
+  set description(value: string) {
+    this.attributes.description = value
+  }
 
-set slug(value: string) {
-      this.attributes.slug = value
-    }
+  set slug(value: string) {
+    this.attributes.slug = value
+  }
 
-set image_url(value: string) {
-      this.attributes.image_url = value
-    }
+  set image_url(value: string) {
+    this.attributes.image_url = value
+  }
 
-set is_active(value: boolean) {
-      this.attributes.is_active = value
-    }
+  set is_active(value: boolean) {
+    this.attributes.is_active = value
+  }
 
-set parent_category_id(value: string) {
-      this.attributes.parent_category_id = value
-    }
+  set parent_category_id(value: string) {
+    this.attributes.parent_category_id = value
+  }
 
-set display_order(value: number) {
-      this.attributes.display_order = value
-    }
+  set display_order(value: number) {
+    this.attributes.display_order = value
+  }
 
-set updated_at(value: string) {
-      this.attributes.updated_at = value
-    }
-
-
+  set updated_at(value: string) {
+    this.attributes.updated_at = value
+  }
 
   static select(params: (keyof CategoryJsonResponse)[] | RawBuilder<string> | string): CategoryModel {
     const instance = new CategoryModel(undefined)
@@ -249,11 +229,12 @@ set updated_at(value: string) {
 
   // Method to find a Category by ID
   static async find(id: number): Promise<CategoryModel | undefined> {
-    let query = DB.instance.selectFrom('categories').where('id', '=', id).selectAll()
+    const query = DB.instance.selectFrom('categories').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     const instance = new CategoryModel(undefined)
     return instance.createInstance(model)
@@ -274,7 +255,8 @@ set updated_at(value: string) {
 
     const model = await instance.applyLast()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new CategoryModel(model)
   }
@@ -307,7 +289,7 @@ set updated_at(value: string) {
 
   static async findMany(ids: number[]): Promise<CategoryModel[]> {
     const instance = new CategoryModel(undefined)
-     
+
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: CategoryJsonResponse) => instance.parseResult(new CategoryModel(modelItem)))
@@ -322,7 +304,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new CategoryModel(model)
   }
@@ -336,7 +319,8 @@ set updated_at(value: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!model) return undefined
+    if (!model)
+      return undefined
 
     return new CategoryModel(model)
   }
@@ -503,12 +487,12 @@ set updated_at(value: string) {
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: CategoryModel[],
+    data: CategoryModel[]
     paging: {
-      total_records: number,
-      page: number,
+      total_records: number
+      page: number
       total_pages: number
-    },
+    }
     next_cursor: number | null
   }> {
     const instance = new CategoryModel(undefined)
@@ -518,7 +502,7 @@ set updated_at(value: string) {
     return {
       data: result.data.map((item: CategoryJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor
+      next_cursor: result.next_cursor,
     }
   }
 
@@ -530,13 +514,13 @@ set updated_at(value: string) {
   async applyCreate(newCategory: NewCategory): Promise<CategoryModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newCategory).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewCategory
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues['uuid'] = randomUUIDv7()
+    filteredValues.uuid = randomUUIDv7()
 
     const result = await DB.instance.insertInto('categories')
       .values(filteredValues)
@@ -552,7 +536,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('category:created', model)
+      dispatch('category:created', model)
     return this.createInstance(model)
   }
 
@@ -621,7 +605,7 @@ set updated_at(value: string) {
   async update(newCategory: CategoryUpdate): Promise<CategoryModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newCategory).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key)
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as CategoryUpdate
 
@@ -646,7 +630,7 @@ set updated_at(value: string) {
       }
 
       if (model)
- dispatch('category:updated', model)
+        dispatch('category:updated', model)
       return this.createInstance(model)
     }
 
@@ -671,7 +655,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('category:updated', model)
+        dispatch('category:updated', model)
       return this.createInstance(model)
     }
 
@@ -698,9 +682,10 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('category:updated', model)
+        dispatch('category:updated', model)
       return this.createInstance(model)
-    } else {
+    }
+    else {
       // Create new record
       const result = await DB.instance.insertInto('categories')
         .values(this.attributes as NewCategory)
@@ -717,7 +702,7 @@ set updated_at(value: string) {
       }
 
       if (this)
- dispatch('category:created', model)
+        dispatch('category:created', model)
       return this.createInstance(model)
     }
   }
@@ -732,7 +717,7 @@ set updated_at(value: string) {
         ),
       ) as NewCategory
 
-      filteredValues['uuid'] = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
 
       return filteredValues
     })
@@ -758,7 +743,7 @@ set updated_at(value: string) {
     }
 
     if (model)
- dispatch('category:created', model)
+      dispatch('category:created', model)
 
     return instance.createInstance(model)
   }
@@ -768,9 +753,9 @@ set updated_at(value: string) {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-    
+
     if (model)
- dispatch('category:deleted', model)
+      dispatch('category:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('categories')
       .where('id', '=', this.id)
@@ -784,10 +769,8 @@ set updated_at(value: string) {
 
     const model = await instance.find(Number(id))
 
-    
-
     if (model)
- dispatch('category:deleted', model)
+      dispatch('category:deleted', model)
 
     return await DB.instance.deleteFrom('categories')
       .where('id', '=', id)
@@ -795,62 +778,60 @@ set updated_at(value: string) {
   }
 
   static whereName(value: string): CategoryModel {
-          const instance = new CategoryModel(undefined)
+    const instance = new CategoryModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereDescription(value: string): CategoryModel {
-          const instance = new CategoryModel(undefined)
+  static whereDescription(value: string): CategoryModel {
+    const instance = new CategoryModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereSlug(value: string): CategoryModel {
-          const instance = new CategoryModel(undefined)
+  static whereSlug(value: string): CategoryModel {
+    const instance = new CategoryModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('slug', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('slug', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereImageUrl(value: string): CategoryModel {
-          const instance = new CategoryModel(undefined)
+  static whereImageUrl(value: string): CategoryModel {
+    const instance = new CategoryModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('image_url', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('image_url', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereIsActive(value: string): CategoryModel {
-          const instance = new CategoryModel(undefined)
+  static whereIsActive(value: string): CategoryModel {
+    const instance = new CategoryModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('is_active', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('is_active', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereParentCategoryId(value: string): CategoryModel {
-          const instance = new CategoryModel(undefined)
+  static whereParentCategoryId(value: string): CategoryModel {
+    const instance = new CategoryModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('parent_category_id', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('parent_category_id', '=', value)
 
-          return instance
-        } 
+    return instance
+  }
 
-static whereDisplayOrder(value: string): CategoryModel {
-          const instance = new CategoryModel(undefined)
+  static whereDisplayOrder(value: string): CategoryModel {
+    const instance = new CategoryModel(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.where('display_order', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('display_order', '=', value)
 
-          return instance
-        } 
-
-
+    return instance
+  }
 
   static whereIn<V = number>(column: keyof CategoriesTable, values: V[]): CategoryModel {
     const instance = new CategoryModel(undefined)
@@ -858,24 +839,16 @@ static whereDisplayOrder(value: string): CategoryModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  
-
-  
-      toSearchableObject(): Partial<CategoryJsonResponse> {
-        return {
-          id: this.id,
-name: this.name,
-description: this.description,
-is_active: this.is_active,
-parent_category_id: this.parent_category_id,
-display_order: this.display_order
-        }
-      }
-    
-
-  
-
-  
+  toSearchableObject(): Partial<CategoryJsonResponse> {
+    return {
+      id: this.id,
+      name: this.name,
+      description: this.description,
+      is_active: this.is_active,
+      parent_category_id: this.parent_category_id,
+      display_order: this.display_order,
+    }
+  }
 
   static distinct(column: keyof CategoryJsonResponse): CategoryModel {
     const instance = new CategoryModel(undefined)
@@ -892,24 +865,24 @@ display_order: this.display_order
   toJSON(): CategoryJsonResponse {
     const output = {
 
- uuid: this.uuid,
+      uuid: this.uuid,
 
-id: this.id,
-name: this.name,
-   description: this.description,
-   slug: this.slug,
-   image_url: this.image_url,
-   is_active: this.is_active,
-   parent_category_id: this.parent_category_id,
-   display_order: this.display_order,
-   
-        created_at: this.created_at,
+      id: this.id,
+      name: this.name,
+      description: this.description,
+      slug: this.slug,
+      image_url: this.image_url,
+      is_active: this.is_active,
+      parent_category_id: this.parent_category_id,
+      display_order: this.display_order,
 
-        updated_at: this.updated_at,
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
 
       products: this.products,
-...this.customColumns,
-}
+      ...this.customColumns,
+    }
 
     return output
   }
@@ -921,8 +894,6 @@ name: this.name,
 
     return model
   }
-
-  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<CategoryModel | undefined> {
@@ -941,16 +912,15 @@ name: this.name,
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
-
-  
 }
 
 export async function find(id: number): Promise<CategoryModel | undefined> {
-  let query = DB.instance.selectFrom('categories').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('categories').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model) return undefined
+  if (!model)
+    return undefined
 
   const instance = new CategoryModel(undefined)
   return instance.createInstance(model)
@@ -978,55 +948,53 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<CategoryModel[]> {
-          const query = DB.instance.selectFrom('categories').where('name', '=', value)
-          const results: CategoryJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('categories').where('name', '=', value)
+  const results: CategoryJsonResponse = await query.execute()
 
-          return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))
-        } 
+  return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))
+}
 
 export async function whereDescription(value: string): Promise<CategoryModel[]> {
-          const query = DB.instance.selectFrom('categories').where('description', '=', value)
-          const results: CategoryJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('categories').where('description', '=', value)
+  const results: CategoryJsonResponse = await query.execute()
 
-          return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))
-        } 
+  return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))
+}
 
 export async function whereSlug(value: string): Promise<CategoryModel[]> {
-          const query = DB.instance.selectFrom('categories').where('slug', '=', value)
-          const results: CategoryJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('categories').where('slug', '=', value)
+  const results: CategoryJsonResponse = await query.execute()
 
-          return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))
-        } 
+  return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))
+}
 
 export async function whereImageUrl(value: string): Promise<CategoryModel[]> {
-          const query = DB.instance.selectFrom('categories').where('image_url', '=', value)
-          const results: CategoryJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('categories').where('image_url', '=', value)
+  const results: CategoryJsonResponse = await query.execute()
 
-          return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))
-        } 
+  return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))
+}
 
 export async function whereIsActive(value: boolean): Promise<CategoryModel[]> {
-          const query = DB.instance.selectFrom('categories').where('is_active', '=', value)
-          const results: CategoryJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('categories').where('is_active', '=', value)
+  const results: CategoryJsonResponse = await query.execute()
 
-          return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))
-        } 
+  return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))
+}
 
 export async function whereParentCategoryId(value: string): Promise<CategoryModel[]> {
-          const query = DB.instance.selectFrom('categories').where('parent_category_id', '=', value)
-          const results: CategoryJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('categories').where('parent_category_id', '=', value)
+  const results: CategoryJsonResponse = await query.execute()
 
-          return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))
-        } 
+  return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))
+}
 
 export async function whereDisplayOrder(value: number): Promise<CategoryModel[]> {
-          const query = DB.instance.selectFrom('categories').where('display_order', '=', value)
-          const results: CategoryJsonResponse = await query.execute()
+  const query = DB.instance.selectFrom('categories').where('display_order', '=', value)
+  const results: CategoryJsonResponse = await query.execute()
 
-          return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))
-        } 
-
-
+  return results.map((modelItem: CategoryJsonResponse) => new CategoryModel(modelItem))
+}
 
 export const Category = CategoryModel
 
