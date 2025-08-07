@@ -3,7 +3,7 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .createTable('taggable_models')
+    .createTable('taggables')
     .addColumn('id', 'serial', col => col.primaryKey())
     .addColumn('tag_id', 'integer', col => col.notNull())
     .addColumn('taggable_id', 'integer', col => col.notNull())
@@ -13,25 +13,25 @@ export async function up(db: Database<any>) {
     .execute()
 
   await db.schema
-    .alterTable('taggable_models')
-    .addForeignKeyConstraint('taggable_models_tag_id_foreign', ['tag_id'], 'tags', ['id'], (cb) => cb.onDelete('cascade'))
+    .alterTable('taggables')
+    .addForeignKeyConstraint('taggables_tag_id_foreign', ['tag_id'], 'tags', ['id'], (cb) => cb.onDelete('cascade'))
     .execute()
 
   await db.schema
-    .createIndex('idx_taggable_models_tag')
-    .on('taggable_models')
+    .createIndex('idx_taggables_tag')
+    .on('taggables')
     .column('tag_id')
     .execute()
 
   await db.schema
-    .createIndex('idx_taggable_models_polymorphic')
-    .on('taggable_models')
+    .createIndex('idx_taggables_polymorphic')
+    .on('taggables')
     .columns(['taggable_id', 'taggable_type'])
     .execute()
 
   await db.schema
-    .createIndex('idx_taggable_models_unique')
-    .on('taggable_models')
+    .createIndex('idx_taggables_unique')
+    .on('taggables')
     .columns(['tag_id', 'taggable_id', 'taggable_type'])
     .unique()
     .execute()

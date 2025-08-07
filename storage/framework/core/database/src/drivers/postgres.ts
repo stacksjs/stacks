@@ -30,7 +30,7 @@ import {
   createPostgresPasskeyMigration,
   createPostgresQueryLogsTable,
   createPostgresTaggablesTable,
-  createPostgresTaggableTable,
+  createPostgresTagsTable,
   truncateMigrationTables,
 } from './defaults/traits'
 
@@ -66,7 +66,7 @@ export async function generatePostgresTraitMigrations(): Promise<void> {
   Promise.all([
     await createPostgresCategorizableTable(),
     await createPostgresCommentsTable(),
-    await createPostgresTaggableTable(),
+    await createPostgresTagsTable(),
     await createPostgresTaggablesTable(),
     await createPostgresCommentUpvoteMigration(),
     await createPostgresPasskeyMigration(),

@@ -139,7 +139,7 @@ export async function createTaggableTable(): Promise<void> {
   await createTaggablesTable()
 }
 
-export async function createPostgresTaggableTable(): Promise<void> {
+export async function createPostgresTagsTable(): Promise<void> {
   const hasBeenMigrated = await hasMigrationBeenCreated('tags')
 
   if (hasBeenMigrated)
