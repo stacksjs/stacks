@@ -25,10 +25,12 @@ import {
 import {
   createPostgresCategorizableTable,
   createPostgresCommenteableTable,
+  createPostgresCommentablesPivotTable,
   createPostgresCommentUpvoteMigration,
   createPostgresPasskeyMigration,
   createPostgresQueryLogsTable,
   createPostgresTaggableTable,
+  createPostgresTaggableModelsTable,
   dropCommonTables,
   truncateMigrationTables,
 } from './defaults/traits'
@@ -54,6 +56,8 @@ async function dropCommonPostgresTables(): Promise<void> {
   await db.schema.dropTable('password_resets').cascade().ifExists().execute()
   await db.schema.dropTable('query_logs').cascade().ifExists().execute()
   await db.schema.dropTable('categorizables').cascade().ifExists().execute()
+  await db.schema.dropTable('commentables').cascade().ifExists().execute()
+  await db.schema.dropTable('comments').cascade().ifExists().execute()
   await db.schema.dropTable('commenteable_upvotes').cascade().ifExists().execute()
 } 
 
@@ -61,7 +65,9 @@ export async function generatePostgresTraitMigrations(): Promise<void> {
   Promise.all([
     await createPostgresCategorizableTable(),
     await createPostgresCommenteableTable(),
+    await createPostgresCommentablesPivotTable(),
     await createPostgresTaggableTable(),
+    await createPostgresTaggableModelsTable(),
     await createPostgresCommentUpvoteMigration(),
     await createPostgresPasskeyMigration(),
     await createPostgresQueryLogsTable(),

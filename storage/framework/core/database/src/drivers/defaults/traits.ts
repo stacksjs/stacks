@@ -6,7 +6,9 @@ import { hasMigrationBeenCreated } from '../index'
 export function getTraitTables(): string[] {
   return [
     'taggables',
+    'taggable_models',
     'categorizables',
+    'comments',
     'commentables',
     'commentable_upvotes',
     'passkeys',
@@ -320,15 +322,13 @@ export async function createCommentablesTable(options: {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('commentables')\n`
+  migrationContent += `    .createTable('comments')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
   migrationContent += `    .addColumn('title', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('body', 'text', col => col.notNull())\n`
   migrationContent += `    .addColumn('status', 'varchar(50)', col => col.notNull().defaultTo('${options.requiresApproval ? 'pending' : 'approved'}'))\n`
   migrationContent += `    .addColumn('approved_at', 'integer')\n`
   migrationContent += `    .addColumn('rejected_at', 'integer')\n`
-  migrationContent += `    .addColumn('commentables_id', 'integer', col => col.notNull())\n`
-  migrationContent += `    .addColumn('commentables_type', 'varchar(255)', col => col.notNull())\n`
 
   if (options.reportable) {
     migrationContent += `    .addColumn('reports_count', 'integer', col => col.defaultTo(0))\n`
@@ -344,13 +344,13 @@ export async function createCommentablesTable(options: {
   migrationContent += `    .execute()\n\n`
 
   // Add indexes
-  migrationContent += `  await db.schema.createIndex('idx_commenteable_status').on('commentables').column('status').execute()\n`
-  migrationContent += `  await db.schema.createIndex('idx_commenteable_commentables').on('commentables').columns(['commentables_id', 'commentables_type']).execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_comments_status').on('comments').column('status').execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_comments_created_at').on('comments').column('created_at').execute()\n`
 
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-commentables-table.ts`
+  const migrationFileName = `${timestamp}-create-comments-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
@@ -369,24 +369,22 @@ export async function createPostgresCommenteableTable(): Promise<void> {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('commentables')\n`
+  migrationContent += `    .createTable('comments')\n`
   migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
   migrationContent += `    .addColumn('title', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('body', 'text', col => col.notNull())\n`
   migrationContent += `    .addColumn('status', 'varchar(50)', col => col.notNull().defaultTo('pending'))\n`
   migrationContent += `    .addColumn('approved_at', 'integer')\n`
   migrationContent += `    .addColumn('rejected_at', 'integer')\n`
-  migrationContent += `    .addColumn('commentables_id', 'integer', col => col.notNull())\n`
-  migrationContent += `    .addColumn('commentables_type', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
   migrationContent += `    .execute()\n\n`
-  migrationContent += `  await db.schema.createIndex('idx_commenteable_status').on('commentables').column('status').execute()\n`
-  migrationContent += `  await db.schema.createIndex('idx_commenteable_commentables').on('commentables').columns(['commentables_id', 'commentables_type']).execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_comments_status').on('comments').column('status').execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_comments_created_at').on('comments').column('created_at').execute()\n`
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-commentables-table.ts`
+  const migrationFileName = `${timestamp}-create-comments-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)
@@ -460,6 +458,116 @@ export async function createPostgresCommentUpvoteMigration(): Promise<void> {
 
   const timestamp = new Date().getTime().toString()
   const migrationFileName = `${timestamp}-create-commenteable_upvotes-table.ts`
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  Bun.write(migrationFilePath, migrationContent)
+
+  log.success(`Created migration: ${italic(migrationFileName)}`)
+}
+
+export async function createCommentablesPivotTable(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('commentables_pivot')
+
+  if (hasBeenMigrated)
+    return
+
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createTable('commentables')\n`
+  migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
+  migrationContent += `    .addColumn('comment_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('commentable_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('commentable_type', 'varchar(255)', col => col.notNull())\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
+  migrationContent += `    .execute()\n\n`
+
+  // Add foreign key constraint to comments table
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .alterTable('commentables')\n`
+  migrationContent += `    .addForeignKeyConstraint('commentables_comment_id_foreign', ['comment_id'], 'comments', ['id'], (cb) => cb.onDelete('cascade'))\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_commentables_comment')\n`
+  migrationContent += `    .on('commentables')\n`
+  migrationContent += `    .column('comment_id')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_commentables_polymorphic')\n`
+  migrationContent += `    .on('commentables')\n`
+  migrationContent += `    .columns(['commentable_id', 'commentable_type'])\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_commentables_unique')\n`
+  migrationContent += `    .on('commentables')\n`
+  migrationContent += `    .columns(['comment_id', 'commentable_id', 'commentable_type'])\n`
+  migrationContent += `    .unique()\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `}\n`
+
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-create-commentables-pivot-table.ts`
+  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+
+  Bun.write(migrationFilePath, migrationContent)
+
+  log.success(`Created migration: ${italic(migrationFileName)}`)
+}
+
+export async function createPostgresCommentablesPivotTable(): Promise<void> {
+  const hasBeenMigrated = await hasMigrationBeenCreated('commentables_pivot')
+
+  if (hasBeenMigrated)
+    return
+
+  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createTable('commentables')\n`
+  migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
+  migrationContent += `    .addColumn('comment_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('commentable_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('commentable_type', 'varchar(255)', col => col.notNull())\n`
+  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+  migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
+  migrationContent += `    .execute()\n\n`
+
+  // Add foreign key constraint to comments table
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .alterTable('commentables')\n`
+  migrationContent += `    .addForeignKeyConstraint('commentables_comment_id_foreign', ['comment_id'], 'comments', ['id'], (cb) => cb.onDelete('cascade'))\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_commentables_comment')\n`
+  migrationContent += `    .on('commentables')\n`
+  migrationContent += `    .column('comment_id')\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_commentables_polymorphic')\n`
+  migrationContent += `    .on('commentables')\n`
+  migrationContent += `    .columns(['commentable_id', 'commentable_type'])\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `  await db.schema\n`
+  migrationContent += `    .createIndex('idx_commentables_unique')\n`
+  migrationContent += `    .on('commentables')\n`
+  migrationContent += `    .columns(['comment_id', 'commentable_id', 'commentable_type'])\n`
+  migrationContent += `    .unique()\n`
+  migrationContent += `    .execute()\n\n`
+
+  migrationContent += `}\n`
+
+  const timestamp = new Date().getTime().toString()
+  const migrationFileName = `${timestamp}-create-commentables-pivot-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   Bun.write(migrationFilePath, migrationContent)

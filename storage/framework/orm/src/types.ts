@@ -79,16 +79,25 @@ export interface PasskeysTable {
 
 export interface CommentablesTable {
   id?: number
+  comment_id: number
+  commentable_id: number
+  commentable_type: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface CommentsTable {
+  id?: number
   title: string
   body: string
   status: string
-  approved_at: number | null
-  rejected_at: number | null
-  commentables_id: number
-  commentables_type: string
-  user_id: number | null
+  approved_at?: number | null
+  rejected_at?: number | null
+  user_id?: number | null
+  reports_count?: number
+  reported_at?: number | null
   created_at?: string
-  updated_at?: string | null
+  updated_at?: string
 }
 
 export interface CommentableUpvotesTable {
@@ -220,6 +229,7 @@ export interface Database {
   migrations: MigrationsTable
   passkeys: PasskeysTable
   commentables: CommentablesTable
+  comments: CommentsTable
   taggables: TaggableTable
   commentable_upvotes: CommentableUpvotesTable
   categorizables: CategorizableTable

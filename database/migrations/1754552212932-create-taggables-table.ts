@@ -7,9 +7,10 @@ export async function up(db: Database<any>) {
     .addColumn('id', 'serial', col => col.primaryKey())
     .addColumn('name', 'varchar(255)', col => col.notNull())
     .addColumn('slug', 'varchar(255)', col => col.notNull().unique())
+    .addColumn('type', 'varchar(255)')
+    .addColumn('color', 'varchar(255)')
     .addColumn('description', 'text')
     .addColumn('is_active', 'boolean', col => col.defaultTo(true))
-    .addColumn('taggable_type', 'varchar(255)', col => col.notNull())
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .addColumn('updated_at', 'timestamp')
     .execute()
@@ -21,9 +22,15 @@ export async function up(db: Database<any>) {
     .execute()
 
   await db.schema
-    .createIndex('idx_taggables_polymorphic')
+    .createIndex('idx_taggables_type')
     .on('taggables')
-    .columns(['taggable_type'])
+    .column('type')
+    .execute()
+
+  await db.schema
+    .createIndex('idx_taggables_name')
+    .on('taggables')
+    .column('name')
     .execute()
 
 }
