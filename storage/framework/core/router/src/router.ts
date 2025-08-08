@@ -12,9 +12,35 @@ import { extractDefaultRequest, findRequestInstanceFromAction } from './utils'
 
 type ActionPath = string
 
+// Global cache busting timestamp for development mode
+declare global {
+  var __cacheBuster: number
+}
+
+// Initialize cache buster for development
+if (process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod') {
+  globalThis.__cacheBuster = Date.now()
+}
+
 export class Router implements RouterInterface {
   private routes: Route[] = []
   private path = ''
+
+  // Method to update cache buster when files change
+  public static updateCacheBuster(): void {
+    if (process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod') {
+      globalThis.__cacheBuster = Date.now()
+      log.debug('Updated cache buster timestamp')
+    }
+  }
+
+  // Helper to get cache busting query parameter
+  private getCacheBuster(): string {
+    if (process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod') {
+      return `?t=${globalThis.__cacheBuster}`
+    }
+    return ''
+  }
 
   private addRoute(
     method: Route['method'],
@@ -306,7 +332,11 @@ export class Router implements RouterInterface {
       // Handle controller-based routing
       if (modulePath.includes('Controller')) {
         const [controllerPath, methodName = 'index'] = modulePath.split('@')
-        const controller = await import(importPathFunction(controllerPath))
+        
+        // Add cache busting for development mode
+        const controllerPathWithCacheBuster = importPathFunction(controllerPath) + this.getCacheBuster()
+        
+        const controller = await import(controllerPathWithCacheBuster)
         // eslint-disable-next-line new-cap
         const instance = new controller.default()
 
@@ -342,14 +372,15 @@ export class Router implements RouterInterface {
 
       // Handle action-based routing
       let actionModule = null
+      
       if (modulePath.includes('storage/framework/orm'))
-        actionModule = await import(modulePath)
+        actionModule = await import(modulePath + this.getCacheBuster())
       else if (modulePath.includes('Actions'))
-        actionModule = await import(p.projectPath(`app/${modulePath}.ts`))
+        actionModule = await import(p.projectPath(`app/${modulePath}.ts`) + this.getCacheBuster())
       else if (modulePath.includes('OrmAction'))
-        actionModule = await import(p.storagePath(`/framework/actions/src/${modulePath}.ts`))
+        actionModule = await import(p.storagePath(`/framework/actions/src/${modulePath}.ts`) + this.getCacheBuster())
       else
-        actionModule = await import(importPathFunction(modulePath))
+        actionModule = await import(importPathFunction(modulePath) + this.getCacheBuster())
 
       // Use custom path from action module if available
       const newPath = actionModule.default.path ?? originalPath

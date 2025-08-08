@@ -63,17 +63,15 @@ async function dropCommonPostgresTables(): Promise<void> {
 }
 
 export async function generatePostgresTraitMigrations(): Promise<void> {
-  Promise.all([
-    await createPostgresCategorizableTable(),
-    await createPostgresCommentsTable(),
-    await createPostgresTagsTable(),
-    await createPostgresCommentUpvoteMigration(),
-    await createPostgresPasskeyMigration(),
-    await createPostgresQueryLogsTable(),
-    await createPasswordResetsTable(),
-    await createPostgresCommentablesPivotTable(),
-    await createPostgresTaggablesTable(),
-  ])
+  await createPostgresCategorizableTable()
+  await createPostgresCommentsTable()
+  await createPostgresTagsTable()
+  await createPostgresCommentUpvoteMigration()
+  await createPostgresPasskeyMigration()
+  await createPostgresQueryLogsTable()
+  await createPasswordResetsTable()
+  await createPostgresCommentablesPivotTable()
+  await createPostgresTaggablesTable()
 }
 
 export async function resetPostgresDatabase(): Promise<Ok<string, never>> {

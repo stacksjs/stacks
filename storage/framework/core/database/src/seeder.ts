@@ -55,20 +55,20 @@ async function seedModel(name: string, modelPath: string, model: Model) {
       }
     }
 
-    if (otherRelations?.length) {
-      for (let j = 0; j < otherRelations.length; j++) {
-        const relationElement = otherRelations[j] as RelationConfig
+    // if (otherRelations?.length) {
+    //   for (let j = 0; j < otherRelations.length; j++) {
+    //     const relationElement = otherRelations[j] as RelationConfig
 
-        const relationType = getRelationType(relationElement.relationship)
+    //     const relationType = getRelationType(relationElement.relationship)
 
-        if (relationElement.relationship === 'belongsToMany') {
-          await seedPivotRelation(relationElement)
-        }
+    //     if (relationElement.relationship === 'belongsToMany') {
+    //       await seedPivotRelation(relationElement)
+    //     }
 
-        if (relationType === 'hasType')
-          record[relationElement?.foreignKey] = await seedModelRelation(relationElement?.relationModel as string)
-      }
-    }
+    //     if (relationType === 'hasType')
+    //       record[relationElement?.foreignKey] = await seedModelRelation(relationElement?.relationModel as string)
+    //   }
+    // }
 
     if (useUuid)
       record.uuid = Bun.randomUUIDv7()
