@@ -140,6 +140,22 @@ async function watchFolders() {
       log.success(`Hot reloaded Controller: ${filename}`)
     }
   })
+
+  // Watch app/Middleware directory for hot reloading
+  watch(path.appPath('Middleware'), { recursive: true }, (event: string, filename: string | null) => {
+    if (filename === null)
+      return
+
+    log.info(`Detected ${event} in app/Middleware/${filename}`)
+    log.info('Invalidating module cache for Middleware...')
+    
+    const middlewarePath = path.appPath(`Middleware/${filename}`)
+    if (invalidateModuleCache(middlewarePath)) {
+      // Update the global cache buster to force fresh imports
+      Router.updateCacheBuster()
+      log.success(`Hot reloaded Middleware: ${filename}`)
+    }
+  })
 }
 
 // @ts-expect-error - somehow type is not recognized
