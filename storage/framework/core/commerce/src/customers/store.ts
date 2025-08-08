@@ -20,7 +20,7 @@ export async function store(data: NewCustomer): Promise<CustomerJsonResponse> {
 
     const insertId = result.insertId || Number(result.numInsertedOrUpdatedRows)
 
-    const customerResult = await fetchById(insertId) as CustomerJsonResponse
+    const customerResult = await fetchById(Number(insertId)) as CustomerJsonResponse
 
     return customerResult
   }

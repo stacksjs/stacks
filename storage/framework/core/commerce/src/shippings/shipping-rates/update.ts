@@ -86,7 +86,7 @@ export async function bulkUpdate(updates: Array<{
  * @param data The update data to apply
  * @returns Number of shipping rates updated
  */
-export async function updateByZone(zone: string, data: ShippingRateUpdate): Promise<number> {
+export async function updateByZone(zone: number, data: ShippingRateUpdate): Promise<number> {
   try {
     const result = await db
       .updateTable('shipping_rates')
@@ -94,7 +94,7 @@ export async function updateByZone(zone: string, data: ShippingRateUpdate): Prom
         ...data,
         updated_at: formatDate(new Date()),
       })
-      .where('zone', '=', zone)
+      .where('zone_id', '=', zone)
       .executeTakeFirst()
 
     return Number(result.numUpdatedRows)

@@ -31,23 +31,47 @@ interface Receipt {
 }
 
 class TSPIVPrinter implements PrinterDriver {
-  async print(receipt: Receipt): Promise<void> {
+  async print(printJob: PrintJob): Promise<void> {
     // eslint-disable-next-line no-console
-    console.log('TSP IV Printer: Printing receipt', receipt)
+    console.log('TSP IV Printer: Printing receipt', printJob.receipt)
     // Implement actual printing logic here
   }
 
-  async cleanUp(): Promise<void> {
+  async cleanUp(printer: Printer): Promise<void> {
     // eslint-disable-next-line no-console
     console.log('TSP IV Printer: Cleaning up print job...')
     // Implement actual cleanup logic here
   }
 
-  async checkStatus(): Promise<boolean> {
+  async checkStatus(printer: Printer): Promise<boolean> {
     // eslint-disable-next-line no-console
     console.log('TSP IV Printer: Checking online status...')
     // Implement actual status check logic here
     return true // Return actual status
+  }
+
+  async findPrinters(): Promise<Printer[]> {
+    // eslint-disable-next-line no-console
+    console.log('TSP IV Printer: Finding printers...')
+    return [] // Return actual printers
+  }
+
+  async setup(printer: Printer): Promise<void> {
+    // eslint-disable-next-line no-console
+    console.log('TSP IV Printer: Setting up printer...')
+    // Implement actual setup logic here
+  }
+
+  async restart(): Promise<void> {
+    // eslint-disable-next-line no-console
+    console.log('TSP IV Printer: Restarting...')
+    // Implement actual restart logic here
+  }
+
+  async canInteractWithPrinter(printer: Printer): Promise<boolean> {
+    // eslint-disable-next-line no-console
+    console.log('TSP IV Printer: Checking if can interact with printer...')
+    return true // Return actual capability
   }
 }
 

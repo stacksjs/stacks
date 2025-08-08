@@ -1,5 +1,6 @@
 import type { ReceiptJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { formatDate } from '@stacksjs/orm'
 
 /**
  * Fetch a print log by ID
@@ -27,8 +28,8 @@ export async function fetchAll(): Promise<ReceiptJsonResponse[]> {
  * @returns Object containing counts for each status and total
  */
 export async function fetchPrintJobStats(
-  startDate: number,
-  endDate: number,
+  startDate: Date,
+  endDate: Date,
 ): Promise<{
     total: number
     success: number
@@ -40,7 +41,7 @@ export async function fetchPrintJobStats(
   }> {
   const stats = await db
     .selectFrom('receipts')
-    .where('timestamp', '>=', startDate)
+    .where('timestamp', '>=', formatDate(startDate))
     .where('timestamp', '<=', endDate)
     .select([
       db.fn.count<number>('id').as('total'),
@@ -72,8 +73,8 @@ export async function fetchPrintJobStats(
  * @returns Object containing success rate percentage and detailed counts
  */
 export async function fetchSuccessRate(
-  startDate: number,
-  endDate: number,
+  startDate: Date,
+  endDate: Date,
 ): Promise<{
     successRate: number
     total: number
@@ -83,8 +84,8 @@ export async function fetchSuccessRate(
   }> {
   const stats = await db
     .selectFrom('receipts')
-    .where('timestamp', '>=', startDate)
-    .where('timestamp', '<=', endDate)
+    .where('timestamp', '>=', formatDate(startDate))
+    .where('timestamp', '<=', formatDate(endDate))
     .select([
       db.fn.count<number>('id').as('total'),
       db.fn.count<number>('id').filterWhere('status', '=', 'success').as('success'),
@@ -118,8 +119,8 @@ export async function fetchSuccessRate(
  * @returns Object containing total pages and average pages per receipt
  */
 export async function fetchPageStats(
-  startDate: number,
-  endDate: number,
+  startDate: Date,
+  endDate: Date,
 ): Promise<{
     totalPages: number
     averagePagesPerReceipt: number
@@ -127,8 +128,8 @@ export async function fetchPageStats(
   }> {
   const stats = await db
     .selectFrom('receipts')
-    .where('timestamp', '>=', startDate)
-    .where('timestamp', '<=', endDate)
+    .where('timestamp', '>=', formatDate(startDate))
+    .where('timestamp', '<=', formatDate(endDate))
     .select([
       db.fn.count<number>('id').as('totalReceipts'),
       db.fn.sum<number>('pages').as('totalPages'),
@@ -151,8 +152,8 @@ export async function fetchPageStats(
  * @returns Object containing average print time and related statistics
  */
 export async function fetchPrintTimeStats(
-  startDate: number,
-  endDate: number,
+  startDate: Date,
+  endDate: Date,
 ): Promise<{
     averageDuration: number
     minDuration: number
@@ -161,8 +162,8 @@ export async function fetchPrintTimeStats(
   }> {
   const stats = await db
     .selectFrom('receipts')
-    .where('timestamp', '>=', startDate)
-    .where('timestamp', '<=', endDate)
+    .where('timestamp', '>=', formatDate(startDate))
+    .where('timestamp', '<=', formatDate(endDate))
     .select([
       db.fn.count<number>('id').as('totalJobs'),
       db.fn.avg<number>('duration').as('averageDuration'),
@@ -187,8 +188,8 @@ export async function fetchPrintTimeStats(
  * @returns Object containing prints per hour statistics
  */
 export async function fetchPrintsPerHour(
-  startDate: number,
-  endDate: number,
+  startDate: Date,
+  endDate: Date,
 ): Promise<{
     totalPrints: number
     totalHours: number
@@ -200,13 +201,13 @@ export async function fetchPrintsPerHour(
   }> {
   const receipts = await db
     .selectFrom('receipts')
-    .where('timestamp', '>=', startDate)
-    .where('timestamp', '<=', endDate)
+    .where('timestamp', '>=', formatDate(startDate))
+    .where('timestamp', '<=', formatDate(endDate))
     .selectAll()
     .execute()
 
   const totalPrints = receipts.length
-  const totalHours = Math.ceil((endDate - startDate) / (1000 * 60 * 60))
+  const totalHours = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60))
   const printsPerHour = totalHours > 0 ? Math.round(totalPrints / totalHours) : 0
 
   const hourlyBreakdown = Array.from({ length: 24 }, (_, i) => ({

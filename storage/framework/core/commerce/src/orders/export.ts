@@ -61,6 +61,9 @@ async function fetchAllWithDetails(): Promise<OrderWithTotals[] | []> {
 
   const orderItemsMap = allOrderItems.reduce<Record<number, { totalItems: number, totalPrice: number }>>(
     (acc, item) => {
+      if (!item.order_id)
+        return acc // Skip items without order_id
+
       if (!acc[item.order_id]) {
         acc[item.order_id] = {
           totalItems: 0,
