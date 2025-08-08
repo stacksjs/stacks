@@ -1,5 +1,6 @@
 import type { Action } from '@stacksjs/actions'
 import type { Job, RedirectCode, RequestInstance, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
+import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
@@ -9,12 +10,12 @@ import { customValidate, isObject, isObjectNotEmpty } from '@stacksjs/validation
 import { staticRoute } from './'
 import { response } from './response'
 import { extractDefaultRequest, findRequestInstanceFromAction } from './utils'
-import process from 'process'
 
 type ActionPath = string
 
 // Global cache busting timestamp for development mode
 declare global {
+  // eslint-disable-next-line vars-on-top
   var __cacheBuster: number
 }
 

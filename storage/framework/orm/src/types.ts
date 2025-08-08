@@ -220,6 +220,7 @@ export interface Database {
   commentables: CommentablesTable
   comments: CommentsTable
   tags: TagsTable
+  taggables: TaggableTable
   commentable_upvotes: CommentableUpvotesTable
   categorizables: CategorizableTable
   categorizable_models: CategorizableModelsTable

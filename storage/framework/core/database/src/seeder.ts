@@ -1,8 +1,8 @@
-import type { Model, RelationConfig } from '@stacksjs/types'
+import type { Model } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { faker } from '@stacksjs/faker'
-import { fetchOtherModelRelations, findCoreModel, getModelName, getTableName } from '@stacksjs/orm'
+import { findCoreModel, getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { makeHash } from '@stacksjs/security'
 import { fs } from '@stacksjs/storage'
@@ -80,66 +80,66 @@ async function seedModel(name: string, modelPath: string, model: Model) {
   log.info(`Successfully seeded ${italic(tableName)}`)
 }
 
-async function seedPivotRelation(relation: RelationConfig): Promise<any> {
-  const record: Record<string, any> = {}
-  const record2: Record<string, any> = {}
-  const pivotRecord: Record<string, any> = {}
-  const modelInstance = await getModelInstance(relation?.model)
+// async function seedPivotRelation(relation: RelationConfig): Promise<any> {
+//   const record: Record<string, any> = {}
+//   const record2: Record<string, any> = {}
+//   const pivotRecord: Record<string, any> = {}
+//   const modelInstance = await getModelInstance(relation?.model)
 
-  const relationModelInstance = (await import(path.userModelsPath(`${relation?.relationModel}.ts`))).default
+//   const relationModelInstance = (await import(path.userModelsPath(`${relation?.relationModel}.ts`))).default
 
-  const useUuid = modelInstance?.traits?.useUuid || false
+//   const useUuid = modelInstance?.traits?.useUuid || false
 
-  if (!relationModelInstance)
-    return 1
+//   if (!relationModelInstance)
+//     return 1
 
-  const relationModelTable = relationModelInstance.table
-  const relationalModelUuid = relationModelInstance.traits?.useUuid || false
-  const relationTable = relation.table
-  const pivotTable = relation.pivotTable
-  const modelKey = relation.pivotForeign || ''
-  const foreignKey = relation.pivotKey || ''
+//   const relationModelTable = relationModelInstance.table
+//   const relationalModelUuid = relationModelInstance.traits?.useUuid || false
+//   const relationTable = relation.table
+//   const pivotTable = relation.pivotTable
+//   const modelKey = relation.pivotForeign || ''
+//   const foreignKey = relation.pivotKey || ''
 
-  for (const fieldName in relationModelInstance.attributes) {
-    const formattedFieldName = snakeCase(fieldName)
-    const field = relationModelInstance.attributes[fieldName]
-    // Pass faker to the factory function
-    if (formattedFieldName === 'password')
-      record[formattedFieldName] = field?.factory ? await makeHash(field.factory(faker), { algorithm: 'bcrypt' }) : undefined
-    else
-      record[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
-  }
+//   for (const fieldName in relationModelInstance.attributes) {
+//     const formattedFieldName = snakeCase(fieldName)
+//     const field = relationModelInstance.attributes[fieldName]
+//     // Pass faker to the factory function
+//     if (formattedFieldName === 'password')
+//       record[formattedFieldName] = field?.factory ? await makeHash(field.factory(faker), { algorithm: 'bcrypt' }) : undefined
+//     else
+//       record[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
+//   }
 
-  for (const fieldName in modelInstance.attributes) {
-    const formattedFieldName = snakeCase(fieldName)
-    const field = modelInstance.attributes[fieldName]
-    // Pass faker to the factory function
-    if (formattedFieldName === 'password')
-      record2[formattedFieldName] = field?.factory ? await makeHash(field.factory(faker), { algorithm: 'bcrypt' }) : undefined
-    else record2[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
-  }
+//   for (const fieldName in modelInstance.attributes) {
+//     const formattedFieldName = snakeCase(fieldName)
+//     const field = modelInstance.attributes[fieldName]
+//     // Pass faker to the factory function
+//     if (formattedFieldName === 'password')
+//       record2[formattedFieldName] = field?.factory ? await makeHash(field.factory(faker), { algorithm: 'bcrypt' }) : undefined
+//     else record2[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
+//   }
 
-  if (relationalModelUuid)
-    record.uuid = Bun.randomUUIDv7()
+//   if (relationalModelUuid)
+//     record.uuid = Bun.randomUUIDv7()
 
-  const data = await db.insertInto(relationModelTable).values(record).executeTakeFirstOrThrow()
+//   const data = await db.insertInto(relationModelTable).values(record).executeTakeFirstOrThrow()
 
-  if (useUuid)
-    record2.uuid = Bun.randomUUIDv7()
+//   if (useUuid)
+//     record2.uuid = Bun.randomUUIDv7()
 
-  const data2 = await db.insertInto(relationTable).values(record2).executeTakeFirstOrThrow()
-  const relationData = data.insertId || 1
-  const modelData = data2.insertId || 1
+//   const data2 = await db.insertInto(relationTable).values(record2).executeTakeFirstOrThrow()
+//   const relationData = data.insertId || 1
+//   const modelData = data2.insertId || 1
 
-  pivotRecord[foreignKey] = relationData
-  pivotRecord[modelKey] = modelData
+//   pivotRecord[foreignKey] = relationData
+//   pivotRecord[modelKey] = modelData
 
-  if (useUuid)
-    pivotRecord.uuid = Bun.randomUUIDv7()
+//   if (useUuid)
+//     pivotRecord.uuid = Bun.randomUUIDv7()
 
-  if (pivotTable)
-    await db.insertInto(pivotTable).values(pivotRecord).executeTakeFirstOrThrow()
-}
+//   if (pivotTable)
+//     await db.insertInto(pivotTable).values(pivotRecord).executeTakeFirstOrThrow()
+// }
 
 async function getModelInstance(modelName: string): Promise<Model> {
   let modelInstance: Model
@@ -157,42 +157,42 @@ async function getModelInstance(modelName: string): Promise<Model> {
   return modelInstance
 }
 
-async function seedModelRelation(modelName: string): Promise<bigint | number> {
-  let modelInstance: Model
-  let currentPath = path.userModelsPath(`${modelName}.ts`)
+// async function seedModelRelation(modelName: string): Promise<bigint | number> {
+//   let modelInstance: Model
+//   let currentPath = path.userModelsPath(`${modelName}.ts`)
 
-  if (fs.existsSync(currentPath)) {
-    modelInstance = (await import(path.userModelsPath(`${modelName}.ts`))).default as Model
-  }
-  else {
-    currentPath = findCoreModel(`${modelName}.ts`)
-    modelInstance = (await import(currentPath)).default as Model
-  }
+//   if (fs.existsSync(currentPath)) {
+//     modelInstance = (await import(path.userModelsPath(`${modelName}.ts`))).default as Model
+//   }
+//   else {
+//     currentPath = findCoreModel(`${modelName}.ts`)
+//     modelInstance = (await import(currentPath)).default as Model
+//   }
 
-  if (modelInstance === null || modelInstance === undefined)
-    return 1
+//   if (modelInstance === null || modelInstance === undefined)
+//     return 1
 
-  const record: any = {}
-  const tableName = getTableName(modelInstance, currentPath)
+//   const record: any = {}
+//   const tableName = getTableName(modelInstance, currentPath)
 
-  const useUuid = modelInstance.traits?.useUuid || false
+//   const useUuid = modelInstance.traits?.useUuid || false
 
-  for (const fieldName in modelInstance.attributes) {
-    const formattedFieldName = snakeCase(fieldName)
-    const field = modelInstance.attributes[fieldName]
-    // Pass faker to the factory function
-    if (formattedFieldName === 'password')
-      record[formattedFieldName] = field?.factory ? await makeHash(field.factory(faker), { algorithm: 'bcrypt' }) : undefined
-    else record[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
-  }
+//   for (const fieldName in modelInstance.attributes) {
+//     const formattedFieldName = snakeCase(fieldName)
+//     const field = modelInstance.attributes[fieldName]
+//     // Pass faker to the factory function
+//     if (formattedFieldName === 'password')
+//       record[formattedFieldName] = field?.factory ? await makeHash(field.factory(faker), { algorithm: 'bcrypt' }) : undefined
+//     else record[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
+//   }
 
-  if (useUuid)
-    record.uuid = Bun.randomUUIDv7()
+//   if (useUuid)
+//     record.uuid = Bun.randomUUIDv7()
 
-  const data = await db.insertInto(tableName).values(record).executeTakeFirstOrThrow()
+//   const data = await db.insertInto(tableName).values(record).executeTakeFirstOrThrow()
 
-  return (Number(data.insertId) || Number(data.numInsertedOrUpdatedRows)) || 1
-}
+//   return (Number(data.insertId) || Number(data.numInsertedOrUpdatedRows)) || 1
+// }
 
 export async function seed(): Promise<void> {
   // if a custom seeder exists, use it instead
