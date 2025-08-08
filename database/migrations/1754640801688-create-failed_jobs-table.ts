@@ -4,7 +4,7 @@ import { sql } from '@stacksjs/database'
 export async function up(db: Database<any>) {
   await db.schema
     .createTable('failed_jobs')
-    .addColumn('id', 'serial', (col) => col.primaryKey())
+    .addColumn('id', 'serial', col => col.primaryKey())
     .addColumn('connection', 'varchar(100)')
     .addColumn('queue', 'varchar(255)')
     .addColumn('payload', 'varchar(255)')

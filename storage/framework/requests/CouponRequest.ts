@@ -15,12 +15,13 @@ interface RequestDataCoupon {
   id: number
   code: string
   description: string
+  status: string[] | string
+  is_active: boolean
   discount_type: string[] | string
   discount_value: number
   min_order_amount: number
   max_discount_amount: number
   free_product_id: string
-  status: string[] | string
   usage_limit: number
   usage_count: number
   start_date: date
@@ -33,12 +34,13 @@ export class CouponRequest extends Request<RequestDataCoupon> implements CouponR
   public id = 1
   public code = ''
   public description = ''
+  public status = []
+  public is_active = false
   public discount_type = []
   public discount_value = 0
   public min_order_amount = 0
   public max_discount_amount = 0
   public free_product_id = ''
-  public status = []
   public usage_limit = 0
   public usage_count = 0
   public start_date = ''

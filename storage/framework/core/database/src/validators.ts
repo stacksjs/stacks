@@ -8,7 +8,7 @@ export function isNumberValidator(v: ValidationType): v is NumberValidatorType {
   return v.name === 'number'
 }
 
-export function enumValidator(v: ValidationType): v is EnumValidatorType<string | number> {
+export function enumValidator(v: ValidationType): v is EnumValidatorType {
   return v.name === 'enum'
 }
 
@@ -138,7 +138,7 @@ export function prepareNumberColumnType(validator: NumberValidatorType, driver =
 }
 
 // Add new function for enum column types
-export function prepareEnumColumnType(validator: EnumValidatorType<string | number>, driver = 'mysql'): string {
+export function prepareEnumColumnType(validator: EnumValidatorType, driver = 'mysql'): string {
   const allowedValues = validator.getAllowedValues()
 
   if (!allowedValues)

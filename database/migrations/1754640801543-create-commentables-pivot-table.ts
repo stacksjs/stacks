@@ -14,7 +14,7 @@ export async function up(db: Database<any>) {
 
   await db.schema
     .alterTable('commentables')
-    .addForeignKeyConstraint('commentables_comment_id_foreign', ['comment_id'], 'comments', ['id'], (cb) => cb.onDelete('cascade'))
+    .addForeignKeyConstraint('commentables_comment_id_foreign', ['comment_id'], 'comments', ['id'], cb => cb.onDelete('cascade'))
     .execute()
 
   await db.schema
@@ -35,5 +35,4 @@ export async function up(db: Database<any>) {
     .columns(['comment_id', 'commentable_id', 'commentable_type'])
     .unique()
     .execute()
-
 }

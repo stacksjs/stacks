@@ -31,7 +31,7 @@ interface BooleanEnvConfig {
 }
 
 interface EnumEnvConfig {
-  validation: EnumValidatorType<string>
+  validation: EnumValidatorType
   default: string
 }
 
@@ -41,7 +41,7 @@ export type EnvConfig = Partial<Record<EnvKey, EnvValueConfig>>
 
 type EnvMap = Record<string, string>
 
-const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
+const _envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
   if (typeof value === 'object' && value !== null && 'validation' in value) {
     acc[key] = (value as EnvValueConfig).validation.name
     return acc
@@ -89,10 +89,10 @@ const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
 }, {} as Record<string, string>)
 
 export type Env = {
-  [K in keyof typeof envStructure]: typeof envStructure[K]
+  [K in keyof typeof _envStructure]: typeof _envStructure[K]
 }
 
-export type EnvSchema = ReturnType<typeof schema.object<typeof envStructure>>
+export type EnvSchema = ReturnType<typeof schema.object<typeof _envStructure>>
 
 export interface FrontendEnv {
   FRONTEND_APP_ENV: 'local' | 'development' | 'staging' | 'production'

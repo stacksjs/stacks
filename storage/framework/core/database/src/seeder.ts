@@ -2,7 +2,7 @@ import type { Model, RelationConfig } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { faker } from '@stacksjs/faker'
-import { fetchOtherModelRelations, findCoreModel, getModelName, getRelationType, getTableName } from '@stacksjs/orm'
+import { fetchOtherModelRelations, findCoreModel, getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { makeHash } from '@stacksjs/security'
 import { fs } from '@stacksjs/storage'
@@ -33,7 +33,7 @@ async function seedModel(name: string, modelPath: string, model: Model) {
 
   const modelName = getModelName(model, modelPath)
 
-  const otherRelations = await fetchOtherModelRelations(modelName)
+  // const otherRelations = await fetchOtherModelRelations(modelName)
 
   const modelInstance = await getModelInstance(modelName)
 

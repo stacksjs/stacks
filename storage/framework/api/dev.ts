@@ -4,9 +4,8 @@ import process from 'node:process'
 import { log, runCommandSync } from '@stacksjs/cli'
 import { app, ports } from '@stacksjs/config'
 import { join, path } from '@stacksjs/path'
-import { serve } from '@stacksjs/router'
+import { Router, serve } from '@stacksjs/router'
 import { handleEvents } from '../../../app/Listener'
-import { Router } from '@stacksjs/router'
 
 declare global {
   let counter: number
@@ -24,32 +23,34 @@ function invalidateModuleCache(filePath: string) {
   try {
     // Convert to absolute path
     const absolutePath = path.resolve(filePath)
-    
+
     // Clear from require.cache if it exists
     if (require.cache[absolutePath]) {
       delete require.cache[absolutePath]
       log.debug(`Cleared require.cache for ${absolutePath}`)
     }
-    
+
     // Also try with .js extension
     const jsPath = absolutePath.replace(/\.ts$/, '.js')
     if (require.cache[jsPath]) {
       delete require.cache[jsPath]
       log.debug(`Cleared require.cache for ${jsPath}`)
     }
-    
+
     // Clear from Bun's module cache if available
     if (typeof Bun !== 'undefined' && (Bun as any).invalidate) {
       try {
         ;(Bun as any).invalidate(absolutePath)
         log.debug(`Invalidated Bun cache for ${absolutePath}`)
-      } catch (error) {
+      }
+      catch {
         log.debug(`Bun.invalidate not available or failed for ${absolutePath}`)
       }
     }
-    
+
     return true
-  } catch (error) {
+  }
+  catch (error) {
     log.error(`Failed to invalidate cache for ${filePath}:`, error)
     return false
   }
@@ -100,7 +101,7 @@ async function watchFolders() {
 
     log.info(`Detected ${event} in app/Actions/${filename}`)
     log.info('Invalidating module cache for Actions...')
-    
+
     const actionPath = path.appPath(`Actions/${filename}`)
     if (invalidateModuleCache(actionPath)) {
       // Update the global cache buster to force fresh imports
@@ -116,7 +117,7 @@ async function watchFolders() {
 
     log.info(`Detected ${event} in app/Actions/${filename}`)
     log.info('Invalidating module cache for Actions...')
-    
+
     const actionPath = path.appPath(`Actions/${filename}`)
     if (invalidateModuleCache(actionPath)) {
       // Update the global cache buster to force fresh imports
@@ -132,7 +133,7 @@ async function watchFolders() {
 
     log.info(`Detected ${event} in app/Controllers/${filename}`)
     log.info('Invalidating module cache for Controllers...')
-    
+
     const controllerPath = path.appPath(`Controllers/${filename}`)
     if (invalidateModuleCache(controllerPath)) {
       // Update the global cache buster to force fresh imports
@@ -148,7 +149,7 @@ async function watchFolders() {
 
     log.info(`Detected ${event} in app/Middleware/${filename}`)
     log.info('Invalidating module cache for Middleware...')
-    
+
     const middlewarePath = path.appPath(`Middleware/${filename}`)
     if (invalidateModuleCache(middlewarePath)) {
       // Update the global cache buster to force fresh imports

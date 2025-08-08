@@ -6,12 +6,13 @@ export interface CouponsTable {
   id: Generated<number>
   code: string
   description?: string
+  status?: string | string[]
+  is_active: boolean
   discount_type: string | string[]
   discount_value: number
   min_order_amount?: number
   max_discount_amount?: number
   free_product_id?: string
-  status?: string | string[]
   usage_limit?: number
   usage_count?: number
   start_date?: Date | string
@@ -52,6 +53,10 @@ export interface CouponModelType {
   set code(value: string)
   get description(): string | undefined
   set description(value: string)
+  get status(): string | string[] | undefined
+  set status(value: string | string[])
+  get isActive(): boolean
+  set isActive(value: boolean)
   get discountType(): string | string[]
   set discountType(value: string | string[])
   get discountValue(): number
@@ -62,8 +67,6 @@ export interface CouponModelType {
   set maxDiscountAmount(value: number)
   get freeProductId(): string | undefined
   set freeProductId(value: string)
-  get status(): string | string[] | undefined
-  set status(value: string | string[])
   get usageLimit(): number | undefined
   set usageLimit(value: number)
   get usageCount(): number | undefined

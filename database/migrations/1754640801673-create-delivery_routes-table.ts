@@ -4,8 +4,8 @@ import { sql } from '@stacksjs/database'
 export async function up(db: Database<any>) {
   await db.schema
     .createTable('delivery_routes')
-    .addColumn('id', 'serial', (col) => col.primaryKey())
-    .addColumn('uuid', 'uuid', (col) => col.defaultTo(sql.raw('gen_random_uuid()')))
+    .addColumn('id', 'serial', col => col.primaryKey())
+    .addColumn('uuid', 'uuid', col => col.defaultTo(sql.raw('gen_random_uuid()')))
     .addColumn('driver', 'varchar(255)', col => col.notNull())
     .addColumn('vehicle', 'varchar(255)', col => col.notNull())
     .addColumn('stops', 'integer', col => col.notNull())

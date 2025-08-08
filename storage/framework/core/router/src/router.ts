@@ -9,6 +9,7 @@ import { customValidate, isObject, isObjectNotEmpty } from '@stacksjs/validation
 import { staticRoute } from './'
 import { response } from './response'
 import { extractDefaultRequest, findRequestInstanceFromAction } from './utils'
+import process from 'process'
 
 type ActionPath = string
 
@@ -18,7 +19,8 @@ declare global {
 }
 
 // Initialize cache buster for development
-if (process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod') {
+const isProduction = process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod'
+if (!isProduction) {
   globalThis.__cacheBuster = Date.now()
 }
 
@@ -28,7 +30,8 @@ export class Router implements RouterInterface {
 
   // Method to update cache buster when files change
   public static updateCacheBuster(): void {
-    if (process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod') {
+    const isProduction = process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod'
+    if (!isProduction) {
       globalThis.__cacheBuster = Date.now()
       log.debug('Updated cache buster timestamp')
     }
@@ -36,7 +39,8 @@ export class Router implements RouterInterface {
 
   // Helper to get cache busting query parameter
   private getCacheBuster(): string {
-    if (process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod') {
+    const isProduction = process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod'
+    if (!isProduction) {
       return `?t=${globalThis.__cacheBuster}`
     }
     return ''
@@ -332,10 +336,10 @@ export class Router implements RouterInterface {
       // Handle controller-based routing
       if (modulePath.includes('Controller')) {
         const [controllerPath, methodName = 'index'] = modulePath.split('@')
-        
+
         // Add cache busting for development mode
         const controllerPathWithCacheBuster = importPathFunction(controllerPath) + this.getCacheBuster()
-        
+
         const controller = await import(controllerPathWithCacheBuster)
         // eslint-disable-next-line new-cap
         const instance = new controller.default()
@@ -372,7 +376,7 @@ export class Router implements RouterInterface {
 
       // Handle action-based routing
       let actionModule = null
-      
+
       if (modulePath.includes('storage/framework/orm'))
         actionModule = await import(modulePath + this.getCacheBuster())
       else if (modulePath.includes('Actions'))

@@ -4,8 +4,8 @@ import { sql } from '@stacksjs/database'
 export async function up(db: Database<any>) {
   await db.schema
     .createTable('reviews')
-    .addColumn('id', 'serial', (col) => col.primaryKey())
-    .addColumn('uuid', 'uuid', (col) => col.defaultTo(sql.raw('gen_random_uuid()')))
+    .addColumn('id', 'serial', col => col.primaryKey())
+    .addColumn('uuid', 'uuid', col => col.defaultTo(sql.raw('gen_random_uuid()')))
     .addColumn('rating', 'integer', col => col.notNull())
     .addColumn('title', 'varchar(100)', col => col.notNull())
     .addColumn('content', 'varchar(2000)', col => col.notNull())

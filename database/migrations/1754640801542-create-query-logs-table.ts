@@ -41,5 +41,4 @@ export async function up(db: Database<any>) {
     .on('query_logs')
     .column('duration')
     .execute()
-
 }

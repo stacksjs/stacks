@@ -13,7 +13,7 @@ import { BaseOrm } from '../utils/base'
 
 export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonResponse> {
   private readonly hidden: Array<keyof CouponJsonResponse> = []
-  private readonly fillable: Array<keyof CouponJsonResponse> = ['code', 'description', 'discount_type', 'discount_value', 'min_order_amount', 'max_discount_amount', 'free_product_id', 'status', 'usage_limit', 'usage_count', 'start_date', 'end_date', 'uuid', 'product_id']
+  private readonly fillable: Array<keyof CouponJsonResponse> = ['code', 'description', 'status', 'is_active', 'discount_type', 'discount_value', 'min_order_amount', 'max_discount_amount', 'free_product_id', 'usage_limit', 'usage_count', 'start_date', 'end_date', 'uuid', 'product_id']
   private readonly guarded: Array<keyof CouponJsonResponse> = []
   protected attributes = {} as CouponJsonResponse
   protected originalAttributes = {} as CouponJsonResponse
@@ -166,6 +166,14 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return this.attributes.description
   }
 
+  get status(): string | string[] | undefined {
+    return this.attributes.status
+  }
+
+  get is_active(): boolean {
+    return this.attributes.is_active
+  }
+
   get discount_type(): string | string[] {
     return this.attributes.discount_type
   }
@@ -184,10 +192,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
   get free_product_id(): string | undefined {
     return this.attributes.free_product_id
-  }
-
-  get status(): string | string[] | undefined {
-    return this.attributes.status
   }
 
   get usage_limit(): number | undefined {
@@ -226,6 +230,14 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     this.attributes.description = value
   }
 
+  set status(value: string | string[]) {
+    this.attributes.status = value
+  }
+
+  set is_active(value: boolean) {
+    this.attributes.is_active = value
+  }
+
   set discount_type(value: string | string[]) {
     this.attributes.discount_type = value
   }
@@ -244,10 +256,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
   set free_product_id(value: string) {
     this.attributes.free_product_id = value
-  }
-
-  set status(value: string | string[]) {
-    this.attributes.status = value
   }
 
   set usage_limit(value: number) {
@@ -842,6 +850,22 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return instance
   }
 
+  static whereStatus(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+
+    return instance
+  }
+
+  static whereIsActive(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('is_active', '=', value)
+
+    return instance
+  }
+
   static whereDiscountType(value: string): CouponModel {
     const instance = new CouponModel(undefined)
 
@@ -878,14 +902,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('free_product_id', '=', value)
-
-    return instance
-  }
-
-  static whereStatus(value: string): CouponModel {
-    const instance = new CouponModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
     return instance
   }
@@ -973,12 +989,13 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
       id: this.id,
       code: this.code,
       description: this.description,
+      status: this.status,
+      is_active: this.is_active,
       discount_type: this.discount_type,
       discount_value: this.discount_value,
       min_order_amount: this.min_order_amount,
       max_discount_amount: this.max_discount_amount,
       free_product_id: this.free_product_id,
-      status: this.status,
       usage_limit: this.usage_limit,
       usage_count: this.usage_count,
       start_date: this.start_date,
@@ -1071,6 +1088,20 @@ export async function whereDescription(value: string): Promise<CouponModel[]> {
   return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
+export async function whereStatus(value: string | string[]): Promise<CouponModel[]> {
+  const query = DB.instance.selectFrom('coupons').where('status', '=', value)
+  const results: CouponJsonResponse = await query.execute()
+
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
+}
+
+export async function whereIsActive(value: boolean): Promise<CouponModel[]> {
+  const query = DB.instance.selectFrom('coupons').where('is_active', '=', value)
+  const results: CouponJsonResponse = await query.execute()
+
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
+}
+
 export async function whereDiscountType(value: string | string[]): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('discount_type', '=', value)
   const results: CouponJsonResponse = await query.execute()
@@ -1101,13 +1132,6 @@ export async function whereMaxDiscountAmount(value: number): Promise<CouponModel
 
 export async function whereFreeProductId(value: string): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('free_product_id', '=', value)
-  const results: CouponJsonResponse = await query.execute()
-
-  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
-}
-
-export async function whereStatus(value: string | string[]): Promise<CouponModel[]> {
-  const query = DB.instance.selectFrom('coupons').where('status', '=', value)
   const results: CouponJsonResponse = await query.execute()
 
   return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))

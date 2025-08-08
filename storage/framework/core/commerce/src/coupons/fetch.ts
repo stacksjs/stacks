@@ -1,7 +1,7 @@
 import type { CouponJsonResponse } from '@stacksjs/orm'
 import type { CouponCountStats, CouponRedemptionStats, CouponStats, CouponTimeStats } from '../types'
 import { db } from '@stacksjs/database'
-import { extractDate } from '@stacksjs/orm'
+import { extractDate, formatDate } from '@stacksjs/orm'
 
 /**
  * Process coupon data from the database
@@ -11,8 +11,12 @@ function processCouponData(coupon: CouponJsonResponse): CouponJsonResponse {
   // Create a copy to avoid modifying the original object
   const processed = { ...coupon }
 
-  processed.end_date = extractDate(new Date(processed.end_date))
-  processed.start_date = extractDate(new Date(processed.start_date))
+  if (processed.end_date) {
+    processed.end_date = extractDate(new Date(processed.end_date))
+  }
+  if (processed.start_date) {
+    processed.start_date = extractDate(new Date(processed.start_date))
+  }
 
   // Convert is_active to boolean if needed
   if (processed.is_active !== undefined) {

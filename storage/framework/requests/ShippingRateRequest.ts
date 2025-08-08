@@ -13,8 +13,8 @@ interface CustomAttributes {
 }
 interface RequestDataShippingRate {
   id: number
-  weight_from: number
-  weight_to: number
+  weight_from: float
+  weight_to: float
   rate: number
   shipping_zone_id: number
   shipping_method_id: number
@@ -23,8 +23,8 @@ interface RequestDataShippingRate {
 }
 export class ShippingRateRequest extends Request<RequestDataShippingRate> implements ShippingRateRequestType {
   public id = 1
-  public weight_from = 0
-  public weight_to = 0
+  public weight_from = ''
+  public weight_to = ''
   public rate = 0
   public shipping_zone_id = 0
   public shipping_method_id = 0

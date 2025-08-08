@@ -32,5 +32,4 @@ export async function up(db: Database<any>) {
     .on('tags')
     .column('name')
     .execute()
-
 }

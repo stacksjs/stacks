@@ -54,8 +54,28 @@ export default {
       factory: faker => faker.commerce.productDescription(),
     },
 
-    discountType: {
+    status: {
       order: 3,
+      fillable: true,
+      validation: {
+        rule: schema.enum(['Active', 'Scheduled', 'Expired']),
+        message: {
+          required: 'Status is required',
+        },
+      },
+      factory: faker => faker.helpers.arrayElement(['Active', 'Scheduled', 'Expired']),
+    },
+
+    isActive: {
+      order: 4,
+      fillable: true,
+      validation: {
+        rule: schema.boolean().required(),
+      },
+    },
+
+    discountType: {
+      order: 5,
       fillable: true,
       validation: {
         rule: schema.enum(['fixed_amount', 'percentage']).required(),
@@ -67,7 +87,7 @@ export default {
     },
 
     discountValue: {
-      order: 4,
+      order: 6,
       fillable: true,
       validation: {
         rule: schema.number().required().min(0.01),
@@ -80,7 +100,7 @@ export default {
     },
 
     minOrderAmount: {
-      order: 5,
+      order: 7,
       fillable: true,
       validation: {
         rule: schema.number().min(0),
@@ -92,7 +112,7 @@ export default {
     },
 
     maxDiscountAmount: {
-      order: 6,
+      order: 8,
       fillable: true,
       validation: {
         rule: schema.number().min(0),
@@ -104,7 +124,7 @@ export default {
     },
 
     freeProductId: {
-      order: 7,
+      order: 9,
       fillable: true,
       validation: {
         rule: schema.string(),
@@ -112,20 +132,8 @@ export default {
       factory: faker => faker.string.uuid(),
     },
 
-    status: {
-      order: 8,
-      fillable: true,
-      validation: {
-        rule: schema.enum(['Active', 'Scheduled', 'Expired']),
-        message: {
-          required: 'Status is required',
-        },
-      },
-      factory: faker => faker.helpers.arrayElement(['Active', 'Scheduled', 'Expired']),
-    },
-
     usageLimit: {
-      order: 9,
+      order: 10,
       fillable: true,
       validation: {
         rule: schema.number().min(1),
@@ -137,7 +145,7 @@ export default {
     },
 
     usageCount: {
-      order: 10,
+      order: 11,
       fillable: true,
       validation: {
         rule: schema.number().min(0),
@@ -149,7 +157,7 @@ export default {
     },
 
     startDate: {
-      order: 11,
+      order: 12,
       fillable: true,
       validation: {
         rule: schema.date(),
@@ -158,7 +166,7 @@ export default {
     },
 
     endDate: {
-      order: 12,
+      order: 13,
       fillable: true,
       validation: {
         rule: schema.date(),

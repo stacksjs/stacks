@@ -1033,12 +1033,13 @@ interface RequestDataCoupon {
   id: number
   code: string
   description: string
+  status: string[] | string
+  is_active: boolean
   discount_type: string[] | string
   discount_value: number
   min_order_amount: number
   max_discount_amount: number
   free_product_id: string
-  status: string[] | string
   usage_limit: number
   usage_count: number
   start_date: date
@@ -1054,12 +1055,13 @@ export interface CouponRequestType extends Request {
   id: number
   code: string
   description: string
+  status: string[] | string
+  is_active: boolean
   discount_type: string[] | string
   discount_value: number
   min_order_amount: number
   max_discount_amount: number
   free_product_id: string
-  status: string[] | string
   usage_limit: number
   usage_count: number
   start_date: date
@@ -1211,8 +1213,8 @@ export interface ShippingMethodRequestType extends Request {
 
 interface RequestDataShippingRate {
   id: number
-  weight_from: number
-  weight_to: number
+  weight_from: float
+  weight_to: float
   rate: number
   shipping_zone_id: number
   shipping_method_id: number
@@ -1224,8 +1226,8 @@ export interface ShippingRateRequestType extends Request {
   get: <T = string>(element: string, defaultValue?: T) => T
   all: () => RequestDataShippingRate
   id: number
-  weight_from: number
-  weight_to: number
+  weight_from: float
+  weight_to: float
   rate: number
   shipping_zone_id: number
   shipping_method_id: number

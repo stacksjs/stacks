@@ -4,7 +4,7 @@ import { sql } from '@stacksjs/database'
 export async function up(db: Database<any>) {
   await db.schema
     .createTable('teams')
-    .addColumn('id', 'serial', (col) => col.primaryKey())
+    .addColumn('id', 'serial', col => col.primaryKey())
     .addColumn('name', 'varchar(255)', col => col.notNull())
     .addColumn('company_name', 'varchar(255)', col => col.notNull())
     .addColumn('email', 'varchar(255)', col => col.notNull())
