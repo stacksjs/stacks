@@ -1,5 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { ShippingMethodModelType } from './ShippingMethodType'
+import type { ShippingZoneModelType } from './ShippingZoneType'
 
 export interface ShippingRatesTable {
   id: Generated<number>
@@ -122,6 +124,6 @@ export interface ShippingRateModelType {
   toJSON: () => ShippingRateJsonResponse
   parseResult: (model: ShippingRateModelType) => ShippingRateModelType
 
-  shippingMethodBelong: () => Promise<ShippingMethodType>
-  shippingZoneBelong: () => Promise<ShippingZoneType>
+  shippingMethodBelong: () => Promise<ShippingMethodModelType>
+  shippingZoneBelong: () => Promise<ShippingZoneModelType>
 }

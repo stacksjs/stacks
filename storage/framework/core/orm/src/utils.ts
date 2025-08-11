@@ -1871,32 +1871,32 @@ export interface ${formattedTableName}Table {
       const relationName = relation.relationName || formattedModelName + modelRelation
       if (relation.throughModel !== undefined) {
         modelTypeInterface += `
-  ${relationName}: () => Promise<${modelRelation}Type | undefined>`
+  ${relationName}: () => Promise<${modelRelation}ModelType | undefined>`
       }
     }
 
     if (relationType === 'morphType' && relationCount === 'one') {
       const morphName = relation.relationName || `${formattedModelName}able`
       modelTypeInterface += `
-  ${morphName}: () => Promise<${modelRelation}Type | undefined>`
+  ${morphName}: () => Promise<${modelRelation}ModelType | undefined>`
     }
 
     if (relationType === 'morphType' && relationCount === 'many') {
       const morphName = relation.relationName || `${formattedModelName}able`
       modelTypeInterface += `
-  ${morphName}: () => Promise<${modelRelation}Type[]>`
+  ${morphName}: () => Promise<${modelRelation}ModelType[]>`
     }
 
     if (relationType === 'belongsType' && !relationCount) {
       const relationName = camelCase(relation.relationName || formattedModelRelation)
       modelTypeInterface += `
-  ${relationName}Belong: () => Promise<${modelRelation}Type>`
+  ${relationName}Belong: () => Promise<${modelRelation}ModelType>`
     }
 
     if (relationType === 'belongsType' && relationCount === 'many') {
       const relationName = relation.relationName || formattedModelName + plural(pascalCase(modelRelation))
       modelTypeInterface += `
-  ${relationName}: () => Promise<${modelRelation}Type[]>`
+  ${relationName}: () => Promise<${modelRelation}ModelType[]>`
     }
   }
 

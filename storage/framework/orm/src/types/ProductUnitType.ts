@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { ProductModelType } from './ProductType'
 
 export interface ProductUnitsTable {
   id: Generated<number>
@@ -126,5 +127,5 @@ export interface ProductUnitModelType {
   toJSON: () => ProductUnitJsonResponse
   parseResult: (model: ProductUnitModelType) => ProductUnitModelType
 
-  productBelong: () => Promise<ProductType>
+  productBelong: () => Promise<ProductModelType>
 }

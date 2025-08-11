@@ -1,5 +1,8 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CustomerModelType } from './CustomerType'
+import type { OrderModelType } from './OrderType'
+import type { ProductModelType } from './ProductType'
 
 export interface LicenseKeysTable {
   id: Generated<number>
@@ -127,7 +130,7 @@ export interface LicenseKeyModelType {
   toJSON: () => LicenseKeyJsonResponse
   parseResult: (model: LicenseKeyModelType) => LicenseKeyModelType
 
-  customerBelong: () => Promise<CustomerType>
-  productBelong: () => Promise<ProductType>
-  orderBelong: () => Promise<OrderType>
+  customerBelong: () => Promise<CustomerModelType>
+  productBelong: () => Promise<ProductModelType>
+  orderBelong: () => Promise<OrderModelType>
 }

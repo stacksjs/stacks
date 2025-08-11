@@ -1,7 +1,9 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CategoryModelType } from './CategoryType'
 import type { CouponModelType } from './CouponType'
 import type { LicenseKeyModelType } from './LicenseKeyType'
+import type { ManufacturerModelType } from './ManufacturerType'
 import type { ProductUnitModelType } from './ProductUnitType'
 import type { ProductVariantModelType } from './ProductVariantType'
 import type { ReviewModelType } from './ReviewType'
@@ -152,6 +154,6 @@ export interface ProductModelType {
   toJSON: () => ProductJsonResponse
   parseResult: (model: ProductModelType) => ProductModelType
 
-  categoryBelong: () => Promise<CategoryType>
-  manufacturerBelong: () => Promise<ManufacturerType>
+  categoryBelong: () => Promise<CategoryModelType>
+  manufacturerBelong: () => Promise<ManufacturerModelType>
 }

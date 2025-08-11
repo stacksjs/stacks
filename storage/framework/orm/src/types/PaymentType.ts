@@ -1,5 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CustomerModelType } from './CustomerType'
+import type { OrderModelType } from './OrderType'
 
 export interface PaymentsTable {
   id: Generated<number>
@@ -149,6 +151,6 @@ export interface PaymentModelType {
   toJSON: () => PaymentJsonResponse
   parseResult: (model: PaymentModelType) => PaymentModelType
 
-  orderBelong: () => Promise<OrderType>
-  customerBelong: () => Promise<CustomerType>
+  orderBelong: () => Promise<OrderModelType>
+  customerBelong: () => Promise<CustomerModelType>
 }

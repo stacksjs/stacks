@@ -1,6 +1,8 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { CartItemModelType } from './CartItemType'
+import type { CouponModelType } from './CouponType'
+import type { CustomerModelType } from './CustomerType'
 
 export interface CartsTable {
   id: Generated<number>
@@ -145,6 +147,6 @@ export interface CartModelType {
   toJSON: () => CartJsonResponse
   parseResult: (model: CartModelType) => CartModelType
 
-  customerBelong: () => Promise<CustomerType>
-  couponBelong: () => Promise<CouponType>
+  customerBelong: () => Promise<CustomerModelType>
+  couponBelong: () => Promise<CouponModelType>
 }

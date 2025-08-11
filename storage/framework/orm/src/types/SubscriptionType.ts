@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { UserModelType } from './UserType'
 
 export interface SubscriptionsTable {
   id: Generated<number>
@@ -138,5 +139,5 @@ export interface SubscriptionModelType {
   toJSON: () => SubscriptionJsonResponse
   parseResult: (model: SubscriptionModelType) => SubscriptionModelType
 
-  userBelong: () => Promise<UserType>
+  userBelong: () => Promise<UserModelType>
 }

@@ -37,13 +37,13 @@ class TSPIVPrinter implements PrinterDriver {
     // Implement actual printing logic here
   }
 
-  async cleanUp(printer: Printer): Promise<void> {
+  async cleanUp(_printer: Printer): Promise<void> {
     // eslint-disable-next-line no-console
     console.log('TSP IV Printer: Cleaning up print job...')
     // Implement actual cleanup logic here
   }
 
-  async checkStatus(printer: Printer): Promise<boolean> {
+  async checkStatus(_printer: Printer): Promise<boolean> {
     // eslint-disable-next-line no-console
     console.log('TSP IV Printer: Checking online status...')
     // Implement actual status check logic here
@@ -56,7 +56,7 @@ class TSPIVPrinter implements PrinterDriver {
     return [] // Return actual printers
   }
 
-  async setup(printer: Printer): Promise<void> {
+  async setup(_printer: Printer): Promise<void> {
     // eslint-disable-next-line no-console
     console.log('TSP IV Printer: Setting up printer...')
     // Implement actual setup logic here
@@ -68,7 +68,7 @@ class TSPIVPrinter implements PrinterDriver {
     // Implement actual restart logic here
   }
 
-  async canInteractWithPrinter(printer: Printer): Promise<boolean> {
+  async canInteractWithPrinter(_printer: Printer): Promise<boolean> {
     // eslint-disable-next-line no-console
     console.log('TSP IV Printer: Checking if can interact with printer...')
     return true // Return actual capability

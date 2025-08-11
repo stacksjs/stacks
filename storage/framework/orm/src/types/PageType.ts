@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { AuthorModelType } from './AuthorType'
 
 export interface PagesTable {
   id: Generated<number>
@@ -126,5 +127,5 @@ export interface PageModelType {
   toJSON: () => PageJsonResponse
   parseResult: (model: PageModelType) => PageModelType
 
-  authorBelong: () => Promise<AuthorType>
+  authorBelong: () => Promise<AuthorModelType>
 }

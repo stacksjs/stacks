@@ -1,5 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { OrderModelType } from './OrderType'
+import type { ProductModelType } from './ProductType'
 
 export interface OrderItemsTable {
   id: Generated<number>
@@ -118,6 +120,6 @@ export interface OrderItemModelType {
   toJSON: () => OrderItemJsonResponse
   parseResult: (model: OrderItemModelType) => OrderItemModelType
 
-  orderBelong: () => Promise<OrderType>
-  productBelong: () => Promise<ProductType>
+  orderBelong: () => Promise<OrderModelType>
+  productBelong: () => Promise<ProductModelType>
 }

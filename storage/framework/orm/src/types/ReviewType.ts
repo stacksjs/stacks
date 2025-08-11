@@ -1,5 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CustomerModelType } from './CustomerType'
+import type { ProductModelType } from './ProductType'
 
 export interface ReviewsTable {
   id: Generated<number>
@@ -143,6 +145,6 @@ export interface ReviewModelType {
   toJSON: () => ReviewJsonResponse
   parseResult: (model: ReviewModelType) => ReviewModelType
 
-  productBelong: () => Promise<ProductType>
-  customerBelong: () => Promise<CustomerType>
+  productBelong: () => Promise<ProductModelType>
+  customerBelong: () => Promise<CustomerModelType>
 }

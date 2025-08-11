@@ -1,5 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CouponModelType } from './CouponType'
+import type { CustomerModelType } from './CustomerType'
 import type { LicenseKeyModelType } from './LicenseKeyType'
 import type { OrderItemModelType } from './OrderItemType'
 import type { PaymentModelType } from './PaymentType'
@@ -152,6 +154,6 @@ export interface OrderModelType {
   toJSON: () => OrderJsonResponse
   parseResult: (model: OrderModelType) => OrderModelType
 
-  customerBelong: () => Promise<CustomerType>
-  couponBelong: () => Promise<CouponType>
+  customerBelong: () => Promise<CustomerModelType>
+  couponBelong: () => Promise<CouponModelType>
 }

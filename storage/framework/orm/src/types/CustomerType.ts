@@ -5,6 +5,7 @@ import type { LicenseKeyModelType } from './LicenseKeyType'
 import type { OrderModelType } from './OrderType'
 import type { PaymentModelType } from './PaymentType'
 import type { ReviewModelType } from './ReviewType'
+import type { UserModelType } from './UserType'
 import type { WaitlistProductModelType } from './WaitlistProductType'
 import type { WaitlistRestaurantModelType } from './WaitlistRestaurantType'
 
@@ -146,5 +147,5 @@ export interface CustomerModelType {
   toJSON: () => CustomerJsonResponse
   parseResult: (model: CustomerModelType) => CustomerModelType
 
-  userBelong: () => Promise<UserType>
+  userBelong: () => Promise<UserModelType>
 }

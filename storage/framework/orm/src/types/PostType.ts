@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { AuthorModelType } from './AuthorType'
 
 export interface PostsTable {
   id: Generated<number>
@@ -135,5 +136,5 @@ export interface PostModelType {
   toJSON: () => PostJsonResponse
   parseResult: (model: PostModelType) => PostModelType
 
-  authorBelong: () => Promise<AuthorType>
+  authorBelong: () => Promise<AuthorModelType>
 }
