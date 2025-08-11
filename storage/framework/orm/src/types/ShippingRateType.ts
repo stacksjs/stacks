@@ -3,8 +3,8 @@ import type { Operator } from '@stacksjs/orm'
 
 export interface ShippingRatesTable {
   id: Generated<number>
-  weight_from: float
-  weight_to: float
+  weight_from: number
+  weight_to: number
   rate: number
   shipping_method_id?: number
   shipping_zone_id?: number
@@ -39,10 +39,10 @@ export type ShippingRateUpdate = Updateable<ShippingRateWrite>
 export interface ShippingRateModelType {
   // Properties
   readonly id: number
-  get weightFrom(): float
-  set weightFrom(value: float)
-  get weightTo(): float
-  set weightTo(value: float)
+  get weightFrom(): number
+  set weightFrom(value: number)
+  get weightTo(): number
+  set weightTo(value: number)
   get rate(): number
   set rate(value: number)
 

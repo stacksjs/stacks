@@ -153,8 +153,8 @@ export interface Attributes {
   discount_percentage: number
   base_rate: number
   free_shipping: number
-  weight_from: float
-  weight_to: float
+  weight_from: number
+  weight_to: number
   total_items: number
   subtotal: number
   total: number

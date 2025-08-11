@@ -162,11 +162,11 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
     return this.attributes.uuid
   }
 
-  get weight_from(): float {
+  get weight_from(): number {
     return this.attributes.weight_from
   }
 
-  get weight_to(): float {
+  get weight_to(): number {
     return this.attributes.weight_to
   }
 
@@ -186,11 +186,11 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
     this.attributes.uuid = value
   }
 
-  set weight_from(value: float) {
+  set weight_from(value: number) {
     this.attributes.weight_from = value
   }
 
-  set weight_to(value: float) {
+  set weight_to(value: number) {
     this.attributes.weight_to = value
   }
 
@@ -820,7 +820,6 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
     return {
       id: this.id,
       method: this.method,
-      zone: this.zone,
       weight_from: this.weight_from,
       weight_to: this.weight_to,
       rate: this.rate,
@@ -923,14 +922,14 @@ export async function remove(id: number): Promise<void> {
     .execute()
 }
 
-export async function whereWeightFrom(value: float): Promise<ShippingRateModel[]> {
+export async function whereWeightFrom(value: number): Promise<ShippingRateModel[]> {
   const query = DB.instance.selectFrom('shipping_rates').where('weight_from', '=', value)
   const results: ShippingRateJsonResponse = await query.execute()
 
   return results.map((modelItem: ShippingRateJsonResponse) => new ShippingRateModel(modelItem))
 }
 
-export async function whereWeightTo(value: float): Promise<ShippingRateModel[]> {
+export async function whereWeightTo(value: number): Promise<ShippingRateModel[]> {
   const query = DB.instance.selectFrom('shipping_rates').where('weight_to', '=', value)
   const results: ShippingRateJsonResponse = await query.execute()
 

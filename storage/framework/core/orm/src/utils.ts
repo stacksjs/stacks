@@ -1361,6 +1361,16 @@ export function mapEntity(attribute: ModelElement): string | undefined {
       return 'Date | string'
     case 'datetime':
       return 'Date | string'
+    case 'float':
+      return 'number'
+    case 'double':
+      return 'number'
+    case 'decimal':
+      return 'number'
+    case 'integer':
+      return 'number'
+    case 'bigint':
+      return 'number'
     default:
       return entity
   }
