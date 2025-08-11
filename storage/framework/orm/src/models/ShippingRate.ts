@@ -819,7 +819,7 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
   toSearchableObject(): Partial<ShippingRateJsonResponse> {
     return {
       id: this.id,
-      method: this.method,
+      shipping_method_id: this.shipping_method_id,
       weight_from: this.weight_from,
       weight_to: this.weight_to,
       rate: this.rate,
