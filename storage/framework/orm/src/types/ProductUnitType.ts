@@ -9,7 +9,6 @@ export interface ProductUnitsTable {
   type: string
   description?: string
   is_default?: boolean
-  product_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -51,8 +50,8 @@ export interface ProductUnitModelType {
   set description(value: string)
   get isDefault(): boolean | undefined
   set isDefault(value: boolean)
+  get product(): ProductModelType | undefined
 
-  productBelong: () => Promise<ProductType>
   get uuid(): string | undefined
   set uuid(value: string)
 

@@ -12,7 +12,6 @@ export interface PostsTable {
   published_at?: Date | string
   status?: string | string[]
   is_featured?: number
-  author_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -60,8 +59,8 @@ export interface PostModelType {
   set status(value: string | string[])
   get isFeatured(): number | undefined
   set isFeatured(value: number)
+  get author(): AuthorModelType | undefined
 
-  authorBelong: () => Promise<AuthorType>
   get uuid(): string | undefined
   set uuid(value: string)
 

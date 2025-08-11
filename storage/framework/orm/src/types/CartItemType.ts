@@ -15,7 +15,6 @@ export interface CartItemsTable {
   product_sku?: string
   product_image?: string
   notes?: string
-  cart_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -69,8 +68,8 @@ export interface CartItemModelType {
   set productImage(value: string)
   get notes(): string | undefined
   set notes(value: string)
+  get cart(): CartModelType | undefined
 
-  cartBelong: () => Promise<CartType>
   get uuid(): string | undefined
   set uuid(value: string)
 

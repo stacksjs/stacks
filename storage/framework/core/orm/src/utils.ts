@@ -1689,14 +1689,14 @@ export interface ${formattedTableName}Table {
   }
 
   // Add relation foreign keys to the table interface
-  for (const relation of relations) {
-    const relationType = getRelationType(relation.relationship)
-    const relationCount = getRelationCount(relation.relationship)
+  // for (const relation of relations) {
+  //   const relationType = getRelationType(relation.relationship)
+  //   const relationCount = getRelationCount(relation.relationship)
 
-    if (relationType === 'belongsType' && !relationCount) {
-      typeString += `  ${relation.modelKey}: number\n`
-    }
-  }
+  //   if (relationType === 'belongsType' && !relationCount) {
+  //     typeString += `  ${relation.modelKey}: number\n`
+  //   }
+  // }
 
   if (useUuid) {
     typeString += `  uuid?: string\n`
@@ -1757,14 +1757,14 @@ export interface ${formattedTableName}Table {
 
     if (relationType === 'belongsType' && !relationCount) {
       const relationName = camelCase(relation.relationName || formattedModelRelation)
-      modelTypeInterface += `
-  ${relationName}Belong: () => Promise<${modelRelation}Type>`
+      modelTypeInterface += `  get ${snakeCase(relationName)}(): ${modelRelation}ModelType | undefined 
+      `
     }
 
     if (relationType === 'belongsType' && relationCount === 'many') {
       const relationName = relation.relationName || formattedModelName + plural(pascalCase(modelRelation))
-      modelTypeInterface += `
-  ${relationName}: () => Promise<${modelRelation}Type[]>`
+      modelTypeInterface += `  get ${snakeCase(relationName)}(): ${modelRelation}ModelType[] | []
+      `
     }
   }
 
@@ -1890,13 +1890,13 @@ export interface ${formattedTableName}Table {
     if (relationType === 'belongsType' && !relationCount) {
       const relationName = camelCase(relation.relationName || formattedModelRelation)
       modelTypeInterface += `
-  ${relationName}Belong: () => Promise<${modelRelation}ModelType>`
+    ${relationName}Belong: () => Promise<${modelRelation}ModelType>`
     }
 
     if (relationType === 'belongsType' && relationCount === 'many') {
       const relationName = relation.relationName || formattedModelName + plural(pascalCase(modelRelation))
       modelTypeInterface += `
-  ${relationName}: () => Promise<${modelRelation}ModelType[]>`
+    ${relationName}: () => Promise<${modelRelation}ModelType[]>`
     }
   }
 

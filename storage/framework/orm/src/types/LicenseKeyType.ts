@@ -10,9 +10,6 @@ export interface LicenseKeysTable {
   template: string | string[]
   expiry_date: Date | string
   status?: string | string[]
-  customer_id: number
-  product_id: number
-  order_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -52,10 +49,10 @@ export interface LicenseKeyModelType {
   set expiryDate(value: Date | string)
   get status(): string | string[] | undefined
   set status(value: string | string[])
+  get customer(): CustomerModelType | undefined
+  get product(): ProductModelType | undefined
+  get order(): OrderModelType | undefined
 
-  customerBelong: () => Promise<CustomerType>
-  productBelong: () => Promise<ProductType>
-  orderBelong: () => Promise<OrderType>
   get uuid(): string | undefined
   set uuid(value: string)
 

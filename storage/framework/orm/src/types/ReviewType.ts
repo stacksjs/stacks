@@ -15,8 +15,6 @@ export interface ReviewsTable {
   unhelpful_votes?: number
   purchase_date?: string
   images?: string
-  product_id: number
-  customer_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -68,9 +66,9 @@ export interface ReviewModelType {
   set purchaseDate(value: string)
   get images(): string | undefined
   set images(value: string)
+  get product(): ProductModelType | undefined
+  get customer(): CustomerModelType | undefined
 
-  productBelong: () => Promise<ProductType>
-  customerBelong: () => Promise<CustomerType>
   get uuid(): string | undefined
   set uuid(value: string)
 

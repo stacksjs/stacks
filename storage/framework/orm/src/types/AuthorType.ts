@@ -7,7 +7,6 @@ export interface AuthorsTable {
   id: Generated<number>
   name?: string
   email?: string
-  user_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -44,8 +43,8 @@ export interface AuthorModelType {
   get email(): string | undefined
   set email(value: string)
   get post(): PostModelType[] | []
+  get user(): UserModelType | undefined
 
-  userBelong: () => Promise<UserType>
   get uuid(): string | undefined
   set uuid(value: string)
 

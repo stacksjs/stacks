@@ -8,8 +8,6 @@ export interface OrderItemsTable {
   quantity: number
   price: number
   special_instructions?: string
-  order_id: number
-  product_id: number
   created_at?: string
   updated_at?: string
 }
@@ -46,9 +44,9 @@ export interface OrderItemModelType {
   set price(value: number)
   get specialInstructions(): string | undefined
   set specialInstructions(value: string)
+  get order(): OrderModelType | undefined
+  get product(): ProductModelType | undefined
 
-  orderBelong: () => Promise<OrderType>
-  productBelong: () => Promise<ProductType>
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)

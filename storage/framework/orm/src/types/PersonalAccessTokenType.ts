@@ -14,7 +14,6 @@ export interface PersonalAccessTokensTable {
   ip_address?: string
   device_name?: string
   is_single_use: boolean
-  user_id: number
   created_at?: string
   updated_at?: string
 }
@@ -65,8 +64,8 @@ export interface PersonalAccessTokenModelType {
   set deviceName(value: string)
   get isSingleUse(): boolean
   set isSingleUse(value: boolean)
+  get user(): UserModelType | undefined
 
-  userBelong: () => Promise<UserType>
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)

@@ -16,8 +16,6 @@ export interface WaitlistProductsTable {
   notified_at?: unix
   purchased_at?: unix
   cancelled_at?: unix
-  product_id: number
-  customer_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -71,9 +69,9 @@ export interface WaitlistProductModelType {
   set purchasedAt(value: unix)
   get cancelledAt(): unix | undefined
   set cancelledAt(value: unix)
+  get product(): ProductModelType | undefined
+  get customer(): CustomerModelType | undefined
 
-  productBelong: () => Promise<ProductType>
-  customerBelong: () => Promise<CustomerType>
   get uuid(): string | undefined
   set uuid(value: string)
 

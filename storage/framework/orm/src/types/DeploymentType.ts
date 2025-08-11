@@ -11,7 +11,6 @@ export interface DeploymentsTable {
   execution_time?: number
   deploy_script?: string
   terminal_output?: string
-  user_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -57,8 +56,8 @@ export interface DeploymentModelType {
   set deployScript(value: string)
   get terminalOutput(): string | undefined
   set terminalOutput(value: string)
+  get user(): UserModelType | undefined
 
-  userBelong: () => Promise<UserType>
   get uuid(): string | undefined
   set uuid(value: string)
 

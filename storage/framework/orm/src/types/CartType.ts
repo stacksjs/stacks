@@ -16,8 +16,6 @@ export interface CartsTable {
   currency?: string
   notes?: string
   applied_coupon_id: string
-  customer_id: number
-  coupon_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -70,9 +68,9 @@ export interface CartModelType {
   get appliedCouponId(): string
   set appliedCouponId(value: string)
   get cart_item(): CartItemModelType[] | []
+  get customer(): CustomerModelType | undefined
+  get coupon(): CouponModelType | undefined
 
-  customerBelong: () => Promise<CustomerType>
-  couponBelong: () => Promise<CouponType>
   get uuid(): string | undefined
   set uuid(value: string)
 

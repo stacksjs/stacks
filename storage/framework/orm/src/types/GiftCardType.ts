@@ -20,7 +20,6 @@ export interface GiftCardsTable {
   expiry_date?: Date | string
   last_used_date?: Date | string
   template_id?: string
-  customer_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -83,8 +82,8 @@ export interface GiftCardModelType {
   get templateId(): string | undefined
   set templateId(value: string)
   get order(): OrderModelType[] | []
+  get customer(): CustomerModelType | undefined
 
-  customerBelong: () => Promise<CustomerType>
   get uuid(): string | undefined
   set uuid(value: string)
 

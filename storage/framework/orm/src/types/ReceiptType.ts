@@ -12,7 +12,6 @@ export interface ReceiptsTable {
   pages?: number
   duration?: number
   metadata?: string
-  print_device_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -60,8 +59,8 @@ export interface ReceiptModelType {
   set duration(value: number)
   get metadata(): string | undefined
   set metadata(value: string)
+  get print_device(): PrintDeviceModelType | undefined
 
-  printDeviceBelong: () => Promise<PrintDeviceType>
   get uuid(): string | undefined
   set uuid(value: string)
 

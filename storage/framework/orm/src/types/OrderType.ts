@@ -19,8 +19,6 @@ export interface OrdersTable {
   special_instructions?: string
   estimated_delivery_time?: string
   applied_coupon_id?: string
-  customer_id: number
-  coupon_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -77,9 +75,9 @@ export interface OrderModelType {
   get order_item(): OrderItemModelType[] | []
   get payment(): PaymentModelType[] | []
   get license_key(): LicenseKeyModelType[] | []
+  get customer(): CustomerModelType | undefined
+  get coupon(): CouponModelType | undefined
 
-  customerBelong: () => Promise<CustomerType>
-  couponBelong: () => Promise<CouponType>
   get uuid(): string | undefined
   set uuid(value: string)
 

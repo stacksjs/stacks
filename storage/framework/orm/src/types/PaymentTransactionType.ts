@@ -10,8 +10,6 @@ export interface PaymentTransactionsTable {
   amount?: number
   type?: string
   provider_id?: string
-  user_id: number
-  payment_method_id: number
   uuid?: string
 }
 
@@ -51,9 +49,9 @@ export interface PaymentTransactionModelType {
   set type(value: string)
   get providerId(): string | undefined
   set providerId(value: string)
+  get user(): UserModelType | undefined
+  get payment_method(): PaymentMethodModelType | undefined
 
-  userBelong: () => Promise<UserType>
-  paymentMethodBelong: () => Promise<PaymentMethodType>
   get uuid(): string | undefined
   set uuid(value: string)
 

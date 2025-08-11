@@ -17,7 +17,6 @@ export interface WaitlistRestaurantsTable {
   seated_at?: Date | string
   no_show_at?: Date | string
   cancelled_at?: Date | string
-  customer_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -75,8 +74,8 @@ export interface WaitlistRestaurantModelType {
   set noShowAt(value: Date | string)
   get cancelledAt(): Date | string | undefined
   set cancelledAt(value: Date | string)
+  get customer(): CustomerModelType | undefined
 
-  customerBelong: () => Promise<CustomerType>
   get uuid(): string | undefined
   set uuid(value: string)
 

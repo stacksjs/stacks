@@ -10,7 +10,6 @@ export interface ShippingZonesTable {
   regions?: string
   postal_codes?: string
   status: string | string[]
-  shipping_method_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -53,8 +52,8 @@ export interface ShippingZoneModelType {
   get status(): string | string[]
   set status(value: string | string[])
   get shipping_rate(): ShippingRateModelType[] | []
+  get shipping_method(): ShippingMethodModelType | undefined
 
-  shippingMethodBelong: () => Promise<ShippingMethodType>
   get uuid(): string | undefined
   set uuid(value: string)
 

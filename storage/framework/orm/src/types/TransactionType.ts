@@ -11,7 +11,6 @@ export interface TransactionsTable {
   transaction_reference?: string
   loyalty_points_earned?: number
   loyalty_points_redeemed?: number
-  order_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -57,8 +56,8 @@ export interface TransactionModelType {
   set loyaltyPointsEarned(value: number)
   get loyaltyPointsRedeemed(): number | undefined
   set loyaltyPointsRedeemed(value: number)
+  get order(): OrderModelType | undefined
 
-  orderBelong: () => Promise<OrderType>
   get uuid(): string | undefined
   set uuid(value: string)
 

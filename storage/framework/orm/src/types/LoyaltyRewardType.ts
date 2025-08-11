@@ -13,7 +13,6 @@ export interface LoyaltyRewardsTable {
   is_active?: boolean
   expiry_days?: number
   image_url?: string
-  product_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -63,8 +62,8 @@ export interface LoyaltyRewardModelType {
   set expiryDays(value: number)
   get imageUrl(): string | undefined
   set imageUrl(value: string)
+  get product(): ProductModelType | undefined
 
-  productBelong: () => Promise<ProductType>
   get uuid(): string | undefined
   set uuid(value: string)
 

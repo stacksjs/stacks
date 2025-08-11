@@ -10,7 +10,6 @@ export interface DriversTable {
   vehicle_number: string
   license: string
   status?: string | string[]
-  user_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -53,8 +52,8 @@ export interface DriverModelType {
   get status(): string | string[] | undefined
   set status(value: string | string[])
   get delivery_route(): DeliveryRouteModelType[] | []
+  get user(): UserModelType | undefined
 
-  userBelong: () => Promise<UserType>
   get uuid(): string | undefined
   set uuid(value: string)
 

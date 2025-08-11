@@ -20,8 +20,6 @@ export interface ProductsTable {
   preparation_time: number
   allergens?: string
   nutritional_info?: string
-  category_id: number
-  manufacturer_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -77,9 +75,9 @@ export interface ProductModelType {
   get license_key(): LicenseKeyModelType[] | []
   get waitlist_product(): WaitlistProductModelType[] | []
   get coupon(): CouponModelType[] | []
+  get category(): CategoryModelType | undefined
+  get manufacturer(): ManufacturerModelType | undefined
 
-  categoryBelong: () => Promise<CategoryType>
-  manufacturerBelong: () => Promise<ManufacturerType>
   get uuid(): string | undefined
   set uuid(value: string)
 

@@ -9,7 +9,6 @@ export interface ProductVariantsTable {
   description?: string
   options?: string
   status: string | string[]
-  product_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -51,8 +50,8 @@ export interface ProductVariantModelType {
   set options(value: string)
   get status(): string | string[]
   set status(value: string | string[])
+  get product(): ProductModelType | undefined
 
-  productBelong: () => Promise<ProductType>
   get uuid(): string | undefined
   set uuid(value: string)
 

@@ -15,7 +15,6 @@ export interface SubscriptionsTable {
   trial_ends_at?: Date | string
   ends_at?: Date | string
   last_used_at?: Date | string
-  user_id: number
   uuid?: string
 }
 
@@ -67,8 +66,8 @@ export interface SubscriptionModelType {
   set endsAt(value: Date | string)
   get lastUsedAt(): Date | string | undefined
   set lastUsedAt(value: Date | string)
+  get user(): UserModelType | undefined
 
-  userBelong: () => Promise<UserType>
   get uuid(): string | undefined
   set uuid(value: string)
 

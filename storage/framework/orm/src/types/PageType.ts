@@ -9,7 +9,6 @@ export interface PagesTable {
   views?: number
   published_at?: Date | string
   conversions?: number
-  author_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -51,8 +50,8 @@ export interface PageModelType {
   set publishedAt(value: Date | string)
   get conversions(): number | undefined
   set conversions(value: number)
+  get author(): AuthorModelType | undefined
 
-  authorBelong: () => Promise<AuthorType>
   get uuid(): string | undefined
   set uuid(value: string)
 

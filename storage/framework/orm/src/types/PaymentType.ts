@@ -17,8 +17,6 @@ export interface PaymentsTable {
   payment_provider?: string
   refund_amount?: number
   notes?: string
-  order_id: number
-  customer_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -74,9 +72,9 @@ export interface PaymentModelType {
   set refundAmount(value: number)
   get notes(): string | undefined
   set notes(value: string)
+  get order(): OrderModelType | undefined
+  get customer(): CustomerModelType | undefined
 
-  orderBelong: () => Promise<OrderType>
-  customerBelong: () => Promise<CustomerType>
   get uuid(): string | undefined
   set uuid(value: string)
 

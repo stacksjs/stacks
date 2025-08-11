@@ -8,8 +8,6 @@ export interface ShippingRatesTable {
   weight_from: number
   weight_to: number
   rate: number
-  shipping_method_id: number
-  shipping_zone_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -47,9 +45,9 @@ export interface ShippingRateModelType {
   set weightTo(value: number)
   get rate(): number
   set rate(value: number)
+  get shipping_method(): ShippingMethodModelType | undefined
+  get shipping_zone(): ShippingZoneModelType | undefined
 
-  shippingMethodBelong: () => Promise<ShippingMethodType>
-  shippingZoneBelong: () => Promise<ShippingZoneType>
   get uuid(): string | undefined
   set uuid(value: string)
 

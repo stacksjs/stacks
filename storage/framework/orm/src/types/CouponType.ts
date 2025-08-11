@@ -18,7 +18,6 @@ export interface CouponsTable {
   usage_count?: number
   start_date?: Date | string
   end_date?: Date | string
-  product_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -77,8 +76,8 @@ export interface CouponModelType {
   get endDate(): Date | string | undefined
   set endDate(value: Date | string)
   get order(): OrderModelType[] | []
+  get product(): ProductModelType | undefined
 
-  productBelong: () => Promise<ProductType>
   get uuid(): string | undefined
   set uuid(value: string)
 

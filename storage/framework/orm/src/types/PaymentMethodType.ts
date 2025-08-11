@@ -12,7 +12,6 @@ export interface PaymentMethodsTable {
   exp_year?: number
   is_default?: boolean
   provider_id?: string
-  user_id: number
   uuid?: string
 }
 
@@ -57,8 +56,8 @@ export interface PaymentMethodModelType {
   get providerId(): string | undefined
   set providerId(value: string)
   get payment_transaction(): PaymentTransactionModelType[] | []
+  get user(): UserModelType | undefined
 
-  userBelong: () => Promise<UserType>
   get uuid(): string | undefined
   set uuid(value: string)
 

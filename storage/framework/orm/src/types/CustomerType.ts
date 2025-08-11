@@ -18,7 +18,6 @@ export interface CustomersTable {
   last_order?: string
   status: string | string[]
   avatar: string
-  user_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -71,8 +70,8 @@ export interface CustomerModelType {
   get license_key(): LicenseKeyModelType[] | []
   get waitlist_product(): WaitlistProductModelType[] | []
   get waitlist_restaurant(): WaitlistRestaurantModelType[] | []
+  get user(): UserModelType | undefined
 
-  userBelong: () => Promise<UserType>
   get uuid(): string | undefined
   set uuid(value: string)
 
