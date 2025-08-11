@@ -18,8 +18,8 @@ export interface ProductsTable {
   preparation_time: number
   allergens?: string
   nutritional_info?: string
-  category_id?: number
-  manufacturer_id?: number
+  category_id: number
+  manufacturer_id: number
   uuid?: string
   created_at?: string
   updated_at?: string

@@ -1694,8 +1694,7 @@ export interface ${formattedTableName}Table {
     const relationCount = getRelationCount(relation.relationship)
 
     if (relationType === 'belongsType' && !relationCount) {
-      // belongsTo relation - add foreign key
-      typeString += `  ${relation.modelKey}?: number\n`
+      typeString += `  ${relation.modelKey}: number\n`
     }
   }
 

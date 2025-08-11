@@ -17,8 +17,8 @@ export interface OrdersTable {
   special_instructions?: string
   estimated_delivery_time?: string
   applied_coupon_id?: string
-  customer_id?: number
-  coupon_id?: number
+  customer_id: number
+  coupon_id: number
   uuid?: string
   created_at?: string
   updated_at?: string

@@ -19,7 +19,7 @@ export interface GiftCardsTable {
   expiry_date?: Date | string
   last_used_date?: Date | string
   template_id?: string
-  customer_id?: number
+  customer_id: number
   uuid?: string
   created_at?: string
   updated_at?: string

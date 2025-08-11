@@ -9,7 +9,7 @@ export interface DriversTable {
   vehicle_number: string
   license: string
   status?: string | string[]
-  user_id?: number
+  user_id: number
   uuid?: string
   created_at?: string
   updated_at?: string

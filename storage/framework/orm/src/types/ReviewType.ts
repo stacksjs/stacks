@@ -13,8 +13,8 @@ export interface ReviewsTable {
   unhelpful_votes?: number
   purchase_date?: string
   images?: string
-  product_id?: number
-  customer_id?: number
+  product_id: number
+  customer_id: number
   uuid?: string
   created_at?: string
   updated_at?: string

@@ -10,7 +10,7 @@ export interface DeploymentsTable {
   execution_time?: number
   deploy_script?: string
   terminal_output?: string
-  user_id?: number
+  user_id: number
   uuid?: string
   created_at?: string
   updated_at?: string

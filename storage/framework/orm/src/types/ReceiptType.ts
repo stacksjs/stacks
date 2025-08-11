@@ -11,7 +11,7 @@ export interface ReceiptsTable {
   pages?: number
   duration?: number
   metadata?: string
-  print_device_id?: number
+  print_device_id: number
   uuid?: string
   created_at?: string
   updated_at?: string

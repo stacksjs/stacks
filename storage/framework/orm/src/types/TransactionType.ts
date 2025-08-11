@@ -10,7 +10,7 @@ export interface TransactionsTable {
   transaction_reference?: string
   loyalty_points_earned?: number
   loyalty_points_redeemed?: number
-  order_id?: number
+  order_id: number
   uuid?: string
   created_at?: string
   updated_at?: string

@@ -17,7 +17,7 @@ export interface CouponsTable {
   usage_count?: number
   start_date?: Date | string
   end_date?: Date | string
-  product_id?: number
+  product_id: number
   uuid?: string
   created_at?: string
   updated_at?: string

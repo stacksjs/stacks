@@ -13,7 +13,7 @@ export interface PersonalAccessTokensTable {
   ip_address?: string
   device_name?: string
   is_single_use: boolean
-  user_id?: number
+  user_id: number
   created_at?: string
   updated_at?: string
 }

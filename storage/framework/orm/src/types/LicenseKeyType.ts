@@ -7,9 +7,9 @@ export interface LicenseKeysTable {
   template: string | string[]
   expiry_date: Date | string
   status?: string | string[]
-  customer_id?: number
-  product_id?: number
-  order_id?: number
+  customer_id: number
+  product_id: number
+  order_id: number
   uuid?: string
   created_at?: string
   updated_at?: string

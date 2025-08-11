@@ -6,8 +6,8 @@ export interface ShippingRatesTable {
   weight_from: number
   weight_to: number
   rate: number
-  shipping_method_id?: number
-  shipping_zone_id?: number
+  shipping_method_id: number
+  shipping_zone_id: number
   uuid?: string
   created_at?: string
   updated_at?: string

@@ -14,7 +14,7 @@ export interface SubscriptionsTable {
   trial_ends_at?: Date | string
   ends_at?: Date | string
   last_used_at?: Date | string
-  user_id?: number
+  user_id: number
   uuid?: string
 }
 

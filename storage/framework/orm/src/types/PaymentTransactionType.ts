@@ -8,8 +8,8 @@ export interface PaymentTransactionsTable {
   amount?: number
   type?: string
   provider_id?: string
-  user_id?: number
-  payment_method_id?: number
+  user_id: number
+  payment_method_id: number
   uuid?: string
 }
 

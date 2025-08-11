@@ -8,7 +8,7 @@ export interface PagesTable {
   views?: number
   published_at?: Date | string
   conversions?: number
-  author_id?: number
+  author_id: number
   uuid?: string
   created_at?: string
   updated_at?: string

@@ -6,8 +6,8 @@ export interface OrderItemsTable {
   quantity: number
   price: number
   special_instructions?: string
-  order_id?: number
-  product_id?: number
+  order_id: number
+  product_id: number
   created_at?: string
   updated_at?: string
 }

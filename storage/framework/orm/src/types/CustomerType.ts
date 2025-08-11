@@ -17,7 +17,7 @@ export interface CustomersTable {
   last_order?: string
   status: string | string[]
   avatar: string
-  user_id?: number
+  user_id: number
   uuid?: string
   created_at?: string
   updated_at?: string

@@ -11,7 +11,7 @@ export interface PaymentMethodsTable {
   exp_year?: number
   is_default?: boolean
   provider_id?: string
-  user_id?: number
+  user_id: number
   uuid?: string
 }
 

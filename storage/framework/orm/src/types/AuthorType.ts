@@ -6,7 +6,7 @@ export interface AuthorsTable {
   id: Generated<number>
   name?: string
   email?: string
-  user_id?: number
+  user_id: number
   uuid?: string
   created_at?: string
   updated_at?: string
