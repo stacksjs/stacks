@@ -125,7 +125,7 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     }
   }
 
-  async mapCustomSetters(model: NewTransaction | TransactionUpdate): Promise<void> {
+  async mapCustomSetters(model: NewTransaction): Promise<void> {
     const customSetter = {
       default: () => {
       },

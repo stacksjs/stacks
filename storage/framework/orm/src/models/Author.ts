@@ -126,7 +126,7 @@ export class AuthorModel extends BaseOrm<AuthorModel, AuthorsTable, AuthorJsonRe
     }
   }
 
-  async mapCustomSetters(model: NewAuthor | AuthorUpdate): Promise<void> {
+  async mapCustomSetters(model: NewAuthor): Promise<void> {
     const customSetter = {
       default: () => {
       },

@@ -122,7 +122,7 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     }
   }
 
-  async mapCustomSetters(model: NewFailedJob | FailedJobUpdate): Promise<void> {
+  async mapCustomSetters(model: NewFailedJob): Promise<void> {
     const customSetter = {
       default: () => {
       },

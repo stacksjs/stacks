@@ -124,7 +124,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     }
   }
 
-  async mapCustomSetters(model: NewOrderItem | OrderItemUpdate): Promise<void> {
+  async mapCustomSetters(model: NewOrderItem): Promise<void> {
     const customSetter = {
       default: () => {
       },

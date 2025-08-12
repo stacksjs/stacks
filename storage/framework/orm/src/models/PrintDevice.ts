@@ -125,7 +125,7 @@ export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTabl
     }
   }
 
-  async mapCustomSetters(model: NewPrintDevice | PrintDeviceUpdate): Promise<void> {
+  async mapCustomSetters(model: NewPrintDevice): Promise<void> {
     const customSetter = {
       default: () => {
       },

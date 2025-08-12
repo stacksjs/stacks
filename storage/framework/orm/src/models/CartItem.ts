@@ -125,7 +125,7 @@ export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartIt
     }
   }
 
-  async mapCustomSetters(model: NewCartItem | CartItemUpdate): Promise<void> {
+  async mapCustomSetters(model: NewCartItem): Promise<void> {
     const customSetter = {
       default: () => {
       },

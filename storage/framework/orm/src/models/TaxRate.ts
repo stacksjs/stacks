@@ -124,7 +124,7 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
     }
   }
 
-  async mapCustomSetters(model: NewTaxRate | TaxRateUpdate): Promise<void> {
+  async mapCustomSetters(model: NewTaxRate): Promise<void> {
     const customSetter = {
       default: () => {
       },

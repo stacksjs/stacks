@@ -125,7 +125,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     }
   }
 
-  async mapCustomSetters(model: NewPost | PostUpdate): Promise<void> {
+  async mapCustomSetters(model: NewPost): Promise<void> {
     const customSetter = {
       default: () => {
       },

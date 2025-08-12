@@ -1167,7 +1167,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
     }
   }
 
-  async mapCustomSetters(model: New${modelName} | ${modelName}Update): Promise<void> {
+  async mapCustomSetters(model: New${modelName}): Promise<void> {
     const customSetter = {
       default: () => {
       },

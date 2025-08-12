@@ -123,7 +123,7 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     }
   }
 
-  async mapCustomSetters(model: NewRelease | ReleaseUpdate): Promise<void> {
+  async mapCustomSetters(model: NewRelease): Promise<void> {
     const customSetter = {
       default: () => {
       },

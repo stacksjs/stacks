@@ -123,7 +123,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
     }
   }
 
-  async mapCustomSetters(model: NewWebsocket | WebsocketUpdate): Promise<void> {
+  async mapCustomSetters(model: NewWebsocket): Promise<void> {
     const customSetter = {
       default: () => {
       },

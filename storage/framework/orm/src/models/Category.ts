@@ -125,7 +125,7 @@ export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, Categ
     }
   }
 
-  async mapCustomSetters(model: NewCategory | CategoryUpdate): Promise<void> {
+  async mapCustomSetters(model: NewCategory): Promise<void> {
     const customSetter = {
       default: () => {
       },

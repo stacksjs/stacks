@@ -124,7 +124,7 @@ export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalD
     }
   }
 
-  async mapCustomSetters(model: NewDigitalDelivery | DigitalDeliveryUpdate): Promise<void> {
+  async mapCustomSetters(model: NewDigitalDelivery): Promise<void> {
     const customSetter = {
       default: () => {
       },

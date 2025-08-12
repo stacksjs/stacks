@@ -122,7 +122,7 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     }
   }
 
-  async mapCustomSetters(model: NewError | ErrorUpdate): Promise<void> {
+  async mapCustomSetters(model: NewError): Promise<void> {
     const customSetter = {
       default: () => {
       },

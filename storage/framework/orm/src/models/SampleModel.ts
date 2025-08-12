@@ -122,7 +122,7 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
     }
   }
 
-  async mapCustomSetters(model: NewSampleModel | SampleModelUpdate): Promise<void> {
+  async mapCustomSetters(model: NewSampleModel): Promise<void> {
     const customSetter = {
       default: () => {
       },

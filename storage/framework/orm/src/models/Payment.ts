@@ -126,7 +126,7 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJs
     }
   }
 
-  async mapCustomSetters(model: NewPayment | PaymentUpdate): Promise<void> {
+  async mapCustomSetters(model: NewPayment): Promise<void> {
     const customSetter = {
       default: () => {
       },

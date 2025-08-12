@@ -125,7 +125,7 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     }
   }
 
-  async mapCustomSetters(model: NewProductUnit | ProductUnitUpdate): Promise<void> {
+  async mapCustomSetters(model: NewProductUnit): Promise<void> {
     const customSetter = {
       default: () => {
       },

@@ -122,7 +122,7 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     }
   }
 
-  async mapCustomSetters(model: NewProject | ProjectUpdate): Promise<void> {
+  async mapCustomSetters(model: NewProject): Promise<void> {
     const customSetter = {
       default: () => {
       },

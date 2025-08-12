@@ -124,7 +124,7 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
     }
   }
 
-  async mapCustomSetters(model: NewDeliveryRoute | DeliveryRouteUpdate): Promise<void> {
+  async mapCustomSetters(model: NewDeliveryRoute): Promise<void> {
     const customSetter = {
       default: () => {
       },

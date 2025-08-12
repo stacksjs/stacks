@@ -132,7 +132,7 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     }
   }
 
-  async mapCustomSetters(model: NewOrder | OrderUpdate): Promise<void> {
+  async mapCustomSetters(model: NewOrder): Promise<void> {
     const customSetter = {
       default: () => {
       },

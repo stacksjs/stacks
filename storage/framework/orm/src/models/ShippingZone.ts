@@ -126,7 +126,7 @@ export class ShippingZoneModel extends BaseOrm<ShippingZoneModel, ShippingZonesT
     }
   }
 
-  async mapCustomSetters(model: NewShippingZone | ShippingZoneUpdate): Promise<void> {
+  async mapCustomSetters(model: NewShippingZone): Promise<void> {
     const customSetter = {
       default: () => {
       },

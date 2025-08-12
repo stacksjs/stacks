@@ -125,7 +125,7 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
     }
   }
 
-  async mapCustomSetters(model: NewReceipt | ReceiptUpdate): Promise<void> {
+  async mapCustomSetters(model: NewReceipt): Promise<void> {
     const customSetter = {
       default: () => {
       },

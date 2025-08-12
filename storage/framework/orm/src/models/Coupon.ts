@@ -126,7 +126,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     }
   }
 
-  async mapCustomSetters(model: NewCoupon | CouponUpdate): Promise<void> {
+  async mapCustomSetters(model: NewCoupon): Promise<void> {
     const customSetter = {
       default: () => {
       },

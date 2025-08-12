@@ -126,7 +126,7 @@ export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMe
     }
   }
 
-  async mapCustomSetters(model: NewShippingMethod | ShippingMethodUpdate): Promise<void> {
+  async mapCustomSetters(model: NewShippingMethod): Promise<void> {
     const customSetter = {
       default: () => {
       },

@@ -125,7 +125,7 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     }
   }
 
-  async mapCustomSetters(model: NewManufacturer | ManufacturerUpdate): Promise<void> {
+  async mapCustomSetters(model: NewManufacturer): Promise<void> {
     const customSetter = {
       default: () => {
       },

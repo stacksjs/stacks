@@ -136,7 +136,7 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     }
   }
 
-  async mapCustomSetters(model: NewProduct | ProductUpdate): Promise<void> {
+  async mapCustomSetters(model: NewProduct): Promise<void> {
     const customSetter = {
       default: () => {
       },

@@ -126,7 +126,7 @@ export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonRe
     }
   }
 
-  async mapCustomSetters(model: NewDriver | DriverUpdate): Promise<void> {
+  async mapCustomSetters(model: NewDriver): Promise<void> {
     const customSetter = {
       default: () => {
       },

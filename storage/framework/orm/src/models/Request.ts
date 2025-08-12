@@ -122,7 +122,7 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     }
   }
 
-  async mapCustomSetters(model: NewRequest | RequestUpdate): Promise<void> {
+  async mapCustomSetters(model: NewRequest): Promise<void> {
     const customSetter = {
       default: () => {
       },

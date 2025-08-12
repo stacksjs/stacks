@@ -122,7 +122,7 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
     }
   }
 
-  async mapCustomSetters(model: NewLog | LogUpdate): Promise<void> {
+  async mapCustomSetters(model: NewLog): Promise<void> {
     const customSetter = {
       default: () => {
       },

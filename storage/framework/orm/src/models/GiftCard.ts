@@ -126,7 +126,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     }
   }
 
-  async mapCustomSetters(model: NewGiftCard | GiftCardUpdate): Promise<void> {
+  async mapCustomSetters(model: NewGiftCard): Promise<void> {
     const customSetter = {
       default: () => {
       },

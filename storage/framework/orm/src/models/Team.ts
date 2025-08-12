@@ -123,7 +123,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     }
   }
 
-  async mapCustomSetters(model: NewTeam | TeamUpdate): Promise<void> {
+  async mapCustomSetters(model: NewTeam): Promise<void> {
     const customSetter = {
       default: () => {
       },

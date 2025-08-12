@@ -142,7 +142,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     }
   }
 
-  async mapCustomSetters(model: NewUser | UserUpdate): Promise<void> {
+  async mapCustomSetters(model: NewUser): Promise<void> {
     const customSetter = {
       default: () => {
       },

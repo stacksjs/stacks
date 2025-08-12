@@ -126,7 +126,7 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
     }
   }
 
-  async mapCustomSetters(model: NewShippingRate | ShippingRateUpdate): Promise<void> {
+  async mapCustomSetters(model: NewShippingRate): Promise<void> {
     const customSetter = {
       default: () => {
       },

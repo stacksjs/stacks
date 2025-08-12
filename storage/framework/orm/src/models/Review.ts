@@ -126,7 +126,7 @@ export class ReviewModel extends BaseOrm<ReviewModel, ReviewsTable, ReviewJsonRe
     }
   }
 
-  async mapCustomSetters(model: NewReview | ReviewUpdate): Promise<void> {
+  async mapCustomSetters(model: NewReview): Promise<void> {
     const customSetter = {
       default: () => {
       },

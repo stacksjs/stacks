@@ -124,7 +124,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     }
   }
 
-  async mapCustomSetters(model: NewDeployment | DeploymentUpdate): Promise<void> {
+  async mapCustomSetters(model: NewDeployment): Promise<void> {
     const customSetter = {
       default: () => {
       },

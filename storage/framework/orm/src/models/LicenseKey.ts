@@ -128,7 +128,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
     }
   }
 
-  async mapCustomSetters(model: NewLicenseKey | LicenseKeyUpdate): Promise<void> {
+  async mapCustomSetters(model: NewLicenseKey): Promise<void> {
     const customSetter = {
       default: () => {
       },

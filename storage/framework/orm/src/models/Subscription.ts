@@ -124,7 +124,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     }
   }
 
-  async mapCustomSetters(model: NewSubscription | SubscriptionUpdate): Promise<void> {
+  async mapCustomSetters(model: NewSubscription): Promise<void> {
     const customSetter = {
       default: () => {
       },

@@ -123,7 +123,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
     }
   }
 
-  async mapCustomSetters(model: NewPersonalAccessToken | PersonalAccessTokenUpdate): Promise<void> {
+  async mapCustomSetters(model: NewPersonalAccessToken): Promise<void> {
     const customSetter = {
       default: () => {
       },

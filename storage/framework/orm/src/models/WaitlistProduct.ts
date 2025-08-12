@@ -126,7 +126,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, Waitlist
     }
   }
 
-  async mapCustomSetters(model: NewWaitlistProduct | WaitlistProductUpdate): Promise<void> {
+  async mapCustomSetters(model: NewWaitlistProduct): Promise<void> {
     const customSetter = {
       default: () => {
       },

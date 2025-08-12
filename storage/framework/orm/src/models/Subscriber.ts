@@ -122,7 +122,7 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     }
   }
 
-  async mapCustomSetters(model: NewSubscriber | SubscriberUpdate): Promise<void> {
+  async mapCustomSetters(model: NewSubscriber): Promise<void> {
     const customSetter = {
       default: () => {
       },

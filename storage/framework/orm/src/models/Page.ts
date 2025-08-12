@@ -124,7 +124,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
     }
   }
 
-  async mapCustomSetters(model: NewPage | PageUpdate): Promise<void> {
+  async mapCustomSetters(model: NewPage): Promise<void> {
     const customSetter = {
       default: () => {
       },

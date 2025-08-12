@@ -125,7 +125,7 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     }
   }
 
-  async mapCustomSetters(model: NewLoyaltyReward | LoyaltyRewardUpdate): Promise<void> {
+  async mapCustomSetters(model: NewLoyaltyReward): Promise<void> {
     const customSetter = {
       default: () => {
       },

@@ -122,7 +122,7 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     }
   }
 
-  async mapCustomSetters(model: NewJob | JobUpdate): Promise<void> {
+  async mapCustomSetters(model: NewJob): Promise<void> {
     const customSetter = {
       default: () => {
       },

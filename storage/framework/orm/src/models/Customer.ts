@@ -144,7 +144,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     }
   }
 
-  async mapCustomSetters(model: NewCustomer | CustomerUpdate): Promise<void> {
+  async mapCustomSetters(model: NewCustomer): Promise<void> {
     const customSetter = {
       default: () => {
       },
