@@ -5,11 +5,11 @@ import type { UserModelType } from './UserType'
 
 export interface PaymentMethodsTable {
   id: Generated<number>
-  type?: string
-  last_four?: number
-  brand?: string
-  exp_month?: number
-  exp_year?: number
+  type: string
+  last_four: number
+  brand: string
+  exp_month: number
+  exp_year: number
   is_default?: boolean
   provider_id?: string
   uuid?: string
@@ -41,15 +41,15 @@ export type PaymentMethodUpdate = Updateable<PaymentMethodWrite>
 export interface PaymentMethodModelType {
   // Properties
   readonly id: number
-  get type(): string | undefined
+  get type(): string
   set type(value: string)
-  get lastFour(): number | undefined
+  get lastFour(): number
   set lastFour(value: number)
-  get brand(): string | undefined
+  get brand(): string
   set brand(value: string)
-  get expMonth(): number | undefined
+  get expMonth(): number
   set expMonth(value: number)
-  get expYear(): number | undefined
+  get expYear(): number
   set expYear(value: number)
   get isDefault(): boolean | undefined
   set isDefault(value: boolean)

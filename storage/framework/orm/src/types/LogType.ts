@@ -3,13 +3,13 @@ import type { Operator } from '@stacksjs/orm'
 
 export interface LogsTable {
   id: Generated<number>
-  timestamp?: number
-  type?: string | string[]
-  source?: string | string[]
-  message?: string
-  project?: string
-  stacktrace?: string
-  file?: string
+  timestamp: number
+  type: string | string[]
+  source: string | string[]
+  message: string
+  project: string
+  stacktrace: string
+  file: string
   created_at?: string
   updated_at?: string
 }
@@ -40,19 +40,19 @@ export type LogUpdate = Updateable<LogWrite>
 export interface LogModelType {
   // Properties
   readonly id: number
-  get timestamp(): number | undefined
+  get timestamp(): number
   set timestamp(value: number)
-  get type(): string | string[] | undefined
+  get type(): string | string[]
   set type(value: string | string[])
-  get source(): string | string[] | undefined
+  get source(): string | string[]
   set source(value: string | string[])
-  get message(): string | undefined
+  get message(): string
   set message(value: string)
-  get project(): string | undefined
+  get project(): string
   set project(value: string)
-  get stacktrace(): string | undefined
+  get stacktrace(): string
   set stacktrace(value: string)
-  get file(): string | undefined
+  get file(): string
   set file(value: string)
 
   get created_at(): string | undefined

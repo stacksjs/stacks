@@ -4,12 +4,12 @@ import type { UserModelType } from './UserType'
 
 export interface SubscriptionsTable {
   id: Generated<number>
-  type?: string
+  type: string
   plan?: string
-  provider_id?: string
-  provider_status?: string
-  unit_price?: number
-  provider_type?: string
+  provider_id: string
+  provider_status: string
+  unit_price: number
+  provider_type: string
   provider_price_id?: string
   quantity?: number
   trial_ends_at?: Date | string
@@ -44,17 +44,17 @@ export type SubscriptionUpdate = Updateable<SubscriptionWrite>
 export interface SubscriptionModelType {
   // Properties
   readonly id: number
-  get type(): string | undefined
+  get type(): string
   set type(value: string)
   get plan(): string | undefined
   set plan(value: string)
-  get providerId(): string | undefined
+  get providerId(): string
   set providerId(value: string)
-  get providerStatus(): string | undefined
+  get providerStatus(): string
   set providerStatus(value: string)
-  get unitPrice(): number | undefined
+  get unitPrice(): number
   set unitPrice(value: number)
-  get providerType(): string | undefined
+  get providerType(): string
   set providerType(value: string)
   get providerPriceId(): string | undefined
   set providerPriceId(value: string)

@@ -152,7 +152,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return this.attributes.uuid
   }
 
-  get type(): string | undefined {
+  get type(): string {
     return this.attributes.type
   }
 
@@ -160,19 +160,19 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return this.attributes.plan
   }
 
-  get provider_id(): string | undefined {
+  get provider_id(): string {
     return this.attributes.provider_id
   }
 
-  get provider_status(): string | undefined {
+  get provider_status(): string {
     return this.attributes.provider_status
   }
 
-  get unit_price(): number | undefined {
+  get unit_price(): number {
     return this.attributes.unit_price
   }
 
-  get provider_type(): string | undefined {
+  get provider_type(): string {
     return this.attributes.provider_type
   }
 

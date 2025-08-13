@@ -17,10 +17,9 @@ export default {
   },
   attributes: {
     name: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
         message: {
           string: 'name must be a string',
           required: 'name is required',
@@ -42,10 +41,9 @@ export default {
     },
 
     amount: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.number().required(),
         message: {
           number: 'amount must be a number',
           required: 'amount is required',
@@ -55,10 +53,9 @@ export default {
     },
 
     type: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.string().max(50),
+        rule: schema.string().required().max(50),
         message: {
           string: 'type must be a string',
           max: 'type must have a maximum of 512 characters',

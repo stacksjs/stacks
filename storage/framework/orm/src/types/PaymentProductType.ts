@@ -3,10 +3,10 @@ import type { Operator } from '@stacksjs/orm'
 
 export interface PaymentProductsTable {
   id: Generated<number>
-  name?: string
+  name: string
   description?: string
-  key?: string
-  unit_price?: number
+  key: string
+  unit_price: number
   status?: string
   image?: string
   provider_id?: string
@@ -39,13 +39,13 @@ export type PaymentProductUpdate = Updateable<PaymentProductWrite>
 export interface PaymentProductModelType {
   // Properties
   readonly id: number
-  get name(): string | undefined
+  get name(): string
   set name(value: string)
   get description(): string | undefined
   set description(value: string)
-  get key(): string | undefined
+  get key(): string
   set key(value: string)
-  get unitPrice(): number | undefined
+  get unitPrice(): number
   set unitPrice(value: number)
   get status(): string | undefined
   set status(value: string)

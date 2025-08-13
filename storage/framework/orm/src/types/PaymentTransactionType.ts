@@ -5,10 +5,10 @@ import type { UserModelType } from './UserType'
 
 export interface PaymentTransactionsTable {
   id: Generated<number>
-  name?: string
+  name: string
   description?: string
-  amount?: number
-  type?: string
+  amount: number
+  type: string
   provider_id?: string
   uuid?: string
 }
@@ -39,13 +39,13 @@ export type PaymentTransactionUpdate = Updateable<PaymentTransactionWrite>
 export interface PaymentTransactionModelType {
   // Properties
   readonly id: number
-  get name(): string | undefined
+  get name(): string
   set name(value: string)
   get description(): string | undefined
   set description(value: string)
-  get amount(): number | undefined
+  get amount(): number
   set amount(value: number)
-  get type(): string | undefined
+  get type(): string
   set type(value: string)
   get providerId(): string | undefined
   set providerId(value: string)

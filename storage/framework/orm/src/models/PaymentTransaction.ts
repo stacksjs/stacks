@@ -162,7 +162,7 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
     return this.attributes.uuid
   }
 
-  get name(): string | undefined {
+  get name(): string {
     return this.attributes.name
   }
 
@@ -170,11 +170,11 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
     return this.attributes.description
   }
 
-  get amount(): number | undefined {
+  get amount(): number {
     return this.attributes.amount
   }
 
-  get type(): string | undefined {
+  get type(): string {
     return this.attributes.type
   }
 

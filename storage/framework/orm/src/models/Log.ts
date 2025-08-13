@@ -138,31 +138,31 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
     return this.attributes.id
   }
 
-  get timestamp(): number | undefined {
+  get timestamp(): number {
     return this.attributes.timestamp
   }
 
-  get type(): string | string[] | undefined {
+  get type(): string | string[] {
     return this.attributes.type
   }
 
-  get source(): string | string[] | undefined {
+  get source(): string | string[] {
     return this.attributes.source
   }
 
-  get message(): string | undefined {
+  get message(): string {
     return this.attributes.message
   }
 
-  get project(): string | undefined {
+  get project(): string {
     return this.attributes.project
   }
 
-  get stacktrace(): string | undefined {
+  get stacktrace(): string {
     return this.attributes.stacktrace
   }
 
-  get file(): string | undefined {
+  get file(): string {
     return this.attributes.file
   }
 

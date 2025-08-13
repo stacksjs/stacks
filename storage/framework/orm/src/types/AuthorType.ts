@@ -5,8 +5,8 @@ import type { UserModelType } from './UserType'
 
 export interface AuthorsTable {
   id: Generated<number>
-  name?: string
-  email?: string
+  name: string
+  email: string
   uuid?: string
   created_at?: string
   updated_at?: string
@@ -38,9 +38,9 @@ export type AuthorUpdate = Updateable<AuthorWrite>
 export interface AuthorModelType {
   // Properties
   readonly id: number
-  get name(): string | undefined
+  get name(): string
   set name(value: string)
-  get email(): string | undefined
+  get email(): string
   set email(value: string)
   get post(): PostModelType[] | []
   get user(): UserModelType | undefined

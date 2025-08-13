@@ -3,8 +3,8 @@ import type { Operator } from '@stacksjs/orm'
 
 export interface JobsTable {
   id: Generated<number>
-  queue?: string
-  payload?: string
+  queue: string
+  payload: string
   attempts?: number
   available_at?: number
   reserved_at?: Date | string
@@ -38,9 +38,9 @@ export type JobUpdate = Updateable<JobWrite>
 export interface JobModelType {
   // Properties
   readonly id: number
-  get queue(): string | undefined
+  get queue(): string
   set queue(value: string)
-  get payload(): string | undefined
+  get payload(): string
   set payload(value: string)
   get attempts(): number | undefined
   set attempts(value: number)
