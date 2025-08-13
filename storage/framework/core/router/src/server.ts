@@ -131,12 +131,12 @@ export async function serverResponse(req: Request, body: string): Promise<Respon
 
   if (!foundRoute) {
     // TODO: create a pretty 404 page
-    return new Response('<html><body><h1>Route not found!</h1<pre></pre></body></html>', {
+    return new Response('<html><body><h1>Route not found!</h1></body></html>', {
       status: 404,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': '*',
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/html',
       },
     })
   }
@@ -190,83 +190,115 @@ function extractDynamicSegments(routePattern: string, path: string): RouteParam 
 }
 
 async function execute(foundRoute: Route, req: Request, _options: Options) {
-  const foundCallback = await route.resolveCallback(foundRoute.callback)
+  try {
+    const foundCallback = await route.resolveCallback(foundRoute.callback)
 
-  const middlewarePayload = await executeMiddleware(foundRoute)
-  if (
-    middlewarePayload !== null
-    && typeof middlewarePayload === 'object'
-    && Object.keys(middlewarePayload).length > 0
-  ) {
-    const { status, message } = middlewarePayload
-    return new Response(`<html><body><h1>${message}</h1></body></html>`, {
+    if (!foundCallback) {
+      return new Response('<html><body><h1>Route callback not found!</h1></body></html>', {
+        status: 500,
+        headers: {
+          'Content-Type': 'text/html',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': '*',
+        },
+      })
+    }
+
+    const middlewarePayload = await executeMiddleware(foundRoute)
+    if (
+      middlewarePayload !== null
+      && typeof middlewarePayload === 'object'
+      && Object.keys(middlewarePayload).length > 0
+    ) {
+      const { status, message } = middlewarePayload
+      return new Response(`<html><body><h1>${message}</h1></body></html>`, {
+        headers: {
+          'Content-Type': 'text/html',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': '*',
+        },
+        status: status || 401,
+      })
+    }
+
+    if (foundRoute?.method !== req.method) {
+      return new Response('<html><body><h1>Method not allowed!</h1></body></html>', {
+        status: 405,
+        headers: {
+          'Content-Type': 'text/html',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': '*',
+        },
+      })
+    }
+
+    // foundCallback is now a ResponseData object from response.ts
+    const { status, headers, body } = foundCallback
+
+    // Return the response with the exact body from response.ts
+    return new Response(body, {
       headers: {
-        'Content-Type': 'application/json',
+        ...headers,
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': '*',
       },
-      status: status || 401,
+      status,
     })
-  }
-
-  if (foundRoute?.method !== req.method) {
-    return new Response('<html><body><h1>Method not allowed!</h1></body></html>', {
-      status: 405,
+  } catch (error: any) {
+    log.error(`Error executing route: ${error.message}`)
+    return new Response('<html><body><h1>Internal Server Error</h1></body></html>', {
+      status: 500,
       headers: {
+        'Content-Type': 'text/html',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': '*',
       },
     })
   }
-
-  // foundCallback is now a ResponseData object from response.ts
-  const { status, headers, body } = foundCallback
-
-  // Return the response with the exact body from response.ts
-  return new Response(body, {
-    headers: {
-      ...headers,
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': '*',
-    },
-    status,
-  })
 }
 
 async function applyToAllRequests(operation: 'addBodies' | 'addParam' | 'addHeaders' | 'addQuery', data: any): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+  try {
+    const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
-  // Process model files
-  for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default as Model
-    const modelName = getModelName(model, modelFile)
-    const requestPath = path.frameworkPath(`requests/${modelName}Request.ts`)
-    const requestImport = await import(requestPath)
-    const requestInstance = requestImport[`${camelCase(modelName)}Request`]
+    // Process model files
+    for (const modelFile of modelFiles) {
+      try {
+        const model = (await import(modelFile)).default as Model
+        const modelName = getModelName(model, modelFile)
+        const requestPath = path.frameworkPath(`requests/${modelName}Request.ts`)
+        const requestImport = await import(requestPath)
+        const requestInstance = requestImport[`${camelCase(modelName)}Request`]
 
-    if (requestInstance) {
-      requestInstance[operation](data)
-    }
-  }
-
-  // Process trait interfaces
-  for (const trait of traitInterfaces) {
-    const requestPath = path.frameworkPath(`requests/${trait.name}Request.ts`)
-    try {
-      const requestImport = await import(requestPath)
-      const requestInstance = requestImport[`${camelCase(trait.name)}Request`]
-
-      if (requestInstance) {
-        requestInstance[operation](data)
+        if (requestInstance) {
+          requestInstance[operation](data)
+        }
+      } catch (error) {
+        log.error(`Error processing model file ${modelFile}: ${error}`)
+        continue
       }
     }
-    catch (error) {
-      log.error(`Error importing trait interface: ${error}`)
-      continue
-    }
-  }
 
-  RequestParam[operation](data)
+    // Process trait interfaces
+    for (const trait of traitInterfaces) {
+      try {
+        const requestPath = path.frameworkPath(`requests/${trait.name}Request.ts`)
+        const requestImport = await import(requestPath)
+        const requestInstance = requestImport[`${camelCase(trait.name)}Request`]
+
+        if (requestInstance) {
+          requestInstance[operation](data)
+        }
+      } catch (error) {
+        log.error(`Error importing trait interface: ${error}`)
+        continue
+      }
+    }
+
+    RequestParam[operation](data)
+  } catch (error) {
+    log.error(`Error in applyToAllRequests: ${error}`)
+  }
 }
 
 async function addRouteQuery(url: URL): Promise<void> {
@@ -274,7 +306,14 @@ async function addRouteQuery(url: URL): Promise<void> {
 }
 
 async function addBody(params: any): Promise<void> {
-  await applyToAllRequests('addBodies', JSON.parse(params))
+  try {
+    const parsedParams = typeof params === 'string' ? JSON.parse(params) : params
+    await applyToAllRequests('addBodies', parsedParams)
+  } catch (error) {
+    log.error(`Error parsing request body: ${error}`)
+    // Continue with empty object if parsing fails
+    await applyToAllRequests('addBodies', {})
+  }
 }
 
 async function addRouteParam(param: RouteParam): Promise<void> {

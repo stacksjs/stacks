@@ -53,9 +53,9 @@ export class Router implements RouterInterface {
     callback: Route['callback'] | string,
     statusCode: StatusCode,
   ): this {
-    const name = uri.replace(/\//g, '.').replace(/:/g, '') // we can improve this
+    const name = uri.replace(/\//g, '.').replace(/\{/g, '').replace(/\}/g, '') // Updated for curly braces
     const pattern = new RegExp(
-      `^${uri.replace(/:[a-z]+/gi, (_match) => {
+      `^${uri.replace(/\{[a-z]+\}/gi, (_match) => {
         return '([a-zA-Z0-9-]+)'
       })}$`,
     )
