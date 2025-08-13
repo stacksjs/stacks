@@ -157,6 +157,21 @@ async function watchFolders() {
       log.success(`Hot reloaded Middleware: ${filename}`)
     }
   })
+
+  // Watch user models for ORM generation
+  watch(path.userModelsPath(), { recursive: true }, (event: string, filename: string | null) => {
+    if (filename === null)
+      return
+
+    log.info(`Detected ${event} in user models/${filename}`)
+    log.info('Generating ORM model files...')
+
+    runCommandSync('./buddy generate:model-files', {
+      cwd: process.cwd(), // Run at root directory
+    })
+
+    log.success(`Generated ORM model files for: ${filename}`)
+  })
 }
 
 // @ts-expect-error - somehow type is not recognized
