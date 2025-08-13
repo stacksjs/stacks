@@ -87,7 +87,7 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-shiki": "^0.9.0",
-    "unplugin-auto-import": "^19.3.0",
+    "unplugin-auto-import": "^20.0.0",
     "unplugin-vue-components": "^28.8.0",
     "unplugin-vue-markdown": "^29.1.0",
     "vite": "npm:rolldown-vite@latest",
