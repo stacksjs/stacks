@@ -13,10 +13,9 @@ export default {
 
   attributes: {
     connection: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.string().max(100),
+        rule: schema.string().required().max(100),
         message: {
           max: 'Connection must have a maximum of 100 characters',
           string: 'Connection must be a string',
@@ -26,10 +25,9 @@ export default {
     },
 
     queue: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
         message: {
           max: 'Queue must have a maximum of 255 characters',
         },
@@ -38,19 +36,17 @@ export default {
     },
 
     payload: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
       },
       factory: faker => faker.lorem.sentence(),
     },
 
     exception: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
       },
       factory: faker => faker.lorem.sentence(),
     },

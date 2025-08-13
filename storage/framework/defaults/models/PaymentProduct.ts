@@ -14,10 +14,9 @@ export default {
   },
   attributes: {
     name: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.string().max(512),
+        rule: schema.string().required().max(512),
         message: {
           string: 'type must be a string',
           required: 'type is required',
@@ -39,10 +38,9 @@ export default {
       factory: faker => faker.lorem.lines(3),
     },
     key: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
         message: {
           string: 'key must be a string',
           required: 'key is required',
@@ -54,7 +52,7 @@ export default {
     unitPrice: {
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.number().required(),
         message: {
           string: 'expires must be a string',
           required: 'expires is required',

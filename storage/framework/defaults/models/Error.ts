@@ -13,10 +13,9 @@ export default {
 
   attributes: {
     type: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
         message: {
           max: 'type must have a maximum of 255 characters',
         },
@@ -25,10 +24,9 @@ export default {
     },
 
     message: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
         message: {
           string: 'message must be a string',
         },
@@ -48,7 +46,6 @@ export default {
     },
 
     status: {
-      required: true,
       fillable: true,
       validation: {
         rule: schema.number(),

@@ -19,11 +19,10 @@ export default {
 
   attributes: {
     timestamp: {
-      required: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.number().required(),
         message: {
           date: 'Timestamp must be a valid date',
         },
@@ -32,11 +31,10 @@ export default {
     },
 
     type: {
-      required: true,
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.enum(['warning', 'error', 'info', 'success']),
+        rule: schema.enum(['warning', 'error', 'info', 'success']).required(),
         message: {
           enum: 'Type must be one of: warning, error, info, success',
         },
@@ -45,11 +43,10 @@ export default {
     },
 
     source: {
-      required: true,
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.enum(['file', 'cli', 'system']),
+        rule: schema.enum(['file', 'cli', 'system']).required(),
         message: {
           enum: 'Source must be one of: file, cli, system',
         },
@@ -58,11 +55,10 @@ export default {
     },
 
     message: {
-      required: true,
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string().min(1).max(1000),
+        rule: schema.string().required().min(1).max(1000),
         message: {
           min: 'Message must not be empty',
           max: 'Message must not exceed 1000 characters',
@@ -72,11 +68,10 @@ export default {
     },
 
     project: {
-      required: true,
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string().min(1).max(255),
+        rule: schema.string().min(1).required().max(255),
         message: {
           min: 'Project name must not be empty',
           max: 'Project name must not exceed 255 characters',
@@ -86,11 +81,10 @@ export default {
     },
 
     stacktrace: {
-      required: false,
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.string().max(5000),
+        rule: schema.string().required().max(5000),
         message: {
           max: 'Stacktrace must not exceed 5000 characters',
         },
@@ -99,11 +93,10 @@ export default {
     },
 
     file: {
-      required: false,
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
         message: {
           max: 'File path must not exceed 255 characters',
         },
