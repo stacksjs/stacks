@@ -44,7 +44,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@mdit-vue/plugin-component": "^2.1.4",
+    "@mdit-vue/plugin-component": "^3.0.2",
     "@mdit-vue/plugin-frontmatter": "^2.1.4",
     "@mdit-vue/types": "^2.1.4",
     "@rollup/pluginutils": "^5.2.0",
