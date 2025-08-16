@@ -45,6 +45,6 @@
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "node-fetch": "^3.3.2",
-    "socks": "^2.8.6"
+    "socks": "^2.8.7"
   }
 }
