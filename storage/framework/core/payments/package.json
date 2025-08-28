@@ -48,6 +48,6 @@
     "@stacksjs/utils": "workspace:*",
     "@stripe/stripe-js": "^7.6.1",
     "@vue-stripe/vue-stripe": "^4.5.0",
-    "stripe": "^17.7.0"
+    "stripe": "^18.5.0"
   }
 }
