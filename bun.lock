@@ -868,7 +868,7 @@
         "@vite-pwa/vitepress": "^1.0.0",
         "unocss": "^66.4.2",
         "unplugin-icons": "^22.2.0",
-        "unplugin-vue-components": "^28.8.0",
+        "unplugin-vue-components": "^29.0.0",
         "vite-plugin-pwa": "^1.0.3",
         "vitepress": "1.6.4",
       },
@@ -1312,7 +1312,7 @@
         "typescript": "^5.9.2",
         "unocss": "66.4.2",
         "unplugin-auto-import": "^19.3.0",
-        "unplugin-vue-components": "^28.8.0",
+        "unplugin-vue-components": "^29.0.0",
         "vite": "npm:rolldown-vite@latest",
         "vite-plugin-inspect": "^11.3.3",
         "vite-plugin-pwa": "^1.0.3",
@@ -1419,7 +1419,7 @@
         "markdown-it-link-attributes": "^4.0.1",
         "markdown-it-shiki": "^0.9.0",
         "unplugin-auto-import": "^19.3.0",
-        "unplugin-vue-components": "^28.8.0",
+        "unplugin-vue-components": "^29.0.0",
         "unplugin-vue-markdown": "^29.1.0",
         "vite": "npm:rolldown-vite@latest",
         "vite-plugin-full-reload": "^1.2.0",
@@ -1449,7 +1449,7 @@
         "markdown-it-link-attributes": "^4.0.1",
         "markdown-it-shiki": "^0.9.0",
         "unplugin-auto-import": "^19.3.0",
-        "unplugin-vue-components": "^28.8.0",
+        "unplugin-vue-components": "^29.0.0",
         "unplugin-vue-markdown": "^29.1.0",
         "vite": "npm:rolldown-vite@latest",
         "vite-plugin-full-reload": "^1.2.0",
@@ -1590,7 +1590,7 @@
         "shiki": "^3.12.0",
         "unocss": "66.4.2",
         "unplugin-auto-import": "^19.3.0",
-        "unplugin-vue-components": "^28.8.0",
+        "unplugin-vue-components": "^29.0.0",
         "unplugin-vue-markdown": "^29.1.0",
         "unplugin-vue-router": "^0.15.0",
         "vite": "npm:rolldown-vite@latest",
@@ -5316,7 +5316,7 @@
 
     "unplugin-utils": ["unplugin-utils@0.2.5", "", { "dependencies": { "pathe": "^2.0.3", "picomatch": "^4.0.3" } }, "sha512-gwXJnPRewT4rT7sBi/IvxKTjsms7jX7QIDLOClApuZwR49SXbrB1z2NLUZ+vDHyqCj/n58OzRRqaW+B8OZi8vg=="],
 
-    "unplugin-vue-components": ["unplugin-vue-components@28.8.0", "", { "dependencies": { "chokidar": "^3.6.0", "debug": "^4.4.1", "local-pkg": "^1.1.1", "magic-string": "^0.30.17", "mlly": "^1.7.4", "tinyglobby": "^0.2.14", "unplugin": "^2.3.5", "unplugin-utils": "^0.2.4" }, "peerDependencies": { "@babel/parser": "^7.15.8", "@nuxt/kit": "^3.2.2 || ^4.0.0", "vue": "2 || 3" }, "optionalPeers": ["@babel/parser", "@nuxt/kit"] }, "sha512-2Q6ZongpoQzuXDK0ZsVzMoshH0MWZQ1pzVL538G7oIDKRTVzHjppBDS8aB99SADGHN3lpGU7frraCG6yWNoL5Q=="],
+    "unplugin-vue-components": ["unplugin-vue-components@29.0.0", "", { "dependencies": { "chokidar": "^3.6.0", "debug": "^4.4.1", "local-pkg": "^1.1.1", "magic-string": "^0.30.17", "mlly": "^1.7.4", "tinyglobby": "^0.2.14", "unplugin": "^2.3.5", "unplugin-utils": "^0.2.4" }, "peerDependencies": { "@babel/parser": "^7.15.8", "@nuxt/kit": "^3.2.2 || ^4.0.0", "vue": "2 || 3" }, "optionalPeers": ["@babel/parser", "@nuxt/kit"] }, "sha512-M2DX44g4/jvBkB0V6uwqTbkTd5DMRHpeGoi/cIKwGG4HPuNxLbe8zoTStB2n12hoDiWc9I1PIRQruRWExNXHlQ=="],
 
     "unplugin-vue-markdown": ["unplugin-vue-markdown@29.1.0", "", { "dependencies": { "@mdit-vue/plugin-component": "^2.1.4", "@mdit-vue/plugin-frontmatter": "^2.1.4", "@mdit-vue/types": "^2.1.4", "@types/markdown-it": "^14.1.2", "markdown-it": "^14.1.0", "markdown-it-async": "^2.2.0", "unplugin": "^2.3.5", "unplugin-utils": "^0.2.4" }, "peerDependencies": { "vite": "^2.0.0 || ^3.0.0-0 || ^4.0.0-0 || ^5.0.0-0 || ^6.0.0 || ^7.0.0" } }, "sha512-BvDFrhsiXzVvzfq1y68jtZwHg1NYJBteSXmUK4zMdX1HT2QtKw8yimjUbDwuI1K9TW/1/L6QYiRQSl1OkHcxWg=="],
 
