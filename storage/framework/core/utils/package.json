@@ -74,7 +74,7 @@
     "macroable": "^7.0.2",
     "magic-regexp": "^0.10.0",
     "markdown-table": "^3.0.4",
-    "perfect-debounce": "^1.0.0",
+    "perfect-debounce": "^2.0.0",
     "pretty-bytes": "^7.0.0",
     "resize-observer-polyfill": "^1.5.1",
     "vue-starport": "^0.4.0",
