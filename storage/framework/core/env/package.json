@@ -34,13 +34,13 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.48.3"
+    "@dotenvx/dotenvx": "^1.49.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "fs-extra": "^11.3.0",
+    "fs-extra": "^11.3.1",
     "std-env": "^3.9.0"
   }
 }
