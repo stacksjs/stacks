@@ -35,10 +35,10 @@
     "highlight.js": "^11.11.1"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.52.9",
+    "@microsoft/api-extractor": "^7.52.11",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
-    "@vue/tsconfig": "^0.7.0",
-    "unplugin-icons": "^22.1.0"
+    "@vue/tsconfig": "^0.8.1",
+    "unplugin-icons": "^22.2.0"
   }
 }

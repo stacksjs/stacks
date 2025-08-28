@@ -17,7 +17,7 @@
     "@stacksjs/server": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/vite-config": "workspace:*",
-    "vitepress": "1.6.3"
+    "vitepress": "1.6.4"
   },
   "overrides": {
     "vite": "npm:rolldown-vite@latest"

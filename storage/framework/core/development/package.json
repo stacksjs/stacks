@@ -57,7 +57,7 @@
     "@stacksjs/tunnel": "^0.70.23",
     "@stacksjs/types": "^0.70.23",
     "bun-plugin-dtsx": "^0.21.12",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.2"
   },
   "devDependencies": {
     "@total-typescript/ts-reset": "^0.6.1"

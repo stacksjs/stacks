@@ -98,9 +98,9 @@
     "unplugin-vue-markdown": "^29.1.0",
     "vite": "npm:rolldown-vite@latest",
     "vite-plugin-full-reload": "^1.2.0",
-    "vite-plugin-inspect": "^11.3.2",
-    "vite-plugin-pwa": "^1.0.2",
-    "vite-ssg": "^28.0.0",
+    "vite-plugin-inspect": "^11.3.3",
+    "vite-plugin-pwa": "^1.0.3",
+    "vite-ssg": "^28.1.0",
     "vite-ssg-sitemap": "^0.10.0"
   },
   "overrides": {

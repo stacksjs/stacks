@@ -54,11 +54,11 @@
     "@stacksjs/build": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "@tauri-apps/api": "^2.7.0",
-    "@tauri-apps/cli": "^2.7.1",
+    "@tauri-apps/api": "^2.8.0",
+    "@tauri-apps/cli": "^2.8.3",
     "@types/d3": "^7.4.3",
     "d3": "^7.9.0",
     "unified-network": "^0.6.4",
-    "vue": "^3.5.18"
+    "vue": "^3.5.20"
   }
 }
