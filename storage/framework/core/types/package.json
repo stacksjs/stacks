@@ -46,7 +46,7 @@
   "devDependencies": {
     "@mdit-vue/plugin-component": "^2.1.4",
     "@mdit-vue/plugin-frontmatter": "^2.1.4",
-    "@mdit-vue/types": "^2.1.4",
+    "@mdit-vue/types": "^3.0.2",
     "@rollup/pluginutils": "^5.2.0",
     "@stacksjs/validation": "workspace:*",
     "@types/aws4": "^1.11.6",
