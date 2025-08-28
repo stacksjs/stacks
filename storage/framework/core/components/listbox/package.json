@@ -52,10 +52,10 @@
   },
   "devDependencies": {
     "@iconify-json/hugeicons": "^1.2.6",
-    "@microsoft/api-extractor": "^7.52.9",
+    "@microsoft/api-extractor": "^7.52.11",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
-    "@vue/tsconfig": "^0.7.0",
+    "@vue/tsconfig": "^0.8.1",
     "unocss": "66.3.3",
     "unplugin-icons": "^22.1.0"
   },

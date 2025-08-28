@@ -59,11 +59,11 @@
     "@types/js-yaml": "^4.0.9",
     "@vueuse/core": "^13.6.0",
     "@vueuse/head": "^2.0.0",
-    "@vueuse/math": "^13.6.0",
-    "@vueuse/shared": "^13.6.0",
+    "@vueuse/math": "^13.8.0",
+    "@vueuse/shared": "^13.8.0",
     "ace-builds": "^1.43.2",
     "bun-plugin-dotenvx": "^0.6.4",
-    "bun-plugin-yml": "^0.3.1",
+    "bun-plugin-yml": "^0.58.73",
     "defu": "^6.1.4",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.1",
@@ -75,10 +75,10 @@
     "magic-regexp": "^0.10.0",
     "markdown-table": "^3.0.4",
     "perfect-debounce": "^1.0.0",
-    "pretty-bytes": "^7.0.0",
+    "pretty-bytes": "^7.0.1",
     "resize-observer-polyfill": "^1.5.1",
     "vue-starport": "^0.4.0",
     "vue3-ace-editor": "^2.2.4",
-    "yaml": "^2.8.0"
+    "yaml": "^2.8.1"
   }
 }
