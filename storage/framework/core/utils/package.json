@@ -59,7 +59,7 @@
     "@types/js-yaml": "^4.0.9",
     "@vueuse/core": "^13.8.0",
     "@vueuse/head": "^2.0.0",
-    "@vueuse/math": "^13.8.0",
+    "@vueuse/math": "^14.0.0-alpha.0",
     "@vueuse/shared": "^13.8.0",
     "ace-builds": "^1.43.2",
     "bun-plugin-dotenvx": "^0.6.4",
