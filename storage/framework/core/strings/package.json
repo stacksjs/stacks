@@ -56,7 +56,7 @@
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/validator": "^13.15.2",
+    "@types/validator": "^13.15.3",
     "macroable": "^7.0.2",
     "validator": "^13.15.15"
   }

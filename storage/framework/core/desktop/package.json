@@ -55,7 +55,7 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/server": "workspace:*",
     "@tauri-apps/api": "^2.8.0",
-    "@tauri-apps/cli": "^2.8.3",
+    "@tauri-apps/cli": "^2.8.4",
     "@types/d3": "^7.4.3",
     "d3": "^7.9.0",
     "unified-network": "^0.6.4",
