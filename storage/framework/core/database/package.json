@@ -44,11 +44,11 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.876.0",
-    "@aws-sdk/lib-dynamodb": "^3.876.0",
+    "@aws-sdk/lib-dynamodb": "^3.883.0",
     "dynamodb-toolbox": "^2.7.1"
   },
   "optionalDependencies": {
-    "mysql2": "^3.14.3"
+    "mysql2": "^3.14.4"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
