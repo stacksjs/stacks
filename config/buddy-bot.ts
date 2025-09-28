@@ -1,6 +1,6 @@
 import type { BuddyBotConfig } from 'buddy-bot'
 
-const config: BuddyBotConfig = {
+export default {
   repository: {
     owner: 'stacksjs',
     name: 'stacks',
@@ -34,6 +34,4 @@ const config: BuddyBotConfig = {
     ],
   },
   verbose: false,
-}
-
-export default config
+} satisfies BuddyBotConfig

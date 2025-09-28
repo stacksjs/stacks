@@ -10,13 +10,10 @@
 
 dependencies:
   aws/cli: ^2.22.26
-  bun: ^1.2.20
+  bun: ^1.2.22
   gh: ^2.76.2
   zip: ^3.0
   unzip: ^6.0
   sqlite3: ^3.50.4
-  node: ^22.18.0 # only temporarily needed until bun & vue-tsc issue is resolved
   # mailpit: ^1.21.8
   # redis: ^7.4.1
-  # rust: ^1.74.1
-  # openjdk.org: ^21.0.3.6
