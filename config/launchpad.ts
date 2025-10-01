@@ -3,9 +3,9 @@ import type { LaunchpadConfig } from '@stacksjs/launchpad'
 export const config: LaunchpadConfig = {
   // Object format with version constraints
   dependencies: {
-    'bun.com': '^1.2.19',        // Bun runtime
-    'redisio': '^8.0.0',         // Redis server
-    'postgresqlorg': '^17.0.0',  // PostgreSQL database
+    'bun.com': '^1.2.21',
+    'redisio': '^8.0.0',
+    'sqlite': '^3.43.0',
   },
 
   // Or as an array (uses latest versions)
@@ -17,15 +17,18 @@ export const config: LaunchpadConfig = {
   // Install globally (optional)
   global: false,
 
-  // Enable services to auto-start Redis and PostgreSQL
+  // Enable services to auto-start Redis and SQLite
   services: {
     enabled: true,
     autoStart: true,
     database: {
-      username: 'postgres',
-      password: 'password',
+      connection: 'sqlite',
+      name: 'stacks',
+      username: 'root',
+      password: '',
       authMethod: 'trust',
     },
+    postDatabaseSetup: './buddy migrate:fresh --seed',
   },
 
   verbose: true,

@@ -14,12 +14,12 @@ const dirs = await glob([p.resolve('./', '*'), `!${componentsDir}`], {
 dirs.sort((a, b) => a.localeCompare(b))
 
 // Get component directories directly
-const components = await glob('./components/*', {
-  onlyDirectories: true,
-  absolute: true,
-})
-// console.log('components', components)
-dirs.push(...components)
+// const components = await glob('./components/*', {
+//   onlyDirectories: true,
+//   absolute: true,
+// })
+// // console.log('components', components)
+// dirs.push(...components)
 
 const startTime = Date.now()
 

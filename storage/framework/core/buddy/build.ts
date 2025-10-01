@@ -17,7 +17,6 @@ const result = await Bun.build({
   target: 'bun',
   // sourcemap: 'linked',
   minify: true,
-  splitting: true,
 
   external: [
     '@stacksjs/ai',
@@ -34,7 +33,6 @@ const result = await Bun.build({
     '@stacksjs/path',
     '@stacksjs/storage',
     '@stacksjs/types',
-    'bun',
   ],
 
   plugins: [dts({ root: './src', outdir: './dist' })],
