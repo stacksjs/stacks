@@ -3,9 +3,12 @@ import type { LaunchpadConfig } from '@stacksjs/launchpad'
 export const config: LaunchpadConfig = {
   // Object format with version constraints
   dependencies: {
-    'bun.com': '^1.2.21',
-    'redisio': '^8.0.0',
+    'bun': '^1.2.21',
+    // 'redis': '^8.2.1',
     'sqlite': '^3.43.0',
+    'aws/cli': '^2.22.26',
+    'zip': '^3.0.0',
+    'unzip': '^6.0.0',
   },
 
   // Or as an array (uses latest versions)
