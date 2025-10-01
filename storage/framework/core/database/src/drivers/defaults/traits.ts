@@ -136,6 +136,8 @@ export async function createTaggableTable(): Promise<void> {
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 
+  // Add small delay to ensure different timestamp for taggables migration
+  await new Promise(resolve => setTimeout(resolve, 2))
   await createTaggablesTable()
 }
 
@@ -189,6 +191,8 @@ export async function createPostgresTagsTable(): Promise<void> {
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 
+  // Add small delay to ensure different timestamp for taggables migration
+  await new Promise(resolve => setTimeout(resolve, 2))
   await createPostgresTaggablesTable()
 }
 
