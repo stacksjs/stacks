@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'method', 'zone', 'weightFrom', 'weightTo', 'rate'],
-      searchable: ['method', 'zone'],
-      sortable: ['method', 'zone', 'weightFrom', 'weightTo', 'rate', 'createdAt', 'updatedAt'],
-      filterable: ['method', 'zone'],
+      displayable: ['id', 'shipping_method_id', 'weight_from', 'weight_to', 'rate'],
+      searchable: ['shipping_method_id'],
+      sortable: ['shipping_method_id', 'weight_from', 'weight_to', 'rate', 'created_at', 'updated_at'],
+      filterable: ['shipping_method_id'],
     },
 
     useSeeder: {

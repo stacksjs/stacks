@@ -8,28 +8,31 @@ import { Pool } from 'pg'
 
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
-let appEnv = 'local'
-let dbDriver = 'postgres'
+// Read from environment variables first
+const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+
+let appEnv = envVars.APP_ENV || 'local'
+let dbDriver = envVars.DB_CONNECTION || 'sqlite'
 let dbConfig = {
   connections: {
     sqlite: {
-      database: 'database/stacks.sqlite',
+      database: 'database/stacks.sqlite', // SQLite uses file path, not env DB_DATABASE
       prefix: '',
     },
     mysql: {
-      name: 'stacks',
-      host: '127.0.0.1',
-      username: 'root',
-      password: '',
-      port: 3306,
+      name: envVars.DB_DATABASE || 'stacks',
+      host: envVars.DB_HOST || '127.0.0.1',
+      username: envVars.DB_USERNAME || 'root',
+      password: envVars.DB_PASSWORD || '',
+      port: Number(envVars.DB_PORT) || 3306,
       prefix: '',
     },
     postgres: {
-      name: 'stacks',
-      host: '127.0.0.1',
-      username: 'glennmichaeltorregosa',
-      password: '',
-      port: 5432,
+      name: envVars.DB_DATABASE || 'stacks',
+      host: envVars.DB_HOST || '127.0.0.1',
+      username: envVars.DB_USERNAME || '',
+      password: envVars.DB_PASSWORD || '',
+      port: Number(envVars.DB_PORT) || 5432,
       prefix: '',
     },
   },

@@ -487,11 +487,8 @@ export async function createCommentablesPivotTable(): Promise<void> {
   migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
   migrationContent += `    .execute()\n\n`
 
-  // Add foreign key constraint to comments table
-  migrationContent += `  await db.schema\n`
-  migrationContent += `    .alterTable('commentables')\n`
-  migrationContent += `    .addForeignKeyConstraint('commentables_comment_id_foreign', ['comment_id'], 'comments', ['id'], (cb) => cb.onDelete('cascade'))\n`
-  migrationContent += `    .execute()\n\n`
+  // SQLite doesn't support adding foreign key constraints via ALTER TABLE
+  // Foreign keys can only be added during table creation in SQLite
 
   migrationContent += `  await db.schema\n`
   migrationContent += `    .createIndex('idx_commentables_comment')\n`
@@ -597,11 +594,8 @@ export async function createTaggablesTable(): Promise<void> {
   migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
   migrationContent += `    .execute()\n\n`
 
-  // Add foreign key constraint to tags table
-  migrationContent += `  await db.schema\n`
-  migrationContent += `    .alterTable('taggables')\n`
-  migrationContent += `    .addForeignKeyConstraint('taggables_tag_id_foreign', ['tag_id'], 'tags', ['id'], (cb) => cb.onDelete('cascade'))\n`
-  migrationContent += `    .execute()\n\n`
+  // SQLite doesn't support adding foreign key constraints via ALTER TABLE
+  // Foreign keys can only be added during table creation in SQLite
 
   migrationContent += `  await db.schema\n`
   migrationContent += `    .createIndex('idx_taggables_tag')\n`

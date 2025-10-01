@@ -18,10 +18,9 @@ export default {
   },
   attributes: {
     type: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.string().max(512),
+        rule: schema.string().required().max(512),
         message: {
           string: 'type must be a string',
           required: 'type is required',
@@ -32,10 +31,9 @@ export default {
     },
 
     lastFour: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.number().required(),
         message: {
           number: 'last_four must be a number',
           required: 'last_four is required',
@@ -45,10 +43,9 @@ export default {
     },
 
     brand: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.string().max(50),
+        rule: schema.string().required().max(50),
         message: {
           number: 'brand must be a number',
           required: 'brand is required',
@@ -58,10 +55,9 @@ export default {
     },
 
     expMonth: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.number().required(),
         message: {
           string: 'exp_month must be a number',
           required: 'exp_month is required',
@@ -71,10 +67,9 @@ export default {
     },
 
     expYear: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.number().required(),
         message: {
           string: 'exp_year must be a number',
           required: 'exp_year is required',

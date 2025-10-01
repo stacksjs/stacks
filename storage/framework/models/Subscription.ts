@@ -12,10 +12,9 @@ export default {
   },
   attributes: {
     type: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.string().max(512),
+        rule: schema.string().required().max(512),
         message: {
           string: 'type must be a string',
           required: 'type is required',
@@ -39,11 +38,10 @@ export default {
     },
 
     providerId: {
-      required: true,
       unique: true,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string().required().max(255),
         message: {
           string: 'provider_id must be a string',
           required: 'provider_id is required',
@@ -54,10 +52,9 @@ export default {
     },
 
     providerStatus: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().required(),
         message: {
           string: 'provider_status must be a string',
           required: 'provider_status is required',
@@ -68,7 +65,7 @@ export default {
     unitPrice: {
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.number().required(),
         message: {
           string: 'unit_price must be a number',
           required: 'unit_price is required',
@@ -78,10 +75,9 @@ export default {
     },
 
     providerType: {
-      required: true,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().max(255).required(),
         message: {
           string: 'provider_type must be a string',
           required: 'provider_type is required',

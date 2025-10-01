@@ -31,7 +31,7 @@ export const config: LaunchpadConfig = {
       password: '',
       authMethod: 'trust',
     },
-    postDatabaseSetup: './buddy migrate:fresh --seed',
+    postDatabaseSetup: ['./buddy migrate', './buddy seed'],
   },
 
   verbose: true,

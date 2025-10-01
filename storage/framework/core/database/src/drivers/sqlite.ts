@@ -121,39 +121,10 @@ export async function generateSqliteMigration(modelPath: string): Promise<void> 
 }
 
 export async function createSqliteForeignKeyMigrations(modelPath: string): Promise<void> {
-  const model = (await import(modelPath)).default as Model
-  const modelName = getModelName(model, modelPath)
-  const tableName = getTableName(model, modelPath)
-  const otherModelRelations = await fetchOtherModelRelations(modelName)
-
-  const foreignKeyRelations = otherModelRelations.filter(relation => relation.foreignKey)
-
-  if (!foreignKeyRelations.length) {
-    return
-  }
-
-  let migrationContent = `import type { Database } from '@stacksjs/database'\n`
-  migrationContent += `import { sql } from '@stacksjs/database'\n\n`
-  migrationContent += `export async function up(db: Database<any>) {\n`
-  migrationContent += `  await db.schema\n`
-  migrationContent += `    .alterTable('${tableName}')\n`
-
-  for (const modelRelation of foreignKeyRelations) {
-    migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
-      col.references('${modelRelation.relationTable}.id').onDelete('cascade')
-    ) \n`
-  }
-
-  migrationContent += `    .execute()\n`
-  migrationContent += `}\n`
-
-  const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-add-foreign-keys-to-${tableName}-table.ts`
-  const migrationFilePath = path.userMigrationsPath(migrationFileName)
-
-  Bun.write(migrationFilePath, migrationContent)
-
-  log.success(`Created foreign key migration: ${italic(migrationFileName)}`)
+  // SQLite doesn't support adding foreign key constraints via ALTER TABLE
+  // Foreign keys are already added during table creation in createTableMigration()
+  // So we skip creating separate foreign key migrations for SQLite
+  return
 }
 
 export async function copyModelFiles(modelPath: string): Promise<void> {
