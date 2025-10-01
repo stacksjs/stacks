@@ -40,7 +40,7 @@
     "shiki": "^3.12.2",
     "unocss": "66.5.0",
     "unplugin-auto-import": "^19.3.0",
-    "unplugin-vue-components": "^28.8.0",
+    "unplugin-vue-components": "^29.1.0",
     "unplugin-vue-markdown": "^29.1.0",
     "unplugin-vue-router": "^0.15.0",
     "vite": "npm:rolldown-vite@latest",
