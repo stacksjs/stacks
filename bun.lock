@@ -1292,7 +1292,7 @@
       "devDependencies": {
         "@mdit-vue/plugin-component": "^2.1.4",
         "@mdit-vue/plugin-frontmatter": "^2.1.4",
-        "@mdit-vue/types": "^2.1.4",
+        "@mdit-vue/types": "^3.0.2",
         "@rollup/pluginutils": "^5.3.0",
         "@stacksjs/validation": "workspace:*",
         "@types/aws4": "^1.11.6",
@@ -2286,7 +2286,7 @@
 
     "@mdit-vue/plugin-frontmatter": ["@mdit-vue/plugin-frontmatter@2.1.4", "", { "dependencies": { "@mdit-vue/types": "2.1.4", "@types/markdown-it": "^14.1.2", "gray-matter": "^4.0.3", "markdown-it": "^14.1.0" } }, "sha512-mOlavV176njnozIf0UZGFYymmQ2LK5S1rjrbJ1uGz4Df59tu0DQntdE7YZXqmJJA9MiSx7ViCTUQCNPKg7R8Ow=="],
 
-    "@mdit-vue/types": ["@mdit-vue/types@2.1.4", "", {}, "sha512-QiGNZslz+zXUs2X8D11UQhB4KAMZ0DZghvYxa7+1B+VMLcDtz//XHpWbcuexjzE3kBXSxIUTPH3eSQCa0puZHA=="],
+    "@mdit-vue/types": ["@mdit-vue/types@3.0.2", "", {}, "sha512-00aAZ0F0NLik6I6Yba2emGbHLxv+QYrPH00qQ5dFKXlAo1Ll2RHDXwY7nN2WAfrx2pP+WrvSRFTGFCNGdzBDHw=="],
 
     "@microsoft/api-extractor": ["@microsoft/api-extractor@7.52.11", "", { "dependencies": { "@microsoft/api-extractor-model": "7.30.7", "@microsoft/tsdoc": "~0.15.1", "@microsoft/tsdoc-config": "~0.17.1", "@rushstack/node-core-library": "5.14.0", "@rushstack/rig-package": "0.5.3", "@rushstack/terminal": "0.15.4", "@rushstack/ts-command-line": "5.0.2", "lodash": "~4.17.15", "minimatch": "10.0.3", "resolve": "~1.22.1", "semver": "~7.5.4", "source-map": "~0.6.1", "typescript": "5.8.2" }, "bin": { "api-extractor": "bin/api-extractor" } }, "sha512-IKQ7bHg6f/Io3dQds6r9QPYk4q0OlR9A4nFDtNhUt3UUIhyitbxAqRN1CLjUVtk6IBk3xzyCMOdwwtIXQ7AlGg=="],
 
@@ -6812,6 +6812,8 @@
 
     "@isaacs/fs-minipass/minipass": ["minipass@7.1.2", "", {}, "sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw=="],
 
+    "@mdit-vue/plugin-frontmatter/@mdit-vue/types": ["@mdit-vue/types@2.1.4", "", {}, "sha512-QiGNZslz+zXUs2X8D11UQhB4KAMZ0DZghvYxa7+1B+VMLcDtz//XHpWbcuexjzE3kBXSxIUTPH3eSQCa0puZHA=="],
+
     "@microsoft/api-extractor/typescript": ["typescript@5.8.2", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-aJn6wq13/afZp/jT9QZmwEjDqqvSGp1VT5GVg+f/t6/oVyrgXM6BY1h9BRh/O5p3PlUPAe+WuiEZOmb/49RqoQ=="],
 
     "@napi-rs/wasm-runtime/@emnapi/runtime": ["@emnapi/runtime@1.5.0", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-97/BJ3iXHww3djw6hYIfErCZFee7qCtrneuLa20UXFCOTCfBM2cvQHjWJ2EG0s0MtdNwInarqCTz35i4wWXHsQ=="],
@@ -7343,6 +7345,8 @@
     "unplugin-vue-components/magic-string": ["magic-string@0.30.17", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.0" } }, "sha512-sNPKHvyjVf7gyjwS4xGTaW/mCnF8wnjtifKBEhxfZ7E/S8tQ0rssrwGNn6q8JH/ohItJfSQp9mBtQYuTlH5QnA=="],
 
     "unplugin-vue-components/tinyglobby": ["tinyglobby@0.2.14", "", { "dependencies": { "fdir": "^6.4.4", "picomatch": "^4.0.2" } }, "sha512-tX5e7OM1HnYr2+a2C/4V0htOcSQcoSTH9KgJnVvNm5zm/cyEWKJ7j7YutsH9CxMdtOkkLFy2AHrMci9IM8IPZQ=="],
+
+    "unplugin-vue-markdown/@mdit-vue/types": ["@mdit-vue/types@2.1.4", "", {}, "sha512-QiGNZslz+zXUs2X8D11UQhB4KAMZ0DZghvYxa7+1B+VMLcDtz//XHpWbcuexjzE3kBXSxIUTPH3eSQCa0puZHA=="],
 
     "unplugin-vue-router/chokidar": ["chokidar@4.0.3", "", { "dependencies": { "readdirp": "^4.0.1" } }, "sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA=="],
 
