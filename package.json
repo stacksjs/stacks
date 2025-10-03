@@ -77,8 +77,8 @@
     "storage/framework/server"
   ],
   "devDependencies": {
-    "buddy-bot": "0.9.4",
-    "typescript": "5.9.2"
+    "buddy-bot": "0.9.7",
+    "typescript": "5.9.3"
   },
   "overrides": {
     "unconfig": "0.3.10"
