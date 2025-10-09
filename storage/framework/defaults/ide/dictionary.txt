@@ -174,7 +174,6 @@ kleur
 kohler
 kolorist
 kstenerud
-kysely
 laravel
 latexmk
 leex

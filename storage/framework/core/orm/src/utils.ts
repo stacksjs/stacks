@@ -1272,83 +1272,6 @@ export function generateTraitBasedTables(): string {
   return text
 }
 
-export async function generateKyselyTypes(): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('**/*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
-
-  let text = ``
-
-  for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default as Model
-    const tableName = getTableName(model, modelFile)
-    const modelName = getModelName(model, modelFile)
-    const words = tableName.split('_')
-    const pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}`
-
-    text += `import type { ${pivotFormatted}Table } from '../src/types/${modelName}Type'\n`
-  }
-
-  text += `import type { Generated } from 'kysely'\n\n`
-
-  let pivotFormatted = ''
-  for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default as Model
-    const modelName = getModelName(model, modelFile)
-    const pivotTables = await getPivotTables(model, modelName)
-
-    for (const pivotTable of pivotTables) {
-      const words = pivotTable.table.split('_')
-      pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
-
-      text += `export interface ${pivotFormatted} {
-        id: Generated<number>
-        ${pivotTable.firstForeignKey}: number
-        ${pivotTable.secondForeignKey}: number
-      }\n\n`
-    }
-  }
-
-  text += generateTraitTableInterfaces()
-
-  text += '\nexport interface Database {\n'
-
-  const pushedTables: string[] = []
-
-  for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default as Model
-    const modelName = getModelName(model, modelFile)
-    const tableName = getTableName(model, modelFile)
-    const pivotTables = await getPivotTables(model, modelName)
-
-    for (const pivotTable of pivotTables) {
-      if (pushedTables.includes(pivotTable.table))
-        continue
-
-      text += `  ${pivotTable.table}: ${pivotFormatted}\n`
-      pushedTables.push(pivotTable.table)
-    }
-
-    const words = tableName.split('_')
-    const formattedTableName = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
-
-    if (!pushedTables.includes(tableName)) {
-      text += `  ${tableName}: ${formattedTableName}\n`
-      pushedTables.push(tableName)
-    }
-  }
-
-  // Add trait-based tables
-  text += generateTraitBasedTables()
-  text += '}\n'
-
-  const file = Bun.file(path.frameworkPath('orm/src/types.ts'))
-
-  const writer = file.writer()
-
-  writer.write(text)
-
-  await writer.end()
-}
-
 export function mapEntity(attribute: ModelElement): string | undefined {
   const entity = attribute.fieldArray?.entity
 
@@ -1503,7 +1426,6 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     }
 
     log.info('Generating Query Builder types...')
-    await generateKyselyTypes()
     log.success('Generated Query Builder types')
 
     log.info('Writing Model Orm Imports...')
