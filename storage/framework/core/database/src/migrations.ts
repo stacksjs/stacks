@@ -6,3 +6,5 @@ export function refreshDatabase(): void {
 
     resetDatabase(modelsPath, 'postgres')
 }
+
+refreshDatabase()

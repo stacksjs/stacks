@@ -1,14 +1,14 @@
-import { log } from '@stacksjs/logging'
-import { Table } from './table'
+// import { log } from '@stacksjs/logging'
+// import { Table } from './table'
 
-export const Schema = {
-  async createTable(tableName: string, callback: (table: Table) => void): Promise<void> {
-    const table = new Table()
+// export const Schema = {
+//   async createTable(tableName: string, callback: (table: Table) => void): Promise<void> {
+//     const table = new Table()
 
-    callback(table)
+//     callback(table)
 
-    table.execute() // Simulate the execution of the table creation
+//     table.execute() // Simulate the execution of the table creation
 
-    log.success(`Table "${tableName}" created.`)
-  },
-}
+//     log.success(`Table "${tableName}" created.`)
+//   },
+// }
