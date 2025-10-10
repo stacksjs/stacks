@@ -37,5 +37,10 @@
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@stacksjs/utils": "workspace:*"
+  },
+  "dependencies": {
+    "@stripe/stripe-js": "^8.0.0",
+    "@vueuse/core": "^13.9.0",
+    "vue": "^3.5.22"
   }
 }
