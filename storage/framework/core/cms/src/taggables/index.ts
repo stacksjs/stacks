@@ -1,17 +1,17 @@
-export {
-  bulkDestroy,
-  destroy,
-} from './destroy'
+// export {
+//   bulkDestroy,
+//   destroy,
+// } from './destroy'
 
-export {
-  fetchTagById,
-  fetchTags,
-} from './fetch'
+// export {
+//   fetchTagById,
+//   fetchTags,
+// } from './fetch'
 
-export {
-  store,
-} from './store'
+// export {
+//   store,
+// } from './store'
 
-export {
-  update,
-} from './update'
+// export {
+//   update,
+// } from './update'

@@ -46,7 +46,8 @@
     "@aws-sdk/client-dynamodb": "^3.876.0",
     "@aws-sdk/lib-dynamodb": "^3.883.0",
     "bun-query-builder": "^0.1.5",
-    "dynamodb-toolbox": "^2.7.1"
+    "dynamodb-toolbox": "^2.7.1",
+    "tinyglobby": "^0.2.15"
   },
   "optionalDependencies": {
     "mysql2": "^3.14.4"

@@ -1,6 +1,6 @@
-import type { UserModelType } from '@stacksjs/orm'
+// import type { UserModelType } from '@stacksjs/orm'
 import type { AuthToken, CustomAttributes, HttpMethod, NumericField, RequestData, RequestInstance, RouteParam, RouteParams } from '@stacksjs/types'
-import { getCurrentUser } from '@stacksjs/auth'
+// import { getCurrentUser } from '@stacksjs/auth'
 import { customValidate } from '@stacksjs/validation'
 import { UploadedFile } from './uploaded-file'
 
@@ -306,7 +306,9 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   }
 
   public async user(): Promise<UserModelType | undefined> {
-    return await getCurrentUser()
+    // return await getCurrentUser()
+
+    return undefined
   }
 
   public file(key: string): UploadedFile | null {

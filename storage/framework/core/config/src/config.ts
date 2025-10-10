@@ -1,5 +1,4 @@
 import type { StacksOptions } from '@stacksjs/types'
-import { initializeDbConfig } from '../../database/src/utils'
 import { defaults } from './defaults'
 import { overrides } from './overrides'
 
@@ -8,9 +7,6 @@ export const config: StacksOptions = {
   ...defaults,
   ...overrides,
 }
-
-// Initialize the database config to avoid circular dependencies
-initializeDbConfig(config)
 
 export function getConfig(): StacksOptions {
   return config

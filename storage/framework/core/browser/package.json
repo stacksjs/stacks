@@ -41,6 +41,12 @@
   "dependencies": {
     "@stripe/stripe-js": "^8.0.0",
     "@vueuse/core": "^13.9.0",
+    "@vueuse/head": "^2.0.0",
+    "@vueuse/math": "^13.9.0",
+    "magic-regexp": "^0.10.0",
+    "ofetch": "^1.4.1",
+    "perfect-debounce": "^2.0.0",
+    "pretty-bytes": "^7.1.0",
     "vue": "^3.5.22"
   }
 }
