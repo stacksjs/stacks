@@ -1,20 +1,20 @@
 import process from 'node:process'
-import { refreshDatabase } from '@stacksjs/database'
+import { generateMigrations, resetDatabase, runDatabaseMigration } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 
 // first, reset the database, if it exists
-const result = await refreshDatabase()
+const result = await resetDatabase()
 
-// if (result?.isErr()) {
-//   console.error(result.error)
-//   log.error('generateMigrations failed', result.error)
-//   process.exit(1)
-// }
+if (result?.isErr()) {
+  console.error(result.error)
+  log.error('generateMigrations failed', result.error)
+  process.exit(1)
+}
 
-// // then,generate the migrations
-// await generateMigrations()
+// then,generate the migrations
+await generateMigrations()
 
-// // finally, migrate the database
-// await runDatabaseMigration()
+// finally, migrate the database
+await runDatabaseMigration()
 
-// process.exit(0)
+process.exit(0)

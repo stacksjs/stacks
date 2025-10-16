@@ -5,7 +5,7 @@ import * as process from 'node:process'
 import { italic, stripAnsi } from '@stacksjs/cli'
 import * as path from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { fs } from '@stacksjs/storage'
+import fs from 'fs-extra'
 
 type ErrorMessage = string
 
