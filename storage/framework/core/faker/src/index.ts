@@ -1,2 +1,2 @@
-export { faker } from '@faker-js/faker'
-export type { Faker } from '@faker-js/faker'
+export { faker } from 'ts-mocker'
+export type { Faker } from 'ts-mocker'

@@ -951,6 +951,9 @@
     "storage/framework/core/faker": {
       "name": "@stacksjs/faker",
       "version": "0.70.23",
+      "dependencies": {
+        "ts-mocker": "^0.1.4",
+      },
       "devDependencies": {
         "@faker-js/faker": "^9.9.0",
         "@stacksjs/cli": "workspace:*",
@@ -5286,6 +5289,8 @@
     "ts-macro": ["ts-macro@0.1.35", "", { "dependencies": { "muggle-string": "^0.4.1" } }, "sha512-cMPJUCH8VsH9s9FANjL1r/SrkV2T6CKBjgWqgP2XGiS+y/zBBwmw0C3C31M4LqrLEjb8djgUMDV18vQ4Dr+/mg=="],
 
     "ts-map": ["ts-map@1.0.3", "", {}, "sha512-vDWbsl26LIcPGmDpoVzjEP6+hvHZkBkLW7JpvwbCv/5IYPJlsbzCVXY3wsCeAxAUeTclNOUZxnLdGh3VBD/J6w=="],
+
+    "ts-mocker": ["ts-mocker@0.1.4", "", { "dependencies": { "cac": "^6.7.14" }, "bin": { "ts-mocker": "dist/bin/cli.js", "mock": "dist/bin/cli.js" } }, "sha512-dsphvNGvIuAaWSsfS+rYvF95hFx79xwuHUX2fN0akhlf29czk7nEwIDnYjr2Cn1pcMzyC62A4fFnxWInsgyjeQ=="],
 
     "ts-pkgx": ["ts-pkgx@0.4.52", "", { "dependencies": { "chromium-bidi": "^7.2.0", "electron": "^37.4.0", "js-yaml": "^4.1.0", "playwright": "^1.55.0" }, "bin": { "ts-pkgx": "dist/bin/cli.js" } }, "sha512-YDuXweSXHXk3Me1Q/wI0mTpl4e0GQpiZfqAckPZ9d/PwLbFCQSjinSmTj6n8pnSj0XXs5/kw9z8aLZfSZtBzmw=="],
 
