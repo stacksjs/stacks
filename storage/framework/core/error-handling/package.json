@@ -42,5 +42,8 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "neverthrow": "^8.2.0"
+  },
+  "dependencies": {
+    "fs-extra": "^11.3.2"
   }
 }

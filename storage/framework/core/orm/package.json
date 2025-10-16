@@ -40,5 +40,9 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/query-builder": "workspace:*",
     "@stacksjs/types": "workspace:*"
+  },
+  "dependencies": {
+    "@stacksjs/ts-validation": "^0.4.7",
+    "tinyglobby": "^0.2.15"
   }
 }
