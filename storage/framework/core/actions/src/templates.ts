@@ -96,6 +96,15 @@ export default {
   },
 } satisfies Model`,
 
+  migration: `import { Kysely } from 'kysely'
+
+export async function up(db: Kysely<any>): Promise<void> {
+  await db.schema
+    .createTable('{0}')
+    .addColumn('id', 'integer', col => col.autoIncrement().primaryKey())
+    .execute()
+}`,
+
   // Add more templates as needed
   job: `import { Job } from '@stacksjs/jobs'
 

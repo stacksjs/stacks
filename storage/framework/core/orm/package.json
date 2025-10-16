@@ -16,7 +16,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["stacks"],
+  "keywords": ["stacks", "kysely"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
