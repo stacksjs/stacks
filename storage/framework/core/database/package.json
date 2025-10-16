@@ -45,7 +45,6 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.876.0",
     "@aws-sdk/lib-dynamodb": "^3.883.0",
-    "bun-query-builder": "^0.1.2",
     "dynamodb-toolbox": "^2.7.1"
   },
   "optionalDependencies": {

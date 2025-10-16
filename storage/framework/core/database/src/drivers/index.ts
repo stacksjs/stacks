@@ -265,6 +265,65 @@ export function prepareNumberColumnType(validator: NumberValidatorType, driver =
   return `'integer'`
 }
 
+// Add new function for enum column types
+export function prepareEnumColumnType(validator: EnumValidatorType, driver = 'mysql'): string {
+  const allowedValues = validator.getAllowedValues()
+
+  if (!allowedValues)
+    throw new Error('Enum rule found but no allowedValues defined')
+
+  const enumStructure = allowedValues.map((value: any) => `'${value}'`).join(', ')
+
+  if (driver === 'postgres')
+    return `'varchar(255)'`
+
+  if (driver === 'sqlite')
+    return `'text'` // SQLite doesn't support ENUM, but we'll enforce values at app level
+
+  return `sql\`enum(${enumStructure})\`` // MySQL supports native ENUM
+}
+
+export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'mysql'): string {
+  if (enumValidator(validator))
+    return prepareEnumColumnType(validator, driver)
+
+  // Check for base types
+  if (isStringValidator(validator))
+    return prepareTextColumnType(validator, driver)
+
+  if (isNumberValidator(validator))
+    return prepareNumberColumnType(validator, driver)
+
+  if (isBooleanValidator(validator))
+    return `'boolean'` // Use boolean type for both MySQL and SQLite
+
+  // Handle date types
+
+  if (isDateValidator(validator))
+    return `'date'`
+
+  if (isDatetimeValidator(validator))
+    return driver === 'postgres' ? `'timestamp'` : `'datetime'`
+
+  if (isUnixValidator(validator))
+    return `'bigint'`
+
+  if (isTimestampValidator(validator))
+    return `'timestamp'`
+
+  if (isFloatValidator(validator))
+    return `'float4'`
+
+  // Handle array/object types
+  if (['array', 'object'].includes(validator.name))
+    return driver === 'sqlite' ? `'text'` : `'json'`
+
+  if (driver === 'sqlite')
+    return `'text'`
+
+  return driver === 'mysql' ? `'varchar(255)'` : `'text'`
+}
+
 export function checkIsRequired(rule: string): boolean {
   // Check if the rule contains .required()
   return rule.includes('.required()')
