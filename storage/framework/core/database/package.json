@@ -56,7 +56,6 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*",
-    "@stacksjs/faker": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/query-builder": "workspace:*",
     "@stacksjs/storage": "workspace:*",
