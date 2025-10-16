@@ -55,6 +55,8 @@
     "stx": "./buddy"
   },
   "dependencies": {
+    "bun-plugin-dotenvx": "^0.6.4",
+    "bun-plugin-yml": "^0.3.1",
     "stacks": "workspace:*"
   },
   "config": {

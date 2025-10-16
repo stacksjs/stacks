@@ -43,5 +43,8 @@
     "@stacksjs/types": "workspace:*",
     "aws-sdk": "^2.1692.0",
     "vue-email": "^0.8.11"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ses": "^3.911.0"
   }
 }
