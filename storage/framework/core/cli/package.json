@@ -63,10 +63,10 @@
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "@types/prompts": "^2.4.9",
-    "ansi-escapes": "^7.0.0",
+    "ansi-escapes": "^7.1.1",
     "cac": "^6.7.14",
     "consola": "^3.4.2",
-    "kolorist": "1.8.0",
+    "kolorist": "^1.8.0",
     "ora": "^8.2.0",
     "prompts": "^2.4.2",
     "supports-hyperlinks": "^4.1.0"
