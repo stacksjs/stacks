@@ -50,7 +50,11 @@
     "@stacksjs/storage": "workspace:*",
     "@types/babel__generator": "^7.27.0",
     "@types/babel__traverse": "^7.28.0",
-    "bun-plugin-dtsx": "^0.21.12",
     "vue-docgen-web-types": "^0.1.8"
+  },
+  "dependencies": {
+    "@babel/generator": "^7.26.2",
+    "@babel/traverse": "^7.26.4",
+    "better-dx": "^0.2.0"
   }
 }

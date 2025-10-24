@@ -10,6 +10,7 @@ coverage = true
 # Default "auto" — when no node_modules folder is found, Bun
 # will automatically install dependencies on the fly during execution.
 # auto = true
+linker = "hoisted"
 
 registry = { url = "https://registry.npmjs.org/", token = "$BUN_AUTH_TOKEN" }
 
