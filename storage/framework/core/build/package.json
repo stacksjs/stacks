@@ -53,8 +53,8 @@
     "vue-docgen-web-types": "^0.1.8"
   },
   "dependencies": {
-    "@babel/generator": "^7.26.2",
-    "@babel/traverse": "^7.26.4",
+    "@babel/generator": "^7.28.5",
+    "@babel/traverse": "^7.28.5",
     "better-dx": "^0.2.0"
   }
 }
