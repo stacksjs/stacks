@@ -35,11 +35,11 @@
     "highlight.js": "^11.11.1"
   },
   "devDependencies": {
-    "@iconify-json/hugeicons": "^1.2.14",
-    "@microsoft/api-extractor": "^7.52.11",
+    "@iconify-json/hugeicons": "^1.2.17",
+    "@microsoft/api-extractor": "^7.53.3",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@vue/tsconfig": "^0.8.1",
-    "unplugin-icons": "^22.2.0"
+    "unplugin-icons": "^22.5.0"
   }
 }
