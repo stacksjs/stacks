@@ -1,5 +1,5 @@
 import type { SelectQueryBuilder } from 'bun-query-builder'
-import { db2, schema } from '../db'
+import { db2, schema } from '../../db'
 
 class UserModel {
   private query: SelectQueryBuilder<typeof schema, 'users', Record<string, unknown>, 'users'>
