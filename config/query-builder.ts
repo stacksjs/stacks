@@ -1,15 +1,15 @@
-import type { QueryBuilderConfig } from 'bun-query-builder'
+import type { QueryBuilderConfig, SupportedDialect } from 'bun-query-builder'
 import { env } from '@stacksjs/env'
 
 export default {
   verbose: true,
-  dialect: env.DB_CONNECTION || 'postgres',
+  dialect: env.DB_CONNECTION as SupportedDialect|| 'postgres',
   database: {
-    database: 'test_db',
-    username: 'postgres',
-    password: 'postgres',
-    host: 'localhost',
-    port: 5432,
+    database: env.DB_DATABASE || 'stacks',
+    username: env.DB_USERNAME || '',
+    password: env.DB_PASSWORD || '',
+    host: env.DB_HOST || 'localhost',
+    port: Number(env.DB_PORT) || 5432,
   },
   timestamps: {
     createdAt: 'created_at',
