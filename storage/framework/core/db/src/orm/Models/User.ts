@@ -1,10 +1,16 @@
-import type { SelectQueryBuilder } from 'bun-query-builder'
-import { db2, schema } from '../../db'
+import { db2 } from '../../db'
 
 class UserModel {
-  private query: SelectQueryBuilder<typeof schema, 'users', Record<string, unknown>, 'users'>
+  private readonly hidden: string[] = ['password']
+  private readonly fillable: string[] = ['name', 'email', 'password', 'uuid', 'two_factor_secret', 'public_key']
+  private readonly guarded: string[] = []
+  protected attributes: Record<string, any> = {}
+  private query: any
 
-  constructor() {
+  constructor(data?: Record<string, any>) {
+    if (data) {
+      this.attributes = { ...data }
+    }
     this.query = db2.selectFrom('users')
   }
 
@@ -15,22 +21,26 @@ class UserModel {
 
   // Find by ID
   static async find(id: number) {
-    return await db2.selectFrom('users').where('id', '=', id).executeTakeFirst()
+    const result = await db2.selectFrom('users').where('id', '=', id).executeTakeFirst()
+    return result ? new UserModel(result) : undefined
   }
 
   // Get all records
   static async all() {
-    return await db2.selectFrom('users').execute()
+    const results = await db2.selectFrom('users').execute()
+    return results.map((result: any) => new UserModel(result))
   }
 
   // Get the first record
   async first() {
-    return await this.query.executeTakeFirst()
+    const result = await this.query.executeTakeFirst()
+    return result ? new UserModel(result) : undefined
   }
 
   // Get all records from the query
   async get() {
-    return await this.query.execute()
+    const results = await this.query.execute()
+    return results.map((result: any) => new UserModel(result))
   }
 
   // Chainable where clause
@@ -59,6 +69,83 @@ class UserModel {
   limit(count: number) {
     this.query = this.query.limit(count)
     return this
+  }
+
+  // Create a new record
+  static async create(data: Record<string, any>) {
+    const instance = new UserModel()
+    
+    // Filter based on fillable and guarded
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key)
+      )
+    )
+
+    const result = await db2.insertInto('users')
+      .values(filteredData)
+      .execute()
+
+    // Fetch the created record
+    const created = await db2.selectFrom('users')
+      .where('id', '=', Number((result as any).insertId))
+      .executeTakeFirst()
+
+    return created ? new UserModel(created) : undefined
+  }
+
+  // Update the current record
+  async update(data: Record<string, any>) {
+    if (!this.attributes.id) {
+      throw new Error('Cannot update a model without an ID')
+    }
+
+    // Filter based on fillable and guarded
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key)
+      )
+    )
+
+    await (db2 as any).updateTable('users')
+      .set(filteredData)
+      .where('id', '=', this.attributes.id)
+      .execute()
+
+    // Fetch the updated record
+    const updated = await db2.selectFrom('users')
+      .where('id', '=', this.attributes.id)
+      .executeTakeFirst()
+
+    if (updated) {
+      this.attributes = { ...updated }
+    }
+
+    return this
+  }
+
+  // Delete the current record
+  async delete() {
+    if (!this.attributes.id) {
+      throw new Error('Cannot delete a model without an ID')
+    }
+
+    await (db2 as any).deleteFrom('users')
+      .where('id', '=', this.attributes.id)
+      .execute()
+
+    return true
+  }
+
+  // Convert to JSON (excluding hidden fields)
+  toJSON() {
+    const json = { ...this.attributes }
+    
+    for (const field of this.hidden) {
+      delete json[field]
+    }
+    
+    return json
   }
 }
 
