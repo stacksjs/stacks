@@ -1,7 +1,8 @@
-import { db2 } from '../db'
+import type { SelectQueryBuilder } from 'bun-query-builder'
+import { db2, schema } from '../db'
 
 class UserModel {
-  private query: any
+  private query: SelectQueryBuilder<typeof schema, 'users', Record<string, unknown>, 'users'>
 
   constructor() {
     this.query = db2.selectFrom('users')

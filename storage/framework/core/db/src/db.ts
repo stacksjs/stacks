@@ -18,5 +18,7 @@ const meta = buildSchemaMeta(defineModels(models))
 const db2 = createQueryBuilder<typeof schema>({ schema, meta })
 
 export {
-  db2
+  db2,
+  schema,
+  meta
 }
