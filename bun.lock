@@ -816,6 +816,37 @@
         "@stacksjs/utils": "workspace:*",
       },
     },
+    "storage/framework/core/db": {
+      "name": "@stacksjs/db",
+      "version": "0.70.23",
+      "dependencies": {
+        "@aws-sdk/client-dynamodb": "^3.876.0",
+        "@aws-sdk/lib-dynamodb": "^3.883.0",
+        "bun-query-builder": "^0.1.5",
+        "dynamodb-toolbox": "^2.7.1",
+        "kysely": "^0.28.8",
+        "pg": "^8.16.3",
+      },
+      "devDependencies": {
+        "@stacksjs/cli": "workspace:*",
+        "@stacksjs/config": "workspace:*",
+        "@stacksjs/development": "workspace:*",
+        "@stacksjs/path": "workspace:*",
+        "@stacksjs/query-builder": "workspace:*",
+        "@stacksjs/storage": "workspace:*",
+        "@stacksjs/strings": "workspace:*",
+        "@stacksjs/utils": "workspace:*",
+        "@types/tar": "^6.1.13",
+        "debug": "^4.4.1",
+        "dynamodb-tooling": "^0.3.2",
+        "kysely-bun-worker": "^0.7.0",
+        "mkdirp": "^3.0.1",
+        "tar": "^7.4.3",
+      },
+      "optionalDependencies": {
+        "mysql2": "^3.14.4",
+      },
+    },
     "storage/framework/core/desktop": {
       "name": "@stacksjs/desktop",
       "version": "0.70.23",
@@ -2714,6 +2745,8 @@
 
     "@stacksjs/datetime": ["@stacksjs/datetime@workspace:storage/framework/core/datetime"],
 
+    "@stacksjs/db": ["@stacksjs/db@workspace:storage/framework/core/db"],
+
     "@stacksjs/desktop": ["@stacksjs/desktop@workspace:storage/framework/core/desktop"],
 
     "@stacksjs/development": ["@stacksjs/development@workspace:storage/framework/core/development"],
@@ -3461,6 +3494,8 @@
     "bun-plugin-unocss": ["bun-plugin-unocss@0.1.3", "", {}, "sha512-alior9JEeeK/0SniQfjfeOKw4r7dwXg9D+C4yKyg2csvaC6FO66lUI7ps9RBECQbgXgm15AUtnIIpUNYMrEAkQ=="],
 
     "bun-plugin-yml": ["bun-plugin-yml@0.3.1", "", {}, "sha512-qRy6wNIU+VuwNYmiWvpTuq4MJAvP6emXcHCetE3YDdObaywL4rI+3gATUq3TTWWBqCO9NvQGWRfgLl+BOfQQ0A=="],
+
+    "bun-query-builder": ["bun-query-builder@0.1.5", "", { "dependencies": { "@stacksjs/ts-validation": "^0.4.7", "ts-mocker": "^0.1.3" }, "bin": { "query-builder": "dist/bin/cli.js", "qbx": "dist/bin/cli.js", "qb": "dist/bin/cli.js" } }, "sha512-z8LjF+T69Q+5C7YDt8lkijojFEy4YpV5Ync05WYnp4kw9/714z/NtRISBct8MlNAiZ0vmeq7saARByKUu1LlUg=="],
 
     "bun-types": ["bun-types@1.3.1", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-NMrcy7smratanWJ2mMXdpatalovtxVggkj11bScuWuiOoXTiKIu2eVS1/7qbyI/4yHedtsn175n4Sm4JcdHLXw=="],
 
