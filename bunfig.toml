@@ -11,7 +11,6 @@ coverage = true
 # will automatically install dependencies on the fly during execution.
 # auto = true
 linker = "hoisted"
-
 registry = { url = "https://registry.npmjs.org/", token = "$BUN_AUTH_TOKEN" }
 
 # whether to install optionalDependencies (currently needed because all drivers are optional)

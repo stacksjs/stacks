@@ -43,6 +43,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "@stacksjs/ts-validation": "^0.4.7"
+  },
   "devDependencies": {
     "@mdit-vue/plugin-component": "^2.1.4",
     "@mdit-vue/plugin-frontmatter": "^2.1.4",
@@ -76,8 +79,5 @@
   },
   "overrides": {
     "vite": "npm:rolldown-vite@latest"
-  },
-  "dependencies": {
-    "@stacksjs/ts-validation": "^0.4.7"
   }
 }

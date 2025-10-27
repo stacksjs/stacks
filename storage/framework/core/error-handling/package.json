@@ -34,6 +34,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "fs-extra": "^11.3.2"
+  },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -42,8 +45,5 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "neverthrow": "^8.2.0"
-  },
-  "dependencies": {
-    "fs-extra": "^11.3.2"
   }
 }

@@ -418,6 +418,11 @@ export async function truncateMigrationTables(): Promise<void> {
   await sql`TRUNCATE TABLE migration_locks`.execute(db)
 }
 
+export async function dropMigrationTables(): Promise<void> {
+  await db.schema.dropTable('migrations').ifExists().execute()
+  await db.schema.dropTable('migration_locks').ifExists().execute()
+}
+
 export async function createCommentUpvoteMigration(): Promise<void> {
   const hasBeenMigrated = await hasMigrationBeenCreated('commenteable_upvotes')
 

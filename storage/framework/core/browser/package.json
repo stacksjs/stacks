@@ -34,11 +34,11 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "@stripe/stripe-js": "^8.1.0"
+  },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@stacksjs/utils": "workspace:*"
-  },
-  "dependencies": {
-    "@stripe/stripe-js": "^8.1.0"
   }
 }

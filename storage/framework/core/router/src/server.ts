@@ -244,7 +244,8 @@ async function execute(foundRoute: Route, req: Request, _options: Options) {
       },
       status,
     })
-  } catch (error: any) {
+  }
+  catch (error: any) {
     log.error(`Error executing route: ${error.message}`)
     return new Response('<html><body><h1>Internal Server Error</h1></body></html>', {
       status: 500,
@@ -273,7 +274,8 @@ async function applyToAllRequests(operation: 'addBodies' | 'addParam' | 'addHead
         if (requestInstance) {
           requestInstance[operation](data)
         }
-      } catch (error) {
+      }
+      catch (error) {
         log.error(`Error processing model file ${modelFile}: ${error}`)
         continue
       }
@@ -289,14 +291,16 @@ async function applyToAllRequests(operation: 'addBodies' | 'addParam' | 'addHead
         if (requestInstance) {
           requestInstance[operation](data)
         }
-      } catch (error) {
+      }
+      catch (error) {
         log.error(`Error importing trait interface: ${error}`)
         continue
       }
     }
 
     RequestParam[operation](data)
-  } catch (error) {
+  }
+  catch (error) {
     log.error(`Error in applyToAllRequests: ${error}`)
   }
 }
@@ -309,7 +313,8 @@ async function addBody(params: any): Promise<void> {
   try {
     const parsedParams = typeof params === 'string' ? JSON.parse(params) : params
     await applyToAllRequests('addBodies', parsedParams)
-  } catch (error) {
+  }
+  catch (error) {
     log.error(`Error parsing request body: ${error}`)
     // Continue with empty object if parsing fails
     await applyToAllRequests('addBodies', {})
