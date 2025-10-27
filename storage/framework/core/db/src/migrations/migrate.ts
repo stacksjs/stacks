@@ -1,12 +1,10 @@
-import { generateMigration } from 'bun-query-builder'
+import { generateMigration, config } from 'bun-query-builder'
 
 export { generateMigration } from 'bun-query-builder'
 
-type Dialect = 'postgres' | 'mysql' | 'sqlite'
-
-export async function generateMigrations(dialect: Dialect): Promise<any> {
+export async function generateMigrations(): Promise<any> {
   return await generateMigration('./models', {
-    dialect,
+    dialect: config.dialect,
     apply: true,
     full: true
   })

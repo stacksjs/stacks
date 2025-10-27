@@ -1,5 +1,6 @@
+import type { SupportedDialect } from 'bun-query-builder'
 export interface DatabaseOptions {
-  default: string
+  default: SupportedDialect
   logging?: boolean
   connections: {
     mysql?: {

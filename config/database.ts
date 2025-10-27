@@ -1,6 +1,6 @@
 import type { DatabaseConfig } from '@stacksjs/types'
 import { env } from '@stacksjs/env'
-
+import type { SupportedDialect } from 'bun-query-builder'
 /**
  * **Database Configuration**
  *
@@ -9,7 +9,7 @@ import { env } from '@stacksjs/env'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  default: env.DB_CONNECTION || 'postgres',
+  default: env.DB_CONNECTION as SupportedDialect || 'postgres',
 
   connections: {
     sqlite: {
