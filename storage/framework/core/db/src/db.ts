@@ -1,4 +1,4 @@
-import { buildDatabaseSchema, buildSchemaMeta, createQueryBuilder } from 'bun-query-builder'
+import { buildDatabaseSchema, buildSchemaMeta, createQueryBuilder, defineModels } from 'bun-query-builder'
 import { path } from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
 
@@ -13,8 +13,8 @@ for (const userModelFile of userModelFiles) {
   models.push(model)
 }
 
-const schema = buildDatabaseSchema(models)
-const meta = buildSchemaMeta(models)
+const schema = buildDatabaseSchema(defineModels(models))
+const meta = buildSchemaMeta(defineModels(models))
 const db = createQueryBuilder<typeof schema>({ schema, meta })
 
 export {
