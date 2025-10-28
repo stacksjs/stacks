@@ -1,5 +1,7 @@
 import type { AuthConfig } from '@stacksjs/types'
-import { env } from '@stacksjs/env'
+
+// Use direct environment variable access to avoid circular dependencies
+const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
 
 /**
  * **Authentication Configuration**
@@ -37,17 +39,17 @@ export default {
   /**
    * The username field used for authentication.
    */
-  username: env.AUTH_USERNAME_FIELD || 'email',
+  username: envVars.AUTH_USERNAME_FIELD || 'email',
 
   /**
    * The password field used for authentication.
    */
-  password: env.AUTH_PASSWORD_FIELD || 'password',
+  password: envVars.AUTH_PASSWORD_FIELD || 'password',
 
   /**
    * The token expiry time in milliseconds (default: 30 days).
    */
-  tokenExpiry: env.AUTH_TOKEN_EXPIRY || 30 * 24 * 60 * 60 * 1000,
+  tokenExpiry: envVars.AUTH_TOKEN_EXPIRY || 30 * 24 * 60 * 60 * 1000,
 
   /**
    * The token rotation time in hours (default: 24 hours).

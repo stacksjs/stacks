@@ -1,5 +1,7 @@
 import type { AppConfig } from '@stacksjs/types'
-import { env } from '@stacksjs/env'
+
+// Use direct environment variable access to avoid circular dependencies
+const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
 
 /**
  * **Application Configuration**
@@ -9,15 +11,15 @@ import { env } from '@stacksjs/env'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  name: env.APP_NAME ?? 'Stacks',
+  name: envVars.APP_NAME ?? 'Stacks',
   description: 'Stacks is a full-stack framework for building modern web applications.',
-  env: env.APP_ENV ?? 'local',
-  url: env.APP_URL ?? 'stacks.localhost',
+  env: envVars.APP_ENV ?? 'local',
+  url: envVars.APP_URL ?? 'stacks.localhost',
   redirectUrls: ['stacksjs.com'],
-  debug: env.DEBUG ?? false,
-  key: env.APP_KEY,
+  debug: envVars.DEBUG ? envVars.DEBUG === 'true' : false,
+  key: envVars.APP_KEY,
 
-  maintenanceMode: env.APP_MAINTENANCE ?? false,
+  maintenanceMode: envVars.APP_MAINTENANCE ? envVars.APP_MAINTENANCE === 'true' : false,
   // docMode: true, // instead of example.com/docs, deploys example.com as main entry point for docs
   docMode: false,
 

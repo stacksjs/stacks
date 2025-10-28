@@ -1,5 +1,7 @@
 import type { EmailConfig } from '@stacksjs/types'
-import { env } from '@stacksjs/env'
+
+// Use direct environment variable access to avoid circular dependencies
+const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
 
 /**
  * **Email Configuration**
@@ -10,18 +12,18 @@ import { env } from '@stacksjs/env'
  */
 export default {
   from: {
-    name: env.MAIL_FROM_NAME || 'Stacks',
-    address: env.MAIL_FROM_ADDRESS || 'no-reply@stacksjs.org',
+    name: envVars.MAIL_FROM_NAME || 'Stacks',
+    address: envVars.MAIL_FROM_ADDRESS || 'no-reply@stacksjs.org',
   },
 
   mailboxes: ['chris@stacksjs.org', 'blake@stacksjs.org', 'glenn@stacksjs.org'],
 
-  url: env.APP_URL || 'http://localhost:3000',
+  url: envVars.APP_URL || 'http://localhost:3000',
   charset: 'UTF-8',
 
   server: {
     scan: true, // scans for spam and viruses
   },
 
-  default: env.MAIL_DRIVER || 'ses',
+  default: envVars.MAIL_DRIVER || 'ses',
 } satisfies EmailConfig

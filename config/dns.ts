@@ -1,5 +1,7 @@
 import type { DnsConfig } from '@stacksjs/types'
-import { env } from '@stacksjs/env'
+
+// Use direct environment variable access to avoid circular dependencies
+const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
 
 /**
  * **DNS Options**
@@ -11,7 +13,7 @@ import { env } from '@stacksjs/env'
 export default {
   a: [
     {
-      name: env.APP_URL || '', // Hostname (root domain)
+      name: envVars.APP_URL || '', // Hostname (root domain)
       address: '10.0.0.1', // IPv4 address
       ttl: 300, // Time-to-live in seconds
     },

@@ -1,15 +1,17 @@
 import type { QueryBuilderConfig, SupportedDialect } from 'bun-query-builder'
-import { env } from '@stacksjs/env'
+
+// Use direct environment variable access to avoid circular dependencies
+const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
 
 export default {
   verbose: true,
-  dialect: env.DB_CONNECTION as SupportedDialect|| 'postgres',
+  dialect: envVars.DB_CONNECTION as SupportedDialect|| 'postgres',
   database: {
-    database: env.DB_DATABASE || 'stacks',
-    username: env.DB_USERNAME || '',
-    password: env.DB_PASSWORD || '',
-    host: env.DB_HOST || 'localhost',
-    port: Number(env.DB_PORT) || 5432,
+    database: envVars.DB_DATABASE || 'stacks',
+    username: envVars.DB_USERNAME || '',
+    password: envVars.DB_PASSWORD || '',
+    host: envVars.DB_HOST || 'localhost',
+    port: Number(envVars.DB_PORT) || 5432,
   },
   timestamps: {
     createdAt: 'created_at',

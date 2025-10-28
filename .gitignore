@@ -25,7 +25,7 @@ custom-cli
 .cursor
 .zed
 ./test.ts
-
+generated/*
 resources/assets/fonts/*.woff
 resources/assets/fonts/*.woff2
 storage/framework/api/storage/logs/stacks.log

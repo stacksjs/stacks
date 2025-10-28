@@ -1,5 +1,7 @@
 import type { CacheConfig } from '@stacksjs/types'
-import { env } from '@stacksjs/env'
+
+// Use direct environment variable access to avoid circular dependencies
+const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
 
 /**
  * **Cache Configuration**
@@ -15,9 +17,9 @@ export default {
 
   drivers: {
     dynamodb: {
-      key: env.AWS_ACCESS_KEY_ID || '',
-      secret: env.AWS_SECRET_ACCESS_KEY || '',
-      region: env.AWS_DEFAULT_REGION || 'us-east-1',
+      key: envVars.AWS_ACCESS_KEY_ID || '',
+      secret: envVars.AWS_SECRET_ACCESS_KEY || '',
+      region: envVars.AWS_DEFAULT_REGION || 'us-east-1',
       table: 'cache',
       endpoint: '',
     },

@@ -1,6 +1,8 @@
 import type { CloudConfig } from '@stacksjs/types'
-import { env } from '@stacksjs/env'
 import security from './security'
+
+// Use direct environment variable access to avoid circular dependencies
+const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
 
 /**
  * **Cloud**
@@ -59,7 +61,7 @@ export default {
     storage: {},
 
     api: {
-      prefix: env.API_PREFIX || 'api',
+      prefix: envVars.API_PREFIX || 'api',
       // version: 'v1',
       description: 'My awesome Stacks API',
       deploy: true,
