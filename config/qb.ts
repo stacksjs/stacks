@@ -3,9 +3,12 @@ import type { QueryBuilderConfig, SupportedDialect } from 'bun-query-builder'
 // Use direct environment variable access to avoid circular dependencies
 const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
 
+
+
+
 export default {
   verbose: true,
-  dialect: envVars.DB_CONNECTION as SupportedDialect|| 'postgres',
+  dialect: envVars.DB_CONNECTION as SupportedDialect || 'postgres',
   database: {
     database: envVars.DB_DATABASE || 'stacks',
     username: envVars.DB_USERNAME || '',
