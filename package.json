@@ -57,8 +57,7 @@
   "dependencies": {
     "bun-plugin-dotenvx": "^0.6.4",
     "bun-plugin-yml": "^0.3.1",
-    "bun-query-builder": "^0.1.6",
-    "bunfig": "^0.15.0",
+    "bunfig": "^0.15.6",
     "stacks": "workspace:*"
   },
   "config": {
