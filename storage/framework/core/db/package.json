@@ -43,9 +43,9 @@
         "prepublishOnly": "bun run build"
     },
     "dependencies": {
-        "@aws-sdk/client-dynamodb": "^3.918.0",
-        "@aws-sdk/lib-dynamodb": "^3.918.0",
-        "bun-query-builder": "^0.1.9",
+        "@aws-sdk/client-dynamodb": "^3.921.0",
+        "@aws-sdk/lib-dynamodb": "^3.921.0",
+        "bun-query-builder": "^0.1.10",
         "dynamodb-toolbox": "^2.7.2",
         "kysely": "^0.28.8",
         "pg": "^8.16.3"
@@ -67,6 +67,6 @@
         "dynamodb-tooling": "^0.3.2",
         "kysely-bun-worker": "^0.7.0",
         "mkdirp": "^3.0.1",
-        "tar": "^7.5.1"
+        "tar": "^7.5.2"
     }
 }
