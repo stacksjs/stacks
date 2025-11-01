@@ -21,8 +21,8 @@ export default new Action({
     else
       git clone https://github.com/stacksjs/stacks.git $1
       cd $1
-      # Run the pkgx-install script
-      "./storage/framework/scripts/pkgx-install"
+      # Run the pantry-install script
+      "./storage/framework/scripts/pantry-install"
 
       echo "Project $1 has been created. Please open a new terminal, run 'bun run dev' to start the server."
 
@@ -34,7 +34,7 @@ fi
 # Get the directory of the current script and go up 3 directories
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 CLI_PATH="$PROJECT_ROOT/storage/framework/core/buddy/src/cli.ts"
-SCRIPT_PATH="$PROJECT_ROOT/storage/framework/scripts/pkgx-install"
+SCRIPT_PATH="$PROJECT_ROOT/storage/framework/scripts/pantry-install"
 LOG_PATH="$PROJECT_ROOT/storage/logs/console.log"
 
 if [[ $* == *--verbose* ]]; then
@@ -45,7 +45,7 @@ if [[ $* == *--verbose* ]]; then
 fi
 
 cd $PROJECT_ROOT
-# Run the pkgx-install script
+# Run the pantry-install script
 if [[ $* == *--verbose* ]]; then
   "$SCRIPT_PATH"
   # bun ./storage/framework/core/buddy/src/cli.ts setup --verbose

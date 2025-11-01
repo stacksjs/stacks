@@ -109,7 +109,7 @@ async function download(name: string, path: string, options: CreateOptions) {
 
 async function ensureEnv(path: string, options: CreateOptions) {
   log.info('Ensuring your environment is ready...')
-  await runCommand('pkgx --update ', { ...options, cwd: path })
+  await runCommand('pantry --update ', { ...options, cwd: path })
   log.success('Environment is ready')
 }
 
@@ -131,7 +131,7 @@ async function install(path: string, options: CreateOptions) {
 
   await runAction(Action.KeyGenerate, { ...options, cwd: path })
 
-  // TODO: we should ask quite a few questions here, similar how we do in `buddy new my-project`, so we can generate a custom pkgx.yaml file
+  // TODO: we should ask quite a few questions here, similar how we do in `buddy new my-project`, so we can generate a custom pantry.yaml file
 
   result = await runCommand('git init', { ...options, cwd: path }) // do we need this? or does giget do this already?
   if (result.isErr()) {

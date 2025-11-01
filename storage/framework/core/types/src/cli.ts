@@ -267,7 +267,7 @@ export type GeneratorOption =
   | 'componentMeta'
   | 'coreSymlink'
   | 'openApiSpec'
-  | 'pkgxConfig'
+  | 'pantryConfig'
   | 'openapi'
   | 'modelFiles'
 export type GeneratorOptions = {

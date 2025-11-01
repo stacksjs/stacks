@@ -10,7 +10,7 @@ export function upgrade(buddy: CLI): void {
   const descriptions = {
     command: 'Upgrade dependencies, framework, package manager, JS/TS runtime',
     framework: 'Upgrade the Stacks framework',
-    dependencies: 'Upgrade your dependencies (pkgx.yaml & package.json)',
+    dependencies: 'Upgrade your dependencies (pantry.yaml & package.json)',
     bun: 'Upgrade Bun to the latest version',
     shell: 'Upgrade the to the latest shell integration (currently only supports Oh My Zsh)',
     binary:

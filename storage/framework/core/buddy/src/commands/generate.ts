@@ -6,7 +6,7 @@ import {
   generateIdeHelpers,
   generateLibEntries,
   generateOpenApiSpec,
-  generatePkgxConfig,
+  generatePantryConfig,
   generateTypes,
   generateVsCodeCustomData,
   generateWebTypes,
@@ -28,7 +28,7 @@ export function generate(buddy: CLI): void {
     ideHelpers: 'Generate IDE helpers',
     componentMeta: 'Generate component meta information',
     coreSymlink: 'Generate symlink of the core framework to the project root',
-    pkgx: 'Generate the pkgx configuration file',
+    pantry: 'Generate the pantry configuration file',
     modelFiles: 'Generate the model files',
     openApi: 'Generate the OpenAPI specification',
     select: 'What are you trying to generate?',
@@ -44,7 +44,7 @@ export function generate(buddy: CLI): void {
     .option('-c, --custom-data', descriptions.customData)
     .option('-i, --ide-helpers', descriptions.ideHelpers)
     .option('-c, --component-meta', descriptions.componentMeta)
-    .option('-p, --pkgx', descriptions.pkgx)
+    .option('-p, --pantry', descriptions.pantry)
     .option('-m, --model-files', descriptions.modelFiles)
     .option('-o, --openapi', descriptions.openApi)
     .option('-p, --project [project]', descriptions.project, { default: false })
@@ -135,12 +135,12 @@ export function generate(buddy: CLI): void {
     })
 
   buddy
-    .command('generate:pkgx-config', descriptions.pkgx)
+    .command('generate:pantry-config', descriptions.pantry)
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action((options: GeneratorOptions) => {
-      log.debug('Running `buddy generate:pkgx-config` ...', options)
-      generatePkgxConfig()
+      log.debug('Running `buddy generate:pantry-config` ...', options)
+      generatePantryConfig()
     })
 
   buddy

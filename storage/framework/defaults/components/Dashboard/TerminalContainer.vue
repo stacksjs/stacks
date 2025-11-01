@@ -57,7 +57,7 @@ defineProps({
             'bootstrap', 'buddy', 'cloud', 'commitlint.config.ts',
             'bun.lock', 'bunfig.toml', 'config', 'database',
             'docs', 'eslint.config.ts', 'node_modules', 'package.json',
-            'pkgx.yaml', 'public', 'resources', 'routes',
+            'pantry.yaml', 'public', 'resources', 'routes',
             'storage', 'tests', 'tsconfig.json', '~'
           ]" :key="file" class="text-[#C9D1D9]">
             {{ file }}

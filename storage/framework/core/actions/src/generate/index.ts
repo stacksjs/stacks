@@ -112,11 +112,10 @@ export async function generateTypes(options?: GeneratorOptions): Promise<void> {
   log.success('Types were generated successfully')
 }
 
-export function generatePkgxConfig(): void {
+export function generatePantryConfig(): void {
   // write the yaml string to a file in your project root
-  // files.put(projectPath('./pkgx.yaml'), yamlStr)
-
-  log.success('Successfully generated `./pkgx.yaml` based on your config')
+  // files.put(projectPath('./pantry.yaml'), yamlStr)
+  log.success('Successfully generated `./pantry.yaml` based on your config')
 }
 
 export async function generateSeeder(): Promise<void> {

@@ -25,11 +25,11 @@ export function setup(buddy: CLI): void {
     .action(async (options: CliOptions) => {
       log.debug('Running `buddy setup` ...', options)
 
-      if (!(await isPkgxInstalled()))
-        await installPkgx()
+      if (!(await isPantryInstalled()))
+        await installPantry()
 
-      // ensure the minimal amount of deps are written to ./pkgx.yaml
-      await optimizePkgxDeps()
+      // ensure the minimal amount of deps are written to ./pantry.yaml
+      await optimizePantryDeps()
 
       // TODO: optimizeConfigDir()
       // TODO: optimizeAddDir()
@@ -57,8 +57,8 @@ export function setup(buddy: CLI): void {
   })
 }
 
-async function isPkgxInstalled(): Promise<boolean> {
-  const result = await runCommand('pkgx --version', { silent: true })
+async function isPantryInstalled(): Promise<boolean> {
+  const result = await runCommand('pantry --version', { silent: true })
 
   if (result.isOk())
     return true
@@ -66,8 +66,8 @@ async function isPkgxInstalled(): Promise<boolean> {
   return false
 }
 
-async function installPkgx(): Promise<void> {
-  const result = await runCommand(p.frameworkPath('scripts/pkgx-install'))
+async function installPantry(): Promise<void> {
+  const result = await runCommand(p.frameworkPath('scripts/pantry-install'))
 
   if (result.isOk())
     return
@@ -120,7 +120,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
   log.info('Happy coding! 💙')
 }
 
-export async function optimizePkgxDeps(): Promise<void> {
+export async function optimizePantryDeps(): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, 300))
 }
 
