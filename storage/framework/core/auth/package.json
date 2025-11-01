@@ -35,12 +35,12 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@simplewebauthn/browser": "^13.1.2",
-    "@simplewebauthn/server": "^13.1.2",
+    "@simplewebauthn/browser": "^13.2.2",
+    "@simplewebauthn/server": "^13.2.2",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@types/qrcode": "^1.5.5",
+    "@types/qrcode": "^1.5.6",
     "otplib": "^12.0.1",
     "qrcode": "^1.5.4"
   }

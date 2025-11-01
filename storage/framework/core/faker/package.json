@@ -36,7 +36,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "ts-mocker": "^0.1.4"
+    "ts-mocker": "^0.1.5"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.9.0",
