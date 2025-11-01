@@ -55,35 +55,14 @@
     "stx": "./buddy"
   },
   "dependencies": {
-    "bun-plugin-dotenvx": "^0.6.4",
-    "bun-plugin-yml": "^0.3.1",
     "bunfig": "^0.15.6",
     "stacks": "workspace:*"
   },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-git"
-    }
-  },
   "workspaces": [
-    "storage/framework",
-    "storage/framework/core",
-    "storage/framework/core/*",
-    "storage/framework/core/bun-create/*",
-    "storage/framework/core/components/*",
-    "storage/framework/docs",
-    "storage/framework/email",
-    "storage/framework/libs/*",
-    "storage/framework/libs/functions",
-    "storage/framework/libs/components/*",
-    "storage/framework/views/*",
-    "storage/framework/server"
+    "storage/framework/**"
   ],
   "devDependencies": {
     "buddy-bot": "0.9.4",
     "typescript": "5.9.2"
-  },
-  "overrides": {
-    "unconfig": "0.3.10"
   }
 }

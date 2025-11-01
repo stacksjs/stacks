@@ -63,13 +63,10 @@
     "@vueuse/shared": "^13.8.0",
     "ace-builds": "^1.43.3",
     "bun-plugin-dotenvx": "^0.6.4",
-    "bun-plugin-yml": "^0.3.1",
     "defu": "^6.1.4",
     "detect-indent": "^7.0.1",
     "detect-newline": "^4.0.1",
     "export-size": "^0.7.0",
-    "jiti": "^2.5.1",
-    "js-yaml": "^4.1.0",
     "kolorist": "1.8.0",
     "macroable": "^7.0.2",
     "magic-regexp": "^0.10.0",
@@ -77,8 +74,6 @@
     "perfect-debounce": "^1.0.0",
     "pretty-bytes": "^7.0.1",
     "resize-observer-polyfill": "^1.5.1",
-    "vue-starport": "^0.4.0",
-    "vue3-ace-editor": "^2.2.4",
-    "yaml": "^2.8.1"
+    "vue3-ace-editor": "^2.2.4"
   }
 }

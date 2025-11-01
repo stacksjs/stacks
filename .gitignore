@@ -28,10 +28,4 @@ custom-cli
 generated/*
 resources/assets/fonts/*.woff
 resources/assets/fonts/*.woff2
-storage/framework/api/storage/logs/stacks.log
-storage/framework/core/storage/logs/stacks.log
-storage/framework/core/cms/storage/logs/stacks.log
-storage/framework/orm/src/tests/storage/logs/stacks.log
-storage/framework/core/commerce/storage/logs/stacks.log
-storage/framework/views/dashboard/storage/logs/stacks.log
-storage/framework/core/commerce/src/tests/storage/logs/stacks.log
+stacks.log

@@ -1,5 +1,4 @@
 preload = [
-  "../../../node_modules/bun-plugin-yml/src/index.ts",
   "../../../node_modules/bun-plugin-env/src/index.ts"
 ]
 

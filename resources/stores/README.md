@@ -1,3 +1,0 @@
-# The Stores Folder
-
-wip

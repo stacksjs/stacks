@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stacks.js - Coming Soon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tahoma:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="homepage.css">
+</head>
+
+<body>
+  <div class="desktop">
+    <!-- Desktop Icons -->
+    <div class="desktop-icons">
+        <button
+          class="desktop-icon"
+          data-icon-id="docs"
+          data-icon-type="link"
+          data-icon-section=""
+          data-icon-url="https://stacksjs.org/docs"
+          style="left: 20px; top: 20px;"
+        >
+          <div class="desktop-icon-image">📚</div>
+          <div class="desktop-icon-label">Documentation</div>
+        </button>
+
+        <button
+          class="desktop-icon"
+          data-icon-id="github"
+          data-icon-type="link"
+          data-icon-section=""
+          data-icon-url="https://github.com/stacksjs/stacks"
+          style="left: 20px; top: 140px;"
+        >
+          <div class="desktop-icon-image">💻</div>
+          <div class="desktop-icon-label">GitHub</div>
+        </button>
+
+        <button
+          class="desktop-icon"
+          data-icon-id="sponsor"
+          data-icon-type="link"
+          data-icon-section=""
+          data-icon-url="https://github.com/sponsors/chrisbbreuer"
+          style="left: 20px; top: 260px;"
+        >
+          <div class="desktop-icon-image">💖</div>
+          <div class="desktop-icon-label">Sponsor</div>
+        </button>
+
+        <button
+          class="desktop-icon"
+          data-icon-id="discord"
+          data-icon-type="link"
+          data-icon-section=""
+          data-icon-url="https://discord.gg/stacksjs"
+          style="left: 20px; top: 380px;"
+        >
+          <div class="desktop-icon-image">💬</div>
+          <div class="desktop-icon-label">Discord</div>
+        </button>
+    </div>
+
+
+    <!-- Start Menu -->
+    <div class="start-menu" id="start-menu">
+      <div class="start-menu-header">
+        STACKS.JS
+      </div>
+      <div class="start-menu-user">
+        <div class="start-menu-user-icon">👤</div>
+        <div>Developer</div>
+      </div>
+      <div class="start-menu-items">
+        <div class="start-menu-item" style="opacity: 0.6; cursor: not-allowed;">
+          <div class="start-menu-item-icon">📄</div>
+          <div>About Stacks <span style="font-size: 10px; color: #999;">(Coming Soon)</span></div>
+        </div>
+        <div class="start-menu-item" style="opacity: 0.6; cursor: not-allowed;">
+          <div class="start-menu-item-icon">🌐</div>
+          <div>Ecosystem <span style="font-size: 10px; color: #999;">(Coming Soon)</span></div>
+        </div>
+        <div class="start-menu-item" style="opacity: 0.6; cursor: not-allowed;">
+          <div class="start-menu-item-icon">⚙️</div>
+          <div>Backend <span style="font-size: 10px; color: #999;">(Coming Soon)</span></div>
+        </div>
+        <div class="start-menu-item" style="opacity: 0.6; cursor: not-allowed;">
+          <div class="start-menu-item-icon">🎨</div>
+          <div>Frontend <span style="font-size: 10px; color: #999;">(Coming Soon)</span></div>
+        </div>
+        <div class="start-menu-item" style="opacity: 0.6; cursor: not-allowed;">
+          <div class="start-menu-item-icon">☁️</div>
+          <div>Cloud <span style="font-size: 10px; color: #999;">(Coming Soon)</span></div>
+        </div>
+        <div class="start-menu-item" style="opacity: 0.6; cursor: not-allowed;">
+          <div class="start-menu-item-icon">📊</div>
+          <div>Dashboard <span style="font-size: 10px; color: #999;">(Coming Soon)</span></div>
+        </div>
+        <div class="start-menu-separator"></div>
+        <div class="start-menu-item has-submenu">
+          <div class="start-menu-item-icon">🔗</div>
+          <div>Resources</div>
+          <div class="start-submenu">
+            <button class="start-menu-item" onclick="window.open('https://stacksjs.org/docs', '_blank')">
+              <div class="start-menu-item-icon">📚</div>
+              <div>Documentation</div>
+            </button>
+            <button class="start-menu-item" onclick="window.open('https://github.com/stacksjs/stacks', '_blank')">
+              <div class="start-menu-item-icon">💻</div>
+              <div>GitHub</div>
+            </button>
+            <button class="start-menu-item" onclick="window.open('https://github.com/sponsors/chrisbbreuer', '_blank')">
+              <div class="start-menu-item-icon">💖</div>
+              <div>Sponsor</div>
+            </button>
+            <button class="start-menu-item" onclick="window.open('https://discord.gg/stacksjs', '_blank')">
+              <div class="start-menu-item-icon">💬</div>
+              <div>Discord</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- taskbar -->
+    <div class="taskbar">
+      <button class="start-button" id="start-button">
+        <span class="start-logo">🪟</span>
+        <span>start</span>
+      </button>
+      <div class="taskbar-tasks" id="taskbar-tasks"></div>
+      <div class="taskbar-clock" id="clock">12:00 PM</div>
+    </div>
+
+    <!-- Notification Popup -->
+    <div class="notification-popup" id="notification-popup">
+      <div class="notification-header">
+        <div class="notification-icon">⭐</div>
+        <div class="notification-title">Build Anything</div>
+        <div class="notification-count">5</div>
+        <button class="notification-close" onclick="closeNotification()">×</button>
+      </div>
+      <div class="notification-features">
+        <div class="notification-feature">
+          <div class="notification-feature-icon"></div>
+          <div>Modern web applications & APIs</div>
+        </div>
+        <div class="notification-feature">
+          <div class="notification-feature-icon"></div>
+          <div>One UI. 3 apps. <em>Web, Desktop & Mobile.</em></div>
+        </div>
+        <div class="notification-feature">
+          <div class="notification-feature-icon"></div>
+          <div>Cloud infrastructure & serverless</div>
+        </div>
+        <div class="notification-feature">
+          <div class="notification-feature-icon"></div>
+          <div>Type-safe with TypeScript</div>
+        </div>
+        <div class="notification-feature">
+          <div class="notification-feature-icon"></div>
+          <div>Lightning fast with Bun</div>
+        </div>
+      </div>
+      <div class="notification-signup" id="notification-signup">
+        <div class="notification-separator"></div>
+        <div class="notification-signup-text">Get updates on new features & releases:</div>
+        <div class="notification-signup-form">
+          <input
+            type="email"
+            id="notification-email"
+            class="notification-email-input"
+            placeholder="your@email.com"
+            autocomplete="email"
+          />
+          <button class="notification-signup-btn" onclick="handleEmailSignup()">
+            Sign Up
+          </button>
+        </div>
+      </div>
+      <div class="notification-success" id="notification-success" style="display: none;">
+        <div class="notification-separator"></div>
+        <div class="notification-success-content">
+          <div class="notification-success-icon">✓</div>
+          <div class="notification-success-text">
+            <div class="notification-success-title">Thanks for subscribing!</div>
+            <div class="notification-success-subtitle">We'll keep you updated.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context Menu (outside desktop div to avoid layout inheritance) -->
+  <div class="context-menu" id="context-menu" style="display: none;">
+    <button class="context-menu-item has-submenu">
+      <div class="context-menu-item-icon">📤</div>
+      <div>Share with a friend...</div>
+      <div class="context-submenu">
+        <button class="context-menu-item" onclick="shareVia('twitter')">
+          <div class="context-menu-item-icon">🐦</div>
+          <div>Share on Twitter</div>
+        </button>
+        <button class="context-menu-item" onclick="shareVia('bluesky')">
+          <div class="context-menu-item-icon">🦋</div>
+          <div>Share on Bluesky</div>
+        </button>
+        <button class="context-menu-item" onclick="shareVia('linkedin')">
+          <div class="context-menu-item-icon">💼</div>
+          <div>Share on LinkedIn</div>
+        </button>
+        <button class="context-menu-item" onclick="shareVia('email')">
+          <div class="context-menu-item-icon">📫</div>
+          <div>Share via Email</div>
+        </button>
+        <button class="context-menu-item" onclick="shareVia('copy')">
+          <div class="context-menu-item-icon">📋</div>
+          <div>Copy Link</div>
+        </button>
+      </div>
+    </button>
+    <div class="context-menu-separator"></div>
+    <button class="context-menu-item" onclick="copyLogoSVG()">
+      <div class="context-menu-item-icon">🎨</div>
+      <div>Copy Logo as SVG</div>
+    </button>
+    <button class="context-menu-item" onclick="copyWordmarkSVG()">
+      <div class="context-menu-item-icon">✏️</div>
+      <div>Copy Wordmark as SVG</div>
+    </button>
+    <button class="context-menu-item" onclick="window.open('https://stacksjs.org/brand', '_blank')">
+      <div class="context-menu-item-icon">📖</div>
+      <div>Brand Guidelines</div>
+    </button>
+    <div class="context-menu-separator"></div>
+    <button class="context-menu-item" onclick="window.open('https://stacksjs.org/docs', '_blank')">
+      <div class="context-menu-item-icon">📚</div>
+      <div>Documentation</div>
+    </button>
+    <button class="context-menu-item" onclick="window.open('https://github.com/stacksjs/stacks', '_blank')">
+      <div class="context-menu-item-icon">💻</div>
+      <div>View on GitHub</div>
+    </button>
+    <div class="context-menu-separator"></div>
+    <button class="context-menu-item" onclick="window.location.reload()">
+      <div class="context-menu-item-icon">🔄</div>
+      <div>Refresh</div>
+    </button>
+  </div>
+
+  <!-- Icon Context Menu -->
+  <div class="context-menu" id="icon-context-menu" style="display: none;">
+    <button class="context-menu-item" onclick="openIconFromMenu()">
+      <div class="context-menu-item-icon">📂</div>
+      <div>Open</div>
+    </button>
+    <div class="context-menu-separator"></div>
+    <button class="context-menu-item" onclick="renameIcon()">
+      <div class="context-menu-item-icon">✏️</div>
+      <div>Rename</div>
+    </button>
+    <button class="context-menu-item" onclick="deleteIcon()">
+      <div class="context-menu-item-icon">🗑️</div>
+      <div>Delete</div>
+    </button>
+    <div class="context-menu-separator"></div>
+    <button class="context-menu-item has-submenu">
+      <div class="context-menu-item-icon">📤</div>
+      <div>Share with a friend...</div>
+      <div class="context-submenu">
+        <button class="context-menu-item" onclick="shareVia('twitter')">
+          <div class="context-menu-item-icon">🐦</div>
+          <div>Share on Twitter</div>
+        </button>
+        <button class="context-menu-item" onclick="shareVia('bluesky')">
+          <div class="context-menu-item-icon">🦋</div>
+          <div>Share on Bluesky</div>
+        </button>
+        <button class="context-menu-item" onclick="shareVia('linkedin')">
+          <div class="context-menu-item-icon">💼</div>
+          <div>Share on LinkedIn</div>
+        </button>
+        <button class="context-menu-item" onclick="shareVia('email')">
+          <div class="context-menu-item-icon">📫</div>
+          <div>Share via Email</div>
+        </button>
+        <button class="context-menu-item" onclick="shareVia('copy')">
+          <div class="context-menu-item-icon">📋</div>
+          <div>Copy Link</div>
+        </button>
+      </div>
+    </button>
+    <div class="context-menu-separator"></div>
+    <button class="context-menu-item" onclick="copyLogoSVG()">
+      <div class="context-menu-item-icon">🎨</div>
+      <div>Copy Logo as SVG</div>
+    </button>
+    <button class="context-menu-item" onclick="copyWordmarkSVG()">
+      <div class="context-menu-item-icon">✏️</div>
+      <div>Copy Wordmark as SVG</div>
+    </button>
+    <button class="context-menu-item" onclick="window.open('https://stacksjs.org/brand', '_blank')">
+      <div class="context-menu-item-icon">📖</div>
+      <div>Brand Guidelines</div>
+    </button>
+    <div class="context-menu-separator"></div>
+    <button class="context-menu-item" onclick="window.open('https://stacksjs.org/docs', '_blank')">
+      <div class="context-menu-item-icon">📚</div>
+      <div>Documentation</div>
+    </button>
+    <button class="context-menu-item" onclick="window.open('https://github.com/stacksjs/stacks', '_blank')">
+      <div class="context-menu-item-icon">💻</div>
+      <div>View on GitHub</div>
+    </button>
+    <div class="context-menu-separator"></div>
+    <button class="context-menu-item" onclick="window.location.reload()">
+      <div class="context-menu-item-icon">🔄</div>
+      <div>Refresh</div>
+    </button>
+  </div>
+
+  <script type="module" src="homepage.ts"></script>
+</body>
+</html>
