@@ -13,8 +13,7 @@ export function upgrade(buddy: CLI): void {
     dependencies: 'Upgrade your dependencies (pantry.yaml & package.json)',
     bun: 'Upgrade Bun to the latest version',
     shell: 'Upgrade the to the latest shell integration (currently only supports Oh My Zsh)',
-    binary:
-      'Upgrade the `stacks` binary to the latest version. Please note, the binary is moved to the `~/.stacks/bin` directory',
+    binary: 'Upgrade the `stacks` binary to the latest version. Please note, the binary is moved to the `~/.stacks/bin` directory',
     all: 'Upgrade Node, package manager, project dependencies, and framework',
     force: 'Overwrite possible local updates with remote framework updates',
     select: 'What are you trying to upgrade?',

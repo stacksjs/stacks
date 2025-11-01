@@ -3,7 +3,6 @@ import type { CliOptions, CommandError, Readable, Subprocess, Writable } from '@
 import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
-import { log } from './console'
 import { exec, execSync } from './exec'
 
 /**

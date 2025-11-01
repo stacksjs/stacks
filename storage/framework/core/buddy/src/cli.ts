@@ -1,4 +1,4 @@
-import type { CAC } from '@stacksjs/cli'
+import type { CLI } from '@stacksjs/cli'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { cli, log } from '@stacksjs/cli'
@@ -90,7 +90,7 @@ async function main() {
 
 await main()
 
-async function dynamicImports(buddy: CAC) {
+async function dynamicImports(buddy: CLI) {
   // dynamically import and register commands from ./app/Commands/*
   const commandsDir = p.appPath('Commands')
   const commandFiles = fs.readdirSync(commandsDir).filter((file: string) => file.endsWith('.ts'))

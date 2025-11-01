@@ -1,5 +1,5 @@
 // import type { CliOptions } from '@stacksjs/types'
-import { CAC } from 'cac'
+import { CLI } from '@stacksjs/clapp'
 
 export interface ParsedArgv {
   args: ReadonlyArray<string>
@@ -14,16 +14,16 @@ interface CliOptions {
   // description: string
 }
 
-export function cli(name?: string | CliOptions, options?: CliOptions): CAC {
+export function cli(name?: string | CliOptions, options?: CliOptions): CLI {
   if (typeof name === 'object') {
     options = name
     name = options.name
   }
 
-  return new CAC(name || 'buddy')
+  return new CLI(name || 'buddy')
 }
 
-export { CAC }
+export { CLI }
 
 // export function command(name: string, description: string, options?: CliOptions) {
 //   return cli(options).command(name, description)
