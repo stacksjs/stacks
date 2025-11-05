@@ -29,3 +29,4 @@ generated/*
 resources/assets/fonts/*.woff
 resources/assets/fonts/*.woff2
 stacks.log
+/pantry_modules

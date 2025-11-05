@@ -55,7 +55,6 @@
     "stx": "./buddy"
   },
   "dependencies": {
-    "bunfig": "^0.15.6",
     "stacks": "workspace:*"
   },
   "workspaces": [
