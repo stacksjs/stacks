@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Tahoma:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="homepage.css">
+  <link rel="stylesheet" href="assets/styles/main.css">
 </head>
 
 <body>
@@ -321,6 +321,6 @@
     </button>
   </div>
 
-  <script type="module" src="homepage.ts"></script>
+  <script type="module" src="assets/scripts/main.ts"></script>
 </body>
 </html>

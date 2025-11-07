@@ -461,7 +461,7 @@ function initializeIcons() {
         }, 500)
       }
       else {
-        // Set timeout to reset click count
+      // Set timeout to reset click count
         clickTimeout = window.setTimeout(() => {
           _clickCount = 0
         }, 250)
