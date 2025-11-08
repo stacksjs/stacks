@@ -6,7 +6,7 @@ const { startTime } = await intro({
 })
 
 const result = await Bun.build({
-  root: './src',
+  root: '.',
   outdir: './dist',
   format: 'esm',
   target: 'bun',
@@ -75,7 +75,7 @@ const result = await Bun.build({
 
   plugins: [
     dts({
-      root: './src',
+      root: '.',
       outdir: './dist',
     }),
   ],

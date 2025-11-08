@@ -58,6 +58,18 @@ disableManifest = false
 # whether to save the lockfile to disk
 save = true
 
+# Exclude patterns - directories to ignore in workspaces
+[install.workspace]
+exclude = [
+  "**/cdk.out/**",
+  "**/node_modules/**",
+  "**/dist/**",
+  "**/.cache/**",
+  "**/build/**",
+  "**/coverage/**",
+  "**/.turbo/**"
+]
+
 [run]
 # equivalent to `bun --bun` for all `bun run` commands
 bun = true

@@ -7,7 +7,7 @@ import { ExitCode } from '@stacksjs/types'
 
 // Initialize logger with default options
 const logger = new Logger('stacks', {
-  level: 'debug',
+  level: (process.env.LOG_LEVEL as any) || 'info',
   logDirectory: p.projectPath('storage/logs'),
   showTags: false,
   fancy: true,
@@ -109,3 +109,6 @@ export function dd(...args: any[]): void {
 export function echo(...args: any[]): void {
   log.debug(...args)
 }
+
+// Export logger instance for debugging
+export { logger }

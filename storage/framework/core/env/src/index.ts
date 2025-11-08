@@ -56,3 +56,7 @@ export function writeEnv(key: EnvKey, value: string, options?: { path: string })
 }
 
 export * from './types'
+export * from './crypto'
+export * from './parser'
+export * from './plugin'
+export * from './cli'

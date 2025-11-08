@@ -1,6 +1,7 @@
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
+import { decryptEnv, encryptEnv, getEnv, getKeypair, rotateKeypair, setEnv } from '@stacksjs/env'
 import { ExitCode } from '@stacksjs/types'
 
 interface EnvOptions {
@@ -19,6 +20,7 @@ interface EnvOptions {
   project: string
   verbose: boolean
   file: string
+  plain: boolean
 }
 
 export function env(buddy: CLI): void {
@@ -58,32 +60,20 @@ export function env(buddy: CLI): void {
     .action(async (key: string, options: EnvOptions) => {
       log.debug('Running `buddy env:get` ...', options)
 
-      const args = ['get']
-
-      if (key)
-        args.push(key)
-      if (options.all)
-        args.push('--all')
-      if (options.pretty)
-        args.push('--pretty-print')
-      if (options.file)
-        args.push('--file', options.file)
-      if (options.format)
-        args.push('--format', options.format)
-
-      const result = Bun.spawnSync(['dotenvx', ...args], {
-        stdout: 'pipe',
-        stderr: 'pipe',
+      const result = getEnv(key, {
+        file: options.file,
+        keysFile: options.fileKeys,
+        all: options.all,
+        format: options.format as 'json' | 'shell' | 'eval',
+        prettyPrint: options.pretty,
       })
 
-      if (result.exitCode === 0) {
-        const output = new TextDecoder().decode(result.stdout)
-        console.log(output)
+      if (result.success) {
+        console.log(result.output)
         process.exit(ExitCode.Success)
       }
       else {
-        const error = new TextDecoder().decode(result.stderr)
-        console.error(error)
+        console.error(result.error)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -91,46 +81,33 @@ export function env(buddy: CLI): void {
   buddy
     .command('env:set [key] [value]', descriptions.set)
     .option('-f, --file [file]', descriptions.file, { default: '' })
-    .option('--format [format]', descriptions.format, { default: 'json' })
-    .option('-a, --all', descriptions.all, { default: false })
-    .option('-p, --pretty', descriptions.pretty, { default: false })
-    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('-fk, --file-keys [fileKeys]', descriptions.fileKeys, { default: '' })
+    .option('--plain', 'Don\'t encrypt the value', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy env:set SECRET=value')
     .example('buddy env:set SECRET value')
     .example('buddy env:set SECRET value --file .env.production')
-    .example('buddy env:set --format shell')
+    .example('buddy env:set SECRET value --plain')
     .action(async (key: string, value: string, options: EnvOptions) => {
       log.debug('Running `buddy env:set` ...', options)
 
-      const args = ['set']
-
-      if (key) {
-        args.push(key)
-        if (value)
-          args.push(value)
+      if (!key || !value) {
+        console.error('Both key and value are required')
+        process.exit(ExitCode.FatalError)
       }
 
-      if (options.file)
-        args.push('--file', options.file)
-      if (options.format)
-        args.push('--format', options.format)
-      if (options.pretty)
-        args.push('--pretty-print')
-
-      const result = Bun.spawnSync(['dotenvx', ...args], {
-        stdout: 'pipe',
-        stderr: 'pipe',
+      const result = setEnv(key, value, {
+        file: options.file,
+        keysFile: options.fileKeys,
+        plain: options.plain,
       })
 
-      if (result.exitCode === 0) {
-        const output = new TextDecoder().decode(result.stdout)
-        console.log(output)
+      if (result.success) {
+        console.log(result.output)
         process.exit(ExitCode.Success)
       }
       else {
-        const error = new TextDecoder().decode(result.stderr)
-        console.error(error)
+        console.error(result.error)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -139,40 +116,28 @@ export function env(buddy: CLI): void {
     .command('env:encrypt [key]', descriptions.encrypt)
     .option('-f, --file [file]', descriptions.file, { default: '' })
     .option('-fk, --file-keys [fileKeys]', descriptions.fileKeys, { default: '' })
-    .option('-k, --keypair [keypair]', descriptions.keypair, { default: '' })
     .option('-o, --stdout', descriptions.stdout, { default: false })
     .option('-ek, --exclude-key [excludeKey]', descriptions.excludeKey, { default: '' })
+    .example('buddy env:encrypt')
+    .example('buddy env:encrypt --file .env.production')
+    .example('buddy env:encrypt -k "SECRET_*"')
     .action(async (key: string, options: EnvOptions) => {
       log.debug('Running `buddy env:encrypt` ...', options)
 
-      const args = ['encrypt']
-
-      if (key)
-        args.push(key)
-      if (options.file)
-        args.push('--file', options.file)
-      if (options.fileKeys)
-        args.push('--file-keys', options.fileKeys)
-      if (options.keypair)
-        args.push('--keypair', options.keypair)
-      if (options.stdout)
-        args.push('--stdout')
-      if (options.excludeKey)
-        args.push('--exclude-key', options.excludeKey)
-
-      const result = Bun.spawnSync(['dotenvx', ...args], {
-        stdout: 'pipe',
-        stderr: 'pipe',
+      const result = encryptEnv({
+        file: options.file,
+        keysFile: options.fileKeys,
+        key,
+        excludeKey: options.excludeKey,
+        stdout: options.stdout,
       })
 
-      if (result.exitCode === 0) {
-        const output = new TextDecoder().decode(result.stdout)
-        console.log(output)
+      if (result.success) {
+        console.log(result.output)
         process.exit(ExitCode.Success)
       }
       else {
-        const error = new TextDecoder().decode(result.stderr)
-        console.error(error)
+        console.error(result.error)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -181,37 +146,26 @@ export function env(buddy: CLI): void {
     .command('env:decrypt [key]', descriptions.decrypt)
     .option('-f, --file [file]', descriptions.file, { default: '' })
     .option('-fk, --file-keys [fileKeys]', descriptions.fileKeys, { default: '' })
-    .option('-k, --keypair [keypair]', descriptions.keypair, { default: '' })
     .option('-o, --stdout', descriptions.stdout, { default: false })
+    .example('buddy env:decrypt')
+    .example('buddy env:decrypt --file .env.production')
+    .example('buddy env:decrypt -k "SECRET_*"')
     .action(async (key: string, options: EnvOptions) => {
       log.debug('Running `buddy env:decrypt` ...', options)
 
-      const args = ['decrypt']
-
-      if (key)
-        args.push(key)
-      if (options.file)
-        args.push('--file', options.file)
-      if (options.fileKeys)
-        args.push('--file-keys', options.fileKeys)
-      if (options.keypair)
-        args.push('--keypair', options.keypair)
-      if (options.stdout)
-        args.push('--stdout')
-
-      const result = Bun.spawnSync(['dotenvx', ...args], {
-        stdout: 'pipe',
-        stderr: 'pipe',
+      const result = decryptEnv({
+        file: options.file,
+        keysFile: options.fileKeys,
+        key,
+        stdout: options.stdout,
       })
 
-      if (result.exitCode === 0) {
-        const output = new TextDecoder().decode(result.stdout)
-        console.log(output)
+      if (result.success) {
+        console.log(result.output)
         process.exit(ExitCode.Success)
       }
       else {
-        const error = new TextDecoder().decode(result.stderr)
-        console.error(error)
+        console.error(result.error)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -220,34 +174,25 @@ export function env(buddy: CLI): void {
     .command('env:keypair [key]', descriptions.keypair)
     .option('-f, --file [file]', descriptions.file, { default: '' })
     .option('-fk, --file-keys [fileKeys]', descriptions.fileKeys, { default: '' })
-    .option('-o, --stdout', descriptions.stdout, { default: false })
+    .option('--format [format]', descriptions.format, { default: 'json' })
+    .example('buddy env:keypair')
+    .example('buddy env:keypair --file .env.production')
+    .example('buddy env:keypair DOTENV_PRIVATE_KEY')
     .action(async (key: string, options: EnvOptions) => {
       log.debug('Running `buddy env:keypair` ...', options)
 
-      const args = ['keypair']
-
-      if (key)
-        args.push(key)
-      if (options.file)
-        args.push('--file', options.file)
-      if (options.fileKeys)
-        args.push('--file-keys', options.fileKeys)
-      if (options.stdout)
-        args.push('--stdout')
-
-      const result = Bun.spawnSync(['dotenvx', ...args], {
-        stdout: 'pipe',
-        stderr: 'pipe',
+      const result = getKeypair(key, {
+        file: options.file,
+        keysFile: options.fileKeys,
+        format: options.format as 'json' | 'shell',
       })
 
-      if (result.exitCode === 0) {
-        const output = new TextDecoder().decode(result.stdout)
-        console.log(output)
+      if (result.success) {
+        console.log(result.output)
         process.exit(ExitCode.Success)
       }
       else {
-        const error = new TextDecoder().decode(result.stderr)
-        console.error(error)
+        console.error(result.error)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -256,37 +201,27 @@ export function env(buddy: CLI): void {
     .command('env:rotate [key]', descriptions.rotate)
     .option('-f, --file [file]', descriptions.file, { default: '' })
     .option('-fk, --file-keys [fileKeys]', descriptions.fileKeys, { default: '' })
-    .option('-k, --keypair [keypair]', descriptions.keypair, { default: '' })
     .option('-o, --stdout', descriptions.stdout, { default: false })
+    .option('-ek, --exclude-key [excludeKey]', descriptions.excludeKey, { default: '' })
+    .example('buddy env:rotate')
+    .example('buddy env:rotate --file .env.production')
     .action(async (key: string, options: EnvOptions) => {
       log.debug('Running `buddy env:rotate` ...', options)
 
-      const args = ['rotate']
-
-      if (key)
-        args.push(key)
-      if (options.file)
-        args.push('--file', options.file)
-      if (options.fileKeys)
-        args.push('--file-keys', options.fileKeys)
-      if (options.keypair)
-        args.push('--keypair', options.keypair)
-      if (options.stdout)
-        args.push('--stdout')
-
-      const result = Bun.spawnSync(['dotenvx', ...args], {
-        stdout: 'pipe',
-        stderr: 'pipe',
+      const result = rotateKeypair({
+        file: options.file,
+        keysFile: options.fileKeys,
+        key,
+        excludeKey: options.excludeKey,
+        stdout: options.stdout,
       })
 
-      if (result.exitCode === 0) {
-        const output = new TextDecoder().decode(result.stdout)
-        console.log(output)
+      if (result.success) {
+        console.log(result.output)
         process.exit(ExitCode.Success)
       }
       else {
-        const error = new TextDecoder().decode(result.stderr)
-        console.error(error)
+        console.error(result.error)
         process.exit(ExitCode.FatalError)
       }
     })

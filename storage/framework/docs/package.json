@@ -16,7 +16,6 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/server": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "@stacksjs/vite-config": "workspace:*",
     "vitepress": "1.6.4"
   },
   "overrides": {

@@ -55,10 +55,19 @@
     "stx": "./buddy"
   },
   "dependencies": {
-    "stacks": "workspace:*"
+    "stacks": "workspace:*",
+    "@stacksjs/stx": "link:../stx/packages/stx",
+    "bun-plugin-stx": "link:../stx/packages/bun-plugin"
   },
   "workspaces": [
-    "storage/framework/**"
+    "storage/framework/**",
+    "!storage/framework/cloud/cdk.out",
+    "!storage/framework/cloud/cdk.out/**",
+    "!**/node_modules/**",
+    "!**/dist/**",
+    "!**/docs/deps/**",
+    "!storage/framework/server/storage/**",
+    "!storage/framework/cache/**"
   ],
   "devDependencies": {
     "buddy-bot": "0.9.4",

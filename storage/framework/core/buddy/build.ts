@@ -35,7 +35,7 @@ const result = await Bun.build({
     '@stacksjs/types',
   ],
 
-  plugins: [dts({ root: './src', outdir: './dist' })],
+  plugins: [dts({ root: '.', outdir: './dist' })],
 })
 
 // Update the package.json workspace:* references to the specific version

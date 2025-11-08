@@ -4,6 +4,7 @@ import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
 import { exec, execSync } from './exec'
+import { log } from '@stacksjs/logging'
 
 /**
  * Run a command.

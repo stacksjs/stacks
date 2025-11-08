@@ -296,7 +296,7 @@
   ],
   "scripts": {
     "buddy": "bun run ./buddy/src/cli.ts",
-    "build": "cd path && bun run build && cd .. && bun ./build.ts",
+    "build": "bun ./build.ts",
     "up": "bun update",
     "up:latest": "bun update --latest"
   },
@@ -347,8 +347,6 @@
     "@stacksjs/types": "^0.70.23",
     "@stacksjs/ui": "^0.70.23",
     "@stacksjs/utils": "^0.70.23",
-    "@stacksjs/validation": "^0.70.23",
-    "@stacksjs/vite-config": "^0.70.23",
-    "@stacksjs/vite-plugin": "^0.70.23"
+    "@stacksjs/validation": "^0.70.23"
   }
 }

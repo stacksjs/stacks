@@ -15,7 +15,7 @@ const result = await Bun.build({
   external: ['@stacksjs/validation', 'consola', 'unocss', '@unocss/core'],
   plugins: [
     dts({
-      root: './src',
+      root: '.',
       outdir: './dist',
     }),
   ],

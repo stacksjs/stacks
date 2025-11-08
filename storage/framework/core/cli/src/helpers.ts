@@ -5,6 +5,10 @@ import { ExitCode } from '@stacksjs/types'
 import { bgCyan, bold, cyan, dim, gray, green, italic } from 'kolorist'
 import { version } from '../package.json'
 
+// Re-export commonly used CLI utilities
+export { log }
+export { italic, bold, cyan, dim, gray, green } from 'kolorist'
+
 /**
  * Prints the intro message.
  */

@@ -33,10 +33,7 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
-    "@dotenvx/dotenvx": "^1.49.0",
-    "bun-plugin-dotenvx": "^0.6.4"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@stacksjs/path": "workspace:*",

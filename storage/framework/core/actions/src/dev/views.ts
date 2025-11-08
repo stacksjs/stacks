@@ -1,7 +1,10 @@
 import { runCommand } from '@stacksjs/cli'
-import { frameworkPath } from '@stacksjs/path'
 
-await runCommand('bun run dev', {
-  cwd: frameworkPath('views/web'),
+// Run stx dev server for resources/views
+// This serves .stx templates from the project's resources/views directory
+const viewsPath = 'resources/views'
+
+await runCommand(`serve ${viewsPath} --port 3456`, {
+  cwd: process.cwd(),
   // verbose: true,
 })
