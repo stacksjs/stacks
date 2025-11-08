@@ -11,6 +11,7 @@ A secure .env file management package with built-in encryption support for Bun a
 - 🔧 **Command Substitution** - Execute commands with `$(command)`
 - 🎯 **Multi-Environment** - Manage multiple .env files for different environments
 - 🛠️ **CLI Tools** - Full-featured CLI via buddy commands
+- 🌍 **Environment Detection** - Native runtime, platform, and CI/CD detection utilities
 
 ## Installation
 
@@ -220,6 +221,67 @@ CURRENT_USER=$(whoami)
 BUILD_TIME=$(date +%s)
 GIT_COMMIT=$(git rev-parse HEAD)
 ```
+
+## Environment Detection
+
+The package includes native utilities to detect runtime, platform, and CI/CD environments:
+
+```typescript
+import {
+  // Runtime detection
+  isBun,
+  isNode,
+  runtime,
+  runtimeInfo,
+
+  // Platform detection
+  platform,
+  isWindows,
+  isMacOS,
+  isLinux,
+
+  // Environment detection
+  hasTTY,
+  hasWindow,
+  isCI,
+  isDebug,
+  isMinimal,
+  isColorSupported,
+
+  // Provider detection
+  provider,
+  providerInfo,
+} from '@stacksjs/env'
+
+// Check runtime
+console.log(runtime) // 'bun' | 'node' | 'unknown'
+console.log(runtimeInfo) // { name: 'bun', version: '1.3.2' }
+
+// Check platform
+console.log(platform) // 'darwin' | 'linux' | 'win32' | etc.
+console.log(isMacOS) // true/false
+
+// Check CI environment
+console.log(isCI) // true/false
+console.log(provider) // 'github' | 'gitlab' | 'vercel' | etc.
+console.log(providerInfo) // { name: 'GitHub Actions', detected: true }
+```
+
+### Supported CI/CD Providers
+
+- GitHub Actions
+- GitLab CI
+- CircleCI
+- Travis CI
+- Jenkins
+- Vercel
+- Netlify
+- Heroku
+- AWS
+- Azure
+- Cloudflare Pages
+- Railway
+- Render
 
 ## Multi-Environment Support
 

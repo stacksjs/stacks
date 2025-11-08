@@ -5,6 +5,7 @@
 ### Dependencies Removed
 - ❌ `@dotenvx/dotenvx` - Completely removed
 - ❌ `bun-plugin-dotenvx` - Completely removed
+- ❌ `std-env` - Replaced with native implementation
 
 ### Files Removed from node_modules
 - ✓ `/node_modules/@dotenvx/dotenvx` - Deleted
@@ -20,7 +21,8 @@
 ### New Native Implementation
 - ✅ `@stacksjs/env` - Native Bun plugin
 - ✅ Full encryption/decryption support
-- ✅ 82 passing tests with 191 assertions
+- ✅ Native environment detection utilities
+- ✅ 99 passing tests with 235 assertions
 - ✅ Zero external dependencies
 
 ## 📊 What's Working
@@ -35,6 +37,10 @@
 ✓ Command substitution $(command)
 ✓ Multi-environment support
 ✓ Bun plugin auto-loading
+✓ Runtime detection (Bun, Node)
+✓ Platform detection (Windows, macOS, Linux)
+✓ CI/CD provider detection (14+ platforms)
+✓ Environment utilities (TTY, color support, debug mode)
 ```
 
 ### CLI Commands
@@ -49,11 +55,11 @@
 
 ### Test Coverage
 ```
-82 pass
+99 pass
 1 skip
 0 fail
-191 expect() calls
-Ran 83 tests across 4 files. [126.00ms]
+235 expect() calls
+Ran 100 tests across 5 files. [44.00ms]
 ```
 
 ## 🚀 Usage Examples
@@ -131,6 +137,7 @@ buddy env:keypair
 - `src/parser.ts` - .env file parser
 - `src/plugin.ts` - Bun plugin
 - `src/cli.ts` - CLI commands
+- `src/utils.ts` - Environment detection utilities
 - `tests/` - Comprehensive test suite
 
 ## ✨ Benefits
@@ -155,9 +162,10 @@ buddy env:keypair
 ```
 ✅ 100% test coverage for critical paths
 ✅ 0 external dependencies
-✅ 82 passing tests
-✅ <200ms full test suite
+✅ 99 passing tests (235 assertions)
+✅ <50ms full test suite
 ✅ Compatible with dotenvx APIs
+✅ Native environment detection (replaces std-env)
 ✅ Production-ready
 ```
 

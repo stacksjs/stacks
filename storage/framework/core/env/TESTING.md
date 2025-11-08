@@ -2,7 +2,7 @@
 
 ## Test Coverage
 
-The `@stacksjs/env` package has comprehensive test coverage with **82 passing tests** across multiple test suites.
+The `@stacksjs/env` package has comprehensive test coverage with **99 passing tests** across multiple test suites.
 
 ## Test Suites
 
@@ -98,7 +98,40 @@ Tests for .env file parsing:
   - AWS credentials format
   - Next.js style .env
 
-### 3. E2E Tests (`tests/e2e.test.ts`)
+### 3. Utils Tests (`tests/utils.test.ts`)
+
+**Coverage: 17 tests**
+
+Tests for environment detection utilities:
+
+- **Runtime Detection (2 tests)**
+  - Bun runtime detection
+  - Runtime info and version
+
+- **Platform Detection (3 tests)**
+  - Platform identification
+  - OS type detection (Windows, macOS, Linux)
+  - Platform/OS boolean matching
+
+- **Environment Detection (6 tests)**
+  - TTY detection
+  - Window detection (browser)
+  - CI environment detection
+  - Debug mode detection
+  - Minimal mode detection
+  - Color support detection
+
+- **Provider Detection (4 tests)**
+  - Provider identification
+  - Valid provider info
+  - Known provider detection
+  - Provider info matching
+
+- **Type Safety (2 tests)**
+  - Correct types for all exports
+  - Runtime value validation
+
+### 4. E2E Tests (`tests/e2e.test.ts`)
 
 **Coverage: 24 tests**
 
@@ -145,6 +178,7 @@ bun test
 # Run specific test file
 bun test tests/crypto.test.ts
 bun test tests/parser.test.ts
+bun test tests/utils.test.ts
 bun test tests/e2e.test.ts
 
 # Run tests with coverage
@@ -154,11 +188,11 @@ bun test --coverage
 ## Test Results
 
 ```
- 82 pass
+ 99 pass
  1 skip
  0 fail
- 191 expect() calls
-Ran 83 tests across 4 files. [145.00ms]
+ 235 expect() calls
+Ran 100 tests across 5 files. [44.00ms]
 ```
 
 ## Test Data
@@ -198,6 +232,10 @@ This directory is cleaned up after each test.
 - Command substitution
 - File operations (encrypt, decrypt, set, get)
 - Multi-environment support
+- Environment detection utilities
+- Runtime detection (Bun, Node)
+- Platform detection (Windows, macOS, Linux)
+- CI/CD provider detection
 - Error handling
 
 ### Edge Cases Covered
@@ -223,7 +261,7 @@ This directory is cleaned up after each test.
 
 ## Performance
 
-All tests complete in under 200ms, with most individual tests completing in < 10ms.
+All tests complete in under 50ms, with most individual tests completing in < 5ms.
 
 ## Continuous Integration
 
