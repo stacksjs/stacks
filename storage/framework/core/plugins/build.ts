@@ -13,7 +13,10 @@ const result = await Bun.build({
   external: ['bun'],
   minify: true,
   plugins: [
-    dts(),
+    dts({
+      root: '.',
+      outdir: './dist',
+    }),
   ],
 })
 
