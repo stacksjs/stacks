@@ -6,6 +6,7 @@ node_modules
 temp
 .temp
 .env
+.env.keys
 *.local
 updates
 tests/unit/coverage
@@ -30,3 +31,5 @@ resources/assets/fonts/*.woff
 resources/assets/fonts/*.woff2
 stacks.log
 /pantry_modules
+.stx
+.stx-serve
