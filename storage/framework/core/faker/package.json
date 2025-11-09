@@ -35,13 +35,10 @@
     "test": "bun test",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
-    "ts-mocker": "^0.1.4"
-  },
   "devDependencies": {
-    "@faker-js/faker": "^9.9.0",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/development": "workspace:*"
+    "@stacksjs/development": "workspace:*",
+    "ts-mocker": "^0.1.4"
   }
 }

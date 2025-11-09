@@ -68,7 +68,6 @@
     "detect-newline": "^4.0.1",
     "export-size": "^0.7.0",
     "kolorist": "1.8.0",
-    "macroable": "^7.0.2",
     "magic-regexp": "^0.10.0",
     "markdown-table": "^3.0.4",
     "perfect-debounce": "^1.0.0",

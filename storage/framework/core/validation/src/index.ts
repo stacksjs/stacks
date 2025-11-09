@@ -1,6 +1,2 @@
-export * from './is'
-export * from './reporter'
-export * from './rules'
-export * from './schema'
-export * from './types'
-export * from './validator'
+// Re-export everything from @stacksjs/ts-validation
+export * from '@stacksjs/ts-validation'
