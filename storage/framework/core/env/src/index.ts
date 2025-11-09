@@ -3,7 +3,7 @@ import type { Env } from './types'
 import p from 'node:process'
 import { projectPath } from '@stacksjs/path'
 import { ValidationBoolean, ValidationEnum, ValidationNumber } from '@stacksjs/validation'
-import fs from 'fs-extra'
+import fs from 'node:fs'
 
 const handler = {
   get: (target: Env, key: EnvKey) => {

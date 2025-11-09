@@ -35,7 +35,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "fs-extra": "^11.3.2"
+    "ts-error-handling": "^0.1.0"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
@@ -43,7 +43,6 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@stacksjs/validation": "workspace:*",
-    "neverthrow": "^8.2.0"
+    "@stacksjs/validation": "workspace:*"
   }
 }

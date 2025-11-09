@@ -31,7 +31,6 @@ import {
   deleteFolder,
   doesFolderExist,
   fileURLToPath,
-  fs, // fs-extra Node module
   hasComponents,
   hasFiles,
   hasFunctions,

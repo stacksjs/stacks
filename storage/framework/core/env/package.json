@@ -37,8 +37,7 @@
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/validation": "workspace:*",
-    "fs-extra": "^11.3.1"
+    "@stacksjs/validation": "workspace:*"
   },
   "peerDependencies": {
     "bun-types": "*"

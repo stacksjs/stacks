@@ -1,11 +1,11 @@
 import type { LogErrorOptions } from '@stacksjs/logging'
 import { appendFile, mkdir } from 'node:fs/promises'
+import fs from 'node:fs'
 import { dirname } from 'node:path'
 import * as process from 'node:process'
 import { italic, stripAnsi } from '@stacksjs/cli'
 import * as path from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import fs from 'fs-extra'
 
 type ErrorMessage = string
 

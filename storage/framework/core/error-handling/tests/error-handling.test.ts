@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, mock, spyOn } from 'bun:test'
 import { italic } from '@stacksjs/cli'
-import fs from 'fs-extra'
+import fs from 'ndoe:fs'
 import { ErrorHandler, handleError } from '../src/handler'
 import { rescue } from '../src/utils'
 
