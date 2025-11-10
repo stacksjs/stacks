@@ -46,7 +46,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "@stripe/stripe-js": "^7.9.0",
+    "@stripe/stripe-js": "^8.4.0",
     "stripe": "^17.7.0"
   }
 }
