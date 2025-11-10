@@ -73,10 +73,73 @@ export interface StorageOptions {
    *
    * The storage driver to utilize.
    *
-   * @default string 'local'
+   * @default 'local'
    * @see https://stacksjs.org/docs/storage
    */
   driver: 's3' | 'efs' | 'local' | 'bun' | 'memory'
+
+  /**
+   * **Root Directory**
+   *
+   * Root directory for local and bun drivers.
+   *
+   * @default process.cwd()
+   */
+  root?: string
+
+  /**
+   * **S3 Configuration**
+   */
+  s3?: {
+    /**
+     * S3 bucket name
+     */
+    bucket: string
+
+    /**
+     * S3 region
+     *
+     * @default 'us-east-1'
+     */
+    region?: string
+
+    /**
+     * Key prefix for all S3 objects
+     */
+    prefix?: string
+
+    /**
+     * AWS credentials
+     */
+    credentials?: {
+      accessKeyId: string
+      secretAccessKey: string
+    }
+
+    /**
+     * Custom endpoint (for S3-compatible services)
+     */
+    endpoint?: string
+  }
+
+  /**
+   * **Public URL Configuration**
+   */
+  publicUrl?: {
+    /**
+     * Domain for public URLs
+     *
+     * @default 'http://localhost'
+     */
+    domain?: string
+  }
+
+  /**
+   * **Default Visibility**
+   *
+   * @default 'private'
+   */
+  defaultVisibility?: Visibility
 }
 
 export type StorageConfig = Partial<StorageOptions>

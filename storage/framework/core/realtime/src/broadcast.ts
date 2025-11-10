@@ -1,7 +1,6 @@
 import type { BroadcastInstance, ChannelType, RealtimeDriver } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
 import { appPath } from '@stacksjs/path'
-import { globSync } from 'tinyglobby'
 import { RealtimeFactory } from './factory'
 
 export class Broadcast {

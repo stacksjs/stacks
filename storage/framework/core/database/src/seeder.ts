@@ -7,7 +7,6 @@ import { path } from '@stacksjs/path'
 import { makeHash } from '@stacksjs/security'
 import { fs } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
-import { globSync } from 'tinyglobby'
 
 async function seedModel(name: string, modelPath: string, model: Model) {
   if (model?.traits?.useSeeder === false || model?.traits?.seedable === false) {

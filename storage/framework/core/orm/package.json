@@ -35,8 +35,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-validation": "^0.4.7",
-    "tinyglobby": "^0.2.15"
+    "@stacksjs/ts-validation": "^0.4.7"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",

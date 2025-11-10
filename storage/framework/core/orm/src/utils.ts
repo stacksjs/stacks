@@ -21,7 +21,6 @@ import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { camelCase, kebabCase, pascalCase, plural, singular, slugify, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
-import { globSync } from 'tinyglobby'
 import { generateModelString } from './generate'
 import { generateTraitRequestTypes, generateTraitTableInterfaces, traitInterfaces } from './generated/table-traits'
 
@@ -612,7 +611,7 @@ export async function writeModelEvents(): Promise<void> {
   eventString += `
   ${observerImports} \n\n
 
-  export interface ModelEvents {\n 
+  export interface ModelEvents {\n
     ${observerString}
   }`
 
@@ -1757,7 +1756,7 @@ export interface ${formattedTableName}Table {
 
     if (relationType === 'belongsType' && !relationCount) {
       const relationName = camelCase(relation.relationName || formattedModelRelation)
-      modelTypeInterface += `  get ${snakeCase(relationName)}(): ${modelRelation}ModelType | undefined 
+      modelTypeInterface += `  get ${snakeCase(relationName)}(): ${modelRelation}ModelType | undefined
       `
     }
 

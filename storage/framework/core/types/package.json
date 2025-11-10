@@ -47,33 +47,15 @@
     "@stacksjs/ts-validation": "^0.4.7"
   },
   "devDependencies": {
-    "@mdit-vue/plugin-component": "^2.1.4",
-    "@mdit-vue/plugin-frontmatter": "^2.1.4",
-    "@mdit-vue/types": "^2.1.4",
     "@rollup/pluginutils": "^5.3.0",
     "@stacksjs/validation": "workspace:*",
     "@types/aws4": "^1.11.6",
     "@types/bun": "^1.2.21",
-    "@types/crypto-js": "^4.2.2",
     "@types/minimatch": "^6.0.0",
     "@types/nprogress": "^0.2.3",
-    "@vinejs/vine": "^3.0.1",
     "aws-cdk-lib": "^2.213.0",
-    "cac": "^6.7.14",
     "meilisearch": "^0.52.0",
     "ora": "^8.2.0",
-    "typescript": "^5.9.2",
-    "unocss": "66.4.2",
-    "unplugin-auto-import": "^19.3.0",
-    "unplugin-vue-components": "^28.8.0",
-    "vite": "npm:rolldown-vite@latest",
-    "vite-plugin-inspect": "^11.3.3",
-    "vite-plugin-pwa": "^1.0.3",
-    "vite-ssg": "^28.1.0",
-    "vitepress": "1.6.4",
-    "vue": "^3.5.20"
-  },
-  "overrides": {
-    "vite": "npm:rolldown-vite@latest"
+    "typescript": "^5.9.2"
   }
 }

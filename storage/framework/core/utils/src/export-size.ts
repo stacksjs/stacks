@@ -1,1 +1,2 @@
-export { getExportsSize } from 'export-size'
+// Re-export from our native implementation
+export { getExportsSize } from './size'

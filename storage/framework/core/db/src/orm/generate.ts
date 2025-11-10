@@ -2,7 +2,6 @@ import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'
 import type { Model } from '@stacksjs/types'
-import { globSync } from 'tinyglobby'
 
 export function getModelName(model: Model, modelPath: string): string {
   if (model.name)
@@ -22,26 +21,26 @@ export function getTableName(model: Model, modelPath: string): string {
 
 function extractHiddenFields(model: Model): string[] {
   if (!model.attributes) return []
-  
-  return Object.keys(model.attributes).filter(key => 
+
+  return Object.keys(model.attributes).filter(key =>
     model.attributes?.[key]?.hidden === true
   ).map(field => snakeCase(field))
 }
 
 function extractFillableFields(model: Model): string[] {
   if (!model.attributes) return []
-  
-  const fillable = Object.keys(model.attributes).filter(key => 
+
+  const fillable = Object.keys(model.attributes).filter(key =>
     model.attributes?.[key]?.fillable === true
   ).map(field => snakeCase(field))
 
   // Add trait-specific fillable fields
   const additionalFields: string[] = []
-  
+
   if (model.traits?.useUuid) {
     additionalFields.push('uuid')
   }
-  
+
   if (model.traits?.useAuth) {
     const useAuth = model.traits.useAuth
     if (typeof useAuth === 'object' && useAuth.usePasskey) {
@@ -54,8 +53,8 @@ function extractFillableFields(model: Model): string[] {
 
 function extractGuardedFields(model: Model): string[] {
   if (!model.attributes) return []
-  
-  return Object.keys(model.attributes).filter(key => 
+
+  return Object.keys(model.attributes).filter(key =>
     model.attributes?.[key]?.guarded === true
   ).map(field => snakeCase(field))
 }
@@ -145,7 +144,7 @@ class ${modelName}Model {
   // Create a new record
   static async create(data: Record<string, any>) {
     const instance = new ${modelName}Model()
-    
+
     // Filter based on fillable and guarded
     const filteredData = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
@@ -211,11 +210,11 @@ class ${modelName}Model {
   // Convert to JSON (excluding hidden fields)
   toJSON() {
     const json = { ...this.attributes }
-    
+
     for (const field of this.hidden) {
       delete json[field]
     }
-    
+
     return json
   }
 }
@@ -236,7 +235,7 @@ export async function generateOrmModels(): Promise<void> {
     const tableName = getTableName(model, userModelFile)
 
     const modelString = generateOrmModelString(modelName, tableName, model)
-    
+
     // Ensure the directory exists
     const ormModelsDir = path.storagePath('framework/core/db/src/orm/Models')
     await fs.promises.mkdir(ormModelsDir, { recursive: true })
@@ -244,7 +243,7 @@ export async function generateOrmModels(): Promise<void> {
     // Write the generated model file
     const outputPath = path.join(ormModelsDir, `${modelName}.ts`)
     await fs.promises.writeFile(outputPath, modelString, 'utf8')
-    
+
     console.log(`Generated ORM model: ${modelName} -> ${outputPath}`)
   }
 }
@@ -255,7 +254,7 @@ export async function generateOrmModel(modelPath: string): Promise<void> {
   const tableName = getTableName(model, modelPath)
 
   const modelString = generateOrmModelString(modelName, tableName, model)
-  
+
   // Ensure the directory exists
   const ormModelsDir = path.storagePath('framework/core/db/src/orm/Models')
   await fs.promises.mkdir(ormModelsDir, { recursive: true })
@@ -263,7 +262,7 @@ export async function generateOrmModel(modelPath: string): Promise<void> {
   // Write the generated model file
   const outputPath = path.join(ormModelsDir, `${modelName}.ts`)
   await fs.promises.writeFile(outputPath, modelString, 'utf8')
-  
+
   console.log(`Generated ORM model: ${modelName} -> ${outputPath}`)
 }
 

@@ -59,7 +59,6 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@types/archiver": "^6.0.3",
-    "archiver": "^7.0.1",
-    "tinyglobby": "^0.2.15"
+    "archiver": "^7.0.1"
   }
 }

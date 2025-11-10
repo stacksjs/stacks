@@ -1,7 +1,3 @@
-import { globSync as gs } from 'tinyglobby'
-
-export { glob } from 'tinyglobby'
-
 export interface GlobOptions {
   absolute?: boolean
   cwd?: string
