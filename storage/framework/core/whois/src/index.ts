@@ -1,10 +1,9 @@
-import type { SocksClientOptions } from 'socks'
 import type { ProxyData, WhoIsOptions, WhoIsResponse } from './types'
 import Net from 'node:net'
 import { log } from '@stacksjs/logging'
-import fetch from 'node-fetch'
-import { SocksClient } from 'socks'
 import { IANA_CHK_URL, PARAMETERS, SERVERS } from './constants'
+import { SocksClient } from './socks'
+import type { SocksClientOptions } from './socks'
 import { ProxyType } from './types'
 import { shallowCopy } from './utils'
 
@@ -379,5 +378,5 @@ export async function batchWhois(
 export * from './constants'
 export * from './types'
 
-export { SocksClient } from 'socks'
-export type { SocksClientOptions } from 'socks'
+export { SocksClient } from './socks'
+export type { SocksClientOptions } from './socks'
