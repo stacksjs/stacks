@@ -35,12 +35,8 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*",
-    "bumpp": "^10.2.3",
-    "bun-git-hooks": "^0.2.19",
-    "changelogen": "^0.6.2",
-    "commitizen": "^4.3.1",
-    "cz-git": "^1.12.0",
-    "giget": "^2.0.0"
+    "@stacksjs/gitlint": "^0.1.5",
+    "@stacksjs/gitit": "^0.2.2",
+    "bun-git-hooks": "^0.3.1"
   }
 }

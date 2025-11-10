@@ -48,8 +48,6 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@stacksjs/validation": "workspace:*",
-    "unplugin-vue-router": "^0.15.0",
-    "vue-router": "^4.5.1"
+    "@stacksjs/validation": "workspace:*"
   }
 }

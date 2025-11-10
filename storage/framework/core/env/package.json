@@ -33,13 +33,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {},
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/validation": "workspace:*"
-  },
-  "peerDependencies": {
-    "bun-types": "*"
   }
 }

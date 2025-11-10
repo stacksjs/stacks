@@ -38,14 +38,13 @@
   "files": ["README.md", "dist"],
   "scripts": {
     "build": "bun build.ts",
-    "generate-types": "openapi-typescript ./../../api/openapi.json --output ./../../api/api-types.ts",
+    "generate-types": "open-api ./../../api/openapi.json --output ./../../api/api-types.ts",
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "ofetch": "^1.4.1",
-    "openapi-typescript": "^7.9.1"
+    "ts-open-api": "workspace:*"
   }
 }
