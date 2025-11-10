@@ -55,7 +55,7 @@
     "@types/nprogress": "^0.2.3",
     "aws-cdk-lib": "^2.213.0",
     "meilisearch": "^0.52.0",
-    "ora": "^8.2.0",
+    "ora": "^9.0.0",
     "typescript": "^5.9.2"
   }
 }
