@@ -70,7 +70,7 @@
     "!storage/framework/cache/**"
   ],
   "devDependencies": {
-    "buddy-bot": "0.9.4",
+    "buddy-bot": "^0.9.11",
     "ts-pantry": "link:../pantry/packages/ts-pantry",
     "typescript": "5.9.2"
   }
