@@ -70,7 +70,7 @@
     "kolorist": "1.8.0",
     "magic-regexp": "^0.10.0",
     "markdown-table": "^3.0.4",
-    "perfect-debounce": "^1.0.0",
+    "perfect-debounce": "^2.0.0",
     "pretty-bytes": "^7.0.1",
     "resize-observer-polyfill": "^1.5.1",
     "vue3-ace-editor": "^2.2.4"
