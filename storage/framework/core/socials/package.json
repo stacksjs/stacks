@@ -35,11 +35,8 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@simplewebauthn/browser": "^13.1.2",
-    "@simplewebauthn/server": "^13.1.2",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/router": "workspace:*",
-    "otplib": "^12.0.1"
+    "@stacksjs/router": "workspace:*"
   }
 }

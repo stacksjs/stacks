@@ -47,13 +47,11 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "devDependencies": {
+  "dependencies": {
     "@aws-sdk/client-s3": "^3.876.0",
-    "@flystorage/aws-s3": "^1.2.0",
-    "@flystorage/chaos": "^1.1.0",
-    "@flystorage/file-storage": "^1.1.0",
-    "@flystorage/in-memory": "^1.1.0",
-    "@flystorage/local-fs": "^1.1.0",
+    "@aws-sdk/s3-request-presigner": "^3.876.0"
+  },
+  "devDependencies": {
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",

@@ -1,14 +1,14 @@
 import type { StorageDriver } from '@stacksjs/types'
 import { resolve } from 'node:path'
 import process from 'node:process'
-import { createLocalStorage } from '../adapters/local'
+import { createBunStorage } from '../adapters/bun'
 
 const rootDirectory = resolve(process.cwd())
-const adapter = createLocalStorage({ root: rootDirectory })
+const adapter = createBunStorage({ root: rootDirectory })
 
-export const localStorage = adapter
+export const bunStorage = adapter
 
-export const local: StorageDriver = {
+export const bun: StorageDriver = {
   async write(path: string, contents: any): Promise<void> {
     await adapter.write(path, contents)
   },

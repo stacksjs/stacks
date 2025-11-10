@@ -1,103 +1,92 @@
-import type { ChecksumOptions, DirectoryListing, FileContents, MimeTypeOptions, PublicUrlOptions, StatEntry, TemporaryUrlOptions } from '@flystorage/file-storage'
-
 import type { StorageDriver } from '@stacksjs/types'
+import { createMemoryStorage } from '../adapters/memory'
 
-import type { Buffer } from 'node:buffer'
+const adapter = createMemoryStorage()
 
-import { FileStorage } from '@flystorage/file-storage'
-import { InMemoryStorageAdapter } from '@flystorage/in-memory'
-
-const adapter = new InMemoryStorageAdapter()
-
-export const memoryStorage: FileStorage = new FileStorage(adapter)
+export const memoryStorage = adapter
 
 export const memory: StorageDriver = {
-  async write(path: string, contents: FileContents): Promise<void> {
-    await localStorage.write(path, contents)
+  async write(path: string, contents: any): Promise<void> {
+    await adapter.write(path, contents)
   },
 
   async deleteFile(path: string): Promise<void> {
-    await localStorage.deleteFile(path)
+    await adapter.deleteFile(path)
   },
 
   async createDirectory(path: string): Promise<void> {
-    await localStorage.createDirectory(path)
+    await adapter.createDirectory(path)
   },
 
   async moveFile(from: string, to: string): Promise<void> {
-    await localStorage.moveFile(from, to)
+    await adapter.moveFile(from, to)
   },
 
   async copyFile(from: string, to: string): Promise<void> {
-    await localStorage.copyFile(from, to)
+    await adapter.copyFile(from, to)
   },
 
-  async stat(path: string): Promise<StatEntry> {
-    return await localStorage.stat(path)
+  async stat(path: string) {
+    return await adapter.stat(path)
   },
 
-  list(path: string, options: { deep: boolean }): DirectoryListing {
-    return localStorage.list(path, options)
+  list(path: string, options: { deep: boolean } = { deep: false }) {
+    return adapter.list(path, options)
   },
 
-  async changeVisibility(path: string, visibility: string): Promise<void> {
-    await localStorage.changeVisibility(path, visibility)
+  async changeVisibility(path: string, visibility: any): Promise<void> {
+    await adapter.changeVisibility(path, visibility)
   },
 
-  async visibility(path: string): Promise<string> {
-    return await localStorage.visibility(path)
+  async visibility(path: string) {
+    return await adapter.visibility(path)
   },
 
   async fileExists(path: string): Promise<boolean> {
-    return await localStorage.fileExists(path)
+    return await adapter.fileExists(path)
   },
 
   async directoryExists(path: string): Promise<boolean> {
-    return await localStorage.directoryExists(path)
+    return await adapter.directoryExists(path)
   },
 
-  async publicUrl(path: string, options: PublicUrlOptions): Promise<string> {
-    return await localStorage.publicUrl(path, options)
+  async publicUrl(path: string, options: any) {
+    return await adapter.publicUrl(path, options)
   },
 
-  async temporaryUrl(path: string, options: TemporaryUrlOptions): Promise<string> {
-    return await localStorage.temporaryUrl(path, options)
+  async temporaryUrl(path: string, options: any) {
+    return await adapter.temporaryUrl(path, options)
   },
 
-  async checksum(path: string, options: ChecksumOptions): Promise<string> {
-    return await localStorage.checksum(path, options)
+  async checksum(path: string, options: any) {
+    return await adapter.checksum(path, options)
   },
 
-  async mimeType(path: string, options: MimeTypeOptions): Promise<string> {
-    return await localStorage.mimeType(path, options)
+  async mimeType(path: string, options: any) {
+    return await adapter.mimeType(path, options)
   },
 
   async lastModified(path: string): Promise<number> {
-    return await localStorage.lastModified(path)
+    return await adapter.lastModified(path)
   },
 
   async fileSize(path: string): Promise<number> {
-    return await localStorage.fileSize(path)
+    return await adapter.fileSize(path)
   },
 
-  async read(path: string): Promise<FileContents> {
-    const contents = await localStorage.read(path)
-
-    return contents
+  async read(path: string) {
+    return await adapter.read(path)
   },
+
   async readToString(path: string): Promise<string> {
-    const contents = await localStorage.readToString(path)
-
-    return contents
+    return await adapter.readToString(path)
   },
-  async readToBuffer(path: string): Promise<Buffer> {
-    const contents = await localStorage.readToBuffer(path)
 
-    return contents
+  async readToBuffer(path: string) {
+    return await adapter.readToBuffer(path)
   },
+
   async readToUint8Array(path: string): Promise<Uint8Array> {
-    const contents = await localStorage.readToUint8Array(path)
-
-    return contents
+    return await adapter.readToUint8Array(path)
   },
 }

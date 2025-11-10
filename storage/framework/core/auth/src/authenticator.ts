@@ -1,35 +1,49 @@
 import { handleError } from '@stacksjs/error-handling'
-import { authenticator } from 'otplib'
-import qrcode from 'qrcode'
+import { generate, generateQRCodeDataURL, generateSecret, keyuri, QRErrorCorrection, verify } from 'ts-auth'
 
 export function generateTwoFactorSecret(): string {
-  const secret = authenticator.generateSecret()
-
-  return secret
+  return generateSecret()
 }
 
 export type Token = string
 export type Secret = string
-export function generateTwoFactorToken(): Token {
-  return authenticator.generate(generateTwoFactorSecret())
+
+export function generateTwoFactorToken(secret: Secret): Token {
+  return generate({ secret })
 }
 
 export function verifyTwoFactorCode(token: Token, secret: Secret): boolean {
-  const isValid = authenticator.verify({ token, secret })
-
-  return isValid
+  return verify(token, { secret })
 }
 
-export function generateQrCode(): void {
-  const user = 'johndoe@example.com'
-  const service = 'StacksJS 2fa'
-  const secret = generateTwoFactorSecret()
-  const otpauth = authenticator.keyuri(user, service, secret)
+/**
+ * Generate a QR code for two-factor authentication
+ *
+ * @param user - User identifier (email or username)
+ * @param service - Service name (e.g., 'StacksJS 2FA')
+ * @param secret - Optional secret (will be generated if not provided)
+ * @returns Promise resolving to the data URL of the QR code
+ */
+export async function generateQrCode(
+  user?: string,
+  service?: string,
+  secret?: Secret
+): Promise<string> {
+  const userIdentifier = user || 'johndoe@example.com'
+  const serviceName = service || 'StacksJS 2fa'
+  const otpSecret = secret || generateTwoFactorSecret()
+  const otpauth = keyuri(userIdentifier, serviceName, otpSecret)
 
-  qrcode.toDataURL(otpauth, (err: any) => {
-    // qrcode.toDataURL(otpauth, (err: any, imageUrl: any) => {
-    if (err) {
-      handleError('Error with QR', err)
-    }
-  })
+  try {
+    return await generateQRCodeDataURL({
+      text: otpauth,
+      width: 256,
+      height: 256,
+      correctLevel: QRErrorCorrection.H,
+    })
+  }
+  catch (error) {
+    handleError('Error generating QR code', error)
+    throw error
+  }
 }
