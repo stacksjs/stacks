@@ -44,9 +44,6 @@
   "devDependencies": {
     "@stacksjs/components": "workspace:*",
     "@stacksjs/desktop": "workspace:*",
-    "@stacksjs/development": "workspace:*",
-    "@stacksjs/notification": "workspace:*",
-    "@stacksjs/popover": "workspace:*",
-    "vite-ssg": "^28.1.0"
+    "@stacksjs/development": "workspace:*"
   }
 }
