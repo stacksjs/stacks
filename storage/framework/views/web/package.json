@@ -31,7 +31,7 @@
     "@intlify/unplugin-vue-i18n": "^6.0.8",
     "@types/nprogress": "^0.2.3",
     "@vitejs/plugin-vue": "^6.0.1",
-    "@vue-macros/volar": "^0.30.15",
+    "@vue-macros/volar": "^3.1.1",
     "@vue/test-utils": "^2.4.6",
     "rollup": "^4.50.0",
     "shiki": "^3.12.2",
