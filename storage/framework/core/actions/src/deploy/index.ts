@@ -43,24 +43,49 @@ await runCommand('bun zip.ts', {
   cwd: p.corePath('cloud'),
 })
 
-log.info('Deploying...')
+log.info('Deploying using ts-cloud...')
 
-const profile = process.env.AWS_PROFILE ?? 'stacks'
+// Use ts-cloud deployment instead of CDK
+try {
+  const { deployStack, deployFrontend } = await import('../../deploy')
 
-const result = await runCommand(`bunx --bun cdk deploy --require-approval never --profile="${profile}"`, {
-  cwd: p.frameworkCloudPath(),
-})
+  const environment = process.env.CLOUD_ENV || process.env.NODE_ENV || 'production'
+  const region = process.env.AWS_REGION || 'us-east-1'
 
-if (result.isErr()) {
-  log.error(result.error)
+  // Step 1: Deploy infrastructure stack
+  log.info('Deploying infrastructure stack...')
+  await deployStack({
+    environment,
+    region,
+    waitForCompletion: true,
+  })
+  log.success('Infrastructure stack deployed')
+
+  // Step 2: Deploy frontend (if views were built)
+  if (config.app.docMode !== true) {
+    log.info('Deploying frontend...')
+    await deployFrontend({
+      environment,
+      region,
+      buildDir: p.frameworkPath('views/web/dist'),
+    })
+    log.success('Frontend deployed')
+  }
+
+  log.success('Deployment completed successfully!')
+} catch (error) {
+  log.error('Deployment failed:', error)
   process.exit(ExitCode.FatalError)
 }
 
-const t = result.value as Subprocess
-await t.exited
-
-// try {
-//   await import('../../../../../../cloud/deploy-script.ts')
-// } catch (error) {
-//   log.error(error)
+// Legacy CDK deployment (commented out for reference)
+// const profile = process.env.AWS_PROFILE ?? 'stacks'
+// const result = await runCommand(`bunx --bun cdk deploy --require-approval never --profile="${profile}"`, {
+//   cwd: p.frameworkCloudPath(),
+// })
+// if (result.isErr()) {
+//   log.error(result.error)
+//   process.exit(ExitCode.FatalError)
 // }
+// const t = result.value as Subprocess
+// await t.exited

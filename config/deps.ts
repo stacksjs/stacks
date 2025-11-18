@@ -16,7 +16,6 @@ export const config: PantryConfig = {
   dependencies: {
     'bun.com': '^1.3.0',
     'sqlite.org': '^3.47.2',
-    'aws.amazon.com/cli': '^2.22.26',
     'info-zip.org/zip': '^3.0.0',
     'info-zip.org/unzip': '^6.0.0',
     // Uncomment as needed:

@@ -1,0 +1,16 @@
+{
+  "name": "@stacksjs/deploy",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Deployment module for Stacks using ts-cloud",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "import": "./index.ts"
+    }
+  },
+  "dependencies": {
+    "ts-cloud": "link:ts-cloud"
+  }
+}

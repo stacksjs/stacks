@@ -1,102 +1,196 @@
 import type { CloudConfig } from '@stacksjs/types'
-import security from './security'
-
-// Use direct environment variable access to avoid circular dependencies
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+import type { CloudConfig as TsCloudConfig } from '@ts-cloud/types'
 
 /**
- * **Cloud**
+ * Stacks Cloud Configuration
  *
- * This configuration defines your cloud. Because Stacks is fully-typed, you may hover
- * any of the options below and the definitions will be provided. In case you have
- * any questions, feel free to reach out via Discord or GitHub Discussions.
+ * This file defines your cloud infrastructure configuration for Stacks.
+ * Supports both server mode (Forge-style) and serverless mode (Vapor-style).
+ *
+ * Environment variables:
+ * - CLOUD_ENV: Set the active environment (production, staging, development)
+ * - NODE_ENV: Fallback for CLOUD_ENV
+ *
+ * @see https://github.com/stacksjs/ts-cloud
  */
-export default {
-  sites: {
-    root: 'stacksjs.org',
-    path: '../storage/framework/views/web',
 
-    docs: {
-      domain: 'docs.stacksjs.org',
-      path: '../storage/framework/docs/dist',
+// ts-cloud configuration for deployment
+export const tsCloud: TsCloudConfig = {
+  /**
+   * Project configuration
+   */
+  project: {
+    name: 'stacks',
+    slug: 'stacks',
+    region: 'us-east-1', // Default AWS region
+  },
+
+  /**
+   * Environment configurations
+   * Each environment can have its own settings
+   *
+   * Note: Deployment mode is automatically determined by your infrastructure configuration.
+   * Simply define the resources you need below (functions, servers, storage, etc.) and
+   * ts-cloud will deploy them accordingly. You can mix and match any resources.
+   */
+  environments: {
+    production: {
+      type: 'production',
+      region: 'us-east-1',
+      variables: {
+        NODE_ENV: 'production',
+        LOG_LEVEL: 'info',
+      },
     },
-
-    modals: {
-      domain: 'modals.stacksjs.org',
-      path: '../storage/framework/core/components/modals',
+    staging: {
+      type: 'staging',
+      region: 'us-east-1',
+      variables: {
+        NODE_ENV: 'staging',
+        LOG_LEVEL: 'debug',
+      },
     },
-
-    stepper: {
-      domain: 'stepper.stacksjs.org',
-      path: '../storage/framework/core/components/stepper',
-    },
-
-    notification: {
-      domain: 'notification.stacksjs.org',
-      path: '../storage/framework/core/components/notification',
-    },
-
-    tlsx: {
-      domain: 'tlsx.stacksjs.org',
-      path: '../../tlsx/docs/dist',
-    },
-
-    dtsx: {
-      domain: 'dtsx.stacksjs.org',
-      path: '../../dtsx/docs/dist',
-    },
-
-    spreadsheets: {
-      domain: 'spreadsheets.stacksjs.org',
-      path: '../../spreadsheets/docs/dist',
+    development: {
+      type: 'development',
+      region: 'us-east-1',
+      variables: {
+        NODE_ENV: 'development',
+        LOG_LEVEL: 'debug',
+      },
     },
   },
 
+  /**
+   * Infrastructure configuration
+   * Define your cloud resources here
+   */
   infrastructure: {
-    type: 'serverless',
-    driver: 'aws',
-    firewall: security.firewall,
-    environments: ['production', 'staging', 'development'],
-
-    storage: {},
-
-    api: {
-      prefix: envVars.API_PREFIX || 'api',
-      // version: 'v1',
-      description: 'My awesome Stacks API',
-      deploy: true,
-      memorySize: 512,
-      prewarm: 10,
-      timeout: 30,
+    /**
+     * Storage Configuration
+     * S3 buckets for frontend, assets, uploads, etc.
+     */
+    storage: {
+      'frontend': {
+        public: true,
+        website: true,
+        encryption: true,
+        versioning: false,
+      },
+      'assets': {
+        public: true,
+        website: false,
+        encryption: true,
+        versioning: false,
+      },
+      'uploads': {
+        public: false,
+        website: false,
+        encryption: true,
+        versioning: true,
+      },
+      'backups': {
+        public: false,
+        website: false,
+        encryption: true,
+        versioning: true,
+      },
     },
 
+    /**
+     * Functions Configuration (optional)
+     * Lambda functions for specific serverless workloads
+     *
+     * Note: Stacks uses Bun-based routing (./routes) for APIs, not Lambda functions.
+     * Only add functions here for specific use cases like:
+     * - Background job processing
+     * - Event-driven tasks
+     * - Image processing
+     * - Scheduled tasks
+     */
+    functions: {
+      // Example background worker (optional)
+      // 'background-worker': {
+      //   handler: 'worker.handler',
+      //   runtime: 'nodejs20.x',
+      //   timeout: 300,
+      //   memorySize: 1024,
+      // },
+    },
+
+    /**
+     * Database Configuration (optional)
+     */
+    databases: {
+      // Uncomment to add a database
+      // 'main': {
+      //   engine: 'postgres',
+      //   instanceClass: 'db.t3.micro',
+      //   storage: 20,
+      //   username: 'admin',
+      //   password: 'changeme123', // Use AWS Secrets Manager in production
+      // },
+    },
+
+    /**
+     * CDN Configuration
+     * CloudFront distribution for global content delivery
+     */
     cdn: {
-      compress: true,
-
-      allowedMethods: 'ALL',
-      cachedMethods: 'GET_HEAD',
-      originShieldRegion: 'us-east-1',
-      minTtl: 0,
-      defaultTtl: 86400,
-      maxTtl: 31536000,
-      cookieBehavior: 'none',
-
-      allowList: {
-        cookies: [],
-        headers: [],
-        queryStrings: [],
-      },
-
-      realtimeLogs: {
-        enabled: true,
-        samplingRate: 1,
+      'frontend': {
+        origin: 'stacks-production-frontend.s3.us-east-1.amazonaws.com',
+        customDomain: 'stacks.example.com', // Update with your domain
       },
     },
 
-    fileSystem: true, // enables file system
+    /**
+     * API Gateway Configuration (optional)
+     *
+     * Note: Stacks handles APIs through Bun serve with ./routes
+     * API Gateway is only needed if you're using Lambda functions for your API.
+     * For most Stacks apps, you don't need this.
+     */
+    // api: {
+    //   type: 'rest',
+    //   cors: true,
+    // },
 
-    // compute: {},
-    // queues: false,
-    // queue-concurrency: 50
+    /**
+     * Monitoring Configuration (optional)
+     */
+    monitoring: {
+      // Uncomment to add alarms
+      // alarms: {
+      //   'high-cpu': {
+      //     metricName: 'CPUUtilization',
+      //     namespace: 'AWS/EC2',
+      //     threshold: 80,
+      //     comparisonOperator: 'GreaterThanThreshold',
+      //   },
+      // },
+    },
   },
-} satisfies CloudConfig
+
+  /**
+   * Sites Configuration (optional)
+   * For multi-site deployments
+   */
+  sites: {
+    main: {
+      root: '/var/www/main',
+      path: '/',
+      domain: 'stacks.example.com',
+    },
+    // api: {
+    //   root: '/var/www/api',
+    //   path: '/api',
+    //   domain: 'api.stacks.example.com',
+    // },
+  },
+}
+
+// Stacks cloud configuration (for existing Stacks cloud features)
+const config: CloudConfig = {
+  // Add Stacks-specific cloud config here if needed
+}
+
+export default config
