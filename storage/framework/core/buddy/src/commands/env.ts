@@ -30,6 +30,7 @@ export function env(buddy: CLI): void {
     set: 'Set an environment variable',
     encrypt: 'Encrypt a value',
     decrypt: 'Decrypt a value',
+    check: 'Check environment configuration and validate setup',
     pretty: 'Pretty print the result',
     stdout: 'Output the result to stdout',
     keypair: 'Generate a keypair',
@@ -223,6 +224,190 @@ export function env(buddy: CLI): void {
       else {
         console.error(result.error)
         process.exit(ExitCode.FatalError)
+      }
+    })
+
+  buddy
+    .command('env:check', descriptions.check)
+    .option('-f, --file [file]', descriptions.file, { default: '' })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy env:check')
+    .example('buddy env:check --file .env.production')
+    .action(async (options: EnvOptions) => {
+      log.debug('Running `buddy env:check` ...', options)
+
+      const { bold, dim, green, red, yellow, intro } = await import('@stacksjs/cli')
+      const { storage } = await import('@stacksjs/storage')
+      const { existsSync } = await import('node:fs')
+      const { resolve } = await import('node:path')
+
+      await intro('buddy env:check')
+
+      interface EnvCheck {
+        name: string
+        status: 'pass' | 'warn' | 'fail'
+        message: string
+      }
+
+      const checks: EnvCheck[] = []
+      const envFile = options.file || '.env'
+      const envPath = resolve(process.cwd(), envFile)
+
+      // Check if .env file exists
+      if (existsSync(envPath)) {
+        checks.push({
+          name: `${envFile} file`,
+          status: 'pass',
+          message: 'Found',
+        })
+
+        // Read and validate .env contents
+        try {
+          const envContent = await storage.readTextFile(envPath)
+          const contentStr = String(envContent)
+          const lines = contentStr.split('\n').filter(line => line.trim() && !line.startsWith('#'))
+          const varCount = lines.length
+
+          checks.push({
+            name: 'Environment variables',
+            status: 'pass',
+            message: `${varCount} variables defined`,
+          })
+
+          // Check for APP_KEY
+          const hasAppKey = lines.some(line => line.startsWith('APP_KEY='))
+          if (hasAppKey) {
+            const appKeyLine = lines.find(line => line.startsWith('APP_KEY='))
+            const appKeyValue = appKeyLine?.split('=')[1]?.trim()
+            if (appKeyValue && appKeyValue.length > 0) {
+              checks.push({
+                name: 'APP_KEY',
+                status: 'pass',
+                message: 'Set',
+              })
+            }
+            else {
+              checks.push({
+                name: 'APP_KEY',
+                status: 'warn',
+                message: 'Empty (run: buddy key:generate)',
+              })
+            }
+          }
+          else {
+            checks.push({
+              name: 'APP_KEY',
+              status: 'warn',
+              message: 'Not found (run: buddy key:generate)',
+            })
+          }
+
+          // Check for encryption keys
+          const hasPublicKey = lines.some(line => line.startsWith('DOTENV_PUBLIC_KEY='))
+          const hasPrivateKey = lines.some(line => line.startsWith('DOTENV_PRIVATE_KEY='))
+
+          if (hasPublicKey && hasPrivateKey) {
+            checks.push({
+              name: 'Encryption keys',
+              status: 'pass',
+              message: 'Public and private keys configured',
+            })
+          }
+          else if (hasPublicKey || hasPrivateKey) {
+            checks.push({
+              name: 'Encryption keys',
+              status: 'warn',
+              message: 'Incomplete keypair (run: buddy env:keypair)',
+            })
+          }
+          else {
+            checks.push({
+              name: 'Encryption keys',
+              status: 'warn',
+              message: 'Not configured (optional)',
+            })
+          }
+        }
+        catch (error) {
+          checks.push({
+            name: `${envFile} content`,
+            status: 'fail',
+            message: `Cannot read file: ${error}`,
+          })
+        }
+      }
+      else {
+        checks.push({
+          name: `${envFile} file`,
+          status: 'fail',
+          message: 'Not found',
+        })
+      }
+
+      // Check for .env.keys file
+      const keysPath = resolve(process.cwd(), '.env.keys')
+      if (existsSync(keysPath)) {
+        checks.push({
+          name: '.env.keys file',
+          status: 'pass',
+          message: 'Found',
+        })
+      }
+      else {
+        checks.push({
+          name: '.env.keys file',
+          status: 'warn',
+          message: 'Not found (optional for encryption)',
+        })
+      }
+
+      // Display results
+      console.log('')
+      console.log(bold('Environment Configuration Check:'))
+      console.log(dim('─'.repeat(60)))
+      console.log('')
+
+      let hasFailures = false
+      let hasWarnings = false
+
+      for (const check of checks) {
+        let statusIcon = ''
+        let statusColor = (text: string) => text
+
+        if (check.status === 'pass') {
+          statusIcon = '✓'
+          statusColor = green
+        }
+        else if (check.status === 'warn') {
+          statusIcon = '⚠'
+          statusColor = yellow
+          hasWarnings = true
+        }
+        else {
+          statusIcon = '✗'
+          statusColor = red
+          hasFailures = true
+        }
+
+        console.log(`${statusColor(statusIcon)} ${bold(check.name.padEnd(25))} ${dim(check.message)}`)
+      }
+
+      console.log('')
+      console.log(dim('─'.repeat(60)))
+      console.log('')
+
+      // Summary
+      if (hasFailures) {
+        console.log(red('✗ Some critical checks failed. Please address the issues above.'))
+        process.exit(ExitCode.FatalError)
+      }
+      else if (hasWarnings) {
+        console.log(yellow('⚠ Some checks have warnings. Your environment should work but may have issues.'))
+        process.exit(ExitCode.Success)
+      }
+      else {
+        console.log(green('✓ All checks passed! Your environment configuration looks healthy.'))
+        process.exit(ExitCode.Success)
       }
     })
 

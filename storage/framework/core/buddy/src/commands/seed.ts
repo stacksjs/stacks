@@ -14,6 +14,7 @@ export function seed(buddy: CLI): void {
 
   buddy
     .command('seed', descriptions.seed)
+    .alias('db:seed')
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: SeedOptions) => {

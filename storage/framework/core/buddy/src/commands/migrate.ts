@@ -14,6 +14,7 @@ export function migrate(buddy: CLI): void {
 
   buddy
     .command('migrate', descriptions.migrate)
+    .alias('db:migrate')
     .option('-d, --diff', 'Show the SQL that would be run', { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -43,6 +44,7 @@ export function migrate(buddy: CLI): void {
 
   buddy
     .command('migrate:fresh', descriptions.migrate)
+    .alias('db:fresh')
     .option('-d, --diff', 'Show the SQL that would be run', { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })

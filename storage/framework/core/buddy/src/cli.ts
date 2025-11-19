@@ -57,14 +57,17 @@ async function main() {
     // Load all commands only if we need them
     const cmd = await import('./commands/index.ts')
 
+    cmd.about(buddy)
     cmd.auth(buddy)
     cmd.build(buddy)
     cmd.changelog(buddy)
     cmd.clean(buddy)
     cmd.cloud(buddy)
     cmd.commit(buddy)
+    cmd.completion(buddy)
     cmd.configure(buddy)
     cmd.dev(buddy)
+    cmd.doctor(buddy)
     cmd.domains(buddy)
     cmd.deploy(buddy)
     cmd.dns(buddy)
