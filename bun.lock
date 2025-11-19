@@ -358,8 +358,10 @@
     "storage/framework/core/cli": {
       "name": "@stacksjs/cli",
       "version": "0.70.23",
-      "devDependencies": {
+      "dependencies": {
         "@stacksjs/clapp": "^0.2.0",
+      },
+      "devDependencies": {
         "@stacksjs/collections": "workspace:*",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/development": "workspace:*",

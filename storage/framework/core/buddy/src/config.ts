@@ -359,14 +359,15 @@ export async function applyBuddyConfig(buddy: CLI): Promise<void> {
   const config = await loadBuddyConfig()
 
   // Apply theme if specified
-  if (config.theme && !buddy.theme) {
-    const { applyTheme, getAvailableThemes } = await import('@stacksjs/cli')
-    const availableThemes = getAvailableThemes()
-    if (availableThemes.includes(config.theme)) {
-      applyTheme(config.theme as any)
-      buddy.theme = config.theme
-    }
-  }
+  // Note: Theme support will be available after @stacksjs/clapp is updated with theme exports
+  // if (config.theme && !buddy.theme) {
+  //   const { applyTheme, getAvailableThemes } = await import('@stacksjs/cli')
+  //   const availableThemes = getAvailableThemes()
+  //   if (availableThemes.includes(config.theme)) {
+  //     applyTheme(config.theme as any)
+  //     buddy.theme = config.theme
+  //   }
+  // }
 
   // Apply emoji setting if specified
   if (config.emoji !== undefined && buddy.options.noEmoji === undefined) {

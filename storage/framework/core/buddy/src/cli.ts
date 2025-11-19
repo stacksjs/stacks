@@ -6,7 +6,9 @@ import { path as p } from '@stacksjs/path'
 // Get the command being run to determine what to load
 const args = process.argv.slice(2)
 const requestedCommand = args[0] || 'help'
-const needsFullSetup = !['dev', 'build', 'test', 'lint', '--version', '-v', '--help', '-h', 'help'].includes(requestedCommand)
+// Minimal commands that don't need full project setup
+const isMinimalCommand = ['--version', '-v', '--help', '-h', 'help', 'version'].includes(requestedCommand)
+const needsFullSetup = !isMinimalCommand
 
 // setup global error handlers
 process.on('uncaughtException', (error: Error) => {
@@ -61,55 +63,17 @@ async function main() {
       }
     }
 
-    // Load all commands only if we need them
-    const cmd = await import('./commands/index.ts')
-
-    cmd.about(buddy)
-    cmd.auth(buddy)
-    cmd.build(buddy)
-    cmd.changelog(buddy)
-    cmd.clean(buddy)
-    cmd.cloud(buddy)
-    cmd.commit(buddy)
-    cmd.completion(buddy)
-    cmd.configure(buddy)
-    cmd.dev(buddy)
-    cmd.doctor(buddy)
-    cmd.domains(buddy)
-    cmd.deploy(buddy)
-    cmd.dns(buddy)
-    cmd.ports(buddy)
-    cmd.projects(buddy)
-    cmd.fresh(buddy)
-    cmd.generate(buddy)
-    cmd.http(buddy)
-    cmd.install(buddy)
-    cmd.lint(buddy)
-    cmd.list(buddy)
-    cmd.make(buddy)
-    cmd.migrate(buddy)
-    cmd.outdated(buddy)
-    cmd.queue(buddy)
-    cmd.release(buddy)
-    cmd.route(buddy)
-    cmd.saas(buddy)
-    cmd.search(buddy)
-    cmd.env(buddy)
-    cmd.seed(buddy)
-    cmd.schedule(buddy)
-    cmd.test(buddy)
-    cmd.tinker(buddy)
-    cmd.version(buddy)
-    cmd.prepublish(buddy)
-    cmd.upgrade(buddy)
+    // Use lazy loading for better cold start performance
+    const { loadAllCommands } = await import('./lazy-commands.ts')
+    await loadAllCommands(buddy)
 
     // dynamic imports
     await dynamicImports(buddy)
   }
   else {
-    // For simple commands like --version, just register that one command
-    const { version } = await import('./commands/version.ts')
-    version(buddy)
+    // For minimal commands, only load what's needed for better cold start
+    const { loadCommand } = await import('./lazy-commands.ts')
+    await loadCommand('version', buddy)
   }
 
   buddy.help()
@@ -124,16 +88,17 @@ async function main() {
   }
 
   // Apply theme if specified
-  if (buddy.theme) {
-    const { applyTheme, getAvailableThemes } = await import('@stacksjs/cli')
-    const availableThemes = getAvailableThemes()
-    if (availableThemes.includes(buddy.theme)) {
-      applyTheme(buddy.theme as any)
-    }
-    else {
-      log.warn(`Unknown theme: ${buddy.theme}. Available themes: ${availableThemes.join(', ')}`)
-    }
-  }
+  // Note: Theme support will be available after @stacksjs/clapp is updated with theme exports
+  // if (buddy.theme) {
+  //   const { applyTheme, getAvailableThemes } = await import('@stacksjs/clapp')
+  //   const availableThemes = getAvailableThemes()
+  //   if (availableThemes.includes(buddy.theme)) {
+  //     applyTheme(buddy.theme as any)
+  //   }
+  //   else {
+  //     log.warn(`Unknown theme: ${buddy.theme}. Available themes: ${availableThemes.join(', ')}`)
+  //   }
+  // }
 }
 
 async function showInteractiveMenu(buddy: CLI) {

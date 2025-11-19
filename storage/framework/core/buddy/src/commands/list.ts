@@ -8,6 +8,7 @@ export function list(buddy: CLI): void {
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
     filter: 'Filter commands by name or group',
+    namespace: 'Filter commands by namespace (e.g., make, env, db)',
     grouped: 'Group commands by category',
     format: 'Output format (text, json)',
   }
@@ -16,12 +17,14 @@ export function list(buddy: CLI): void {
     .command('list', descriptions.list)
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('-f, --filter [filter]', descriptions.filter)
+    .option('-n, --namespace [namespace]', descriptions.namespace)
     .option('-g, --grouped', descriptions.grouped, { default: true })
     .option('--format [format]', descriptions.format, { default: 'text' })
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy list')
     .example('buddy list --filter=make')
-    .example('buddy list --filter=env')
+    .example('buddy list --namespace=make')
+    .example('buddy list --namespace=env')
     .example('buddy list --no-grouped')
     .example('buddy list --format=json')
     .action(async (options: CliOptions) => {
@@ -40,6 +43,15 @@ export function list(buddy: CLI): void {
           const name = cmd.name || ''
           const desc = cmd.description || ''
           return name.toLowerCase().includes(filterStr) || desc.toLowerCase().includes(filterStr)
+        })
+      }
+
+      // Filter by namespace if provided
+      if (options.namespace) {
+        const namespaceStr = String(options.namespace).toLowerCase()
+        filteredCommands = filteredCommands.filter((cmd: any) => {
+          const namespace = cmd.namespace || ''
+          return namespace.toLowerCase() === namespaceStr
         })
       }
 
