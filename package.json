@@ -56,8 +56,8 @@
   },
   "dependencies": {
     "stacks": "workspace:*",
-    "@stacksjs/stx": "link:../stx/packages/stx",
-    "bun-plugin-stx": "link:../stx/packages/bun-plugin"
+    "@stacksjs/stx": "link:@stacksjs/stx",
+    "bun-plugin-stx": "link:bun-plugin-stx"
   },
   "workspaces": [
     "storage/framework/**",
@@ -71,7 +71,7 @@
   ],
   "devDependencies": {
     "buddy-bot": "^0.9.11",
-    "ts-pantry": "link:../pantry/packages/ts-pantry",
+    "ts-pantry": "link:ts-pantry",
     "typescript": "5.9.2"
   }
 }
