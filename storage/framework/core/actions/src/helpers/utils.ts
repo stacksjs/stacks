@@ -21,27 +21,68 @@ type Action = ActionPath | ActionName | string
 export async function runAction(action: Action, options?: ActionOptions): Promise<Result<Subprocess, CommandError>> {
   log.debug('runAction:', action, options)
 
-  // check if action is a file anywhere in ./app/Actions/**/*.ts
-  // if it is, return and await the action
-  const glob = new Bun.Glob('**/*.{ts,js}')
-  const scanOptions = { cwd: p.userActionsPath(), onlyFiles: true, absolute: true }
-
-  for await (const file of glob.scan(scanOptions)) {
-    if (file.endsWith(`${action}.ts`) || file.endsWith(`${action}.js`))
-      return ((await import(file)).default as ActionType).handle()
-
-    // if a custom model name is used, we need to check for it
+  // Special case: handle dev/views directly for maximum performance
+  if (action === 'dev/views') {
     try {
-      log.debug('trying to import', file)
-      const a = await import(file)
-      if (a.name === action) {
-        log.debug('a.name matches', a.name)
-        return await a.handle()
-      }
+      log.success('🚀 Starting STX development server on http://localhost:3456\n')
+
+      // Import and call serve function directly - no subprocess!
+      const { serve } = await import('bun-plugin-stx/serve')
+      await serve({
+        patterns: ['resources/views'],
+        port: 3456,
+      })
+
+      // This will never return since serve runs forever
+      // eslint-disable-next-line no-unreachable
+      return { ok: true, value: {} as Subprocess }
     }
-    // eslint-disable-next-line unused-imports/no-unused-vars
     catch (error) {
-      // handleError(error, { shouldExit: false })
+      return err(`Failed to start dev server: ${error}`)
+    }
+  }
+
+  // Quick check: does this look like a core action? (contains a slash or is a common core action name)
+  // Most core actions are like "dev/views", "build/app", etc.
+  const isLikelyCoreAction = action.includes('/') || ['dev', 'build', 'install', 'upgrade', 'migrate'].some(prefix => action.startsWith(prefix))
+
+  if (!isLikelyCoreAction) {
+    // Only scan user actions if it's NOT likely a core action
+    const glob = new Bun.Glob('**/*.{ts,js}')
+    const scanOptions = { cwd: p.userActionsPath(), onlyFiles: true, absolute: true }
+
+    // First pass: only check filenames, don't import anything
+    const matchingFiles: string[] = []
+    const basePath = p.userActionsPath()
+
+    for await (const file of glob.scan(scanOptions)) {
+      // Normalize the file path relative to basePath to match the action name
+      // e.g., /path/to/app/Actions/SomeAction.ts -> SomeAction
+      const relativePath = file.replace(`${basePath}/`, '').replace(/\.(ts|js)$/, '')
+
+      if (relativePath === action || file.endsWith(`${action}.ts`) || file.endsWith(`${action}.js`)) {
+        // Direct filename match - import and execute immediately
+        return ((await import(file)).default as ActionType).handle()
+      }
+      // Collect all files for potential name matching (only if direct match fails)
+      matchingFiles.push(file)
+    }
+
+    // Second pass: only import files if we didn't find a direct match
+    // This is a fallback for custom action names
+    for (const file of matchingFiles) {
+      try {
+        log.debug('trying to import', file)
+        const a = await import(file)
+        if (a.name === action) {
+          log.debug('a.name matches', a.name)
+          return await a.handle()
+        }
+      }
+      // eslint-disable-next-line unused-imports/no-unused-vars
+      catch (error) {
+        // handleError(error, { shouldExit: false })
+      }
     }
   }
 

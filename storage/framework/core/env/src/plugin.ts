@@ -134,8 +134,10 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
         }
       }
 
-      if (!quiet) {
+      // Only log once per process to avoid duplicate messages
+      if (!quiet && !process.env.__ENV_LOADED__) {
         console.log(`[env] loaded ${Object.keys(parsed).length} variables from ${envPath}`)
+        process.env.__ENV_LOADED__ = '1'
       }
     }
     catch (error) {

@@ -6,11 +6,20 @@
  * automatically be injected into the Bun process.
  */
 
-// Load .env files with encryption support using our native Bun plugin
-import { autoLoadEnv } from '@stacksjs/env'
+// Skip preloader for fast commands to maximize startup speed
+// These commands don't need env loading
+const args = process.argv.slice(2)
+const fastCommands = ['dev', 'build', 'test', 'lint', '--version', '-v', 'version', '--help', '-h', 'help']
+const skipPreloader = args.length === 0 || fastCommands.includes(args[0])
 
-// Auto-load .env files based on environment
-autoLoadEnv({ quiet: false })
+if (!skipPreloader) {
+  // Load .env files with encryption support using our native Bun plugin
+  const { autoLoadEnv } = await import('@stacksjs/env')
+
+  // Auto-load .env files based on environment
+  // Set quiet: true to prevent duplicate logging across multiple processes
+  autoLoadEnv({ quiet: true })
+}
 
 // stx template engine plugin
 // enables .stx file processing

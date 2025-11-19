@@ -5,4 +5,4 @@ export function exists(path: string): boolean {
   return existsSync(path)
 }
 
-export { fsWatch, mkdirSync, readFileSync, watchFile, writeFileSync, fs }
+export { existsSync, fsWatch, mkdirSync, readFileSync, watchFile, writeFileSync, fs }

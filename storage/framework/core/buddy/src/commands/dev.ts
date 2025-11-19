@@ -277,12 +277,8 @@ export function dev(buddy: CLI): void {
 }
 
 export async function startDevelopmentServer(options: DevOptions): Promise<void> {
-  const result = await runAction(Action.Dev, options)
-
-  if (result.isErr()) {
-    log.error('While running the dev command, there was an issue', result.error)
-    process.exit(ExitCode.InvalidArgument)
-  }
+  await runAction(Action.Dev, options)
+  // Dev server runs indefinitely, so this line should not be reached
 }
 
 function wantsInteractive(options: DevOptions) {
