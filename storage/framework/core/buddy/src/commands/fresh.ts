@@ -19,6 +19,20 @@ export function fresh(buddy: CLI): void {
     .action(async (options: FreshOptions) => {
       log.debug('Running `buddy fresh` ...', options)
 
+      // Check if confirmation is needed (not forced and not no-interaction mode)
+      if (!buddy.isForce && !buddy.isNoInteraction) {
+        const { confirm } = await import('@stacksjs/cli')
+        const confirmed = await confirm({
+          message: 'This will remove and reinstall all dependencies. Continue?',
+          initial: false,
+        })
+
+        if (!confirmed) {
+          log.info('Fresh install cancelled')
+          process.exit(ExitCode.Success)
+        }
+      }
+
       const perf = await intro('buddy fresh')
       const result = await runAction(Action.Fresh, {
         ...options,

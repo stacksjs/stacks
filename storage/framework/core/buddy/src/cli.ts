@@ -24,6 +24,13 @@ process.on('unhandledRejection', (error: Error) => {
 async function main() {
   const buddy = cli('buddy')
 
+  // Enable theme support
+  buddy.themes()
+
+  // Load and apply buddy.config.ts if it exists
+  const { applyBuddyConfig } = await import('./config.ts')
+  await applyBuddyConfig(buddy)
+
   // Skip expensive setup for commands that don't need it
   if (needsFullSetup) {
     const { runAction } = await import('@stacksjs/actions')
@@ -106,7 +113,66 @@ async function main() {
   }
 
   buddy.help()
-  buddy.parse()
+
+  // Handle interactive mode when no command is specified
+  const args = process.argv.slice(2)
+  if (args.length === 0 && process.stdin.isTTY && !buddy.isNoInteraction) {
+    await showInteractiveMenu(buddy)
+  }
+  else {
+    buddy.parse()
+  }
+
+  // Apply theme if specified
+  if (buddy.theme) {
+    const { applyTheme, getAvailableThemes } = await import('@stacksjs/cli')
+    const availableThemes = getAvailableThemes()
+    if (availableThemes.includes(buddy.theme)) {
+      applyTheme(buddy.theme as any)
+    }
+    else {
+      log.warn(`Unknown theme: ${buddy.theme}. Available themes: ${availableThemes.join(', ')}`)
+    }
+  }
+}
+
+async function showInteractiveMenu(buddy: CLI) {
+  const { bold, green, intro } = await import('@stacksjs/cli')
+  const { select } = await import('@stacksjs/cli')
+
+  await intro('buddy')
+
+  console.log(bold(green('What would you like to do?')))
+  console.log('')
+
+  const choice = await select({
+    message: 'Select a command:',
+    choices: [
+      { value: 'dev', label: 'Start development server' },
+      { value: 'build', label: 'Build for production' },
+      { value: 'test', label: 'Run tests' },
+      { value: 'list', label: 'List all commands' },
+      { value: 'doctor', label: 'Run health checks' },
+      { value: 'about', label: 'Show system information' },
+      { value: 'help', label: 'Show help' },
+      { value: 'exit', label: 'Exit' },
+    ],
+    initial: 0,
+  })
+
+  console.log('')
+
+  if (choice === 'exit') {
+    process.exit(0)
+  }
+  else if (choice === 'help') {
+    buddy.outputHelp()
+  }
+  else {
+    // Run the selected command
+    process.argv = ['bun', 'buddy', choice]
+    buddy.parse()
+  }
 }
 
 await main()

@@ -1,5 +1,5 @@
 // import type { CliOptions } from '@stacksjs/types'
-import { CLI, cli as createCli } from '@stacksjs/clapp'
+import { applyTheme, CLI, cli as createCli, getAvailableThemes } from '@stacksjs/clapp'
 
 export interface ParsedArgv {
   args: ReadonlyArray<string>
@@ -23,7 +23,7 @@ export function cli(name?: string | CliOptions, options?: CliOptions): CLI {
   return createCli(name || 'buddy')
 }
 
-export { CLI }
+export { applyTheme, CLI, getAvailableThemes }
 
 // export function command(name: string, description: string, options?: CliOptions) {
 //   return cli(options).command(name, description)
