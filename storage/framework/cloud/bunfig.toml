@@ -1,6 +1,7 @@
-preload = [
-  "../../../node_modules/bun-plugin-env/src/index.ts"
-]
+# Disabled preload for cloud operations - env is loaded by buddy deploy command
+# preload = [
+#   "../core/env/src/plugin.ts"
+# ]
 
 [install]
 # set default registry as a string

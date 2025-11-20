@@ -33,23 +33,37 @@ export function deploy(buddy: CLI): void {
     .action(async (env: string | undefined, options: DeployOptions) => {
       log.debug('Running `buddy deploy` ...', options)
 
-      const startTime = await intro('buddy deploy')
-      const domain = options.domain || app.url
+      // Force production environment for deployment
+      const deployEnv = env || 'production'
+      process.env.APP_ENV = deployEnv
+      process.env.NODE_ENV = deployEnv
 
-      if ((options.prod || env === 'production' || env === 'prod') && !options.yes)
+      // Reload env with production settings BEFORE loading config
+      const { loadEnv } = await import('@stacksjs/env')
+      loadEnv({
+        path: ['.env.production', '.env'],
+        overload: true, // Override any existing env vars
+      })
+
+      const startTime = await intro('buddy deploy')
+
+      // Get domain directly from environment variable after reload
+      const domain = options.domain || process.env.APP_URL || app.url
+
+      if ((options.prod || deployEnv === 'production' || deployEnv === 'prod') && !options.yes)
         await confirmProductionDeployment()
 
       if (!domain) {
-        log.info('No domain found in your .env or ./config/app.ts')
+        log.info('No domain found in your .env.production or ./config/app.ts')
         log.info('Please ensure your domain is properly configured.')
         log.info('For more info, check out the docs or join our Discord.')
         process.exit(ExitCode.FatalError)
       }
 
-      log.info(`Deploying to ${italic(domain)}`)
+      log.info(`Deploying to ${italic(domain)} (${deployEnv})`)
 
       await checkIfAwsIsConfigured()
-      await checkIfAwsIsBootstrapped()
+      await checkIfAwsIsBootstrapped(options)
 
       options.domain = await configureDomain(domain, options, startTime)
 
@@ -169,36 +183,205 @@ async function checkIfAwsIsConfigured() {
   }
 }
 
-async function checkIfAwsIsBootstrapped() {
+async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
   try {
-    log.info('Ensuring AWS is bootstrapped...')
-    const result = await runCommand('aws cloudformation describe-stacks --stack-name stacks-cloud', { silent: true })
+    log.info('Ensuring AWS cloud stack exists...')
 
-    // Check if command was successful
-    if (result && typeof result.isErr === 'function' && result.isErr()) {
-      throw new Error('Stack not found')
+    // Check if AWS credentials are configured
+    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+      log.warn('AWS credentials not found in environment')
+      log.info('Let\'s set up your AWS credentials for deployment')
+      console.log('')
+
+      // If --yes flag is used, skip prompting and just inform the user
+      if (options?.yes) {
+        log.info('Skipping credential setup (--yes flag provided)')
+        log.info('Please set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your .env.production file')
+        log.info('Or run without --yes to configure credentials interactively')
+        process.exit(ExitCode.FatalError)
+      }
+
+      const setupCredentials = await prompts.confirm({
+        message: 'Would you like to configure AWS credentials now?',
+        initial: true,
+      })
+
+      log.debug('setupCredentials response:', setupCredentials, typeof setupCredentials)
+
+      // Handle user cancellation (Ctrl+C or ESC) or explicit "no"
+      if (setupCredentials === undefined || setupCredentials === false) {
+        if (setupCredentials === undefined) {
+          console.log('')
+          log.info('Deployment cancelled')
+          process.exit(ExitCode.Success)
+        }
+        console.log('')
+        log.info('Skipping cloud infrastructure check')
+        log.info('You can configure AWS credentials later by running: buddy configure:aws')
+        return true
+      }
+
+      // Prompt for AWS credentials
+      const accessKeyId = await prompts.text({
+        message: 'AWS Access Key ID:',
+        validate: (value: string) => value.length > 0 ? true : 'Access Key ID is required',
+      })
+
+      if (!accessKeyId) {
+        log.info('Deployment cancelled')
+        process.exit(ExitCode.Success)
+      }
+
+      const secretAccessKey = await prompts.password({
+        message: 'AWS Secret Access Key:',
+        validate: (value: string) => value.length > 0 ? true : 'Secret Access Key is required',
+      })
+
+      if (!secretAccessKey) {
+        log.info('Deployment cancelled')
+        process.exit(ExitCode.Success)
+      }
+
+      const region = await prompts.text({
+        message: 'AWS Region:',
+        initial: 'us-east-1',
+      })
+
+      if (!region) {
+        log.info('Deployment cancelled')
+        process.exit(ExitCode.Success)
+      }
+
+      // Save credentials to .env.production
+      const fs = await import('node:fs')
+      const envPath = p.projectPath('.env.production')
+      let envContent = fs.readFileSync(envPath, 'utf-8')
+
+      // Update or add AWS credentials
+      if (envContent.includes('AWS_ACCESS_KEY_ID=')) {
+        envContent = envContent.replace(/AWS_ACCESS_KEY_ID=.*$/m, `AWS_ACCESS_KEY_ID=${accessKeyId}`)
+      }
+      else {
+        envContent += `\nAWS_ACCESS_KEY_ID=${accessKeyId}`
+      }
+
+      if (envContent.includes('AWS_SECRET_ACCESS_KEY=')) {
+        envContent = envContent.replace(/AWS_SECRET_ACCESS_KEY=.*$/m, `AWS_SECRET_ACCESS_KEY=${secretAccessKey}`)
+      }
+      else {
+        envContent += `\nAWS_SECRET_ACCESS_KEY=${secretAccessKey}`
+      }
+
+      if (envContent.includes('AWS_REGION=')) {
+        envContent = envContent.replace(/AWS_REGION=.*$/m, `AWS_REGION=${region}`)
+      }
+      else {
+        envContent += `\nAWS_REGION=${region}`
+      }
+
+      fs.writeFileSync(envPath, envContent)
+
+      // Update process.env
+      process.env.AWS_ACCESS_KEY_ID = accessKeyId
+      process.env.AWS_SECRET_ACCESS_KEY = secretAccessKey
+      process.env.AWS_REGION = region
+
+      log.success('AWS credentials saved to .env.production')
+      console.log('')
     }
 
-    log.success('AWS is bootstrapped')
-    return true
-  }
-  catch (err: any) {
-    log.debug(`Not yet bootstrapped. Error: ${err.message}`)
+    // Use ts-cloud's CloudFormation client instead of CDK
+    const { CloudFormationClient } = await import('/Users/chrisbreuer/Code/ts-cloud/packages/ts-cloud/src/aws/cloudformation.ts')
 
-    log.info('AWS is not bootstrapped yet')
-    log.info('Bootstrapping. This may take a few moments...')
+    const cfnClient = new CloudFormationClient(
+      process.env.AWS_REGION || 'us-east-1',
+      process.env.AWS_PROFILE
+    )
+
+    // Check if stack exists
+    try {
+      const result = await cfnClient.describeStacks({ stackName: 'stacks-cloud' })
+
+      if (result.Stacks && result.Stacks.length > 0) {
+        log.success('Cloud stack exists')
+        return true
+      }
+    }
+    catch (error: any) {
+      log.debug(`Stack not found: ${error.message}`)
+      // Stack doesn't exist, we'll create it below
+    }
+
+    log.info('Cloud stack not found')
+    log.info('Creating cloud infrastructure. This may take a few moments...')
+
+    // Create basic CloudFormation template for Stacks cloud infrastructure
+    const template = {
+      AWSTemplateFormatVersion: '2010-09-09',
+      Description: 'Stacks Cloud Infrastructure',
+      Resources: {
+        StacksBucket: {
+          Type: 'AWS::S3::Bucket',
+          Properties: {
+            BucketName: `stacks-${process.env.APP_ENV || 'production'}-assets`,
+            PublicAccessBlockConfiguration: {
+              BlockPublicAcls: false,
+              BlockPublicPolicy: false,
+              IgnorePublicAcls: false,
+              RestrictPublicBuckets: false,
+            },
+            WebsiteConfiguration: {
+              IndexDocument: 'index.html',
+              ErrorDocument: 'error.html',
+            },
+          },
+        },
+      },
+      Outputs: {
+        BucketName: {
+          Description: 'Name of the S3 bucket',
+          Value: { Ref: 'StacksBucket' },
+          Export: {
+            Name: 'StacksBucketName',
+          },
+        },
+        BucketWebsiteURL: {
+          Description: 'URL of the S3 bucket website',
+          Value: { 'Fn::GetAtt': ['StacksBucket', 'WebsiteURL'] },
+        },
+      },
+    }
 
     try {
-      $.cwd(p.frameworkCloudPath())
-      const result = await $`bun run bootstrap`
-      console.log(result)
-      log.success('AWS bootstrapped successfully')
+      // Create the stack using ts-cloud
+      const result = await cfnClient.createStack({
+        stackName: 'stacks-cloud',
+        templateBody: JSON.stringify(template),
+        capabilities: ['CAPABILITY_IAM'],
+        tags: [
+          { Key: 'Environment', Value: process.env.APP_ENV || 'production' },
+          { Key: 'ManagedBy', Value: 'Stacks' },
+        ],
+      })
+
+      log.info(`Stack creation initiated: ${result.StackId}`)
+      log.info('Waiting for stack creation to complete...')
+
+      // Wait for stack creation to complete
+      await cfnClient.waitForStack('stacks-cloud', 'stack-create-complete')
+
+      log.success('Cloud infrastructure created successfully')
       return true
     }
-    catch (error) {
-      log.error('Failed to bootstrap AWS')
+    catch (error: any) {
+      log.error('Failed to create cloud infrastructure')
       console.error(error)
       process.exit(ExitCode.FatalError)
     }
+  }
+  catch (err: any) {
+    log.error('Error checking cloud infrastructure')
+    console.error(err)
+    process.exit(ExitCode.FatalError)
   }
 }
