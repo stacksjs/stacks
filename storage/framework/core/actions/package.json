@@ -30,6 +30,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./run-action": {
+      "types": "./dist/run-action.d.ts",
+      "import": "./dist/run-action.js"
+    },
     "./*": {
       "import": "./dist/*"
     }

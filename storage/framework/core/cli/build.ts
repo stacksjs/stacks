@@ -9,6 +9,7 @@ const result = await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
   target: 'bun',
+  external: ['@stacksjs/clapp'],
   plugins: [
     dts({
       root: '.',

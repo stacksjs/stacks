@@ -55,9 +55,10 @@
     "stx": "./buddy"
   },
   "dependencies": {
-    "stacks": "workspace:*",
+    "@stacksjs/clarity": "^0.3.24",
     "@stacksjs/stx": "link:@stacksjs/stx",
-    "bun-plugin-stx": "link:bun-plugin-stx"
+    "bun-plugin-stx": "link:bun-plugin-stx",
+    "stacks": "workspace:*"
   },
   "workspaces": [
     "storage/framework/**",

@@ -56,6 +56,7 @@ const result = await Bun.build({
     './src/make.ts',
     './src/prepublish.ts',
     './src/release.ts',
+    './src/run-action.ts',
     './src/typecheck.ts',
     './src/types.ts',
     './src/upgrade.ts',

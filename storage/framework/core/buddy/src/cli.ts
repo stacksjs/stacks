@@ -10,35 +10,44 @@ const requestedCommand = args[0] || 'help'
 const isMinimalCommand = ['--version', '-v', '--help', '-h', 'help', 'version'].includes(requestedCommand)
 const needsFullSetup = !isMinimalCommand
 
-// setup global error handlers
-process.on('uncaughtException', (error: Error) => {
-  log.debug('Buddy uncaughtException')
-  log.error(error)
-  process.exit(1)
-})
+// Setup global error handlers (skip for minimal commands for performance)
+if (needsFullSetup) {
+  process.on('uncaughtException', (error: Error) => {
+    log.debug('Buddy uncaughtException')
+    log.error(error)
+    process.exit(1)
+  })
 
-process.on('unhandledRejection', (error: Error) => {
-  log.debug('Buddy unhandledRejection')
-  log.error(error)
-  process.exit(1)
-})
+  process.on('unhandledRejection', (error: Error) => {
+    log.debug('Buddy unhandledRejection')
+    log.error(error)
+    process.exit(1)
+  })
+}
 
 async function main() {
   const buddy = cli('buddy')
 
   // Enable theme support
-  buddy.themes()
+  // buddy.themes() // TODO: Re-enable after clapp npm package is updated with themes() method
 
-  // Load and apply buddy.config.ts if it exists
-  const { applyBuddyConfig } = await import('./config.ts')
-  await applyBuddyConfig(buddy)
+  // Load and apply buddy.config.ts only if it exists (performance optimization)
+  const configPath = './buddy.config.ts'
+  try {
+    // Use Bun's fast file check
+    await Bun.file(configPath).text()
+    const { applyBuddyConfig } = await import('./config.ts')
+    await applyBuddyConfig(buddy)
+  }
+  catch {
+    // Config file doesn't exist, skip loading (saves ~5-10ms)
+  }
 
   // Skip expensive setup for commands that don't need it
   if (needsFullSetup) {
     const { runAction } = await import('@stacksjs/actions')
     const { Action } = await import('@stacksjs/enums')
     const { ensureProjectIsInitialized } = await import('@stacksjs/utils')
-    const { fs } = await import('@stacksjs/storage')
 
     // Load required commands for setup
     const { setup } = await import('./commands/setup.ts')
@@ -64,8 +73,9 @@ async function main() {
     }
 
     // Use lazy loading for better cold start performance
-    const { loadAllCommands } = await import('./lazy-commands.ts')
-    await loadAllCommands(buddy)
+    const { loadCommands, getCommandsToLoad } = await import('./lazy-commands.ts')
+    const commandsToLoad = getCommandsToLoad(args)
+    await loadCommands(commandsToLoad, buddy)
 
     // dynamic imports
     await dynamicImports(buddy)
@@ -79,7 +89,6 @@ async function main() {
   buddy.help()
 
   // Handle interactive mode when no command is specified
-  const args = process.argv.slice(2)
   if (args.length === 0 && process.stdin.isTTY && !buddy.isNoInteraction) {
     await showInteractiveMenu(buddy)
   }

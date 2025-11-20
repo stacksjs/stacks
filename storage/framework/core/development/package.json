@@ -56,7 +56,7 @@
     "@stacksjs/tinker": "^0.70.23",
     "@stacksjs/tunnel": "^0.70.23",
     "@stacksjs/types": "^0.70.23",
-    "bun-plugin-dtsx": "^0.21.12",
+    "bun-plugin-dtsx": "0.9.9",
     "typescript": "^5.9.2"
   },
   "devDependencies": {

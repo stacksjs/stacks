@@ -5,9 +5,16 @@ node_modules
 .cache
 temp
 .temp
-.env
-.env.keys
-*.local
+# Environment files
+.env                    # Local environment (not committed)
+.env.keys              # Encryption keys (NEVER commit!)
+*.local                # Local overrides (not committed)
+
+# Encrypted environment files (safe to commit)
+# These can be committed because they're encrypted
+!.env.production
+!.env.staging
+!.env.ci
 updates
 tests/unit/coverage
 dist*
@@ -33,3 +40,4 @@ stacks.log
 /pantry_modules
 .stx
 .stx-serve
+.env.keys
