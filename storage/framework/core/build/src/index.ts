@@ -1,7 +1,8 @@
+import { stat } from 'node:fs/promises'
 import process from 'node:process'
 import { bold, dim, green, italic, log } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
-import { fs, glob } from '@stacksjs/storage'
+import { glob } from '@stacksjs/storage'
 
 export async function outro(options: {
   dir: string
@@ -22,7 +23,7 @@ export async function outro(options: {
   // loop over all the files in the dist directory and log them and their size
   const files = await glob([p.resolve(options.dir, 'dist', '**/*')], { absolute: true })
   for (const file of files) {
-    const stats = await fs.stat(file)
+    const stats = await stat(file)
 
     let sizeStr
     if (stats.size < 1024 * 1024) {

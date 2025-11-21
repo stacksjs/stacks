@@ -1,14 +1,101 @@
 import type { CLI, DeployOptions } from '@stacksjs/types'
 import { $ } from 'bun'
+import { existsSync, readFileSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, italic, log, outro, prompts, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
-import { encryptEnv, loadEnv } from '@stacksjs/env'
+import { encryptEnv } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+
+/**
+ * Load AWS credentials from ~/.aws/credentials file
+ * Returns credentials for the specified profile (or 'default'/'stacks')
+ */
+function loadAwsCredentialsFromFile(): { accessKeyId?: string, secretAccessKey?: string, region?: string } {
+  const credentialsPath = join(homedir(), '.aws', 'credentials')
+  const configPath = join(homedir(), '.aws', 'config')
+
+  if (!existsSync(credentialsPath)) {
+    return {}
+  }
+
+  try {
+    const content = readFileSync(credentialsPath, 'utf-8')
+    const lines = content.split('\n')
+
+    // Try to find credentials in order: stacks profile, default profile, any profile
+    const profiles = ['stacks', 'default']
+    let currentProfile = ''
+    let credentials: { accessKeyId?: string, secretAccessKey?: string } = {}
+    const profileCredentials: Record<string, { accessKeyId?: string, secretAccessKey?: string }> = {}
+
+    for (const line of lines) {
+      const trimmed = line.trim()
+
+      // Check for profile header
+      const profileMatch = trimmed.match(/^\[(.+)\]$/)
+      if (profileMatch) {
+        currentProfile = profileMatch[1]
+        profileCredentials[currentProfile] = {}
+        continue
+      }
+
+      // Parse key=value
+      const keyValue = trimmed.match(/^(\w+)\s*=\s*(.+)$/)
+      if (keyValue && currentProfile) {
+        const [, key, value] = keyValue
+        if (key === 'aws_access_key_id') {
+          profileCredentials[currentProfile].accessKeyId = value
+        }
+        else if (key === 'aws_secret_access_key') {
+          profileCredentials[currentProfile].secretAccessKey = value
+        }
+      }
+    }
+
+    // Try to find credentials in preferred order
+    for (const profile of profiles) {
+      if (profileCredentials[profile]?.accessKeyId && profileCredentials[profile]?.secretAccessKey) {
+        credentials = profileCredentials[profile]
+        log.debug(`Using AWS credentials from ~/.aws/credentials [${profile}] profile`)
+        break
+      }
+    }
+
+    // Fallback to any available profile
+    if (!credentials.accessKeyId) {
+      for (const [profile, creds] of Object.entries(profileCredentials)) {
+        if (creds.accessKeyId && creds.secretAccessKey) {
+          credentials = creds
+          log.debug(`Using AWS credentials from ~/.aws/credentials [${profile}] profile`)
+          break
+        }
+      }
+    }
+
+    // Try to load region from config file
+    let region: string | undefined
+    if (existsSync(configPath)) {
+      const configContent = readFileSync(configPath, 'utf-8')
+      const regionMatch = configContent.match(/region\s*=\s*(.+)/)
+      if (regionMatch) {
+        region = regionMatch[1].trim()
+      }
+    }
+
+    return { ...credentials, region }
+  }
+  catch (error) {
+    log.debug('Failed to read AWS credentials file:', error)
+    return {}
+  }
+}
 
 export function deploy(buddy: CLI): void {
   const descriptions = {
@@ -34,22 +121,34 @@ export function deploy(buddy: CLI): void {
     .action(async (env: string | undefined, options: DeployOptions) => {
       log.debug('Running `buddy deploy` ...', options)
 
-      // Force production environment for deployment
       const deployEnv = env || 'production'
-      process.env.APP_ENV = deployEnv
-      process.env.NODE_ENV = deployEnv
 
-      // Reload env with production settings BEFORE loading config
-      // Load .env first, then .env.production to ensure production values take precedence
-      loadEnv({
-        path: ['.env', '.env.production'],
-        overload: true, // Override any existing env vars
-      })
+      // Clear AWS_PROFILE to prevent credential conflicts when static credentials are provided
+      // AWS SDK's defaultProvider prefers profile over static credentials, causing InvalidClientTokenId errors
+      if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+        delete process.env.AWS_PROFILE
+      }
 
       const startTime = await intro('buddy deploy')
 
-      // Get domain directly from environment variable after reload
-      const domain = options.domain || process.env.APP_URL || app.url
+      // For production deploy, explicitly load .env.production to get the correct domain
+      // This ensures we use production settings even if .env.local has different values
+      let productionUrl: string | undefined
+      if (deployEnv === 'production' || deployEnv === 'prod') {
+        const prodEnvPath = p.projectPath('.env.production')
+        if (existsSync(prodEnvPath)) {
+          const prodEnvContent = readFileSync(prodEnvPath, 'utf-8')
+          const urlMatch = prodEnvContent.match(/^APP_URL=(.+)$/m)
+          if (urlMatch) {
+            productionUrl = urlMatch[1].trim()
+            log.debug('Using APP_URL from .env.production:', productionUrl)
+          }
+        }
+      }
+
+      // Get domain from options, production env, Bun.env, or config
+      const envUrl = typeof Bun !== 'undefined' ? Bun.env.APP_URL : process.env.APP_URL
+      const domain = options.domain || productionUrl || envUrl || app.url
 
       if ((options.prod || deployEnv === 'production' || deployEnv === 'prod') && !options.yes)
         await confirmProductionDeployment()
@@ -70,7 +169,7 @@ export function deploy(buddy: CLI): void {
 
       const result = await runAction(Action.Deploy, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the `buddy deploy`, there was an issue',
           { startTime, useSeconds: true },
@@ -150,7 +249,7 @@ async function configureDomain(domain: string, options: DeployOptions, startTime
     startTime,
   })
 
-  if (result.isErr()) {
+  if (result.isErr) {
     await outro('While running the `buddy deploy`, there was an issue', { startTime, useSeconds: true }, result.error)
     process.exit(ExitCode.FatalError)
   }
@@ -214,17 +313,36 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
   try {
     log.info('Ensuring AWS cloud stack exists...')
 
-    // Check if AWS credentials are configured
-    const hasCredentials = process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+    // Check if AWS credentials are configured in env vars (non-empty values)
+    let hasCredentials = process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+
+    // If .env doesn't have credentials, try to load from ~/.aws/credentials
+    if (!hasCredentials) {
+      const fileCredentials = loadAwsCredentialsFromFile()
+
+      if (fileCredentials.accessKeyId && fileCredentials.secretAccessKey) {
+        // Set credentials in process.env for downstream use
+        process.env.AWS_ACCESS_KEY_ID = fileCredentials.accessKeyId
+        process.env.AWS_SECRET_ACCESS_KEY = fileCredentials.secretAccessKey
+        if (fileCredentials.region && !process.env.AWS_REGION) {
+          process.env.AWS_REGION = fileCredentials.region
+        }
+        hasCredentials = true
+        log.success('Using AWS credentials from ~/.aws/credentials')
+      }
+    }
 
     if (!hasCredentials) {
-      log.info('AWS credentials not found. Let\'s set them up for deployment.')
+      log.info('AWS credentials not found in .env or ~/.aws/credentials.')
+      log.info('You can either:')
+      log.info('  1. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in .env.production')
+      log.info('  2. Add credentials to ~/.aws/credentials')
+      log.info('  3. Configure them interactively below')
+      console.log('')
 
       // If --yes flag is used, skip prompting and just inform the user
       if (options?.yes) {
         log.info('Skipping credential setup (--yes flag provided)')
-        log.info('Please set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your .env.production file')
-        log.info('Or run without --yes to configure credentials interactively')
         process.exit(ExitCode.FatalError)
       }
 
@@ -259,11 +377,11 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     const stackName = `${appName}-cloud`
 
     // Use ts-cloud's CloudFormation client instead of CDK
-    const { CloudFormationClient } = await import('/Users/chrisbreuer/Code/ts-cloud/packages/ts-cloud/src/aws/cloudformation.ts')
+    const { CloudFormationClient } = await import('ts-cloud/aws')
 
+    // Don't pass AWS_PROFILE when we have static credentials to avoid conflicts
     const cfnClient = new CloudFormationClient(
-      process.env.AWS_REGION || 'us-east-1',
-      process.env.AWS_PROFILE
+      process.env.AWS_REGION || 'us-east-1'
     )
 
     // Check if stack exists

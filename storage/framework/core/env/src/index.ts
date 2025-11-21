@@ -2,7 +2,6 @@ import type { EnvKey } from '../../../env'
 import type { Env } from './types'
 import p from 'node:process'
 import { projectPath } from '@stacksjs/path'
-import { ValidationBoolean, ValidationEnum, ValidationNumber } from '@stacksjs/validation'
 import fs from 'node:fs'
 
 const handler = {
@@ -16,14 +15,6 @@ const handler = {
     // if value is a string but only contains boolean values, return it as a boolean
     if (typeof value === 'string' && /^true|false$/.test(value))
       return value === 'true'
-
-    // at some point, let's see if we can remove the need for below
-    if (value instanceof ValidationEnum)
-      return target[key] as string
-    if (value instanceof ValidationBoolean)
-      return !!target[key]
-    if (value instanceof ValidationNumber)
-      return Number(target[key])
 
     return value as string
   },

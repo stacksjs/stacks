@@ -24,7 +24,7 @@ import { ExitCode } from '@stacksjs/types'
  */
 async function createTemporaryCdkRole(roleName: string): Promise<void> {
   // Import AWSClient for direct IAM API calls
-  const { AWSClient } = await import('ts-cloud')
+  const { AWSClient } = await import('ts-cloud/aws')
   const client = new AWSClient()
 
   // Trust policy that allows CloudFormation to assume this role
@@ -128,7 +128,7 @@ async function createTemporaryCdkRole(roleName: string): Promise<void> {
  * Uses raw AWS API calls since AWS SDK has dependency issues with Bun
  */
 async function deleteTemporaryCdkRole(roleName: string): Promise<void> {
-  const { AWSClient } = await import('ts-cloud')
+  const { AWSClient } = await import('ts-cloud/aws')
   const client = new AWSClient()
 
   try {
@@ -235,7 +235,7 @@ export function cloud(buddy: CLI): void {
         log.info('Invalidating the CloudFront cache...')
 
         // Use ts-cloud CloudFront client instead of AWS SDK
-        const { CloudFrontClient } = await import('ts-cloud')
+        const { CloudFrontClient } = await import('ts-cloud/aws')
         const cloudfront = new CloudFrontClient()
         const distributionId = await getCloudFrontDistributionId()
 
@@ -347,15 +347,6 @@ export function cloud(buddy: CLI): void {
     .action(async (options: CloudCliOptions) => {
       log.debug('Running `buddy cloud:remove` ...', options)
 
-      // Load production environment variables
-      const { loadEnv } = await import('@stacksjs/env')
-      process.env.APP_ENV = 'production'
-      process.env.NODE_ENV = 'production'
-      loadEnv({
-        path: ['.env', '.env.production'],
-        overload: true,
-      })
-
       const startTime = await intro('buddy cloud:remove')
 
       if (options.jumpBox) {
@@ -401,7 +392,7 @@ export function cloud(buddy: CLI): void {
 
       try {
         // Use ts-cloud's CloudFormation client instead of CDK
-        const { CloudFormationClient } = await import('ts-cloud')
+        const { CloudFormationClient } = await import('ts-cloud/aws')
 
         // Unset AWS_PROFILE to force AWS SDK to use static credentials from .env.production
         delete process.env.AWS_PROFILE
@@ -729,15 +720,6 @@ export function cloud(buddy: CLI): void {
       log.debug('Running `buddy cloud:cleanup` ...', options)
 
       const startTime = await intro('buddy cloud:cleanup')
-
-      // Load production environment variables for AWS credentials
-      const { loadEnv } = await import('@stacksjs/env')
-      process.env.APP_ENV = 'production'
-      process.env.NODE_ENV = 'production'
-      loadEnv({
-        path: ['.env', '.env.production'],
-        overload: true,
-      })
 
       // Unset AWS_PROFILE to force AWS SDK to use static credentials from .env.production
       delete process.env.AWS_PROFILE
