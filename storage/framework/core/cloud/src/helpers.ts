@@ -288,56 +288,83 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
       // Delete the bucket
       log.info(`Deleting bucket ${bucketName}...`)
 
-      // List all objects in the bucket
-      const objects = await s3.listObjectsV2({ Bucket: bucketName })
-      log.info(`Finished listing bucket ${bucketName} objects`)
+      // List and delete all objects in the bucket with pagination
+      let continuationToken: string | undefined
+      let hasMoreObjects = true
 
-      // Delete all objects
-      if (objects.Contents) {
-        log.info('Deleting bucket objects...')
+      while (hasMoreObjects) {
+        const objects = await s3.listObjectsV2({
+          Bucket: bucketName,
+          ContinuationToken: continuationToken,
+        })
 
-        await Promise.all(
-          objects.Contents.map(object =>
-            s3.deleteObject({ Bucket: bucketName, Key: object.Key || '' }).catch(error => handleError(error)),
-          ),
-        )
+        // Delete all objects in this batch
+        if (objects.Contents && objects.Contents.length > 0) {
+          log.info(`Deleting ${objects.Contents.length} objects from bucket ${bucketName}...`)
 
-        log.info(`Finished deleting objects from bucket ${bucketName}`)
+          await Promise.all(
+            objects.Contents.map(object =>
+              s3.deleteObject({ Bucket: bucketName, Key: object.Key || '' }).catch(error => handleError(error)),
+            ),
+          )
+        }
+
+        // Check if there are more objects
+        hasMoreObjects = objects.IsTruncated === true
+        continuationToken = objects.NextContinuationToken
       }
+
+      log.info(`Finished deleting objects from bucket ${bucketName}`)
 
       log.info(`Deleting bucket ${bucketName} versions...`)
       try {
-        const versions = await s3.listObjectVersions({ Bucket: bucketName })
+        // Delete all versions and delete markers with pagination
+        let keyMarker: string | undefined
+        let versionIdMarker: string | undefined
+        let hasMore = true
 
-        if (versions.Versions) {
-          await Promise.all(
-            versions.Versions.map(version =>
-              s3.deleteObject({
-                Bucket: bucketName,
-                Key: version.Key || '',
-                VersionId: version.VersionId,
-              }),
-            ),
-          ).catch(error => handleError(error))
-          log.info(`Finished deleting versions from bucket ${bucketName}`)
+        while (hasMore) {
+          const versions = await s3.listObjectVersions({
+            Bucket: bucketName,
+            KeyMarker: keyMarker,
+            VersionIdMarker: versionIdMarker,
+          })
+
+          // Delete versions in this batch
+          if (versions.Versions && versions.Versions.length > 0) {
+            await Promise.all(
+              versions.Versions.map(version =>
+                s3.deleteObject({
+                  Bucket: bucketName,
+                  Key: version.Key || '',
+                  VersionId: version.VersionId,
+                }),
+              ),
+            ).catch(error => handleError(error))
+            log.info(`Deleted ${versions.Versions.length} versions from bucket ${bucketName}`)
+          }
+
+          // Delete delete markers in this batch
+          if (versions.DeleteMarkers && versions.DeleteMarkers.length > 0) {
+            await Promise.all(
+              versions.DeleteMarkers.map(marker =>
+                s3.deleteObject({
+                  Bucket: bucketName,
+                  Key: marker.Key || '',
+                  VersionId: marker.VersionId,
+                }),
+              ),
+            ).catch(error => handleError(error))
+            log.info(`Deleted ${versions.DeleteMarkers.length} delete markers from bucket ${bucketName}`)
+          }
+
+          // Check if there are more items
+          hasMore = versions.IsTruncated === true
+          keyMarker = versions.NextKeyMarker
+          versionIdMarker = versions.NextVersionIdMarker
         }
 
-        // Delete all delete markers
-        log.info(`Deleting bucket ${bucketName} delete markers...`)
-
-        if (versions.DeleteMarkers) {
-          await Promise.all(
-            versions.DeleteMarkers.map(marker =>
-              s3.deleteObject({
-                Bucket: bucketName,
-                Key: marker.Key || '',
-                VersionId: marker.VersionId,
-              }),
-            ),
-          ).catch(error => handleError(error))
-
-          log.info(`Finished deleting delete markers from bucket ${bucketName}`)
-        }
+        log.info(`Finished deleting all versions from bucket ${bucketName}`)
 
         // If the bucket has uncompleted multipart uploads, you need to abort them
         const uploads = await s3.listMultipartUploads({ Bucket: bucketName })

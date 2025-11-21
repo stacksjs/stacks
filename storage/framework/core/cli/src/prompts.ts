@@ -3,42 +3,59 @@
  */
 
 import process from 'node:process'
+import { createInterface } from 'node:readline'
+import type { Interface } from 'node:readline'
+
+// Protect stdin from being closed by readline
+const originalDestroy = process.stdin.destroy
+process.stdin.destroy = function(error?: Error) {
+  // Don't actually destroy stdin - just emit 'close' if needed
+  if (error) {
+    this.emit('error', error)
+  }
+  // Return this to satisfy the method signature
+  return this
+} as any
+
+// Handle Ctrl+C gracefully
+process.on('SIGINT', () => {
+  console.log('\n')
+  process.exit(130) // Standard exit code for SIGINT
+})
+
+// Single global readline interface that we reuse
+let globalRl: Interface | null = null
+
+function getGlobalRl(): Interface {
+  if (!globalRl) {
+    // Detect if we're in a TTY
+    const isTTY = process.stdin.isTTY && process.stdout.isTTY
+
+    globalRl = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+      terminal: isTTY,
+    })
+
+    // Set up Ctrl+C handler
+    if (isTTY && process.stdin.setRawMode) {
+      globalRl.on('SIGINT', () => {
+        process.emit('SIGINT' as any)
+      })
+    }
+  }
+  return globalRl
+}
 
 /**
- * Read a line from stdin without using readline
+ * Read a line from stdin using readline's question method
  */
-function readLine(): Promise<string> {
+function readLine(prompt: string): Promise<string> {
   return new Promise((resolve) => {
-    let data = ''
-
-    const onData = (chunk: Buffer) => {
-      const str = chunk.toString()
-      data += str
-
-      if (str.includes('\n')) {
-        cleanup()
-        resolve(data.replace(/\r?\n$/, ''))
-      }
-    }
-
-    const onEnd = () => {
-      cleanup()
-      resolve(data)
-    }
-
-    const cleanup = () => {
-      process.stdin.removeListener('data', onData)
-      process.stdin.removeListener('end', onEnd)
-      process.stdin.pause()
-    }
-
-    // Resume stdin to read data
-    if (process.stdin.isPaused()) {
-      process.stdin.resume()
-    }
-
-    process.stdin.on('data', onData)
-    process.stdin.once('end', onEnd)
+    const rl = getGlobalRl()
+    rl.question(prompt, (answer) => {
+      resolve(answer)
+    })
   })
 }
 
@@ -71,11 +88,9 @@ interface SelectOptions {
 async function confirm(options: ConfirmOptions | string): Promise<boolean> {
   const opts = typeof options === 'string' ? { message: options } : options
   const defaultValue = opts.initial ?? false
-  const suffix = defaultValue ? ' (Y/n)' : ' (y/N)'
+  const suffix = defaultValue ? ' (Y/n) ' : ' (y/N) '
 
-  process.stdout.write(`${opts.message}${suffix} `)
-
-  const answer = await readLine()
+  const answer = await readLine(`${opts.message}${suffix}`)
   const normalized = answer.toLowerCase().trim()
 
   if (!normalized) {
@@ -98,11 +113,9 @@ async function confirm(options: ConfirmOptions | string): Promise<boolean> {
 async function text(options: TextOptions | string): Promise<string> {
   const opts = typeof options === 'string' ? { message: options } : options
   const placeholder = opts.placeholder || opts.initial || ''
-  const suffix = placeholder ? ` (${placeholder})` : ''
+  const suffix = placeholder ? ` (${placeholder}) ` : ' '
 
-  process.stdout.write(`${opts.message}${suffix}: `)
-
-  const answer = await readLine()
+  const answer = await readLine(`${opts.message}${suffix}`)
   return answer.trim() || opts.initial || ''
 }
 
@@ -116,9 +129,7 @@ async function select(options: SelectOptions): Promise<any> {
     console.log(`${marker} ${index + 1}. ${choice.label}`)
   })
 
-  process.stdout.write('Select (number): ')
-
-  const answer = await readLine()
+  const answer = await readLine('Select (number): ')
   const index = Number.parseInt(answer.trim()) - 1
   if (index >= 0 && index < options.choices.length) {
     return options.choices[index].value
@@ -138,9 +149,7 @@ async function multiselect(options: SelectOptions): Promise<any[]> {
     console.log(`  ${index + 1}. ${choice.label}`)
   })
 
-  process.stdout.write('Select (e.g., 1,3,4): ')
-
-  const answer = await readLine()
+  const answer = await readLine('Select (e.g., 1,3,4): ')
   const indices = answer.split(',').map(s => Number.parseInt(s.trim()) - 1)
   const selected = indices
     .filter(i => i >= 0 && i < options.choices.length)
@@ -154,9 +163,7 @@ async function multiselect(options: SelectOptions): Promise<any[]> {
 async function password(options: PasswordOptions | string): Promise<string> {
   const opts = typeof options === 'string' ? { message: options } : options
 
-  process.stdout.write(`${opts.message}: `)
-
-  const answer = await readLine()
+  const answer = await readLine(`${opts.message} `)
   return answer.trim()
 }
 

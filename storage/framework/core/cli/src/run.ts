@@ -36,7 +36,8 @@ export async function runCommand(command: string, options?: CliOptions): Promise
 
   const opts: CliOptions = {
     ...options,
-    stdio: options?.stdio ?? [options?.stdin ?? 'inherit', 'pipe', 'pipe'],
+    // Don't override stdin if it's explicitly set
+    stdin: options?.stdin ?? 'inherit',
     verbose: options?.verbose ?? false,
   }
 

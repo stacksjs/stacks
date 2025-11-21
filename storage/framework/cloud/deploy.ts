@@ -17,9 +17,9 @@ const domain = config.app.url
 const appName = config.app.name?.toLowerCase() ?? 'stacks'
 const slug = slugify(appName)
 const name = `${slug}-cloud`
-const account = env.AWS_ACCOUNT_ID
+const account = env.AWS_ACCOUNT_ID || undefined
 // const region = env.AWS_DEFAULT_REGION
-const region = 'us-east-1' // currently, us-east-1 is the only fully-supported region
+const region = env.AWS_REGION || 'us-east-1' // currently, us-east-1 is the only fully-supported region
 let timestamp
 
 if (!appKey) {
@@ -34,8 +34,10 @@ if (parts && parts.length < 2) {
   )
 }
 
-if (!account || !region)
-  throw new Error('Stacks is missing your accountId or region. Please ensure it is set in your .env file')
+// AWS Account ID is optional - CDK will use current credentials if not specified
+if (!region) {
+  throw new Error('Stacks is missing AWS region. Please ensure AWS_REGION is set in your .env file')
+}
 
 if (!domain)
   throw new Error('Missing app.url in config.')

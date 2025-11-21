@@ -5,6 +5,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, italic, log, outro, prompts, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
+import { encryptEnv, loadEnv } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
@@ -39,9 +40,9 @@ export function deploy(buddy: CLI): void {
       process.env.NODE_ENV = deployEnv
 
       // Reload env with production settings BEFORE loading config
-      const { loadEnv } = await import('@stacksjs/env')
+      // Load .env first, then .env.production to ensure production values take precedence
       loadEnv({
-        path: ['.env.production', '.env'],
+        path: ['.env', '.env.production'],
         overload: true, // Override any existing env vars
       })
 
@@ -62,7 +63,7 @@ export function deploy(buddy: CLI): void {
 
       log.info(`Deploying to ${italic(domain)} (${deployEnv})`)
 
-      await checkIfAwsIsConfigured()
+      // Skip AWS config check - we'll handle credentials in checkIfAwsIsBootstrapped
       await checkIfAwsIsBootstrapped(options)
 
       options.domain = await configureDomain(domain, options, startTime)
@@ -90,7 +91,7 @@ export function deploy(buddy: CLI): void {
 async function confirmProductionDeployment() {
   const confirmed = await prompts.confirm({
     message: 'Are you sure you want to deploy to production?',
-    initial: false,
+    initial: true,
   })
 
   if (!confirmed) {
@@ -158,40 +159,66 @@ async function configureDomain(domain: string, options: DeployOptions, startTime
   process.exit(ExitCode.Success)
 }
 
-async function checkIfAwsIsConfigured() {
-  log.info('Ensuring AWS is configured...')
+async function promptAndSaveCredentials() {
+  // Prompt for AWS credentials
+  const accessKeyId = await prompts.text({
+    message: 'AWS Access Key ID:',
+    validate: (value: string) => value.length > 0 ? true : 'Access Key ID is required',
+  })
 
-  try {
-    const result = await runCommand('buddy configure:aws', {
-      silent: true,
-    })
-
-    // Check if result has isErr method (proper Result type)
-    if (result && typeof result.isErr === 'function' && result.isErr()) {
-      log.error('AWS is not configured properly.', {
-        shouldExit: false,
-      })
-      log.error('Please run `buddy configure:aws` to set up your AWS credentials.')
-      return
-    }
-
-    log.success('AWS is configured')
+  if (!accessKeyId) {
+    log.info('Deployment cancelled')
+    process.exit(ExitCode.Success)
   }
-  catch (error) {
-    log.debug('Error checking AWS configuration:', error)
-    log.success('AWS is configured')
+
+  const secretAccessKey = await prompts.password({
+    message: 'AWS Secret Access Key:',
+    validate: (value: string) => value.length > 0 ? true : 'Secret Access Key is required',
+  })
+
+  if (!secretAccessKey) {
+    log.info('Deployment cancelled')
+    process.exit(ExitCode.Success)
   }
+
+  const region = await prompts.text({
+    message: 'AWS Region:',
+    initial: 'us-east-1',
+  })
+
+  if (!region) {
+    log.info('Deployment cancelled')
+    process.exit(ExitCode.Success)
+  }
+
+  // Save credentials to .env.production with encryption
+  const { setEnv } = await import('@stacksjs/env')
+
+  // Set and encrypt the credentials
+  await setEnv('AWS_ACCESS_KEY_ID', accessKeyId, { file: '.env.production', encrypt: true })
+  await setEnv('AWS_SECRET_ACCESS_KEY', secretAccessKey, { file: '.env.production', encrypt: true })
+  await setEnv('AWS_REGION', region || 'us-east-1', { file: '.env.production' })
+
+  // Update process.env
+  process.env.AWS_ACCESS_KEY_ID = accessKeyId
+  process.env.AWS_SECRET_ACCESS_KEY = secretAccessKey
+  process.env.AWS_REGION = region || 'us-east-1'
+
+  log.success('AWS credentials saved securely to .env.production')
+  console.log('')
 }
 
 async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
+  let handlingAlreadyExists = false
+
   try {
     log.info('Ensuring AWS cloud stack exists...')
 
     // Check if AWS credentials are configured
-    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
-      log.warn('AWS credentials not found in environment')
-      log.info('Let\'s set up your AWS credentials for deployment')
-      console.log('')
+    const hasCredentials = process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+
+    if (!hasCredentials) {
+      log.info('AWS credentials not found. Let\'s set them up for deployment.')
 
       // If --yes flag is used, skip prompting and just inform the user
       if (options?.yes) {
@@ -221,74 +248,15 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
         return true
       }
 
-      // Prompt for AWS credentials
-      const accessKeyId = await prompts.text({
-        message: 'AWS Access Key ID:',
-        validate: (value: string) => value.length > 0 ? true : 'Access Key ID is required',
-      })
-
-      if (!accessKeyId) {
-        log.info('Deployment cancelled')
-        process.exit(ExitCode.Success)
-      }
-
-      const secretAccessKey = await prompts.password({
-        message: 'AWS Secret Access Key:',
-        validate: (value: string) => value.length > 0 ? true : 'Secret Access Key is required',
-      })
-
-      if (!secretAccessKey) {
-        log.info('Deployment cancelled')
-        process.exit(ExitCode.Success)
-      }
-
-      const region = await prompts.text({
-        message: 'AWS Region:',
-        initial: 'us-east-1',
-      })
-
-      if (!region) {
-        log.info('Deployment cancelled')
-        process.exit(ExitCode.Success)
-      }
-
-      // Save credentials to .env.production
-      const fs = await import('node:fs')
-      const envPath = p.projectPath('.env.production')
-      let envContent = fs.readFileSync(envPath, 'utf-8')
-
-      // Update or add AWS credentials
-      if (envContent.includes('AWS_ACCESS_KEY_ID=')) {
-        envContent = envContent.replace(/AWS_ACCESS_KEY_ID=.*$/m, `AWS_ACCESS_KEY_ID=${accessKeyId}`)
-      }
-      else {
-        envContent += `\nAWS_ACCESS_KEY_ID=${accessKeyId}`
-      }
-
-      if (envContent.includes('AWS_SECRET_ACCESS_KEY=')) {
-        envContent = envContent.replace(/AWS_SECRET_ACCESS_KEY=.*$/m, `AWS_SECRET_ACCESS_KEY=${secretAccessKey}`)
-      }
-      else {
-        envContent += `\nAWS_SECRET_ACCESS_KEY=${secretAccessKey}`
-      }
-
-      if (envContent.includes('AWS_REGION=')) {
-        envContent = envContent.replace(/AWS_REGION=.*$/m, `AWS_REGION=${region}`)
-      }
-      else {
-        envContent += `\nAWS_REGION=${region}`
-      }
-
-      fs.writeFileSync(envPath, envContent)
-
-      // Update process.env
-      process.env.AWS_ACCESS_KEY_ID = accessKeyId
-      process.env.AWS_SECRET_ACCESS_KEY = secretAccessKey
-      process.env.AWS_REGION = region
-
-      log.success('AWS credentials saved to .env.production')
-      console.log('')
+      await promptAndSaveCredentials()
     }
+    else {
+      log.success('AWS credentials found')
+    }
+
+    // Generate stack name from app name and environment
+    const appName = (process.env.APP_NAME || app.name || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
+    const stackName = `${appName}-cloud`
 
     // Use ts-cloud's CloudFormation client instead of CDK
     const { CloudFormationClient } = await import('/Users/chrisbreuer/Code/ts-cloud/packages/ts-cloud/src/aws/cloudformation.ts')
@@ -300,7 +268,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
 
     // Check if stack exists
     try {
-      const result = await cfnClient.describeStacks({ stackName: 'stacks-cloud' })
+      const result = await cfnClient.describeStacks({ stackName })
 
       if (result.Stacks && result.Stacks.length > 0) {
         log.success('Cloud stack exists')
@@ -318,12 +286,12 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     // Create basic CloudFormation template for Stacks cloud infrastructure
     const template = {
       AWSTemplateFormatVersion: '2010-09-09',
-      Description: 'Stacks Cloud Infrastructure',
+      Description: `${appName} Cloud Infrastructure`,
       Resources: {
         StacksBucket: {
           Type: 'AWS::S3::Bucket',
           Properties: {
-            BucketName: `stacks-${process.env.APP_ENV || 'production'}-assets`,
+            BucketName: `${appName}-${process.env.APP_ENV || 'production'}-assets`,
             PublicAccessBlockConfiguration: {
               BlockPublicAcls: false,
               BlockPublicPolicy: false,
@@ -342,7 +310,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
           Description: 'Name of the S3 bucket',
           Value: { Ref: 'StacksBucket' },
           Export: {
-            Name: 'StacksBucketName',
+            Name: `${appName}BucketName`,
           },
         },
         BucketWebsiteURL: {
@@ -355,7 +323,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     try {
       // Create the stack using ts-cloud
       const result = await cfnClient.createStack({
-        stackName: 'stacks-cloud',
+        stackName,
         templateBody: JSON.stringify(template),
         capabilities: ['CAPABILITY_IAM'],
         tags: [
@@ -368,20 +336,54 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
       log.info('Waiting for stack creation to complete...')
 
       // Wait for stack creation to complete
-      await cfnClient.waitForStack('stacks-cloud', 'stack-create-complete')
+      await cfnClient.waitForStack(stackName, 'stack-create-complete')
 
       log.success('Cloud infrastructure created successfully')
       return true
     }
     catch (error: any) {
+      // Handle case where stack already exists
+      if (error.code === 'AlreadyExistsException') {
+        handlingAlreadyExists = true
+        console.log('')
+        log.error(`A cloud stack named "${stackName}" already exists`)
+        log.info('This stack may be from a previous incomplete deployment.')
+        console.log('')
+        log.info('To resolve this, run one of the following commands:')
+        console.log('')
+        log.info('  buddy cloud:cleanup           # Clean up all cloud resources')
+        log.info('  buddy cloud:remove            # Remove the entire cloud stack')
+        console.log('')
+        log.info('Or manually delete it in the AWS Console:')
+        log.info('  https://console.aws.amazon.com/cloudformation')
+        console.log('')
+        process.exit(ExitCode.FatalError)
+      }
+
+      // Handle other errors
       log.error('Failed to create cloud infrastructure')
-      console.error(error)
+      log.error(`Error: ${error.message || error}`)
+
+      if (error.code) {
+        log.error(`AWS Error Code: ${error.code}`)
+      }
+
+      if (options?.verbose) {
+        console.error(error)
+      }
+
       process.exit(ExitCode.FatalError)
     }
   }
   catch (err: any) {
-    log.error('Error checking cloud infrastructure')
-    console.error(err)
+    // Don't log error details if we're already handling AlreadyExistsException
+    if (!handlingAlreadyExists) {
+      log.error('Error checking cloud infrastructure')
+      log.error(`Error: ${err.message || err}`)
+      if (options?.verbose) {
+        console.error(err)
+      }
+    }
     process.exit(ExitCode.FatalError)
   }
 }
