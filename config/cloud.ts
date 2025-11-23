@@ -98,7 +98,7 @@ export const tsCloud: TsCloudConfig = {
      */
     compute: {
       instances: 1,
-      size: 'micro', // Provider-agnostic: 'nano', 'micro', 'small', 'medium', 'large', 'xlarge', '2xlarge'
+      size: 'small', // Provider-agnostic: 'nano', 'micro', 'small', 'medium', 'large', 'xlarge', '2xlarge' (small = 2GB RAM, needed for bun install)
       disk: {
         size: 20,
         type: 'ssd', // Provider-agnostic: 'standard', 'ssd', 'premium'

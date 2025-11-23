@@ -55,6 +55,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   'test': { path: './commands/test.ts', exportName: 'test' },
   'tinker': { path: './commands/tinker.ts', exportName: 'tinker' },
   'types': { path: './commands/types.ts', exportName: 'types' },
+  'undeploy': { path: './commands/cloud.ts', exportName: 'cloud' }, // Alias for cloud:remove
   'upgrade': { path: './commands/upgrade.ts', exportName: 'upgrade' },
   'version': { path: './commands/version.ts', exportName: 'version' },
 }

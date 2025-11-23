@@ -10,7 +10,9 @@ import type { CloudConfig } from '@ts-cloud/types'
 // Load cloud config lazily to avoid import issues
 async function getCloudConfig(): Promise<CloudConfig | null> {
   try {
-    const cloudConfig = await import('../../../../../config/cloud')
+    // Path from storage/framework/core/actions/deploy.ts to config/cloud.ts
+    // 4 levels up: actions -> core -> framework -> storage -> (root)
+    const cloudConfig = await import('../../../../config/cloud')
     return cloudConfig.tsCloud || null
   }
   catch {
@@ -82,7 +84,7 @@ async function generateStacksTemplate(options: {
 
   // Load cloud config for compute settings
   const cloudConfig = await getCloudConfig()
-  const siteDomain = domain || cloudConfig?.infrastructure?.dns?.domain || 'stacksjs.org'
+  const siteDomain = domain || cloudConfig?.infrastructure?.dns?.domain || 'stacksjs.com'
   const sslConfig = cloudConfig?.infrastructure?.ssl || { enabled: true, provider: 'acm' }
   const loadBalancerConfig = cloudConfig?.infrastructure?.loadBalancer || { enabled: true }
   const computeConfig = cloudConfig?.infrastructure?.compute || { instances: 1, size: 'micro' }
@@ -254,6 +256,8 @@ const mimeTypes: Record<string, string> = {
   '.css': 'text/css; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
   '.mjs': 'application/javascript; charset=utf-8',
+  '.ts': 'application/javascript; charset=utf-8',
+  '.mts': 'application/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.xml': 'application/xml; charset=utf-8',
   '.png': 'image/png',
@@ -305,6 +309,20 @@ const server = Bun.serve({
       })
     }
 
+    // Favicon - return empty response if not found
+    if (pathname === '/favicon.ico') {
+      const faviconPaths = ['./public/favicon.ico', './resources/favicon.ico', './favicon.ico']
+      for (const p of faviconPaths) {
+        try {
+          const file = Bun.file(p)
+          if (await file.exists()) {
+            return new Response(file, { headers: { 'Content-Type': 'image/x-icon', 'Cache-Control': 'public, max-age=86400' } })
+          }
+        } catch {}
+      }
+      return new Response('', { status: 204 })
+    }
+
     // Handle static assets (CSS, JS, images, fonts, etc.)
     if (isStaticAsset(pathname)) {
       const assetPaths = [
@@ -313,10 +331,30 @@ const server = Bun.serve({
         './storage/public' + pathname,
         '.' + pathname,
       ]
+
+      // For /assets/* URLs, also check resources/assets directory
+      if (pathname.startsWith('/assets/')) {
+        assetPaths.push('./resources' + pathname)
+      }
+
       for (const assetPath of assetPaths) {
         try {
           const file = Bun.file(assetPath)
           if (await file.exists()) {
+            // Transpile TypeScript files to JavaScript
+            const ext = pathname.substring(pathname.lastIndexOf('.')).toLowerCase()
+            if (ext === '.ts' || ext === '.mts') {
+              const tsCode = await file.text()
+              const transpiler = new Bun.Transpiler({ loader: 'ts' })
+              const jsCode = transpiler.transformSync(tsCode)
+              return new Response(jsCode, {
+                headers: {
+                  'Content-Type': 'application/javascript; charset=utf-8',
+                  'Cache-Control': 'public, max-age=31536000, immutable',
+                  'Access-Control-Allow-Origin': '*',
+                }
+              })
+            }
             return new Response(file, {
               headers: {
                 'Content-Type': getMimeType(pathname),
@@ -381,6 +419,17 @@ systemctl enable stacks
 systemctl start stacks
 echo "Setup complete!"
 `
+  }
+
+  // DNS Configuration
+  const dnsConfig = cloudConfig?.infrastructure?.dns || {}
+  const hostedZoneId = dnsConfig.hostedZoneId || ''
+  const sslDomains = sslConfig.domains || [siteDomain, `www.${siteDomain}`]
+
+  // Log DNS config
+  if (hostedZoneId) {
+    log.info(`  DNS: Route53 (${siteDomain})`)
+    log.info(`  SSL Domains: ${sslDomains.join(', ')}`)
   }
 
   // Build resources object
@@ -667,6 +716,79 @@ echo "Setup complete!"
     }
   }
 
+  // Add Route53 DNS records if hostedZoneId is provided
+  if (hostedZoneId && useLoadBalancer) {
+    // ALB hosted zone IDs by region (for ALIAS records)
+    const albHostedZoneIds: Record<string, string> = {
+      'us-east-1': 'Z35SXDOTRQ7X7K',
+      'us-east-2': 'Z3AADJGX6KTTL2',
+      'us-west-1': 'Z368ELLRRE2KJ0',
+      'us-west-2': 'Z1H1FL5HABSF5',
+      'eu-west-1': 'Z32O12XQLNTSW2',
+      'eu-west-2': 'ZHURV8PSTC4K8',
+      'eu-west-3': 'Z3Q77PNBQS71R4',
+      'eu-central-1': 'Z215JYRZR1TBD5',
+      'ap-northeast-1': 'Z14GRHDCWA56QT',
+      'ap-northeast-2': 'ZWKZPGTI48KDX',
+      'ap-southeast-1': 'Z1LMS91P8CMLE5',
+      'ap-southeast-2': 'Z1GM3OXH4ZPM65',
+      'ap-south-1': 'ZP97RAFLXTNZK',
+      'sa-east-1': 'Z2P70J7HTTTPLU',
+      'ca-central-1': 'ZQSVJUPU6J1EY',
+    }
+
+    const albHostedZoneId = albHostedZoneIds[options.environment === 'production' ? 'us-east-1' : 'us-east-1'] || 'Z35SXDOTRQ7X7K'
+
+    // Create DNS A record for each SSL domain
+    sslDomains.forEach((domain: string, index: number) => {
+      const recordName = domain.startsWith('www.') ? domain : (domain === siteDomain ? siteDomain : domain)
+      const resourceId = `DNSRecord${index === 0 ? '' : index + 1}`
+
+      resources[resourceId] = {
+        Type: 'AWS::Route53::RecordSet',
+        DependsOn: 'ApplicationLoadBalancer',
+        Properties: {
+          HostedZoneId: hostedZoneId,
+          Name: recordName,
+          Type: 'A',
+          AliasTarget: {
+            HostedZoneId: { 'Fn::GetAtt': ['ApplicationLoadBalancer', 'CanonicalHostedZoneID'] },
+            DNSName: { 'Fn::GetAtt': ['ApplicationLoadBalancer', 'DNSName'] },
+            EvaluateTargetHealth: true,
+          },
+        },
+      }
+    })
+  } else if (hostedZoneId && !useLoadBalancer && !useAutoScaling) {
+    // Direct EC2 instance - create A record pointing to Elastic IP
+    resources.DNSRecord = {
+      Type: 'AWS::Route53::RecordSet',
+      DependsOn: 'WebServerEIP',
+      Properties: {
+        HostedZoneId: hostedZoneId,
+        Name: siteDomain,
+        Type: 'A',
+        TTL: '300',
+        ResourceRecords: [{ Ref: 'WebServerEIP' }],
+      },
+    }
+
+    // Add www subdomain if in sslDomains
+    if (sslDomains.includes(`www.${siteDomain}`)) {
+      resources.DNSRecordWww = {
+        Type: 'AWS::Route53::RecordSet',
+        DependsOn: 'WebServerEIP',
+        Properties: {
+          HostedZoneId: hostedZoneId,
+          Name: `www.${siteDomain}`,
+          Type: 'A',
+          TTL: '300',
+          ResourceRecords: [{ Ref: 'WebServerEIP' }],
+        },
+      }
+    }
+  }
+
   // Build outputs
   const outputs: Record<string, any> = {
     VpcId: { Description: 'VPC ID', Value: { Ref: 'VPC' }, Export: { Name: { 'Fn::Sub': '${AWS::StackName}-VpcId' } } },
@@ -679,6 +801,11 @@ echo "Setup complete!"
   } else if (!useAutoScaling) {
     outputs.WebServerPublicIP = { Description: 'Public IP of the web server', Value: { Ref: 'WebServerEIP' }, Export: { Name: { 'Fn::Sub': '${AWS::StackName}-WebServerIP' } } }
     outputs.ApplicationURL = { Description: 'URL to access the application', Value: { 'Fn::Sub': 'http://${WebServerEIP}' } }
+  }
+
+  // Add domain URL output if DNS is configured
+  if (hostedZoneId) {
+    outputs.DomainURL = { Description: 'Domain URL', Value: `https://${siteDomain}` }
   }
 
   const template = {
@@ -705,6 +832,7 @@ function formatResourceStatus(status: string): string {
     yellow: '\x1b[33m',
     red: '\x1b[31m',
     cyan: '\x1b[36m',
+    gray: '\x1b[90m',
     reset: '\x1b[0m',
   }
 
@@ -716,6 +844,9 @@ function formatResourceStatus(status: string): string {
   }
   if (status.includes('FAILED') || status.includes('ROLLBACK')) {
     return `${colors.red}${status}${colors.reset}`
+  }
+  if (status.includes('DELETE')) {
+    return `${colors.gray}${status}${colors.reset}`
   }
   return status
 }
@@ -1182,5 +1313,203 @@ export async function getDeploymentStatus(options: { environment: string, region
   return {
     status: stack.StackStatus,
     outputs,
+  }
+}
+
+interface UndeployStackOptions {
+  environment: string
+  region: string
+  verbose?: boolean
+}
+
+/**
+ * Undeploy the infrastructure stack using ts-cloud with CDK-style status updates
+ */
+export async function undeployStack(options: UndeployStackOptions): Promise<void> {
+  const { environment, region, verbose } = options
+
+  const projectConfig = await getProjectConfig()
+  const stackName = `stacks-cloud-${environment}`
+
+  log.info(`Undeploying infrastructure from ${environment} in ${region}...`)
+  log.info(`Stack: ${stackName}`)
+  log.info('')
+
+  try {
+    const { CloudFormationClient, AWSClient } = await import('ts-cloud/aws')
+    const cf = new CloudFormationClient(region)
+
+    // Check if stack exists
+    let stackExists = false
+    try {
+      const describeResult = await cf.describeStacks({ stackName })
+      if (describeResult.Stacks && describeResult.Stacks.length > 0) {
+        const stack = describeResult.Stacks[0]
+        log.info(`Current stack status: ${formatResourceStatus(stack.StackStatus)}`)
+        stackExists = true
+      }
+    }
+    catch {
+      stackExists = false
+    }
+
+    if (!stackExists) {
+      log.info(`Stack ${stackName} does not exist. Nothing to undeploy.`)
+      return
+    }
+
+    // Clean up any HTTPS listeners before deletion to avoid DELETE_FAILED
+    log.info('Checking for resources to clean up before deletion...')
+    try {
+      const client = new AWSClient()
+
+      // Get ALB from stack resources
+      const resourcesResult = await cf.listStackResources(stackName)
+      const resources = resourcesResult.StackResourceSummaries || []
+
+      const albResource = resources.find((r: any) => r.LogicalResourceId === 'ApplicationLoadBalancer')
+
+      if (albResource?.PhysicalResourceId) {
+        const albArn = albResource.PhysicalResourceId
+
+        // Get all listeners
+        const listParams = {
+          Action: 'DescribeListeners',
+          LoadBalancerArn: albArn,
+          Version: '2015-12-01',
+        }
+
+        const listResult = await client.request({
+          service: 'elasticloadbalancing',
+          region,
+          method: 'POST',
+          path: '/',
+          body: new URLSearchParams(listParams as any).toString(),
+        })
+
+        const listeners = listResult?.DescribeListenersResult?.Listeners?.member
+          || listResult?.DescribeListenersResponse?.DescribeListenersResult?.Listeners?.member
+        const listenerList = Array.isArray(listeners) ? listeners : listeners ? [listeners] : []
+
+        // Delete any HTTPS listeners (manually added, not part of stack)
+        let deletedListeners = 0
+        for (const listener of listenerList) {
+          if (listener.Protocol === 'HTTPS') {
+            log.info(`  Removing HTTPS listener on port ${listener.Port}...`)
+            const deleteParams = {
+              Action: 'DeleteListener',
+              ListenerArn: listener.ListenerArn,
+              Version: '2015-12-01',
+            }
+
+            await client.request({
+              service: 'elasticloadbalancing',
+              region,
+              method: 'POST',
+              path: '/',
+              body: new URLSearchParams(deleteParams as any).toString(),
+            })
+            deletedListeners++
+          }
+        }
+
+        if (deletedListeners > 0) {
+          log.success(`  Cleaned up ${deletedListeners} HTTPS listener(s)`)
+          await new Promise(resolve => setTimeout(resolve, 2000))
+        }
+      }
+    }
+    catch (cleanupError: any) {
+      if (verbose) {
+        log.warn(`Cleanup warning: ${cleanupError.message}`)
+      }
+    }
+
+    // Initiate stack deletion
+    log.info('')
+    log.info('Initiating stack deletion...')
+    log.info('')
+
+    await cf.deleteStack(stackName)
+
+    // Print header for resource status table
+    console.log(`  ${'ResourceId'.padEnd(35)} ${'ResourceType'.padEnd(30)} Status`)
+    console.log('  ' + '-'.repeat(80))
+
+    // Wait for deletion with progress callback
+    await cf.waitForStackWithProgress(stackName, 'stack-delete-complete', createProgressCallback())
+
+    log.info('')
+    log.success('Infrastructure undeployed successfully!')
+    log.info('')
+    log.info('═══════════════════════════════════════════════════════════════')
+    log.info('  UNDEPLOY SUMMARY')
+    log.info('═══════════════════════════════════════════════════════════════')
+    log.info('')
+    log.info(`  Stack:       ${stackName}`)
+    log.info(`  Status:      DELETED`)
+    log.info(`  Environment: ${environment}`)
+    log.info(`  Region:      ${region}`)
+    log.info('')
+    log.info('═══════════════════════════════════════════════════════════════')
+    log.info('')
+  }
+  catch (error: any) {
+    const errorStr = String(error.message || error)
+
+    // Handle stack doesn't exist
+    if (errorStr.includes('does not exist')) {
+      log.info('')
+      log.success('Stack already deleted or does not exist.')
+      return
+    }
+
+    // Handle DELETE_FAILED - need to retain some resources
+    if (error.code === 'DELETE_FAILED' || errorStr.includes('DELETE_FAILED')) {
+      log.warn('')
+      log.warn('Some resources could not be deleted automatically')
+      log.info('Identifying resources to retain...')
+
+      const { CloudFormationClient } = await import('ts-cloud/aws')
+      const cf = new CloudFormationClient(region)
+
+      try {
+        const resourcesResult = await cf.listStackResources(stackName)
+        const resources = resourcesResult.StackResourceSummaries || []
+        const failedResources = resources
+          .filter((r: any) => r.ResourceStatus === 'DELETE_FAILED')
+          .map((r: any) => r.LogicalResourceId)
+
+        if (failedResources.length > 0) {
+          log.info(`Retaining ${failedResources.length} resource(s):`)
+          failedResources.forEach((r: string) => log.info(`  - ${r}`))
+          log.info('')
+
+          // Retry with retained resources
+          log.info('Retrying deletion with retained resources...')
+          await cf.deleteStack(stackName, undefined, failedResources)
+          await cf.waitForStackWithProgress(stackName, 'stack-delete-complete', createProgressCallback())
+
+          log.info('')
+          log.success('Stack removed (with retained resources)')
+          log.info('')
+          log.info('Note: Some resources were retained and may need manual cleanup.')
+          log.info('Run `./buddy cloud:cleanup` to clean up remaining resources.')
+          return
+        }
+      }
+      catch (retryError: any) {
+        const retryErrorStr = String(retryError.message || retryError)
+        if (retryErrorStr.includes('does not exist')) {
+          log.info('')
+          log.success('Stack deleted successfully!')
+          return
+        }
+        throw retryError
+      }
+    }
+
+    log.error(`Stack deletion failed: ${error.message}`)
+    throw error
   }
 }

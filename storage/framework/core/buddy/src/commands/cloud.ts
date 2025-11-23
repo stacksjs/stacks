@@ -385,404 +385,76 @@ export function cloud(buddy: CLI): void {
       // Give user time to read the message
       await new Promise(resolve => setTimeout(resolve, 1500))
 
-      // Get app name and generate stack name
-      const { app } = await import('@stacksjs/config')
-      const appName = (process.env.APP_NAME || app.name || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
-      const env = process.env.APP_ENV || 'production'
-      const stackName = `${appName}-cloud-${env}`
+      // Load AWS credentials from .env.production if not already set
+      if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+        const { existsSync, readFileSync } = await import('node:fs')
+        const { projectPath } = await import('@stacksjs/path')
+        const prodEnvPath = projectPath('.env.production')
 
-      log.info(`Target: ${stackName}`)
+        if (existsSync(prodEnvPath)) {
+          const envContent = readFileSync(prodEnvPath, 'utf-8')
+          const lines = envContent.split('\n')
 
+          for (const line of lines) {
+            const trimmed = line.trim()
+            if (trimmed.startsWith('#') || !trimmed.includes('='))
+              continue
+
+            const [key, ...valueParts] = trimmed.split('=')
+            const value = valueParts.join('=').replace(/^["']|["']$/g, '')
+
+            if (key === 'AWS_ACCESS_KEY_ID' || key === 'AWS_SECRET_ACCESS_KEY' || key === 'AWS_REGION') {
+              process.env[key] = value
+            }
+          }
+
+          if (process.env.AWS_ACCESS_KEY_ID) {
+            log.success('Loaded AWS credentials from .env.production')
+          }
+        }
+      }
+
+      // Use static credentials from .env.production
+      delete process.env.AWS_PROFILE
+
+      // Use the new undeployStack function with CDK-style status updates
       try {
-        // Use ts-cloud's CloudFormation client
-        const { CloudFormationClient } = await import('ts-cloud/aws')
+        const { undeployStack } = await import('../../../actions/deploy')
 
-        // Load AWS credentials from .env.production if not already set
-        if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
-          const { existsSync, readFileSync } = await import('node:fs')
-          const { projectPath } = await import('@stacksjs/path')
-          const prodEnvPath = projectPath('.env.production')
+        const environment = process.env.CLOUD_ENV || process.env.NODE_ENV || 'production'
+        const region = process.env.AWS_REGION || 'us-east-1'
 
-          if (existsSync(prodEnvPath)) {
-            const envContent = readFileSync(prodEnvPath, 'utf-8')
-            const lines = envContent.split('\n')
+        await undeployStack({
+          environment,
+          region,
+          verbose: options.verbose,
+        })
 
-            for (const line of lines) {
-              const trimmed = line.trim()
-              if (trimmed.startsWith('#') || !trimmed.includes('='))
-                continue
-
-              const [key, ...valueParts] = trimmed.split('=')
-              const value = valueParts.join('=').replace(/^["']|["']$/g, '')
-
-              if (key === 'AWS_ACCESS_KEY_ID' || key === 'AWS_SECRET_ACCESS_KEY' || key === 'AWS_REGION') {
-                process.env[key] = value
-              }
-            }
-
-            if (process.env.AWS_ACCESS_KEY_ID) {
-              log.success('Loaded AWS credentials from .env.production')
-            }
-          }
-        }
-
-        // Use static credentials from .env.production
-        delete process.env.AWS_PROFILE
-
-        const cfnClient = new CloudFormationClient(
-          process.env.AWS_REGION || 'us-east-1'
-        )
-
-        // Clean up any manually added HTTPS listeners before deleting the stack
-        // This prevents DELETE_FAILED on WebTargetGroup due to external references
-        log.info('Checking for HTTPS listeners to clean up...')
-        try {
-          const { AWSClient } = await import('ts-cloud/aws')
-          const client = new AWSClient()
-          const region = process.env.AWS_REGION || 'us-east-1'
-
-          // Get ALB from stack resources
-          const resourcesResult = await cfnClient.listStackResources(stackName)
-          const resources = resourcesResult.StackResourceSummaries || []
-
-          if (options.verbose) {
-            log.debug(`Found ${resources.length} stack resources`)
-          }
-
-          const albResource = resources.find((r: any) => r.LogicalResourceId === 'ApplicationLoadBalancer')
-
-          if (!albResource?.PhysicalResourceId) {
-            if (options.verbose) {
-              log.debug('No ALB found in stack resources - skipping listener cleanup')
-            }
-          }
-
-          if (albResource?.PhysicalResourceId) {
-            const albArn = albResource.PhysicalResourceId
-
-            // Get all listeners
-            const listParams = {
-              Action: 'DescribeListeners',
-              LoadBalancerArn: albArn,
-              Version: '2015-12-01',
-            }
-
-            const listResult = await client.request({
-              service: 'elasticloadbalancing',
-              region,
-              method: 'POST',
-              path: '/',
-              body: new URLSearchParams(listParams as any).toString(),
-            })
-
-            // Handle both response formats (with and without Response wrapper)
-            const listeners = listResult?.DescribeListenersResult?.Listeners?.member
-              || listResult?.DescribeListenersResponse?.DescribeListenersResult?.Listeners?.member
-            const listenerList = Array.isArray(listeners) ? listeners : listeners ? [listeners] : []
-
-            if (options.verbose) {
-              log.debug(`Found ${listenerList.length} listeners on ALB`)
-            }
-
-            // Delete any HTTPS listeners (they're manually added and not part of the stack)
-            let deletedListeners = 0
-            for (const listener of listenerList) {
-              if (listener.Protocol === 'HTTPS') {
-                log.info(`Cleaning up HTTPS listener on port ${listener.Port}...`)
-                const deleteParams = {
-                  Action: 'DeleteListener',
-                  ListenerArn: listener.ListenerArn,
-                  Version: '2015-12-01',
-                }
-
-                await client.request({
-                  service: 'elasticloadbalancing',
-                  region,
-                  method: 'POST',
-                  path: '/',
-                  body: new URLSearchParams(deleteParams as any).toString(),
-                })
-                deletedListeners++
-              }
-            }
-
-            // Wait for AWS to propagate listener deletion before proceeding
-            if (deletedListeners > 0) {
-              log.info('Waiting for listener cleanup to propagate...')
-              await new Promise(resolve => setTimeout(resolve, 3000))
-            }
-          }
-        }
-        catch (cleanupError: any) {
-          // Log cleanup errors - they're important for debugging but shouldn't block deletion
-          const cleanupErrorMsg = cleanupError?.message || String(cleanupError)
-          log.warn(`HTTPS listener cleanup warning: ${cleanupErrorMsg}`)
-          if (options.verbose) {
-            log.debug('Full cleanup error details:', cleanupError)
-          }
-        }
-
-        // Initiate stack deletion
-        log.info('Initiating stack deletion...')
+        // Run cleanup for any retained resources
+        console.log('')
+        log.info('Running cleanup for any retained resources...')
 
         try {
-          await cfnClient.deleteStack(stackName)
-          log.success('Deletion request accepted')
-
-          // Wait for deletion with progress indication
-          log.info('Deleting resources (this takes 3-5 minutes)...')
-
-          try {
-            await cfnClient.waitForStack(stackName, 'stack-delete-complete')
-            console.log('')
-            log.success('Infrastructure removed successfully!')
+          await runCommand('./buddy cloud:cleanup', {
+            ...options,
+            cwd: p.projectPath(),
+            stdin: 'inherit',
+          })
+        }
+        catch (e: any) {
+          // Cleanup failures are non-fatal since main stack was deleted
+          const errStr = String(e.message || e)
+          if (errStr.includes('AuthFailure') || errStr.includes('credentials') || errStr.includes('not authorized')) {
+            log.warn('Cleanup skipped due to credential issues')
           }
-          catch (waitError: any) {
-            // If waiting fails, the stack might already be deleted or in a terminal state
-            const errorStr = String(waitError.message || waitError)
-            if (errorStr.includes('does not exist')) {
-              console.log('')
-              log.success('Infrastructure removed successfully!')
-            }
-            // Handle DELETE_FAILED - retry with retained resources
-            else if (waitError.code === 'DELETE_FAILED' || errorStr.includes('DELETE_FAILED')) {
-              console.log('')
-              log.warn('Some resources could not be deleted automatically')
-              log.info('Identifying resources to retain...')
-
-              try {
-                // Get list of failed resources from stack events
-                const resourcesResult = await cfnClient.listStackResources(stackName)
-                const resources = resourcesResult.StackResourceSummaries || []
-                const failedResources = resources
-                  .filter((r: any) => r.ResourceStatus === 'DELETE_FAILED')
-                  .map((r: any) => r.LogicalResourceId)
-
-                if (failedResources.length > 0) {
-                  log.info(`Retaining ${failedResources.length} resource(s):`)
-                  failedResources.forEach((r: string) => log.info(`  - ${r}`))
-                  console.log('')
-
-                  // Capture physical resource IDs before stack deletion
-                  const retainedResourceInfo = resources
-                    .filter((r: any) => failedResources.includes(r.LogicalResourceId))
-                    .map((r: any) => ({
-                      logicalId: r.LogicalResourceId,
-                      physicalId: r.PhysicalResourceId,
-                      type: r.ResourceType,
-                    }))
-
-                  log.info('Retrying with retained resources...')
-                  await cfnClient.deleteStack(stackName, undefined, failedResources)
-                  await cfnClient.waitForStack(stackName, 'stack-delete-complete')
-                  console.log('')
-                  log.success('Stack removed (with retained resources)')
-
-                  // Now try to clean up retained resources manually
-                  log.info('Cleaning up retained resources...')
-                  const { AWSClient } = await import('ts-cloud/aws')
-                  const client = new AWSClient()
-                  const region = process.env.AWS_REGION || 'us-east-1'
-
-                  for (const resource of retainedResourceInfo) {
-                    try {
-                      if (resource.type === 'AWS::ElasticLoadBalancingV2::TargetGroup' && resource.physicalId) {
-                        log.info(`  Deleting target group: ${resource.logicalId}...`)
-                        const deleteParams = {
-                          Action: 'DeleteTargetGroup',
-                          TargetGroupArn: resource.physicalId,
-                          Version: '2015-12-01',
-                        }
-                        await client.request({
-                          service: 'elasticloadbalancing',
-                          region,
-                          method: 'POST',
-                          path: '/',
-                          body: new URLSearchParams(deleteParams as any).toString(),
-                        })
-                        log.success(`  Deleted ${resource.logicalId}`)
-                      }
-                      else if (resource.type === 'AWS::S3::Bucket' && resource.physicalId) {
-                        log.info(`  Deleting S3 bucket: ${resource.logicalId}...`)
-                        const { S3Client } = await import('ts-cloud/aws')
-                        const s3 = new S3Client(region)
-                        await s3.emptyAndDeleteBucket(resource.physicalId)
-                        log.success(`  Deleted ${resource.logicalId}`)
-                      }
-                      else {
-                        log.info(`  Skipped ${resource.logicalId} (${resource.type}) - manual cleanup may be required`)
-                      }
-                    }
-                    catch (resourceError: any) {
-                      log.warn(`  Could not delete ${resource.logicalId}: ${resourceError?.message || resourceError}`)
-                    }
-                  }
-
-                  console.log('')
-                  log.success('Infrastructure removed successfully!')
-                }
-                else {
-                  throw waitError
-                }
-              }
-              catch (retainError: any) {
-                const retainErrorStr = String(retainError.message || retainError)
-                if (retainErrorStr.includes('does not exist')) {
-                  console.log('')
-                  log.success('Infrastructure removed successfully!')
-                }
-                else {
-                  throw retainError
-                }
-              }
-            }
-            else {
-              throw waitError
-            }
+          else {
+            log.warn('Some cleanup tasks may need manual completion')
           }
         }
-        catch (deleteError: any) {
-          const errorStr = String(deleteError.message || deleteError)
 
-          if (options.verbose) {
-            log.debug('Delete error details:', deleteError)
-          }
-
-          // Stack doesn't exist - that's fine, nothing to delete
-          if (errorStr.includes('does not exist')) {
-            console.log('')
-            log.info(`No cloud infrastructure found for "${stackName}"`)
-            await outro('Nothing to remove', { startTime, useSeconds: true })
-            process.exit(ExitCode.Success)
-          }
-
-          // ValidationError for CDK role issues
-          if (errorStr.includes('ValidationError') && errorStr.includes('cdk-')) {
-            console.log('')
-            log.warn('Stack has invalid CDK execution role')
-
-            if (options.verbose) {
-              log.debug('Full error:', errorStr)
-            }
-
-            log.info('Attempting to delete CDK role and retry...')
-            console.log('')
-
-            // Extract the role ARN from the error message
-            const roleMatch = errorStr.match(/arn:aws:iam::[0-9]+:role\/(cdk-[a-z0-9-]+)/)
-
-            if (roleMatch && roleMatch[1]) {
-              const roleName = roleMatch[1]
-              console.log('')
-              log.warn(`Stack requires CDK execution role: ${roleName}`)
-              log.info('This role is missing or invalid. Creating it automatically...')
-              console.log('')
-
-              try {
-                // Create the temporary IAM role
-                try {
-                  await createTemporaryCdkRole(roleName)
-                }
-                catch (roleCreateError: any) {
-                  console.log('')
-                  log.error('Failed to create IAM role automatically')
-                  if (options.verbose) {
-                    log.error(`Role creation error: ${String(roleCreateError.message || roleCreateError)}`)
-                  }
-                  throw roleCreateError
-                }
-
-                // Retry stack deletion
-                console.log('')
-                log.info('Retrying stack deletion with new IAM role...')
-                await cfnClient.deleteStack(stackName)
-                log.success('Stack deletion initiated')
-
-                // Wait for deletion to complete
-                log.info('Waiting for stack deletion to complete...')
-                log.info('This may take several minutes...')
-
-                try {
-                  await cfnClient.waitForStack(stackName, 'stack-delete-complete')
-                  log.success('Cloud stack deleted successfully')
-
-                  // Clean up the temporary role
-                  log.info('Cleaning up temporary IAM role...')
-                  await deleteTemporaryCdkRole(roleName)
-
-                  // Success! Exit early to avoid re-throwing the original error
-                  console.log('')
-                  await outro('Cloud stack removed successfully', { startTime, useSeconds: true })
-                  process.exit(ExitCode.Success)
-                }
-                catch (waitError: any) {
-                  const waitErrorStr = String(waitError.message || waitError)
-                  if (waitErrorStr.includes('does not exist')) {
-                    log.success('Cloud stack deleted successfully')
-                    // Clean up the temporary role
-                    await deleteTemporaryCdkRole(roleName)
-
-                    // Success! Exit early to avoid re-throwing the original error
-                    console.log('')
-                    await outro('Cloud stack removed successfully', { startTime, useSeconds: true })
-                    process.exit(ExitCode.Success)
-                  }
-                  else {
-                    throw waitError
-                  }
-                }
-              }
-              catch (retryError: any) {
-                console.log('')
-                log.error('Failed to delete stack even after creating IAM role')
-
-                if (options.verbose) {
-                  log.error(`Retry error: ${String(retryError.message || retryError)}`)
-                }
-
-                console.log('')
-                log.info('Please contact AWS Support to manually delete the stack.')
-                console.log('')
-
-                await outro('Could not delete stack', { startTime, useSeconds: true })
-                process.exit(ExitCode.FatalError)
-              }
-            }
-            else {
-              console.log('')
-              log.error('Could not extract role name from error')
-              log.info('Try manual cleanup:')
-              log.info('  buddy cloud:cleanup')
-              console.log('')
-
-              if (options.verbose) {
-                log.error(`Full error: ${errorStr}`)
-              }
-
-              await outro('Stack has validation issues', { startTime, useSeconds: true })
-              process.exit(ExitCode.FatalError)
-            }
-          }
-          // Other validation errors
-          else if (errorStr.includes('ValidationError')) {
-            console.log('')
-            log.error('Stack has validation issues')
-
-            if (options.verbose) {
-              log.error(`Full error: ${errorStr}`)
-            }
-
-            console.log('')
-            log.info('Try manual cleanup:')
-            log.info('  buddy cloud:cleanup')
-            console.log('')
-
-            await outro('Stack has validation issues', { startTime, useSeconds: true })
-            process.exit(ExitCode.FatalError)
-          }
-
-          throw deleteError
-        }
+        console.log('')
+        await outro('Cloud infrastructure removed', { startTime, useSeconds: true })
+        process.exit(ExitCode.Success)
       }
       catch (error: any) {
         console.log('')
@@ -814,8 +486,8 @@ export function cloud(buddy: CLI): void {
 
         console.log('')
         log.info('Troubleshooting:')
-        log.info('  buddy cloud:cleanup   - Clean up resources manually')
-        log.info('  --verbose             - Show detailed error information')
+        log.info('  ./buddy cloud:cleanup   - Clean up resources manually')
+        log.info('  --verbose               - Show detailed error information')
         console.log('')
 
         if (options.verbose) {
@@ -825,32 +497,6 @@ export function cloud(buddy: CLI): void {
         await outro('Failed to remove infrastructure', { startTime, useSeconds: true })
         process.exit(ExitCode.FatalError)
       }
-
-      // Run cleanup for any retained resources
-      console.log('')
-      log.info('Cleaning up retained resources...')
-
-      try {
-        await runCommand('buddy cloud:cleanup', {
-          ...options,
-          cwd: p.projectPath(),
-          stdin: 'inherit',
-        })
-      }
-      catch (e: any) {
-        // Cleanup failures are non-fatal since main stack was deleted
-        const errStr = String(e.message || e)
-        if (errStr.includes('AuthFailure') || errStr.includes('credentials') || errStr.includes('not authorized')) {
-          log.warn('Cleanup skipped due to credential issues')
-        }
-        else {
-          log.warn('Some cleanup tasks may need manual completion')
-        }
-      }
-
-      console.log('')
-      await outro('Cloud infrastructure removed', { startTime, useSeconds: true })
-      process.exit(ExitCode.Success)
     })
 
   buddy
