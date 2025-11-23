@@ -165,6 +165,81 @@ mkdir -p /var/www
 cd /var/www
 git clone --depth 1 https://github.com/stacksjs/stacks.git app
 cd app
+
+# Remove linked packages from ALL package.json files (they don't exist on the server)
+echo "Removing linked packages from all package.json files..."
+/root/.bun/bin/bun -e "
+import { Glob } from 'bun';
+
+async function cleanPackageJson(filePath) {
+  try {
+    const pkg = await Bun.file(filePath).json();
+    let modified = false;
+
+    // Remove link: dependencies
+    for (const key of Object.keys(pkg.dependencies || {})) {
+      if (typeof pkg.dependencies[key] === 'string' && pkg.dependencies[key].startsWith('link:')) {
+        console.log('[' + filePath + '] Removing linked dependency: ' + key);
+        delete pkg.dependencies[key];
+        modified = true;
+      }
+    }
+    for (const key of Object.keys(pkg.devDependencies || {})) {
+      if (typeof pkg.devDependencies[key] === 'string' && pkg.devDependencies[key].startsWith('link:')) {
+        console.log('[' + filePath + '] Removing linked devDependency: ' + key);
+        delete pkg.devDependencies[key];
+        modified = true;
+      }
+    }
+    // Also handle workspace: dependencies
+    for (const key of Object.keys(pkg.dependencies || {})) {
+      if (typeof pkg.dependencies[key] === 'string' && pkg.dependencies[key].startsWith('workspace:')) {
+        console.log('[' + filePath + '] Removing workspace dependency: ' + key);
+        delete pkg.dependencies[key];
+        modified = true;
+      }
+    }
+    for (const key of Object.keys(pkg.devDependencies || {})) {
+      if (typeof pkg.devDependencies[key] === 'string' && pkg.devDependencies[key].startsWith('workspace:')) {
+        console.log('[' + filePath + '] Removing workspace devDependency: ' + key);
+        delete pkg.devDependencies[key];
+        modified = true;
+      }
+    }
+
+    if (modified) {
+      await Bun.write(filePath, JSON.stringify(pkg, null, 2));
+      console.log('[' + filePath + '] Cleaned');
+    }
+  } catch (e) {
+    console.log('[' + filePath + '] Error: ' + e.message);
+  }
+}
+
+// Find and clean all package.json files
+const glob = new Glob('**/package.json');
+for await (const file of glob.scan({ cwd: '.', absolute: true })) {
+  // Skip node_modules
+  if (file.includes('node_modules')) continue;
+  await cleanPackageJson(file);
+}
+console.log('All package.json files cleaned for production install');
+"
+
+# Remove bun.lock to avoid lockfile conflicts after modifying package.json
+rm -f bun.lock
+
+# Install dependencies
+echo "Installing dependencies..."
+/root/.bun/bin/bun install --no-save || echo "Install completed with warnings"
+
+echo "Building assets..."
+/root/.bun/bin/bun run build || echo "Build step skipped (no build script or failed)"
+
+# Create public/dist directory for assets if it doesn't exist
+mkdir -p public/dist
+mkdir -p storage/public/assets
+
 cat > .env << 'ENVEOF'
 APP_ENV=production
 APP_URL=https://\${DomainName}
@@ -172,23 +247,112 @@ PORT=80
 DEBUG=false
 ENVEOF
 cat > server-prod.ts << 'SERVEREOF'
+// MIME type mapping for static assets
+const mimeTypes: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.htm': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.mjs': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.webp': 'image/webp',
+  '.avif': 'image/avif',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.otf': 'font/otf',
+  '.eot': 'application/vnd.ms-fontobject',
+  '.pdf': 'application/pdf',
+  '.txt': 'text/plain; charset=utf-8',
+  '.mp3': 'audio/mpeg',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.ogg': 'audio/ogg',
+  '.wav': 'audio/wav',
+  '.wasm': 'application/wasm',
+  '.map': 'application/json',
+}
+
+function getMimeType(filePath: string): string {
+  const ext = filePath.substring(filePath.lastIndexOf('.')).toLowerCase()
+  return mimeTypes[ext] || 'application/octet-stream'
+}
+
+function isStaticAsset(pathname: string): boolean {
+  if (pathname.startsWith('/assets/') || pathname.startsWith('/_assets/') || pathname.startsWith('/static/')) return true
+  const ext = pathname.substring(pathname.lastIndexOf('.')).toLowerCase()
+  return ext in mimeTypes && ext !== '.html' && ext !== '.htm'
+}
+
 const server = Bun.serve({
   port: process.env.PORT || 80,
   development: false,
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url)
-    if (url.pathname === '/health') {
-      return new Response(JSON.stringify({ status: 'ok', timestamp: new Date().toISOString(), version: '1.0.0' }), { headers: { 'Content-Type': 'application/json' } })
+    const pathname = url.pathname
+
+    // Health check endpoint
+    if (pathname === '/health') {
+      return new Response(JSON.stringify({ status: 'ok', timestamp: new Date().toISOString(), version: '1.0.0' }), {
+        headers: { 'Content-Type': 'application/json' }
+      })
     }
-    if (url.pathname === '/' || url.pathname === '/index.html') {
-      try {
-        const file = Bun.file('./resources/views/index.stx')
-        if (await file.exists()) {
-          return new Response(file, { headers: { 'Content-Type': 'text/html; charset=utf-8' } })
-        }
-      } catch (e) {}
+
+    // Handle static assets (CSS, JS, images, fonts, etc.)
+    if (isStaticAsset(pathname)) {
+      const assetPaths = [
+        './public/dist' + pathname,
+        './public' + pathname,
+        './storage/public' + pathname,
+        '.' + pathname,
+      ]
+      for (const assetPath of assetPaths) {
+        try {
+          const file = Bun.file(assetPath)
+          if (await file.exists()) {
+            return new Response(file, {
+              headers: {
+                'Content-Type': getMimeType(pathname),
+                'Cache-Control': 'public, max-age=31536000, immutable',
+                'Access-Control-Allow-Origin': '*',
+              }
+            })
+          }
+        } catch {}
+      }
+      // Asset not found
+      return new Response('Not Found', { status: 404, headers: { 'Content-Type': 'text/plain' } })
     }
-    return new Response(JSON.stringify({ message: 'Welcome to Stacks API!', path: url.pathname, method: request.method, timestamp: new Date().toISOString() }), { headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } })
+
+    // Serve index.html for root and HTML pages
+    if (pathname === '/' || pathname === '/index.html' || pathname.endsWith('.html')) {
+      const htmlPaths = [
+        './public/dist/index.html',
+        './public/index.html',
+        './resources/views/index.stx',
+        './resources/views/index.html',
+      ]
+      for (const htmlPath of htmlPaths) {
+        try {
+          const file = Bun.file(htmlPath)
+          if (await file.exists()) {
+            return new Response(file, { headers: { 'Content-Type': 'text/html; charset=utf-8' } })
+          }
+        } catch {}
+      }
+    }
+
+    // API fallback - return JSON for unmatched routes
+    return new Response(JSON.stringify({ message: 'Welcome to Stacks API!', path: pathname, method: request.method, timestamp: new Date().toISOString() }), {
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+    })
   }
 })
 console.log('Stacks Server running at http://localhost:' + server.port)

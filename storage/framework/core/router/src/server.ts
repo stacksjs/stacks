@@ -12,7 +12,7 @@ import { fs, globSync } from '@stacksjs/storage'
 
 import { camelCase } from '@stacksjs/strings'
 // import { RateLimiter } from 'ts-rate-limiter'
-import { route, staticRoute } from '.'
+import { getMimeType, isStaticAssetPath, route, staticRoute } from '.'
 import { request as RequestParam } from './request'
 
 export async function serve(options: ServeOptions = {}): Promise<void> {
@@ -68,6 +68,66 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
           default:
             return new Response('No WebSocket driver configured', { status: 400 })
         }
+      }
+
+      // Handle static asset requests (CSS, JS, images, fonts, etc.)
+      if (isStaticAssetPath(url.pathname)) {
+        // Try to serve from public/dist directory first (Vite SSG output)
+        const publicDistPath = path.publicPath(`dist${url.pathname}`)
+        if (fs.existsSync(publicDistPath)) {
+          const file = Bun.file(publicDistPath)
+          return new Response(file, {
+            headers: {
+              'Content-Type': getMimeType(url.pathname),
+              'Cache-Control': 'public, max-age=31536000, immutable',
+              'Access-Control-Allow-Origin': '*',
+            },
+          })
+        }
+
+        // Try public directory root
+        const publicPath = path.publicPath(url.pathname.slice(1))
+        if (fs.existsSync(publicPath)) {
+          const file = Bun.file(publicPath)
+          return new Response(file, {
+            headers: {
+              'Content-Type': getMimeType(url.pathname),
+              'Cache-Control': 'public, max-age=31536000, immutable',
+              'Access-Control-Allow-Origin': '*',
+            },
+          })
+        }
+
+        // Try storage/public/assets (compiled assets)
+        const storagePath = path.storagePath(`public${url.pathname}`)
+        if (fs.existsSync(storagePath)) {
+          const file = Bun.file(storagePath)
+          return new Response(file, {
+            headers: {
+              'Content-Type': getMimeType(url.pathname),
+              'Cache-Control': 'public, max-age=31536000, immutable',
+              'Access-Control-Allow-Origin': '*',
+            },
+          })
+        }
+
+        // Try resources/assets (source assets - CSS, JS, etc.)
+        // For /assets/styles/main.css -> resources/assets/styles/main.css
+        if (url.pathname.startsWith('/assets/')) {
+          const assetsPath = path.resourcesPath(url.pathname.slice(1)) // Remove leading /
+          if (fs.existsSync(assetsPath)) {
+            const file = Bun.file(assetsPath)
+            return new Response(file, {
+              headers: {
+                'Content-Type': getMimeType(url.pathname),
+                'Cache-Control': 'public, max-age=31536000, immutable',
+                'Access-Control-Allow-Origin': '*',
+              },
+            })
+          }
+        }
+
+        log.debug(`Static asset not found: ${url.pathname}`)
       }
 
       // Handle regular HTTP requests with body parsing
