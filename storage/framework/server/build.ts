@@ -3,7 +3,7 @@ import { intro, outro } from '@stacksjs/build'
 import { log, runCommand, runCommandSync } from '@stacksjs/cli'
 import { cloud } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
-import { fs, deleteFolder } from '@stacksjs/storage'
+import { fs, deleteFolder, writeFileSync, readFileSync } from '@stacksjs/storage'
 import { build } from 'bun'
 import { buildDockerImage, useCustomOrDefaultServerConfig } from './src/utils'
 
@@ -85,7 +85,7 @@ async function main() {
     target: 'bun',
     // sourcemap: 'linked',
     // minify: true,
-    splitting: true,
+    splitting: false, // Disabled to avoid duplicate output path issues
     external: ['@swc/wasm'],
   })
 
@@ -103,10 +103,11 @@ async function main() {
   const scanOptions2 = { cwd: appPath, onlyFiles: true }
 
   for await (const file of glob2.scan(scanOptions2)) {
-    let content = await fs.readFile(path.resolve(appPath, file), 'utf-8')
+    const filePath = path.resolve(appPath, file)
+    let content = readFileSync(filePath, 'utf-8')
     if (content.includes('storage/framework/server')) {
       content = content.replace(/storage\/framework\/server/g, 'dist')
-      await fs.writeFile(file, content, 'utf-8')
+      writeFileSync(filePath, content, 'utf-8')
       log.info(`Updated imports in ${file}`)
     }
   }
@@ -119,10 +120,11 @@ async function main() {
   const scanOptions3 = { cwd: distPath, onlyFiles: true }
 
   for await (const file of glob3.scan(scanOptions3)) {
-    let content = await fs.readFile(path.resolve(distPath, file), 'utf-8')
+    const filePath = path.resolve(distPath, file)
+    let content = readFileSync(filePath, 'utf-8')
     if (content.includes('export { ENV_KEY, ENV_SECRET, fromEnv };')) {
       content = content.replace(/export { ENV_KEY, ENV_SECRET, fromEnv };/g, '')
-      await fs.writeFile(file, content, 'utf-8')
+      writeFileSync(filePath, content, 'utf-8')
       log.info(`Updated imports in ${file}`)
       break
     }

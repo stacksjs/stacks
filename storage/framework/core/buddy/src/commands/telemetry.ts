@@ -1,7 +1,24 @@
 import type { CLI, CliOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { bold, dim, green, intro, log } from '@stacksjs/cli'
-import { telemetry } from '@stacksjs/clapp/telemetry'
+
+// Telemetry stub - telemetry feature is not yet implemented in @stacksjs/clapp
+const telemetry = {
+  async enable() {
+    // TODO: Implement telemetry when @stacksjs/clapp adds telemetry support
+  },
+  async disable() {
+    // TODO: Implement telemetry when @stacksjs/clapp adds telemetry support
+  },
+  async status() {
+    return {
+      enabled: false,
+      doNotTrack: !!process.env.DO_NOT_TRACK,
+      eventsQueued: 0,
+      lastSent: null as string | null,
+    }
+  },
+}
 
 export function telemetryCommand(buddy: CLI): void {
   buddy

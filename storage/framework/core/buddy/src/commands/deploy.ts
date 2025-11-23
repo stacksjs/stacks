@@ -307,6 +307,60 @@ async function promptAndSaveCredentials() {
   console.log('')
 }
 
+/**
+ * Load AWS credentials from .env.production file
+ * Returns credentials if found, otherwise empty object
+ */
+function loadAwsCredentialsFromEnvProduction(): { accessKeyId?: string, secretAccessKey?: string, region?: string } {
+  const prodEnvPath = p.projectPath('.env.production')
+
+  if (!existsSync(prodEnvPath)) {
+    return {}
+  }
+
+  try {
+    const content = readFileSync(prodEnvPath, 'utf-8')
+    const lines = content.split('\n')
+
+    let accessKeyId: string | undefined
+    let secretAccessKey: string | undefined
+    let region: string | undefined
+
+    for (const line of lines) {
+      const trimmed = line.trim()
+
+      // Skip comments and empty lines
+      if (trimmed.startsWith('#') || !trimmed.includes('=')) {
+        continue
+      }
+
+      const [key, ...valueParts] = trimmed.split('=')
+      const value = valueParts.join('=').trim()
+
+      if (key === 'AWS_ACCESS_KEY_ID' && value) {
+        accessKeyId = value
+      }
+      else if (key === 'AWS_SECRET_ACCESS_KEY' && value) {
+        secretAccessKey = value
+      }
+      else if (key === 'AWS_REGION' && value) {
+        region = value
+      }
+    }
+
+    if (accessKeyId && secretAccessKey) {
+      log.debug('Found AWS credentials in .env.production')
+      return { accessKeyId, secretAccessKey, region }
+    }
+
+    return {}
+  }
+  catch (error) {
+    log.debug('Failed to read .env.production file:', error)
+    return {}
+  }
+}
+
 async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
   let handlingAlreadyExists = false
 
@@ -316,7 +370,22 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     // Check if AWS credentials are configured in env vars (non-empty values)
     let hasCredentials = process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
 
-    // If .env doesn't have credentials, try to load from ~/.aws/credentials
+    // For production deployments, try to load from .env.production first
+    if (!hasCredentials) {
+      const prodCredentials = loadAwsCredentialsFromEnvProduction()
+
+      if (prodCredentials.accessKeyId && prodCredentials.secretAccessKey) {
+        process.env.AWS_ACCESS_KEY_ID = prodCredentials.accessKeyId
+        process.env.AWS_SECRET_ACCESS_KEY = prodCredentials.secretAccessKey
+        if (prodCredentials.region && !process.env.AWS_REGION) {
+          process.env.AWS_REGION = prodCredentials.region
+        }
+        hasCredentials = true
+        log.success('Using AWS credentials from .env.production')
+      }
+    }
+
+    // If still no credentials, try to load from ~/.aws/credentials
     if (!hasCredentials) {
       const fileCredentials = loadAwsCredentialsFromFile()
 

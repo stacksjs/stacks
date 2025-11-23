@@ -17,10 +17,8 @@ declare module 'vue' {
     HomeContributors: typeof import('./../../defaults/components/Docs/HomeContributors.vue')['default']
     HomeSponsors: typeof import('./../../defaults/components/Docs/HomeSponsors.vue')['default']
     HomeTeam: typeof import('./../../defaults/components/Docs/HomeTeam.vue')['default']
-    Installation: typeof import('./../../defaults/components/Docs/demo/Installation.vue')['default']
     ListboxDemo: typeof import('./../../defaults/components/Docs/Demo/ListboxDemo.vue')['default']
     NotificationDemo: typeof import('./../../defaults/components/Docs/Demo/NotificationDemo.vue')['default']
-    Playground: typeof import('./../../defaults/components/Docs/Demo/Playground.vue')['default']
     PopoverDemo: typeof import('./../../defaults/components/Docs/Demo/PopoverDemo.vue')['default']
     RadioGroupDemo: typeof import('./../../defaults/components/Docs/Demo/RadioGroupDemo.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
@@ -30,6 +28,5 @@ declare module 'vue' {
     StepperDemo: typeof import('./../../defaults/components/Docs/Demo/StepperDemo.vue')['default']
     SwitchDemo: typeof import('./../../defaults/components/Docs/Demo/SwitchDemo.vue')['default']
     TeamMember: typeof import('./../../defaults/components/Docs/TeamMember.vue')['default']
-    Usage: typeof import('./../../defaults/components/Docs/demo/Usage.vue')['default']
   }
 }

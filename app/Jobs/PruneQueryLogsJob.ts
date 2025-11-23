@@ -1,6 +1,6 @@
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
-import QueryController from '../Actions/Queries/QueryController'
+import QueryController from '../Controllers/QueryController'
 
 export default class PruneQueryLogsJob {
   /**

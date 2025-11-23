@@ -66,31 +66,146 @@ export const tsCloud: TsCloudConfig = {
    */
   infrastructure: {
     /**
+     * Compute Configuration
+     *
+     * Defines the instances running your Stacks/Bun application.
+     * When instances > 1, load balancer is automatically enabled.
+     *
+     * @example Single instance (development/staging)
+     * compute: { instances: 1, size: 'micro' }
+     *
+     * @example Multiple instances with auto-scaling (production)
+     * compute: {
+     *   instances: 3,
+     *   size: 'small',
+     *   autoScaling: { min: 2, max: 10, scaleUpThreshold: 70 },
+     * }
+     *
+     * @example Mixed instance fleet for cost optimization
+     * compute: {
+     *   instances: 3,
+     *   fleet: [
+     *     { size: 'small', weight: 1 },
+     *     { size: 'medium', weight: 2 },
+     *     { size: 'small', weight: 1, spot: true },
+     *   ],
+     *   spotConfig: {
+     *     baseCapacity: 1,           // Always keep 1 on-demand
+     *     onDemandPercentage: 50,    // 50% on-demand, 50% spot
+     *     strategy: 'capacity-optimized',
+     *   },
+     * }
+     */
+    compute: {
+      instances: 1,
+      size: 'micro', // Provider-agnostic: 'nano', 'micro', 'small', 'medium', 'large', 'xlarge', '2xlarge'
+      disk: {
+        size: 20,
+        type: 'ssd', // Provider-agnostic: 'standard', 'ssd', 'premium'
+        encrypted: true,
+      },
+      // Uncomment for auto-scaling:
+      // autoScaling: {
+      //   min: 1,
+      //   max: 5,
+      //   scaleUpThreshold: 70,
+      //   scaleDownThreshold: 30,
+      // },
+      // Uncomment for mixed instance fleet:
+      // fleet: [
+      //   { size: 'micro', weight: 1 },
+      //   { size: 'small', weight: 2 },
+      //   { size: 'micro', weight: 1, spot: true },
+      // ],
+      // spotConfig: {
+      //   baseCapacity: 1,
+      //   onDemandPercentage: 50,
+      //   strategy: 'capacity-optimized',
+      // },
+    },
+
+    /**
+     * Load Balancer Configuration
+     *
+     * Controls whether to use an Application Load Balancer (ALB) for traffic distribution.
+     * Automatically enabled when compute.instances > 1.
+     *
+     * Benefits of ALB:
+     * - SSL termination with ACM certificates (free)
+     * - Health checks and automatic failover
+     * - HTTP to HTTPS redirect
+     * - Multiple target support
+     *
+     * When to disable:
+     * - Cost optimization (ALB costs ~$16/month minimum)
+     * - Simple single-instance deployments
+     * - Using Let's Encrypt for SSL instead of ACM
+     */
+    loadBalancer: {
+      enabled: true,
+      type: 'application',
+      healthCheck: {
+        path: '/health',
+        interval: 30,
+        healthyThreshold: 2,
+        unhealthyThreshold: 5,
+      },
+    },
+
+    /**
+     * SSL/TLS Configuration
+     *
+     * Supports two providers:
+     * - 'acm': AWS Certificate Manager (free, requires ALB or CloudFront)
+     * - 'letsencrypt': Free certificates (works without ALB, runs on EC2)
+     *
+     * When loadBalancer.enabled = true:
+     *   - Uses ACM by default (recommended)
+     *   - Certificates are automatically requested and validated via DNS
+     *   - HTTP to HTTPS redirect handled by ALB
+     *
+     * When loadBalancer.enabled = false:
+     *   - Uses Let's Encrypt by default
+     *   - Certificates are obtained and renewed automatically on EC2
+     *   - Requires port 80 for HTTP-01 challenge or DNS for DNS-01
+     */
+    ssl: {
+      enabled: true,
+      provider: 'acm', // 'acm' | 'letsencrypt'
+      domains: ['stacksjs.com', 'www.stacksjs.com'],
+      redirectHttp: true,
+      // Uncomment for existing ACM certificate:
+      // certificateArn: 'arn:aws:acm:us-east-1:...',
+      // Let's Encrypt configuration (used when provider: 'letsencrypt' or loadBalancer.enabled: false)
+      letsEncrypt: {
+        email: 'admin@stacksjs.com',
+        staging: false, // Set to true for testing
+        autoRenew: true,
+      },
+    },
+
+    /**
+     * DNS Configuration
+     */
+    dns: {
+      domain: 'stacksjs.com',
+      hostedZoneId: 'Z01455702Q7952O6RCY37', // Route53 hosted zone for stacksjs.com
+    },
+
+    /**
      * Storage Configuration
      * S3 buckets for frontend, assets, uploads, etc.
      */
     storage: {
-      'frontend': {
-        public: true,
-        website: true,
-        encryption: true,
-        versioning: false,
-      },
       'assets': {
-        public: true,
-        website: false,
         encryption: true,
         versioning: false,
       },
       'uploads': {
-        public: false,
-        website: false,
         encryption: true,
         versioning: true,
       },
       'backups': {
-        public: false,
-        website: false,
         encryption: true,
         versioning: true,
       },
@@ -136,23 +251,12 @@ export const tsCloud: TsCloudConfig = {
      * CloudFront distribution for global content delivery
      */
     cdn: {
-      'frontend': {
-        origin: 'stacks-production-frontend.s3.us-east-1.amazonaws.com',
-        customDomain: 'stacks.example.com', // Update with your domain
-      },
+      // Uncomment to enable CloudFront CDN
+      // 'frontend': {
+      //   origin: 'stacks-production-frontend.s3.us-east-1.amazonaws.com',
+      //   customDomain: 'cdn.stacks-js.org',
+      // },
     },
-
-    /**
-     * API Gateway Configuration (optional)
-     *
-     * Note: Stacks handles APIs through Bun serve with ./routes
-     * API Gateway is only needed if you're using Lambda functions for your API.
-     * For most Stacks apps, you don't need this.
-     */
-    // api: {
-    //   type: 'rest',
-    //   cors: true,
-    // },
 
     /**
      * Monitoring Configuration (optional)
@@ -176,15 +280,10 @@ export const tsCloud: TsCloudConfig = {
    */
   sites: {
     main: {
-      root: '/var/www/main',
+      root: '/var/www/app',
       path: '/',
-      domain: 'stacks.example.com',
+      domain: 'stacksjs.com',
     },
-    // api: {
-    //   root: '/var/www/api',
-    //   path: '/api',
-    //   domain: 'api.stacks.example.com',
-    // },
   },
 }
 
