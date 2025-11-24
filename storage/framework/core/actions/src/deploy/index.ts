@@ -1,54 +1,70 @@
 import type { Subprocess } from '@stacksjs/types'
 import process from 'node:process'
-import { log, runCommand } from '@stacksjs/cli'
+import { log, runCommand, spinner } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 
-log.info('Building the framework...')
+// Check if verbose mode is enabled via CLI args
+const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')
+
+// Build framework with spinner (quiet unless verbose)
+const buildSpinner = spinner('Building framework...')
+buildSpinner.start()
 await runCommand('bun run build', {
   cwd: p.frameworkPath(),
+  quiet: !isVerbose,
 })
-log.success('Framework built')
+buildSpinner.succeed('Framework built')
 
 // Skip docs build for now - demo components have missing dependencies
 // TODO: Fix demo components to use actual installed packages
 // if (storage.hasFiles(p.projectPath('docs'))) {
-//   log.info('Building the documentation...')
+//   const docsSpinner = spinner('Building documentation...')
+//   docsSpinner.start()
 //   await runCommand('bun run build', {
 //     cwd: p.frameworkPath('docs'),
+//     quiet: !isVerbose,
 //   })
-//   log.success('Documentation built')
+//   docsSpinner.succeed('Documentation built')
 // }
-log.info('Skipping documentation build (demo components need updates)')
+if (isVerbose) log.debug('Skipping documentation build (demo components need updates)')
 
 // Skip views build for now - vite-config is not set up
 // TODO: Set up vite-config for views build
 // if (config.app.docMode !== true) {
-//   log.info('Building the views...')
+//   const viewsSpinner = spinner('Building views...')
+//   viewsSpinner.start()
 //   await runCommand('bun run build', {
 //     cwd: p.frameworkPath('views/web'),
+//     quiet: !isVerbose,
 //   })
-//   log.success('Views built')
+//   viewsSpinner.succeed('Views built')
 // }
-log.info('Skipping views build (vite-config not configured)')
+if (isVerbose) log.debug('Skipping views build (vite-config not configured)')
 
 // await runCommand('bun run build-edge', {
 //   cwd: p.corePath('cloud'),
 // })
 
-log.info('Building the server...')
+// Build server
+const serverSpinner = spinner('Building server...')
+serverSpinner.start()
 await runCommand('bun build.ts', {
   cwd: p.frameworkPath('server'),
+  quiet: !isVerbose,
 })
-log.success('Server built')
+serverSpinner.succeed('Server built')
 
+// Package for deployment
+const packageSpinner = spinner('Packaging for deployment...')
+packageSpinner.start()
 await runCommand('bun zip.ts', {
   cwd: p.corePath('cloud'),
+  quiet: !isVerbose,
 })
-
-log.info('Deploying using ts-cloud...')
+packageSpinner.succeed('Package ready')
 
 // Load AWS credentials from .env.production if not already set
 if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
@@ -66,7 +82,7 @@ if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
       else if (key === 'AWS_SECRET_ACCESS_KEY' && value) process.env.AWS_SECRET_ACCESS_KEY = value
       else if (key === 'AWS_REGION' && value && !process.env.AWS_REGION) process.env.AWS_REGION = value
     }
-    log.success('Loaded AWS credentials from .env.production')
+    if (isVerbose) log.debug('Loaded AWS credentials from .env.production')
   }
 }
 
@@ -78,27 +94,31 @@ try {
   const region = process.env.AWS_REGION || 'us-east-1'
 
   // Step 1: Deploy infrastructure stack
-  log.info('Deploying infrastructure stack...')
+  const deploySpinner = spinner('Deploying infrastructure...')
+  deploySpinner.start()
   await deployStack({
     environment,
     region,
     waitForCompletion: true,
+    verbose: isVerbose,
   })
-  log.success('Infrastructure stack deployed')
+  deploySpinner.succeed('Infrastructure deployed')
 
   // Skip frontend deployment for now - views build is disabled
   // TODO: Enable frontend deployment when vite-config is set up
   // if (config.app.docMode !== true) {
-  //   log.info('Deploying frontend...')
+  //   const frontendSpinner = spinner('Deploying frontend...')
+  //   frontendSpinner.start()
   //   await deployFrontend({
   //     environment,
   //     region,
   //     buildDir: p.frameworkPath('views/web/dist'),
   //   })
-  //   log.success('Frontend deployed')
+  //   frontendSpinner.succeed('Frontend deployed')
   // }
-  log.info('Skipping frontend deployment (views build is disabled)')
+  if (isVerbose) log.debug('Skipping frontend deployment (views build is disabled)')
 
+  console.log('')
   log.success('Deployment completed successfully!')
 } catch (error) {
   log.error('Deployment failed:', error)

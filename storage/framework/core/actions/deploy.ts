@@ -62,6 +62,7 @@ interface DeployStackOptions {
   environment: string
   region: string
   waitForCompletion?: boolean
+  verbose?: boolean
 }
 
 interface DeployFrontendOptions {
@@ -125,9 +126,10 @@ async function generateStacksTemplate(options: {
   // ACM certificate ARN (only used when useLoadBalancer && !useLetsEncrypt)
   const certificateArn = sslConfig.certificateArn || ''
 
-  log.info(`  Compute: ${useMixedInstances ? 'mixed fleet' : `${instanceCount} x ${instanceSize} (${instanceType})`}`)
-  log.info(`  Auto Scaling: ${useAutoScaling ? 'enabled' : 'disabled'}`)
-  log.info(`  Load Balancer: ${useLoadBalancer ? 'enabled' : 'disabled'}`)
+  // Config details are only shown in verbose mode
+  log.debug(`  Compute: ${useMixedInstances ? 'mixed fleet' : `${instanceCount} x ${instanceSize} (${instanceType})`}`)
+  log.debug(`  Auto Scaling: ${useAutoScaling ? 'enabled' : 'disabled'}`)
+  log.debug(`  Load Balancer: ${useLoadBalancer ? 'enabled' : 'disabled'}`)
 
   // Generate Let's Encrypt setup script for UserData
   function generateLetsEncryptSetup(): string {
@@ -426,10 +428,10 @@ echo "Setup complete!"
   const hostedZoneId = dnsConfig.hostedZoneId || ''
   const sslDomains = sslConfig.domains || [siteDomain, `www.${siteDomain}`]
 
-  // Log DNS config
+  // Log DNS config (verbose mode only)
   if (hostedZoneId) {
-    log.info(`  DNS: Route53 (${siteDomain})`)
-    log.info(`  SSL Domains: ${sslDomains.join(', ')}`)
+    log.debug(`  DNS: Route53 (${siteDomain})`)
+    log.debug(`  SSL Domains: ${sslDomains.join(', ')}`)
   }
 
   // Build resources object
@@ -1084,13 +1086,13 @@ async function setupDnsAndSsl(options: {
  * Deploy the infrastructure stack using ts-cloud
  */
 export async function deployStack(options: DeployStackOptions): Promise<void> {
-  const { environment, region, waitForCompletion = true } = options
+  const { environment, region, waitForCompletion = true, verbose = false } = options
 
   const projectConfig = await getProjectConfig()
   const projectName = projectConfig.name
   const stackName = `stacks-cloud-${environment}`
 
-  log.info(`Deploying infrastructure to ${environment} in ${region}...`)
+  if (verbose) log.info(`Deploying infrastructure to ${environment} in ${region}...`)
 
   try {
     const { CloudFormationClient } = await import('ts-cloud/aws')
