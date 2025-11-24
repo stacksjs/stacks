@@ -869,8 +869,9 @@ function getShortResourceType(resourceType: string): string {
 
 /**
  * Create CDK-style progress callback
+ * @param filter - Optional filter: 'delete' to only show DELETE events, 'create' for CREATE, etc.
  */
-function createProgressCallback(): (event: {
+function createProgressCallback(filter?: 'delete' | 'create' | 'update'): (event: {
   resourceId: string
   resourceType: string
   status: string
@@ -879,8 +880,27 @@ function createProgressCallback(): (event: {
 }) => void {
   const maxIdLength = 35
   const maxTypeLength = 30
+  const seenEvents = new Set<string>()
 
   return (event) => {
+    // Filter events based on type if specified
+    if (filter === 'delete' && !event.status.includes('DELETE')) {
+      return
+    }
+    if (filter === 'create' && !event.status.includes('CREATE')) {
+      return
+    }
+    if (filter === 'update' && !event.status.includes('UPDATE')) {
+      return
+    }
+
+    // Deduplicate events (same resource + status)
+    const eventKey = `${event.resourceId}:${event.status}`
+    if (seenEvents.has(eventKey)) {
+      return
+    }
+    seenEvents.add(eventKey)
+
     const resourceId = event.resourceId.padEnd(maxIdLength).substring(0, maxIdLength)
     const resourceType = getShortResourceType(event.resourceType).padEnd(maxTypeLength).substring(0, maxTypeLength)
     const status = formatResourceStatus(event.status)
@@ -1333,9 +1353,8 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
   const projectConfig = await getProjectConfig()
   const stackName = `stacks-cloud-${environment}`
 
-  log.info(`Undeploying infrastructure from ${environment} in ${region}...`)
-  log.info(`Stack: ${stackName}`)
-  log.info('')
+  console.log(`Undeploying ${stackName} from ${region}...`)
+  console.log('')
 
   try {
     const { CloudFormationClient, AWSClient } = await import('ts-cloud/aws')
@@ -1347,7 +1366,7 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
       const describeResult = await cf.describeStacks({ stackName })
       if (describeResult.Stacks && describeResult.Stacks.length > 0) {
         const stack = describeResult.Stacks[0]
-        log.info(`Current stack status: ${formatResourceStatus(stack.StackStatus)}`)
+        console.log(`Current status: ${formatResourceStatus(stack.StackStatus)}`)
         stackExists = true
       }
     }
@@ -1356,12 +1375,12 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
     }
 
     if (!stackExists) {
-      log.info(`Stack ${stackName} does not exist. Nothing to undeploy.`)
+      console.log(`Stack ${stackName} does not exist. Nothing to undeploy.`)
       return
     }
 
     // Clean up any HTTPS listeners before deletion to avoid DELETE_FAILED
-    log.info('Checking for resources to clean up before deletion...')
+    if (verbose) console.log('Checking for resources to clean up before deletion...')
     try {
       const client = new AWSClient()
 
@@ -1397,7 +1416,7 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
         let deletedListeners = 0
         for (const listener of listenerList) {
           if (listener.Protocol === 'HTTPS') {
-            log.info(`  Removing HTTPS listener on port ${listener.Port}...`)
+            if (verbose) console.log(`  Removing HTTPS listener on port ${listener.Port}...`)
             const deleteParams = {
               Action: 'DeleteListener',
               ListenerArn: listener.ListenerArn,
@@ -1415,62 +1434,58 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
           }
         }
 
-        if (deletedListeners > 0) {
-          log.success(`  Cleaned up ${deletedListeners} HTTPS listener(s)`)
+        if (deletedListeners > 0 && verbose) {
+          console.log(`✓ Cleaned up ${deletedListeners} HTTPS listener(s)`)
           await new Promise(resolve => setTimeout(resolve, 2000))
         }
       }
     }
     catch (cleanupError: any) {
       if (verbose) {
-        log.warn(`Cleanup warning: ${cleanupError.message}`)
+        console.log(`Warning: ${cleanupError.message}`)
       }
     }
 
     // Initiate stack deletion
-    log.info('')
-    log.info('Initiating stack deletion...')
-    log.info('')
+    console.log('Deleting stack...')
+    console.log('')
 
     await cf.deleteStack(stackName)
 
     // Print header for resource status table
-    console.log(`  ${'ResourceId'.padEnd(35)} ${'ResourceType'.padEnd(30)} Status`)
-    console.log('  ' + '-'.repeat(80))
+    console.log(`  ${'Resource'.padEnd(35)} ${'Type'.padEnd(30)} Status`)
+    console.log('  ' + '─'.repeat(85))
 
-    // Wait for deletion with progress callback
-    await cf.waitForStackWithProgress(stackName, 'stack-delete-complete', createProgressCallback())
+    // Wait for deletion with progress callback - only show DELETE events
+    await cf.waitForStackWithProgress(stackName, 'stack-delete-complete', createProgressCallback('delete'))
 
-    log.info('')
-    log.success('Infrastructure undeployed successfully!')
-    log.info('')
-    log.info('═══════════════════════════════════════════════════════════════')
-    log.info('  UNDEPLOY SUMMARY')
-    log.info('═══════════════════════════════════════════════════════════════')
-    log.info('')
-    log.info(`  Stack:       ${stackName}`)
-    log.info(`  Status:      DELETED`)
-    log.info(`  Environment: ${environment}`)
-    log.info(`  Region:      ${region}`)
-    log.info('')
-    log.info('═══════════════════════════════════════════════════════════════')
-    log.info('')
+    console.log('')
+    console.log('═══════════════════════════════════════════════════════════════════════════════════════')
+    console.log('')
+    console.log('  ✓ Infrastructure removed successfully')
+    console.log('')
+    console.log(`    Stack:       ${stackName}`)
+    console.log(`    Environment: ${environment}`)
+    console.log(`    Region:      ${region}`)
+    console.log('')
+    console.log('═══════════════════════════════════════════════════════════════════════════════════════')
+    console.log('')
   }
   catch (error: any) {
     const errorStr = String(error.message || error)
 
     // Handle stack doesn't exist
     if (errorStr.includes('does not exist')) {
-      log.info('')
-      log.success('Stack already deleted or does not exist.')
+      console.log('')
+      console.log('✓ Stack already deleted or does not exist.')
       return
     }
 
     // Handle DELETE_FAILED - need to retain some resources
     if (error.code === 'DELETE_FAILED' || errorStr.includes('DELETE_FAILED')) {
-      log.warn('')
-      log.warn('Some resources could not be deleted automatically')
-      log.info('Identifying resources to retain...')
+      console.log('')
+      console.log('Some resources could not be deleted automatically')
+      console.log('Identifying resources to retain...')
 
       const { CloudFormationClient } = await import('ts-cloud/aws')
       const cf = new CloudFormationClient(region)
@@ -1483,35 +1498,35 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
           .map((r: any) => r.LogicalResourceId)
 
         if (failedResources.length > 0) {
-          log.info(`Retaining ${failedResources.length} resource(s):`)
-          failedResources.forEach((r: string) => log.info(`  - ${r}`))
-          log.info('')
+          console.log(`Retaining ${failedResources.length} resource(s):`)
+          failedResources.forEach((r: string) => console.log(`  - ${r}`))
+          console.log('')
 
           // Retry with retained resources
-          log.info('Retrying deletion with retained resources...')
+          console.log('Retrying deletion with retained resources...')
           await cf.deleteStack(stackName, undefined, failedResources)
-          await cf.waitForStackWithProgress(stackName, 'stack-delete-complete', createProgressCallback())
+          await cf.waitForStackWithProgress(stackName, 'stack-delete-complete', createProgressCallback('delete'))
 
-          log.info('')
-          log.success('Stack removed (with retained resources)')
-          log.info('')
-          log.info('Note: Some resources were retained and may need manual cleanup.')
-          log.info('Run `./buddy cloud:cleanup` to clean up remaining resources.')
+          console.log('')
+          console.log('✓ Stack removed (with retained resources)')
+          console.log('')
+          console.log('Note: Some resources were retained and may need manual cleanup.')
+          console.log('Run `./buddy cloud:cleanup` to clean up remaining resources.')
           return
         }
       }
       catch (retryError: any) {
         const retryErrorStr = String(retryError.message || retryError)
         if (retryErrorStr.includes('does not exist')) {
-          log.info('')
-          log.success('Stack deleted successfully!')
+          console.log('')
+          console.log('✓ Stack deleted successfully!')
           return
         }
         throw retryError
       }
     }
 
-    log.error(`Stack deletion failed: ${error.message}`)
+    console.error(`Stack deletion failed: ${error.message}`)
     throw error
   }
 }

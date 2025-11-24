@@ -377,13 +377,9 @@ export function cloud(buddy: CLI): void {
       }
 
       console.log('')
-      log.info('Removing your cloud infrastructure...')
-      console.log(`   ${italic('This process typically takes 3-5 minutes to complete.')}`)
-      console.log(`   ${italic('Your backups will be retained for 30 days before automatic deletion.')}`)
+      console.log('Removing cloud infrastructure...')
+      console.log(`   ${italic('This typically takes 2-5 minutes.')}`)
       console.log('')
-
-      // Give user time to read the message
-      await new Promise(resolve => setTimeout(resolve, 1500))
 
       // Load AWS credentials from .env.production if not already set
       if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
@@ -407,10 +403,6 @@ export function cloud(buddy: CLI): void {
               process.env[key] = value
             }
           }
-
-          if (process.env.AWS_ACCESS_KEY_ID) {
-            log.success('Loaded AWS credentials from .env.production')
-          }
         }
       }
 
@@ -430,64 +422,43 @@ export function cloud(buddy: CLI): void {
           verbose: options.verbose,
         })
 
-        // Run cleanup for any retained resources
-        console.log('')
-        log.info('Running cleanup for any retained resources...')
+        // Cleanup is already handled by CloudFormation - retained resources (like S3)
+        // are intentional and can be cleaned up separately with `./buddy cloud:cleanup`
 
-        try {
-          await runCommand('./buddy cloud:cleanup', {
-            ...options,
-            cwd: p.projectPath(),
-            stdin: 'inherit',
-          })
-        }
-        catch (e: any) {
-          // Cleanup failures are non-fatal since main stack was deleted
-          const errStr = String(e.message || e)
-          if (errStr.includes('AuthFailure') || errStr.includes('credentials') || errStr.includes('not authorized')) {
-            log.warn('Cleanup skipped due to credential issues')
-          }
-          else {
-            log.warn('Some cleanup tasks may need manual completion')
-          }
-        }
-
-        console.log('')
         await outro('Cloud infrastructure removed', { startTime, useSeconds: true })
         process.exit(ExitCode.Success)
       }
       catch (error: any) {
         console.log('')
-        log.error('Failed to remove cloud infrastructure')
+        console.error('✗ Failed to remove cloud infrastructure')
 
         // Check for common error patterns
         const errorStr = String(error.message || error)
         if (errorStr.includes('security token') || errorStr.includes('credentials')) {
           console.log('')
-          log.error('AWS credentials are invalid or expired')
-          log.info('Check your AWS credentials in .env.production:')
-          log.info('  - AWS_ACCESS_KEY_ID')
-          log.info('  - AWS_SECRET_ACCESS_KEY')
+          console.error('  AWS credentials are invalid or expired')
+          console.log('  Check your AWS credentials in .env.production:')
+          console.log('    - AWS_ACCESS_KEY_ID')
+          console.log('    - AWS_SECRET_ACCESS_KEY')
         }
         else if (errorStr.includes('region') || errorStr.includes('AWS_REGION')) {
           console.log('')
-          log.error('AWS Region not configured')
-          log.info('Add AWS_REGION to your .env.production file')
+          console.error('  AWS Region not configured')
+          console.log('  Add AWS_REGION to your .env.production file')
         }
         else if (errorStr.includes('AccessDenied')) {
           console.log('')
-          log.error('Access denied')
-          log.info('Your AWS credentials may not have permission to delete stacks')
-          log.info('Required permissions: CloudFormation:DeleteStack, IAM:*, EC2:*, S3:*')
+          console.error('  Access denied')
+          console.log('  Your AWS credentials may not have permission to delete stacks')
         }
         else {
-          log.error(errorStr)
+          console.error(`  ${errorStr}`)
         }
 
         console.log('')
-        log.info('Troubleshooting:')
-        log.info('  ./buddy cloud:cleanup   - Clean up resources manually')
-        log.info('  --verbose               - Show detailed error information')
+        console.log('Troubleshooting:')
+        console.log('  ./buddy cloud:cleanup   - Clean up resources manually')
+        console.log('  --verbose               - Show detailed error information')
         console.log('')
 
         if (options.verbose) {
