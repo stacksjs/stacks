@@ -381,39 +381,49 @@ export function cloud(buddy: CLI): void {
       console.log(`   ${italic('This typically takes 2-5 minutes.')}`)
       console.log('')
 
-      // Load AWS credentials from .env.production if not already set
+      // Determine environment first
+      const environment = process.env.APP_ENV || process.env.NODE_ENV || 'production'
+
+      // Load AWS credentials from environment-specific .env file if not already set
       if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
         const { existsSync, readFileSync } = await import('node:fs')
         const { projectPath } = await import('@stacksjs/path')
-        const prodEnvPath = projectPath('.env.production')
 
-        if (existsSync(prodEnvPath)) {
-          const envContent = readFileSync(prodEnvPath, 'utf-8')
-          const lines = envContent.split('\n')
+        // Try environment-specific file first (e.g., .env.staging, .env.production)
+        const envFiles = [
+          projectPath(`.env.${environment}`),
+          projectPath('.env'),
+        ]
 
-          for (const line of lines) {
-            const trimmed = line.trim()
-            if (trimmed.startsWith('#') || !trimmed.includes('='))
-              continue
+        for (const envPath of envFiles) {
+          if (existsSync(envPath)) {
+            const envContent = readFileSync(envPath, 'utf-8')
+            const lines = envContent.split('\n')
 
-            const [key, ...valueParts] = trimmed.split('=')
-            const value = valueParts.join('=').replace(/^["']|["']$/g, '')
+            for (const line of lines) {
+              const trimmed = line.trim()
+              if (trimmed.startsWith('#') || !trimmed.includes('='))
+                continue
 
-            if (key === 'AWS_ACCESS_KEY_ID' || key === 'AWS_SECRET_ACCESS_KEY' || key === 'AWS_REGION') {
-              process.env[key] = value
+              const [key, ...valueParts] = trimmed.split('=')
+              const value = valueParts.join('=').replace(/^["']|["']$/g, '')
+
+              if (key === 'AWS_ACCESS_KEY_ID' || key === 'AWS_SECRET_ACCESS_KEY' || key === 'AWS_REGION' || key === 'AWS_ACCOUNT_ID') {
+                process.env[key] = value
+              }
             }
+            break // Stop after loading the first existing file
           }
         }
       }
 
-      // Use static credentials from .env.production
+      // Use static credentials from environment-specific .env file
       delete process.env.AWS_PROFILE
 
       // Use the new undeployStack function with CDK-style status updates
       try {
         const { undeployStack } = await import('../../../actions/deploy')
 
-        const environment = process.env.CLOUD_ENV || process.env.NODE_ENV || 'production'
         const region = process.env.AWS_REGION || 'us-east-1'
 
         await undeployStack({

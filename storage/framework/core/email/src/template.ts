@@ -1,22 +1,32 @@
-import type { RenderOptions } from '@vue-email/compiler'
-import process from 'node:process'
+import { fs } from '@stacksjs/storage'
 import { resourcesPath } from '@stacksjs/path'
-import { config } from '@vue-email/compiler'
+import { join } from 'node:path'
 
 interface HtmlResult {
   html: string
   text: string
 }
 
-export async function template(path: string, options?: RenderOptions): Promise<HtmlResult> {
-  const templatePath = path.endsWith('.vue') ? path : `${path}.vue`
+export async function template(path: string, options?: Record<string, any>): Promise<HtmlResult> {
+  // Simple template function without @vue-email/compiler (removed WASM dependency)
+  // For production binaries, we use plain HTML templates instead of Vue templates
+  const templatePath = path.endsWith('.html') ? path : `${path}.html`
+  const fullPath = resourcesPath(join('emails', templatePath))
 
-  const email = config(resourcesPath('emails'), {
-    verbose: !!process.env.DEBUG,
-    // options: {
-    //   baseUrl: 'https://APP_URL/',
-    // },
-  })
+  let html = ''
+  if (fs.existsSync(fullPath)) {
+    html = fs.readFileSync(fullPath, 'utf-8')
 
-  return await email.render(templatePath, options)
+    // Simple template variable replacement if options provided
+    if (options) {
+      for (const [key, value] of Object.entries(options)) {
+        html = html.replace(new RegExp(`{{\\s*${key}\\s*}}`, 'g'), String(value))
+      }
+    }
+  }
+
+  // Strip HTML tags for plain text version
+  const text = html.replace(/<[^>]*>/g, '').trim()
+
+  return { html, text }
 }

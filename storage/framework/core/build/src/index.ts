@@ -14,7 +14,15 @@ export async function outro(options: {
   const timeTaken = endTime - options.startTime
   const pkgName = options.pkgName ?? `@stacksjs/${p.basename(options.dir)}`
 
-  if (!options.result.success) {
+  // Handle both esbuild and Bun.build result formats
+  if (options.result.errors && options.result.errors.length > 0) {
+    // esbuild format
+    // eslint-disable-next-line no-console
+    console.error('Build errors:', options.result.errors)
+    process.exit(1)
+  }
+  else if (options.result.success !== undefined && !options.result.success) {
+    // Bun.build format
     // eslint-disable-next-line no-console
     console.log(options.result.logs[0])
     process.exit(1)

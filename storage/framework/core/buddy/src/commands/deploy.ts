@@ -5,13 +5,26 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, italic, log, outro, prompts, runCommand } from '@stacksjs/cli'
+import { italic, outro, prompts, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 import { encryptEnv } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+
+// Use console.log for clean output without timestamps
+const log = {
+  info: (...args: any[]) => console.log('ℹ', ...args),
+  success: (...args: any[]) => console.log('✓', ...args),
+  warn: (...args: any[]) => console.log('⚠', ...args),
+  error: (...args: any[]) => console.error('✗', ...args),
+  debug: (...args: any[]) => {
+    if (process.argv.includes('--verbose') || process.argv.includes('-v')) {
+      console.log('🔍', ...args)
+    }
+  },
+}
 
 /**
  * Load AWS credentials from ~/.aws/credentials file
@@ -129,7 +142,10 @@ export function deploy(buddy: CLI): void {
         delete process.env.AWS_PROFILE
       }
 
-      const startTime = await intro('buddy deploy')
+      const startTime = performance.now()
+      console.log('')
+      console.log('🚀 Deploy')
+      console.log('')
 
       // For production deploy, explicitly load .env.production to get the correct domain
       // This ensures we use production settings even if .env.local has different values
@@ -308,57 +324,69 @@ async function promptAndSaveCredentials() {
 }
 
 /**
- * Load AWS credentials from .env.production file
+ * Load AWS credentials from environment-specific .env file
  * Returns credentials if found, otherwise empty object
  */
-function loadAwsCredentialsFromEnvProduction(): { accessKeyId?: string, secretAccessKey?: string, region?: string } {
-  const prodEnvPath = p.projectPath('.env.production')
+function loadAwsCredentialsFromEnv(): { accessKeyId?: string, secretAccessKey?: string, region?: string, accountId?: string } {
+  // Determine environment from APP_ENV
+  const environment = process.env.APP_ENV || process.env.NODE_ENV || 'production'
 
-  if (!existsSync(prodEnvPath)) {
-    return {}
-  }
+  // Try environment-specific file first (e.g., .env.staging, .env.production)
+  const envFiles = [
+    p.projectPath(`.env.${environment}`),
+    p.projectPath('.env'),
+  ]
 
-  try {
-    const content = readFileSync(prodEnvPath, 'utf-8')
-    const lines = content.split('\n')
-
-    let accessKeyId: string | undefined
-    let secretAccessKey: string | undefined
-    let region: string | undefined
-
-    for (const line of lines) {
-      const trimmed = line.trim()
-
-      // Skip comments and empty lines
-      if (trimmed.startsWith('#') || !trimmed.includes('=')) {
-        continue
-      }
-
-      const [key, ...valueParts] = trimmed.split('=')
-      const value = valueParts.join('=').trim()
-
-      if (key === 'AWS_ACCESS_KEY_ID' && value) {
-        accessKeyId = value
-      }
-      else if (key === 'AWS_SECRET_ACCESS_KEY' && value) {
-        secretAccessKey = value
-      }
-      else if (key === 'AWS_REGION' && value) {
-        region = value
-      }
+  for (const envPath of envFiles) {
+    if (!existsSync(envPath)) {
+      continue
     }
 
-    if (accessKeyId && secretAccessKey) {
-      log.debug('Found AWS credentials in .env.production')
-      return { accessKeyId, secretAccessKey, region }
-    }
+    try {
+      const content = readFileSync(envPath, 'utf-8')
+      const lines = content.split('\n')
 
-    return {}
+      let accessKeyId: string | undefined
+      let secretAccessKey: string | undefined
+      let region: string | undefined
+      let accountId: string | undefined
+
+      for (const line of lines) {
+        const trimmed = line.trim()
+
+        // Skip comments and empty lines
+        if (trimmed.startsWith('#') || !trimmed.includes('=')) {
+          continue
+        }
+
+        const [key, ...valueParts] = trimmed.split('=')
+        const value = valueParts.join('=').trim()
+
+        if (key === 'AWS_ACCESS_KEY_ID' && value) {
+          accessKeyId = value
+        }
+        else if (key === 'AWS_SECRET_ACCESS_KEY' && value) {
+          secretAccessKey = value
+        }
+        else if (key === 'AWS_REGION' && value) {
+          region = value
+        }
+        else if (key === 'AWS_ACCOUNT_ID' && value) {
+          accountId = value
+        }
+      }
+
+      if (accessKeyId && secretAccessKey) {
+        log.debug(`Found AWS credentials in ${envPath}`)
+        return { accessKeyId, secretAccessKey, region, accountId }
+      }
+    }
+    catch (error) {
+      log.debug(`Failed to read ${envPath} file:`, error)
+    }
   }
-  catch (error) {
-    log.debug('Failed to read .env.production file:', error)
-    return {}
-  }
+
+  return {}
 }
 
 async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
@@ -370,18 +398,22 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     // Check if AWS credentials are configured in env vars (non-empty values)
     let hasCredentials = process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
 
-    // For production deployments, try to load from .env.production first
+    // Try to load from environment-specific .env file first
     if (!hasCredentials) {
-      const prodCredentials = loadAwsCredentialsFromEnvProduction()
+      const envCredentials = loadAwsCredentialsFromEnv()
 
-      if (prodCredentials.accessKeyId && prodCredentials.secretAccessKey) {
-        process.env.AWS_ACCESS_KEY_ID = prodCredentials.accessKeyId
-        process.env.AWS_SECRET_ACCESS_KEY = prodCredentials.secretAccessKey
-        if (prodCredentials.region && !process.env.AWS_REGION) {
-          process.env.AWS_REGION = prodCredentials.region
+      if (envCredentials.accessKeyId && envCredentials.secretAccessKey) {
+        process.env.AWS_ACCESS_KEY_ID = envCredentials.accessKeyId
+        process.env.AWS_SECRET_ACCESS_KEY = envCredentials.secretAccessKey
+        if (envCredentials.region && !process.env.AWS_REGION) {
+          process.env.AWS_REGION = envCredentials.region
+        }
+        if (envCredentials.accountId && !process.env.AWS_ACCOUNT_ID) {
+          process.env.AWS_ACCOUNT_ID = envCredentials.accountId
         }
         hasCredentials = true
-        log.success('Using AWS credentials from .env.production')
+        const environment = process.env.APP_ENV || process.env.NODE_ENV || 'production'
+        log.success(`Using AWS credentials from .env.${environment}`)
       }
     }
 

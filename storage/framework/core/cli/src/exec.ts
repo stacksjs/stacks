@@ -44,7 +44,7 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
 
     // detached: options?.background || false,
     cwd,
-    // env: { ...e, ...options?.env },
+    env: { ...process.env, ...options?.env },
     onExit(
       subprocess: Subprocess<SpawnOptions.Writable, SpawnOptions.Readable, SpawnOptions.Readable>,
       exitCode: number | null,
@@ -106,7 +106,7 @@ export async function execSync(command: string | string[], options?: CliOptions)
     stdout: options?.stdout ?? 'pipe',
     stderr: options?.stderr ?? 'inherit',
     cwd: options?.cwd ?? process.cwd(),
-    // env: { ...Bun.env, ...options?.env },
+    env: { ...process.env, ...options?.env },
     onExit(
       subprocess: Subprocess<SpawnOptions.Writable, SpawnOptions.Readable, SpawnOptions.Readable>,
       exitCode: number | null,

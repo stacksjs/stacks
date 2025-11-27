@@ -24,7 +24,7 @@ route.post('/verify-authentication', 'Actions/Auth/VerifyAuthenticationAction')
 route.get('/coming-soon', 'Controllers/ComingSoonController@index')
 
 // route.email('/welcome')
-route.health() // adds a GET `/health` route
+await route.health() // adds a GET `/health` route
 route.get('/install', 'Actions/InstallAction')
 route.post('/ai/ask', 'Actions/AI/AskAction')
 route.post('/ai/summary', 'Actions/AI/SummaryAction')

@@ -108,7 +108,10 @@ export class StaticRouteManager {
   }
 
   public async getStaticConfig(): Promise<Record<string, any>> {
-    await route.importRoutes()
+    // PRODUCTION BINARY MODE: Skip route imports that require external files
+    if (process.env.SKIP_CONFIG_LOADING !== 'true') {
+      await route.importRoutes()
+    }
 
     return this.staticRoutes
   }

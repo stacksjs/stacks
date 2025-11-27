@@ -3,7 +3,7 @@ import type { WebSocketHandler } from 'bun'
 // import type { RateLimitResult } from 'ts-rate-limiter'
 
 import process from 'node:process'
-import { config } from '@stacksjs/config'
+// import { config } from '@stacksjs/config'  // DISABLED for production binary - causes runtime TS file loading
 import { log } from '@stacksjs/logging'
 import { getModelName, traitInterfaces } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
@@ -26,8 +26,10 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
 
   let driver = null
 
-  // Initialize the appropriate driver based on configuration
-  switch (config.realtime?.driver) {
+  // DISABLED for production binary: Initialize the appropriate driver based on configuration
+  // const realtimeDriver = config.realtime?.driver
+  const realtimeDriver = null // Disabled to avoid runtime config loading
+  switch (realtimeDriver) {
     case 'bun':
       driver = new BunSocket()
       await driver.connect()
@@ -54,9 +56,31 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
     async fetch(req: Request, server) {
       const url = new URL(req.url)
 
+      // Fast path for health check - bypasses all middleware and dynamic imports
+      // This is critical for container health checks that need immediate response
+      // Handles both GET and HEAD requests (wget --spider uses HEAD)
+      if (url.pathname === '/health' && (req.method === 'GET' || req.method === 'HEAD')) {
+        const body = JSON.stringify({
+          status: 'ok',
+          uptime: Bun.nanoseconds(),
+          version: Bun.version,
+        })
+        return new Response(req.method === 'HEAD' ? null : body, {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': String(body.length),
+            'Access-Control-Allow-Origin': '*',
+          },
+        })
+      }
+
       // Handle WebSocket connections based on the configured driver
       if (url.pathname === '/ws') {
-        switch (config.realtime?.driver) {
+        // DISABLED for production binary
+        // const wsDriver = config.realtime?.driver
+        const wsDriver = null
+        switch (wsDriver) {
           case 'bun':
             return handleWebSocketRequest(req, server)
           case 'socket':
@@ -135,7 +159,7 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
       return serverResponse(req, reqBody)
     },
 
-    websocket: config.realtime?.driver === 'bun'
+    websocket: realtimeDriver === 'bun'
       ? (driver as BunSocket)?.getWebSocketConfig() as WebSocketHandler<any>
       : {
           message() {},
@@ -146,10 +170,10 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
   })
 
   if (driver) {
-    if (config.realtime?.driver === 'bun') {
+    if (realtimeDriver === 'bun') {
       (driver as BunSocket).setServer(server)
     }
-    log.info(`WebSocket server initialized with ${config.realtime?.driver} driver`)
+    log.info(`WebSocket server initialized with ${realtimeDriver} driver`)
   }
 
   log.info(`Server running at http://${hostname}:${port}`)

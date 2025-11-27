@@ -66,10 +66,29 @@ export const tsCloud: TsCloudConfig = {
    */
   infrastructure: {
     /**
+     * Deployment Mode
+     *
+     * - 'server': Traditional EC2-based deployment (Forge-style)
+     *   - EC2 instances running your full-stack Bun app
+     *   - Application Load Balancer for traffic distribution
+     *   - Suitable for monolithic applications
+     *
+     * - 'serverless': Container + static site deployment (Vapor-style)
+     *   - ECS Fargate for API (Bun running in containers)
+     *   - S3 + CloudFront for frontend (static assets)
+     *   - Better cost optimization and auto-scaling
+     */
+    mode: 'serverless', // 'server' | 'serverless'
+
+    /**
      * Compute Configuration
      *
-     * Defines the instances running your Stacks/Bun application.
+     * For mode: 'server'
+     * Defines the EC2 instances running your Stacks/Bun application.
      * When instances > 1, load balancer is automatically enabled.
+     *
+     * For mode: 'serverless'
+     * These settings are not used. See 'containers' configuration instead.
      *
      * @example Single instance (development/staging)
      * compute: { instances: 1, size: 'micro' }
@@ -122,6 +141,53 @@ export const tsCloud: TsCloudConfig = {
       //   onDemandPercentage: 50,
       //   strategy: 'capacity-optimized',
       // },
+    },
+
+    /**
+     * Container Configuration (for serverless mode only)
+     *
+     * Defines ECS Fargate containers running your Bun API.
+     * Only used when mode: 'serverless'.
+     *
+     * @example Basic API container
+     * containers: {
+     *   api: {
+     *     cpu: 256,    // 0.25 vCPU
+     *     memory: 512, // 512 MB
+     *     port: 3000,
+     *     healthCheck: '/health',
+     *   }
+     * }
+     *
+     * @example Production API with auto-scaling
+     * containers: {
+     *   api: {
+     *     cpu: 512,
+     *     memory: 1024,
+     *     port: 3000,
+     *     desiredCount: 2,
+     *     autoScaling: {
+     *       min: 2,
+     *       max: 10,
+     *       targetCpuUtilization: 70,
+     *     },
+     *   }
+     * }
+     */
+    containers: {
+      api: {
+        cpu: 512, // 256, 512, 1024, 2048, 4096
+        memory: 1024, // Must be compatible with CPU (512 MB - 16 GB)
+        port: 3000,
+        healthCheck: '/health',
+        desiredCount: 2,
+        autoScaling: {
+          min: 1,
+          max: 10,
+          targetCpuUtilization: 70,
+          targetMemoryUtilization: 80,
+        },
+      },
     },
 
     /**

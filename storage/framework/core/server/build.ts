@@ -1,28 +1,20 @@
-import { dts } from 'bun-plugin-dtsx'
 import { intro, outro } from '../build/src'
+import { $ } from 'bun'
 
-const { startTime } = await intro({
+const { startTime} = await intro({
   dir: import.meta.dir,
 })
 
-const result = await Bun.build({
-  entrypoints: ['./src/index.ts'],
-  outdir: './dist',
-  format: 'esm',
-  target: 'bun',
-  // sourcemap: 'linked',
-  minify: true,
-  external: ['@stacksjs/config'],
-  plugins: [
-    dts({
-      root: '.',
-      outdir: './dist',
-    }),
-  ],
-})
+// Compile to standalone binary using bun build --compile
+// Cross-compile for Linux x64 (AWS ECS Fargate)
+console.log('Compiling server to standalone binary for Linux...')
+
+await $`bun build --compile --minify --sourcemap --target=bun-linux-x64 ./src/start.ts --outfile ./dist/server`
+
+console.log('✓ Binary compiled successfully for Linux x64')
 
 await outro({
   dir: import.meta.dir,
   startTime,
-  result,
+  result: { errors: [], warnings: [] },
 })

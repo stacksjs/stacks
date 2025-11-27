@@ -159,7 +159,7 @@ export function writeNameserversToConfig(nameservers: string[]): void {
     )
     fs.writeFileSync(path, modifiedContent, 'utf-8')
 
-    log.info('Nameservers have been set.')
+    console.log('ℹ Nameservers have been set.')
   }
   catch (err) {
     console.error('Error updating nameservers:', err)
