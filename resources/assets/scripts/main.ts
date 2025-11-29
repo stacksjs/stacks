@@ -1187,10 +1187,29 @@ function showNotification() {
   }
 }
 
-// Email signup
+// Email signup helper
+async function subscribeEmail(email: string): Promise<{ success: boolean, message?: string }> {
+  const response = await fetch('/api/email/subscribe', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  })
+
+  if (response.ok) {
+    return { success: true }
+  }
+  else {
+    const data = await response.json().catch(() => ({}))
+    return { success: false, message: data.message || 'Failed to subscribe. Please try again later.' }
+  }
+}
+
+// Email signup (notification popup)
 async function handleEmailSignup() {
-  const emailInput = document.getElementById('notification-email')
-  const email = emailInput.value.trim()
+  const emailInput = document.getElementById('notification-email') as HTMLInputElement
+  const email = emailInput?.value.trim()
 
   if (!email || !email.includes('@')) {
     alert('Please enter a valid email address')
@@ -1198,20 +1217,45 @@ async function handleEmailSignup() {
   }
 
   try {
-    const response = await fetch('https://stacksjs.org/api/newsletter/subscribe', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email }),
-    })
+    const result = await subscribeEmail(email)
 
-    if (response.ok) {
-      document.getElementById('notification-signup').style.display = 'none'
-      document.getElementById('notification-success').style.display = 'block'
+    if (result.success) {
+      const signupEl = document.getElementById('notification-signup')
+      const successEl = document.getElementById('notification-success')
+      if (signupEl) signupEl.style.display = 'none'
+      if (successEl) successEl.style.display = 'block'
     }
     else {
-      alert('Failed to subscribe. Please try again later.')
+      alert(result.message)
+    }
+  }
+  catch (error) {
+    console.error('Subscription error:', error)
+    alert('Failed to subscribe. Please try again later.')
+  }
+}
+
+// Blog newsletter signup
+async function handleBlogNewsletterSignup() {
+  const emailInput = document.getElementById('blog-newsletter-email') as HTMLInputElement
+  const email = emailInput?.value.trim()
+
+  if (!email || !email.includes('@')) {
+    alert('Please enter a valid email address')
+    return
+  }
+
+  try {
+    const result = await subscribeEmail(email)
+
+    if (result.success) {
+      const formEl = document.getElementById('blog-newsletter-form')
+      const successEl = document.getElementById('blog-newsletter-success')
+      if (formEl) formEl.style.display = 'none'
+      if (successEl) successEl.style.display = 'block'
+    }
+    else {
+      alert(result.message)
     }
   }
   catch (error) {
@@ -2081,6 +2125,7 @@ window.showFeature = showFeature
 window.closeNotification = closeNotification
 window.showNotification = showNotification
 window.handleEmailSignup = handleEmailSignup
+window.handleBlogNewsletterSignup = handleBlogNewsletterSignup
 window.shareVia = shareVia
 window.copyLogoSVG = copyLogoSVG
 window.copyWordmarkSVG = copyWordmarkSVG

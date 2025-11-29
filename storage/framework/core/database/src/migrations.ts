@@ -1,112 +1,139 @@
+/**
+ * Database Migrations using bun-query-builder
+ *
+ * This module provides migration functionality for the stacks framework
+ * powered by bun-query-builder.
+ */
+
 import type { Err, Ok, Result } from '@stacksjs/error-handling'
-import type { MigrationResult } from 'kysely'
 import { log } from '@stacksjs/cli'
 import { database } from '@stacksjs/config'
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
-import { fs, globSync } from '@stacksjs/storage'
-import { FileMigrationProvider, Migrator } from 'kysely'
-import { createMysqlForeignKeyMigrations, createPostgresForeignKeyMigrations, createSqliteForeignKeyMigrations, generateMysqlMigration, generateMysqlTraitMigrations, generatePostgresMigration, generatePostgresTraitMigrations, generateSqliteMigration, resetMysqlDatabase, resetPostgresDatabase, resetSqliteDatabase } from './drivers'
-
-import { db } from './utils'
+import {
+  executeMigration as qbExecuteMigration,
+  generateMigration as qbGenerateMigration,
+  resetConnection,
+  resetDatabase as qbResetDatabase,
+  setConfig,
+} from 'bun-query-builder'
 
 function getDriver(): string {
   return database.default || ''
 }
 
-export function migrator(): Migrator {
-  return new Migrator({
-    db,
-
-    provider: new FileMigrationProvider({
-      fs,
-      path,
-      // This needs to be an absolute path.
-      migrationFolder: path.userMigrationsPath(),
-    }),
-
-    migrationTableName: database.migrations,
-    migrationLockTableName: database.migrationLocks,
-  })
+function getDialect(): 'sqlite' | 'mysql' | 'postgres' {
+  const driver = getDriver()
+  if (driver === 'sqlite') return 'sqlite'
+  if (driver === 'mysql') return 'mysql'
+  if (driver === 'postgres') return 'postgres'
+  return 'sqlite'
 }
 
-// const migratorForeign = new Migrator({
-//   db,
+/**
+ * Configure bun-query-builder with stacks database settings
+ */
+function configureQueryBuilder(): void {
+  const dialect = getDialect()
+  const dbConfig = database.connections[dialect]
 
-//   provider: new FileMigrationProvider({
-//     fs,
-//     path,
-//     // This needs to be an absolute path.
-//     migrationFolder: path.userMigrationsPath('foreign'),
-//   }),
-// })
+  setConfig({
+    dialect,
+    database: {
+      database: dbConfig?.name || dbConfig?.database || 'stacks',
+      host: dbConfig?.host || 'localhost',
+      port: dbConfig?.port || (dialect === 'postgres' ? 5432 : dialect === 'mysql' ? 3306 : 0),
+      username: dbConfig?.username || '',
+      password: dbConfig?.password || '',
+    },
+  })
 
-export async function runDatabaseMigration(): Promise<Result<MigrationResult[] | string, Error>> {
+  // Reset the connection to ensure the new config is used
+  resetConnection()
+}
+
+/**
+ * Run database migrations
+ */
+export async function runDatabaseMigration(): Promise<Result<string, Error>> {
   try {
     log.info('Migrating database...')
 
-    const { error, results } = await migrator().migrateToLatest()
+    // Configure bun-query-builder with stacks database settings
+    configureQueryBuilder()
 
-    if (error) {
-      console.error('Migration error:', error)
-      return err(handleError(error))
-    }
+    const modelsDir = path.userModelsPath()
 
-    if (results?.length === 0) {
-      log.success('No new migrations were executed')
-      return ok('No new migrations were executed')
-    }
+    // Execute existing migration files
+    await qbExecuteMigration(modelsDir)
 
-    if (results)
-      return ok(results)
-
-    log.success('Database migration completed with no new migrations.')
-    return ok('Database migration completed with no new migrations.')
+    log.success('Database migration completed.')
+    return ok('Database migration completed.')
   }
   catch (error) {
     return err(handleError('Migration failed', error))
   }
 }
 
-export interface MigrationOptions {
-  name: string
-  up: string
-}
-
+/**
+ * Reset the database (drop all tables)
+ */
 export async function resetDatabase(): Promise<Ok<string, never>> {
-  if (getDriver() === 'sqlite')
-    return await resetSqliteDatabase()
-  if (getDriver() === 'mysql')
-    return await resetMysqlDatabase()
-  if (getDriver() === 'postgres')
-    return await resetPostgresDatabase()
+  // Configure bun-query-builder with stacks database settings
+  configureQueryBuilder()
 
-  throw new Error('Unsupported database driver in resetDatabase')
+  const modelsDir = path.userModelsPath()
+  const dialect = getDialect()
+
+  await qbResetDatabase(modelsDir, { dialect })
+
+  return ok('All tables dropped successfully!')
 }
 
+/**
+ * Generate migrations based on model changes
+ * This is the new bun-query-builder style that compares models to generate diffs
+ */
 export async function generateMigrations(): Promise<Ok<string, never> | Err<string, any>> {
   try {
     log.info('Generating migrations...')
 
-    // Create framework tables first
-    if (getDriver() === 'postgres') {
-      await generatePostgresTraitMigrations()
+    // Configure bun-query-builder with stacks database settings
+    configureQueryBuilder()
+
+    const modelsDir = path.userModelsPath()
+    const dialect = getDialect()
+
+    const result = await qbGenerateMigration(modelsDir, { dialect })
+
+    if (result.hasChanges) {
+      log.success('Migrations generated')
     }
     else {
-      await generateMysqlTraitMigrations()
+      log.info('No changes detected')
     }
 
-    const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+    return ok('Migrations generated')
+  }
+  catch (error) {
+    return err(error)
+  }
+}
 
-    for (const file of modelFiles) {
-      log.debug('Generating migration for:', file)
+/**
+ * Generate fresh migrations (full regeneration, ignoring previous state)
+ */
+export async function generateMigrations2(): Promise<Ok<string, never> | Err<string, any>> {
+  try {
+    log.info('Generating fresh migrations...')
 
-      await generateMigration(file)
-    }
+    // Configure bun-query-builder with stacks database settings
+    configureQueryBuilder()
 
-    for (const file of modelFiles) {
-      await generateForeignKeyMigration(file)
-    }
+    const modelsDir = path.userModelsPath()
+    const dialect = getDialect()
+
+    await qbGenerateMigration(modelsDir, { dialect, full: true })
 
     log.success('Migrations generated')
     return ok('Migrations generated')
@@ -116,65 +143,13 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
   }
 }
 
-export async function generateMigration(modelPath: string): Promise<void> {
-  if (getDriver() === 'sqlite')
-    await generateSqliteMigration(modelPath)
-
-  if (getDriver() === 'mysql')
-    await generateMysqlMigration(modelPath)
-
-  if (getDriver() === 'postgres')
-    await generatePostgresMigration(modelPath)
+/**
+ * Migration result type for compatibility
+ */
+export interface MigrationResult {
+  migrationName: string
+  direction: 'Up' | 'Down'
+  status: 'Success' | 'Error' | 'NotExecuted'
 }
 
-export async function generateForeignKeyMigration(modelPath: string): Promise<void> {
-  if (getDriver() === 'sqlite')
-    await createSqliteForeignKeyMigrations(modelPath)
-
-  if (getDriver() === 'mysql')
-    await createMysqlForeignKeyMigrations(modelPath)
-
-  if (getDriver() === 'postgres')
-    await createPostgresForeignKeyMigrations(modelPath)
-}
-
-export async function haveModelFieldsChangedSinceLastMigration(modelPath: string): Promise<boolean> {
-  log.debug(`haveModelFieldsChangedSinceLastMigration for model: ${modelPath}`)
-
-  // const model = await import(modelPath)
-  // const tableName = model.default.table
-  // const lastMigration = await lastMigrationDate()
-
-  // now that we know the date, we need to check the git history for changes to the model file since that date
-  const cmd = ``
-  const gitHistory = await Bun.$`${cmd}`.text()
-
-  // if there are updates, then we need to check whether
-  // the updates include the any updates to the model
-  // fields that would require a migration
-
-  return !!gitHistory
-}
-
-export async function lastMigration(): Promise<any> {
-  try {
-    return await db.selectFrom('migrations').selectAll().orderBy('timestamp', 'desc').limit(1).execute()
-  }
-  catch (error) {
-    console.error('Failed to get last migration:', error)
-    return { error }
-  }
-}
-
-export async function lastMigrationDate(): Promise<string | undefined> {
-  try {
-    return (await db.selectFrom('migrations').select('timestamp').orderBy('timestamp', 'desc').limit(1).execute())[0]
-      .timestamp
-  }
-  catch (error) {
-    console.error('Failed to get last migration date:', error)
-    return undefined
-  }
-}
-
-export type { MigrationResult }
+export type { MigrationResult as MigrationResultType }

@@ -1,5 +1,6 @@
 import type { Action } from '@stacksjs/actions'
 import type { Job, RedirectCode, RequestInstance, Route, RouteGroupOptions, RouterInterface, StatusCode } from '@stacksjs/types'
+import type { EnhancedRequest } from 'bun-router'
 import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
@@ -7,7 +8,8 @@ import { path as p } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
 import { customValidate, isObject, isObjectNotEmpty } from '@stacksjs/validation'
-import { staticRoute } from './'
+import { Router as BunRouter } from 'bun-router'
+import { staticRoute } from './static'
 import { response } from './response'
 import { extractDefaultRequest, findRequestInstanceFromAction } from './utils'
 
@@ -25,9 +27,41 @@ if (!isProduction) {
   globalThis.__cacheBuster = Date.now()
 }
 
+/**
+ * StacksRouter - A wrapper around bun-router that provides stacks-specific features
+ * like Action/Controller resolution, middleware handling, and route grouping
+ */
 export class Router implements RouterInterface {
-  private routes: Route[] = []
+  private stacksRoutes: Route[] = []
   private path = ''
+  private _bunRouter: BunRouter
+  private _pendingRoutes: Promise<any>[] = []
+
+  constructor() {
+    this._bunRouter = new BunRouter({
+      verbose: !isProduction,
+      // Disable bun-router's path prefixing since stacks manages its own prefixes
+      apiPrefix: '',
+      webPrefix: '',
+    })
+  }
+
+  /**
+   * Wait for all pending route registrations to complete
+   */
+  async waitForRoutes(): Promise<void> {
+    if (this._pendingRoutes.length > 0) {
+      await Promise.all(this._pendingRoutes)
+      this._pendingRoutes = []
+    }
+  }
+
+  /**
+   * Get the underlying bun-router instance
+   */
+  get bunRouter(): BunRouter {
+    return this._bunRouter
+  }
 
   // Method to update cache buster when files change
   public static updateCacheBuster(): void {
@@ -47,31 +81,23 @@ export class Router implements RouterInterface {
     return ''
   }
 
-  private addRoute(
+  private async addRouteAsync(
     method: Route['method'],
     uri: string,
     callback: Route['callback'] | string,
     statusCode: StatusCode,
-  ): this {
-    const name = uri.replace(/\//g, '.').replace(/\{/g, '').replace(/\}/g, '') // Updated for curly braces
+  ): Promise<this> {
+    const name = uri.replace(/\//g, '.').replace(/\{/g, '').replace(/\}/g, '')
     const pattern = new RegExp(
       `^${uri.replace(/\{[a-z]+\}/gi, (_match) => {
         return '([a-zA-Z0-9-]+)'
       })}$`,
     )
 
-    // let routeCallback: Route['callback']
-
-    // if (typeof callback === 'string' || typeof callback === 'object') {
-    //   // Convert string or object to RouteCallback
-    //   routeCallback = () => callback
-    // } else {
-    //   routeCallback = callback
-    // }
-
     log.debug(`Adding route: ${method} ${uri} with name ${name}`)
 
-    this.routes.push({
+    // Store in stacks routes for compatibility
+    this.stacksRoutes.push({
       name,
       method,
       url: uri,
@@ -80,10 +106,232 @@ export class Router implements RouterInterface {
       pattern,
       statusCode,
       paramNames: [],
-      // middleware: [],
     })
 
+    // Register with bun-router using a wrapper handler
+    const wrappedHandler = async (req: EnhancedRequest) => {
+      return this.executeHandler(callback, req, statusCode)
+    }
+
+    // Register route with bun-router based on method - awaiting the async calls
+    switch (method) {
+      case 'GET':
+        await this._bunRouter.get(uri, wrappedHandler, 'api', name)
+        break
+      case 'POST':
+        await this._bunRouter.post(uri, wrappedHandler, 'api', name)
+        break
+      case 'PUT':
+        await this._bunRouter.put(uri, wrappedHandler, 'api', name)
+        break
+      case 'PATCH':
+        await this._bunRouter.patch(uri, wrappedHandler, 'api', name)
+        break
+      case 'DELETE':
+        await this._bunRouter.delete(uri, wrappedHandler, 'api', name)
+        break
+    }
+
     return this
+  }
+
+  // Sync wrapper for backwards compatibility with chaining
+  private addRoute(
+    method: Route['method'],
+    uri: string,
+    callback: Route['callback'] | string,
+    statusCode: StatusCode,
+  ): this {
+    // Track the pending promise so we can wait for all routes to be registered
+    const promise = this.addRouteAsync(method, uri, callback, statusCode)
+    this._pendingRoutes.push(promise)
+    return this
+  }
+
+  /**
+   * Execute a handler (string path, function, or promise)
+   */
+  private async executeHandler(
+    callback: Route['callback'] | string,
+    req: EnhancedRequest,
+    _statusCode: StatusCode,
+  ): Promise<Response> {
+    try {
+      // If it's a string, resolve it as an Action or Controller path
+      if (typeof callback === 'string') {
+        return await this.resolveStringHandler(callback, req)
+      }
+
+      // If it's a function, call it directly with the enhanced request
+      if (typeof callback === 'function') {
+        const result = await callback(req)
+
+        // If result is already a Response, return it
+        if (result instanceof Response) {
+          return result
+        }
+
+        // If result is a properly formatted response object
+        if (
+          isObject(result)
+          && 'status' in result
+          && typeof result.status === 'number'
+          && 'headers' in result
+          && isObject(result.headers)
+          && 'body' in result
+        ) {
+          return new Response(result.body, {
+            status: result.status,
+            headers: result.headers as HeadersInit,
+          })
+        }
+
+        // If it's a JSON-like object, return as JSON
+        if (isObject(result)) {
+          return Response.json(result)
+        }
+
+        // For other types (string, number, etc), return as text
+        return new Response(String(result))
+      }
+
+      // If it's a promise, resolve it
+      if (callback instanceof Promise) {
+        const actionModule = await callback
+        if (actionModule.default && typeof actionModule.default.handle === 'function') {
+          const result = await actionModule.default.handle(req)
+          if (result instanceof Response) {
+            return result
+          }
+          return Response.json(result)
+        }
+      }
+
+      return new Response('Invalid handler', { status: 500 })
+    }
+    catch (error: any) {
+      log.error('Route handler error:', error)
+
+      if (error.status === 422) {
+        return Response.json(JSON.parse(error.message), { status: 422 })
+      }
+
+      return Response.json({ error: error.message || 'Internal server error' }, { status: error.status || 500 })
+    }
+  }
+
+  /**
+   * Resolve a string handler (Action or Controller path)
+   */
+  private async resolveStringHandler(callbackPath: string, req: EnhancedRequest): Promise<Response> {
+    let modulePath = callbackPath
+    let importPathFunction = p.appPath
+
+    if (callbackPath.startsWith('../'))
+      importPathFunction = p.routesPath
+    if (modulePath.includes('OrmAction'))
+      importPathFunction = p.storagePath
+
+    // Remove trailing .ts if present
+    modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath
+
+    let requestInstance: RequestInstance = await extractDefaultRequest()
+
+    try {
+      // Handle controller-based routing
+      if (modulePath.includes('Controller')) {
+        const [controllerPath, methodName = 'index'] = modulePath.split('@')
+
+        const controllerPathWithCacheBuster = importPathFunction(controllerPath) + this.getCacheBuster()
+        const controller = await import(controllerPathWithCacheBuster)
+        // eslint-disable-next-line new-cap
+        const instance = new controller.default()
+
+        if (typeof instance[methodName] !== 'function')
+          throw new Error(`Method ${methodName} not found in controller ${controllerPath}`)
+
+        const result = await instance[methodName](requestInstance)
+
+        if (result instanceof Response) {
+          return result
+        }
+
+        if (
+          isObject(result)
+          && 'status' in result
+          && typeof result.status === 'number'
+          && 'headers' in result
+          && isObject(result.headers)
+          && 'body' in result
+        ) {
+          return new Response(result.body, {
+            status: result.status,
+            headers: result.headers as HeadersInit,
+          })
+        }
+
+        if (isObject(result)) {
+          return Response.json(result)
+        }
+
+        return new Response(String(result))
+      }
+
+      // Handle action-based routing
+      let actionModule = null
+
+      if (modulePath.includes('storage/framework/orm'))
+        actionModule = await import(modulePath + this.getCacheBuster())
+      else if (modulePath.includes('Actions'))
+        actionModule = await import(p.projectPath(`app/${modulePath}.ts`) + this.getCacheBuster())
+      else if (modulePath.includes('OrmAction'))
+        actionModule = await import(p.storagePath(`/framework/actions/src/${modulePath}.ts`) + this.getCacheBuster())
+      else
+        actionModule = await import(importPathFunction(modulePath) + this.getCacheBuster())
+
+      if (actionModule.default.model)
+        requestInstance = await findRequestInstanceFromAction(actionModule.default.model)
+      else
+        requestInstance = await extractDefaultRequest()
+
+      if (isObjectNotEmpty(actionModule.default.validations) && requestInstance)
+        await customValidate(actionModule.default.validations, requestInstance.all())
+
+      const result = await actionModule.default.handle(requestInstance)
+
+      if (result instanceof Response) {
+        return result
+      }
+
+      if (
+        isObject(result)
+        && 'status' in result
+        && typeof result.status === 'number'
+        && 'headers' in result
+        && isObject(result.headers)
+        && 'body' in result
+      ) {
+        return new Response(result.body, {
+          status: result.status,
+          headers: result.headers as HeadersInit,
+        })
+      }
+
+      if (isObject(result)) {
+        return Response.json(result)
+      }
+
+      return new Response(String(result))
+    }
+    catch (error: any) {
+      if (error.status === 422)
+        return Response.json(JSON.parse(error.message), { status: 422 })
+
+      if (!error.status)
+        return Response.json({ error: error.message }, { status: 500 })
+
+      return Response.json({ error: error.message }, { status: error.status })
+    }
   }
 
   public get(path: Route['url'], callback: Route['callback']): this {
@@ -95,9 +343,7 @@ export class Router implements RouterInterface {
 
     // If callback is a string and ends with .html, treat it as a view
     if (typeof callback === 'string' && callback.endsWith('.html')) {
-      // Add to static manager
       staticRoute.addHtmlFile(uri, callback)
-      // Register as a route for consistency
       return this.addRoute('GET', uri, async () => callback, 200)
     }
 
@@ -148,15 +394,13 @@ export class Router implements RouterInterface {
     if (!path)
       return this
 
-    // check if action is a file anywhere in ./app/Actions/**/*.ts
     if (path?.endsWith('.ts')) {
-      // given it ends with .ts, we treat it as an Actions path
       const action = (await import(p.userActionsPath(path))).default as Action
       path = action.path ?? kebabCase(path as string)
       return this.addRoute(action.method ?? 'GET', path, action.handle, 200)
     }
 
-    path = pascalCase(path) // actions are PascalCase
+    path = pascalCase(path)
 
     try {
       const action = (await import(p.userActionsPath(path))).default as Action
@@ -182,14 +426,11 @@ export class Router implements RouterInterface {
     this.path = this.normalizePath(path)
     const uri = this.prepareUri(this.path)
 
-    // Add to static manager
     staticRoute.addHtmlFile(uri, htmlFile)
 
-    // Register as a route for consistency
     return this.addRoute('GET', uri, async () => htmlFile, 200)
   }
 
-  // New method to get static configuration
   public getStaticConfig(): Record<string, any> {
     return staticRoute.getStaticConfig()
   }
@@ -239,21 +480,18 @@ export class Router implements RouterInterface {
     const { middleware = [] } = options as RouteGroupOptions
 
     // Save a reference to the original routes array
-    const originalRoutes = this.routes
+    const originalRoutes = this.stacksRoutes
 
     // Create a new routes array for the duration of the callback
-    this.routes = []
+    this.stacksRoutes = []
 
-    // Execute the callback. This will add routes to the new this.routes array
+    // Execute the callback
     cb()
 
     if (typeof options === 'object') {
-      this.routes.forEach((r) => {
-        // Add middleware if any
+      this.stacksRoutes.forEach((r) => {
         if (middleware.length)
           r.middleware = middleware
-
-        // Add the prefix to the route path
 
         const prefix = options.prefix || '/'
         const formattedPrefix = prefix.startsWith('/') ? prefix : `/${prefix}`
@@ -264,33 +502,31 @@ export class Router implements RouterInterface {
           r.url = r.uri
         }
 
-        // Push the modified route to the original routes array
         originalRoutes.push(r)
 
         return this
       })
     }
 
-    // Restore the original routes array.
-    this.routes = originalRoutes
+    this.stacksRoutes = originalRoutes
 
     return this
   }
 
   public name(name: string): this {
-    this.routes[this.routes.length - 1].name = name
+    this.stacksRoutes[this.stacksRoutes.length - 1].name = name
 
     return this
   }
 
   public middleware(middleware: Route['middleware']): this {
-    this.routes[this.routes.length - 1].middleware = middleware
+    this.stacksRoutes[this.stacksRoutes.length - 1].middleware = middleware
 
     return this
   }
 
   public prefix(prefix: string): this {
-    this.routes[this.routes.length - 1].prefix = prefix
+    this.stacksRoutes[this.stacksRoutes.length - 1].prefix = prefix
 
     return this
   }
@@ -298,12 +534,38 @@ export class Router implements RouterInterface {
   public async getRoutes(): Promise<Route[]> {
     await this.importRoutes()
 
-    return this.routes
+    return this.stacksRoutes
   }
 
   public async importRoutes(): Promise<void> {
-    await import('../../../../../routes/api') // user routes
-    await import('../../../orm/routes') // auto-generated routes
+    // Skip dynamic imports in production if routes are already loaded
+    if (this.stacksRoutes.length > 0) {
+      log.debug(`Routes already loaded via static import. Total routes: ${this.stacksRoutes.length}`)
+      return
+    }
+
+    try {
+      const userRoutesPath = p.routesPath('api.ts')
+      const ormRoutesPath = p.frameworkPath('core/orm/routes.ts')
+
+      log.debug(`Importing user routes from: ${userRoutesPath}`)
+      log.debug(`Importing ORM routes from: ${ormRoutesPath}`)
+
+      await import(userRoutesPath)
+      await import(ormRoutesPath)
+
+      log.debug(`Routes imported successfully. Total routes: ${this.stacksRoutes.length}`)
+    }
+    catch (error) {
+      log.error('Failed to import routes:', error)
+      try {
+        await import('../../../../../routes/api')
+        await import('../../../orm/routes')
+      }
+      catch (fallbackError) {
+        log.error('Fallback route import also failed:', fallbackError)
+      }
+    }
   }
 
   public async resolveCallback(callback: Route['callback']): Promise<Route['callback']> {
@@ -315,30 +577,26 @@ export class Router implements RouterInterface {
     if (typeof callback === 'string')
       return await this.importCallbackFromPath(callback, this.path)
 
-    // in this case, the callback ends up being a function
     return callback
   }
 
   public async importCallbackFromPath(callbackPath: string, originalPath: string): Promise<Route['callback']> {
     let modulePath = callbackPath
-    let importPathFunction = p.appPath // Default import path function
+    let importPathFunction = p.appPath
 
     if (callbackPath.startsWith('../'))
       importPathFunction = p.routesPath
     if (modulePath.includes('OrmAction'))
       importPathFunction = p.storagePath
 
-    // Remove trailing .ts if present
     modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath
 
     let requestInstance: RequestInstance = await extractDefaultRequest()
 
     try {
-      // Handle controller-based routing
       if (modulePath.includes('Controller')) {
         const [controllerPath, methodName = 'index'] = modulePath.split('@')
 
-        // Add cache busting for development mode
         const controllerPathWithCacheBuster = importPathFunction(controllerPath) + this.getCacheBuster()
 
         const controller = await import(controllerPathWithCacheBuster)
@@ -348,13 +606,11 @@ export class Router implements RouterInterface {
         if (typeof instance[methodName] !== 'function')
           throw new Error(`Method ${methodName} not found in controller ${controllerPath}`)
 
-        // Use custom path from controller if available
         const newPath = controller.default.path ?? originalPath
         this.updatePathIfNeeded(newPath, originalPath)
 
         const result = await instance[methodName](requestInstance)
 
-        // Use the same response format checking for controllers
         if (
           isObject(result)
           && 'status' in result
@@ -366,16 +622,13 @@ export class Router implements RouterInterface {
           return result
         }
 
-        // If it's a JSON-like object, use response.json
         if (isObject(result)) {
           return response.json(result)
         }
 
-        // For other types (string, number, etc), use response.success
         return response.success(result)
       }
 
-      // Handle action-based routing
       let actionModule = null
 
       if (modulePath.includes('storage/framework/orm'))
@@ -387,7 +640,6 @@ export class Router implements RouterInterface {
       else
         actionModule = await import(importPathFunction(modulePath) + this.getCacheBuster())
 
-      // Use custom path from action module if available
       const newPath = actionModule.default.path ?? originalPath
       this.updatePathIfNeeded(newPath, originalPath)
 
@@ -396,16 +648,11 @@ export class Router implements RouterInterface {
       else
         requestInstance = await extractDefaultRequest()
 
-      // TODO: Check if model name is one of the model names generated by the ORM
-      // else
-      //   requestInstance = await findRequestInstanceFromAction(getModelFromAction(modulePath))
-
       if (isObjectNotEmpty(actionModule.default.validations) && requestInstance)
         await customValidate(actionModule.default.validations, requestInstance.all())
 
       const result = await actionModule.default.handle(requestInstance)
 
-      // Check if result is already a properly formatted response
       if (
         isObject(result)
         && 'status' in result
@@ -417,16 +664,13 @@ export class Router implements RouterInterface {
         return result
       }
 
-      // If it's a JSON-like object, use response.json
       if (isObject(result)) {
         return response.json(result)
       }
 
-      // For other types (string, number, etc), use response.success
       return response.success(result)
     }
     catch (error: any) {
-      // Use the response helper for errors
       if (error.status === 422)
         return response.json(JSON.parse(error.message), 422)
 
@@ -442,22 +686,37 @@ export class Router implements RouterInterface {
   }
 
   public prepareUri(path: string): string {
-    // if string starts with / then remove it because we are adding it back in the next line
     if (path.startsWith('/'))
       path = path.slice(1)
 
     path = `/${path}`
-    // if path ends in "/", then remove it
-    // e.g. triggered when route is "/"
+
     return path.endsWith('/') ? path.slice(0, -1) : path
   }
 
   private updatePathIfNeeded(newPath: string, originalPath: string): void {
     if (newPath !== originalPath) {
-      // Logic to update the path if needed, based on the action module's custom path
       this.path = newPath
     }
   }
 }
 
-export const route: Router = new Router()
+// Singleton router instance - initialized immediately and stored on globalThis
+// This ensures it's available even when bundler reorders imports
+const _router = new Router()
+
+// Store on globalThis for compiled binary compatibility
+if (typeof globalThis !== 'undefined') {
+  ;(globalThis as any).__STACKS_ROUTER__ = _router
+}
+
+// Export the router instance
+export const route: Router = _router
+
+// Helper function to get the router from globalThis (for compiled binary mode)
+export function getRouter(): Router {
+  if (typeof globalThis !== 'undefined' && (globalThis as any).__STACKS_ROUTER__) {
+    return (globalThis as any).__STACKS_ROUTER__
+  }
+  return _router
+}

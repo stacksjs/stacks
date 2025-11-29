@@ -1,144 +1,107 @@
-import type { Model, Options, Route, RouteParam, ServeOptions } from '@stacksjs/types'
-import type { WebSocketHandler } from 'bun'
-// import type { RateLimitResult } from 'ts-rate-limiter'
-
+import type { Server } from 'bun'
 import process from 'node:process'
-// import { config } from '@stacksjs/config'  // DISABLED for production binary - causes runtime TS file loading
 import { log } from '@stacksjs/logging'
-import { getModelName, traitInterfaces } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
-import { BunSocket, handleWebSocketRequest, PusherDriver, setBunSocket, SocketDriver } from '@stacksjs/realtime'
-import { fs, globSync } from '@stacksjs/storage'
+import { fs } from '@stacksjs/storage'
+import { getRouter, route as defaultRoute, Router } from './router'
 
-import { camelCase } from '@stacksjs/strings'
-// import { RateLimiter } from 'ts-rate-limiter'
-import { getMimeType, isStaticAssetPath, route, staticRoute } from '.'
-import { request as RequestParam } from './request'
+// Static file extension to MIME type mapping
+const mimeTypes: Record<string, string> = {
+  '.html': 'text/html',
+  '.css': 'text/css',
+  '.js': 'application/javascript',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.eot': 'application/vnd.ms-fontobject',
+}
 
-export async function serve(options: ServeOptions = {}): Promise<void> {
-  const hostname = options.host || 'localhost'
-  const port = options.port || 3000
-  const development = options.debug ? true : process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod'
-  const staticFiles = await staticRoute.getStaticConfig()
+function getMimeType(pathname: string): string {
+  const ext = pathname.substring(pathname.lastIndexOf('.'))
+  return mimeTypes[ext] || 'application/octet-stream'
+}
 
-  if (options.timezone)
-    process.env.TZ = options.timezone
+/**
+ * Serve options interface
+ */
+interface ServeOptions {
+  port?: number
+  host?: string
+  router?: Router
+}
 
-  let driver = null
+/**
+ * Serve the application using bun-router
+ *
+ * This function uses the underlying bun-router for request handling
+ * while supporting stacks-specific features like static file serving
+ */
+export async function serve(options: ServeOptions = {}): Promise<Server<any>> {
+  const port = options.port || Number(process.env.PORT) || 3000
+  const hostname = options.host || process.env.HOST || '0.0.0.0'
 
-  // DISABLED for production binary: Initialize the appropriate driver based on configuration
-  // const realtimeDriver = config.realtime?.driver
-  const realtimeDriver = null // Disabled to avoid runtime config loading
-  switch (realtimeDriver) {
-    case 'bun':
-      driver = new BunSocket()
-      await driver.connect()
-      setBunSocket(driver)
-      break
-    case 'socket':
-      driver = new SocketDriver() // Use a different port for Socket.IO
-      await driver.connect()
-      break
-    case 'pusher':
-      driver = new PusherDriver()
-      await driver.connect()
-      break
-    default:
-      log.warn('No realtime driver configured')
+  // Use provided router, try globalThis, or fall back to default
+  const route = options.router || getRouter() || defaultRoute
+
+  // Only import routes if not already registered (for backwards compatibility)
+  if (route && typeof route.getRoutes === 'function') {
+    const existingRoutes = await route.getRoutes()
+    if (existingRoutes.length === 0) {
+      await route.importRoutes()
+    }
   }
 
-  const server = Bun.serve({
-    static: staticFiles,
-    hostname,
-    port,
-    development,
+  // Wait for all pending route registrations to complete
+  if (route && typeof route.waitForRoutes === 'function') {
+    await route.waitForRoutes()
+  }
 
-    async fetch(req: Request, server) {
+  // Get routes list for logging
+  const routes = await route.getRoutes()
+
+  log.info('Routes List:')
+  for (const r of routes) {
+    log.info(`  ${r.method} ${r.uri}`)
+  }
+
+  // Debug: log bun-router routes count
+  log.info(`BunRouter has ${route.bunRouter.routes.length} routes registered`)
+
+  // Create the server using Bun.serve with bun-router's handleRequest
+  const server = Bun.serve({
+    port,
+    hostname,
+
+    async fetch(req: Request): Promise<Response> {
       const url = new URL(req.url)
 
-      // Fast path for health check - bypasses all middleware and dynamic imports
-      // This is critical for container health checks that need immediate response
-      // Handles both GET and HEAD requests (wget --spider uses HEAD)
-      if (url.pathname === '/health' && (req.method === 'GET' || req.method === 'HEAD')) {
-        const body = JSON.stringify({
-          status: 'ok',
-          uptime: Bun.nanoseconds(),
-          version: Bun.version,
-        })
-        return new Response(req.method === 'HEAD' ? null : body, {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': String(body.length),
-            'Access-Control-Allow-Origin': '*',
-          },
-        })
-      }
-
-      // Handle WebSocket connections based on the configured driver
-      if (url.pathname === '/ws') {
-        // DISABLED for production binary
-        // const wsDriver = config.realtime?.driver
-        const wsDriver = null
-        switch (wsDriver) {
-          case 'bun':
-            return handleWebSocketRequest(req, server)
-          case 'socket':
-            // Socket.IO handles its own WebSocket connections
-            return new Response('Socket.IO WebSocket endpoint', { status: 200 })
-          case 'pusher':
-            // Pusher connects directly to Pusher's servers
-            return new Response('Pusher WebSocket endpoint', { status: 200 })
-          default:
-            return new Response('No WebSocket driver configured', { status: 400 })
-        }
-      }
-
-      // Handle static asset requests (CSS, JS, images, fonts, etc.)
-      if (isStaticAssetPath(url.pathname)) {
-        // Try to serve from public/dist directory first (Vite SSG output)
-        const publicDistPath = path.publicPath(`dist${url.pathname}`)
-        if (fs.existsSync(publicDistPath)) {
-          const file = Bun.file(publicDistPath)
-          return new Response(file, {
-            headers: {
-              'Content-Type': getMimeType(url.pathname),
-              'Cache-Control': 'public, max-age=31536000, immutable',
-              'Access-Control-Allow-Origin': '*',
-            },
-          })
-        }
-
-        // Try public directory root
-        const publicPath = path.publicPath(url.pathname.slice(1))
-        if (fs.existsSync(publicPath)) {
-          const file = Bun.file(publicPath)
-          return new Response(file, {
-            headers: {
-              'Content-Type': getMimeType(url.pathname),
-              'Cache-Control': 'public, max-age=31536000, immutable',
-              'Access-Control-Allow-Origin': '*',
-            },
-          })
-        }
-
-        // Try storage/public/assets (compiled assets)
-        const storagePath = path.storagePath(`public${url.pathname}`)
-        if (fs.existsSync(storagePath)) {
-          const file = Bun.file(storagePath)
-          return new Response(file, {
-            headers: {
-              'Content-Type': getMimeType(url.pathname),
-              'Cache-Control': 'public, max-age=31536000, immutable',
-              'Access-Control-Allow-Origin': '*',
-            },
-          })
+      // Try to serve static files first
+      if (req.method === 'GET') {
+        // Try public directory first (compiled assets)
+        if (url.pathname.startsWith('/assets/')) {
+          const publicPath = path.publicPath(url.pathname.slice(1)) // Remove leading /
+          if (fs.existsSync(publicPath)) {
+            const file = Bun.file(publicPath)
+            return new Response(file, {
+              headers: {
+                'Content-Type': getMimeType(url.pathname),
+                'Cache-Control': 'public, max-age=31536000, immutable',
+                'Access-Control-Allow-Origin': '*',
+              },
+            })
+          }
         }
 
         // Try resources/assets (source assets - CSS, JS, etc.)
-        // For /assets/styles/main.css -> resources/assets/styles/main.css
         if (url.pathname.startsWith('/assets/')) {
-          const assetsPath = path.resourcesPath(url.pathname.slice(1)) // Remove leading /
+          const assetsPath = path.resourcesPath(url.pathname.slice(1))
           if (fs.existsSync(assetsPath)) {
             const file = Bun.file(assetsPath)
             return new Response(file, {
@@ -150,346 +113,75 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
             })
           }
         }
-
-        log.debug(`Static asset not found: ${url.pathname}`)
       }
 
-      // Handle regular HTTP requests with body parsing
-      const reqBody = await req.text()
-      return serverResponse(req, reqBody)
+      // Delegate to bun-router for all other requests
+      try {
+        return await route.bunRouter.handleRequest(req)
+      }
+      catch (error: any) {
+        log.error('Request handling error:', error)
+        return Response.json({ error: error.message || 'Internal server error' }, { status: 500 })
+      }
     },
-
-    websocket: realtimeDriver === 'bun'
-      ? (driver as BunSocket)?.getWebSocketConfig() as WebSocketHandler<any>
-      : {
-          message() {},
-          open() {},
-          close() {},
-          drain() {},
-        },
   })
-
-  if (driver) {
-    if (realtimeDriver === 'bun') {
-      (driver as BunSocket).setServer(server)
-    }
-    log.info(`WebSocket server initialized with ${realtimeDriver} driver`)
-  }
 
   log.info(`Server running at http://${hostname}:${port}`)
+
+  return server
 }
 
-export async function serverResponse(req: Request, body: string): Promise<Response> {
-  log.debug(`Incoming Request: ${req.method} ${req.url}`)
-  log.debug(`Headers: ${JSON.stringify(req.headers)}`)
-  log.debug(`Body: ${JSON.stringify(req.body)}`)
+/**
+ * Handle a request and return a response
+ * This is a simple wrapper for the bun-router's handleRequest
+ * that can be used in custom server implementations
+ */
+export async function serverResponse(request: Request, _body?: string): Promise<Response> {
+  const route = getRouter() || defaultRoute
+  const url = new URL(request.url)
 
-  // const result = await limiter.check(req)
-
-  // if (!result.allowed) {
-  //   log.info(`Rate limit exceeded: ${result.current}/${result.limit}`)
-  //   log.info(`Reset in ${Math.ceil(result.remaining / 1000)} seconds`)
-
-  //   // Handle rate limiting in your own way
-  //   return new Response('Too many requests', { status: 429 })
-  // }
-
-  const trimmedUrl = req.url.endsWith('/') && req.url.length > 1 ? req.url.slice(0, -1) : req.url
-  const url: URL = new URL(trimmedUrl) as URL
-  const routesList: Route[] = await route.getRoutes()
-
-  log.info(`Routes List: ${JSON.stringify(routesList)}`)
-  log.info(`URL: ${JSON.stringify(url)}`)
-
-  if (req.method === 'OPTIONS') {
-    return handleOptions()
-  }
-
-  const foundRoute: Route | undefined = routesList
-    .find((route: Route) => {
-      const pattern = new RegExp(`^${route.uri.replace(/\{(\w+)\}/g, '(\\w+)')}$`)
-      return pattern.test(url.pathname) && route.method === req.method
-    })
-
-  log.info(`Found Route: ${JSON.stringify(foundRoute)}`)
-
-  if (!foundRoute) {
-    // TODO: create a pretty 404 page
-    return new Response('<html><body><h1>Route not found!</h1></body></html>', {
-      status: 404,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-        'Content-Type': 'text/html',
-      },
-    })
-  }
-
-  const routeParams = extractDynamicSegments(foundRoute.uri, url.pathname)
-
-  if (!body) {
-    await addRouteQuery(url)
-  }
-  else {
-    await addBody(body)
-  }
-
-  await addRouteParam(routeParams)
-  await addHeaders(req.headers as Headers)
-
-  return await execute(foundRoute, req, { statusCode: foundRoute?.statusCode })
-}
-
-function handleOptions() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers':
-        'Content-Type, Authorization, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Accept',
-      'Access-Control-Max-Age': '86400', // Cache the preflight response for a day
-    },
-  })
-}
-
-function extractDynamicSegments(routePattern: string, path: string): RouteParam {
-  const regexPattern = new RegExp(`^${routePattern.replace(/\{(\w+)\}/g, '(\\w+)')}$`)
-  const match = path.match(regexPattern)
-
-  if (!match) {
-    return {}
-  }
-
-  const dynamicSegmentNames = [...routePattern.matchAll(/\{(\w+)\}/g)].map(m => m[1])
-  const dynamicSegmentValues = match.slice(1) // First match is the whole string, so we slice it off
-
-  const dynamicSegments: { [key: string]: string } = {}
-  dynamicSegmentNames.forEach((name, index) => {
-    if (name && dynamicSegmentValues[index] !== undefined) {
-      dynamicSegments[name] = dynamicSegmentValues[index] // Ensure value is defined
+  // Try to serve static files first
+  if (request.method === 'GET') {
+    // Try public directory first (compiled assets)
+    if (url.pathname.startsWith('/assets/')) {
+      const publicPath = path.publicPath(url.pathname.slice(1)) // Remove leading /
+      if (fs.existsSync(publicPath)) {
+        const file = Bun.file(publicPath)
+        return new Response(file, {
+          headers: {
+            'Content-Type': getMimeType(url.pathname),
+            'Cache-Control': 'public, max-age=31536000, immutable',
+            'Access-Control-Allow-Origin': '*',
+          },
+        })
+      }
     }
-  })
-  return dynamicSegments
-}
 
-async function execute(foundRoute: Route, req: Request, _options: Options) {
+    // Try resources/assets (source assets - CSS, JS, etc.)
+    if (url.pathname.startsWith('/assets/')) {
+      const assetsPath = path.resourcesPath(url.pathname.slice(1))
+      if (fs.existsSync(assetsPath)) {
+        const file = Bun.file(assetsPath)
+        return new Response(file, {
+          headers: {
+            'Content-Type': getMimeType(url.pathname),
+            'Cache-Control': 'public, max-age=31536000, immutable',
+            'Access-Control-Allow-Origin': '*',
+          },
+        })
+      }
+    }
+  }
+
+  // Delegate to bun-router for all other requests
   try {
-    const foundCallback = await route.resolveCallback(foundRoute.callback)
-
-    if (!foundCallback) {
-      return new Response('<html><body><h1>Route callback not found!</h1></body></html>', {
-        status: 500,
-        headers: {
-          'Content-Type': 'text/html',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-      })
-    }
-
-    const middlewarePayload = await executeMiddleware(foundRoute)
-    if (
-      middlewarePayload !== null
-      && typeof middlewarePayload === 'object'
-      && Object.keys(middlewarePayload).length > 0
-    ) {
-      const { status, message } = middlewarePayload
-      return new Response(`<html><body><h1>${message}</h1></body></html>`, {
-        headers: {
-          'Content-Type': 'text/html',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-        status: status || 401,
-      })
-    }
-
-    if (foundRoute?.method !== req.method) {
-      return new Response('<html><body><h1>Method not allowed!</h1></body></html>', {
-        status: 405,
-        headers: {
-          'Content-Type': 'text/html',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-      })
-    }
-
-    // foundCallback is now a ResponseData object from response.ts
-    const { status, headers, body } = foundCallback
-
-    // Return the response with the exact body from response.ts
-    return new Response(body, {
-      headers: {
-        ...headers,
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-      },
-      status,
-    })
+    return await route.bunRouter.handleRequest(request)
   }
   catch (error: any) {
-    log.error(`Error executing route: ${error.message}`)
-    return new Response('<html><body><h1>Internal Server Error</h1></body></html>', {
-      status: 500,
-      headers: {
-        'Content-Type': 'text/html',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-      },
-    })
+    log.error('Request handling error:', error)
+    return Response.json({ error: error.message || 'Internal server error' }, { status: 500 })
   }
 }
 
-async function applyToAllRequests(operation: 'addBodies' | 'addParam' | 'addHeaders' | 'addQuery', data: any): Promise<void> {
-  try {
-    const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
-
-    // Process model files
-    for (const modelFile of modelFiles) {
-      try {
-        const model = (await import(modelFile)).default as Model
-        const modelName = getModelName(model, modelFile)
-        const requestPath = path.frameworkPath(`requests/${modelName}Request.ts`)
-        const requestImport = await import(requestPath)
-        const requestInstance = requestImport[`${camelCase(modelName)}Request`]
-
-        if (requestInstance) {
-          requestInstance[operation](data)
-        }
-      }
-      catch (error) {
-        log.error(`Error processing model file ${modelFile}: ${error}`)
-        continue
-      }
-    }
-
-    // Process trait interfaces
-    for (const trait of traitInterfaces) {
-      try {
-        const requestPath = path.frameworkPath(`requests/${trait.name}Request.ts`)
-        const requestImport = await import(requestPath)
-        const requestInstance = requestImport[`${camelCase(trait.name)}Request`]
-
-        if (requestInstance) {
-          requestInstance[operation](data)
-        }
-      }
-      catch (error) {
-        log.error(`Error importing trait interface: ${error}`)
-        continue
-      }
-    }
-
-    RequestParam[operation](data)
-  }
-  catch (error) {
-    log.error(`Error in applyToAllRequests: ${error}`)
-  }
-}
-
-async function addRouteQuery(url: URL): Promise<void> {
-  await applyToAllRequests('addQuery', url)
-}
-
-async function addBody(params: any): Promise<void> {
-  try {
-    const parsedParams = typeof params === 'string' ? JSON.parse(params) : params
-    await applyToAllRequests('addBodies', parsedParams)
-  }
-  catch (error) {
-    log.error(`Error parsing request body: ${error}`)
-    // Continue with empty object if parsing fails
-    await applyToAllRequests('addBodies', {})
-  }
-}
-
-async function addRouteParam(param: RouteParam): Promise<void> {
-  await applyToAllRequests('addParam', param)
-}
-
-async function addHeaders(headers: Headers): Promise<void> {
-  await applyToAllRequests('addHeaders', headers)
-}
-
-async function executeMiddleware(route: Route): Promise<any> {
-  const { middleware = null } = route
-
-  if (!middleware)
-    return null
-
-  // Get middleware aliases from app/Middleware.ts
-  const middlewareAliases = (await import(path.appPath('Middleware.ts'))).default
-
-  // Helper function to resolve middleware path
-  async function resolveMiddlewarePath(middlewareName: string): Promise<string> {
-    // Check if it's an alias
-    const actualName = middlewareAliases[middlewareName] || middlewareName
-    let middlewarePath = path.userMiddlewarePath(`${actualName}.ts`)
-
-    if (!fs.existsSync(middlewarePath))
-      middlewarePath = path.storagePath(`framework/defaults/middleware/${actualName}.ts`)
-
-    if (!fs.existsSync(middlewarePath))
-      throw new Error(`Middleware "${middlewareName}" not found in user or default paths`)
-
-    return middlewarePath
-  }
-
-  // Helper function to execute a single middleware with negation support
-  async function executeSingleMiddleware(middlewareName: string) {
-    try {
-      let isNegated = false
-      let actualMiddlewareName = middlewareName
-
-      // Check if middleware is negated (starts with !)
-      if (middlewareName.startsWith('!')) {
-        isNegated = true
-        actualMiddlewareName = middlewareName.slice(1) // Remove the ! prefix
-      }
-
-      const middlewarePath = await resolveMiddlewarePath(actualMiddlewareName)
-      const middlewareInstance = (await import(middlewarePath)).default
-
-      if (!middlewareInstance?.handle)
-        throw new Error(`Middleware "${actualMiddlewareName}" does not have a handle method`)
-
-      // Execute the middleware
-      await middlewareInstance.handle(RequestParam)
-
-      // If negated, we want the opposite behavior
-      // If the original middleware didn't throw an error (allowed access),
-      // then the negated version should throw an error (deny access)
-      if (isNegated) {
-        return {
-          status: 403,
-          message: `Access denied by negated middleware "${actualMiddlewareName}"`,
-        }
-      }
-    }
-    catch (error: any) {
-      // If negated and the original middleware threw an error (denied access),
-      // then the negated version should allow access (don't throw)
-      if (middlewareName.startsWith('!')) {
-        return null // Allow access for negated middleware
-      }
-
-      return {
-        status: error.status || 500,
-        message: error.message || 'Internal Server Error',
-      }
-    }
-  }
-
-  // Handle both single middleware and array of middleware
-  const middlewareList = Array.isArray(middleware) ? middleware : [middleware]
-
-  for (const middlewareName of middlewareList) {
-    const result = await executeSingleMiddleware(middlewareName)
-    if (result)
-      return result // Return early if middleware returns an error
-  }
-
-  return null
-}
+// Export the route instance for use in route files
+export { defaultRoute as route }

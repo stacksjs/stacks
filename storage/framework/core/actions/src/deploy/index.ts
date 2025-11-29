@@ -30,18 +30,31 @@ log.debug('Skipping framework build (already built)...')
 // })
 log.success('Framework build skipped')
 
-// Skip docs build for now - demo components have missing dependencies
-// TODO: Fix demo components to use actual installed packages
-// if (storage.hasFiles(p.projectPath('docs'))) {
-//   const docsSpinner = spinner('Building documentation...')
-//   docsSpinner.start()
-//   await runCommand('bun run build', {
-//     cwd: p.frameworkPath('docs'),
-//     quiet: !isVerbose,
-//   })
-//   docsSpinner.succeed('Documentation built')
-// }
-if (isVerbose) log.debug('Skipping documentation build (demo components need updates)')
+// Build documentation with BunPress
+// Skip if docs directory doesn't exist or if pre-built docs exist
+const docsDir = p.projectPath('docs')
+const docsDistExists = storage.hasFiles(p.projectPath('dist/docs/.bunpress'))
+if (storage.hasFiles(docsDir) && !docsDistExists) {
+  const docsSpinner = spinner('Building documentation with BunPress...')
+  docsSpinner.start()
+  try {
+    // Try to run bunpress from node_modules/.bin or linked package
+    // Note: bunpress outputs to .bunpress subdirectory within outdir
+    await runCommand('bunx @stacksjs/bunpress build --dir ./docs --outdir ./dist/docs', {
+      cwd: p.projectPath(),
+      quiet: !isVerbose,
+    })
+    docsSpinner.succeed('Documentation built with BunPress')
+  } catch (docsError: any) {
+    // BunPress might not be installed - skip gracefully
+    docsSpinner.warn(`Documentation build skipped: ${docsError.message}`)
+    if (isVerbose) log.debug('To build docs manually: cd ~/Code/bunpress && bun bin/cli.ts build --dir /path/to/docs --outdir /path/to/dist/docs')
+  }
+} else if (docsDistExists) {
+  if (isVerbose) log.debug('Pre-built docs found at dist/docs/.bunpress, skipping build')
+} else {
+  if (isVerbose) log.debug('No docs directory found, skipping documentation build')
+}
 
 // Skip views build for now - vite-config is not set up
 // TODO: Set up vite-config for views build
@@ -285,6 +298,27 @@ try {
     verbose: isVerbose,
   })
 
+  // Run database migrations after infrastructure is deployed
+  // This ensures the RDS database is available before we try to migrate
+  const migrateSpinner = spinner('Running database migrations...')
+  migrateSpinner.start()
+  try {
+    const { generateMigrations, runDatabaseMigration } = await import('@stacksjs/database')
+
+    // Generate migrations from models
+    await generateMigrations()
+
+    // Execute migrations against the production database
+    await runDatabaseMigration()
+
+    migrateSpinner.succeed('Database migrations completed')
+  } catch (migrationError: any) {
+    // Don't fail the entire deployment if migrations fail
+    // The database might not be accessible from the deploy machine
+    migrateSpinner.warn(`Database migrations skipped: ${migrationError.message}`)
+    if (isVerbose) log.debug(`Migration error: ${migrationError.stack}`)
+  }
+
   // Deploy frontend to S3
   const frontendSpinner = spinner('Deploying frontend to S3...')
   frontendSpinner.start()
@@ -441,6 +475,122 @@ try {
   } catch (frontendError: any) {
     frontendSpinner.fail(`Frontend deployment failed: ${frontendError.message}`)
     if (isVerbose) log.debug(`Frontend error: ${frontendError.stack}`)
+  }
+
+  // Deploy documentation to S3
+  // Note: BunPress outputs to .bunpress subdirectory within outdir
+  const docsDistPath = p.projectPath('dist/docs/.bunpress')
+  const { existsSync: docsExists } = await import('node:fs')
+  if (docsExists(docsDistPath)) {
+    const docsDeploySpinner = spinner('Deploying documentation to S3...')
+    docsDeploySpinner.start()
+
+    try {
+      const { S3Client, CloudFormationClient } = await import('ts-cloud/aws')
+      const { readdirSync, statSync, readFileSync } = await import('node:fs')
+      const { join, extname } = await import('node:path')
+
+      const s3 = new S3Client(region)
+      const cf = new CloudFormationClient(region)
+
+      // Get docs bucket name from stack outputs
+      const stackName = `stacks-cloud-${environment}`
+      const outputs = await cf.getStackOutputs(stackName)
+      const docsBucketName = outputs.DocsBucketName
+
+      if (!docsBucketName) {
+        docsDeploySpinner.warn('Docs bucket not found in stack outputs (infrastructure may not be updated yet)')
+      } else {
+        // MIME type helper
+        const getMimeType = (filePath: string): string => {
+          const ext = extname(filePath).toLowerCase()
+          const mimeTypes: Record<string, string> = {
+            '.html': 'text/html',
+            '.css': 'text/css',
+            '.js': 'application/javascript',
+            '.json': 'application/json',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.svg': 'image/svg+xml',
+            '.ico': 'image/x-icon',
+            '.woff': 'font/woff',
+            '.woff2': 'font/woff2',
+            '.ttf': 'font/ttf',
+            '.xml': 'application/xml',
+            '.txt': 'text/plain',
+          }
+          return mimeTypes[ext] || 'application/octet-stream'
+        }
+
+        // Upload docs files to S3 (files go to root since CloudFront routes /docs/* to this bucket)
+        const uploadDocsDir = async (dir: string, prefix: string = '') => {
+          const items = readdirSync(dir)
+          for (const item of items) {
+            if (item === '.DS_Store' || item === '.bunpress') continue
+            const filePath = join(dir, item)
+            const key = prefix ? `${prefix}/${item}` : item
+
+            if (statSync(filePath).isDirectory()) {
+              await uploadDocsDir(filePath, key)
+            } else {
+              const content = readFileSync(filePath)
+              const contentType = getMimeType(filePath)
+              const cacheControl = item.endsWith('.html')
+                ? 'no-cache, no-store, must-revalidate'
+                : 'public, max-age=31536000, immutable'
+
+              await s3.putObject({
+                bucket: docsBucketName,
+                key: key,
+                body: content,
+                contentType: contentType,
+                cacheControl: cacheControl,
+              })
+              if (isVerbose) log.debug(`  Uploaded docs: ${key}`)
+            }
+          }
+        }
+
+        await uploadDocsDir(docsDistPath)
+
+        // Invalidate CloudFront cache for /docs paths
+        const distributionId = outputs.CloudFrontDistributionId
+        if (distributionId) {
+          if (isVerbose) log.debug('  Invalidating CloudFront cache for /docs...')
+          const { AWSClient } = await import('ts-cloud/aws')
+          const client = new AWSClient()
+          await client.request({
+            service: 'cloudfront',
+            region: 'us-east-1',
+            method: 'POST',
+            path: `/2020-05-31/distribution/${distributionId}/invalidation`,
+            headers: {
+              'Content-Type': 'application/xml',
+            },
+            body: `<?xml version="1.0" encoding="UTF-8"?>
+<InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/2020-05-31/">
+  <CallerReference>docs-${Date.now()}</CallerReference>
+  <Paths>
+    <Quantity>2</Quantity>
+    <Items>
+      <Path>/docs</Path>
+      <Path>/docs/*</Path>
+    </Items>
+  </Paths>
+</InvalidationBatch>`,
+          })
+        }
+
+        docsDeploySpinner.succeed(`Documentation deployed to S3 (${docsBucketName})`)
+      }
+    } catch (docsDeployError: any) {
+      docsDeploySpinner.fail(`Documentation deployment failed: ${docsDeployError.message}`)
+      if (isVerbose) log.debug(`Docs deploy error: ${docsDeployError.stack}`)
+    }
+  } else {
+    if (isVerbose) log.debug('No docs build found at dist/docs, skipping docs deployment')
   }
 
   console.log('')

@@ -1,16 +1,17 @@
 import type { DateValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, ValidationType } from '@stacksjs/ts-validation'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
-import { db } from '@stacksjs/database'
 import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'
+import { db } from '../utils'
 import { enumValidator, isBooleanValidator, isDatetimeValidator, isDateValidator, isFloatValidator, isNumberValidator, isStringValidator, isTimestampValidator, isUnixValidator } from '../validators'
 
 export * from './mysql'
 export * from './postgres'
 export * from './sqlite'
+export * from './defaults'
 
 interface Range {
   min: number

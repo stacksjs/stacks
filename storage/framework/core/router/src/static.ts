@@ -1,5 +1,3 @@
-import { route } from './'
-
 /**
  * MIME type mapping for common file extensions
  */
@@ -110,6 +108,8 @@ export class StaticRouteManager {
   public async getStaticConfig(): Promise<Record<string, any>> {
     // PRODUCTION BINARY MODE: Skip route imports that require external files
     if (process.env.SKIP_CONFIG_LOADING !== 'true') {
+      // Dynamically import route to avoid circular dependency
+      const { route } = await import('./router')
       await route.importRoutes()
     }
 

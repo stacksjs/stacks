@@ -1276,6 +1276,22 @@ async function generateServerlessTemplate(options: {
       },
     },
 
+    // S3 Bucket for Documentation
+    DocsBucket: {
+      Type: 'AWS::S3::Bucket',
+      DeletionPolicy: 'Retain',
+      Properties: {
+        BucketName: { 'Fn::Sub': `${stackSlug}-docs-\${AWS::AccountId}` },
+        WebsiteConfiguration: {
+          IndexDocument: 'index.html',
+          ErrorDocument: '404.html',
+        },
+        PublicAccessBlockConfiguration: { BlockPublicAcls: false, BlockPublicPolicy: false, IgnorePublicAcls: false, RestrictPublicBuckets: false },
+        CorsConfiguration: { CorsRules: [{ AllowedHeaders: ['*'], AllowedMethods: ['GET', 'HEAD'], AllowedOrigins: ['*'], MaxAge: 3600 }] },
+        Tags: [{ Key: 'Environment', Value: environment }, { Key: 'Purpose', Value: 'documentation' }],
+      },
+    },
+
     // CloudFront Origin Access Control for S3
     CloudFrontOAC: {
       Type: 'AWS::CloudFront::OriginAccessControl',
@@ -1301,11 +1317,19 @@ async function generateServerlessTemplate(options: {
           PriceClass: 'PriceClass_100',
           HttpVersion: 'http2and3',
           IPV6Enabled: true,
-          // Origins: S3 for frontend, ALB for API
+          // Origins: S3 for frontend, S3 for docs, ALB for API
           Origins: [
             {
               Id: 'S3Origin',
               DomainName: { 'Fn::GetAtt': ['FrontendBucket', 'RegionalDomainName'] },
+              S3OriginConfig: {
+                OriginAccessIdentity: '',
+              },
+              OriginAccessControlId: { 'Fn::GetAtt': ['CloudFrontOAC', 'Id'] },
+            },
+            {
+              Id: 'DocsS3Origin',
+              DomainName: { 'Fn::GetAtt': ['DocsBucket', 'RegionalDomainName'] },
               S3OriginConfig: {
                 OriginAccessIdentity: '',
               },
@@ -1332,8 +1356,28 @@ async function generateServerlessTemplate(options: {
             CachePolicyId: '658327ea-f89d-4fab-a63d-7e88639e58f6', // CachingOptimized
             OriginRequestPolicyId: '88a5eaf4-2fd4-4709-b370-b4c650ea3fcf', // CORS-S3Origin
           },
-          // Cache behaviors for API routes
+          // Cache behaviors for API routes and docs
           CacheBehaviors: [
+            {
+              PathPattern: '/docs/*',
+              TargetOriginId: 'DocsS3Origin',
+              ViewerProtocolPolicy: 'redirect-to-https',
+              AllowedMethods: ['GET', 'HEAD', 'OPTIONS'],
+              CachedMethods: ['GET', 'HEAD'],
+              Compress: true,
+              CachePolicyId: '658327ea-f89d-4fab-a63d-7e88639e58f6', // CachingOptimized
+              OriginRequestPolicyId: '88a5eaf4-2fd4-4709-b370-b4c650ea3fcf', // CORS-S3Origin
+            },
+            {
+              PathPattern: '/docs',
+              TargetOriginId: 'DocsS3Origin',
+              ViewerProtocolPolicy: 'redirect-to-https',
+              AllowedMethods: ['GET', 'HEAD', 'OPTIONS'],
+              CachedMethods: ['GET', 'HEAD'],
+              Compress: true,
+              CachePolicyId: '658327ea-f89d-4fab-a63d-7e88639e58f6', // CachingOptimized
+              OriginRequestPolicyId: '88a5eaf4-2fd4-4709-b370-b4c650ea3fcf', // CORS-S3Origin
+            },
             {
               PathPattern: '/api/*',
               TargetOriginId: 'ALBOrigin',
@@ -1403,6 +1447,31 @@ async function generateServerlessTemplate(options: {
     },
   }
 
+  // Docs bucket policy to allow CloudFront OAC access
+  resources.DocsBucketPolicy = {
+    Type: 'AWS::S3::BucketPolicy',
+    DependsOn: 'CloudFrontOAC',
+    Properties: {
+      Bucket: { Ref: 'DocsBucket' },
+      PolicyDocument: {
+        Version: '2012-10-17',
+        Statement: [
+          {
+            Effect: 'Allow',
+            Principal: { Service: 'cloudfront.amazonaws.com' },
+            Action: 's3:GetObject',
+            Resource: { 'Fn::Sub': 'arn:aws:s3:::${DocsBucket}/*' },
+            Condition: {
+              StringEquals: {
+                'AWS:SourceArn': { 'Fn::Sub': 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}' },
+              },
+            },
+          },
+        ],
+      },
+    },
+  }
+
   // Add DNS records if hosted zone is configured - point to CloudFront
   if (hostedZoneId) {
     // CloudFront hosted zone ID (global - same for all regions)
@@ -1454,6 +1523,8 @@ async function generateServerlessTemplate(options: {
     FrontendBucketName: { Description: 'S3 bucket for frontend', Value: { Ref: 'FrontendBucket' }, Export: { Name: { 'Fn::Sub': '${AWS::StackName}-FrontendBucket' } } },
     FrontendURL: { Description: 'Frontend website URL', Value: { 'Fn::Sub': 'https://${CloudFrontDistribution.DomainName}' } },
     AssetsBucketName: { Description: 'S3 bucket for static assets', Value: { Ref: 'AssetsBucket' }, Export: { Name: { 'Fn::Sub': '${AWS::StackName}-AssetsBucket' } } },
+    DocsBucketName: { Description: 'S3 bucket for documentation', Value: { Ref: 'DocsBucket' }, Export: { Name: { 'Fn::Sub': '${AWS::StackName}-DocsBucket' } } },
+    DocsURL: { Description: 'Documentation URL', Value: { 'Fn::Sub': 'https://${CloudFrontDistribution.DomainName}/docs' } },
   }
 
   // Add domain URL output if DNS is configured

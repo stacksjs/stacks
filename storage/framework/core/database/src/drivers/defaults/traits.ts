@@ -1,7 +1,10 @@
 import { italic, log } from '@stacksjs/cli'
-import { db, sql } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
+import { db } from '../../utils'
 import { hasMigrationBeenCreated } from '../index'
+
+// Import sql from bun-query-builder
+import { sql } from 'bun-query-builder'
 
 export function getTraitTables(): string[] {
   return [

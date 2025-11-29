@@ -693,7 +693,7 @@ export default {
   description: 'Rapid application, cloud & library development framework.',
   lastUpdated: true,
   deploy: true,
-  base: '/',
+  base: '/docs/',
 
   metaChunk: true,
 

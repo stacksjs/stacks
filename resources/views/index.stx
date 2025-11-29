@@ -1277,20 +1277,24 @@ export default {
         </article>
 
         <!-- Newsletter Signup -->
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; border-radius: 8px; border: 2px solid #5a67d8; text-align: center;">
+        <div id="blog-newsletter" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; border-radius: 8px; border: 2px solid #5a67d8; text-align: center;">
           <h3 style="margin: 0 0 8px 0; font-size: 20px;">Stay Updated</h3>
           <p style="margin: 0 0 16px 0; font-size: 13px; opacity: 0.95;">
             Subscribe to our newsletter for the latest updates, tutorials, and community highlights.
           </p>
-          <div style="display: flex; gap: 8px; max-width: 400px; margin: 0 auto;">
+          <div id="blog-newsletter-form" style="display: flex; gap: 8px; max-width: 400px; margin: 0 auto;">
             <input
+              id="blog-newsletter-email"
               type="email"
               placeholder="your@email.com"
               style="flex: 1; padding: 10px 14px; border: 2px inset #999; border-radius: 4px; font-size: 13px;"
             />
-            <button style="padding: 10px 20px; background: white; color: #667eea; border: 2px outset #999; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">
+            <button onclick="handleBlogNewsletterSignup()" style="padding: 10px 20px; background: white; color: #667eea; border: 2px outset #999; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">
               Subscribe
             </button>
+          </div>
+          <div id="blog-newsletter-success" style="display: none; padding: 12px; background: rgba(255,255,255,0.2); border-radius: 4px;">
+            Thanks for subscribing! We'll keep you updated.
           </div>
         </div>
       </div>

@@ -39,7 +39,7 @@ export default {
     postgres: {
       name: envVars.DB_DATABASE || 'stacks',
       host: envVars.DB_HOST || '127.0.0.1',
-      port: Number(envVars.DB_PORT) || 3306,
+      port: Number(envVars.DB_PORT) || 5432,
       username: envVars.DB_USERNAME || '',
       password: envVars.DB_PASSWORD || '',
       prefix: '',
