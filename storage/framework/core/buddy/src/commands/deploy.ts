@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { italic, outro, prompts, runCommand } from '@stacksjs/cli'
-import { app } from '@stacksjs/config'
+import { app, email as emailConfig } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 import { encryptEnv } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
@@ -477,7 +477,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     const appName = (process.env.APP_NAME || app.name || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
     const stackName = `${appName}-cloud`
 
-    // Use ts-cloud's CloudFormation client instead of CDK
+    // Use ts-cloud's CloudFormation client
     const { CloudFormationClient } = await import('ts-cloud/aws')
 
     // Don't pass AWS_PROFILE when we have static credentials to avoid conflicts
@@ -485,13 +485,42 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
       process.env.AWS_REGION || 'us-east-1'
     )
 
-    // Check if stack exists
+    // Check if stack exists and if it needs updating
+    let stackExists = false
+    let needsEmailUpdate = false
+
     try {
       const result = await cfnClient.describeStacks({ stackName })
 
       if (result.Stacks && result.Stacks.length > 0) {
+        stackExists = true
         log.success('Cloud stack exists')
-        return true
+
+        // Check if email infrastructure is already deployed and matches config
+        const resources = await cfnClient.listStackResources(stackName)
+        const hasEmailBucket = resources.StackResourceSummaries?.some(
+          (r: any) => r.LogicalResourceId === 'EmailBucket'
+        )
+
+        // Get current email domain from stack outputs to check if it needs updating
+        const currentEmailDomain = result.Stacks[0]?.Outputs?.find(
+          (o: any) => o.OutputKey === 'EmailDomain'
+        )?.OutputValue
+
+        const configuredDomain = emailConfig?.from?.address?.split('@')[1] || 'stacksjs.com'
+
+        if (!hasEmailBucket && emailConfig?.server?.scan !== undefined) {
+          log.info('Email infrastructure not found in stack, will update...')
+          needsEmailUpdate = true
+        }
+        else if (currentEmailDomain && currentEmailDomain !== configuredDomain) {
+          log.info(`Email domain changed: ${currentEmailDomain} -> ${configuredDomain}, will update...`)
+          needsEmailUpdate = true
+        }
+
+        if (!needsEmailUpdate) {
+          return true
+        }
       }
     }
     catch (error: any) {
@@ -499,14 +528,26 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
       // Stack doesn't exist, we'll create it below
     }
 
-    log.info('Cloud stack not found')
-    log.info('Creating cloud infrastructure. This may take a few moments...')
+    if (!stackExists) {
+      log.info('Cloud stack not found')
+    }
+    log.info('Creating/updating cloud infrastructure. This may take a few moments...')
 
-    // Create basic CloudFormation template for Stacks cloud infrastructure
-    const template = {
+    // Get email configuration
+    const emailDomain = emailConfig?.from?.address?.split('@')[1] || 'stacksjs.com'
+    const emailBucketName = `${appName}-emails`
+    const region = process.env.AWS_REGION || 'us-east-1'
+    const enableEmailServer = emailConfig?.server?.scan !== undefined
+
+    log.info(`Email domain: ${emailDomain}`)
+    log.info(`Email server enabled: ${enableEmailServer}`)
+
+    // Create CloudFormation template for Stacks cloud infrastructure with email support
+    const template: any = {
       AWSTemplateFormatVersion: '2010-09-09',
-      Description: `${appName} Cloud Infrastructure`,
+      Description: `${appName} Cloud Infrastructure with Email Server`,
       Resources: {
+        // Assets bucket
         StacksBucket: {
           Type: 'AWS::S3::Bucket',
           Properties: {
@@ -539,29 +580,323 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
       },
     }
 
+    // Add email infrastructure if email server is enabled
+    if (enableEmailServer) {
+      log.info('Adding email server infrastructure...')
+
+      // Email storage bucket
+      template.Resources.EmailBucket = {
+        Type: 'AWS::S3::Bucket',
+        Properties: {
+          BucketName: emailBucketName,
+          LifecycleConfiguration: {
+            Rules: [
+              {
+                Id: 'ArchiveOldEmails',
+                Status: 'Enabled',
+                Transitions: [
+                  {
+                    StorageClass: 'GLACIER',
+                    TransitionInDays: 90,
+                  },
+                ],
+              },
+            ],
+          },
+          Tags: [
+            { Key: 'Purpose', Value: 'EmailStorage' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        },
+      }
+
+      // S3 bucket policy to allow SES to write emails
+      template.Resources.EmailBucketPolicy = {
+        Type: 'AWS::S3::BucketPolicy',
+        Properties: {
+          Bucket: { Ref: 'EmailBucket' },
+          PolicyDocument: {
+            Version: '2012-10-17',
+            Statement: [
+              {
+                Sid: 'AllowSESPuts',
+                Effect: 'Allow',
+                Principal: {
+                  Service: 'ses.amazonaws.com',
+                },
+                Action: 's3:PutObject',
+                Resource: { 'Fn::Sub': 'arn:aws:s3:::${EmailBucket}/*' },
+                Condition: {
+                  StringEquals: {
+                    'AWS:SourceAccount': { Ref: 'AWS::AccountId' },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      }
+
+      // SES Domain Identity
+      template.Resources.EmailIdentity = {
+        Type: 'AWS::SES::EmailIdentity',
+        Properties: {
+          EmailIdentity: emailDomain,
+          DkimSigningAttributes: {
+            NextSigningKeyLength: 'RSA_2048_BIT',
+          },
+          FeedbackAttributes: {
+            EmailForwardingEnabled: true,
+          },
+        },
+      }
+
+      // SES Configuration Set
+      template.Resources.EmailConfigurationSet = {
+        Type: 'AWS::SES::ConfigurationSet',
+        Properties: {
+          Name: `${appName}-email-config`,
+          ReputationOptions: {
+            ReputationMetricsEnabled: true,
+          },
+          SendingOptions: {
+            SendingEnabled: true,
+          },
+          SuppressionOptions: {
+            SuppressedReasons: ['BOUNCE', 'COMPLAINT'],
+          },
+        },
+      }
+
+      // IAM Role for Email Lambda functions
+      template.Resources.EmailLambdaRole = {
+        Type: 'AWS::IAM::Role',
+        Properties: {
+          RoleName: `${appName}-email-lambda-role`,
+          AssumeRolePolicyDocument: {
+            Version: '2012-10-17',
+            Statement: [
+              {
+                Effect: 'Allow',
+                Principal: {
+                  Service: 'lambda.amazonaws.com',
+                },
+                Action: 'sts:AssumeRole',
+              },
+            ],
+          },
+          ManagedPolicyArns: [
+            'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole',
+          ],
+          Policies: [
+            {
+              PolicyName: 'EmailLambdaPolicy',
+              PolicyDocument: {
+                Version: '2012-10-17',
+                Statement: [
+                  {
+                    Effect: 'Allow',
+                    Action: [
+                      's3:GetObject',
+                      's3:PutObject',
+                      's3:DeleteObject',
+                      's3:ListBucket',
+                    ],
+                    Resource: [
+                      { 'Fn::GetAtt': ['EmailBucket', 'Arn'] },
+                      { 'Fn::Sub': '${EmailBucket.Arn}/*' },
+                    ],
+                  },
+                  {
+                    Effect: 'Allow',
+                    Action: [
+                      'ses:SendEmail',
+                      'ses:SendRawEmail',
+                    ],
+                    Resource: '*',
+                  },
+                ],
+              },
+            },
+          ],
+          Tags: [
+            { Key: 'Purpose', Value: 'EmailProcessing' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        },
+      }
+
+      // Inbound Email Lambda Function
+      template.Resources.InboundEmailLambda = {
+        Type: 'AWS::Lambda::Function',
+        DependsOn: ['EmailLambdaRole'],
+        Properties: {
+          FunctionName: `${appName}-inbound-email`,
+          Runtime: 'nodejs20.x',
+          Handler: 'index.handler',
+          Role: { 'Fn::GetAtt': ['EmailLambdaRole', 'Arn'] },
+          Timeout: 60,
+          MemorySize: 512,
+          Environment: {
+            Variables: {
+              S3_BUCKET: emailBucketName,
+              ORGANIZED_PREFIX: 'organized/',
+            },
+          },
+          Code: {
+            ZipFile: `
+const { S3Client, GetObjectCommand, PutObjectCommand } = require('@aws-sdk/client-s3');
+const s3 = new S3Client({});
+
+exports.handler = async (event) => {
+  console.log('Processing inbound email:', JSON.stringify(event));
+  const bucket = process.env.S3_BUCKET;
+  const organizedPrefix = process.env.ORGANIZED_PREFIX || 'organized/';
+
+  for (const record of event.Records || []) {
+    if (!record.ses) continue;
+    const mail = record.ses.mail;
+    const from = mail.commonHeaders?.from?.[0] || mail.source || 'unknown';
+    const to = mail.commonHeaders?.to || mail.destination || [];
+    const subject = mail.commonHeaders?.subject || 'No Subject';
+    const date = mail.timestamp || new Date().toISOString();
+    const dateFolder = date.slice(0, 10).replace(/-/g, '/');
+
+    for (const recipient of to) {
+      const recipientEmail = recipient.replace(/<|>/g, '').toLowerCase().trim();
+      const organizedKey = organizedPrefix + 'by-recipient/' + recipientEmail + '/' + dateFolder + '/' + mail.messageId + '.json';
+      await s3.send(new PutObjectCommand({
+        Bucket: bucket,
+        Key: organizedKey,
+        Body: JSON.stringify({ from, to: recipientEmail, subject, date, messageId: mail.messageId }, null, 2),
+        ContentType: 'application/json'
+      }));
+    }
+    console.log('Organized email from ' + from + ' to ' + to.join(', ') + ': ' + subject);
+  }
+  return { statusCode: 200, body: 'Emails organized successfully' };
+};
+`,
+          },
+          Tags: [
+            { Key: 'Purpose', Value: 'InboundEmail' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        },
+      }
+
+      // Lambda permission for SES to invoke
+      template.Resources.InboundEmailLambdaPermission = {
+        Type: 'AWS::Lambda::Permission',
+        Properties: {
+          FunctionName: { Ref: 'InboundEmailLambda' },
+          Action: 'lambda:InvokeFunction',
+          Principal: 'ses.amazonaws.com',
+          SourceAccount: { Ref: 'AWS::AccountId' },
+        },
+      }
+
+      // SES Receipt Rule Set
+      template.Resources.EmailReceiptRuleSet = {
+        Type: 'AWS::SES::ReceiptRuleSet',
+        Properties: {
+          RuleSetName: `${appName}-email-rules`,
+        },
+      }
+
+      // SES Receipt Rule for inbound emails
+      template.Resources.EmailReceiptRule = {
+        Type: 'AWS::SES::ReceiptRule',
+        DependsOn: ['EmailReceiptRuleSet', 'InboundEmailLambda', 'EmailBucket', 'EmailBucketPolicy'],
+        Properties: {
+          RuleSetName: { Ref: 'EmailReceiptRuleSet' },
+          Rule: {
+            Name: `${appName}-inbound-rule`,
+            Enabled: true,
+            ScanEnabled: emailConfig?.server?.scan || true,
+            Recipients: [emailDomain],
+            Actions: [
+              {
+                S3Action: {
+                  BucketName: { Ref: 'EmailBucket' },
+                  ObjectKeyPrefix: 'inbound/',
+                },
+              },
+              {
+                LambdaAction: {
+                  FunctionArn: { 'Fn::GetAtt': ['InboundEmailLambda', 'Arn'] },
+                  InvocationType: 'Event',
+                },
+              },
+            ],
+          },
+        },
+      }
+
+      // Add email outputs
+      template.Outputs.EmailBucketName = {
+        Description: 'Name of the email storage bucket',
+        Value: { Ref: 'EmailBucket' },
+      }
+      template.Outputs.EmailDomain = {
+        Description: 'Email domain configured',
+        Value: emailDomain,
+      }
+      template.Outputs.EmailRuleSetName = {
+        Description: 'SES Receipt Rule Set name',
+        Value: { Ref: 'EmailReceiptRuleSet' },
+      }
+
+      log.success('Email infrastructure added to template')
+    }
+
     try {
-      // Create the stack using ts-cloud
-      const result = await cfnClient.createStack({
-        stackName,
-        templateBody: JSON.stringify(template),
-        capabilities: ['CAPABILITY_IAM'],
-        tags: [
-          { Key: 'Environment', Value: process.env.APP_ENV || 'production' },
-          { Key: 'ManagedBy', Value: 'Stacks' },
-        ],
-      })
+      if (stackExists && needsEmailUpdate) {
+        // Update existing stack with email infrastructure
+        log.info('Updating stack with email infrastructure...')
+        const result = await cfnClient.updateStack({
+          stackName,
+          templateBody: JSON.stringify(template),
+          capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
+          tags: [
+            { Key: 'Environment', Value: process.env.APP_ENV || 'production' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        })
 
-      log.info(`Stack creation initiated: ${result.StackId}`)
-      log.info('Waiting for stack creation to complete...')
+        log.info(`Stack update initiated: ${result.StackId}`)
+        log.info('Waiting for stack update to complete...')
 
-      // Wait for stack creation to complete
-      await cfnClient.waitForStack(stackName, 'stack-create-complete')
+        // Wait for stack update to complete
+        await cfnClient.waitForStack(stackName, 'stack-update-complete')
 
-      log.success('Cloud infrastructure created successfully')
-      return true
+        log.success('Cloud infrastructure updated with email server!')
+        return true
+      }
+      else {
+        // Create new stack
+        const result = await cfnClient.createStack({
+          stackName,
+          templateBody: JSON.stringify(template),
+          capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
+          tags: [
+            { Key: 'Environment', Value: process.env.APP_ENV || 'production' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        })
+
+        log.info(`Stack creation initiated: ${result.StackId}`)
+        log.info('Waiting for stack creation to complete...')
+
+        // Wait for stack creation to complete
+        await cfnClient.waitForStack(stackName, 'stack-create-complete')
+
+        log.success('Cloud infrastructure created successfully')
+        return true
+      }
     }
     catch (error: any) {
-      // Handle case where stack already exists
+      // Handle case where stack already exists (shouldn't happen now with our check)
       if (error.code === 'AlreadyExistsException') {
         handlingAlreadyExists = true
         console.log('')
@@ -579,8 +914,14 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
         process.exit(ExitCode.FatalError)
       }
 
+      // Handle no updates needed
+      if (error.message?.includes('No updates are to be performed')) {
+        log.success('Stack is already up to date')
+        return true
+      }
+
       // Handle other errors
-      log.error('Failed to create cloud infrastructure')
+      log.error('Failed to create/update cloud infrastructure')
       log.error(`Error: ${error.message || error}`)
 
       if (error.code) {

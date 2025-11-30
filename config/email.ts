@@ -13,12 +13,12 @@ const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
 export default {
   from: {
     name: envVars.MAIL_FROM_NAME || 'Stacks',
-    address: envVars.MAIL_FROM_ADDRESS || 'no-reply@stacksjs.org',
+    address: envVars.MAIL_FROM_ADDRESS || 'no-reply@stacksjs.com',
   },
 
-  mailboxes: ['chris@stacksjs.org', 'blake@stacksjs.org', 'glenn@stacksjs.org'],
+  mailboxes: ['chris@stacksjs.com', 'blake@stacksjs.com', 'glenn@stacksjs.com'],
 
-  url: envVars.APP_URL || 'http://localhost:3000',
+  url: envVars.APP_URL || 'https://stacksjs.com',
   charset: 'UTF-8',
 
   server: {
