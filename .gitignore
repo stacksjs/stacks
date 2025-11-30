@@ -42,3 +42,4 @@ stacks.log
 .stx-serve
 .env.keys
 /storage/framework/frontend-dist
+/.qb

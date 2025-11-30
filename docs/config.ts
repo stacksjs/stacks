@@ -42,12 +42,62 @@ export const fathomAnalyticsHead: HeadConfig[] = [
   ],
 ]
 
+// Self-hosted analytics using Stacks Analytics (dynamodb-tooling)
+function generateSelfHostedAnalyticsScript(): string {
+  const config = analytics.drivers?.selfHosted
+  if (!config?.siteId || !config?.apiEndpoint) {
+    return ''
+  }
+
+  const honorDnt = config.honorDnt ? `if(n.doNotTrack==="1")return;` : ''
+  const hashTracking = config.trackHashChanges ? `w.addEventListener('hashchange',pv);` : ''
+  const outboundTracking = config.trackOutboundLinks
+    ? `d.addEventListener('click',function(e){var a=e.target.closest('a');if(a&&a.hostname!==location.hostname){t('outbound',{url:a.href});}});`
+    : ''
+
+  return `(function(){
+'use strict';
+var d=document,w=window,n=navigator,s=d.currentScript;
+var site=s.dataset.site,api=s.dataset.api;
+${honorDnt}
+var q=[],sid=Math.random().toString(36).slice(2);
+function t(e,p){
+var x=new XMLHttpRequest();
+x.open('POST',api+'/collect',true);
+x.setRequestHeader('Content-Type','application/json');
+x.send(JSON.stringify({s:site,sid:sid,e:e,p:p||{},u:location.href,r:d.referrer,t:d.title,sw:screen.width,sh:screen.height}));
+}
+function pv(){t('pageview');}
+${hashTracking}
+${outboundTracking}
+if(d.readyState==='complete')pv();
+else w.addEventListener('load',pv);
+w.stacksAnalytics={track:function(n,v){t('event',{name:n,value:v});}};
+})();`
+}
+
+export const selfHostedAnalyticsHead: HeadConfig[] = analytics.drivers?.selfHosted?.siteId
+  ? [
+      [
+        'script',
+        {
+          'data-site': analytics.drivers.selfHosted.siteId,
+          'data-api': analytics.drivers.selfHosted.apiEndpoint || '',
+          'defer': '',
+        },
+        generateSelfHostedAnalyticsScript(),
+      ],
+    ]
+  : []
+
 export const analyticsHead
   = analytics.driver === 'fathom'
     ? fathomAnalyticsHead
     : analytics.driver === 'google-analytics'
       ? googleAnalyticsHead
-      : []
+      : analytics.driver === 'self-hosted'
+        ? selfHostedAnalyticsHead
+        : []
 
 const nav = [
   {
