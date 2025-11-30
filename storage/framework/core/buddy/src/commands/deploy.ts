@@ -501,6 +501,15 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
         const hasEmailBucket = resources.StackResourceSummaries?.some(
           (r: any) => r.LogicalResourceId === 'EmailBucket'
         )
+        const hasOutboundLambda = resources.StackResourceSummaries?.some(
+          (r: any) => r.LogicalResourceId === 'OutboundEmailLambda'
+        )
+        const hasConversionLambda = resources.StackResourceSummaries?.some(
+          (r: any) => r.LogicalResourceId === 'EmailConversionLambda'
+        )
+        const hasNotificationTopic = resources.StackResourceSummaries?.some(
+          (r: any) => r.LogicalResourceId === 'EmailNotificationTopic'
+        )
 
         // Get current email domain from stack outputs to check if it needs updating
         const currentEmailDomain = result.Stacks[0]?.Outputs?.find(
@@ -515,6 +524,10 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
         }
         else if (currentEmailDomain && currentEmailDomain !== configuredDomain) {
           log.info(`Email domain changed: ${currentEmailDomain} -> ${configuredDomain}, will update...`)
+          needsEmailUpdate = true
+        }
+        else if (hasEmailBucket && (!hasOutboundLambda || !hasConversionLambda || !hasNotificationTopic)) {
+          log.info('Email infrastructure incomplete, will update...')
           needsEmailUpdate = true
         }
 
@@ -833,6 +846,200 @@ exports.handler = async (event) => {
         },
       }
 
+      // Outbound Email Lambda Function
+      template.Resources.OutboundEmailLambda = {
+        Type: 'AWS::Lambda::Function',
+        DependsOn: ['EmailLambdaRole'],
+        Properties: {
+          FunctionName: `${appName}-outbound-email`,
+          Runtime: 'nodejs20.x',
+          Handler: 'index.handler',
+          Role: { 'Fn::GetAtt': ['EmailLambdaRole', 'Arn'] },
+          Timeout: 30,
+          MemorySize: 256,
+          Environment: {
+            Variables: {
+              DOMAIN: emailDomain,
+              CONFIGURATION_SET: `${appName}-email-config`,
+            },
+          },
+          Code: {
+            ZipFile: `
+const { SESClient, SendRawEmailCommand } = require('@aws-sdk/client-ses');
+const ses = new SESClient({});
+
+exports.handler = async (event) => {
+  console.log('Processing outbound email:', JSON.stringify(event));
+  const { to, from, subject, html, text, cc, bcc, replyTo, attachments = [] } = event;
+  const domain = process.env.DOMAIN;
+  const configSet = process.env.CONFIGURATION_SET;
+
+  const boundary = 'NextPart_' + Date.now().toString(16);
+  const fromAddress = from || 'noreply@' + domain;
+
+  let rawEmail = '';
+  rawEmail += 'From: ' + fromAddress + '\\r\\n';
+  rawEmail += 'To: ' + (Array.isArray(to) ? to.join(', ') : to) + '\\r\\n';
+  if (cc) rawEmail += 'Cc: ' + (Array.isArray(cc) ? cc.join(', ') : cc) + '\\r\\n';
+  if (bcc) rawEmail += 'Bcc: ' + (Array.isArray(bcc) ? bcc.join(', ') : bcc) + '\\r\\n';
+  if (replyTo) rawEmail += 'Reply-To: ' + replyTo + '\\r\\n';
+  rawEmail += 'Subject: ' + subject + '\\r\\n';
+  rawEmail += 'MIME-Version: 1.0\\r\\n';
+  rawEmail += 'Content-Type: multipart/mixed; boundary="' + boundary + '"\\r\\n\\r\\n';
+
+  rawEmail += '--' + boundary + '\\r\\n';
+  rawEmail += 'Content-Type: multipart/alternative; boundary="alt_boundary"\\r\\n\\r\\n';
+
+  if (text) {
+    rawEmail += '--alt_boundary\\r\\n';
+    rawEmail += 'Content-Type: text/plain; charset=UTF-8\\r\\n\\r\\n';
+    rawEmail += text + '\\r\\n\\r\\n';
+  }
+  if (html) {
+    rawEmail += '--alt_boundary\\r\\n';
+    rawEmail += 'Content-Type: text/html; charset=UTF-8\\r\\n\\r\\n';
+    rawEmail += html + '\\r\\n\\r\\n';
+  }
+  rawEmail += '--alt_boundary--\\r\\n';
+
+  for (const att of attachments) {
+    rawEmail += '--' + boundary + '\\r\\n';
+    rawEmail += 'Content-Type: ' + (att.contentType || 'application/octet-stream') + '; name="' + att.filename + '"\\r\\n';
+    rawEmail += 'Content-Transfer-Encoding: base64\\r\\n';
+    rawEmail += 'Content-Disposition: attachment; filename="' + att.filename + '"\\r\\n\\r\\n';
+    rawEmail += att.content + '\\r\\n';
+  }
+  rawEmail += '--' + boundary + '--\\r\\n';
+
+  const params = {
+    RawMessage: { Data: Buffer.from(rawEmail) },
+    Source: fromAddress,
+    Destinations: [...(Array.isArray(to) ? to : [to]), ...(cc ? (Array.isArray(cc) ? cc : [cc]) : []), ...(bcc ? (Array.isArray(bcc) ? bcc : [bcc]) : [])]
+  };
+  if (configSet) params.ConfigurationSetName = configSet;
+
+  const result = await ses.send(new SendRawEmailCommand(params));
+  return { statusCode: 200, body: JSON.stringify({ messageId: result.MessageId }) };
+};
+`,
+          },
+          Tags: [
+            { Key: 'Purpose', Value: 'OutboundEmail' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        },
+      }
+
+      // Email Conversion Lambda Function
+      template.Resources.EmailConversionLambda = {
+        Type: 'AWS::Lambda::Function',
+        DependsOn: ['EmailLambdaRole'],
+        Properties: {
+          FunctionName: `${appName}-email-conversion`,
+          Runtime: 'nodejs20.x',
+          Handler: 'index.handler',
+          Role: { 'Fn::GetAtt': ['EmailLambdaRole', 'Arn'] },
+          Timeout: 60,
+          MemorySize: 512,
+          Environment: {
+            Variables: {
+              S3_BUCKET: emailBucketName,
+              CONVERTED_PREFIX: 'converted/',
+            },
+          },
+          Code: {
+            ZipFile: `
+const { S3Client, GetObjectCommand, PutObjectCommand } = require('@aws-sdk/client-s3');
+const s3 = new S3Client({});
+
+exports.handler = async (event) => {
+  console.log('Converting email:', JSON.stringify(event));
+  const bucket = process.env.S3_BUCKET;
+  const convertedPrefix = process.env.CONVERTED_PREFIX || 'converted/';
+
+  for (const record of event.Records || []) {
+    const key = decodeURIComponent(record.s3.object.key.replace(/\\+/g, ' '));
+    if (!key.startsWith('inbound/')) continue;
+
+    const getCmd = new GetObjectCommand({ Bucket: bucket, Key: key });
+    const response = await s3.send(getCmd);
+    const rawEmail = await response.Body.transformToString();
+
+    // Simple email parsing (headers + body)
+    const [headerSection, ...bodyParts] = rawEmail.split('\\r\\n\\r\\n');
+    const body = bodyParts.join('\\r\\n\\r\\n');
+    const headers = {};
+    for (const line of headerSection.split('\\r\\n')) {
+      const colonIdx = line.indexOf(':');
+      if (colonIdx > 0) {
+        const name = line.slice(0, colonIdx).toLowerCase();
+        headers[name] = line.slice(colonIdx + 1).trim();
+      }
+    }
+
+    const metadata = {
+      from: headers.from || '',
+      to: headers.to || '',
+      subject: headers.subject || '',
+      date: headers.date || new Date().toISOString(),
+      contentType: headers['content-type'] || 'text/plain',
+    };
+
+    const baseName = key.replace('inbound/', '').replace(/\\.[^.]+$/, '');
+    await s3.send(new PutObjectCommand({
+      Bucket: bucket,
+      Key: convertedPrefix + baseName + '.json',
+      Body: JSON.stringify(metadata, null, 2),
+      ContentType: 'application/json'
+    }));
+
+    if (body) {
+      const isHtml = metadata.contentType.includes('html');
+      await s3.send(new PutObjectCommand({
+        Bucket: bucket,
+        Key: convertedPrefix + baseName + (isHtml ? '.html' : '.txt'),
+        Body: body,
+        ContentType: isHtml ? 'text/html' : 'text/plain'
+      }));
+    }
+    console.log('Converted email:', key);
+  }
+  return { statusCode: 200, body: 'Emails converted' };
+};
+`,
+          },
+          Tags: [
+            { Key: 'Purpose', Value: 'EmailConversion' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        },
+      }
+
+      // S3 trigger for email conversion Lambda
+      template.Resources.EmailConversionLambdaPermission = {
+        Type: 'AWS::Lambda::Permission',
+        Properties: {
+          FunctionName: { Ref: 'EmailConversionLambda' },
+          Action: 'lambda:InvokeFunction',
+          Principal: 's3.amazonaws.com',
+          SourceArn: { 'Fn::GetAtt': ['EmailBucket', 'Arn'] },
+          SourceAccount: { Ref: 'AWS::AccountId' },
+        },
+      }
+
+      // SNS Topic for email notifications
+      template.Resources.EmailNotificationTopic = {
+        Type: 'AWS::SNS::Topic',
+        Properties: {
+          TopicName: `${appName}-email-notifications`,
+          DisplayName: `${appName} Email Notifications`,
+          Tags: [
+            { Key: 'Purpose', Value: 'EmailNotifications' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        },
+      }
+
       // Add email outputs
       template.Outputs.EmailBucketName = {
         Description: 'Name of the email storage bucket',
@@ -845,6 +1052,14 @@ exports.handler = async (event) => {
       template.Outputs.EmailRuleSetName = {
         Description: 'SES Receipt Rule Set name',
         Value: { Ref: 'EmailReceiptRuleSet' },
+      }
+      template.Outputs.OutboundEmailLambdaArn = {
+        Description: 'Outbound email Lambda ARN',
+        Value: { 'Fn::GetAtt': ['OutboundEmailLambda', 'Arn'] },
+      }
+      template.Outputs.EmailNotificationTopicArn = {
+        Description: 'Email notification SNS topic ARN',
+        Value: { Ref: 'EmailNotificationTopic' },
       }
 
       log.success('Email infrastructure added to template')
