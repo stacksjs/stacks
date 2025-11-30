@@ -12,16 +12,16 @@ export default {
 
   // Our group of awesome team members
   members: {
-    chris: 'chris@stacksjs.org',
-    blake: 'blake@stacksjs.org',
-    zoltan: 'zoltan@stacksjs.org',
-    freddy: 'freddy@stacksjs.org',
-    glenn: 'glenn@stacksjs.org',
-    dorell: 'dorell@stacksjs.org',
-    avery: 'avery@stacksjs.org',
-    adelino: 'adelino@stacksjs.org',
-    germaine: 'germaine@stacksjs.org',
-    harley: 'harley@stacksjs.org',
-    michael: 'michael@stacksjs.org',
+    chris: 'chris@stacksjs.com',
+    blake: 'blake@stacksjs.com',
+    zoltan: 'zoltan@stacksjs.com',
+    freddy: 'freddy@stacksjs.com',
+    glenn: 'glenn@stacksjs.com',
+    dorell: 'dorell@stacksjs.com',
+    avery: 'avery@stacksjs.com',
+    adelino: 'adelino@stacksjs.com',
+    germaine: 'germaine@stacksjs.com',
+    harley: 'harley@stacksjs.com',
+    michael: 'michael@stacksjs.com',
   },
 } satisfies Team

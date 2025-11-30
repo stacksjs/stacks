@@ -146,11 +146,11 @@ buddy types:generate # generates types for your components, functions, & views
 buddy types:fix # auto-fixes types for your components, functions, & views
 
 buddy domains # alias for `buddy domains:list`
-buddy domains:add stacksjs.org # adds a domain
-buddy domains:remove stacksjs.org # removes a domain
+buddy domains:add stacksjs.com # adds a domain
+buddy domains:remove stacksjs.com # removes a domain
 buddy domains:list # lists all domains
 buddy domains:update # apply ./config/dns.ts updates
-buddy domains:purchase stacksjs.org # purchase a new domain
+buddy domains:purchase stacksjs.com # purchase a new domain
 
 # test your stack
 buddy test # runs test suite (unit & e2e)

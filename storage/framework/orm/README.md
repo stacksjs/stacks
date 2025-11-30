@@ -22,7 +22,7 @@ import { orm } from 'your-orm'
 // wip
 ```
 
-To view the full documentation, please visit [https://stacksjs.org/orm](https://stacksjs.org/orm).
+To view the full documentation, please visit [https://stacksjs.com/orm](https://stacksjs.com/orm).
 
 ## 🧪 Testing
 

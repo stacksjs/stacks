@@ -62,7 +62,7 @@ const cloudConfig = ref<CloudConfig>({
   servers: {
     app: {
       name: 'app-server-1',
-      domain: 'stacksjs.org',
+      domain: 'stacksjs.com',
       region: 'us-east-1',
       type: 'app',
       size: 't3.micro',
@@ -586,7 +586,7 @@ interface ServerConfig {
 const servers = ref<Record<string, ServerConfig>>({
   app1: {
     name: 'app-cosmic-nebula',
-    domain: 'stacksjs.org',
+    domain: 'stacksjs.com',
     region: 'us-east-1',
     type: 'app',
     size: 't3.micro' as InstanceType,
@@ -599,7 +599,7 @@ const servers = ref<Record<string, ServerConfig>>({
   },
   worker1: {
     name: 'worker-cosmic-nebula',
-    domain: 'stacksjs.org',
+    domain: 'stacksjs.com',
     region: 'us-east-1',
     type: 'worker',
     size: 't3.micro' as InstanceType,
@@ -609,7 +609,7 @@ const servers = ref<Record<string, ServerConfig>>({
   },
   worker2: {
     name: 'worker2-cosmic-nebula',
-    domain: 'stacksjs.org',
+    domain: 'stacksjs.com',
     region: 'us-east-1',
     type: 'worker',
     size: 't3.micro' as InstanceType,
@@ -619,7 +619,7 @@ const servers = ref<Record<string, ServerConfig>>({
   },
   worker3: {
     name: 'worker3-cosmic-nebula',
-    domain: 'stacksjs.org',
+    domain: 'stacksjs.com',
     region: 'us-east-1',
     type: 'worker',
     size: 't3.micro' as InstanceType,
@@ -629,7 +629,7 @@ const servers = ref<Record<string, ServerConfig>>({
   },
   cache1: {
     name: 'cache-cosmic-nebula',
-    domain: 'stacksjs.org',
+    domain: 'stacksjs.com',
     region: 'us-east-1',
     type: 'cache',
     size: 't3.micro' as InstanceType,
@@ -639,7 +639,7 @@ const servers = ref<Record<string, ServerConfig>>({
   },
   database1: {
     name: 'database-cosmic-nebula',
-    domain: 'stacksjs.org',
+    domain: 'stacksjs.com',
     region: 'us-east-1',
     type: 'database',
     size: 't3.micro' as InstanceType,
@@ -648,7 +648,7 @@ const servers = ref<Record<string, ServerConfig>>({
   },
   search1: {
     name: 'search-cosmic-nebula',
-    domain: 'stacksjs.org',
+    domain: 'stacksjs.com',
     region: 'us-east-1',
     type: 'search',
     size: 't3.micro' as InstanceType,

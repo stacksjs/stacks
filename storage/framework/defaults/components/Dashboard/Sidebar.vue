@@ -345,7 +345,7 @@ const teams = ref<Team[]>([
   {
     id: 1,
     name: 'Stacks.js',
-    email: 'chris@stacksjs.org',
+    email: 'chris@stacksjs.com',
     type: 'Personal',
     logo: '/images/logos/logo.svg'
   },
@@ -361,7 +361,7 @@ const teams = ref<Team[]>([
 const currentTeam = ref<Team>(teams.value[0] ?? {
   id: 1,
   name: 'Stacks.js',
-  email: 'chris@stacksjs.org',
+  email: 'chris@stacksjs.com',
   type: 'Personal',
   logo: '/images/logos/logo.svg'
 })

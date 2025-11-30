@@ -266,7 +266,7 @@ useHead({
                             Chris Breuer
                           </div>
                           <div class="text-sm text-gray-500 dark:text-gray-300 dark:text-gray-400">
-                            chris@stacksjs.org
+                            chris@stacksjs.com
                           </div>
                         </div>
                       </div>

@@ -24,7 +24,7 @@ const formatted = useDateFormat(now(), 'YYYY-MM-DD HH:mm:ss')
 console.log(formatted) // 2022-11-01 17:06:01
 ```
 
-To view the full documentation, please visit [https://stacksjs.org/datetime](https://stacksjs.org/datetime).
+To view the full documentation, please visit [https://stacksjs.com/datetime](https://stacksjs.com/datetime).
 
 ## 🧪 Testing
 

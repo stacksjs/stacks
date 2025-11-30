@@ -4,7 +4,7 @@
   "version": "0.70.23",
   "description": "The Stacks Registry.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/registry/framework/core/registry#readme",

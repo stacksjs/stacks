@@ -88,7 +88,7 @@ const settings = ref({
     language: 'en',
   },
   accounts: {
-    primaryEmail: 'me@stacksjs.org',
+    primaryEmail: 'me@stacksjs.com',
     name: 'User',
     signature: '<p>Best regards,<br>User</p>',
     vacationResponder: {

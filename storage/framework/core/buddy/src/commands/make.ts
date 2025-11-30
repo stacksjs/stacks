@@ -215,7 +215,7 @@ export function make(buddy: CLI): void {
         log.error('You need to specify a database name via the `--name` option, or as the command’s argument.')
         log.info('Example: `buddy make:database my-cool-database`')
         log.info('Or: `buddy make:database --name=my-cool-database`')
-        log.info('Read more about the documentation here: https://stacksjs.org/docs/make/database')
+        log.info('Read more about the documentation here: https://stacksjs.com/docs/make/database')
         process.exit()
       }
 

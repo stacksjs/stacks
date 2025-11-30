@@ -9,7 +9,7 @@ export type Registry = {
 export const registry: Registry = [
   {
     name: 'stacks',
-    url: 'stacksjs.org',
+    url: 'stacksjs.com',
     github: 'stacksjs/stacks',
     // bitbucket: 'stacksjs/stacks',
     // gitlab: 'stacksjs/stacks'

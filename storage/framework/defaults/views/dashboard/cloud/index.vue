@@ -175,7 +175,7 @@ const cloudConfig = ref<CloudConfig>({
   servers: {
     app: {
       name: 'app-server-1',
-      domain: 'stacksjs.org',
+      domain: 'stacksjs.com',
       region: 'us-east-1',
       type: 'app',
       size: 't3.micro',
@@ -611,7 +611,7 @@ const addServer = () => {
   const key = `app${id}`
   const newServer: ServerConfig = {
     name: `app-${generateServerName('app')}`,
-    domain: 'stacksjs.org',
+    domain: 'stacksjs.com',
     region: 'us-east-1',
     type: 'app',
     size: 't3.micro' as InstanceType,

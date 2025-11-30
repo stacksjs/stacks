@@ -12,7 +12,7 @@
             Chris
           </h3>
           <p class="text-sm text-gray-600 leading-6">
-            chris@stacksjs.org
+            chris@stacksjs.com
           </p>
         </li>
 
@@ -22,7 +22,7 @@
             Blake
           </h3>
           <p class="text-sm text-gray-600 leading-6">
-            blake@stacksjs.org
+            blake@stacksjs.com
           </p>
         </li>
 
@@ -32,7 +32,7 @@
             Zoltan
           </h3>
           <p class="text-sm text-gray-600 leading-6">
-            zoltan@stacksjs.org
+            zoltan@stacksjs.com
           </p>
         </li>
 
@@ -42,7 +42,7 @@
             Freddy
           </h3>
           <p class="text-sm text-gray-600 leading-6">
-            freddy@stacksjs.org
+            freddy@stacksjs.com
           </p>
         </li>
 
@@ -52,7 +52,7 @@
             Glenn
           </h3>
           <p class="text-sm text-gray-600 leading-6">
-            glenn@stacksjs.org
+            glenn@stacksjs.com
           </p>
         </li>
 
@@ -62,7 +62,7 @@
             Dorell
           </h3>
           <p class="text-sm text-gray-600 leading-6">
-            dorell@stacksjs.org
+            dorell@stacksjs.com
           </p>
         </li>
 
@@ -72,7 +72,7 @@
             Avery
           </h3>
           <p class="text-sm text-gray-600 leading-6">
-            avery@stacksjs.org
+            avery@stacksjs.com
           </p>
         </li>
       </ul>

@@ -74,7 +74,7 @@ export interface StorageOptions {
    * The storage driver to utilize.
    *
    * @default 'local'
-   * @see https://stacksjs.org/docs/storage
+   * @see https://stacksjs.com/docs/storage
    */
   driver: 's3' | 'efs' | 'local' | 'bun' | 'memory'
 

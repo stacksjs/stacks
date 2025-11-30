@@ -19,7 +19,7 @@ import { Route53Client, Route53DomainsClient } from 'ts-cloud/aws'
 
 /**
  * Normalize a domain by stripping protocol and trailing slash
- * e.g., "https://stacksjs.org/" -> "stacksjs.org"
+ * e.g., "https://stacksjs.com/" -> "stacksjs.com"
  */
 function normalizeDomain(url: string | undefined): string | undefined {
   if (!url) return undefined

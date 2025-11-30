@@ -28,7 +28,7 @@ export interface GitOptions {
    *
    * The git commit scopes to use.
    *
-   * @see https://stacksjs.org/docs/git/scopes
+   * @see https://stacksjs.com/docs/git/scopes
    * @example
    * git: [
    *   scopes: [
@@ -46,7 +46,7 @@ export interface GitOptions {
    * The git commit types to use.
    *
    * @default array
-   * @see https://stacksjs.org/docs/git/types
+   * @see https://stacksjs.com/docs/git/types
    * @see https://www.conventionalcommits.org/en/v1.0.0/
    * @example
    * ```ts
@@ -81,7 +81,7 @@ export interface GitOptions {
    *   confirmCommit: 'Are you sure you want to proceed with the commit above?',
    * }
    * ```
-   * @see https://stacksjs.org/docs/git/messages
+   * @see https://stacksjs.com/docs/git/messages
    */
   messages: {
     type: string

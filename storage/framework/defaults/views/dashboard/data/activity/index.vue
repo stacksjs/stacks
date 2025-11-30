@@ -74,10 +74,10 @@ const subjectTypeFilter = ref<string>('all')
 
 // Sample users for the activity logs
 const users: User[] = [
-  { id: '1', name: 'Chris Breuer', email: 'chris@stacksjs.org', avatar: 'https://i.pravatar.cc/150?u=chris' },
+  { id: '1', name: 'Chris Breuer', email: 'chris@stacksjs.com', avatar: 'https://i.pravatar.cc/150?u=chris' },
   { id: '2', name: 'John Doe', email: 'john@example.com', avatar: 'https://i.pravatar.cc/150?u=john' },
   { id: '3', name: 'Jane Smith', email: 'jane@example.com', avatar: 'https://i.pravatar.cc/150?u=jane' },
-  { id: '4', name: 'System', email: 'system@stacksjs.org' },
+  { id: '4', name: 'System', email: 'system@stacksjs.com' },
 ]
 
 // Sample log names (similar to Laravel channels)

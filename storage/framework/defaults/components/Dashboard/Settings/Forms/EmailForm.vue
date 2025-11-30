@@ -29,14 +29,14 @@
               <div class="sm:col-span-3">
                 <label for="address" class="block text-sm text-gray-900 font-medium leading-6">From Address</label>
                 <div class="mt-2">
-                  <input id="address" type="text" name="address" value="no-reply@stacksjs.org" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="address" type="text" name="address" value="no-reply@stacksjs.com" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
 
               <div class="sm:col-span-full">
                 <label for="mailboxes" class="block text-sm text-gray-900 font-medium leading-6">Mailboxes</label>
                 <div class="mt-2">
-                  <input id="maiboxes" type="text" name="mailboxes" value="chris@stacksjs.org,blake@stacksjs.org,glenn@stacksjs.org" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="maiboxes" type="text" name="mailboxes" value="chris@stacksjs.com,blake@stacksjs.com,glenn@stacksjs.com" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
 

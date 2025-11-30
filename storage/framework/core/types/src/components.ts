@@ -21,7 +21,7 @@ export interface TagOption {
    *     name: ['HelloWorld', 'AppHelloWorld'] // results in `<AppHelloWorld />`
    *   }]
    * }
-   * @see https://stacksjs.org/docs/components
+   * @see https://stacksjs.com/docs/components
    */
   name: string | string[]
 
@@ -35,7 +35,7 @@ export interface TagOption {
    * {
    *   name: 'HelloWorld' // results in `<HelloWorld />`
    * }
-   * @see https://stacksjs.org/docs/components
+   * @see https://stacksjs.com/docs/components
    */
   description?: string
 
@@ -53,7 +53,7 @@ export interface TagOption {
    *     description: 'The way to greet the user.',
    *   }
    * }
-   * @see https://stacksjs.org/docs/components
+   * @see https://stacksjs.com/docs/components
    */
   attributes?: {
     name: string

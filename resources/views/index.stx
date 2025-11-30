@@ -277,7 +277,7 @@
           data-icon-id="docs"
           data-icon-type="link"
           data-icon-section=""
-          data-icon-url="https://stacksjs.org/docs"
+          data-icon-url="https://stacksjs.com/docs"
           style="left: 140px; top: 260px;"
         >
           <div class="desktop-icon-image">📚</div>
@@ -985,7 +985,7 @@ export default {
           </div>
 
           <div style="text-align: center; margin-top: 40px; padding-top: 24px; border-top: 1px solid #ddd;">
-            <p style="color: #333; font-size: 12px; margin-bottom: 8px;">Learn more at <strong style="color: #0831d9;">stacksjs.org</strong></p>
+            <p style="color: #333; font-size: 12px; margin-bottom: 8px;">Learn more at <strong style="color: #0831d9;">stacksjs.com</strong></p>
             <p style="color: #4a4a4a; font-size: 11px;">© 2025 Stacks. Open source under MIT License.</p>
           </div>
         </div>
@@ -1168,7 +1168,7 @@ export default {
         </div>
 
         <div style="margin-top: 16px; text-align: center; font-size: 10px; color: #333;">
-          <p style="margin: 4px 0;">Need help? Contact support@stacksjs.org</p>
+          <p style="margin: 4px 0;">Need help? Contact support@stacksjs.com</p>
           <p style="margin: 4px 0;">30-Day Money-Back Guarantee</p>
         </div>
       </div>
@@ -1328,7 +1328,7 @@ export default {
             Sponsorships can be done via <a href="https://github.com/sponsors/chrisbbreuer" target="_blank" style="color: #0831d9;">GitHub Sponsors</a> or <a href="https://opencollective.com/stacksjs" target="_blank" style="color: #0831d9;">OpenCollective</a>. Both monthly-recurring and one-time donations are accepted.
           </p>
           <p style="margin: 8px 0 0 0; font-size: 12px; color: #666;">
-            Questions? Contact <strong>sponsor@stacksjs.org</strong>
+            Questions? Contact <strong>sponsor@stacksjs.com</strong>
           </p>
         </div>
 
@@ -1341,7 +1341,7 @@ export default {
             <span style="background: #78350f; color: #fef3c7; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: bold;">EXCLUSIVE</span>
           </div>
           <p style="margin: 0; font-size: 12px; line-height: 1.5;">
-            Limited to one sponsor globally. <strong>Currently vacant.</strong> Above-the-fold logo placement on stacksjs.org, exclusive social media promotion, and top placement in all sponsorship locations.
+            Limited to one sponsor globally. <strong>Currently vacant.</strong> Above-the-fold logo placement on stacksjs.com, exclusive social media promotion, and top placement in all sponsorship locations.
           </p>
         </div>
 
@@ -1352,7 +1352,7 @@ export default {
             <strong style="color: #7c3aed;">$2,500/mo</strong>
           </div>
           <p style="margin: 0; font-size: 11px; line-height: 1.4; color: #333;">
-            Prominent logo on stacksjs.org, 70+ library sites, and all GitHub READMEs. Maximum visibility across the entire ecosystem.
+            Prominent logo on stacksjs.com, 70+ library sites, and all GitHub READMEs. Maximum visibility across the entire ecosystem.
           </p>
         </div>
 
@@ -1363,7 +1363,7 @@ export default {
             <strong style="color: #64748b;">$1,000/mo</strong>
           </div>
           <p style="margin: 0; font-size: 11px; line-height: 1.4; color: #333;">
-            Large logo placement across stacksjs.org, 70+ library sites, and GitHub READMEs.
+            Large logo placement across stacksjs.com, 70+ library sites, and GitHub READMEs.
           </p>
         </div>
 
@@ -1374,7 +1374,7 @@ export default {
             <strong style="color: #d97706;">$500 - $250/mo</strong>
           </div>
           <p style="margin: 0; font-size: 11px; line-height: 1.4; color: #333;">
-            Large logo on stacksjs.org and 70+ library sites/READMEs.
+            Large logo on stacksjs.com and 70+ library sites/READMEs.
           </p>
         </div>
 
@@ -1385,7 +1385,7 @@ export default {
             <strong style="color: #6b7280;">$100/mo</strong>
           </div>
           <p style="margin: 0; font-size: 11px; line-height: 1.4; color: #333;">
-            Medium logo on stacksjs.org, library sites, and BACKERS.md files.
+            Medium logo on stacksjs.com, library sites, and BACKERS.md files.
           </p>
         </div>
 
@@ -1773,7 +1773,7 @@ export default {
         </div>
 
         <div style="background: #e0f2ff; border: 2px solid #0284c7; padding: 12px; border-radius: 4px; font-size: 11px;">
-          <strong>💡 Quick Links:</strong> For general inquiries, email us at <a href="mailto:hello@stacksjs.org" style="color: #0831d9;">hello@stacksjs.org</a>
+          <strong>💡 Quick Links:</strong> For general inquiries, email us at <a href="mailto:hello@stacksjs.com" style="color: #0831d9;">hello@stacksjs.com</a>
           <br>For support questions, visit our <a href="https://discord.gg/stacksjs" target="_blank" style="color: #0831d9;">Discord community</a>
         </div>
       </div>
@@ -2601,7 +2601,7 @@ export default {
           <div class="start-menu-item-icon">🔗</div>
           <div>Resources</div>
           <div class="start-submenu">
-            <button class="start-menu-item" onclick="window.open('https://stacksjs.org/docs', '_blank')">
+            <button class="start-menu-item" onclick="window.open('https://stacksjs.com/docs', '_blank')">
               <div class="start-menu-item-icon">📚</div>
               <div>Documentation</div>
             </button>
@@ -2642,7 +2642,7 @@ export default {
       </button>
       <div class="taskbar-divider"></div>
       <div class="quick-launch">
-        <a href="https://stacksjs.org/docs" target="_blank" class="quick-launch-icon" title="Documentation">
+        <a href="https://stacksjs.com/docs" target="_blank" class="quick-launch-icon" title="Documentation">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
           </svg>
@@ -2764,12 +2764,12 @@ export default {
       <div class="context-menu-item-icon">✏️</div>
       <div>Copy Wordmark as SVG</div>
     </button>
-    <button class="context-menu-item" onclick="window.open('https://stacksjs.org/brand', '_blank')">
+    <button class="context-menu-item" onclick="window.open('https://stacksjs.com/brand', '_blank')">
       <div class="context-menu-item-icon">📖</div>
       <div>Brand Guidelines</div>
     </button>
     <div class="context-menu-separator"></div>
-    <button class="context-menu-item" onclick="window.open('https://stacksjs.org/docs', '_blank')">
+    <button class="context-menu-item" onclick="window.open('https://stacksjs.com/docs', '_blank')">
       <div class="context-menu-item-icon">📚</div>
       <div>Documentation</div>
     </button>
@@ -2840,12 +2840,12 @@ export default {
       <div class="context-menu-item-icon">✏️</div>
       <div>Copy Wordmark as SVG</div>
     </button>
-    <button class="context-menu-item" onclick="window.open('https://stacksjs.org/brand', '_blank')">
+    <button class="context-menu-item" onclick="window.open('https://stacksjs.com/brand', '_blank')">
       <div class="context-menu-item-icon">📖</div>
       <div>Brand Guidelines</div>
     </button>
     <div class="context-menu-separator"></div>
-    <button class="context-menu-item" onclick="window.open('https://stacksjs.org/docs', '_blank')">
+    <button class="context-menu-item" onclick="window.open('https://stacksjs.com/docs', '_blank')">
       <div class="context-menu-item-icon">📚</div>
       <div>Documentation</div>
     </button>

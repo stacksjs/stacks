@@ -130,7 +130,7 @@ const emails = ref<Email[]>([
   {
     id: 6,
     from: 'Calendar',
-    email: 'calendar@stacksjs.org',
+    email: 'calendar@stacksjs.com',
     subject: 'Reminder: Sprint Planning',
     preview: 'This is a reminder for your Sprint Planning meeting tomorrow at 10:00 AM...',
     body: `
@@ -150,7 +150,7 @@ const emails = ref<Email[]>([
   {
     id: 7,
     from: 'Kevin Adams',
-    email: 'kevin@stacksjs.org',
+    email: 'kevin@stacksjs.com',
     subject: 'Draft: Marketing Email',
     preview: 'Here\'s the draft for our next marketing email. Let me know what you think...',
     body: `
@@ -175,7 +175,7 @@ const emails = ref<Email[]>([
   {
     id: 8,
     from: 'Support',
-    email: 'support@stacksjs.org',
+    email: 'support@stacksjs.com',
     subject: 'New Support Ticket #1234',
     preview: 'A new support ticket has been assigned to your team. Customer is reporting issues with...',
     body: `
@@ -223,7 +223,7 @@ const emails = ref<Email[]>([
   {
     id: 10,
     from: 'Alex Morgan',
-    email: 'alex@stacksjs.org',
+    email: 'alex@stacksjs.com',
     subject: 'Sent: Project Status Update',
     preview: 'Just sent the project status update to the client. They should be pleased with our progress...',
     body: `
@@ -377,7 +377,7 @@ const sendEmail = () => {
   const sentEmail = {
     id: emails.value.length + 1,
     from: 'Me',
-    email: 'me@stacksjs.org',
+    email: 'me@stacksjs.com',
     subject: newEmail.value.subject,
     preview: newEmail.value.body.substring(0, 100),
     body: newEmail.value.body,

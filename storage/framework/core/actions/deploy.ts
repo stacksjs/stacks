@@ -2186,7 +2186,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
     }
 
     // Get cloud config for domain info (reuse cloudConfig from above)
-    const siteDomain = cloudConfig?.infrastructure?.dns?.domain || 'stacksjs.org'
+    const siteDomain = cloudConfig?.infrastructure?.dns?.domain || 'stacksjs.com'
     const sslConfig = cloudConfig?.infrastructure?.ssl || { enabled: true, domains: [] }
     const sslDomains = sslConfig.domains || [siteDomain, `www.${siteDomain}`]
 

@@ -270,7 +270,7 @@ type InfrastructureOptions = Partial<{
    *
    * These settings are used to configure the firewall.
    *
-   * @see https://stacksjs.org/docs/cloud#firewall
+   * @see https://stacksjs.com/docs/cloud#firewall
    *
    * @example
    * ```ts

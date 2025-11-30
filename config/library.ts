@@ -13,7 +13,7 @@ export default {
   repository: 'stacksjs/stacks',
   license: 'MIT',
   author: 'Chris Breuer',
-  contributors: ['Chris Breuer <chris@stacksjs.org>'],
+  contributors: ['Chris Breuer <chris@stacksjs.com>'],
   defaultLanguage: 'en',
   releaseable: true,
 

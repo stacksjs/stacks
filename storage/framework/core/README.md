@@ -31,7 +31,7 @@ In other words, Stacks helps you, as a developer, every step along the way—in 
 It’s incredibly easy to get started with this framework. Simply run the following command in your terminal:
 
 ```bash
-curl -Ssf stacksjs.org/install | sh # wip
+curl -Ssf stacksjs.com/install | sh # wip
 
 # alternatively, if Bun >= v1.1.11 is installed already,
 # you may also get started via:
@@ -221,11 +221,11 @@ buddy types:generate # generates types for your components, functions, & views
 buddy types:fix # auto-fixes types for your components, functions, & views
 
 buddy domains # alias for `buddy domains:list`
-buddy domains:add stacksjs.org # adds a domain
-buddy domains:remove stacksjs.org # removes a domain
+buddy domains:add stacksjs.com # adds a domain
+buddy domains:remove stacksjs.com # removes a domain
 buddy domains:list # lists all domains
 buddy domains:update # apply ./config/dns.ts updates
-buddy domains:purchase stacksjs.org # purchase a new domain
+buddy domains:purchase stacksjs.com # purchase a new domain
 
 # test your stack
 buddy test # runs test suite (unit & e2e)

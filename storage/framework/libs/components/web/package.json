@@ -4,7 +4,7 @@
   "version": "0.70.23",
   "description": "Your framework agnostic web component library description.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/components#readme",
   "repository": {

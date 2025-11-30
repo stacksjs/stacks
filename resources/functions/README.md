@@ -2,7 +2,7 @@
 
 You may use functions to share on npm or have them run on a server behind one of your `../routes`.
 
-To learn more about Stacks Functions, check out the [documentation](https://stacksjs.org).
+To learn more about Stacks Functions, check out the [documentation](https://stacksjs.com).
 
 > **Note**
 > If your project does not require any functions, you can remove this folder._

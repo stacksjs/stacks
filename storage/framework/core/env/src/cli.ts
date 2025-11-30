@@ -110,7 +110,7 @@ export function encryptEnv(options: EncryptOptions = {}): { success: boolean, ou
 
     encryptedLines.push('#/-------------------[DOTENV_PUBLIC_KEY]--------------------/')
     encryptedLines.push('#/            public-key encryption for .env files          /')
-    encryptedLines.push('#/       [how it works](https://stacksjs.org/encryption)   /')
+    encryptedLines.push('#/       [how it works](https://stacksjs.com/encryption)   /')
     encryptedLines.push('#/----------------------------------------------------------/')
     encryptedLines.push(`${publicKeyName}="${publicKey}"`)
     encryptedLines.push('')

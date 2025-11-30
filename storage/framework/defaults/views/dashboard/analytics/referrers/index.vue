@@ -59,7 +59,7 @@ const referrersData = ref<ReferrerData[]>([
   { name: 'Direct / Unknown', visitors: 1400, views: 2100, percentage: 40, type: 'direct' },
   { name: 'X/Twitter', visitors: 545, views: 580, percentage: 15, type: 'social' },
   { name: 'Google', visitors: 346, views: 450, percentage: 10, type: 'search' },
-  { name: 'stacksjs.org', visitors: 245, views: 363, percentage: 7, type: 'referral' },
+  { name: 'stacksjs.com', visitors: 245, views: 363, percentage: 7, type: 'referral' },
   { name: 'stacksjs.netlify.app', visitors: 138, views: 160, percentage: 4, type: 'referral' },
   { name: 'github.com', visitors: 134, views: 147, percentage: 4, type: 'referral' },
   { name: 'DuckDuckGo', visitors: 132, views: 135, percentage: 4, type: 'search' },

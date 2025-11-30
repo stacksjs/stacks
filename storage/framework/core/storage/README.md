@@ -45,7 +45,7 @@ import {
 // wip
 ```
 
-To view the full documentation, please visit [https://stacksjs.org/storage](https://stacksjs.org/storage).
+To view the full documentation, please visit [https://stacksjs.com/storage](https://stacksjs.com/storage).
 
 ## 🧪 Testing
 

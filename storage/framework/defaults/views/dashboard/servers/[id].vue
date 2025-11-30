@@ -44,7 +44,7 @@ interface UfwRule {
 
 const server = ref<ServerConfig>({
   name: 'app-cosmic-nebula',
-  domain: 'stacksjs.org',
+  domain: 'stacksjs.com',
   region: 'us-east-1',
   type: 'app',
   size: 't3.micro',

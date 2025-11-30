@@ -272,7 +272,7 @@ export function cloud(buddy: CLI): void {
         process.exit(ExitCode.Success)
       }
 
-      log.info('Not implemented yet. Read more about `buddy cloud` here: https://stacksjs.org/docs/cloud')
+      log.info('Not implemented yet. Read more about `buddy cloud` here: https://stacksjs.com/docs/cloud')
       process.exit(ExitCode.Success)
     })
 
@@ -712,7 +712,7 @@ export function cloud(buddy: CLI): void {
         process.exit(ExitCode.Success)
       }
 
-      log.info('Not implemented yet. Read more about `buddy cloud` here: https://stacksjs.org/docs/cloud')
+      log.info('Not implemented yet. Read more about `buddy cloud` here: https://stacksjs.com/docs/cloud')
       process.exit(ExitCode.Success)
     })
 

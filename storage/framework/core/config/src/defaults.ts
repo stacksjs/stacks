@@ -190,7 +190,7 @@ export const defaults: StacksOptions = {
   email: {
     from: {
       name: 'Stacks',
-      address: 'no-reply@stacksjs.org',
+      address: 'no-reply@stacksjs.com',
     },
 
     mailboxes: [],
@@ -427,7 +427,7 @@ export const defaults: StacksOptions = {
     repository: 'stacksjs/stacks',
     license: 'MIT',
     author: 'Chris Breuer',
-    contributors: ['Chris Breuer <chris@stacksjs.org>'],
+    contributors: ['Chris Breuer <chris@stacksjs.com>'],
     defaultLanguage: 'en',
 
     vueComponents: {
@@ -658,7 +658,7 @@ export const defaults: StacksOptions = {
   team: {
     name: 'Stacks',
     members: {
-      'Chris Breuer': 'chris@stacksjs.org',
+      'Chris Breuer': 'chris@stacksjs.com',
     },
   },
 

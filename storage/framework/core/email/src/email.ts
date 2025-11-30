@@ -42,7 +42,7 @@ export class Email {
         to: [recipient],
         from: this.from || {
           name: config.email.from?.name || 'Stacks',
-          address: config.email.from?.address || 'no-reply@stacksjs.org',
+          address: config.email.from?.address || 'no-reply@stacksjs.com',
         },
         subject: this.subject,
         html: `<p>Email: ${this.template}</p>`, // Placeholder - should render template
@@ -91,7 +91,7 @@ class Mail {
 
     const defaultFrom = {
       name: config.email.from?.name || 'Stacks',
-      address: config.email.from?.address || 'no-reply@stacksjs.org',
+      address: config.email.from?.address || 'no-reply@stacksjs.com',
     }
 
     return driver.send({

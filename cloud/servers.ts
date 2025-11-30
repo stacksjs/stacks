@@ -4,7 +4,7 @@ export const servers = {
 
   app: {
     name: 'app-server-1',
-    domain: 'stacksjs.org',
+    domain: 'stacksjs.com',
     region: 'us-east-1',
     type: 'app',
     size: 't3.micro',
@@ -24,7 +24,7 @@ export const servers = {
 
   app2: {
     name: 'app-server-2',
-    domain: 'stacksjs.org',
+    domain: 'stacksjs.com',
     instanceType: 't3.micro',
     userData: `#!/bin/bash
       echo "Hello World from App Server 2!" > /tmp/test.txt
@@ -47,7 +47,7 @@ export const servers = {
 
   // worker: {
   //   name: 'worker-server',
-  //   domain: 'stacksjs.org',
+  //   domain: 'stacksjs.com',
   //   region: 'us-east-1',
   //   type: 'worker',
   //   size: 't3.micro',
@@ -61,7 +61,7 @@ export const servers = {
   cache: {
     // redis or memcached
     name: 'cache-server',
-    domain: 'stacksjs.org',
+    domain: 'stacksjs.com',
     region: 'us-east-1',
     type: 'cache',
     size: 't3.micro',
@@ -74,7 +74,7 @@ export const servers = {
 
   // search: {
   //   name: 'search-server',
-  //   domain: 'stacksjs.org',
+  //   domain: 'stacksjs.com',
   //   region: 'us-east-1',
   //   type: 'meilisearch',
   //   size: 't3.micro',

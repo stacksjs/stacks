@@ -71,7 +71,7 @@ export function create(buddy: CLI): void {
       }
 
       log.info(bold('Welcome to the Stacks Framework! ⚛️'))
-      log.info('To learn more, visit https://stacksjs.org')
+      log.info('To learn more, visit https://stacksjs.com')
 
       process.exit(ExitCode.Success)
     })

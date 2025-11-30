@@ -34,7 +34,7 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
   "files": ["README.md", "dist"],
   "scripts": {
     "dev": "docker run -d -p 3000:3000 --name stacks-server --restart unless-stopped stacks",

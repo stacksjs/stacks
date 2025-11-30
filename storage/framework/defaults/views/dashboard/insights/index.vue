@@ -205,11 +205,11 @@ const slowRoutes = ref<SlowRoute[]>([
 ])
 
 const users = ref<User[]>([
-  { name: 'Chris Breuer', email: 'chris@stacksjs.org', requests: 68 },
-  { name: 'Avery', email: 'avery@stacksjs.org', requests: 65 },
-  { name: 'Michael', email: 'michael@stacksjs.org', requests: 51 },
-  { name: 'Glenn', email: 'glenn@stacksjs.org', requests: 50 },
-  { name: 'Zoltan', email: 'zoltan@stacksjs.org', requests: 47 },
+  { name: 'Chris Breuer', email: 'chris@stacksjs.com', requests: 68 },
+  { name: 'Avery', email: 'avery@stacksjs.com', requests: 65 },
+  { name: 'Michael', email: 'michael@stacksjs.com', requests: 51 },
+  { name: 'Glenn', email: 'glenn@stacksjs.com', requests: 50 },
+  { name: 'Zoltan', email: 'zoltan@stacksjs.com', requests: 47 },
 ])
 
 // Chart data
@@ -856,7 +856,7 @@ const statsCards = [
                   <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
                     Create custom insight cards to monitor your application's performance, user behavior, or any other metrics that matter to you.
                   </p>
-                  <a href="https://stacksjs.org/docs/insights" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-blue-gray-800">
+                  <a href="https://stacksjs.com/docs/insights" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-blue-gray-800">
                     <div class="i-hugeicons-book-open h-5 w-5 mr-2" />
                     Read the Documentation
                   </a>

@@ -4,7 +4,7 @@ A comprehensive plan for implementing serverless email, phone/voice, and SMS cap
 
 **Goal:** Enable Stacks users to deploy fully-functional communication infrastructure with `./buddy deploy --yes`, including:
 
-- Email inboxes for team members (e.g., <chris@stacksjs.org>)
+- Email inboxes for team members (e.g., <chris@stacksjs.com>)
 - Phone numbers that can receive calls with notifications
 - Programmatic SMS sending capabilities
 
@@ -977,7 +977,7 @@ app/Commands/
 
 ## Email
 
-- [ ] Team members can send/receive emails at @stacksjs.org
+- [ ] Team members can send/receive emails at @stacksjs.com
 - [ ] Emails are properly organized in S3
 - [ ] Bounce rate < 2%
 - [ ] Complaint rate < 0.1%
@@ -1081,7 +1081,7 @@ const emailConfig = await import('../../../../../config/email')
 const teamConfig = await import('../../../../../config/team')
 
 // Generate email infrastructure
-const domain = emailConfig.default.from.address.split('@')[1] // e.g., 'stacksjs.org'
+const domain = emailConfig.default.from.address.split('@')[1] // e.g., 'stacksjs.com'
 const emailStack = Email.createEmailProcessingStack({
   slug: appName,
   environment: 'production',
@@ -1130,7 +1130,7 @@ export ROUTE53_HOSTED_ZONE_ID=Z01455702Q7952O6RCY37
 
 After running `./buddy deploy --yes`:
 
-1. **SES Domain Identity** - stacksjs.org verified for sending/receiving
+1. **SES Domain Identity** - stacksjs.com verified for sending/receiving
 2. **DKIM Records** - 3 CNAME records in Route53
 3. **SPF Record** - TXT record for email authentication
 4. **DMARC Record** - TXT record for email policy
@@ -1147,7 +1147,7 @@ After running `./buddy deploy --yes`:
 ./buddy email:verify
 
 # Send test email
-./buddy email:test chris@stacksjs.org
+./buddy email:test chris@stacksjs.com
 
 # View email logs
 ./buddy email:logs

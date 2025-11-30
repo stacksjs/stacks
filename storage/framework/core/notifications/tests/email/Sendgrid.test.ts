@@ -6,7 +6,7 @@
 //     const notification = email.sendgrid
 //     const test = await notification.send({
 //       from: env.email.sendgrid.from,
-//       to: 'chris@stacksjs.org',
+//       to: 'chris@stacksjs.com',
 //       subject: 'Test Email',
 //       html: '<p> Test Email using SG!</p>',
 //     })
@@ -18,7 +18,7 @@
 //     const notification = useEmail('sendgrid')
 //     const test = await notification.send({
 //       from: env.email.sendgrid.from,
-//       to: 'chris@stacksjs.org',
+//       to: 'chris@stacksjs.com',
 //       subject: 'Test Email',
 //       html: '<p> Test Email using SG!</p>',
 //     })

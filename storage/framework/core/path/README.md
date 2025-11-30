@@ -25,7 +25,7 @@ import { filename, normalizeAliases, resolve, resolveAlias } from '@stacksjs/pat
 // and more...
 ```
 
-To view the full documentation, please visit [https://stacksjs.org/path](https://stacksjs.org/path).
+To view the full documentation, please visit [https://stacksjs.com/path](https://stacksjs.com/path).
 
 ## 🧪 Testing
 

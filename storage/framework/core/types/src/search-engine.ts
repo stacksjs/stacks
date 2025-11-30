@@ -38,7 +38,7 @@ export interface SearchEngineOptions {
    * The search engine to utilize.
    *
    * @default string 'opensearch'
-   * @see https://stacksjs.org/docs/search-engine
+   * @see https://stacksjs.com/docs/search-engine
    */
   driver: 'opensearch'
   // driver: 'meilisearch' | 'algolia' | 'typesense' | 'opensearch' wip

@@ -222,7 +222,7 @@
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                       <div class="flex items-center text-sm text-gray-900 font-medium dark:text-gray-100">
-                        chris@stacksjs.org
+                        chris@stacksjs.com
                       </div>
                     </td>
 
@@ -255,7 +255,7 @@
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                       <div class="flex items-center text-sm text-gray-900 font-medium dark:text-gray-100">
-                        buddy@stacksjs.org
+                        buddy@stacksjs.com
                       </div>
                     </td>
 

@@ -23,7 +23,7 @@ const faqs = [
     {
       question: 'How do I get started with Stacks?',
       answer:
-        'You can get started with Stacks by running the command "curl -Ssf stacksjs.org | sh" in your terminal. If Bun >= v1.0 is installed already, you can also get started via "bunx stacks new my-project".',
+        'You can get started with Stacks by running the command "curl -Ssf stacksjs.com | sh" in your terminal. If Bun >= v1.0 is installed already, you can also get started via "bunx stacks new my-project".',
     },
     {
       question: 'What is the Stacks mantra?',

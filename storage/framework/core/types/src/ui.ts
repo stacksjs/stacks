@@ -135,7 +135,7 @@ export interface UiOptions {
    * for several local font providers. You may set this value to
    * `null` if you prefer not utilize any local fonts.
    *
-   * @see https://stacksjs.org/docs/fonts
+   * @see https://stacksjs.com/docs/fonts
    * ```
    */
   fonts?: any
@@ -149,7 +149,7 @@ export interface UiOptions {
    * are displayed utilizing a technique called "icons in pure css."
    * Learn more here https://antfu.me/posts/icons-in-pure-css.
    *
-   * @see https://stacksjs.org/config/icons — list of available icon sets
+   * @see https://stacksjs.com/config/icons — list of available icon sets
    * @todo implement this into Vite build flow
    * @example
    * ```ts

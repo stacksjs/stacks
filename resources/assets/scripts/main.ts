@@ -1342,7 +1342,7 @@ document.addEventListener('click', () => {
 
 // Share functions
 function shareVia(platform) {
-  const url = 'https://stacksjs.org'
+  const url = 'https://stacksjs.com'
   const text = 'Check out Stacks - A TypeScript framework for modern development'
 
   switch (platform) {

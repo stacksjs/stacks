@@ -117,7 +117,7 @@ const sampleLogs: Log[] = [
     type: 'info',
     source: 'CLI',
     message: 'buddy build started',
-    metadata: { user: 'chris@stacksjs.org', command: 'buddy build' },
+    metadata: { user: 'chris@stacksjs.com', command: 'buddy build' },
     project: 'stacks'
   },
   {
@@ -153,7 +153,7 @@ const sampleLogs: Log[] = [
     metadata: {
       migration: 'create_users_table',
       database: 'production',
-      user: 'deploy@stacksjs.org',
+      user: 'deploy@stacksjs.com',
       command: 'buddy db:migrate'
     },
     project: 'stacks'
@@ -236,7 +236,7 @@ const sampleLogs: Log[] = [
     source: 'System',
     message: 'SSL certificate expiring soon',
     metadata: {
-      domain: 'api.stacksjs.org',
+      domain: 'api.stacksjs.com',
       expires_in: '7 days',
       certificate_id: 'cert_xyz789'
     },

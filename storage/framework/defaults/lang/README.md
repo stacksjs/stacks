@@ -2,7 +2,7 @@
 
 This folder contains the language files for your application. If you are building an internationalized application, you should populate this directory with the appropriate language files.
 
-To learn more about Stacks Internationalization, check out the [documentation](https://stacksjs.org).
+To learn more about Stacks Internationalization, check out the [documentation](https://stacksjs.com).
 
 > **Note**
 > If your project does not require any routes, you can remove this folder._

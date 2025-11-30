@@ -7,12 +7,12 @@
  *
  * @example To fire an event, you may use any of the following approaches:
  * ```ts
- * dispatch('user:registered', { name: 'Chris', email: 'chris@stacksjs.org' })
+ * dispatch('user:registered', { name: 'Chris', email: 'chris@stacksjs.com' })
  *
  * // alternatively, you may use the following:
- * useEvent('user:registered', { name: 'Chris', email: 'chris@stacksjs.org' })
- * events.emit('user:registered', { name: 'Chris', email: 'chris@stacksjs.org' })
- * useEvents.emit('user:registered', { name: 'Chris', email: 'chris@stacksjs.org' })
+ * useEvent('user:registered', { name: 'Chris', email: 'chris@stacksjs.com' })
+ * events.emit('user:registered', { name: 'Chris', email: 'chris@stacksjs.com' })
+ * useEvents.emit('user:registered', { name: 'Chris', email: 'chris@stacksjs.com' })
  * ```
  *
  * @example To capture an event, you may use any of the following approaches:

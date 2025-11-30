@@ -73,7 +73,7 @@ const messages = ref<Message[]>([
     user: {
       id: 1,
       name: 'Chris',
-      email: 'chris@stacksjs.org',
+      email: 'chris@stacksjs.com',
       avatar: 'https://avatars.githubusercontent.com/u/6228425?v=4'
     },
     content: 'How do I create a new Stacks.js project with TypeScript?',
@@ -85,7 +85,7 @@ const messages = ref<Message[]>([
     user: {
       id: 0,
       name: 'Buddy',
-      email: 'ai@stacksjs.org',
+      email: 'ai@stacksjs.com',
       avatar: ''  // Will fallback to the AI circle
     },
     content: 'I can help you set up a new Stacks.js project. First, let\'s create a new project using the CLI:',
@@ -107,7 +107,7 @@ const sendMessage = () => {
       user: {
         id: 1,
         name: 'Chris',
-        email: 'chris@stacksjs.org',
+        email: 'chris@stacksjs.com',
         avatar: '/avatars/chris.jpg'
       },
       content: newMessage.value,
@@ -125,7 +125,7 @@ const sendMessage = () => {
         user: {
           id: 0,
           name: 'Buddy',
-          email: 'ai@stacksjs.org',
+          email: 'ai@stacksjs.com',
           avatar: '/avatars/stacks-ai.jpg'
         },
         content: 'I\'m processing your request. How can I help you with Stacks.js?',

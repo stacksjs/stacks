@@ -5,7 +5,7 @@ import { route } from '@stacksjs/router'
  * The routes defined here are automatically registered. Last but
  * not least, beware when deleting these pre-configured routes.
  *
- * @see https://stacksjs.org/docs/routing
+ * @see https://stacksjs.com/docs/routing
  */
 
 route.get('/versions', 'Actions/Buddy/VersionsAction') // your-domain.com/api/buddy/versions

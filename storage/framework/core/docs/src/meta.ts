@@ -11,14 +11,14 @@ export const gstatic = 'https://fonts.gstatic.com'
 export const font = `${googleapis}/css2?family=Readex+Pro:wght@200;400;600&display=swap`
 
 /* vitepress head */
-export const ogUrl = 'https://stacksjs.org/'
+export const ogUrl = 'https://stacksjs.com/'
 export const ogImage = `${ogUrl}og.png`
 
 /* GitHub and social links */
 export const github = 'https://github.com/stacksjs/stacks'
 export const releases = 'https://github.com/stacksjs/stacks/releases'
 export const contributing = 'https://github.com/stacksjs/stacks/blob/main/CONTRIBUTING.md'
-export const discord = 'https://chat.stacksjs.org'
+export const discord = 'https://chat.stacksjs.com'
 export const twitter = 'https://twitter.com/stacksjs'
 
 /* Avatar/Image/Sponsors servers */

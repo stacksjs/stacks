@@ -206,7 +206,7 @@ onMounted(async () => {
                 <tbody class="bg-white divide-y divide-gray-200">
                   <tr>
                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:pl-6">
-                      chris@stacksjs.org
+                      chris@stacksjs.com
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
@@ -224,7 +224,7 @@ onMounted(async () => {
 
                   <tr>
                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:pl-6">
-                      blake@stacksjs.org
+                      blake@stacksjs.com
                     </td>
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">

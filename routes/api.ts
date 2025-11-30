@@ -5,7 +5,7 @@ import { route } from '@stacksjs/router'
  * The routes defined here are automatically registered. Last but
  * not least, you may also create any other `routes/*.ts` files.
  *
- * @see https://docs.stacksjs.org/routing
+ * @see https://docs.stacksjs.com/routing
  */
 
 route.get('/foo/bar/{id}', () => 'hello world, foo bar') // $API_URL/hello/world

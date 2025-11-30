@@ -68,7 +68,7 @@
               <div class="sm:col-span-full">
                 <label for="local-root" class="block text-sm text-gray-900 font-medium leading-6">Contributors</label>
                 <div class="mt-2">
-                  <input id="local-root" type="text" name="local-root" value="Chris Breuer <chris@stacksjs.org>" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="local-root" type="text" name="local-root" value="Chris Breuer <chris@stacksjs.com>" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
 

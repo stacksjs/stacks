@@ -6,7 +6,7 @@
 # to automatically install missing dependencies when needed.
 #
 # To learn more, please visit:
-# https://stacksjs.org/docs/dependency-management
+# https://stacksjs.com/docs/dependency-management
 
 dependencies:
   aws.amazon.com/cli: ^2.22.26

@@ -12,7 +12,7 @@ describe('Models test', () => {
   it('should fetch a single record in models', async () => {
     const user = {
       name: 'Chris Breuer',
-      email: 'chris@stacksjs.org',
+      email: 'chris@stacksjs.com',
       password: '123456',
     }
 
@@ -26,7 +26,7 @@ describe('Models test', () => {
   it('should store records in models', async () => {
     const user = {
       name: 'Chris Breuer',
-      email: 'chris@stacksjs.org',
+      email: 'chris@stacksjs.com',
       password: '123456',
     }
 
@@ -38,7 +38,7 @@ describe('Models test', () => {
   it('should update records in models', async () => {
     const user = {
       name: 'Chris Breuer',
-      email: 'chris@stacksjs.org',
+      email: 'chris@stacksjs.com',
       password: '123456',
     }
 
@@ -54,7 +54,7 @@ describe('Models test', () => {
   it('should delete records in models', async () => {
     const user = {
       name: 'Chris Breuer',
-      email: 'chris@stacksjs.org',
+      email: 'chris@stacksjs.com',
       password: '123456',
     }
 
@@ -72,7 +72,7 @@ describe('Models test', () => {
   it('should remove records in models', async () => {
     const user = {
       name: 'Chris Breuer',
-      email: 'chris@stacksjs.org',
+      email: 'chris@stacksjs.com',
       password: '123456',
     }
 
@@ -90,7 +90,7 @@ describe('Models test', () => {
   it('should fetch the first record in models', async () => {
     const user = {
       name: 'Chris Breuer',
-      email: 'chris@stacksjs.org',
+      email: 'chris@stacksjs.com',
       password: '123456',
     }
 
@@ -104,7 +104,7 @@ describe('Models test', () => {
   it('should fetch a record by ID in models', async () => {
     const user = {
       name: 'Chris Breuer',
-      email: 'chris@stacksjs.org',
+      email: 'chris@stacksjs.com',
       password: '123456',
     }
 
@@ -122,7 +122,7 @@ describe('Models test', () => {
   it('should fetch the last record in models', async () => {
     const user1 = {
       name: 'Chris Breuer',
-      email: 'chris@stacksjs.org',
+      email: 'chris@stacksjs.com',
       password: '123456',
     }
 
@@ -143,7 +143,7 @@ describe('Models test', () => {
   it('should fetch records ordered by a specific column in models', async () => {
     const user1 = {
       name: 'Chris Breuer',
-      email: 'chris@stacksjs.org',
+      email: 'chris@stacksjs.com',
       password: '123456',
     }
 
@@ -165,7 +165,7 @@ describe('Models test', () => {
   it('should fetch distinct records in models', async () => {
     const user1 = {
       name: 'Chris Breuer',
-      email: 'chris@stacksjs.org',
+      email: 'chris@stacksjs.com',
       password: '123456',
     }
 
@@ -194,7 +194,7 @@ describe('Models test', () => {
   it('should fetch records ordered in ascending order in models', async () => {
     const user1 = {
       name: 'Chris Breuer',
-      email: 'chris@stacksjs.org',
+      email: 'chris@stacksjs.com',
       password: '123456',
     }
 
@@ -216,7 +216,7 @@ describe('Models test', () => {
   it('should fetch records ordered in descending order in models', async () => {
     const user1 = {
       name: 'Chris Breuer',
-      email: 'chris@stacksjs.org',
+      email: 'chris@stacksjs.com',
       password: '123456',
     }
 
@@ -238,7 +238,7 @@ describe('Models test', () => {
   it('should fetch records with where clause', async () => {
     const user1 = {
       name: 'Chris Breuer',
-      email: 'chris@stacksjs.org',
+      email: 'chris@stacksjs.com',
       password: '123456',
     }
 
@@ -261,7 +261,7 @@ describe('Models test', () => {
     const testUser = [
       {
         name: 'Chris Breuer',
-        email: 'chris@stacksjs.org',
+        email: 'chris@stacksjs.com',
         password: '123456',
       },
       {
@@ -286,7 +286,7 @@ describe('Models test', () => {
     const users = [
       {
         name: 'Chris Breuer',
-        email: 'chris@stacksjs.org',
+        email: 'chris@stacksjs.com',
         password: '123456',
       },
       {
@@ -304,11 +304,11 @@ describe('Models test', () => {
     await Promise.all(users.map(user => User.create(user)))
 
     const results = await User
-      .whereIn('email', ['chris@stacksjs.org', 'john@stacks.com'])
+      .whereIn('email', ['chris@stacksjs.com', 'john@stacks.com'])
       .get()
 
     expect(results.length).toBe(2)
-    expect(results.map(r => r.email).sort()).toEqual(['chris@stacksjs.org', 'john@stacks.com'])
+    expect(results.map(r => r.email).sort()).toEqual(['chris@stacksjs.com', 'john@stacks.com'])
   })
 
   it('should paginate with default options', async () => {
@@ -412,7 +412,7 @@ describe('Models test', () => {
     const users = [
       {
         name: 'Chris Breuer',
-        email: 'chris@stacksjs.org',
+        email: 'chris@stacksjs.com',
         password: '123456',
       },
       {
@@ -467,7 +467,7 @@ describe('Models test', () => {
     const users = [
       {
         name: 'Chris Breuer',
-        email: 'chris@stacksjs.org',
+        email: 'chris@stacksjs.com',
         password: '123456',
       },
       {
@@ -485,7 +485,7 @@ describe('Models test', () => {
     await Promise.all(users.map(user => User.create(user)))
 
     const results = await User
-      .whereNotIn('email', ['chris@stacksjs.org', 'john@stacks.com'])
+      .whereNotIn('email', ['chris@stacksjs.com', 'john@stacks.com'])
       .get()
 
     expect(results.length).toBe(1)
@@ -512,7 +512,7 @@ describe('Models test', () => {
     const users = [
       {
         name: 'Chris Breuer',
-        email: 'chris@stacksjs.org',
+        email: 'chris@stacksjs.com',
         password: '123456',
       },
       {

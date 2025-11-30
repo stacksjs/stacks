@@ -4,7 +4,7 @@
   "version": "0.70.23",
   "description": "A better Stacks shell experience. Currently only fully supporting Oh My Zsh. Stay tuned for more. Or request one!",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/shell#readme",

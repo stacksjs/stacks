@@ -10,7 +10,7 @@ import type { Registry } from '@stacksjs/registry'
 export default [
   {
     name: 'my-stack',
-    url: 'stacksjs.org',
+    url: 'stacksjs.com',
     github: 'stacksjs/my-stack',
   },
   // 'stacksjs' // works as well

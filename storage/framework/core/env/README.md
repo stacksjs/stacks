@@ -80,6 +80,7 @@ buddy env:encrypt -ek "PUBLIC_*"
 ```
 
 This will:
+
 1. Generate a public/private keypair
 2. Store keys in `.env.keys` (keep this secure!)
 3. Encrypt values in your .env file
@@ -109,7 +110,7 @@ The encryption uses **secp256k1 ECIES** (Elliptic Curve Integrated Encryption Sc
 ```ini
 #/-------------------[DOTENV_PUBLIC_KEY]--------------------/
 #/            public-key encryption for .env files          /
-#/       [how it works](https://stacksjs.org/encryption)   /
+#/       [how it works](https://stacksjs.com/encryption)   /
 #/----------------------------------------------------------/
 DOTENV_PUBLIC_KEY="034af93e93708b994c10f236c96ef88e47291066946cce2e8d98c9e02c741ced45"
 
