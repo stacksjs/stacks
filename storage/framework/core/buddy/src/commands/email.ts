@@ -2,6 +2,21 @@ import type { CLI } from '@stacksjs/types'
 import { readFileSync, existsSync } from 'node:fs'
 import { email as emailConfig } from '@stacksjs/config'
 
+const TIMEOUT_MS = 30000 // 30 second timeout for AWS operations
+
+// Helper to run async operations with timeout
+async function withTimeout<T>(promise: Promise<T>, ms: number = TIMEOUT_MS): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout>
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms)
+  })
+  try {
+    return await Promise.race([promise, timeoutPromise])
+  } finally {
+    clearTimeout(timeoutId!)
+  }
+}
+
 // Load AWS credentials from .env.production
 function loadAwsCredentials(): void {
   const envPath = '.env.production'
@@ -52,7 +67,7 @@ export function email(buddy: CLI): void {
         const emailDomain = emailConfig?.from?.address?.split('@')[1] || 'stacksjs.com'
         console.log(`Domain: ${emailDomain}`)
 
-        const identity = await ses.getEmailIdentity(emailDomain)
+        const identity = await withTimeout(ses.getEmailIdentity(emailDomain))
 
         if (identity) {
           console.log(`\n✅ Domain Status: ${identity.VerificationStatus || 'Unknown'}`)
@@ -75,6 +90,7 @@ export function email(buddy: CLI): void {
       catch (error: any) {
         console.error('\n❌ Error checking verification:', error.message)
       }
+      process.exit(0)
     })
 
   buddy
@@ -91,7 +107,7 @@ export function email(buddy: CLI): void {
         const emailDomain = emailConfig?.from?.address?.split('@')[1] || 'stacksjs.com'
         const from = `noreply@${emailDomain}`
 
-        const result = await ses.sendEmail({
+        const result = await withTimeout(ses.sendEmail({
           FromEmailAddress: from,
           Destination: {
             ToAddresses: [to],
@@ -126,7 +142,7 @@ export function email(buddy: CLI): void {
               },
             },
           },
-        })
+        }))
 
         console.log('✅ Test email sent successfully!')
         console.log(`   Message ID: ${result.MessageId}`)
@@ -138,6 +154,7 @@ export function email(buddy: CLI): void {
           console.log('   Run `buddy email:verify` to check status.')
         }
       }
+      process.exit(0)
     })
 
   buddy
@@ -164,6 +181,7 @@ export function email(buddy: CLI): void {
         }
       }
       console.log('')
+      process.exit(0)
     })
 
   buddy
@@ -184,12 +202,12 @@ export function email(buddy: CLI): void {
         console.log(`Showing last ${options.lines} events...\n`)
 
         // First get the latest log stream
-        const streams = await logs.describeLogStreams({
+        const streams = await withTimeout(logs.describeLogStreams({
           logGroupName,
           orderBy: 'LastEventTime',
           descending: true,
           limit: 1,
-        })
+        }))
 
         if (!streams.logStreams || streams.logStreams.length === 0) {
           console.log('No log streams found.')
@@ -203,11 +221,11 @@ export function email(buddy: CLI): void {
           return
         }
 
-        const events = await logs.getLogEvents({
+        const events = await withTimeout(logs.getLogEvents({
           logGroupName,
           logStreamName,
           limit: parseInt(options.lines || '20', 10),
-        })
+        }))
 
         if (events.events && events.events.length > 0) {
           for (const event of events.events) {
@@ -221,13 +239,14 @@ export function email(buddy: CLI): void {
         }
       }
       catch (error: any) {
-        if (error.message.includes('ResourceNotFoundException')) {
-          console.log('Log group not found. No emails have been processed yet.')
+        if (error.message.includes('ResourceNotFoundException') || error.message.includes('timed out')) {
+          console.log('Log group not found or not accessible. No emails have been processed yet.')
         }
         else {
           console.error('Error fetching logs:', error.message)
         }
       }
+      process.exit(0)
     })
 
   buddy
@@ -243,7 +262,7 @@ export function email(buddy: CLI): void {
         const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
         const stackName = `${appName}-cloud`
 
-        const result = await cf.listStackResources(stackName)
+        const result = await withTimeout(cf.listStackResources(stackName))
         const emailResources = result.StackResourceSummaries?.filter(
           (r: any) => r.LogicalResourceId.includes('Email') || r.LogicalResourceId.includes('Inbound') || r.LogicalResourceId.includes('Outbound')
         ) || []
@@ -262,7 +281,7 @@ export function email(buddy: CLI): void {
         }
 
         // Get outputs
-        const stacks = await cf.describeStacks({ stackName })
+        const stacks = await withTimeout(cf.describeStacks({ stackName }))
         const outputs = stacks.Stacks?.[0]?.Outputs || []
         const emailOutputs = outputs.filter((o: any) => o.OutputKey?.includes('Email'))
 
@@ -276,5 +295,6 @@ export function email(buddy: CLI): void {
       catch (error: any) {
         console.error('Error checking status:', error.message)
       }
+      process.exit(0)
     })
 }
