@@ -1,0 +1,18 @@
+{
+  "name": "@stacksjs/mail-server",
+  "version": "0.1.0",
+  "description": "IMAP/SMTP mail server with S3 backend",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun --watch run src/index.ts"
+  },
+  "dependencies": {
+    "ts-cloud": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0"
+  }
+}

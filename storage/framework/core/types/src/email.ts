@@ -1,21 +1,129 @@
 import type { I18n } from 'vue-email'
 
+export interface AutoResponderConfig {
+  enabled: boolean
+  subject: string
+  body: string
+  schedule?: {
+    start?: string
+    end?: string
+  }
+}
+
+export interface EmailFilterRule {
+  field: 'from' | 'to' | 'subject' | 'body'
+  operator: 'contains' | 'equals' | 'startsWith' | 'endsWith' | 'regex'
+  value: string
+  action: 'move' | 'delete' | 'forward' | 'label'
+  actionValue?: string
+}
+
+export interface MailboxConfig {
+  address: string
+  displayName?: string
+  forwardTo?: string[]
+  autoResponder?: AutoResponderConfig
+  filters?: EmailFilterRule[]
+}
+
+export interface MailServerInstanceConfig {
+  /**
+   * EC2 instance type for the mail server
+   * @default 't4g.nano'
+   */
+  type?: 't4g.nano' | 't4g.micro' | 't4g.small' | 't4g.medium' | 't3.nano' | 't3.micro' | 't3.small' | 't3.medium'
+
+  /**
+   * Use spot instance for cost savings (~70% cheaper)
+   * Note: Spot instances can be interrupted with 2-minute warning
+   * @default false
+   */
+  spot?: boolean
+
+  /**
+   * Root volume size in GB
+   * @default 8
+   */
+  diskSize?: number
+
+  /**
+   * SSH key pair name for instance access (optional)
+   */
+  keyPair?: string
+}
+
+export interface MailServerPortsConfig {
+  /**
+   * IMAP port (TLS)
+   * @default 993
+   */
+  imap?: number
+
+  /**
+   * SMTP submission port (TLS)
+   * @default 465
+   */
+  smtp?: number
+
+  /**
+   * SMTP submission port (STARTTLS)
+   * @default 587
+   */
+  smtpStartTls?: number
+}
+
+export interface EmailServerConfig {
+  enabled: boolean
+  scan?: boolean // spam/virus scanning
+  storage?: {
+    bucket?: string
+    retentionDays?: number
+    archiveAfterDays?: number
+  }
+  forwarding?: Record<string, string[]> // alias -> destinations
+  autoResponders?: AutoResponderConfig[]
+
+  /**
+   * Mail server instance configuration
+   * Controls the EC2 instance that runs IMAP/SMTP
+   */
+  instance?: MailServerInstanceConfig
+
+  /**
+   * Mail server ports configuration
+   */
+  ports?: MailServerPortsConfig
+
+  /**
+   * Subdomain for the mail server
+   * @default 'mail'
+   * @example 'mail' -> mail.yourdomain.com
+   */
+  subdomain?: string
+}
+
+export interface EmailNotificationsConfig {
+  newEmail?: boolean
+  bounces?: boolean
+  complaints?: boolean
+}
+
 export interface EmailOptions {
   from: {
     name: string
     address: string
   }
 
-  mailboxes: string[]
+  mailboxes: string[] | MailboxConfig[]
+  domain?: string
 
   url: string
   charset: string
 
-  server: {
-    scan?: boolean
-  }
+  server: EmailServerConfig
+  notifications?: EmailNotificationsConfig
 
-  default: 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap'
+  default: 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp' | 'postmark'
 }
 
 export type EmailConfig = Partial<EmailOptions>

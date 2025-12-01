@@ -110,6 +110,155 @@ function loadAwsCredentialsFromFile(): { accessKeyId?: string, secretAccessKey?:
   }
 }
 
+/**
+ * Set up email DNS records (DKIM CNAMEs and MX record) after SES identity is created
+ */
+async function setupEmailDnsRecords(emailDomain: string, region: string, logger: typeof log): Promise<void> {
+  logger.info('Setting up email DNS records...')
+
+  try {
+    const { SESClient } = await import('ts-cloud/aws')
+    const { Route53Client } = await import('ts-cloud/aws')
+
+    const ses = new SESClient(region)
+    const route53 = new Route53Client(region)
+
+    // Get DKIM tokens from SES
+    logger.info(`Getting DKIM tokens for ${emailDomain}...`)
+    const identity = await ses.getEmailIdentity(emailDomain)
+    const tokens = identity.DkimAttributes?.Tokens || []
+
+    if (tokens.length === 0) {
+      logger.warn('No DKIM tokens found - domain may not be set up in SES yet')
+      return
+    }
+
+    logger.info(`Found ${tokens.length} DKIM tokens`)
+
+    // Find the hosted zone for the domain
+    const zones = await route53.listHostedZones()
+    const zone = zones.HostedZones?.find((z: any) => z.Name === `${emailDomain}.`)
+
+    if (!zone) {
+      logger.warn(`Hosted zone not found for ${emailDomain} - DNS records must be added manually`)
+      logger.info('DKIM records needed:')
+      for (const token of tokens) {
+        logger.info(`  CNAME: ${token}._domainkey.${emailDomain} -> ${token}.dkim.amazonses.com`)
+      }
+      logger.info(`  MX: ${emailDomain} -> 10 inbound-smtp.${region}.amazonaws.com`)
+      return
+    }
+
+    const hostedZoneId = zone.Id?.replace('/hostedzone/', '')
+    logger.info(`Found hosted zone: ${hostedZoneId}`)
+
+    // Add DKIM CNAME records
+    for (const token of tokens) {
+      const recordName = `${token}._domainkey.${emailDomain}`
+      const recordValue = `${token}.dkim.amazonses.com`
+
+      try {
+        await route53.changeResourceRecordSets({
+          HostedZoneId: hostedZoneId,
+          ChangeBatch: {
+            Changes: [{
+              Action: 'UPSERT',
+              ResourceRecordSet: {
+                Name: recordName,
+                Type: 'CNAME',
+                TTL: 300,
+                ResourceRecords: [{ Value: recordValue }],
+              },
+            }],
+          },
+        })
+        logger.success(`Added DKIM record: ${token}._domainkey`)
+      } catch (e: any) {
+        logger.warn(`Failed to add DKIM record: ${e.message}`)
+      }
+    }
+
+    // Add MX record for receiving emails
+    try {
+      await route53.changeResourceRecordSets({
+        HostedZoneId: hostedZoneId,
+        ChangeBatch: {
+          Changes: [{
+            Action: 'UPSERT',
+            ResourceRecordSet: {
+              Name: emailDomain,
+              Type: 'MX',
+              TTL: 300,
+              ResourceRecords: [{ Value: `10 inbound-smtp.${region}.amazonaws.com` }],
+            },
+          }],
+        },
+      })
+      logger.success('Added MX record for receiving emails')
+    } catch (e: any) {
+      logger.warn(`Failed to add MX record: ${e.message}`)
+    }
+
+    // Add SPF record
+    try {
+      await route53.changeResourceRecordSets({
+        HostedZoneId: hostedZoneId,
+        ChangeBatch: {
+          Changes: [{
+            Action: 'UPSERT',
+            ResourceRecordSet: {
+              Name: emailDomain,
+              Type: 'TXT',
+              TTL: 300,
+              ResourceRecords: [{ Value: '"v=spf1 include:amazonses.com ~all"' }],
+            },
+          }],
+        },
+      })
+      logger.success('Added SPF record')
+    } catch (e: any) {
+      logger.warn(`Failed to add SPF record: ${e.message}`)
+    }
+
+    // Add DMARC record
+    try {
+      await route53.changeResourceRecordSets({
+        HostedZoneId: hostedZoneId,
+        ChangeBatch: {
+          Changes: [{
+            Action: 'UPSERT',
+            ResourceRecordSet: {
+              Name: `_dmarc.${emailDomain}`,
+              Type: 'TXT',
+              TTL: 300,
+              ResourceRecords: [{ Value: `"v=DMARC1;p=quarantine;pct=25;rua=mailto:dmarcreports@${emailDomain}"` }],
+            },
+          }],
+        },
+      })
+      logger.success('Added DMARC record')
+    } catch (e: any) {
+      logger.warn(`Failed to add DMARC record: ${e.message}`)
+    }
+
+    // Activate the SES receipt rule set
+    try {
+      const appName = process.env.APP_NAME?.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'stacks'
+      const ruleSetName = `${appName}-email-rules`
+      await ses.setActiveReceiptRuleSet(ruleSetName)
+      logger.success(`Activated email receipt rule set: ${ruleSetName}`)
+    } catch (e: any) {
+      logger.warn(`Failed to activate receipt rule set: ${e.message}`)
+    }
+
+    logger.success('Email DNS records configured!')
+    logger.info('Note: DKIM verification may take 5-15 minutes to complete')
+  } catch (error: any) {
+    logger.warn(`Failed to set up email DNS records: ${error.message}`)
+    logger.info('You can manually set up DNS records using: buddy email:verify')
+  }
+}
+
 export function deploy(buddy: CLI): void {
   const descriptions = {
     deploy: 'Deploy your project',
@@ -510,6 +659,12 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
         const hasNotificationTopic = resources.StackResourceSummaries?.some(
           (r: any) => r.LogicalResourceId === 'EmailNotificationTopic'
         )
+        const hasMailApiLambda = resources.StackResourceSummaries?.some(
+          (r: any) => r.LogicalResourceId === 'MailApiLambda'
+        )
+        const hasMailUsersTable = resources.StackResourceSummaries?.some(
+          (r: any) => r.LogicalResourceId === 'MailUsersTable'
+        )
 
         // Get current email domain from stack outputs to check if it needs updating
         const currentEmailDomain = result.Stacks[0]?.Outputs?.find(
@@ -528,6 +683,10 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
         }
         else if (hasEmailBucket && (!hasOutboundLambda || !hasConversionLambda || !hasNotificationTopic)) {
           log.info('Email infrastructure incomplete, will update...')
+          needsEmailUpdate = true
+        }
+        else if (hasEmailBucket && (!hasMailApiLambda || !hasMailUsersTable)) {
+          log.info('Mail API infrastructure missing, will update...')
           needsEmailUpdate = true
         }
 
@@ -727,6 +886,18 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
                       'ses:SendRawEmail',
                     ],
                     Resource: '*',
+                  },
+                  {
+                    Effect: 'Allow',
+                    Action: [
+                      'dynamodb:GetItem',
+                      'dynamodb:PutItem',
+                      'dynamodb:UpdateItem',
+                      'dynamodb:DeleteItem',
+                      'dynamodb:Query',
+                      'dynamodb:Scan',
+                    ],
+                    Resource: { 'Fn::Sub': 'arn:aws:dynamodb:\${AWS::Region}:\${AWS::AccountId}:table/${appName}-mail-users' },
                   },
                 ],
               },
@@ -1040,6 +1211,273 @@ exports.handler = async (event) => {
         },
       }
 
+      // Mail API Lambda - provides REST API for email operations
+      template.Resources.MailApiLambda = {
+        Type: 'AWS::Lambda::Function',
+        DependsOn: ['EmailLambdaRole'],
+        Properties: {
+          FunctionName: `${appName}-mail-api`,
+          Runtime: 'nodejs20.x',
+          Handler: 'index.handler',
+          Role: { 'Fn::GetAtt': ['EmailLambdaRole', 'Arn'] },
+          Timeout: 30,
+          MemorySize: 256,
+          Environment: {
+            Variables: {
+              EMAIL_BUCKET: emailBucketName,
+              USERS_TABLE: `${appName}-mail-users`,
+              EMAIL_DOMAIN: emailDomain,
+            },
+          },
+          Code: {
+            ZipFile: `
+const { S3Client, GetObjectCommand, ListObjectsV2Command, DeleteObjectCommand, CopyObjectCommand } = require('@aws-sdk/client-s3');
+const { SESv2Client, SendEmailCommand } = require('@aws-sdk/client-sesv2');
+const { DynamoDBClient, GetItemCommand, PutItemCommand } = require('@aws-sdk/client-dynamodb');
+const crypto = require('crypto');
+
+const s3 = new S3Client({});
+const ses = new SESv2Client({});
+const dynamodb = new DynamoDBClient({});
+
+const BUCKET = process.env.EMAIL_BUCKET;
+const USERS_TABLE = process.env.USERS_TABLE;
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Content-Type': 'application/json',
+};
+
+const response = (code, body) => ({ statusCode: code, headers: CORS, body: JSON.stringify(body) });
+
+async function authenticate(email, password) {
+  try {
+    const result = await dynamodb.send(new GetItemCommand({
+      TableName: USERS_TABLE,
+      Key: { email: { S: email.toLowerCase() } },
+    }));
+    if (!result.Item) return false;
+    const hash = crypto.createHash('sha256').update(password).digest('hex');
+    return result.Item.passwordHash?.S === hash;
+  } catch (e) { return false; }
+}
+
+async function getAuthUser(event) {
+  const auth = event.headers?.Authorization || event.headers?.authorization;
+  if (!auth) return null;
+  if (auth.startsWith('Basic ') || auth.startsWith('Bearer ')) {
+    try {
+      const creds = Buffer.from(auth.split(' ')[1], 'base64').toString('utf-8');
+      const [email, password] = creds.split(':');
+      if (email && password && await authenticate(email, password)) return email;
+    } catch (e) {}
+  }
+  return null;
+}
+
+function parseHeaders(content) {
+  const headers = {};
+  const end = content.indexOf('\\r\\n\\r\\n');
+  const section = end > 0 ? content.substring(0, end) : content.substring(0, 2000);
+  for (const line of section.split('\\r\\n')) {
+    const idx = line.indexOf(':');
+    if (idx > 0) headers[line.substring(0, idx).toLowerCase()] = line.substring(idx + 1).trim();
+  }
+  return headers;
+}
+
+async function listMessages(userEmail, mailbox = 'INBOX') {
+  const prefix = mailbox === 'INBOX' ? 'incoming/' : mailbox.toLowerCase() + '/';
+  const result = await s3.send(new ListObjectsV2Command({ Bucket: BUCKET, Prefix: prefix }));
+  const messages = [];
+  let uid = 1;
+  for (const obj of result.Contents || []) {
+    if (obj.Key.includes('AMAZON_SES_SETUP')) continue;
+    try {
+      const getResult = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: obj.Key }));
+      const content = await getResult.Body.transformToString();
+      const headers = parseHeaders(content);
+      const to = (headers.to || '').toLowerCase();
+      if (to.includes(userEmail.toLowerCase()) || to.includes(userEmail.split('@')[0])) {
+        messages.push({
+          id: obj.Key.split('/').pop(),
+          uid: uid++,
+          from: headers.from || '',
+          to: headers.to || '',
+          subject: headers.subject || '(No Subject)',
+          date: headers.date || obj.LastModified?.toISOString(),
+          size: obj.Size,
+          s3Key: obj.Key,
+        });
+      }
+    } catch (e) {}
+  }
+  return messages.sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+exports.handler = async (event) => {
+  // Support both API Gateway v1 (REST) and v2 (HTTP) event formats
+  const method = event.httpMethod || event.requestContext?.http?.method;
+  const path = event.path || event.rawPath;
+  
+  if (method === 'OPTIONS') return response(200, {});
+  
+  // Auth endpoint
+  if (path === '/auth' && method === 'POST') {
+    const body = JSON.parse(event.body || '{}');
+    if (!body.email || !body.password) return response(400, { error: 'Email and password required' });
+    const valid = await authenticate(body.email, body.password);
+    if (!valid) return response(401, { error: 'Invalid credentials' });
+    const token = Buffer.from(body.email + ':' + body.password).toString('base64');
+    return response(200, { token, email: body.email });
+  }
+  
+  const userEmail = await getAuthUser(event);
+  if (!userEmail) return response(401, { error: 'Unauthorized' });
+  
+  try {
+    // List mailboxes
+    if (path === '/mailboxes' && method === 'GET') {
+      const messages = await listMessages(userEmail);
+      return response(200, { mailboxes: [
+        { name: 'INBOX', messages: messages.length, unseen: messages.length },
+        { name: 'Sent', messages: 0, unseen: 0 },
+        { name: 'Drafts', messages: 0, unseen: 0 },
+        { name: 'Trash', messages: 0, unseen: 0 },
+      ]});
+    }
+    
+    // List messages
+    if (path === '/messages' && method === 'GET') {
+      const params = event.queryStringParameters || {};
+      const messages = await listMessages(userEmail, params.mailbox || 'INBOX');
+      return response(200, { messages, total: messages.length });
+    }
+    
+    // Get message
+    if (path.startsWith('/messages/') && method === 'GET') {
+      const id = path.split('/').pop();
+      const messages = await listMessages(userEmail);
+      const msg = messages.find(m => m.id === id);
+      if (!msg) return response(404, { error: 'Not found' });
+      const getResult = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: msg.s3Key }));
+      const content = await getResult.Body.transformToString();
+      return response(200, { message: msg, content });
+    }
+    
+    // Delete message
+    if (path.startsWith('/messages/') && method === 'DELETE') {
+      const id = path.split('/').pop();
+      const messages = await listMessages(userEmail);
+      const msg = messages.find(m => m.id === id);
+      if (!msg) return response(404, { error: 'Not found' });
+      await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: msg.s3Key }));
+      return response(200, { success: true });
+    }
+    
+    // Send message
+    if (path === '/messages' && method === 'POST') {
+      const body = JSON.parse(event.body || '{}');
+      if (!body.to || !body.subject) return response(400, { error: 'To and subject required' });
+      const result = await ses.send(new SendEmailCommand({
+        FromEmailAddress: userEmail,
+        Destination: { ToAddresses: Array.isArray(body.to) ? body.to : [body.to] },
+        Content: { Simple: { Subject: { Data: body.subject }, Body: { Text: { Data: body.text || '' } } } },
+      }));
+      return response(200, { messageId: result.MessageId });
+    }
+    
+    return response(404, { error: 'Not found' });
+  } catch (e) {
+    console.error(e);
+    return response(500, { error: e.message });
+  }
+};
+`,
+          },
+          Tags: [
+            { Key: 'Purpose', Value: 'MailAPI' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        },
+      }
+
+      // API Gateway for Mail API
+      template.Resources.MailApiGateway = {
+        Type: 'AWS::ApiGatewayV2::Api',
+        Properties: {
+          Name: `${appName}-mail-api`,
+          ProtocolType: 'HTTP',
+          CorsConfiguration: {
+            AllowOrigins: ['*'],
+            AllowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+            AllowHeaders: ['Content-Type', 'Authorization'],
+          },
+        },
+      }
+
+      // API Gateway Integration
+      template.Resources.MailApiIntegration = {
+        Type: 'AWS::ApiGatewayV2::Integration',
+        Properties: {
+          ApiId: { Ref: 'MailApiGateway' },
+          IntegrationType: 'AWS_PROXY',
+          IntegrationUri: { 'Fn::GetAtt': ['MailApiLambda', 'Arn'] },
+          PayloadFormatVersion: '2.0',
+        },
+      }
+
+      // API Gateway Route - catch all
+      template.Resources.MailApiRoute = {
+        Type: 'AWS::ApiGatewayV2::Route',
+        Properties: {
+          ApiId: { Ref: 'MailApiGateway' },
+          RouteKey: '$default',
+          Target: { 'Fn::Join': ['/', ['integrations', { Ref: 'MailApiIntegration' }]] },
+        },
+      }
+
+      // API Gateway Stage
+      template.Resources.MailApiStage = {
+        Type: 'AWS::ApiGatewayV2::Stage',
+        Properties: {
+          ApiId: { Ref: 'MailApiGateway' },
+          StageName: '$default',
+          AutoDeploy: true,
+        },
+      }
+
+      // Lambda permission for API Gateway
+      template.Resources.MailApiLambdaPermission = {
+        Type: 'AWS::Lambda::Permission',
+        Properties: {
+          FunctionName: { Ref: 'MailApiLambda' },
+          Action: 'lambda:InvokeFunction',
+          Principal: 'apigateway.amazonaws.com',
+          SourceArn: { 'Fn::Sub': 'arn:aws:execute-api:\${AWS::Region}:\${AWS::AccountId}:\${MailApiGateway}/*' },
+        },
+      }
+
+      // DynamoDB table for mail users
+      template.Resources.MailUsersTable = {
+        Type: 'AWS::DynamoDB::Table',
+        Properties: {
+          TableName: `${appName}-mail-users`,
+          BillingMode: 'PAY_PER_REQUEST',
+          AttributeDefinitions: [
+            { AttributeName: 'email', AttributeType: 'S' },
+          ],
+          KeySchema: [
+            { AttributeName: 'email', KeyType: 'HASH' },
+          ],
+          Tags: [
+            { Key: 'Purpose', Value: 'MailUsers' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        },
+      }
+
       // Add email outputs
       template.Outputs.EmailBucketName = {
         Description: 'Name of the email storage bucket',
@@ -1060,6 +1498,14 @@ exports.handler = async (event) => {
       template.Outputs.EmailNotificationTopicArn = {
         Description: 'Email notification SNS topic ARN',
         Value: { Ref: 'EmailNotificationTopic' },
+      }
+      template.Outputs.MailApiUrl = {
+        Description: 'Mail API URL for IMAP proxy',
+        Value: { 'Fn::GetAtt': ['MailApiGateway', 'ApiEndpoint'] },
+      }
+      template.Outputs.MailUsersTable = {
+        Description: 'DynamoDB table for mail users',
+        Value: { Ref: 'MailUsersTable' },
       }
 
       log.success('Email infrastructure added to template')
@@ -1086,6 +1532,12 @@ exports.handler = async (event) => {
         await cfnClient.waitForStack(stackName, 'stack-update-complete')
 
         log.success('Cloud infrastructure updated with email server!')
+
+        // Set up email DNS records after stack update
+        if (enableEmailServer) {
+          await setupEmailDnsRecords(emailDomain, region, log)
+        }
+
         return true
       }
       else {
@@ -1107,6 +1559,12 @@ exports.handler = async (event) => {
         await cfnClient.waitForStack(stackName, 'stack-create-complete')
 
         log.success('Cloud infrastructure created successfully')
+
+        // Set up email DNS records after stack creation
+        if (enableEmailServer) {
+          await setupEmailDnsRecords(emailDomain, region, log)
+        }
+
         return true
       }
     }
