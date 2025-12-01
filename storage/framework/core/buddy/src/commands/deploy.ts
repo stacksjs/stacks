@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { italic, outro, prompts, runCommand } from '@stacksjs/cli'
-import { app, email as emailConfig } from '@stacksjs/config'
+import { app, email as emailConfig, cloud as cloudConfig } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 import { encryptEnv } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
@@ -256,6 +256,86 @@ async function setupEmailDnsRecords(emailDomain: string, region: string, logger:
   } catch (error: any) {
     logger.warn(`Failed to set up email DNS records: ${error.message}`)
     logger.info('You can manually set up DNS records using: buddy email:verify')
+  }
+}
+
+/**
+ * Create a default mail user in DynamoDB for testing
+ */
+async function createDefaultMailUser(appName: string, emailDomain: string, region: string, logger: typeof log): Promise<void> {
+  try {
+    const { DynamoDBClient } = await import('ts-cloud/aws')
+    const crypto = await import('crypto')
+    
+    const dynamodb = new DynamoDBClient(region)
+    const tableName = `${appName}-mail-users`
+    
+    // Check if mailboxes are configured
+    const mailboxes = emailConfig?.mailboxes || []
+    
+    if (mailboxes.length === 0) {
+      // Create a default admin user
+      const defaultEmail = `admin@${emailDomain}`
+      const defaultPassword = crypto.randomBytes(16).toString('hex')
+      const passwordHash = crypto.createHash('sha256').update(defaultPassword).digest('hex')
+      
+      try {
+        await dynamodb.putItem({
+          TableName: tableName,
+          Item: {
+            email: { S: defaultEmail },
+            passwordHash: { S: passwordHash },
+            createdAt: { S: new Date().toISOString() },
+            displayName: { S: 'Admin' },
+          },
+        })
+        
+        logger.success(`Created default mail user: ${defaultEmail}`)
+        logger.info(`Password: ${defaultPassword}`)
+        logger.info('Save this password - it will not be shown again!')
+      } catch (e: any) {
+        if (e.message?.includes('ConditionalCheckFailedException') || e.message?.includes('already exists')) {
+          logger.debug('Default mail user already exists')
+        } else {
+          throw e
+        }
+      }
+    } else {
+      // Create users from configured mailboxes
+      for (const mailbox of mailboxes) {
+        const mb = mailbox as any
+        const email = typeof mailbox === 'string' ? `${mailbox}@${emailDomain}` : `${mb.name || mb.address?.split('@')[0]}@${emailDomain}`
+        const password = typeof mailbox === 'object' && mb.password 
+          ? mb.password 
+          : crypto.randomBytes(16).toString('hex')
+        const passwordHash = crypto.createHash('sha256').update(password).digest('hex')
+        
+        try {
+          await dynamodb.putItem({
+            TableName: tableName,
+            Item: {
+              email: { S: email },
+              passwordHash: { S: passwordHash },
+              createdAt: { S: new Date().toISOString() },
+              displayName: { S: typeof mailbox === 'object' ? mb.displayName || mb.name || email : mailbox },
+            },
+          })
+          
+          logger.success(`Created mail user: ${email}`)
+          if (typeof mailbox !== 'object' || !mb.password) {
+            logger.info(`  Password: ${password}`)
+          }
+        } catch (e: any) {
+          if (e.message?.includes('ConditionalCheckFailedException')) {
+            logger.debug(`Mail user ${email} already exists`)
+          } else {
+            logger.warn(`Failed to create mail user ${email}: ${e.message}`)
+          }
+        }
+      }
+    }
+  } catch (error: any) {
+    logger.warn(`Failed to create mail users: ${error.message}`)
   }
 }
 
@@ -665,6 +745,9 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
         const hasMailUsersTable = resources.StackResourceSummaries?.some(
           (r: any) => r.LogicalResourceId === 'MailUsersTable'
         )
+        const hasMailServerInstance = resources.StackResourceSummaries?.some(
+          (r: any) => r.LogicalResourceId === 'MailServerInstance'
+        )
 
         // Get current email domain from stack outputs to check if it needs updating
         const currentEmailDomain = result.Stacks[0]?.Outputs?.find(
@@ -687,6 +770,10 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
         }
         else if (hasEmailBucket && (!hasMailApiLambda || !hasMailUsersTable)) {
           log.info('Mail API infrastructure missing, will update...')
+          needsEmailUpdate = true
+        }
+        else if (hasEmailBucket && !hasMailServerInstance && emailConfig?.server?.enabled) {
+          log.info('Mail server EC2 instance missing, will update...')
           needsEmailUpdate = true
         }
 
@@ -713,6 +800,12 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
 
     log.info(`Email domain: ${emailDomain}`)
     log.info(`Email server enabled: ${enableEmailServer}`)
+
+    // Get hosted zone ID from cloud config or use a lookup
+    const hostedZoneId = (cloudConfig as any)?.tsCloud?.infrastructure?.dns?.hostedZoneId
+      || (cloudConfig as any)?.infrastructure?.dns?.hostedZoneId
+      || process.env.AWS_HOSTED_ZONE_ID
+      || 'Z01455702Q7952O6RCY37' // Default for stacksjs.com
 
     // Create CloudFormation template for Stacks cloud infrastructure with email support
     const template: any = {
@@ -897,7 +990,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
                       'dynamodb:Query',
                       'dynamodb:Scan',
                     ],
-                    Resource: { 'Fn::Sub': 'arn:aws:dynamodb:\${AWS::Region}:\${AWS::AccountId}:table/${appName}-mail-users' },
+                    Resource: { 'Fn::Sub': `arn:aws:dynamodb:\${AWS::Region}:\${AWS::AccountId}:table/${appName}-mail-users` },
                   },
                 ],
               },
@@ -1478,6 +1571,399 @@ exports.handler = async (event) => {
         },
       }
 
+      // ========================================================================
+      // Mail Server EC2 Instance (IMAP/SMTP)
+      // ========================================================================
+
+      // Get mail server config from email config
+      const mailServerConfig = emailConfig?.server?.instance || {}
+      const instanceType = mailServerConfig.type || 't4g.nano'
+      const useSpot = mailServerConfig.spot || false
+      const diskSize = mailServerConfig.diskSize || 8
+      const mailSubdomain = emailConfig?.server?.subdomain || 'mail'
+      const imapPort = emailConfig?.server?.ports?.imap || 993
+      const smtpPort = emailConfig?.server?.ports?.smtp || 465
+      const smtpStartTlsPort = emailConfig?.server?.ports?.smtpStartTls || 587
+
+      // Use existing VPC from the stacks-cloud stack (vpc-0d5b3d953b516a107)
+      // This avoids hitting the VPC limit
+      const existingVpcId = 'vpc-0d5b3d953b516a107'
+
+      // Internet Gateway for the VPC (needed for public IP access)
+      template.Resources.MailServerIGW = {
+        Type: 'AWS::EC2::InternetGateway',
+        Properties: {
+          Tags: [
+            { Key: 'Name', Value: `${appName}-mail-igw` },
+            { Key: 'Purpose', Value: 'MailServer' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        },
+      }
+
+      // Attach Internet Gateway to VPC
+      template.Resources.MailServerIGWAttachment = {
+        Type: 'AWS::EC2::VPCGatewayAttachment',
+        Properties: {
+          VpcId: existingVpcId,
+          InternetGatewayId: { Ref: 'MailServerIGW' },
+        },
+      }
+
+      // Route Table for the mail server subnet
+      template.Resources.MailServerRouteTable = {
+        Type: 'AWS::EC2::RouteTable',
+        Properties: {
+          VpcId: existingVpcId,
+          Tags: [
+            { Key: 'Name', Value: `${appName}-mail-rt` },
+            { Key: 'Purpose', Value: 'MailServer' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        },
+      }
+
+      // Route to Internet Gateway
+      template.Resources.MailServerRoute = {
+        Type: 'AWS::EC2::Route',
+        DependsOn: ['MailServerIGWAttachment'],
+        Properties: {
+          RouteTableId: { Ref: 'MailServerRouteTable' },
+          DestinationCidrBlock: '0.0.0.0/0',
+          GatewayId: { Ref: 'MailServerIGW' },
+        },
+      }
+
+      // Public Subnet for the mail server (in existing VPC)
+      template.Resources.MailServerSubnet = {
+        Type: 'AWS::EC2::Subnet',
+        Properties: {
+          VpcId: existingVpcId,
+          CidrBlock: '10.0.100.0/24', // Use a different CIDR that doesn't conflict
+          MapPublicIpOnLaunch: true,
+          AvailabilityZone: { 'Fn::Select': ['0', { 'Fn::GetAZs': '' }] },
+          Tags: [
+            { Key: 'Name', Value: `${appName}-mail-subnet` },
+            { Key: 'Purpose', Value: 'MailServer' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        },
+      }
+
+      // Associate Route Table with Subnet
+      template.Resources.MailServerSubnetRouteTableAssociation = {
+        Type: 'AWS::EC2::SubnetRouteTableAssociation',
+        Properties: {
+          SubnetId: { Ref: 'MailServerSubnet' },
+          RouteTableId: { Ref: 'MailServerRouteTable' },
+        },
+      }
+
+      // Security Group for Mail Server
+      template.Resources.MailServerSecurityGroup = {
+        Type: 'AWS::EC2::SecurityGroup',
+        Properties: {
+          GroupDescription: `${appName} mail server security group for IMAP/SMTP`,
+          VpcId: existingVpcId,
+          SecurityGroupIngress: [
+            {
+              IpProtocol: 'tcp',
+              FromPort: imapPort,
+              ToPort: imapPort,
+              CidrIp: '0.0.0.0/0',
+              Description: 'IMAP over TLS',
+            },
+            {
+              IpProtocol: 'tcp',
+              FromPort: smtpPort,
+              ToPort: smtpPort,
+              CidrIp: '0.0.0.0/0',
+              Description: 'SMTP over TLS',
+            },
+            {
+              IpProtocol: 'tcp',
+              FromPort: smtpStartTlsPort,
+              ToPort: smtpStartTlsPort,
+              CidrIp: '0.0.0.0/0',
+              Description: 'SMTP with STARTTLS',
+            },
+            {
+              IpProtocol: 'tcp',
+              FromPort: 22,
+              ToPort: 22,
+              CidrIp: '0.0.0.0/0',
+              Description: 'SSH access',
+            },
+            {
+              IpProtocol: 'tcp',
+              FromPort: 80,
+              ToPort: 80,
+              CidrIp: '0.0.0.0/0',
+              Description: 'HTTP for LetsEncrypt certificate validation',
+            },
+          ],
+          Tags: [
+            { Key: 'Name', Value: `${appName}-mail-server-sg` },
+            { Key: 'Purpose', Value: 'MailServer' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        },
+      }
+
+      // IAM Role for Mail Server EC2
+      template.Resources.MailServerRole = {
+        Type: 'AWS::IAM::Role',
+        Properties: {
+          RoleName: `${appName}-mail-server-role`,
+          AssumeRolePolicyDocument: {
+            Version: '2012-10-17',
+            Statement: [
+              {
+                Effect: 'Allow',
+                Principal: {
+                  Service: 'ec2.amazonaws.com',
+                },
+                Action: 'sts:AssumeRole',
+              },
+            ],
+          },
+          ManagedPolicyArns: [
+            'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore',
+          ],
+          Policies: [
+            {
+              PolicyName: 'MailServerPolicy',
+              PolicyDocument: {
+                Version: '2012-10-17',
+                Statement: [
+                  {
+                    Effect: 'Allow',
+                    Action: [
+                      's3:GetObject',
+                      's3:PutObject',
+                      's3:DeleteObject',
+                      's3:ListBucket',
+                    ],
+                    Resource: [
+                      { 'Fn::GetAtt': ['EmailBucket', 'Arn'] },
+                      { 'Fn::Sub': '${EmailBucket.Arn}/*' },
+                    ],
+                  },
+                  {
+                    Effect: 'Allow',
+                    Action: [
+                      'ses:SendEmail',
+                      'ses:SendRawEmail',
+                    ],
+                    Resource: '*',
+                  },
+                  {
+                    Effect: 'Allow',
+                    Action: [
+                      'dynamodb:GetItem',
+                      'dynamodb:PutItem',
+                      'dynamodb:UpdateItem',
+                      'dynamodb:DeleteItem',
+                      'dynamodb:Query',
+                      'dynamodb:Scan',
+                    ],
+                    Resource: { 'Fn::GetAtt': ['MailUsersTable', 'Arn'] },
+                  },
+                  {
+                    Effect: 'Allow',
+                    Action: [
+                      'acm:GetCertificate',
+                      'acm:DescribeCertificate',
+                    ],
+                    Resource: '*',
+                  },
+                  {
+                    Effect: 'Allow',
+                    Action: [
+                      'secretsmanager:GetSecretValue',
+                    ],
+                    Resource: { 'Fn::Sub': `arn:aws:secretsmanager:\${AWS::Region}:\${AWS::AccountId}:secret:${appName}-mail-*` },
+                  },
+                ],
+              },
+            },
+          ],
+          Tags: [
+            { Key: 'Purpose', Value: 'MailServer' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        },
+      }
+
+      // Instance Profile for Mail Server
+      template.Resources.MailServerInstanceProfile = {
+        Type: 'AWS::IAM::InstanceProfile',
+        Properties: {
+          InstanceProfileName: `${appName}-mail-server-profile`,
+          Roles: [{ Ref: 'MailServerRole' }],
+        },
+      }
+
+      // User data script to bootstrap the mail server
+      // Downloads server code from S3 to stay under 16KB limit
+      const userDataScript = `#!/bin/bash
+set -e
+export HOME=/root
+exec > >(tee /var/log/mail-server-setup.log) 2>&1
+echo "Starting mail server setup at $(date)"
+
+# Configuration - exported for the server
+export REGION="${region}"
+export EMAIL_BUCKET="${emailBucketName}"
+export USERS_TABLE="${appName}-mail-users"
+export EMAIL_DOMAIN="${emailDomain}"
+export IMAP_PORT=${imapPort}
+export SMTP_PORT=${smtpPort}
+export MAIL_SUBDOMAIN="${mailSubdomain}"
+
+# Install dependencies
+dnf update -y
+dnf install -y nodejs npm git certbot awscli
+curl -fsSL https://bun.sh/install | bash
+export BUN_INSTALL="/root/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+echo 'export BUN_INSTALL="/root/.bun"' >> /root/.bashrc
+echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> /root/.bashrc
+
+mkdir -p /opt/mail-server && cd /opt/mail-server
+
+# Download server code from S3
+aws s3 cp s3://${emailBucketName}/mail-server/server.ts ./server.ts --region ${region} || echo "Server code not in S3 yet"
+aws s3 cp s3://${emailBucketName}/mail-server/package.json ./package.json --region ${region} || cat > package.json << 'PKGJSON'
+{"name":"mail-server","type":"module","dependencies":{"@aws-sdk/client-s3":"^3.0.0","@aws-sdk/client-sesv2":"^3.0.0","@aws-sdk/client-dynamodb":"^3.0.0"}}
+PKGJSON
+
+# If server.ts doesn't exist, create minimal placeholder
+if [ ! -f server.ts ]; then
+cat > server.ts << 'SERVERCODE'
+import*as net from'net';const IP=+(process.env.IMAP_PORT||993),SP=+(process.env.SMTP_PORT||465);
+console.log('Placeholder server starting...');
+net.createServer(s=>{s.write('* OK IMAP ready\\r\\n');s.on('data',()=>s.write('* BAD Placeholder\\r\\n'));}).listen(IP);
+net.createServer(s=>{s.write('220 SMTP ready\\r\\n');s.on('data',()=>s.write('421 Placeholder\\r\\n'));}).listen(SP);
+SERVERCODE
+fi
+
+# Install dependencies
+/root/.bun/bin/bun install
+
+# Create environment file for systemd (use single quotes to prevent shell expansion)
+cat > /opt/mail-server/.env << 'ENVEOF'
+REGION=${region}
+EMAIL_BUCKET=${emailBucketName}
+USERS_TABLE=${appName}-mail-users
+EMAIL_DOMAIN=${emailDomain}
+IMAP_PORT=${imapPort}
+SMTP_PORT=${smtpPort}
+MAIL_SUBDOMAIN=${mailSubdomain}
+ENVEOF
+# Replace placeholders with actual values
+sed -i "s/\\\${region}/${region}/g" /opt/mail-server/.env
+sed -i "s/\\\${emailBucketName}/${emailBucketName}/g" /opt/mail-server/.env
+sed -i "s/\\\${appName}-mail-users/${appName}-mail-users/g" /opt/mail-server/.env
+sed -i "s/\\\${emailDomain}/${emailDomain}/g" /opt/mail-server/.env
+sed -i "s/\\\${imapPort}/${imapPort}/g" /opt/mail-server/.env
+sed -i "s/\\\${smtpPort}/${smtpPort}/g" /opt/mail-server/.env
+sed -i "s/\\\${mailSubdomain}/${mailSubdomain}/g" /opt/mail-server/.env
+
+# Create systemd service
+cat > /etc/systemd/system/mail-server.service << 'SYSTEMD'
+[Unit]
+Description=Stacks Mail Server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/mail-server
+EnvironmentFile=/opt/mail-server/.env
+ExecStart=/root/.bun/bin/bun run server.ts
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+SYSTEMD
+
+# Get TLS certificate
+certbot certonly --standalone -d ${mailSubdomain}.${emailDomain} --non-interactive --agree-tos --email admin@${emailDomain} || true
+
+# Enable and start service
+systemctl daemon-reload
+systemctl enable mail-server
+systemctl start mail-server
+
+echo "Mail server setup complete at $(date)"
+`
+
+      // Mail Server EC2 Instance
+      template.Resources.MailServerInstance = {
+        Type: 'AWS::EC2::Instance',
+        DependsOn: ['MailServerInstanceProfile', 'MailServerSecurityGroup', 'MailUsersTable', 'MailServerSubnetRouteTableAssociation'],
+        Properties: {
+          InstanceType: instanceType,
+          ImageId: { 'Fn::Sub': '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64}}' },
+          IamInstanceProfile: { Ref: 'MailServerInstanceProfile' },
+          SubnetId: { Ref: 'MailServerSubnet' },
+          SecurityGroupIds: [{ 'Fn::GetAtt': ['MailServerSecurityGroup', 'GroupId'] }],
+          BlockDeviceMappings: [
+            {
+              DeviceName: '/dev/xvda',
+              Ebs: {
+                VolumeSize: diskSize,
+                VolumeType: 'gp3',
+                Encrypted: true,
+              },
+            },
+          ],
+          UserData: { 'Fn::Base64': userDataScript },
+          Tags: [
+            { Key: 'Name', Value: `${appName}-mail-server` },
+            { Key: 'Purpose', Value: 'MailServer' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        },
+      }
+
+      // Elastic IP for Mail Server (stable IP for DNS)
+      template.Resources.MailServerEIP = {
+        Type: 'AWS::EC2::EIP',
+        Properties: {
+          Domain: 'vpc',
+          Tags: [
+            { Key: 'Name', Value: `${appName}-mail-server-eip` },
+            { Key: 'Purpose', Value: 'MailServer' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
+        },
+      }
+
+      // Associate EIP with Mail Server
+      template.Resources.MailServerEIPAssociation = {
+        Type: 'AWS::EC2::EIPAssociation',
+        Properties: {
+          InstanceId: { Ref: 'MailServerInstance' },
+          EIP: { Ref: 'MailServerEIP' },
+        },
+      }
+
+      // Route53 record for mail server
+      template.Resources.MailServerDnsRecord = {
+        Type: 'AWS::Route53::RecordSet',
+        DependsOn: ['MailServerEIP'],
+        Properties: {
+          HostedZoneId: hostedZoneId,
+          Name: `${mailSubdomain}.${emailDomain}`,
+          Type: 'A',
+          TTL: '300',
+          ResourceRecords: [{ Ref: 'MailServerEIP' }],
+        },
+      }
+
       // Add email outputs
       template.Outputs.EmailBucketName = {
         Description: 'Name of the email storage bucket',
@@ -1507,8 +1993,53 @@ exports.handler = async (event) => {
         Description: 'DynamoDB table for mail users',
         Value: { Ref: 'MailUsersTable' },
       }
+      template.Outputs.MailServerIP = {
+        Description: 'Mail server public IP address',
+        Value: { Ref: 'MailServerEIP' },
+      }
+      template.Outputs.MailServerHostname = {
+        Description: 'Mail server hostname for IMAP/SMTP',
+        Value: `${emailConfig?.server?.subdomain || 'mail'}.${emailDomain}`,
+      }
+      template.Outputs.MailServerInstanceId = {
+        Description: 'Mail server EC2 instance ID',
+        Value: { Ref: 'MailServerInstance' },
+      }
 
-      log.success('Email infrastructure added to template')
+      log.success('Email infrastructure added to template (including EC2 mail server)')
+
+      // Upload mail server code to S3 (if bucket exists)
+      try {
+        const { S3Client: S3 } = await import('ts-cloud/aws')
+        const s3Client = new S3(region)
+        
+        // Read the mail server code
+        const mailServerPath = p.frameworkPath('core/mail-server/server.ts')
+        if (existsSync(mailServerPath)) {
+          const serverCode = readFileSync(mailServerPath, 'utf-8')
+          await s3Client.putObject({
+            bucket: emailBucketName,
+            key: 'mail-server/server.ts',
+            body: serverCode,
+            contentType: 'text/typescript',
+          })
+          log.success('Uploaded mail server code to S3')
+        }
+
+        // Upload package.json
+        const pkgPath = p.frameworkPath('core/mail-server/package.json')
+        if (existsSync(pkgPath)) {
+          const pkgJson = readFileSync(pkgPath, 'utf-8')
+          await s3Client.putObject({
+            bucket: emailBucketName,
+            key: 'mail-server/package.json',
+            body: pkgJson,
+            contentType: 'application/json',
+          })
+        }
+      } catch (uploadErr: any) {
+        log.debug(`Could not upload mail server to S3 (bucket may not exist yet): ${uploadErr.message}`)
+      }
     }
 
     try {
@@ -1536,6 +2067,28 @@ exports.handler = async (event) => {
         // Set up email DNS records after stack update
         if (enableEmailServer) {
           await setupEmailDnsRecords(emailDomain, region, log)
+          
+          // Create default mail user if configured
+          await createDefaultMailUser(appName, emailDomain, region, log)
+          
+          // Upload mail server code to S3 now that bucket exists
+          try {
+            const { S3Client: S3 } = await import('ts-cloud/aws')
+            const s3Client = new S3(region)
+            const mailServerPath = p.frameworkPath('core/mail-server/server.ts')
+            if (existsSync(mailServerPath)) {
+              const serverCode = readFileSync(mailServerPath, 'utf-8')
+              await s3Client.putObject({
+                bucket: emailBucketName,
+                key: 'mail-server/server.ts',
+                body: serverCode,
+                contentType: 'text/typescript',
+              })
+              log.success('Mail server code uploaded to S3')
+            }
+          } catch (e: any) {
+            log.debug(`S3 upload after stack update: ${e.message}`)
+          }
         }
 
         return true
