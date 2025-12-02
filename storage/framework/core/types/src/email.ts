@@ -29,9 +29,9 @@ export interface MailboxConfig {
 export interface MailServerInstanceConfig {
   /**
    * EC2 instance type for the mail server
-   * @default 't4g.nano'
+   * @default 't4g.nano' for serverless, 't3.small' for server mode
    */
-  type?: 't4g.nano' | 't4g.micro' | 't4g.small' | 't4g.medium' | 't3.nano' | 't3.micro' | 't3.small' | 't3.medium'
+  type?: 't4g.nano' | 't4g.micro' | 't4g.small' | 't4g.medium' | 't3.nano' | 't3.micro' | 't3.small' | 't3.medium' | 't3.large' | 't3.xlarge'
 
   /**
    * Use spot instance for cost savings (~70% cheaper)
@@ -42,7 +42,7 @@ export interface MailServerInstanceConfig {
 
   /**
    * Root volume size in GB
-   * @default 8
+   * @default 8 for serverless, 30 for server mode
    */
   diskSize?: number
 
@@ -54,27 +54,109 @@ export interface MailServerInstanceConfig {
 
 export interface MailServerPortsConfig {
   /**
-   * IMAP port (TLS)
-   * @default 993
-   */
-  imap?: number
-
-  /**
-   * SMTP submission port (TLS)
-   * @default 465
+   * Standard SMTP port
+   * @default 25
    */
   smtp?: number
+
+  /**
+   * SMTP over TLS (implicit TLS)
+   * @default 465
+   */
+  smtps?: number
 
   /**
    * SMTP submission port (STARTTLS)
    * @default 587
    */
+  submission?: number
+
+  /**
+   * IMAP port (plaintext, not recommended)
+   * @default 143
+   */
+  imap?: number
+
+  /**
+   * IMAP over TLS
+   * @default 993
+   */
+  imaps?: number
+
+  /**
+   * POP3 port (plaintext, not recommended)
+   * @default 110
+   */
+  pop3?: number
+
+  /**
+   * POP3 over TLS
+   * @default 995
+   */
+  pop3s?: number
+
+  /**
+   * @deprecated Use 'submission' instead
+   */
   smtpStartTls?: number
+}
+
+export interface MailServerFeaturesConfig {
+  /**
+   * Enable IMAP server
+   * @default true
+   */
+  imap?: boolean
+
+  /**
+   * Enable POP3 server
+   * @default true
+   */
+  pop3?: boolean
+
+  /**
+   * Enable webmail interface (future)
+   * @default false
+   */
+  webmail?: boolean
+
+  /**
+   * Enable CalDAV for calendar sync
+   * @default false
+   */
+  calDAV?: boolean
+
+  /**
+   * Enable CardDAV for contacts sync
+   * @default false
+   */
+  cardDAV?: boolean
+
+  /**
+   * Enable Exchange ActiveSync
+   * @default false
+   */
+  activeSync?: boolean
 }
 
 export interface EmailServerConfig {
   enabled: boolean
   scan?: boolean // spam/virus scanning
+
+  /**
+   * Server mode:
+   * - 'serverless': Lightweight TypeScript/Bun server (default, ~$3/month)
+   * - 'server': Full-featured Zig mail server with IMAP, POP3, CalDAV, etc.
+   * @default 'serverless'
+   */
+  mode?: 'serverless' | 'server'
+
+  /**
+   * Path to the Zig mail server repository (only used when mode is 'server')
+   * @default process.env.MAIL_SERVER_PATH
+   */
+  serverPath?: string
+
   storage?: {
     bucket?: string
     retentionDays?: number
@@ -93,6 +175,11 @@ export interface EmailServerConfig {
    * Mail server ports configuration
    */
   ports?: MailServerPortsConfig
+
+  /**
+   * Mail server features (only available in 'server' mode)
+   */
+  features?: MailServerFeaturesConfig
 
   /**
    * Subdomain for the mail server

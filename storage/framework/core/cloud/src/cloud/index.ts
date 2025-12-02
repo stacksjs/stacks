@@ -12,6 +12,7 @@ import { DocsStack } from './docs'
 import { EmailStack } from './email'
 import { FileSystemStack } from './file-system'
 import { JumpBoxStack } from './jump-box'
+import { MailServerStack } from './mail-server'
 import { NetworkStack } from './network'
 import { PermissionsStack } from './permissions'
 import { QueueStack } from './queue'
@@ -30,6 +31,7 @@ export class Cloud extends Stack {
   jumpBox: JumpBoxStack
   docs: DocsStack
   email: EmailStack
+  mailServer?: MailServerStack
   redirects: RedirectsStack
   permissions: PermissionsStack
   ai: AiStack
@@ -78,6 +80,16 @@ export class Cloud extends Stack {
       ...props,
       zone: this.dns.zone,
     })
+
+    // Deploy mail server if mode is 'server'
+    if (config.email.server?.mode === 'server') {
+      this.mailServer = new MailServerStack(this, {
+        ...props,
+        vpc: this.network.vpc,
+        zone: this.dns.zone,
+        certificate: this.security.certificate,
+      })
+    }
 
     this.redirects = new RedirectsStack(this, props)
 
