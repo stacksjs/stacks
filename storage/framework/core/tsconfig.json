@@ -25,15 +25,7 @@
     },
     "resolveJsonModule": true,
     "types": [
-      "bun",
-      "vite/client",
-      "unplugin-vue-router/client",
-      // "vue/ref-macros",
-      "vite-plugin-pwa/client",
-      "vite-plugin-layouts/client",
-      "@intlify/unplugin-vue-i18n/messages",
-      "@vite-pwa/vitepress",
-      "vitepress"
+      "bun"
     ],
     "allowImportingTsExtensions": true,
     "strict": true,
@@ -69,8 +61,7 @@
     "../../../*.yml",
     "../../../**/*.yml",
     "../../../*.d.ts",
-    "../../../**/*.d.ts",
-    "../docs/.vitepress/*"
+    "../../../**/*.d.ts"
   ],
   "exclude": [
     "../**/cdk.out",
@@ -84,7 +75,6 @@
     "../server/core",
     "../server/docs",
     "../server/routes",
-    "../server/storage",
-    "../../../.stacks"
+    "../server/storage"
   ]
 }
