@@ -32,16 +32,9 @@ export class EmailStack {
       encryption: s3.BucketEncryption.S3_MANAGED,
       lifecycleRules: [
         {
-          id: '24h',
+          id: 'Intelligent transition for Incoming',
           enabled: true,
-          expiration: Duration.days(1),
-          noncurrentVersionExpiration: Duration.days(1),
-          prefix: 'today/',
-        },
-        {
-          id: 'Intelligent transition for Inbox',
-          enabled: true,
-          prefix: 'inbox/',
+          prefix: 'incoming/',
           transitions: [
             {
               storageClass: s3.StorageClass.INTELLIGENT_TIERING,
@@ -59,6 +52,40 @@ export class EmailStack {
               transitionAfter: Duration.days(0),
             },
           ],
+        },
+        {
+          id: 'Intelligent transition for Archive',
+          enabled: true,
+          prefix: 'archive/',
+          transitions: [
+            {
+              storageClass: s3.StorageClass.INTELLIGENT_TIERING,
+              transitionAfter: Duration.days(0),
+            },
+          ],
+        },
+        {
+          id: 'Intelligent transition for Drafts',
+          enabled: true,
+          prefix: 'drafts/',
+          transitions: [
+            {
+              storageClass: s3.StorageClass.INTELLIGENT_TIERING,
+              transitionAfter: Duration.days(0),
+            },
+          ],
+        },
+        {
+          id: 'Auto-delete Trash after 30 days',
+          enabled: true,
+          prefix: 'trash/',
+          expiration: Duration.days(30),
+        },
+        {
+          id: 'Auto-delete Junk after 7 days',
+          enabled: true,
+          prefix: 'junk/',
+          expiration: Duration.days(7),
         },
       ],
     })
@@ -102,7 +129,7 @@ export class EmailStack {
           {
             s3Action: {
               bucketName: this.emailBucket.bucketName,
-              objectKeyPrefix: 'tmp/email_in/',
+              objectKeyPrefix: 'incoming/', // IMAP server reads from this prefix
             },
           },
         ],
@@ -330,7 +357,7 @@ export class EmailStack {
     this.emailBucket.addEventNotification(
       s3.EventType.OBJECT_CREATED_PUT,
       new s3n.LambdaDestination(lambdaEmailInbound),
-      { prefix: 'tmp/email_in/' },
+      { prefix: 'incoming/' },
     )
     this.emailBucket.addEventNotification(
       s3.EventType.OBJECT_CREATED_PUT,
@@ -345,12 +372,12 @@ export class EmailStack {
     this.emailBucket.addEventNotification(
       s3.EventType.OBJECT_CREATED_COPY,
       new s3n.LambdaDestination(lambdaEmailConverter),
-      { prefix: 'inbox/' },
+      { prefix: 'incoming/' },
     )
     this.emailBucket.addEventNotification(
       s3.EventType.OBJECT_CREATED_COPY,
       new s3n.LambdaDestination(lambdaEmailConverter),
-      { prefix: 'today/' },
+      { prefix: 'archive/' },
     )
   }
 }

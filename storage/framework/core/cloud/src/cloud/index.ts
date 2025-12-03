@@ -81,13 +81,14 @@ export class Cloud extends Stack {
       zone: this.dns.zone,
     })
 
-    // Deploy mail server if mode is 'server'
-    if (config.email.server?.mode === 'server') {
+    // Deploy mail server if enabled (works for both 'serverless' and 'server' modes)
+    if (config.email.server?.enabled) {
       this.mailServer = new MailServerStack(this, {
         ...props,
         vpc: this.network.vpc,
         zone: this.dns.zone,
         certificate: this.security.certificate,
+        emailBucket: this.email.emailBucket, // Share the email bucket for S3 storage
       })
     }
 
