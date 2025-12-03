@@ -141,9 +141,20 @@ try {
 
     // Get AWS account ID for ECR
     const accountId = process.env.AWS_ACCOUNT_ID || await getAwsAccountId(region)
+
+    // Validate account ID before proceeding
+    if (!accountId || accountId.length < 10) {
+      throw new Error(
+        `Invalid AWS Account ID: "${accountId || '(empty)'}"\n` +
+        `Set AWS_ACCOUNT_ID in your .env file or ensure valid AWS credentials are configured.`
+      )
+    }
+
     const projectName = cloudConfigModule?.tsCloud?.project?.name || 'stacks'
     const ecrRepository = `${accountId}.dkr.ecr.${region}.amazonaws.com/${projectName}-${environment}-api`
     const imageTag = `${ecrRepository}:latest`
+
+    if (isVerbose) log.debug(`ECR repository: ${ecrRepository}`)
 
     // Step 1: Verify ECR credentials (actual login happens before push)
     if (isVerbose) log.debug('ECR credentials will be validated before push...')
@@ -281,8 +292,11 @@ try {
       const { STSClient } = await import('ts-cloud/aws')
       const sts = new STSClient(region)
       const identity = await sts.getCallerIdentity()
-      return identity.Account || process.env.AWS_ACCOUNT_ID || ''
-    } catch (error) {
+      const accountId = identity.Account || process.env.AWS_ACCOUNT_ID || ''
+      if (isVerbose) log.debug(`Retrieved AWS Account ID: ${accountId || '(empty)'}`)
+      return accountId
+    } catch (error: any) {
+      if (isVerbose) log.debug(`Failed to get AWS Account ID: ${error.message}`)
       // Fallback to environment variable
       return process.env.AWS_ACCOUNT_ID || ''
     }
