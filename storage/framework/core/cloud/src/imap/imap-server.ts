@@ -10,6 +10,27 @@ import * as net from 'node:net'
 import * as tls from 'node:tls'
 import * as fs from 'node:fs'
 import * as crypto from 'node:crypto'
+import { S3Client } from './s3'
+
+/**
+ * Pattern configuration for a single email category
+ */
+export interface CategoryPatternConfig {
+  domains?: string[]
+  substrings?: string[]
+  headers?: Record<string, string[]>
+}
+
+/**
+ * Configuration for all email categories
+ */
+export interface CategorizationConfig {
+  enabled?: boolean
+  social?: CategoryPatternConfig
+  forums?: CategoryPatternConfig
+  updates?: CategoryPatternConfig
+  promotions?: CategoryPatternConfig
+}
 
 export interface ImapServerConfig {
   port?: number
@@ -24,6 +45,301 @@ export interface ImapServerConfig {
     key: string
     cert: string
   }
+  /**
+   * Email categorization configuration.
+   * When enabled, emails are automatically sorted into Social, Forums, Updates, Promotions folders.
+   * You can customize the patterns or use the defaults from the stacks config.
+   */
+  categorization?: CategorizationConfig
+}
+
+/**
+ * Email category types for automatic classification
+ */
+export type EmailCategory = 'social' | 'forums' | 'updates' | 'promotions' | 'primary'
+
+/**
+ * Known sender patterns for automatic email categorization
+ * These patterns match common email senders to categorize emails like Gmail does
+ */
+export const CATEGORY_PATTERNS: Record<Exclude<EmailCategory, 'primary'>, {
+  domains: string[]
+  substrings: string[]
+  headers?: Record<string, string[]>
+}> = {
+  // Social networks and social media platforms
+  social: {
+    domains: [
+      'facebookmail.com', 'facebook.com', 'fb.com',
+      'twitter.com', 'x.com',
+      'linkedin.com', 'linkedinmail.com',
+      'instagram.com',
+      'tiktok.com',
+      'snapchat.com',
+      'pinterest.com',
+      'reddit.com', 'redditmail.com',
+      'tumblr.com',
+      'discord.com', 'discordapp.com',
+      'slack.com',
+      'whatsapp.com',
+      'telegram.org',
+      'signal.org',
+      'nextdoor.com',
+      'meetup.com',
+      'bumble.com', 'tinder.com', 'hinge.co',
+      'strava.com',
+      'twitch.tv',
+      'mastodon.social',
+      'threads.net',
+      'bluesky.social',
+    ],
+    substrings: [
+      'notification', 'noreply', 'no-reply',
+      '@social.', '@notify.',
+    ],
+    headers: {
+      'x-mailer': ['facebook', 'twitter', 'linkedin'],
+    },
+  },
+
+  // Mailing lists, forums, and discussion groups
+  forums: {
+    domains: [
+      'googlegroups.com', 'groups.google.com',
+      'groups.io',
+      'yahoogroups.com',
+      'discourse.org',
+      'mailman.', 'lists.',
+      'freelists.org',
+      'topica.com',
+      'listserv.',
+      'gaggle.email',
+      'simplelists.com',
+      'mailchimp.com', // when used for mailing lists
+      'stackexchange.com', 'stackoverflow.com',
+      'quora.com',
+      'dev.to',
+      'hackernews.com',
+      'lobste.rs',
+      'producthunt.com',
+    ],
+    substrings: [
+      '-list@', '-users@', '-dev@', '-announce@',
+      'mailing-list', 'mailinglist',
+      'discussion@', 'forum@', 'community@',
+      '@lists.', '@list.',
+    ],
+    headers: {
+      'list-unsubscribe': [''], // Presence indicates mailing list
+      'list-id': [''],
+      'x-mailing-list': [''],
+      'precedence': ['list', 'bulk'],
+    },
+  },
+
+  // Transactional updates, notifications, confirmations
+  updates: {
+    domains: [
+      // Development & DevOps
+      'github.com', 'gitlab.com', 'bitbucket.org',
+      'circleci.com', 'travis-ci.com',
+      'vercel.com', 'netlify.com', 'heroku.com',
+      'aws.amazon.com', 'amazonses.com',
+      'cloud.google.com', 'azure.microsoft.com',
+      'digitalocean.com', 'linode.com',
+      'sentry.io', 'bugsnag.com',
+      'datadog.com', 'newrelic.com',
+      'pagerduty.com', 'opsgenie.com',
+      'atlassian.com', 'jira.com',
+      'notion.so', 'clickup.com', 'asana.com',
+      'linear.app',
+
+      // Finance & Banking
+      'paypal.com', 'venmo.com', 'cashapp.com',
+      'stripe.com', 'squareup.com',
+      'intuit.com', 'quickbooks.com',
+      'chase.com', 'wellsfargo.com', 'bankofamerica.com',
+      'capitalone.com', 'citi.com', 'discover.com',
+      'americanexpress.com', 'amex.com',
+
+      // Shipping & Logistics
+      'ups.com', 'fedex.com', 'usps.com', 'dhl.com',
+      'amazon.com', // shipping notifications
+
+      // Travel & Reservations
+      'booking.com', 'airbnb.com', 'vrbo.com',
+      'expedia.com', 'kayak.com', 'tripadvisor.com',
+      'uber.com', 'lyft.com',
+      'delta.com', 'united.com', 'aa.com', 'southwest.com',
+
+      // Services & Subscriptions
+      'apple.com', 'google.com', 'microsoft.com',
+      'dropbox.com', 'box.com',
+      'zoom.us', 'calendly.com',
+      'docusign.com', 'hellosign.com',
+    ],
+    substrings: [
+      'alert@', 'alerts@', 'notification@', 'notifications@',
+      'update@', 'updates@', 'status@',
+      'confirm@', 'confirmation@', 'receipt@',
+      'invoice@', 'billing@', 'payment@',
+      'security@', 'account@', 'verify@',
+      'shipping@', 'delivery@', 'tracking@',
+      'support@', 'help@', 'service@',
+      'donotreply@', 'do-not-reply@', 'do_not_reply@',
+      '@mail.', '@email.', '@e.', '@em.',
+    ],
+    headers: {
+      'x-auto-response-suppress': [''],
+      'auto-submitted': ['auto-generated', 'auto-replied'],
+    },
+  },
+
+  // Marketing, promotional, and commercial emails
+  promotions: {
+    domains: [
+      // Marketing platforms
+      'mailchimp.com', 'sendgrid.net', 'sendgrid.com',
+      'constantcontact.com', 'mailgun.org', 'mailgun.com',
+      'mailjet.com', 'sendinblue.com', 'brevo.com',
+      'hubspot.com', 'hubspotemail.net',
+      'klaviyo.com', 'omnisend.com',
+      'activecampaign.com', 'drip.com',
+      'convertkit.com', 'aweber.com', 'getresponse.com',
+      'campaignmonitor.com', 'createsend.com',
+      'sailthru.com', 'iterable.com',
+      'marketo.com', 'eloqua.com', 'pardot.com',
+
+      // Retail & E-commerce
+      'amazonses.com', 'amazon.com',
+      'ebay.com', 'etsy.com',
+      'walmart.com', 'target.com', 'bestbuy.com',
+      'macys.com', 'nordstrom.com', 'kohls.com',
+      'nike.com', 'adidas.com',
+      'gap.com', 'oldnavy.com', 'zara.com', 'hm.com',
+      'sephora.com', 'ulta.com',
+      'wayfair.com', 'overstock.com',
+      'homedepot.com', 'lowes.com',
+      'costco.com', 'samsclub.com',
+
+      // Food & Delivery
+      'doordash.com', 'grubhub.com', 'ubereats.com',
+      'postmates.com', 'instacart.com',
+      'dominos.com', 'pizzahut.com', 'papajohns.com',
+      'starbucks.com', 'dunkindonuts.com', 'chipotle.com',
+
+      // Entertainment & Media
+      'netflix.com', 'hulu.com', 'disneyplus.com',
+      'hbomax.com', 'peacocktv.com', 'paramountplus.com',
+      'spotify.com', 'apple.com',
+      'audible.com', 'kindle.com',
+      'ticketmaster.com', 'stubhub.com', 'eventbrite.com',
+
+      // Deals & Coupons
+      'groupon.com', 'livingsocial.com',
+      'retailmenot.com', 'slickdeals.net',
+      'honey.com', 'rakuten.com',
+    ],
+    substrings: [
+      'promo@', 'promotions@', 'marketing@',
+      'deals@', 'offers@', 'sale@', 'sales@',
+      'newsletter@', 'news@', 'digest@',
+      'shop@', 'store@', 'order@', 'orders@',
+      'rewards@', 'loyalty@', 'members@',
+      '@promo.', '@marketing.', '@deals.',
+      '@offers.', '@shop.', '@store.',
+      'unsubscribe', // presence in from/to often indicates marketing
+    ],
+    headers: {
+      'x-campaign': [''],
+      'x-mailchimp-': [''],
+      'x-sg-': [''], // SendGrid
+      'x-ses-': [''], // Amazon SES (often marketing)
+    },
+  },
+}
+
+/**
+ * Merge custom patterns with defaults
+ * @param defaults - Default patterns
+ * @param custom - Custom patterns from config (if provided)
+ * @returns Merged patterns
+ */
+function mergePatterns(
+  defaults: typeof CATEGORY_PATTERNS,
+  custom?: CategorizationConfig
+): typeof CATEGORY_PATTERNS {
+  if (!custom) return defaults
+
+  const result = { ...defaults }
+
+  for (const category of ['social', 'forums', 'updates', 'promotions'] as const) {
+    const customCat = custom[category]
+    if (customCat) {
+      result[category] = {
+        domains: customCat.domains || defaults[category].domains,
+        substrings: customCat.substrings || defaults[category].substrings,
+        headers: customCat.headers || defaults[category].headers,
+      }
+    }
+  }
+
+  return result
+}
+
+/**
+ * Categorize an email based on sender patterns and headers
+ * @param from - The From header value
+ * @param headers - All email headers
+ * @param customPatterns - Optional custom patterns from config
+ * @returns The category for the email
+ */
+export function categorizeEmail(
+  from: string,
+  headers: Record<string, string>,
+  customPatterns?: CategorizationConfig
+): EmailCategory {
+  const fromLower = from.toLowerCase()
+  const patterns = mergePatterns(CATEGORY_PATTERNS, customPatterns)
+
+  // Check each category's patterns
+  for (const [category, categoryPatterns] of Object.entries(patterns)) {
+    // Check domain patterns
+    for (const domain of categoryPatterns.domains) {
+      if (fromLower.includes(domain)) {
+        return category as EmailCategory
+      }
+    }
+
+    // Check substring patterns
+    for (const substring of categoryPatterns.substrings) {
+      if (fromLower.includes(substring)) {
+        return category as EmailCategory
+      }
+    }
+
+    // Check header patterns
+    if (categoryPatterns.headers) {
+      for (const [headerName, headerValues] of Object.entries(categoryPatterns.headers)) {
+        const headerValue = headers[headerName.toLowerCase()] || ''
+        if (headerValue) {
+          // If headerValues is empty, presence of header is enough
+          if (headerValues.length === 0 || headerValues[0] === '') {
+            return category as EmailCategory
+          }
+          // Otherwise check if header value matches any pattern
+          for (const value of headerValues) {
+            if (headerValue.toLowerCase().includes(value.toLowerCase())) {
+              return category as EmailCategory
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Default to primary inbox if no patterns match
+  return 'primary'
 }
 
 interface ImapSession {
@@ -50,184 +366,20 @@ interface EmailMessage {
   raw?: string
 }
 
-// Simple S3 client that uses direct HTTP requests
-class SimpleS3Client {
-  private region: string
-  private accessKeyId: string
-  private secretAccessKey: string
-
-  constructor(region: string) {
-    this.region = region
-    this.accessKeyId = process.env.AWS_ACCESS_KEY_ID || ''
-    this.secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || ''
-  }
-
-  private async sign(method: string, path: string, headers: Record<string, string>, payload: string): Promise<Record<string, string>> {
-    const algorithm = 'AWS4-HMAC-SHA256'
-    const service = 's3'
-    const now = new Date()
-    const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '')
-    const dateStamp = amzDate.substring(0, 8)
-
-    const payloadHash = crypto.createHash('sha256').update(payload).digest('hex')
-    headers['x-amz-content-sha256'] = payloadHash
-    headers['x-amz-date'] = amzDate
-
-    const canonicalHeaders = Object.entries(headers)
-      .sort(([a], [b]) => a.toLowerCase().localeCompare(b.toLowerCase()))
-      .map(([k, v]) => `${k.toLowerCase()}:${v.trim()}`)
-      .join('\n')
-
-    const signedHeaders = Object.keys(headers)
-      .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
-      .map(k => k.toLowerCase())
-      .join(';')
-
-    const canonicalRequest = [
-      method,
-      path,
-      '',
-      canonicalHeaders,
-      '',
-      signedHeaders,
-      payloadHash,
-    ].join('\n')
-
-    const credentialScope = `${dateStamp}/${this.region}/${service}/aws4_request`
-    const stringToSign = [
-      algorithm,
-      amzDate,
-      credentialScope,
-      crypto.createHash('sha256').update(canonicalRequest).digest('hex'),
-    ].join('\n')
-
-    const kDate = crypto.createHmac('sha256', `AWS4${this.secretAccessKey}`).update(dateStamp).digest()
-    const kRegion = crypto.createHmac('sha256', kDate).update(this.region).digest()
-    const kService = crypto.createHmac('sha256', kRegion).update(service).digest()
-    const kSigning = crypto.createHmac('sha256', kService).update('aws4_request').digest()
-    const signature = crypto.createHmac('sha256', kSigning).update(stringToSign).digest('hex')
-
-    headers['Authorization'] = `${algorithm} Credential=${this.accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`
-
-    return headers
-  }
-
-  async list(params: { bucket: string; prefix?: string; maxKeys?: number }): Promise<Array<{ Key: string; Size: number; LastModified: string }>> {
-    const prefix = params.prefix || ''
-    const maxKeys = params.maxKeys || 1000
-    const host = `${params.bucket}.s3.${this.region}.amazonaws.com`
-    const path = `/?list-type=2&prefix=${encodeURIComponent(prefix)}&max-keys=${maxKeys}`
-
-    const headers: Record<string, string> = {
-      Host: host,
-    }
-
-    const signedHeaders = await this.sign('GET', path, headers, '')
-
-    const response = await fetch(`https://${host}${path}`, {
-      method: 'GET',
-      headers: signedHeaders,
-    })
-
-    const xml = await response.text()
-    const results: Array<{ Key: string; Size: number; LastModified: string }> = []
-
-    // Simple XML parsing for Contents
-    const contentMatches = xml.matchAll(/<Contents>([\s\S]*?)<\/Contents>/g)
-    for (const match of contentMatches) {
-      const content = match[1]
-      const keyMatch = content.match(/<Key>(.*?)<\/Key>/)
-      const sizeMatch = content.match(/<Size>(.*?)<\/Size>/)
-      const dateMatch = content.match(/<LastModified>(.*?)<\/LastModified>/)
-
-      if (keyMatch) {
-        results.push({
-          Key: keyMatch[1],
-          Size: sizeMatch ? Number.parseInt(sizeMatch[1], 10) : 0,
-          LastModified: dateMatch ? dateMatch[1] : new Date().toISOString(),
-        })
-      }
-    }
-
-    return results
-  }
-
-  async getObject(bucket: string, key: string): Promise<string> {
-    const host = `${bucket}.s3.${this.region}.amazonaws.com`
-    const path = `/${encodeURIComponent(key).replace(/%2F/g, '/')}`
-
-    const headers: Record<string, string> = {
-      Host: host,
-    }
-
-    const signedHeaders = await this.sign('GET', path, headers, '')
-
-    const response = await fetch(`https://${host}${path}`, {
-      method: 'GET',
-      headers: signedHeaders,
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to get object: ${response.status} ${response.statusText}`)
-    }
-
-    return await response.text()
-  }
-
-  async putObject(params: { bucket: string; key: string; body: string; contentType?: string }): Promise<void> {
-    const host = `${params.bucket}.s3.${this.region}.amazonaws.com`
-    const path = `/${encodeURIComponent(params.key).replace(/%2F/g, '/')}`
-
-    const headers: Record<string, string> = {
-      Host: host,
-      'Content-Type': params.contentType || 'application/octet-stream',
-    }
-
-    const signedHeaders = await this.sign('PUT', path, headers, params.body)
-
-    const response = await fetch(`https://${host}${path}`, {
-      method: 'PUT',
-      headers: signedHeaders,
-      body: params.body,
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to put object: ${response.status} ${response.statusText}`)
-    }
-  }
-
-  async deleteObject(bucket: string, key: string): Promise<void> {
-    const host = `${bucket}.s3.${this.region}.amazonaws.com`
-    const path = `/${encodeURIComponent(key).replace(/%2F/g, '/')}`
-
-    const headers: Record<string, string> = {
-      Host: host,
-    }
-
-    const signedHeaders = await this.sign('DELETE', path, headers, '')
-
-    const response = await fetch(`https://${host}${path}`, {
-      method: 'DELETE',
-      headers: signedHeaders,
-    })
-
-    if (!response.ok && response.status !== 204) {
-      throw new Error(`Failed to delete object: ${response.status} ${response.statusText}`)
-    }
-  }
-}
-
 /**
  * IMAP Server that reads emails from S3
  */
 export class ImapServer {
   private config: ImapServerConfig
-  private s3: SimpleS3Client
+  private s3: S3Client
   private server?: net.Server
   private tlsServer?: tls.Server
   private sessions: Map<string, ImapSession> = new Map()
   private messageCache: Map<string, Map<string, EmailMessage[]>> = new Map() // email -> folder -> messages
   private flagsCache: Map<string, Record<string, string[]>> = new Map() // email -> {s3Key: flags[]}
+  private categorizedCache: Map<string, Set<string>> = new Map() // email -> set of already-categorized S3 keys
+  private uidMappingCache: Map<string, Record<string, number>> = new Map() // email -> {s3Key: uid}
+  private nextUidCache: Map<string, number> = new Map() // email -> nextUid
   private cacheTimestamp: Map<string, number> = new Map()
   private uidCounter: Map<string, Map<string, number>> = new Map() // email -> folder -> uidCounter
   private readonly CACHE_TTL_MS = 10000 // 10 seconds cache TTL
@@ -240,7 +392,7 @@ export class ImapServer {
       prefix: 'incoming/',
       ...config,
     }
-    this.s3 = new SimpleS3Client(config.region || 'us-east-1')
+    this.s3 = new S3Client(config.region || 'us-east-1')
   }
 
   /**
@@ -432,6 +584,7 @@ export class ImapServer {
         await this.handleNamespace(session, tag)
         break
       case 'XLIST':
+        // XLIST is deprecated Gmail extension but some clients use it
         await this.handleXlist(session, tag, args || '')
         break
       case 'CREATE':
@@ -522,7 +675,8 @@ export class ImapServer {
   /**
    * Handle AUTHENTICATE command
    */
-  private async handleAuthenticate(session: ImapSession, tag: string, _args: string): Promise<void> {
+  private async handleAuthenticate(session: ImapSession, tag: string, args: string): Promise<void> {
+    // For simplicity, reject AUTHENTICATE and require LOGIN
     this.send(session, `${tag} NO Use LOGIN command`)
   }
 
@@ -567,17 +721,42 @@ export class ImapServer {
    * Handle EXAMINE command (read-only SELECT)
    */
   private async handleExamine(session: ImapSession, tag: string, args: string): Promise<void> {
+    // Same as SELECT but read-only
     await this.handleSelect(session, tag, args)
   }
 
   /**
-   * Handle CHECK command
+   * Handle NOOP command - check for new messages
+   */
+  private async handleNoop(session: ImapSession, tag: string): Promise<void> {
+    if (session.state === 'selected' && session.selectedMailbox === 'INBOX') {
+      // Get old message count
+      const oldMessages = this.messageCache.get(session.email || '') || []
+      const oldCount = oldMessages.length
+
+      // Force refresh to check for new messages
+      await this.loadMessages(session, true)
+      const newMessages = this.messageCache.get(session.email || '') || []
+      const newCount = newMessages.length
+
+      // Notify client of changes
+      if (newCount !== oldCount) {
+        this.send(session, `* ${newCount} EXISTS`)
+        const recent = newMessages.filter(m => m.flags.includes('\\Recent')).length
+        this.send(session, `* ${recent} RECENT`)
+      }
+    }
+    this.send(session, `${tag} OK NOOP completed`)
+  }
+
+  /**
+   * Handle CHECK command - request a checkpoint/sync
    */
   private async handleCheck(session: ImapSession, tag: string): Promise<void> {
+    // CHECK requests a checkpoint, we use it to refresh the cache
     if (session.state === 'selected') {
       await this.loadMessages(session, true)
-      const folder = session.selectedMailbox || 'INBOX'
-      const messages = this.getMessagesForFolder(session.email || '', folder)
+      const messages = this.messageCache.get(session.email || '') || []
       this.send(session, `* ${messages.length} EXISTS`)
     }
     this.send(session, `${tag} OK CHECK completed`)
@@ -592,27 +771,48 @@ export class ImapServer {
       return
     }
 
+    // Parse reference and pattern
     const match = args.match(/^"?([^"]*)"?\s+"?([^"]*)"?$/)
     if (!match) {
       this.send(session, `${tag} BAD Invalid LIST syntax`)
       return
     }
 
-    const [, _reference, pattern] = match
+    const [, reference, pattern] = match
 
+    // Return standard mailboxes with SPECIAL-USE attributes
+    // These attributes help email clients identify folder purposes
     if (pattern === '*' || pattern === '%' || pattern === '') {
+      // INBOX - main inbox
       this.send(session, `* LIST (\\HasNoChildren) "/" "INBOX"`)
+      // Sent - sent messages
       this.send(session, `* LIST (\\HasNoChildren \\Sent) "/" "Sent"`)
+      // Drafts - draft messages
       this.send(session, `* LIST (\\HasNoChildren \\Drafts) "/" "Drafts"`)
+      // Trash - deleted messages
       this.send(session, `* LIST (\\HasNoChildren \\Trash) "/" "Trash"`)
+      // Junk/Spam - spam messages
       this.send(session, `* LIST (\\HasNoChildren \\Junk) "/" "Junk"`)
+      // Archive - archived messages
       this.send(session, `* LIST (\\HasNoChildren \\Archive) "/" "Archive"`)
+      // All Mail - all messages (Gmail-style)
       this.send(session, `* LIST (\\HasNoChildren \\All) "/" "All Mail"`)
+      // Starred - flagged/important messages (virtual folder)
+      this.send(session, `* LIST (\\HasNoChildren \\Flagged) "/" "Starred"`)
+      // Important - high priority messages (virtual folder)
+      this.send(session, `* LIST (\\HasNoChildren \\Important) "/" "Important"`)
+
+      // Gmail-style Categories (real folders with S3 storage)
+      this.send(session, `* LIST (\\HasNoChildren) "/" "Social"`)
+      this.send(session, `* LIST (\\HasNoChildren) "/" "Forums"`)
+      this.send(session, `* LIST (\\HasNoChildren) "/" "Updates"`)
+      this.send(session, `* LIST (\\HasNoChildren) "/" "Promotions"`)
     }
     else if (pattern.toUpperCase() === 'INBOX') {
       this.send(session, `* LIST (\\HasNoChildren) "/" "INBOX"`)
     }
     else {
+      // Check for specific folder patterns
       const upperPattern = pattern.toUpperCase()
       if (upperPattern === 'SENT' || upperPattern === '*SENT*') {
         this.send(session, `* LIST (\\HasNoChildren \\Sent) "/" "Sent"`)
@@ -635,7 +835,7 @@ export class ImapServer {
   }
 
   /**
-   * Handle LSUB command
+   * Handle LSUB command (subscribed folders)
    */
   private async handleLsub(session: ImapSession, tag: string, args: string): Promise<void> {
     if (session.state === 'not_authenticated') {
@@ -643,14 +843,16 @@ export class ImapServer {
       return
     }
 
+    // Parse reference and pattern
     const match = args.match(/^"?([^"]*)"?\s+"?([^"]*)"?$/)
     if (!match) {
       this.send(session, `${tag} BAD Invalid LSUB syntax`)
       return
     }
 
-    const [, _reference, pattern] = match
+    const [, reference, pattern] = match
 
+    // Return all folders as subscribed
     if (pattern === '*' || pattern === '%' || pattern === '') {
       this.send(session, `* LSUB (\\HasNoChildren) "/" "INBOX"`)
       this.send(session, `* LSUB (\\HasNoChildren \\Sent) "/" "Sent"`)
@@ -684,7 +886,7 @@ export class ImapServer {
 
     const [, mailbox, itemsStr] = match
 
-    // Load messages for the requested mailbox (not the selected one)
+    // Load messages for the requested mailbox
     await this.loadMessagesForFolder(session, mailbox)
     const messages = this.getMessagesForFolder(session.email || '', mailbox) || []
     const items = itemsStr.toUpperCase().split(/\s+/)
@@ -723,6 +925,7 @@ export class ImapServer {
       return
     }
 
+    // Parse sequence set and items
     const match = args.match(/^(\S+)\s+(.+)$/i)
     if (!match) {
       this.send(session, `${tag} BAD Invalid FETCH syntax`)
@@ -735,7 +938,7 @@ export class ImapServer {
     const indices = this.parseSequenceSet(sequenceSet, messages.length)
 
     for (const idx of indices) {
-      const msg = messages[idx - 1]
+      const msg = messages[idx - 1] // 1-indexed
       if (!msg)
         continue
 
@@ -747,7 +950,7 @@ export class ImapServer {
   }
 
   /**
-   * Handle UID command
+   * Handle UID command (UID FETCH, UID SEARCH, etc.)
    */
   private async handleUid(session: ImapSession, tag: string, args: string): Promise<void> {
     if (session.state !== 'selected') {
@@ -801,6 +1004,7 @@ export class ImapServer {
     const folder = session.selectedMailbox || 'INBOX'
     const messages = this.getMessagesForFolder(session.email || '', folder)
 
+    // Parse UID set
     const maxUid = messages.length > 0 ? Math.max(...messages.map(m => m.uid)) : 0
     const uids = this.parseSequenceSet(uidSet, maxUid)
 
@@ -820,7 +1024,7 @@ export class ImapServer {
   /**
    * Handle SEARCH command
    */
-  private async handleSearch(session: ImapSession, tag: string, _args: string): Promise<void> {
+  private async handleSearch(session: ImapSession, tag: string, args: string): Promise<void> {
     if (session.state !== 'selected') {
       this.send(session, `${tag} NO Must select mailbox first`)
       return
@@ -829,10 +1033,10 @@ export class ImapServer {
     const folder = session.selectedMailbox || 'INBOX'
     const messages = this.getMessagesForFolder(session.email || '', folder)
 
+    // Simple search - return all message sequence numbers
     if (messages.length === 0) {
       this.send(session, `* SEARCH`)
-    }
-    else {
+    } else {
       const results = messages.map((_, i) => i + 1)
       this.send(session, `* SEARCH ${results.join(' ')}`)
     }
@@ -842,14 +1046,14 @@ export class ImapServer {
   /**
    * Handle UID SEARCH
    */
-  private async handleUidSearch(session: ImapSession, tag: string, _args: string): Promise<void> {
+  private async handleUidSearch(session: ImapSession, tag: string, args: string): Promise<void> {
     const folder = session.selectedMailbox || 'INBOX'
     const messages = this.getMessagesForFolder(session.email || '', folder)
 
+    // Simple UID search - return all UIDs
     if (messages.length === 0) {
       this.send(session, `* SEARCH`)
-    }
-    else {
+    } else {
       const results = messages.map(m => m.uid)
       this.send(session, `* SEARCH ${results.join(' ')}`)
     }
@@ -858,6 +1062,8 @@ export class ImapServer {
 
   /**
    * Handle STORE command
+   * STORE sequence-set flags-operation flags
+   * Example: STORE 1 +FLAGS (\Deleted)
    */
   private async handleStore(session: ImapSession, tag: string, args: string): Promise<void> {
     if (session.state !== 'selected') {
@@ -865,6 +1071,9 @@ export class ImapServer {
       return
     }
 
+    // Parse: sequence-set flags-operation flags
+    // Example: 1 +FLAGS (\Deleted)
+    // Example: 1:* FLAGS.SILENT (\Seen)
     const match = args.match(/^(\S+)\s+([+-]?FLAGS(?:\.SILENT)?)\s+\(([^)]*)\)/i)
     if (!match) {
       this.send(session, `${tag} BAD Invalid STORE syntax`)
@@ -878,34 +1087,40 @@ export class ImapServer {
     const silent = operation.toUpperCase().includes('.SILENT')
     const flags = flagsStr.split(/\s+/).filter(f => f)
 
+    // Load persisted flags
     const persistedFlags = await this.loadFlags(session.email || '')
 
+    // For each message, update flags and send FETCH response (unless SILENT)
     for (const idx of indices) {
       const msg = messages[idx - 1]
-      if (!msg)
-        continue
+      if (!msg) continue
 
+      // Update flags based on operation
       if (operation.startsWith('+')) {
+        // Add flags
         for (const flag of flags) {
           if (!msg.flags.includes(flag)) {
             msg.flags.push(flag)
           }
         }
-      }
-      else if (operation.startsWith('-')) {
+      } else if (operation.startsWith('-')) {
+        // Remove flags
         msg.flags = msg.flags.filter(f => !flags.includes(f))
-      }
-      else {
+      } else {
+        // Replace flags
         msg.flags = [...flags]
       }
 
+      // Persist flags
       persistedFlags[msg.key] = [...msg.flags]
 
+      // Send FETCH response unless SILENT
       if (!silent) {
         this.send(session, `* ${idx} FETCH (FLAGS (${msg.flags.join(' ')}))`)
       }
     }
 
+    // Save flags to S3
     await this.saveFlags(session.email || '')
 
     this.send(session, `${tag} OK STORE completed`)
@@ -913,6 +1128,7 @@ export class ImapServer {
 
   /**
    * Handle UID STORE
+   * UID STORE uid-set flags-operation flags
    */
   private async handleUidStore(session: ImapSession, tag: string, args: string): Promise<void> {
     if (session.state !== 'selected') {
@@ -920,6 +1136,7 @@ export class ImapServer {
       return
     }
 
+    // Parse: uid-set flags-operation flags
     const match = args.match(/^(\S+)\s+([+-]?FLAGS(?:\.SILENT)?)\s+\(([^)]*)\)/i)
     if (!match) {
       this.send(session, `${tag} BAD Invalid UID STORE syntax`)
@@ -934,36 +1151,42 @@ export class ImapServer {
     const silent = operation.toUpperCase().includes('.SILENT')
     const flags = flagsStr.split(/\s+/).filter(f => f)
 
+    // Load persisted flags
     const persistedFlags = await this.loadFlags(session.email || '')
 
+    // For each message, update flags and send FETCH response (unless SILENT)
     for (const uid of uids) {
       const idx = messages.findIndex(m => m.uid === uid)
-      if (idx === -1)
-        continue
+      if (idx === -1) continue
 
       const msg = messages[idx]
 
+      // Update flags based on operation
       if (operation.startsWith('+')) {
+        // Add flags
         for (const flag of flags) {
           if (!msg.flags.includes(flag)) {
             msg.flags.push(flag)
           }
         }
-      }
-      else if (operation.startsWith('-')) {
+      } else if (operation.startsWith('-')) {
+        // Remove flags
         msg.flags = msg.flags.filter(f => !flags.includes(f))
-      }
-      else {
+      } else {
+        // Replace flags
         msg.flags = [...flags]
       }
 
+      // Persist flags
       persistedFlags[msg.key] = [...msg.flags]
 
+      // Send FETCH response unless SILENT
       if (!silent) {
         this.send(session, `* ${idx + 1} FETCH (UID ${msg.uid} FLAGS (${msg.flags.join(' ')}))`)
       }
     }
 
+    // Save flags to S3
     await this.saveFlags(session.email || '')
 
     this.send(session, `${tag} OK UID STORE completed`)
@@ -971,6 +1194,7 @@ export class ImapServer {
 
   /**
    * Handle COPY command
+   * COPY sequence-set mailbox
    */
   private async handleCopy(session: ImapSession, tag: string, args: string): Promise<void> {
     if (session.state !== 'selected') {
@@ -978,6 +1202,7 @@ export class ImapServer {
       return
     }
 
+    // Parse: sequence-set mailbox
     const match = args.match(/^(\S+)\s+"?([^"]+)"?$/i)
     if (!match) {
       this.send(session, `${tag} BAD Invalid COPY syntax`)
@@ -989,18 +1214,23 @@ export class ImapServer {
     const messages = this.getMessagesForFolder(session.email || '', sourceFolder)
     const indices = this.parseSequenceSet(sequenceSet, messages.length)
 
+    // Get destination folder S3 prefix
     const destPrefix = this.getFolderPrefix(destMailbox)
 
+    // Copy messages to destination folder
     for (const idx of indices) {
       const msg = messages[idx - 1]
-      if (!msg)
-        continue
+      if (!msg) continue
 
       try {
+        // Get the message content
         const content = msg.raw || await this.s3.getObject(this.config.bucket, msg.key)
+
+        // Generate new key for destination folder
         const filename = msg.key.split('/').pop() || `${Date.now()}`
         const newKey = `${destPrefix}${filename}`
 
+        // Copy to destination
         await this.s3.putObject({
           bucket: this.config.bucket,
           key: newKey,
@@ -1009,8 +1239,7 @@ export class ImapServer {
         })
 
         console.log(`Copied message from ${msg.key} to ${newKey}`)
-      }
-      catch (err) {
+      } catch (err) {
         console.error(`Failed to copy message: ${err}`)
       }
     }
@@ -1020,6 +1249,7 @@ export class ImapServer {
 
   /**
    * Handle UID COPY
+   * UID COPY uid-set mailbox
    */
   private async handleUidCopy(session: ImapSession, tag: string, args: string): Promise<void> {
     if (session.state !== 'selected') {
@@ -1027,6 +1257,7 @@ export class ImapServer {
       return
     }
 
+    // Parse: uid-set mailbox
     const match = args.match(/^(\S+)\s+"?([^"]+)"?$/i)
     if (!match) {
       this.send(session, `${tag} BAD Invalid UID COPY syntax`)
@@ -1039,18 +1270,23 @@ export class ImapServer {
     const maxUid = messages.length > 0 ? Math.max(...messages.map(m => m.uid)) : 0
     const uids = this.parseSequenceSet(uidSet, maxUid)
 
+    // Get destination folder S3 prefix
     const destPrefix = this.getFolderPrefix(destMailbox)
 
+    // Copy messages to destination folder
     for (const uid of uids) {
       const msg = messages.find(m => m.uid === uid)
-      if (!msg)
-        continue
+      if (!msg) continue
 
       try {
+        // Get the message content
         const content = msg.raw || await this.s3.getObject(this.config.bucket, msg.key)
+
+        // Generate new key for destination folder
         const filename = msg.key.split('/').pop() || `${Date.now()}`
         const newKey = `${destPrefix}${filename}`
 
+        // Copy to destination
         await this.s3.putObject({
           bucket: this.config.bucket,
           key: newKey,
@@ -1059,8 +1295,7 @@ export class ImapServer {
         })
 
         console.log(`UID COPY: Copied message from ${msg.key} to ${newKey}`)
-      }
-      catch (err) {
+      } catch (err) {
         console.error(`Failed to copy message: ${err}`)
       }
     }
@@ -1069,7 +1304,8 @@ export class ImapServer {
   }
 
   /**
-   * Handle MOVE command
+   * Handle MOVE command (RFC 6851)
+   * MOVE sequence-set mailbox
    */
   private async handleMove(session: ImapSession, tag: string, args: string): Promise<void> {
     if (session.state !== 'selected') {
@@ -1077,6 +1313,7 @@ export class ImapServer {
       return
     }
 
+    // Parse sequence set and destination mailbox
     const match = args.match(/^(\S+)\s+"?([^"]+)"?$/i)
     if (!match) {
       this.send(session, `${tag} BAD Invalid MOVE syntax`)
@@ -1091,16 +1328,17 @@ export class ImapServer {
 
     const movedIndices: number[] = []
 
+    // Copy messages to destination then delete from source
     for (const idx of indices) {
       const msg = messages[idx - 1]
-      if (!msg)
-        continue
+      if (!msg) continue
 
       try {
         const content = msg.raw || await this.s3.getObject(this.config.bucket, msg.key)
         const filename = msg.key.split('/').pop() || `${Date.now()}`
         const newKey = `${destPrefix}${filename}`
 
+        // Copy to destination
         await this.s3.putObject({
           bucket: this.config.bucket,
           key: newKey,
@@ -1108,30 +1346,34 @@ export class ImapServer {
           contentType: 'message/rfc822',
         })
 
+        // Delete from source
         await this.s3.deleteObject(this.config.bucket, msg.key)
         console.log(`MOVE: ${msg.key} -> ${newKey}`)
         movedIndices.push(idx)
-      }
-      catch (err) {
+      } catch (err) {
         console.error(`Failed to move message: ${err}`)
       }
     }
 
+    // Send EXPUNGE responses for moved messages (in reverse order per RFC)
     const sortedIndices = [...movedIndices].sort((a, b) => b - a)
     for (const idx of sortedIndices) {
       this.send(session, `* ${idx} EXPUNGE`)
     }
 
+    // Update cache
     const remainingMessages = messages.filter((_, i) => !movedIndices.includes(i + 1))
     this.setMessagesForFolder(session.email || '', sourceFolder, remainingMessages)
 
+    // Update EXISTS count
     this.send(session, `* ${remainingMessages.length} EXISTS`)
 
     this.send(session, `${tag} OK MOVE completed`)
   }
 
   /**
-   * Handle UID MOVE
+   * Handle UID MOVE command (RFC 6851)
+   * UID MOVE uid-set mailbox
    */
   private async handleUidMove(session: ImapSession, tag: string, args: string): Promise<void> {
     if (session.state !== 'selected') {
@@ -1139,6 +1381,7 @@ export class ImapServer {
       return
     }
 
+    // Parse UID set and destination mailbox
     const match = args.match(/^(\S+)\s+"?([^"]+)"?$/i)
     if (!match) {
       this.send(session, `${tag} BAD Invalid UID MOVE syntax`)
@@ -1154,10 +1397,10 @@ export class ImapServer {
 
     const movedIndices: number[] = []
 
+    // Copy messages to destination then delete from source
     for (const uid of uids) {
       const idx = messages.findIndex(m => m.uid === uid)
-      if (idx === -1)
-        continue
+      if (idx === -1) continue
 
       const msg = messages[idx]
 
@@ -1166,6 +1409,7 @@ export class ImapServer {
         const filename = msg.key.split('/').pop() || `${Date.now()}`
         const newKey = `${destPrefix}${filename}`
 
+        // Copy to destination
         await this.s3.putObject({
           bucket: this.config.bucket,
           key: newKey,
@@ -1173,30 +1417,34 @@ export class ImapServer {
           contentType: 'message/rfc822',
         })
 
+        // Delete from source
         await this.s3.deleteObject(this.config.bucket, msg.key)
         console.log(`UID MOVE: ${msg.key} -> ${newKey}`)
         movedIndices.push(idx + 1)
-      }
-      catch (err) {
+      } catch (err) {
         console.error(`Failed to move message: ${err}`)
       }
     }
 
+    // Send EXPUNGE responses for moved messages (in reverse order per RFC)
     const sortedIndices = [...movedIndices].sort((a, b) => b - a)
     for (const idx of sortedIndices) {
       this.send(session, `* ${idx} EXPUNGE`)
     }
 
+    // Update cache
     const remainingMessages = messages.filter((_, i) => !movedIndices.includes(i + 1))
     this.setMessagesForFolder(session.email || '', sourceFolder, remainingMessages)
 
+    // Update EXISTS count
     this.send(session, `* ${remainingMessages.length} EXISTS`)
 
     this.send(session, `${tag} OK UID MOVE completed`)
   }
 
   /**
-   * Handle UID EXPUNGE
+   * Handle UID EXPUNGE command (UIDPLUS extension)
+   * UID EXPUNGE uid-set - expunges only specified UIDs
    */
   private async handleUidExpunge(session: ImapSession, tag: string, args: string): Promise<void> {
     if (session.state !== 'selected') {
@@ -1207,6 +1455,7 @@ export class ImapServer {
     const folder = session.selectedMailbox || 'INBOX'
     const messages = this.getMessagesForFolder(session.email || '', folder)
 
+    // Parse UID set from args
     const uidSet = args.trim()
     const maxUid = messages.length > 0 ? Math.max(...messages.map(m => m.uid)) : 0
     const uids = this.parseSequenceSet(uidSet, maxUid)
@@ -1214,31 +1463,35 @@ export class ImapServer {
     const indicesToExpunge: number[] = []
     const keysToDelete: string[] = []
 
+    // Find messages with specified UIDs that are marked as \Deleted
     for (let i = messages.length - 1; i >= 0; i--) {
       const msg = messages[i]
       if (uids.includes(msg.uid) && msg.flags.includes('\\Deleted')) {
-        indicesToExpunge.push(i + 1)
+        indicesToExpunge.push(i + 1) // 1-indexed
         keysToDelete.push(msg.key)
       }
     }
 
+    // Delete from S3
     for (const key of keysToDelete) {
       try {
         await this.s3.deleteObject(this.config.bucket, key)
         console.log(`Deleted from S3: ${key}`)
-      }
-      catch (err) {
+      } catch (err) {
         console.error(`Failed to delete from S3: ${key}`, err)
       }
     }
 
+    // Send EXPUNGE responses (already in reverse order)
     for (const idx of indicesToExpunge) {
       this.send(session, `* ${idx} EXPUNGE`)
     }
 
+    // Remove deleted messages from cache
     const remainingMessages = messages.filter((_, i) => !indicesToExpunge.includes(i + 1))
     this.setMessagesForFolder(session.email || '', folder, remainingMessages)
 
+    // Send EXISTS if messages were removed
     if (indicesToExpunge.length > 0) {
       this.send(session, `* ${remainingMessages.length} EXISTS`)
     }
@@ -1257,6 +1510,7 @@ export class ImapServer {
 
   /**
    * Handle EXPUNGE command
+   * Removes messages marked with \Deleted flag
    */
   private async handleExpunge(session: ImapSession, tag: string): Promise<void> {
     if (session.state !== 'selected') {
@@ -1269,30 +1523,34 @@ export class ImapServer {
     const indicesToExpunge: number[] = []
     const keysToDelete: string[] = []
 
+    // Find messages marked with \Deleted (in reverse order for correct EXPUNGE responses)
     for (let i = messages.length - 1; i >= 0; i--) {
       if (messages[i].flags.includes('\\Deleted')) {
-        indicesToExpunge.push(i + 1)
+        indicesToExpunge.push(i + 1) // 1-indexed
         keysToDelete.push(messages[i].key)
       }
     }
 
+    // Delete from S3
     for (const key of keysToDelete) {
       try {
         await this.s3.deleteObject(this.config.bucket, key)
         console.log(`EXPUNGE: Deleted from S3: ${key}`)
-      }
-      catch (err) {
+      } catch (err) {
         console.error(`Failed to delete from S3: ${key}`, err)
       }
     }
 
+    // Send EXPUNGE responses (already in reverse order)
     for (const idx of indicesToExpunge) {
       this.send(session, `* ${idx} EXPUNGE`)
     }
 
+    // Remove deleted messages from cache
     const remainingMessages = messages.filter(m => !m.flags.includes('\\Deleted'))
     this.setMessagesForFolder(session.email || '', folder, remainingMessages)
 
+    // Send EXISTS if messages were removed
     if (indicesToExpunge.length > 0) {
       this.send(session, `* ${remainingMessages.length} EXISTS`)
     }
@@ -1307,6 +1565,8 @@ export class ImapServer {
     session.idling = true
     session.idleTag = tag
     this.send(session, `+ idling`)
+    // Client will send DONE to exit IDLE state
+    // When DONE is received, we'll send the OK response with the saved tag
   }
 
   /**
@@ -1320,6 +1580,7 @@ export class ImapServer {
 
     this.send(session, `${tag} OK Begin TLS negotiation`)
 
+    // Upgrade connection to TLS
     const tlsOptions: tls.TlsOptions = {
       key: fs.readFileSync(this.config.tls.key),
       cert: fs.readFileSync(this.config.tls.cert),
@@ -1339,126 +1600,6 @@ export class ImapServer {
   }
 
   /**
-   * Handle XLIST command
-   */
-  private async handleXlist(session: ImapSession, tag: string, args: string): Promise<void> {
-    if (session.state === 'not_authenticated') {
-      this.send(session, `${tag} NO Must authenticate first`)
-      return
-    }
-
-    const match = args.match(/^"?([^"]*)"?\s+"?([^"]*)"?$/)
-    if (!match) {
-      this.send(session, `${tag} BAD Invalid XLIST syntax`)
-      return
-    }
-
-    const [, _reference, pattern] = match
-
-    if (pattern === '*' || pattern === '%' || pattern === '') {
-      this.send(session, `* XLIST (\\HasNoChildren \\Inbox) "/" "INBOX"`)
-      this.send(session, `* XLIST (\\HasNoChildren \\Sent) "/" "Sent"`)
-      this.send(session, `* XLIST (\\HasNoChildren \\Drafts) "/" "Drafts"`)
-      this.send(session, `* XLIST (\\HasNoChildren \\Trash) "/" "Trash"`)
-      this.send(session, `* XLIST (\\HasNoChildren \\Spam) "/" "Junk"`)
-      this.send(session, `* XLIST (\\HasNoChildren \\AllMail) "/" "All Mail"`)
-      this.send(session, `* XLIST (\\HasNoChildren) "/" "Archive"`)
-    }
-
-    this.send(session, `${tag} OK XLIST completed`)
-  }
-
-  /**
-   * Handle CREATE command
-   */
-  private async handleCreate(session: ImapSession, tag: string, _args: string): Promise<void> {
-    if (session.state === 'not_authenticated') {
-      this.send(session, `${tag} NO Must authenticate first`)
-      return
-    }
-    this.send(session, `${tag} OK CREATE completed`)
-  }
-
-  /**
-   * Handle DELETE command
-   */
-  private async handleDelete(session: ImapSession, tag: string, args: string): Promise<void> {
-    if (session.state === 'not_authenticated') {
-      this.send(session, `${tag} NO Must authenticate first`)
-      return
-    }
-
-    const mailbox = args.replace(/^"(.*)"$/, '$1').toUpperCase()
-    const systemFolders = ['INBOX', 'SENT', 'DRAFTS', 'TRASH', 'JUNK', 'ARCHIVE', 'ALL MAIL']
-
-    if (systemFolders.includes(mailbox)) {
-      this.send(session, `${tag} NO Cannot delete system folder`)
-      return
-    }
-
-    this.send(session, `${tag} OK DELETE completed`)
-  }
-
-  /**
-   * Handle SUBSCRIBE command
-   */
-  private async handleSubscribe(session: ImapSession, tag: string, _args: string): Promise<void> {
-    if (session.state === 'not_authenticated') {
-      this.send(session, `${tag} NO Must authenticate first`)
-      return
-    }
-    this.send(session, `${tag} OK SUBSCRIBE completed`)
-  }
-
-  /**
-   * Handle UNSUBSCRIBE command
-   */
-  private async handleUnsubscribe(session: ImapSession, tag: string, _args: string): Promise<void> {
-    if (session.state === 'not_authenticated') {
-      this.send(session, `${tag} NO Must authenticate first`)
-      return
-    }
-    this.send(session, `${tag} OK UNSUBSCRIBE completed`)
-  }
-
-  /**
-   * Handle RENAME command
-   */
-  private async handleRename(session: ImapSession, tag: string, args: string): Promise<void> {
-    if (session.state === 'not_authenticated') {
-      this.send(session, `${tag} NO Must authenticate first`)
-      return
-    }
-
-    const match = args.match(/^"?([^"\s]+)"?\s+"?([^"\s]+)"?$/)
-    if (!match) {
-      this.send(session, `${tag} BAD Invalid RENAME syntax`)
-      return
-    }
-
-    const oldName = match[1].toUpperCase()
-    const systemFolders = ['INBOX', 'SENT', 'DRAFTS', 'TRASH', 'JUNK', 'ARCHIVE', 'ALL MAIL']
-
-    if (systemFolders.includes(oldName)) {
-      this.send(session, `${tag} NO Cannot rename system folder`)
-      return
-    }
-
-    this.send(session, `${tag} OK RENAME completed`)
-  }
-
-  /**
-   * Handle APPEND command
-   */
-  private async handleAppend(session: ImapSession, tag: string, _args: string): Promise<void> {
-    if (session.state === 'not_authenticated') {
-      this.send(session, `${tag} NO Must authenticate first`)
-      return
-    }
-    this.send(session, `${tag} OK APPEND completed`)
-  }
-
-  /**
    * Load messages from S3 for the selected folder
    */
   private async loadMessages(session: ImapSession, forceRefresh = false): Promise<void> {
@@ -1467,11 +1608,13 @@ export class ImapServer {
     if (!email)
       return
 
+    // Check cache freshness
     const cacheKey = `${email}:${folder}`
     const lastUpdate = this.cacheTimestamp.get(cacheKey) || 0
     const now = Date.now()
     const cacheAge = now - lastUpdate
 
+    // Use cache if fresh and not forcing refresh
     if (!forceRefresh && cacheAge < this.CACHE_TTL_MS) {
       const cached = this.getMessagesForFolder(email, folder)
       if (cached.length > 0) {
@@ -1479,11 +1622,33 @@ export class ImapServer {
       }
     }
 
+    // Load persisted flags and UID mapping
     const persistedFlags = await this.loadFlags(email)
+    await this.loadUidMapping(email)
 
     try {
+      // Handle "All Mail" virtual folder - aggregate from all folders
+      if (this.isAllMailFolder(folder)) {
+        await this.loadAllMailFolder(email, persistedFlags)
+        return
+      }
+
+      // Handle "Starred" virtual folder - shows flagged messages
+      if (this.isStarredFolder(folder)) {
+        await this.loadStarredFolder(email, persistedFlags)
+        return
+      }
+
+      // Handle "Important" virtual folder - shows important messages
+      if (this.isImportantFolder(folder)) {
+        await this.loadImportantFolder(email, persistedFlags)
+        return
+      }
+
+      // Determine S3 prefix for this folder
       const prefix = this.getFolderPrefix(folder)
 
+      // List objects in S3
       const objects = await this.s3.list({
         bucket: this.config.bucket,
         prefix,
@@ -1491,12 +1656,13 @@ export class ImapServer {
       })
 
       const messages: EmailMessage[] = []
-      let uidCounter = this.getUidCounterForFolder(email, folder)
+      let hasNewMessages = false
 
       for (const obj of objects) {
         if (!obj.Key)
           continue
 
+        // Parse email content to get headers
         let raw = ''
         try {
           raw = await this.s3.getObject(this.config.bucket, obj.Key)
@@ -1505,21 +1671,36 @@ export class ImapServer {
           continue
         }
 
+        // Parse basic headers
         const headers = this.parseHeaders(raw)
 
+        // For INBOX, check if this email is for this user
+        // For other folders, all messages in the prefix belong to the user
         if (folder === 'INBOX') {
           const toHeader = headers.to || ''
           if (!toHeader.toLowerCase().includes(email.toLowerCase())) {
             continue
           }
+
+          // Auto-categorize new emails in INBOX
+          if (this.config.autoCategorize) {
+            await this.autoCategorizeEmail(email, obj.Key, headers.from || '', headers, raw)
+          }
         }
 
-        uidCounter++
+        // Get or assign a persistent UID for this message
+        const existingUid = this.uidMappingCache.get(email)?.[obj.Key]
+        const uid = this.getOrAssignUid(email, obj.Key)
+        if (!existingUid) {
+          hasNewMessages = true
+        }
 
-        const flags = persistedFlags[obj.Key] || ['\\Recent']
+        // Get persisted flags or use empty array for new messages (no \Recent by default)
+        // Mail.app will show unread messages based on absence of \Seen flag
+        const flags = persistedFlags[obj.Key] || []
 
         messages.push({
-          uid: uidCounter,
+          uid,
           key: obj.Key,
           size: obj.Size || raw.length,
           date: new Date(obj.LastModified || Date.now()),
@@ -1531,10 +1712,20 @@ export class ImapServer {
         })
       }
 
-      this.setUidCounterForFolder(email, folder, uidCounter)
+      // Sort messages by UID (ascending) for correct sequence numbers
+      messages.sort((a, b) => a.uid - b.uid)
+
+      // Save UID mapping if new messages were added
+      if (hasNewMessages) {
+        await this.saveUidMapping(email)
+      }
+
+      // Update UID counter for folder to max UID
+      const maxUid = messages.length > 0 ? Math.max(...messages.map(m => m.uid)) : 0
+      this.setUidCounterForFolder(email, folder, maxUid)
       this.setMessagesForFolder(email, folder, messages)
       this.cacheTimestamp.set(cacheKey, Date.now())
-      console.log(`Loaded ${messages.length} messages for ${email} in ${folder} from S3`)
+      console.log(`Loaded ${messages.length} messages for ${email} in ${folder} from S3 (hasNewMessages=${hasNewMessages})`)
     }
     catch (err) {
       console.error(`Error loading messages from S3: ${err}`)
@@ -1542,7 +1733,324 @@ export class ImapServer {
   }
 
   /**
+   * Load all messages from all folders for the "All Mail" virtual folder
+   * Uses persistent UIDs for stable message identification across sessions
+   */
+  private async loadAllMailFolder(email: string, persistedFlags: Record<string, string[]>): Promise<void> {
+    const folder = 'ALL MAIL'
+    const cacheKey = `${email}:${folder}`
+
+    // Load UID mapping for persistent UIDs
+    await this.loadUidMapping(email)
+
+    // All folder prefixes to aggregate
+    const allPrefixes = [
+      this.config.prefix || 'incoming/', // INBOX
+      'sent/',
+      'trash/',
+      'drafts/',
+      'junk/',
+      'archive/',
+    ]
+
+    const allMessages: EmailMessage[] = []
+    const seenKeys = new Set<string>() // Avoid duplicates
+    let hasNewMessages = false
+
+    for (const prefix of allPrefixes) {
+      try {
+        const objects = await this.s3.list({
+          bucket: this.config.bucket,
+          prefix,
+          maxKeys: 1000,
+        })
+
+        for (const obj of objects) {
+          if (!obj.Key || seenKeys.has(obj.Key))
+            continue
+
+          seenKeys.add(obj.Key)
+
+          let raw = ''
+          try {
+            raw = await this.s3.getObject(this.config.bucket, obj.Key)
+          }
+          catch {
+            continue
+          }
+
+          const headers = this.parseHeaders(raw)
+
+          // For incoming (INBOX) folder, filter by recipient
+          if (prefix === (this.config.prefix || 'incoming/')) {
+            const toHeader = headers.to || ''
+            if (!toHeader.toLowerCase().includes(email.toLowerCase())) {
+              continue
+            }
+          }
+
+          // Get or assign a persistent UID for this message
+          const existingUid = this.uidMappingCache.get(email)?.[obj.Key]
+          const uid = this.getOrAssignUid(email, obj.Key)
+          if (!existingUid) {
+            hasNewMessages = true
+          }
+
+          // Get persisted flags or use empty array for new messages
+          const flags = persistedFlags[obj.Key] || []
+
+          allMessages.push({
+            uid,
+            key: obj.Key,
+            size: obj.Size || raw.length,
+            date: new Date(obj.LastModified || Date.now()),
+            flags: [...flags],
+            from: headers.from,
+            to: headers.to,
+            subject: headers.subject,
+            raw,
+          })
+        }
+      }
+      catch (err) {
+        console.error(`Error loading messages from prefix ${prefix}: ${err}`)
+      }
+    }
+
+    // Sort messages by UID (ascending) for correct sequence numbers
+    allMessages.sort((a, b) => a.uid - b.uid)
+
+    // Save UID mapping if new messages were added
+    if (hasNewMessages) {
+      await this.saveUidMapping(email)
+    }
+
+    // Update UID counter for folder to max UID
+    const maxUid = allMessages.length > 0 ? Math.max(...allMessages.map(m => m.uid)) : 0
+    this.setUidCounterForFolder(email, folder, maxUid)
+    this.setMessagesForFolder(email, folder, allMessages)
+    this.cacheTimestamp.set(cacheKey, Date.now())
+    console.log(`Loaded ${allMessages.length} total messages for ${email} in All Mail from S3 (hasNewMessages=${hasNewMessages})`)
+  }
+
+  /**
+   * Load the Starred virtual folder - shows messages with \Flagged flag
+   * Uses persistent UIDs for stable message identification across sessions
+   */
+  private async loadStarredFolder(email: string, persistedFlags: Record<string, string[]>): Promise<void> {
+    const folder = 'STARRED'
+    const cacheKey = `${email}:${folder}`
+
+    // Load UID mapping for persistent UIDs
+    await this.loadUidMapping(email)
+
+    // All folder prefixes to search through
+    const allPrefixes = [
+      this.config.prefix || 'incoming/', // INBOX
+      'sent/',
+      'trash/',
+      'drafts/',
+      'junk/',
+      'archive/',
+      'categories/social/',
+      'categories/forums/',
+      'categories/updates/',
+      'categories/promotions/',
+    ]
+
+    const starredMessages: EmailMessage[] = []
+    const seenKeys = new Set<string>()
+    let hasNewMessages = false
+
+    for (const prefix of allPrefixes) {
+      try {
+        const objects = await this.s3.list({
+          bucket: this.config.bucket,
+          prefix,
+          maxKeys: 1000,
+        })
+
+        for (const obj of objects) {
+          if (!obj.Key || seenKeys.has(obj.Key))
+            continue
+
+          seenKeys.add(obj.Key)
+
+          // Check if this message has the \Flagged flag
+          const flags = persistedFlags[obj.Key] || []
+          if (!flags.includes('\\Flagged'))
+            continue
+
+          let raw = ''
+          try {
+            raw = await this.s3.getObject(this.config.bucket, obj.Key)
+          }
+          catch {
+            continue
+          }
+
+          const headers = this.parseHeaders(raw)
+
+          // For incoming (INBOX) folder, filter by recipient
+          if (prefix === (this.config.prefix || 'incoming/')) {
+            const toHeader = headers.to || ''
+            if (!toHeader.toLowerCase().includes(email.toLowerCase())) {
+              continue
+            }
+          }
+
+          // Get or assign a persistent UID for this message
+          const existingUid = this.uidMappingCache.get(email)?.[obj.Key]
+          const uid = this.getOrAssignUid(email, obj.Key)
+          if (!existingUid) {
+            hasNewMessages = true
+          }
+
+          starredMessages.push({
+            uid,
+            key: obj.Key,
+            size: obj.Size || raw.length,
+            date: new Date(obj.LastModified || Date.now()),
+            flags: [...flags],
+            from: headers.from,
+            to: headers.to,
+            subject: headers.subject,
+            raw,
+          })
+        }
+      }
+      catch (err) {
+        console.error(`Error loading starred messages from prefix ${prefix}: ${err}`)
+      }
+    }
+
+    // Sort messages by UID (ascending) for correct sequence numbers
+    starredMessages.sort((a, b) => a.uid - b.uid)
+
+    // Save UID mapping if new messages were added
+    if (hasNewMessages) {
+      await this.saveUidMapping(email)
+    }
+
+    // Update UID counter for folder to max UID
+    const maxUid = starredMessages.length > 0 ? Math.max(...starredMessages.map(m => m.uid)) : 0
+    this.setUidCounterForFolder(email, folder, maxUid)
+    this.setMessagesForFolder(email, folder, starredMessages)
+    this.cacheTimestamp.set(cacheKey, Date.now())
+    console.log(`Loaded ${starredMessages.length} starred messages for ${email} (hasNewMessages=${hasNewMessages})`)
+  }
+
+  /**
+   * Load the Important virtual folder - shows messages with \Important flag or $Important keyword
+   * Uses persistent UIDs for stable message identification across sessions
+   */
+  private async loadImportantFolder(email: string, persistedFlags: Record<string, string[]>): Promise<void> {
+    const folder = 'IMPORTANT'
+    const cacheKey = `${email}:${folder}`
+
+    // Load UID mapping for persistent UIDs
+    await this.loadUidMapping(email)
+
+    // All folder prefixes to search through
+    const allPrefixes = [
+      this.config.prefix || 'incoming/', // INBOX
+      'sent/',
+      'trash/',
+      'drafts/',
+      'junk/',
+      'archive/',
+      'categories/social/',
+      'categories/forums/',
+      'categories/updates/',
+      'categories/promotions/',
+    ]
+
+    const importantMessages: EmailMessage[] = []
+    const seenKeys = new Set<string>()
+    let hasNewMessages = false
+
+    for (const prefix of allPrefixes) {
+      try {
+        const objects = await this.s3.list({
+          bucket: this.config.bucket,
+          prefix,
+          maxKeys: 1000,
+        })
+
+        for (const obj of objects) {
+          if (!obj.Key || seenKeys.has(obj.Key))
+            continue
+
+          seenKeys.add(obj.Key)
+
+          // Check if this message has the \Important flag or $Important keyword
+          const flags = persistedFlags[obj.Key] || []
+          const isImportant = flags.includes('\\Important') || flags.includes('$Important')
+          if (!isImportant)
+            continue
+
+          let raw = ''
+          try {
+            raw = await this.s3.getObject(this.config.bucket, obj.Key)
+          }
+          catch {
+            continue
+          }
+
+          const headers = this.parseHeaders(raw)
+
+          // For incoming (INBOX) folder, filter by recipient
+          if (prefix === (this.config.prefix || 'incoming/')) {
+            const toHeader = headers.to || ''
+            if (!toHeader.toLowerCase().includes(email.toLowerCase())) {
+              continue
+            }
+          }
+
+          // Get or assign a persistent UID for this message
+          const existingUid = this.uidMappingCache.get(email)?.[obj.Key]
+          const uid = this.getOrAssignUid(email, obj.Key)
+          if (!existingUid) {
+            hasNewMessages = true
+          }
+
+          importantMessages.push({
+            uid,
+            key: obj.Key,
+            size: obj.Size || raw.length,
+            date: new Date(obj.LastModified || Date.now()),
+            flags: [...flags],
+            from: headers.from,
+            to: headers.to,
+            subject: headers.subject,
+            raw,
+          })
+        }
+      }
+      catch (err) {
+        console.error(`Error loading important messages from prefix ${prefix}: ${err}`)
+      }
+    }
+
+    // Sort messages by UID (ascending) for correct sequence numbers
+    importantMessages.sort((a, b) => a.uid - b.uid)
+
+    // Save UID mapping if new messages were added
+    if (hasNewMessages) {
+      await this.saveUidMapping(email)
+    }
+
+    // Update UID counter for folder to max UID
+    const maxUid = importantMessages.length > 0 ? Math.max(...importantMessages.map(m => m.uid)) : 0
+    this.setUidCounterForFolder(email, folder, maxUid)
+    this.setMessagesForFolder(email, folder, importantMessages)
+    this.cacheTimestamp.set(cacheKey, Date.now())
+    console.log(`Loaded ${importantMessages.length} important messages for ${email} (hasNewMessages=${hasNewMessages})`)
+  }
+
+  /**
    * Load messages from S3 for a specific folder (used by STATUS command)
+   * Uses persistent UIDs for stable message identification across sessions
    */
   private async loadMessagesForFolder(session: ImapSession, folder: string): Promise<void> {
     const email = session.email
@@ -1563,6 +2071,25 @@ export class ImapServer {
     }
 
     const persistedFlags = await this.loadFlags(email)
+    await this.loadUidMapping(email)
+
+    // Handle "All Mail" virtual folder - aggregate from all folders
+    if (this.isAllMailFolder(folder)) {
+      await this.loadAllMailFolder(email, persistedFlags)
+      return
+    }
+
+    // Handle "Starred" virtual folder - shows flagged messages
+    if (this.isStarredFolder(folder)) {
+      await this.loadStarredFolder(email, persistedFlags)
+      return
+    }
+
+    // Handle "Important" virtual folder - shows important messages
+    if (this.isImportantFolder(folder)) {
+      await this.loadImportantFolder(email, persistedFlags)
+      return
+    }
 
     try {
       const prefix = this.getFolderPrefix(folder)
@@ -1574,7 +2101,7 @@ export class ImapServer {
       })
 
       const messages: EmailMessage[] = []
-      let uidCounter = this.getUidCounterForFolder(email, folder)
+      let hasNewMessages = false
 
       for (const obj of objects) {
         if (!obj.Key)
@@ -1598,12 +2125,18 @@ export class ImapServer {
           }
         }
 
-        uidCounter++
+        // Get or assign a persistent UID for this message
+        const existingUid = this.uidMappingCache.get(email)?.[obj.Key]
+        const uid = this.getOrAssignUid(email, obj.Key)
+        if (!existingUid) {
+          hasNewMessages = true
+        }
 
-        const flags = persistedFlags[obj.Key] || ['\\Recent']
+        // Get persisted flags or use empty array for new messages
+        const flags = persistedFlags[obj.Key] || []
 
         messages.push({
-          uid: uidCounter,
+          uid,
           key: obj.Key,
           size: obj.Size || raw.length,
           date: new Date(obj.LastModified || Date.now()),
@@ -1615,7 +2148,17 @@ export class ImapServer {
         })
       }
 
-      this.setUidCounterForFolder(email, folder, uidCounter)
+      // Sort messages by UID (ascending) for correct sequence numbers
+      messages.sort((a, b) => a.uid - b.uid)
+
+      // Save UID mapping if new messages were added
+      if (hasNewMessages) {
+        await this.saveUidMapping(email)
+      }
+
+      // Update UID counter for folder to max UID
+      const maxUid = messages.length > 0 ? Math.max(...messages.map(m => m.uid)) : 0
+      this.setUidCounterForFolder(email, folder, maxUid)
       this.setMessagesForFolder(email, folder, messages)
       this.cacheTimestamp.set(cacheKey, Date.now())
     }
@@ -1639,13 +2182,16 @@ export class ImapServer {
 
     for (const line of lines) {
       if (line.startsWith(' ') || line.startsWith('\t')) {
+        // Continuation
         currentValue += ` ${line.trim()}`
       }
       else {
+        // Save previous header
         if (currentHeader) {
           headers[currentHeader.toLowerCase()] = currentValue
         }
 
+        // Parse new header
         const colonIdx = line.indexOf(':')
         if (colonIdx > 0) {
           currentHeader = line.substring(0, colonIdx).trim()
@@ -1654,6 +2200,7 @@ export class ImapServer {
       }
     }
 
+    // Save last header
     if (currentHeader) {
       headers[currentHeader.toLowerCase()] = currentValue
     }
@@ -1667,7 +2214,7 @@ export class ImapServer {
   private async buildFetchResponse(
     session: ImapSession,
     msg: EmailMessage,
-    _seqNum: number,
+    seqNum: number,
     itemsStr: string,
     includeUid = false,
   ): Promise<string> {
@@ -1750,7 +2297,7 @@ export class ImapServer {
   }
 
   /**
-   * Parse IMAP sequence set
+   * Parse IMAP sequence set (e.g., "1:*", "1,3,5", "1:10")
    */
   private parseSequenceSet(set: string, max: number): number[] {
     const results: number[] = []
@@ -1781,10 +2328,11 @@ export class ImapServer {
    * Get UID validity value for a mailbox
    */
   private getUidValidity(email: string): number {
+    // Use a hash of the email to generate a stable UID validity
     let hash = 0
     for (let i = 0; i < email.length; i++) {
       hash = ((hash << 5) - hash) + email.charCodeAt(i)
-      hash = hash & hash
+      hash = hash & hash // Convert to 32-bit integer
     }
     return Math.abs(hash) || 1
   }
@@ -1807,8 +2355,169 @@ export class ImapServer {
         return 'junk/'
       case 'ARCHIVE':
         return 'archive/'
+      case 'ALL MAIL':
+        return '' // All Mail is a virtual folder - handled specially
+      case 'STARRED':
+        return '' // Starred is a virtual folder - shows flagged messages
+      case 'IMPORTANT':
+        return '' // Important is a virtual folder - shows important messages
+      // Gmail-style Categories
+      case 'SOCIAL':
+        return 'categories/social/'
+      case 'FORUMS':
+        return 'categories/forums/'
+      case 'UPDATES':
+        return 'categories/updates/'
+      case 'PROMOTIONS':
+        return 'categories/promotions/'
       default:
         return `folders/${folder.toLowerCase()}/`
+    }
+  }
+
+  /**
+   * Check if a folder is a virtual folder (computed from flags, not S3 storage)
+   */
+  private isVirtualFolder(folder: string): boolean {
+    const virtualFolders = ['ALL MAIL', 'STARRED', 'IMPORTANT']
+    return virtualFolders.includes(folder.toUpperCase())
+  }
+
+  /**
+   * Check if a folder is the Starred folder (shows flagged messages)
+   */
+  private isStarredFolder(folder: string): boolean {
+    return folder.toUpperCase() === 'STARRED'
+  }
+
+  /**
+   * Check if a folder is the Important folder
+   */
+  private isImportantFolder(folder: string): boolean {
+    return folder.toUpperCase() === 'IMPORTANT'
+  }
+
+  /**
+   * Check if a folder is the virtual "All Mail" folder
+   */
+  private isAllMailFolder(folder: string): boolean {
+    return folder.toUpperCase() === 'ALL MAIL'
+  }
+
+  /**
+   * Auto-categorize an email and copy to the appropriate category folder
+   * This mimics Gmail's automatic inbox categorization
+   * @param email - User's email address
+   * @param s3Key - S3 key of the email
+   * @param from - From header value
+   * @param headers - All email headers
+   * @param raw - Raw email content
+   * @returns The category the email was assigned to, or 'primary' if not categorized
+   */
+  private async autoCategorizeEmail(
+    email: string,
+    s3Key: string,
+    from: string,
+    headers: Record<string, string>,
+    raw: string
+  ): Promise<EmailCategory> {
+    // Skip if auto-categorization is disabled
+    if (!this.config.autoCategorize) {
+      return 'primary'
+    }
+
+    // Get or create the set of already-categorized keys for this user
+    let categorizedKeys = this.categorizedCache.get(email)
+    if (!categorizedKeys) {
+      // Load from S3 on first access
+      categorizedKeys = await this.loadCategorizedKeys(email)
+      this.categorizedCache.set(email, categorizedKeys)
+    }
+
+    // Skip if already categorized
+    if (categorizedKeys.has(s3Key)) {
+      return 'primary'
+    }
+
+    // Categorize the email using config-provided patterns
+    const category = categorizeEmail(from, headers, this.config.categorization)
+
+    // If it's a category folder, copy the email there
+    if (category !== 'primary') {
+      const destPrefix = this.getCategoryPrefix(category)
+      const filename = s3Key.split('/').pop() || `${Date.now()}`
+      const newKey = `${destPrefix}${filename}`
+
+      try {
+        // Copy to category folder
+        await this.s3.putObject({
+          bucket: this.config.bucket,
+          key: newKey,
+          body: raw,
+          contentType: 'message/rfc822',
+        })
+        console.log(`Auto-categorized ${s3Key} -> ${category} (${newKey})`)
+
+        // Mark as categorized
+        categorizedKeys.add(s3Key)
+        await this.saveCategorizedKeys(email)
+      } catch (err) {
+        console.error(`Failed to auto-categorize email to ${category}:`, err)
+      }
+    }
+
+    return category
+  }
+
+  /**
+   * Get the S3 prefix for a category folder
+   */
+  private getCategoryPrefix(category: EmailCategory): string {
+    switch (category) {
+      case 'social':
+        return 'categories/social/'
+      case 'forums':
+        return 'categories/forums/'
+      case 'updates':
+        return 'categories/updates/'
+      case 'promotions':
+        return 'categories/promotions/'
+      default:
+        return this.config.prefix || 'incoming/'
+    }
+  }
+
+  /**
+   * Load the set of already-categorized S3 keys from S3
+   */
+  private async loadCategorizedKeys(email: string): Promise<Set<string>> {
+    try {
+      const key = `categorized/${email.replace('@', '_at_')}.json`
+      const content = await this.s3.getObject(this.config.bucket, key)
+      const data = JSON.parse(content)
+      return new Set(data.keys || [])
+    } catch {
+      return new Set()
+    }
+  }
+
+  /**
+   * Save the set of categorized S3 keys to S3
+   */
+  private async saveCategorizedKeys(email: string): Promise<void> {
+    const categorizedKeys = this.categorizedCache.get(email)
+    if (!categorizedKeys) return
+
+    try {
+      const key = `categorized/${email.replace('@', '_at_')}.json`
+      await this.s3.putObject({
+        bucket: this.config.bucket,
+        key,
+        body: JSON.stringify({ keys: Array.from(categorizedKeys) }),
+        contentType: 'application/json',
+      })
+    } catch (err) {
+      console.error(`Failed to save categorized keys for ${email}:`, err)
     }
   }
 
@@ -1817,8 +2526,7 @@ export class ImapServer {
    */
   private async loadFlags(email: string): Promise<Record<string, string[]>> {
     const cached = this.flagsCache.get(email)
-    if (cached)
-      return cached
+    if (cached) return cached
 
     try {
       const flagsKey = `flags/${email.replace('@', '_at_')}.json`
@@ -1826,8 +2534,8 @@ export class ImapServer {
       const flags = JSON.parse(content)
       this.flagsCache.set(email, flags)
       return flags
-    }
-    catch {
+    } catch {
+      // No flags file yet
       const empty: Record<string, string[]> = {}
       this.flagsCache.set(email, empty)
       return empty
@@ -1839,8 +2547,7 @@ export class ImapServer {
    */
   private async saveFlags(email: string): Promise<void> {
     const flags = this.flagsCache.get(email)
-    if (!flags)
-      return
+    if (!flags) return
 
     try {
       const flagsKey = `flags/${email.replace('@', '_at_')}.json`
@@ -1851,10 +2558,83 @@ export class ImapServer {
         contentType: 'application/json',
       })
       console.log(`Saved flags for ${email}`)
-    }
-    catch (err) {
+    } catch (err) {
       console.error(`Failed to save flags for ${email}:`, err)
     }
+  }
+
+  /**
+   * Load UID mapping from S3 (maps S3 keys to persistent UIDs)
+   */
+  private async loadUidMapping(email: string): Promise<{ mapping: Record<string, number>, nextUid: number }> {
+    const cached = this.uidMappingCache.get(email)
+    const nextUid = this.nextUidCache.get(email)
+    if (cached && nextUid !== undefined) {
+      return { mapping: cached, nextUid }
+    }
+
+    try {
+      const uidKey = `uids/${email.replace('@', '_at_')}.json`
+      const content = await this.s3.getObject(this.config.bucket, uidKey)
+      const data = JSON.parse(content)
+      const mapping = data.mapping || {}
+      const loadedNextUid = data.nextUid || 1
+      this.uidMappingCache.set(email, mapping)
+      this.nextUidCache.set(email, loadedNextUid)
+      return { mapping, nextUid: loadedNextUid }
+    } catch {
+      // No UID mapping file yet
+      const empty: Record<string, number> = {}
+      this.uidMappingCache.set(email, empty)
+      this.nextUidCache.set(email, 1)
+      return { mapping: empty, nextUid: 1 }
+    }
+  }
+
+  /**
+   * Save UID mapping to S3
+   */
+  private async saveUidMapping(email: string): Promise<void> {
+    const mapping = this.uidMappingCache.get(email)
+    const nextUid = this.nextUidCache.get(email)
+    if (!mapping) return
+
+    try {
+      const uidKey = `uids/${email.replace('@', '_at_')}.json`
+      await this.s3.putObject({
+        bucket: this.config.bucket,
+        key: uidKey,
+        body: JSON.stringify({ mapping, nextUid }),
+        contentType: 'application/json',
+      })
+    } catch (err) {
+      console.error(`Failed to save UID mapping for ${email}:`, err)
+    }
+  }
+
+  /**
+   * Get or assign a UID for a message (S3 key)
+   * Returns existing UID if message was seen before, assigns new UID otherwise
+   */
+  private getOrAssignUid(email: string, s3Key: string): number {
+    let mapping = this.uidMappingCache.get(email)
+    if (!mapping) {
+      mapping = {}
+      this.uidMappingCache.set(email, mapping)
+    }
+
+    // Return existing UID if message was seen before
+    if (mapping[s3Key]) {
+      return mapping[s3Key]
+    }
+
+    // Assign new UID
+    let nextUid = this.nextUidCache.get(email) || 1
+    mapping[s3Key] = nextUid
+    nextUid++
+    this.nextUidCache.set(email, nextUid)
+
+    return mapping[s3Key]
   }
 
   /**
@@ -1862,8 +2642,7 @@ export class ImapServer {
    */
   private getMessagesForFolder(email: string, folder: string): EmailMessage[] {
     const userCache = this.messageCache.get(email)
-    if (!userCache)
-      return []
+    if (!userCache) return []
     return userCache.get(folder.toUpperCase()) || []
   }
 
@@ -1884,8 +2663,7 @@ export class ImapServer {
    */
   private getUidCounterForFolder(email: string, folder: string): number {
     const userCounters = this.uidCounter.get(email)
-    if (!userCounters)
-      return 0
+    if (!userCounters) return 0
     return userCounters.get(folder.toUpperCase()) || 0
   }
 
@@ -1899,6 +2677,138 @@ export class ImapServer {
       this.uidCounter.set(email, userCounters)
     }
     userCounters.set(folder.toUpperCase(), value)
+  }
+
+  /**
+   * Handle XLIST command (deprecated Gmail extension, but some clients use it)
+   */
+  private async handleXlist(session: ImapSession, tag: string, args: string): Promise<void> {
+    if (session.state === 'not_authenticated') {
+      this.send(session, `${tag} NO Must authenticate first`)
+      return
+    }
+
+    // Parse reference and pattern
+    const match = args.match(/^"?([^"]*)"?\s+"?([^"]*)"?$/)
+    if (!match) {
+      this.send(session, `${tag} BAD Invalid XLIST syntax`)
+      return
+    }
+
+    const [, reference, pattern] = match
+
+    // Return folders with Gmail-style XLIST attributes
+    if (pattern === '*' || pattern === '%' || pattern === '') {
+      this.send(session, `* XLIST (\\HasNoChildren \\Inbox) "/" "INBOX"`)
+      this.send(session, `* XLIST (\\HasNoChildren \\Sent) "/" "Sent"`)
+      this.send(session, `* XLIST (\\HasNoChildren \\Drafts) "/" "Drafts"`)
+      this.send(session, `* XLIST (\\HasNoChildren \\Trash) "/" "Trash"`)
+      this.send(session, `* XLIST (\\HasNoChildren \\Spam) "/" "Junk"`)
+      this.send(session, `* XLIST (\\HasNoChildren \\AllMail) "/" "All Mail"`)
+      this.send(session, `* XLIST (\\HasNoChildren) "/" "Archive"`)
+    }
+
+    this.send(session, `${tag} OK XLIST completed`)
+  }
+
+  /**
+   * Handle CREATE command
+   */
+  private async handleCreate(session: ImapSession, tag: string, args: string): Promise<void> {
+    if (session.state === 'not_authenticated') {
+      this.send(session, `${tag} NO Must authenticate first`)
+      return
+    }
+
+    // For now, acknowledge but don't actually create (S3 doesn't have true folders)
+    const mailbox = args.replace(/^"(.*)"$/, '$1')
+    this.send(session, `${tag} OK CREATE completed`)
+  }
+
+  /**
+   * Handle DELETE command
+   */
+  private async handleDelete(session: ImapSession, tag: string, args: string): Promise<void> {
+    if (session.state === 'not_authenticated') {
+      this.send(session, `${tag} NO Must authenticate first`)
+      return
+    }
+
+    // Don't allow deleting system folders
+    const mailbox = args.replace(/^"(.*)"$/, '$1').toUpperCase()
+    const systemFolders = ['INBOX', 'SENT', 'DRAFTS', 'TRASH', 'JUNK', 'ARCHIVE', 'ALL MAIL']
+
+    if (systemFolders.includes(mailbox)) {
+      this.send(session, `${tag} NO Cannot delete system folder`)
+      return
+    }
+
+    this.send(session, `${tag} OK DELETE completed`)
+  }
+
+  /**
+   * Handle SUBSCRIBE command
+   */
+  private async handleSubscribe(session: ImapSession, tag: string, args: string): Promise<void> {
+    if (session.state === 'not_authenticated') {
+      this.send(session, `${tag} NO Must authenticate first`)
+      return
+    }
+
+    this.send(session, `${tag} OK SUBSCRIBE completed`)
+  }
+
+  /**
+   * Handle UNSUBSCRIBE command
+   */
+  private async handleUnsubscribe(session: ImapSession, tag: string, args: string): Promise<void> {
+    if (session.state === 'not_authenticated') {
+      this.send(session, `${tag} NO Must authenticate first`)
+      return
+    }
+
+    this.send(session, `${tag} OK UNSUBSCRIBE completed`)
+  }
+
+  /**
+   * Handle RENAME command
+   */
+  private async handleRename(session: ImapSession, tag: string, args: string): Promise<void> {
+    if (session.state === 'not_authenticated') {
+      this.send(session, `${tag} NO Must authenticate first`)
+      return
+    }
+
+    // Don't allow renaming system folders
+    const match = args.match(/^"?([^"\s]+)"?\s+"?([^"\s]+)"?$/)
+    if (!match) {
+      this.send(session, `${tag} BAD Invalid RENAME syntax`)
+      return
+    }
+
+    const oldName = match[1].toUpperCase()
+    const systemFolders = ['INBOX', 'SENT', 'DRAFTS', 'TRASH', 'JUNK', 'ARCHIVE', 'ALL MAIL']
+
+    if (systemFolders.includes(oldName)) {
+      this.send(session, `${tag} NO Cannot rename system folder`)
+      return
+    }
+
+    this.send(session, `${tag} OK RENAME completed`)
+  }
+
+  /**
+   * Handle APPEND command
+   */
+  private async handleAppend(session: ImapSession, tag: string, args: string): Promise<void> {
+    if (session.state === 'not_authenticated') {
+      this.send(session, `${tag} NO Must authenticate first`)
+      return
+    }
+
+    // APPEND adds a message to a mailbox
+    // For now, acknowledge but don't persist (would need S3 write)
+    this.send(session, `${tag} OK APPEND completed`)
   }
 }
 

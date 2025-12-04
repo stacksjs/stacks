@@ -89,6 +89,185 @@ export default {
       cardDAV: false, // contacts sync
       activeSync: false, // Exchange ActiveSync
     },
+
+    /**
+     * Automatic email categorization (Gmail-style folders)
+     * Emails are automatically sorted into Social, Forums, Updates, Promotions folders
+     * based on sender patterns. You can customize the patterns below.
+     */
+    categorization: {
+      enabled: true,
+
+      // Social networks - Facebook, Twitter, LinkedIn, etc.
+      social: {
+        domains: [
+          'facebookmail.com', 'facebook.com', 'fb.com',
+          'twitter.com', 'x.com',
+          'linkedin.com', 'linkedinmail.com',
+          'instagram.com',
+          'pinterest.com',
+          'snapchat.com',
+          'tiktok.com',
+          'reddit.com', 'redditmail.com',
+          'tumblr.com',
+          'whatsapp.com',
+          'telegram.org',
+          'discord.com', 'discordapp.com',
+          'slack.com',
+          'meetup.com',
+          'nextdoor.com',
+          'quora.com',
+          'medium.com',
+          'mastodon.social',
+          'threads.net',
+          'bluesky.social',
+        ],
+        substrings: [
+          'notification@', 'notifications@',
+          'noreply@', 'no-reply@',
+          '@social.', '@notifications.',
+          'updates@', 'info@',
+        ],
+        headers: {
+          'x-mailer': ['facebook', 'twitter', 'linkedin'],
+        },
+      },
+
+      // Forums & mailing lists - Google Groups, Discourse, etc.
+      forums: {
+        domains: [
+          'googlegroups.com', 'groups.google.com',
+          'discourse.org',
+          'stackoverflow.com', 'stackexchange.com',
+          'freelancer.com',
+          'upwork.com',
+          'mailman.org',
+          'listserv.net',
+          'sympa.org',
+          'yahoogroups.com',
+          'topica.com',
+          'gnu.org',
+          'sourceforge.net',
+          'launchpad.net',
+        ],
+        substrings: [
+          '-list@', '-users@', '-dev@', '-announce@',
+          'forum@', 'discuss@', 'community@',
+          '@lists.', '@mailman.', '@groups.',
+          'reply+', // GitHub discussion replies
+        ],
+        headers: {
+          'list-unsubscribe': [''],
+          'list-id': [''],
+          'precedence': ['list', 'bulk'],
+          'x-mailing-list': [''],
+        },
+      },
+
+      // Updates & transactional - GitHub, Stripe, shipping, etc.
+      updates: {
+        domains: [
+          'github.com', 'gitlab.com', 'bitbucket.org',
+          'stripe.com', 'paypal.com', 'square.com', 'venmo.com',
+          'ups.com', 'fedex.com', 'usps.com', 'dhl.com',
+          'amazon.com', 'amazonses.com',
+          'google.com', 'accounts.google.com',
+          'apple.com', 'id.apple.com',
+          'microsoft.com', 'live.com', 'outlook.com',
+          'dropbox.com', 'box.com',
+          'atlassian.com', 'jira.com', 'trello.com',
+          'notion.so', 'airtable.com', 'asana.com',
+          'vercel.com', 'netlify.com', 'heroku.com',
+          'cloudflare.com', 'digitalocean.com',
+          'twilio.com', 'sendgrid.com',
+          'intercom.io', 'zendesk.com', 'freshdesk.com',
+          'calendly.com', 'cal.com',
+          'zoom.us', 'zoom.com',
+          'doordash.com', 'ubereats.com', 'grubhub.com',
+          'airbnb.com', 'booking.com', 'expedia.com',
+          'uber.com', 'lyft.com',
+          'netflix.com', 'spotify.com', 'hulu.com',
+        ],
+        substrings: [
+          'alert@', 'alerts@',
+          'notification@', 'notifications@',
+          'noreply@', 'no-reply@',
+          'security@', 'support@',
+          'confirm@', 'confirmation@',
+          'receipt@', 'invoice@', 'billing@',
+          'shipping@', 'delivery@', 'order@', 'orders@',
+          'account@', 'password@',
+          'verify@', 'verification@',
+        ],
+        headers: {
+          'auto-submitted': ['auto-generated', 'auto-replied'],
+          'x-auto-response-suppress': [''],
+        },
+      },
+
+      // Promotions & marketing - newsletters, sales, etc.
+      promotions: {
+        domains: [
+          'mailchimp.com', 'mail.mailchimp.com',
+          'sendgrid.net', 'sendgrid.com',
+          'constantcontact.com',
+          'mailerlite.com',
+          'hubspot.com', 'hubspotmail.com',
+          'klaviyo.com',
+          'convertkit.com',
+          'drip.com',
+          'getresponse.com',
+          'aweber.com',
+          'campaignmonitor.com',
+          'sendinblue.com', 'brevo.com',
+          'activecampaign.com',
+          'emarsys.net',
+          'salesforce.com', 'exacttarget.com',
+          'amazon.com', 'amazonsellerservices.com',
+          'walmart.com',
+          'target.com',
+          'bestbuy.com',
+          'ebay.com',
+          'etsy.com',
+          'shopify.com',
+          'wish.com',
+          'aliexpress.com',
+          'wayfair.com',
+          'homedepot.com',
+          'lowes.com',
+          'kohls.com',
+          'macys.com',
+          'nordstrom.com',
+          'gap.com',
+          'nike.com',
+          'adidas.com',
+          'lululemon.com',
+          'uniqlo.com',
+          'zara.com',
+          'hm.com',
+          'sephora.com',
+          'ulta.com',
+          'groupon.com',
+          'retailmenot.com',
+        ],
+        substrings: [
+          'promo@', 'promotions@',
+          'marketing@', 'newsletter@', 'news@',
+          'deals@', 'offers@', 'sale@', 'sales@',
+          'shop@', 'store@',
+          'rewards@', 'loyalty@',
+          'unsubscribe', // common in promotional emails
+          'campaign', 'blast@',
+        ],
+        headers: {
+          'x-campaign': [''],
+          'x-mailchimp-id': [''],
+          'x-mc-user': [''],
+          'x-sg-eid': [''], // SendGrid
+          'x-ses-outgoing': [''], // AWS SES promotional
+        },
+      },
+    },
   },
 
   notifications: {

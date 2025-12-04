@@ -148,6 +148,64 @@ export interface MailServerFeaturesConfig {
   activeSync?: boolean
 }
 
+/**
+ * Email category types for automatic email categorization (Gmail-style)
+ */
+export type EmailCategory = 'social' | 'forums' | 'updates' | 'promotions' | 'primary'
+
+/**
+ * Patterns for matching emails to categories
+ */
+export interface CategoryPatterns {
+  /**
+   * Domain names to match (e.g., 'facebookmail.com', 'twitter.com')
+   * Matched against the sender's email domain
+   */
+  domains?: string[]
+
+  /**
+   * Substrings to match in the sender address (e.g., 'notification@', '@social.')
+   */
+  substrings?: string[]
+
+  /**
+   * Email headers to match (e.g., { 'list-id': [''], 'precedence': ['list', 'bulk'] })
+   * Empty string array means "header exists"
+   */
+  headers?: Record<string, string[]>
+}
+
+/**
+ * Configuration for automatic email categorization
+ */
+export interface EmailCategorizationConfig {
+  /**
+   * Enable automatic email categorization into Gmail-style folders
+   * @default true
+   */
+  enabled?: boolean
+
+  /**
+   * Social category patterns (Facebook, Twitter, LinkedIn, etc.)
+   */
+  social?: CategoryPatterns
+
+  /**
+   * Forums category patterns (mailing lists, Google Groups, etc.)
+   */
+  forums?: CategoryPatterns
+
+  /**
+   * Updates category patterns (GitHub, Stripe, shipping notifications, etc.)
+   */
+  updates?: CategoryPatterns
+
+  /**
+   * Promotions category patterns (marketing emails, newsletters, etc.)
+   */
+  promotions?: CategoryPatterns
+}
+
 export interface EmailServerConfig {
   enabled: boolean
   scan?: boolean // spam/virus scanning
@@ -196,6 +254,12 @@ export interface EmailServerConfig {
    * @example 'mail' -> mail.yourdomain.com
    */
   subdomain?: string
+
+  /**
+   * Automatic email categorization (Gmail-style folders)
+   * Categorizes incoming emails into Social, Forums, Updates, Promotions folders
+   */
+  categorization?: EmailCategorizationConfig
 }
 
 export interface EmailNotificationsConfig {

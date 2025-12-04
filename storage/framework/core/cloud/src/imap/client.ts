@@ -76,21 +76,105 @@ export class AWSClient {
   }
 
   /**
-   * Load AWS credentials from environment variables
+   * Load AWS credentials from environment variables or EC2 instance metadata
    */
   private loadCredentials(): AWSCredentials {
     const accessKeyId = process.env.AWS_ACCESS_KEY_ID
     const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
     const sessionToken = process.env.AWS_SESSION_TOKEN
 
-    if (!accessKeyId || !secretAccessKey) {
-      throw new Error('AWS credentials not found. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables.')
+    if (accessKeyId && secretAccessKey) {
+      return {
+        accessKeyId,
+        secretAccessKey,
+        sessionToken,
+      }
     }
 
+    // Return placeholder - will be loaded async from EC2 metadata
+    // The actual credentials will be fetched in getCredentials()
     return {
-      accessKeyId,
-      secretAccessKey,
-      sessionToken,
+      accessKeyId: '',
+      secretAccessKey: '',
+    }
+  }
+
+  /**
+   * Cache for EC2 instance metadata credentials
+   */
+  private ec2CredentialsCache?: {
+    credentials: AWSCredentials
+    expiration: number
+  }
+
+  /**
+   * Get credentials, fetching from EC2 metadata if needed
+   */
+  private async getCredentials(): Promise<AWSCredentials> {
+    // Check environment variables first
+    const accessKeyId = process.env.AWS_ACCESS_KEY_ID
+    const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
+    if (accessKeyId && secretAccessKey) {
+      return {
+        accessKeyId,
+        secretAccessKey,
+        sessionToken: process.env.AWS_SESSION_TOKEN,
+      }
+    }
+
+    // Check if we have cached EC2 credentials that haven't expired
+    if (this.ec2CredentialsCache) {
+      const now = Date.now()
+      // Refresh 5 minutes before expiration
+      if (this.ec2CredentialsCache.expiration > now + 5 * 60 * 1000) {
+        return this.ec2CredentialsCache.credentials
+      }
+    }
+
+    // Fetch from EC2 instance metadata service (IMDSv2)
+    try {
+      // Get token for IMDSv2
+      const tokenResponse = await fetch('http://169.254.169.254/latest/api/token', {
+        method: 'PUT',
+        headers: {
+          'X-aws-ec2-metadata-token-ttl-seconds': '21600',
+        },
+      })
+      const token = await tokenResponse.text()
+
+      // Get IAM role name
+      const roleResponse = await fetch('http://169.254.169.254/latest/meta-data/iam/security-credentials/', {
+        headers: { 'X-aws-ec2-metadata-token': token },
+      })
+      const roleName = await roleResponse.text()
+
+      // Get credentials for the role
+      const credsResponse = await fetch(`http://169.254.169.254/latest/meta-data/iam/security-credentials/${roleName}`, {
+        headers: { 'X-aws-ec2-metadata-token': token },
+      })
+      const credsData = await credsResponse.json() as {
+        AccessKeyId: string
+        SecretAccessKey: string
+        Token: string
+        Expiration: string
+      }
+
+      const credentials: AWSCredentials = {
+        accessKeyId: credsData.AccessKeyId,
+        secretAccessKey: credsData.SecretAccessKey,
+        sessionToken: credsData.Token,
+      }
+
+      // Cache the credentials
+      this.ec2CredentialsCache = {
+        credentials,
+        expiration: new Date(credsData.Expiration).getTime(),
+      }
+
+      return credentials
+    }
+    catch (error) {
+      throw new Error('AWS credentials not found. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables, or run on an EC2 instance with an IAM role.')
     }
   }
 
@@ -153,8 +237,8 @@ export class AWSClient {
    * Make the actual HTTP request
    */
   private async makeRequest(options: AWSRequestOptions): Promise<any> {
-    const credentials = options.credentials || this.credentials
-    if (!credentials) {
+    const credentials = options.credentials || await this.getCredentials()
+    if (!credentials || !credentials.accessKeyId || !credentials.secretAccessKey) {
       throw new Error('AWS credentials not provided')
     }
 
