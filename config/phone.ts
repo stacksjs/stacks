@@ -10,7 +10,7 @@ const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
  * Powered by Amazon Connect for enterprise-grade telephony.
  */
 export default {
-  enabled: false, // Set to true to enable phone features
+  enabled: true, // Set to true to enable phone features
 
   provider: 'connect', // Amazon Connect
 
@@ -21,23 +21,22 @@ export default {
   },
 
   phoneNumbers: [
-    // Example phone number configuration
-    // {
-    //   type: 'TOLL_FREE',
-    //   countryCode: 'US',
-    //   description: 'Main support line',
-    //   notifyOnCall: ['chris@stacksjs.com'],
-    // },
+    {
+      type: 'TOLL_FREE',
+      countryCode: 'US',
+      description: 'Main business line',
+      notifyOnCall: ['chris@stacksjs.com'],
+    },
   ],
 
   notifications: {
     incomingCall: {
       enabled: true,
-      channels: ['email'], // 'email', 'sms', 'slack', 'webhook'
+      channels: ['email', 'sms'], // 'email', 'sms', 'slack', 'webhook'
     },
     missedCall: {
       enabled: true,
-      channels: ['email'],
+      channels: ['email', 'sms'],
     },
     voicemail: {
       enabled: true,
@@ -49,17 +48,40 @@ export default {
     enabled: true,
     transcription: true, // Use Amazon Transcribe
     maxDurationSeconds: 120,
-    greeting: 'Please leave a message after the tone.',
+    greeting: 'Thank you for calling Stacks. Please leave a message after the tone and we will get back to you as soon as possible.',
+  },
+
+  // Call forwarding configuration
+  forwarding: {
+    enabled: true,
+    rules: [
+      {
+        name: 'Forward to Chris (Business Hours)',
+        condition: 'always', // Forward all calls during business hours
+        forwardTo: '+18088218241',
+        ringTimeout: 20, // seconds before going to voicemail
+        priority: 1,
+      },
+      {
+        name: 'Forward to Chris (After Hours)',
+        condition: 'after_hours', // Forward outside business hours
+        forwardTo: '+18088218241',
+        ringTimeout: 15,
+        priority: 2,
+      },
+    ],
   },
 
   businessHours: {
     timezone: 'America/Los_Angeles',
     schedule: [
-      { day: 'MONDAY', start: '09:00', end: '17:00' },
-      { day: 'TUESDAY', start: '09:00', end: '17:00' },
-      { day: 'WEDNESDAY', start: '09:00', end: '17:00' },
-      { day: 'THURSDAY', start: '09:00', end: '17:00' },
-      { day: 'FRIDAY', start: '09:00', end: '17:00' },
+      { day: 'MONDAY', start: '11:30', end: '20:00' },
+      { day: 'TUESDAY', start: '11:30', end: '20:00' },
+      { day: 'WEDNESDAY', start: '11:30', end: '20:00' },
+      { day: 'THURSDAY', start: '11:30', end: '20:00' },
+      { day: 'FRIDAY', start: '11:30', end: '20:00' },
+      { day: 'SATURDAY', start: '11:30', end: '20:00' },
+      { day: 'SUNDAY', start: '11:30', end: '20:00' },
     ],
   },
 } satisfies PhoneConfig

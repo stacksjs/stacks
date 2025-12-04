@@ -28,6 +28,19 @@ export default {
     scan: true, // scans for spam and viruses
     subdomain: 'mail', // mail.stacksjs.com
 
+    /**
+     * Server mode:
+     * - 'serverless': Lightweight TypeScript/Bun server (default, ~$3/month)
+     * - 'server': Full-featured Zig mail server with IMAP, POP3, CalDAV, etc.
+     */
+    mode: (envVars.MAIL_SERVER_MODE || 'serverless') as 'serverless' | 'server',
+
+    /**
+     * Path to the Zig mail server repository (only used when mode is 'server')
+     * @default '/Users/chrisbreuer/Code/mail' or process.env.MAIL_SERVER_PATH
+     */
+    serverPath: envVars.MAIL_SERVER_PATH || '/Users/chrisbreuer/Code/mail',
+
     storage: {
       retentionDays: 90,
       archiveAfterDays: 30,
@@ -35,16 +48,32 @@ export default {
 
     // EC2 instance configuration for IMAP/SMTP server
     instance: {
-      type: 't4g.nano', // ~$3/month - sufficient for light use
-      spot: false, // set to true for ~$1.50/month (can be interrupted)
+      // For 'serverless' mode: t4g.nano ARM64 (~$3/month) is sufficient
+      // For 'server' mode: t3.small x86_64 required for Zig binary
+      type: 't4g.nano',
+      spot: false, // set to true for ~50% cost savings (can be interrupted)
       diskSize: 8, // GB
       // keyPair: 'my-key-pair', // optional SSH access
     },
 
     ports: {
-      imap: 993, // IMAP over TLS
-      smtp: 465, // SMTP over TLS
-      smtpStartTls: 587, // SMTP with STARTTLS
+      smtp: 25, // Standard SMTP
+      smtps: 465, // SMTP over TLS
+      submission: 587, // SMTP with STARTTLS
+      imap: 143, // IMAP
+      imaps: 993, // IMAP over TLS
+      pop3: 110, // POP3
+      pop3s: 995, // POP3 over TLS
+    },
+
+    // Features (only available in 'server' mode)
+    features: {
+      imap: true,
+      pop3: true,
+      webmail: false, // future
+      calDAV: false, // calendar sync
+      cardDAV: false, // contacts sync
+      activeSync: false, // Exchange ActiveSync
     },
   },
 
@@ -54,5 +83,5 @@ export default {
     complaints: true,
   },
 
-  default: envVars.MAIL_DRIVER || 'ses',
+  default: (envVars.MAIL_DRIVER || 'ses') as 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp' | 'postmark',
 } satisfies EmailConfig

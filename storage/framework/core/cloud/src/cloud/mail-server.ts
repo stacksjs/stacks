@@ -111,11 +111,16 @@ export class MailServerStack {
       mailPorts.push({ port: ports.imaps || 993, name: 'IMAPS' })
     }
 
-    // SMTP ports for server mode
+    // SMTP ports for serverless mode (relay to SES) and server mode
+    // This allows mail.domain.com to be used as SMTP server with user-friendly credentials
+    if (mode === 'serverless' || mode === 'server') {
+      mailPorts.push({ port: ports.submission || 587, name: 'SMTP Submission' })
+      mailPorts.push({ port: ports.smtps || 465, name: 'SMTPS' })
+    }
+
+    // SMTP port 25 only for server mode (receiving mail directly)
     if (mode === 'server') {
       mailPorts.push({ port: ports.smtp || 25, name: 'SMTP' })
-      mailPorts.push({ port: ports.smtps || 465, name: 'SMTPS' })
-      mailPorts.push({ port: ports.submission || 587, name: 'Submission' })
     }
 
     // POP3 if enabled in server mode
@@ -320,7 +325,7 @@ export class MailServerStack {
   }
 
   /**
-   * Build user data for serverless (TypeScript/Bun) IMAP server
+   * Build user data for serverless (TypeScript/Bun) IMAP and SMTP server
    */
   private buildServerlessUserData(
     userData: ec2.UserData,
@@ -349,13 +354,44 @@ export class MailServerStack {
       imapServerCode = '// IMAP server code will be deployed separately'
     }
 
-    // Create the startup script
+    // Read the SMTP server code
+    const smtpServerPath = join(__dirname, '../imap/smtp-server.ts')
+    let smtpServerCode = ''
+    if (existsSync(smtpServerPath)) {
+      smtpServerCode = readFileSync(smtpServerPath, 'utf-8')
+    }
+    else {
+      console.warn('SMTP server code not found, using placeholder')
+      smtpServerCode = '// SMTP server code will be deployed separately'
+    }
+
+    // Read the AWS client modules
+    const clientPath = join(__dirname, '../imap/client.ts')
+    let clientCode = ''
+    if (existsSync(clientPath)) {
+      clientCode = readFileSync(clientPath, 'utf-8')
+    }
+
+    const s3Path = join(__dirname, '../imap/s3.ts')
+    let s3Code = ''
+    if (existsSync(s3Path)) {
+      s3Code = readFileSync(s3Path, 'utf-8')
+    }
+
+    const sesPath = join(__dirname, '../imap/ses.ts')
+    let sesCode = ''
+    if (existsSync(sesPath)) {
+      sesCode = readFileSync(sesPath, 'utf-8')
+    }
+
+    // Create the startup script that starts both IMAP and SMTP servers
     const startupScript = `#!/usr/bin/env bun
 import * as fs from 'node:fs'
 import { startImapServer } from './imap-server'
+import { startSmtpServer } from './smtp-server'
 
 async function main() {
-  console.log('Starting IMAP-to-S3 bridge server...')
+  console.log('Starting mail server (IMAP + SMTP)...')
 
   const hasTlsCerts = fs.existsSync('/etc/letsencrypt/live/mail.${domain}/privkey.pem')
   console.log('TLS certificates available:', hasTlsCerts)
@@ -365,7 +401,13 @@ async function main() {
     Object.entries(users).map(([k, v]) => [k, { password: process.env[\`IMAP_PASSWORD_\${k.toUpperCase()}\`] || 'changeme', email: (v as any).email }])
   ), null, 2).replace(/process\.env\[`IMAP_PASSWORD_([A-Z]+)`\]/g, "process.env.IMAP_PASSWORD_$1 || 'changeme'")}
 
-  const server = await startImapServer({
+  const tlsConfig = hasTlsCerts ? {
+    key: '/etc/letsencrypt/live/mail.${domain}/privkey.pem',
+    cert: '/etc/letsencrypt/live/mail.${domain}/fullchain.pem',
+  } : undefined
+
+  // Start IMAP server
+  const imapServer = await startImapServer({
     port: 143,
     sslPort: 993,
     host: '0.0.0.0',
@@ -374,25 +416,32 @@ async function main() {
     prefix: 'incoming/',
     domain: '${domain}',
     users,
-    tls: hasTlsCerts ? {
-      key: '/etc/letsencrypt/live/mail.${domain}/privkey.pem',
-      cert: '/etc/letsencrypt/live/mail.${domain}/fullchain.pem',
-    } : undefined,
+    tls: tlsConfig,
   })
-
   console.log('IMAP server running on port 143' + (hasTlsCerts ? ' and 993 (TLS)' : ''))
 
-  process.on('SIGINT', async () => {
-    console.log('Shutting down...')
-    await server.stop()
-    process.exit(0)
+  // Start SMTP server (relay to SES)
+  const smtpServer = await startSmtpServer({
+    port: 587,
+    tlsPort: 465,
+    host: '0.0.0.0',
+    region: '${Stack.of({ node: { id: 'scope' } } as any).region || 'us-east-1'}',
+    domain: '${domain}',
+    users,
+    tls: tlsConfig,
+    sentBucket: '${this.mailBucket.bucketName}',
+    sentPrefix: 'sent/',
   })
+  console.log('SMTP server running on port 587' + (hasTlsCerts ? ' and 465 (TLS)' : ''))
 
-  process.on('SIGTERM', async () => {
+  const shutdown = async () => {
     console.log('Shutting down...')
-    await server.stop()
+    await Promise.all([imapServer.stop(), smtpServer.stop()])
     process.exit(0)
-  })
+  }
+
+  process.on('SIGINT', shutdown)
+  process.on('SIGTERM', shutdown)
 }
 
 main().catch(console.error)
@@ -421,6 +470,26 @@ main().catch(console.error)
       imapServerCode,
       'EOFIMAPSERVER',
       '',
+      '# Write SMTP server code',
+      `cat > /opt/imap-server/smtp-server.ts << 'EOFSMTPSERVER'`,
+      smtpServerCode,
+      'EOFSMTPSERVER',
+      '',
+      '# Write AWS client code',
+      `cat > /opt/imap-server/client.ts << 'EOFCLIENT'`,
+      clientCode,
+      'EOFCLIENT',
+      '',
+      '# Write S3 client code',
+      `cat > /opt/imap-server/s3.ts << 'EOFS3'`,
+      s3Code,
+      'EOFS3',
+      '',
+      '# Write SES client code',
+      `cat > /opt/imap-server/ses.ts << 'EOFSES'`,
+      sesCode,
+      'EOFSES',
+      '',
       '# Write startup script',
       `cat > /opt/imap-server/server.ts << 'EOFSERVER'`,
       startupScript,
@@ -429,10 +498,10 @@ main().catch(console.error)
       '# Obtain TLS certificate with Let\'s Encrypt (standalone mode)',
       `certbot certonly --standalone --non-interactive --agree-tos --email admin@${domain} -d mail.${domain} || echo "Certificate already exists or failed to obtain"`,
       '',
-      '# Create systemd service',
+      '# Create systemd service for mail server (IMAP + SMTP)',
       'cat > /etc/systemd/system/imap-server.service << EOF',
       '[Unit]',
-      'Description=IMAP-to-S3 Bridge Server',
+      'Description=Mail Server (IMAP + SMTP)',
       'After=network.target',
       '',
       '[Service]',
@@ -458,7 +527,7 @@ main().catch(console.error)
       'echo "0 0,12 * * * root certbot renew --quiet && systemctl restart imap-server" > /etc/cron.d/certbot-renew',
       '',
       '# Log completion',
-      'echo "IMAP server setup complete" >> /var/log/imap-server-setup.log',
+      'echo "Mail server (IMAP + SMTP) setup complete" >> /var/log/imap-server-setup.log',
     )
   }
 
