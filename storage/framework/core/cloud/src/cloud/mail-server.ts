@@ -180,6 +180,21 @@ export class MailServerStack {
       resources: ['*'],
     }))
 
+    // Grant Secrets Manager access for IMAP credentials
+    // This allows the mail server to fetch credentials from the secret
+    // created by deploy-imap.ts or stored in stacks/mail-server/credentials
+    instanceRole.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'secretsmanager:GetSecretValue',
+        'secretsmanager:DescribeSecret',
+      ],
+      resources: [
+        `arn:aws:secretsmanager:${Stack.of(scope).region}:${Stack.of(scope).account}:secret:stacks/*`,
+        `arn:aws:secretsmanager:${Stack.of(scope).region}:${Stack.of(scope).account}:secret:${props.slug}-${props.appEnv}-imap-passwords*`,
+      ],
+    }))
+
     // Create secrets for IMAP passwords
     const imapPasswordsSecret = new secretsmanager.Secret(scope, 'ImapPasswordsSecret', {
       secretName: `${props.slug}-${props.appEnv}-imap-passwords`,

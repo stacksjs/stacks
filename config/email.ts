@@ -18,7 +18,21 @@ export default {
 
   domain: envVars.MAIL_DOMAIN || 'stacksjs.com',
 
-  mailboxes: ['chris@stacksjs.com', 'blake@stacksjs.com', 'glenn@stacksjs.com'],
+  /**
+   * Mailbox users for IMAP/SMTP access.
+   * Passwords are automatically looked up from MAIL_PASSWORD_<USERNAME> env vars.
+   * After first deploy, passwords are synced to AWS Secrets Manager.
+   *
+   * Supported formats:
+   * - Simple usernames: ['chris', 'blake'] -> chris@{domain}, blake@{domain}
+   * - Full emails: ['chris@stacksjs.com']
+   * - Objects: [{ email: 'chris', password: '...' }]
+   */
+  mailboxes: [
+    'chris',
+    'blake',
+    'glenn',
+  ],
 
   url: envVars.APP_URL || 'https://stacksjs.com',
   charset: 'UTF-8',

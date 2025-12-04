@@ -19,8 +19,17 @@ export interface EmailFilterRule {
 }
 
 export interface MailboxConfig {
-  address: string
+  /** Email address (preferred) - e.g., 'chris@stacksjs.com' */
+  email?: string
+  /** @deprecated Use 'email' instead */
+  address?: string
   displayName?: string
+  /**
+   * Password for IMAP/SMTP authentication.
+   * If not provided, will be looked up from MAIL_PASSWORD_<USERNAME> env var.
+   * Passwords are stored in AWS Secrets Manager after first deploy.
+   */
+  password?: string
   forwardTo?: string[]
   autoResponder?: AutoResponderConfig
   filters?: EmailFilterRule[]
