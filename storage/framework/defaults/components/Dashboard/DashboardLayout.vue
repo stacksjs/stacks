@@ -27,7 +27,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   showSidebar: true,
   showNavbar: true,
-  showWindowControls: false,
+  showWindowControls: true, // Enable macOS window controls by default
   fullWidth: false,
   noPadding: false,
 })
@@ -97,7 +97,8 @@ function handleClose() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+  <!-- macOS-inspired layout with subtle background -->
+  <div class="min-h-screen bg-neutral-100 dark:bg-neutral-950">
     <!-- Mobile sidebar overlay -->
     <Transition
       enter-active-class="transition-opacity duration-300 ease-out"

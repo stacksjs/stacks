@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+/**
+ * Input Component - macOS Style
+ * A clean text input inspired by macOS text fields.
+ */
 import { computed, ref } from 'vue'
 
 interface Props {
@@ -12,7 +16,7 @@ interface Props {
   hint?: string
   label?: string
   id?: string
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
   fullWidth?: boolean
 }
 
@@ -40,47 +44,51 @@ const containerClasses = computed(() => [
 const inputClasses = computed(() => {
   const base = [
     'block w-full',
-    'bg-white dark:bg-neutral-800',
-    'border rounded-lg',
+    // macOS text field style
+    'bg-white dark:bg-white/10',
+    'border rounded-md',
     'text-neutral-900 dark:text-neutral-100',
     'placeholder:text-neutral-400 dark:placeholder:text-neutral-500',
-    'transition-colors duration-150',
-    'focus:outline-none focus:ring-2 focus:ring-offset-0',
+    'transition-all duration-150',
+    // macOS focus ring style
+    'focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-0',
   ]
 
-  // Size variants
+  // Size variants - macOS compact sizing
   const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-3.5 py-2 text-sm',
-    lg: 'px-4 py-2.5 text-base',
+    xs: 'px-2 py-1 text-[11px] h-6',
+    sm: 'px-2.5 py-1 text-[12px] h-7',
+    md: 'px-3 py-1.5 text-[13px] h-8',
+    lg: 'px-3.5 py-2 text-[14px] h-9',
   }
   base.push(sizes[props.size])
 
   // Border and focus states
   if (props.error) {
     base.push(
-      'border-red-300 dark:border-red-500',
-      'focus:border-red-500 focus:ring-red-500/20',
+      'border-red-400/60 dark:border-red-500/60',
+      'focus:border-red-500 focus:ring-red-500/30',
     )
   } else {
     base.push(
-      'border-neutral-300 dark:border-neutral-600',
-      'focus:border-blue-500 focus:ring-blue-500/20',
-      'hover:border-neutral-400 dark:hover:border-neutral-500',
+      // macOS subtle border
+      'border-black/10 dark:border-white/15',
+      'focus:border-blue-500/50',
+      'hover:border-black/20 dark:hover:border-white/25',
     )
   }
 
   // Disabled state
   if (props.disabled) {
-    base.push('opacity-50 cursor-not-allowed bg-neutral-50 dark:bg-neutral-900')
+    base.push('opacity-40 cursor-not-allowed bg-black/5 dark:bg-white/5')
   }
 
   return base
 })
 
 const labelClasses = computed(() => [
-  'block text-sm font-medium mb-1.5',
-  props.error ? 'text-red-600 dark:text-red-400' : 'text-neutral-700 dark:text-neutral-300',
+  'block text-[13px] font-medium mb-1.5 tracking-tight',
+  props.error ? 'text-red-600 dark:text-red-400' : 'text-neutral-600 dark:text-neutral-400',
 ])
 
 function handleInput(event: Event) {

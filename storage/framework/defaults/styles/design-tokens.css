@@ -1,89 +1,123 @@
 /**
- * Stacks Dashboard Design System
- * ================================
- * A modern, clean design system with support for light/dark modes.
- * Designed to be reusable across Stacks Dashboard, HomeOS, and web demos.
+ * Stacks Dashboard Design System - macOS Inspired
+ * ================================================
+ * A modern design system inspired by macOS aesthetics.
+ * Features vibrancy, SF-style typography, generous rounded corners,
+ * and native macOS UI patterns.
  */
 
 :root {
   /* ========================================
-   * Color Palette - Light Mode
+   * macOS System Colors - Light Mode
+   * Based on Apple's Human Interface Guidelines
    * ======================================== */
 
-  /* Primary Brand Colors */
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-  --color-primary-950: #172554;
+  /* Primary - macOS Blue */
+  --color-primary-50: #e5f2ff;
+  --color-primary-100: #cce5ff;
+  --color-primary-200: #99cbff;
+  --color-primary-300: #66b0ff;
+  --color-primary-400: #3396ff;
+  --color-primary-500: #007aff; /* macOS Blue */
+  --color-primary-600: #0066d6;
+  --color-primary-700: #0052ad;
+  --color-primary-800: #003d82;
+  --color-primary-900: #002959;
 
-  /* Neutral Colors (Slate-based) */
+  /* Neutral Colors - macOS Gray Scale */
   --color-neutral-0: #ffffff;
-  --color-neutral-50: #f8fafc;
-  --color-neutral-100: #f1f5f9;
-  --color-neutral-200: #e2e8f0;
-  --color-neutral-300: #cbd5e1;
-  --color-neutral-400: #94a3b8;
-  --color-neutral-500: #64748b;
-  --color-neutral-600: #475569;
-  --color-neutral-700: #334155;
-  --color-neutral-800: #1e293b;
-  --color-neutral-900: #0f172a;
-  --color-neutral-950: #020617;
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f7; /* macOS background */
+  --color-neutral-200: #e8e8ed;
+  --color-neutral-300: #d2d2d7;
+  --color-neutral-400: #aeaeb2;
+  --color-neutral-500: #8e8e93; /* macOS secondary label */
+  --color-neutral-600: #636366;
+  --color-neutral-700: #48484a;
+  --color-neutral-800: #3a3a3c;
+  --color-neutral-900: #2c2c2e;
+  --color-neutral-950: #1c1c1e; /* macOS dark background */
 
-  /* Success Colors */
-  --color-success-50: #f0fdf4;
-  --color-success-100: #dcfce7;
-  --color-success-200: #bbf7d0;
-  --color-success-300: #86efac;
-  --color-success-400: #4ade80;
-  --color-success-500: #22c55e;
-  --color-success-600: #16a34a;
-  --color-success-700: #15803d;
-  --color-success-800: #166534;
-  --color-success-900: #14532d;
+  /* Success - macOS Green */
+  --color-success-50: #e8f9ed;
+  --color-success-100: #d1f3db;
+  --color-success-200: #a3e7b7;
+  --color-success-300: #75db93;
+  --color-success-400: #47cf6f;
+  --color-success-500: #34c759; /* macOS Green */
+  --color-success-600: #2aa147;
+  --color-success-700: #207b36;
+  --color-success-800: #155524;
+  --color-success-900: #0b2f13;
 
-  /* Warning Colors */
-  --color-warning-50: #fffbeb;
-  --color-warning-100: #fef3c7;
-  --color-warning-200: #fde68a;
-  --color-warning-300: #fcd34d;
-  --color-warning-400: #fbbf24;
-  --color-warning-500: #f59e0b;
-  --color-warning-600: #d97706;
-  --color-warning-700: #b45309;
-  --color-warning-800: #92400e;
-  --color-warning-900: #78350f;
+  /* Warning - macOS Orange */
+  --color-warning-50: #fff5e5;
+  --color-warning-100: #ffebcc;
+  --color-warning-200: #ffd699;
+  --color-warning-300: #ffc266;
+  --color-warning-400: #ffad33;
+  --color-warning-500: #ff9500; /* macOS Orange */
+  --color-warning-600: #cc7700;
+  --color-warning-700: #995900;
+  --color-warning-800: #663c00;
+  --color-warning-900: #331e00;
 
-  /* Danger/Error Colors */
-  --color-danger-50: #fef2f2;
-  --color-danger-100: #fee2e2;
-  --color-danger-200: #fecaca;
-  --color-danger-300: #fca5a5;
-  --color-danger-400: #f87171;
-  --color-danger-500: #ef4444;
-  --color-danger-600: #dc2626;
-  --color-danger-700: #b91c1c;
-  --color-danger-800: #991b1b;
-  --color-danger-900: #7f1d1d;
+  /* Danger - macOS Red */
+  --color-danger-50: #ffebeb;
+  --color-danger-100: #ffd6d6;
+  --color-danger-200: #ffadad;
+  --color-danger-300: #ff8585;
+  --color-danger-400: #ff5c5c;
+  --color-danger-500: #ff3b30; /* macOS Red */
+  --color-danger-600: #d62f26;
+  --color-danger-700: #ad241c;
+  --color-danger-800: #851912;
+  --color-danger-900: #5c0e08;
 
-  /* Info Colors */
-  --color-info-50: #ecfeff;
-  --color-info-100: #cffafe;
-  --color-info-200: #a5f3fc;
-  --color-info-300: #67e8f9;
-  --color-info-400: #22d3ee;
-  --color-info-500: #06b6d4;
-  --color-info-600: #0891b2;
-  --color-info-700: #0e7490;
-  --color-info-800: #155e75;
-  --color-info-900: #164e63;
+  /* Info - macOS Teal */
+  --color-info-50: #e5fafa;
+  --color-info-100: #ccf5f5;
+  --color-info-200: #99ebeb;
+  --color-info-300: #66e0e0;
+  --color-info-400: #40d4d4;
+  --color-info-500: #5ac8fa; /* macOS Teal/Cyan */
+  --color-info-600: #32ade6;
+  --color-info-700: #2490c3;
+  --color-info-800: #176f96;
+  --color-info-900: #0a4d6a;
+
+  /* Purple - macOS Purple */
+  --color-purple-500: #af52de;
+
+  /* Pink - macOS Pink */
+  --color-pink-500: #ff2d55;
+
+  /* Indigo - macOS Indigo */
+  --color-indigo-500: #5856d6;
+
+  /* ========================================
+   * macOS Vibrancy & Materials
+   * ======================================== */
+
+  /* Vibrancy backgrounds (frosted glass effect) */
+  --vibrancy-light: rgba(255, 255, 255, 0.72);
+  --vibrancy-dark: rgba(30, 30, 30, 0.72);
+  --vibrancy-ultra-thin-light: rgba(255, 255, 255, 0.4);
+  --vibrancy-ultra-thin-dark: rgba(30, 30, 30, 0.4);
+
+  /* Material backgrounds */
+  --material-thin: rgba(255, 255, 255, 0.5);
+  --material-regular: rgba(255, 255, 255, 0.72);
+  --material-thick: rgba(255, 255, 255, 0.85);
+
+  /* Blur amounts */
+  --blur-none: 0;
+  --blur-sm: 8px;
+  --blur-md: 12px;
+  --blur-lg: 20px;
+  --blur-xl: 30px;
+  --blur-2xl: 40px;
+  --blur-macos: 20px; /* Standard macOS blur */
 
   /* ========================================
    * Semantic Colors - Light Mode
@@ -91,68 +125,89 @@
 
   /* Background */
   --bg-primary: var(--color-neutral-0);
-  --bg-secondary: var(--color-neutral-50);
-  --bg-tertiary: var(--color-neutral-100);
+  --bg-secondary: var(--color-neutral-100);
+  --bg-tertiary: var(--color-neutral-200);
   --bg-elevated: var(--color-neutral-0);
   --bg-sunken: var(--color-neutral-100);
-  --bg-hover: var(--color-neutral-100);
-  --bg-active: var(--color-neutral-200);
-  --bg-selected: var(--color-primary-50);
+  --bg-hover: rgba(0, 0, 0, 0.04);
+  --bg-active: rgba(0, 0, 0, 0.08);
+  --bg-selected: rgba(0, 122, 255, 0.12);
 
-  /* Foreground/Text */
-  --text-primary: var(--color-neutral-900);
-  --text-secondary: var(--color-neutral-600);
-  --text-tertiary: var(--color-neutral-500);
-  --text-muted: var(--color-neutral-400);
-  --text-inverted: var(--color-neutral-0);
-  --text-link: var(--color-primary-600);
-  --text-link-hover: var(--color-primary-700);
+  /* Vibrancy backgrounds */
+  --bg-vibrancy: var(--vibrancy-light);
+  --bg-vibrancy-sidebar: rgba(246, 246, 246, 0.8);
+  --bg-vibrancy-navbar: rgba(255, 255, 255, 0.72);
+  --bg-vibrancy-popover: rgba(255, 255, 255, 0.85);
 
-  /* Border */
-  --border-default: var(--color-neutral-200);
-  --border-muted: var(--color-neutral-100);
-  --border-emphasis: var(--color-neutral-300);
+  /* Foreground/Text - SF Pro style */
+  --text-primary: rgba(0, 0, 0, 0.85);
+  --text-secondary: rgba(0, 0, 0, 0.55);
+  --text-tertiary: rgba(0, 0, 0, 0.35);
+  --text-muted: rgba(0, 0, 0, 0.25);
+  --text-inverted: rgba(255, 255, 255, 0.95);
+  --text-link: var(--color-primary-500);
+  --text-link-hover: var(--color-primary-600);
+
+  /* Border - Subtle macOS style */
+  --border-default: rgba(0, 0, 0, 0.1);
+  --border-muted: rgba(0, 0, 0, 0.06);
+  --border-emphasis: rgba(0, 0, 0, 0.15);
   --border-focus: var(--color-primary-500);
+  --border-separator: rgba(0, 0, 0, 0.08);
 
-  /* Shadow */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  /* Shadow - macOS elevation */
+  --shadow-xs: 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16), 0 8px 16px rgba(0, 0, 0, 0.08);
+  --shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.2), 0 12px 24px rgba(0, 0, 0, 0.1);
+
+  /* macOS-specific shadows */
+  --shadow-window: 0 22px 70px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.1);
+  --shadow-popover: 0 4px 16px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --shadow-dropdown: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0 10px 20px -15px rgba(22, 23, 24, 0.2);
 
   /* ========================================
-   * Typography
+   * Typography - SF Pro Inspired
    * ======================================== */
 
-  /* Font Families */
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  /* Font Families - System fonts with SF Pro priority */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Segoe UI", Roboto, sans-serif;
+  --font-mono: "SF Mono", SFMono-Regular, ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", monospace;
+  --font-rounded: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "SF Pro Display", system-ui, sans-serif;
 
-  /* Font Sizes */
-  --text-xs: 0.75rem;      /* 12px */
-  --text-sm: 0.875rem;     /* 14px */
-  --text-base: 1rem;       /* 16px */
-  --text-lg: 1.125rem;     /* 18px */
-  --text-xl: 1.25rem;      /* 20px */
-  --text-2xl: 1.5rem;      /* 24px */
-  --text-3xl: 1.875rem;    /* 30px */
-  --text-4xl: 2.25rem;     /* 36px */
+  /* Font Sizes - macOS scale */
+  --text-xs: 0.6875rem;    /* 11px - Caption 2 */
+  --text-sm: 0.8125rem;    /* 13px - Subheadline */
+  --text-base: 0.9375rem;  /* 15px - Body */
+  --text-lg: 1.0625rem;    /* 17px - Headline */
+  --text-xl: 1.25rem;      /* 20px - Title 3 */
+  --text-2xl: 1.375rem;    /* 22px - Title 2 */
+  --text-3xl: 1.75rem;     /* 28px - Title 1 */
+  --text-4xl: 2.125rem;    /* 34px - Large Title */
 
-  /* Line Heights */
+  /* Line Heights - Tighter for SF Pro */
   --leading-none: 1;
-  --leading-tight: 1.25;
-  --leading-snug: 1.375;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.625;
-  --leading-loose: 2;
+  --leading-tight: 1.15;
+  --leading-snug: 1.25;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.5;
+  --leading-loose: 1.75;
 
-  /* Font Weights */
-  --font-normal: 400;
+  /* Font Weights - SF Pro weights */
+  --font-light: 300;
+  --font-regular: 400;
   --font-medium: 500;
   --font-semibold: 600;
   --font-bold: 700;
+
+  /* Letter Spacing - macOS style */
+  --tracking-tighter: -0.03em;
+  --tracking-tight: -0.02em;
+  --tracking-normal: -0.01em;
+  --tracking-wide: 0;
+  --tracking-wider: 0.01em;
 
   /* ========================================
    * Spacing Scale
@@ -181,37 +236,50 @@
   --space-24: 6rem;        /* 96px */
 
   /* ========================================
-   * Border Radius
+   * Border Radius - macOS Generous Corners
    * ======================================== */
 
   --radius-none: 0;
-  --radius-sm: 0.125rem;   /* 2px */
-  --radius-default: 0.25rem; /* 4px */
-  --radius-md: 0.375rem;   /* 6px */
-  --radius-lg: 0.5rem;     /* 8px */
-  --radius-xl: 0.75rem;    /* 12px */
-  --radius-2xl: 1rem;      /* 16px */
-  --radius-3xl: 1.5rem;    /* 24px */
+  --radius-sm: 4px;
+  --radius-default: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;       /* Common macOS radius */
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
+  --radius-4xl: 24px;
   --radius-full: 9999px;
 
+  /* macOS-specific radii */
+  --radius-button: 8px;
+  --radius-input: 8px;
+  --radius-card: 12px;
+  --radius-modal: 12px;
+  --radius-popover: 10px;
+  --radius-window: 10px;
+
   /* ========================================
-   * Transitions
+   * Transitions - macOS Smooth Animations
    * ======================================== */
 
   --transition-fast: 100ms;
-  --transition-normal: 150ms;
+  --transition-normal: 200ms;
   --transition-slow: 300ms;
-  --transition-slower: 500ms;
+  --transition-slower: 400ms;
 
-  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  /* macOS spring-like easings */
+  --ease-default: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-in: cubic-bezier(0.42, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.58, 1);
+  --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
   /* ========================================
    * Z-Index Scale
    * ======================================== */
 
+  --z-base: 0;
   --z-dropdown: 1000;
   --z-sticky: 1020;
   --z-fixed: 1030;
@@ -220,94 +288,224 @@
   --z-popover: 1060;
   --z-tooltip: 1070;
   --z-toast: 1080;
+  --z-window-controls: 1090;
 
   /* ========================================
-   * Component-specific tokens
+   * Component-specific tokens - macOS Style
    * ======================================== */
 
-  /* Sidebar */
-  --sidebar-width: 16rem;          /* 256px */
-  --sidebar-width-collapsed: 4rem; /* 64px */
-  --sidebar-bg: var(--bg-primary);
-  --sidebar-border: var(--border-default);
+  /* Window Controls */
+  --window-control-close: #ff5f57;
+  --window-control-minimize: #febc2e;
+  --window-control-maximize: #28c840;
+  --window-control-size: 12px;
+  --window-control-spacing: 8px;
 
-  /* Navbar */
-  --navbar-height: 4rem;           /* 64px */
-  --navbar-bg: var(--bg-primary);
-  --navbar-border: var(--border-default);
+  /* Sidebar - macOS Finder style */
+  --sidebar-width: 240px;
+  --sidebar-width-collapsed: 64px;
+  --sidebar-bg: var(--bg-vibrancy-sidebar);
+  --sidebar-border: var(--border-separator);
+  --sidebar-item-radius: 6px;
+  --sidebar-item-padding: 6px 10px;
 
-  /* Card */
+  /* Navbar/Toolbar - macOS style */
+  --navbar-height: 52px;
+  --navbar-bg: var(--bg-vibrancy-navbar);
+  --navbar-border: var(--border-separator);
+
+  /* Card - Elevated macOS panels */
   --card-bg: var(--bg-primary);
-  --card-border: var(--border-default);
-  --card-radius: var(--radius-xl);
+  --card-border: var(--border-muted);
+  --card-radius: var(--radius-card);
   --card-shadow: var(--shadow-sm);
+  --card-padding: 16px;
 
-  /* Input */
+  /* Input - macOS text field */
   --input-bg: var(--bg-primary);
   --input-border: var(--border-default);
   --input-border-focus: var(--color-primary-500);
-  --input-radius: var(--radius-lg);
+  --input-radius: var(--radius-input);
+  --input-height: 28px;
+  --input-height-lg: 36px;
 
-  /* Button */
-  --button-radius: var(--radius-lg);
+  /* Button - macOS push button */
+  --button-radius: var(--radius-button);
+  --button-height: 28px;
+  --button-height-lg: 36px;
+  --button-padding: 0 12px;
+
+  /* Popover/Menu */
+  --popover-bg: var(--bg-vibrancy-popover);
+  --popover-border: var(--border-muted);
+  --popover-radius: var(--radius-popover);
+  --popover-shadow: var(--shadow-popover);
+
+  /* Selection */
+  --selection-bg: var(--color-primary-500);
+  --selection-text: white;
 }
 
 /* ========================================
- * Dark Mode Overrides
+ * Dark Mode - macOS Dark Appearance
  * ======================================== */
 
 .dark,
 [data-theme="dark"] {
-  /* Semantic Colors - Dark Mode */
-  --bg-primary: var(--color-neutral-900);
-  --bg-secondary: var(--color-neutral-800);
-  --bg-tertiary: var(--color-neutral-700);
-  --bg-elevated: var(--color-neutral-800);
-  --bg-sunken: var(--color-neutral-950);
-  --bg-hover: var(--color-neutral-800);
-  --bg-active: var(--color-neutral-700);
-  --bg-selected: color-mix(in srgb, var(--color-primary-900) 50%, transparent);
+  /* Vibrancy - Dark mode */
+  --vibrancy-light: rgba(40, 40, 40, 0.72);
+  --vibrancy-dark: rgba(30, 30, 30, 0.85);
 
-  --text-primary: var(--color-neutral-50);
-  --text-secondary: var(--color-neutral-300);
-  --text-tertiary: var(--color-neutral-400);
-  --text-muted: var(--color-neutral-500);
-  --text-inverted: var(--color-neutral-900);
-  --text-link: var(--color-primary-400);
-  --text-link-hover: var(--color-primary-300);
+  /* Background */
+  --bg-primary: var(--color-neutral-950);
+  --bg-secondary: var(--color-neutral-900);
+  --bg-tertiary: var(--color-neutral-800);
+  --bg-elevated: var(--color-neutral-900);
+  --bg-sunken: #000000;
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --bg-active: rgba(255, 255, 255, 0.1);
+  --bg-selected: rgba(0, 122, 255, 0.25);
 
-  --border-default: var(--color-neutral-700);
-  --border-muted: var(--color-neutral-800);
-  --border-emphasis: var(--color-neutral-600);
-  --border-focus: var(--color-primary-400);
+  /* Vibrancy backgrounds - Dark */
+  --bg-vibrancy: var(--vibrancy-dark);
+  --bg-vibrancy-sidebar: rgba(30, 30, 30, 0.85);
+  --bg-vibrancy-navbar: rgba(28, 28, 30, 0.85);
+  --bg-vibrancy-popover: rgba(40, 40, 42, 0.95);
 
-  /* Dark mode shadows with blue tint */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
-  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+  /* Text - Dark mode */
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-tertiary: rgba(255, 255, 255, 0.4);
+  --text-muted: rgba(255, 255, 255, 0.25);
+  --text-inverted: rgba(0, 0, 0, 0.85);
+  --text-link: #0a84ff; /* macOS dark mode blue */
+  --text-link-hover: #409cff;
 
-  /* Component overrides */
-  --sidebar-bg: var(--color-neutral-900);
-  --navbar-bg: var(--color-neutral-900);
-  --card-bg: var(--color-neutral-800);
-  --input-bg: var(--color-neutral-800);
+  /* Border - Dark mode */
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-muted: rgba(255, 255, 255, 0.06);
+  --border-emphasis: rgba(255, 255, 255, 0.15);
+  --border-focus: #0a84ff;
+  --border-separator: rgba(255, 255, 255, 0.08);
+
+  /* Shadow - Dark mode (more prominent) */
+  --shadow-xs: 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.7);
+  --shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.8);
+  --shadow-window: 0 22px 70px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-popover: 0 4px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+
+  /* Component overrides - Dark */
+  --sidebar-bg: var(--bg-vibrancy-sidebar);
+  --navbar-bg: var(--bg-vibrancy-navbar);
+  --card-bg: var(--color-neutral-900);
+  --card-border: var(--border-muted);
+  --input-bg: rgba(255, 255, 255, 0.06);
+  --popover-bg: var(--bg-vibrancy-popover);
+
+  /* macOS Dark mode colors */
+  --color-primary-500: #0a84ff;
+  --color-success-500: #30d158;
+  --color-warning-500: #ff9f0a;
+  --color-danger-500: #ff453a;
 }
 
 /* ========================================
- * Utility Classes
+ * macOS Utility Classes
  * ======================================== */
 
-/* Focus ring utility */
+/* Vibrancy/Blur effect */
+.vibrancy {
+  background: var(--bg-vibrancy);
+  backdrop-filter: blur(var(--blur-macos)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur-macos)) saturate(180%);
+}
+
+.vibrancy-sidebar {
+  background: var(--bg-vibrancy-sidebar);
+  backdrop-filter: blur(var(--blur-macos)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur-macos)) saturate(180%);
+}
+
+.vibrancy-navbar {
+  background: var(--bg-vibrancy-navbar);
+  backdrop-filter: blur(var(--blur-macos)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur-macos)) saturate(180%);
+}
+
+/* Focus ring - macOS style */
 .focus-ring {
   outline: none;
 }
 
 .focus-ring:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.4);
+  outline: none;
+}
+
+/* macOS selection highlight */
+::selection {
+  background: var(--selection-bg);
+  color: var(--selection-text);
+}
+
+/* Smooth scrolling */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+/* macOS-style thin scrollbar */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.dark .scrollbar-thin {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
 }
 
 /* Truncate text */
@@ -315,6 +513,28 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Line clamp */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* Screen reader only */
@@ -330,9 +550,9 @@
   border: 0;
 }
 
-/* Smooth transitions for interactive elements */
+/* Transitions */
 .transition-colors {
-  transition-property: color, background-color, border-color;
+  transition-property: color, background-color, border-color, fill, stroke;
   transition-duration: var(--transition-normal);
   transition-timing-function: var(--ease-default);
 }
@@ -347,4 +567,31 @@
   transition-property: transform;
   transition-duration: var(--transition-normal);
   transition-timing-function: var(--ease-default);
+}
+
+.transition-opacity {
+  transition-property: opacity;
+  transition-duration: var(--transition-normal);
+  transition-timing-function: var(--ease-default);
+}
+
+/* Spring animation */
+.transition-spring {
+  transition-timing-function: var(--ease-spring);
+}
+
+/* macOS-style active state (press down) */
+.active-scale:active {
+  transform: scale(0.97);
+}
+
+/* Draggable region for Tauri/Electron */
+.drag-region {
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+
+.no-drag {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
 }

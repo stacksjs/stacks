@@ -1,9 +1,13 @@
 <script lang="ts" setup>
+/**
+ * Button Component - macOS Style
+ * A modern button inspired by macOS design patterns.
+ */
 import { computed } from 'vue'
 
 interface Props {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success'
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
   disabled?: boolean
   loading?: boolean
   fullWidth?: boolean
@@ -28,12 +32,17 @@ const emit = defineEmits<{
 }>()
 
 const baseClasses = computed(() => [
-  // Base styles
+  // Base styles - macOS inspired
   'inline-flex items-center justify-center',
-  'font-medium',
-  'transition-all duration-150 ease-out',
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-  'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
+  'font-medium tracking-tight',
+  'transition-all duration-150',
+  'select-none',
+  // Focus ring - macOS blue glow
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-0',
+  // Disabled state
+  'disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none',
+  // Active press effect
+  'active:scale-[0.98]',
   // Full width
   props.fullWidth ? 'w-full' : '',
 ])
@@ -41,46 +50,47 @@ const baseClasses = computed(() => [
 const variantClasses = computed(() => {
   const variants = {
     primary: [
-      'bg-blue-600 text-white',
-      'hover:bg-blue-700',
-      'active:bg-blue-800',
-      'focus-visible:ring-blue-500',
-      'dark:bg-blue-500 dark:hover:bg-blue-600 dark:active:bg-blue-700',
+      // macOS blue button with gradient
+      'bg-gradient-to-b from-blue-500 to-blue-600 text-white',
+      'shadow-sm shadow-blue-600/25',
+      'hover:from-blue-400 hover:to-blue-500',
+      'active:from-blue-600 active:to-blue-700',
+      'dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-500 dark:hover:to-blue-600',
     ],
     secondary: [
-      'bg-neutral-100 text-neutral-900',
-      'hover:bg-neutral-200',
-      'active:bg-neutral-300',
-      'focus-visible:ring-neutral-500',
-      'dark:bg-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-600 dark:active:bg-neutral-500',
+      // macOS secondary button
+      'bg-white/80 dark:bg-white/10 text-neutral-800 dark:text-neutral-100',
+      'border border-black/10 dark:border-white/10',
+      'shadow-sm',
+      'hover:bg-white dark:hover:bg-white/15',
+      'active:bg-neutral-100 dark:active:bg-white/5',
     ],
     outline: [
-      'bg-transparent text-neutral-700 border border-neutral-300',
-      'hover:bg-neutral-50 hover:border-neutral-400',
-      'active:bg-neutral-100',
-      'focus-visible:ring-neutral-500',
-      'dark:text-neutral-200 dark:border-neutral-600 dark:hover:bg-neutral-800 dark:hover:border-neutral-500',
+      // macOS outline style
+      'bg-transparent text-neutral-700 dark:text-neutral-200',
+      'border border-black/15 dark:border-white/15',
+      'hover:bg-black/5 dark:hover:bg-white/8',
+      'active:bg-black/10 dark:active:bg-white/10',
     ],
     ghost: [
-      'bg-transparent text-neutral-600',
-      'hover:bg-neutral-100 hover:text-neutral-900',
-      'active:bg-neutral-200',
-      'focus-visible:ring-neutral-500',
-      'dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-100',
+      // macOS ghost/toolbar button
+      'bg-transparent text-neutral-600 dark:text-neutral-300',
+      'hover:bg-black/5 dark:hover:bg-white/8',
+      'active:bg-black/10 dark:active:bg-white/12',
     ],
     danger: [
-      'bg-red-600 text-white',
-      'hover:bg-red-700',
-      'active:bg-red-800',
-      'focus-visible:ring-red-500',
-      'dark:bg-red-500 dark:hover:bg-red-600',
+      // macOS red button
+      'bg-gradient-to-b from-red-500 to-red-600 text-white',
+      'shadow-sm shadow-red-600/25',
+      'hover:from-red-400 hover:to-red-500',
+      'active:from-red-600 active:to-red-700',
     ],
     success: [
-      'bg-green-600 text-white',
-      'hover:bg-green-700',
-      'active:bg-green-800',
-      'focus-visible:ring-green-500',
-      'dark:bg-green-500 dark:hover:bg-green-600',
+      // macOS green button
+      'bg-gradient-to-b from-green-500 to-green-600 text-white',
+      'shadow-sm shadow-green-600/25',
+      'hover:from-green-400 hover:to-green-500',
+      'active:from-green-600 active:to-green-700',
     ],
   }
   return variants[props.variant]
@@ -88,22 +98,22 @@ const variantClasses = computed(() => {
 
 const sizeClasses = computed(() => {
   if (props.iconOnly) {
+    // Icon-only buttons (square)
     const iconSizes = {
-      xs: 'h-6 w-6',
-      sm: 'h-8 w-8',
-      md: 'h-10 w-10',
-      lg: 'h-12 w-12',
-      xl: 'h-14 w-14',
+      xs: 'h-6 w-6 rounded-md',
+      sm: 'h-7 w-7 rounded-md',
+      md: 'h-8 w-8 rounded-lg',
+      lg: 'h-9 w-9 rounded-lg',
     }
-    return [iconSizes[props.size], 'rounded-lg']
+    return [iconSizes[props.size]]
   }
 
+  // macOS-style compact sizing
   const sizes = {
-    xs: ['text-xs', 'px-2 py-1', 'rounded-md', 'gap-1'],
-    sm: ['text-sm', 'px-3 py-1.5', 'rounded-lg', 'gap-1.5'],
-    md: ['text-sm', 'px-4 py-2', 'rounded-lg', 'gap-2'],
-    lg: ['text-base', 'px-5 py-2.5', 'rounded-lg', 'gap-2'],
-    xl: ['text-base', 'px-6 py-3', 'rounded-xl', 'gap-2.5'],
+    xs: ['text-[11px]', 'px-2 py-1', 'rounded-md', 'gap-1', 'h-6'],
+    sm: ['text-[12px]', 'px-2.5 py-1', 'rounded-md', 'gap-1.5', 'h-7'],
+    md: ['text-[13px]', 'px-3 py-1.5', 'rounded-lg', 'gap-1.5', 'h-8'],
+    lg: ['text-[14px]', 'px-4 py-2', 'rounded-lg', 'gap-2', 'h-9'],
   }
   return sizes[props.size]
 })
@@ -135,7 +145,8 @@ function handleClick(event: MouseEvent) {
     <!-- Loading spinner -->
     <svg
       v-if="loading"
-      class="animate-spin -ml-1 mr-2 h-4 w-4"
+      class="animate-spin h-3.5 w-3.5"
+      :class="{ '-ml-0.5 mr-1.5': !iconOnly }"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
@@ -156,12 +167,12 @@ function handleClick(event: MouseEvent) {
     </svg>
 
     <!-- Leading icon slot -->
-    <slot name="icon-left" />
+    <slot name="iconLeft" />
 
     <!-- Default content slot -->
     <slot />
 
     <!-- Trailing icon slot -->
-    <slot name="icon-right" />
+    <slot name="iconRight" />
   </component>
 </template>

@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+/**
+ * Badge Component - macOS Style
+ * A compact badge inspired by macOS tags and labels.
+ */
 import { computed } from 'vue'
 
 interface Props {
@@ -25,39 +29,39 @@ const emit = defineEmits<{
 
 const classes = computed(() => {
   const base = [
-    'inline-flex items-center font-medium',
-    'transition-colors duration-150',
+    'inline-flex items-center font-medium tracking-tight',
+    'transition-all duration-150',
   ]
 
-  // Size variants
+  // Size variants - macOS compact sizing
   const sizes = {
-    xs: 'text-xs px-1.5 py-0.5',
-    sm: 'text-xs px-2 py-0.5',
-    md: 'text-sm px-2.5 py-0.5',
-    lg: 'text-sm px-3 py-1',
+    xs: 'text-[10px] px-1.5 py-0.5',
+    sm: 'text-[11px] px-2 py-0.5',
+    md: 'text-[12px] px-2.5 py-0.5',
+    lg: 'text-[13px] px-3 py-1',
   }
   base.push(sizes[props.size])
 
   // Border radius
   base.push(props.rounded === 'full' ? 'rounded-full' : 'rounded-md')
 
-  // Variant colors
+  // Variant colors - macOS system colors with softer backgrounds
   const solidVariants = {
-    default: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200',
-    primary: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
-    success: 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300',
-    warning: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
-    danger: 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300',
-    info: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300',
+    default: 'bg-black/[0.06] text-neutral-600 dark:bg-white/10 dark:text-neutral-300',
+    primary: 'bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400',
+    success: 'bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400',
+    warning: 'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400',
+    danger: 'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',
+    info: 'bg-cyan-500/15 text-cyan-600 dark:bg-cyan-400/20 dark:text-cyan-400',
   }
 
   const outlineVariants = {
-    default: 'border border-neutral-300 text-neutral-700 dark:border-neutral-600 dark:text-neutral-300',
-    primary: 'border border-blue-300 text-blue-700 dark:border-blue-600 dark:text-blue-400',
-    success: 'border border-green-300 text-green-700 dark:border-green-600 dark:text-green-400',
-    warning: 'border border-amber-300 text-amber-700 dark:border-amber-600 dark:text-amber-400',
-    danger: 'border border-red-300 text-red-700 dark:border-red-600 dark:text-red-400',
-    info: 'border border-cyan-300 text-cyan-700 dark:border-cyan-600 dark:text-cyan-400',
+    default: 'border border-black/15 text-neutral-600 dark:border-white/20 dark:text-neutral-300',
+    primary: 'border border-blue-500/40 text-blue-600 dark:border-blue-400/50 dark:text-blue-400',
+    success: 'border border-green-500/40 text-green-600 dark:border-green-400/50 dark:text-green-400',
+    warning: 'border border-orange-500/40 text-orange-600 dark:border-orange-400/50 dark:text-orange-400',
+    danger: 'border border-red-500/40 text-red-600 dark:border-red-400/50 dark:text-red-400',
+    info: 'border border-cyan-500/40 text-cyan-600 dark:border-cyan-400/50 dark:text-cyan-400',
   }
 
   base.push(props.outline ? outlineVariants[props.variant] : solidVariants[props.variant])
@@ -66,13 +70,14 @@ const classes = computed(() => {
 })
 
 const dotClasses = computed(() => {
+  // macOS system colors for dots
   const dotColors = {
-    default: 'bg-neutral-400',
-    primary: 'bg-blue-500',
-    success: 'bg-green-500',
-    warning: 'bg-amber-500',
-    danger: 'bg-red-500',
-    info: 'bg-cyan-500',
+    default: 'bg-neutral-400 dark:bg-neutral-500',
+    primary: 'bg-blue-500 dark:bg-blue-400',
+    success: 'bg-green-500 dark:bg-green-400',
+    warning: 'bg-orange-500 dark:bg-orange-400',
+    danger: 'bg-red-500 dark:bg-red-400',
+    info: 'bg-cyan-500 dark:bg-cyan-400',
   }
 
   return [

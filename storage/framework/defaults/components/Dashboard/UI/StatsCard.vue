@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+/**
+ * StatsCard Component - macOS Style
+ * A statistics card with macOS-inspired clean design.
+ */
 import { computed } from 'vue'
 
 interface Props {
@@ -22,73 +26,76 @@ const trendDirection = computed(() => {
   return props.trend > 0 ? 'up' : 'down'
 })
 
+// macOS system colors for trends
 const trendClasses = computed(() => {
   if (trendDirection.value === 'up') {
-    return 'text-green-600 dark:text-green-400'
+    return 'text-green-500 dark:text-green-400' // macOS green
   } else if (trendDirection.value === 'down') {
-    return 'text-red-600 dark:text-red-400'
+    return 'text-red-500 dark:text-red-400' // macOS red
   }
   return 'text-neutral-500 dark:text-neutral-400'
 })
 
+// macOS-style softer icon backgrounds
 const iconBgClasses = computed(() => {
   const colors = {
-    primary: 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400',
-    success: 'bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400',
-    warning: 'bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400',
-    danger: 'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400',
-    info: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/50 dark:text-cyan-400',
-    neutral: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400',
+    primary: 'bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400',
+    success: 'bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400',
+    warning: 'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400',
+    danger: 'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',
+    info: 'bg-cyan-500/15 text-cyan-600 dark:bg-cyan-400/20 dark:text-cyan-400',
+    neutral: 'bg-black/[0.06] text-neutral-600 dark:bg-white/10 dark:text-neutral-400',
   }
   return colors[props.iconBg]
 })
 </script>
 
 <template>
+  <!-- macOS-style clean card -->
   <div
-    class="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 transition-all duration-200 hover:shadow-md"
+    class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5 p-5 transition-all duration-150 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-black/20"
   >
     <div class="flex items-start justify-between">
       <div class="flex-1 min-w-0">
-        <!-- Title -->
-        <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400 truncate">
+        <!-- Title - macOS style -->
+        <p class="text-[13px] font-medium text-neutral-500 dark:text-neutral-400 truncate tracking-tight">
           {{ title }}
         </p>
 
         <!-- Value -->
-        <div class="mt-2 flex items-baseline gap-2">
+        <div class="mt-1.5 flex items-baseline gap-2">
           <template v-if="loading">
-            <div class="h-8 w-24 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse" />
+            <div class="h-7 w-20 bg-black/5 dark:bg-white/10 rounded-md animate-pulse" />
           </template>
           <template v-else>
-            <p class="text-2xl font-semibold text-neutral-900 dark:text-white">
+            <p class="text-[22px] font-semibold text-neutral-900 dark:text-white tracking-tight">
               {{ value }}
             </p>
 
-            <!-- Trend indicator -->
+            <!-- Trend indicator - macOS style -->
             <span
               v-if="trend !== undefined"
-              :class="[trendClasses, 'inline-flex items-center text-sm font-medium']"
+              :class="[trendClasses, 'inline-flex items-center text-[12px] font-medium']"
             >
               <!-- Up arrow -->
               <svg
                 v-if="trendDirection === 'up'"
-                class="h-4 w-4 mr-0.5"
+                class="h-3.5 w-3.5 mr-0.5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17l5-5 5 5M7 7l5 5 5-5" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
               </svg>
               <!-- Down arrow -->
               <svg
                 v-else-if="trendDirection === 'down'"
-                class="h-4 w-4 mr-0.5"
+                class="h-3.5 w-3.5 mr-0.5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 7l-5 5-5-5m10 10l-5-5-5 5" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
               </svg>
               {{ Math.abs(trend) }}%
             </span>
@@ -98,19 +105,19 @@ const iconBgClasses = computed(() => {
         <!-- Subtitle / Trend Label -->
         <p
           v-if="subtitle || trendLabel"
-          class="mt-1 text-sm text-neutral-500 dark:text-neutral-400"
+          class="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400"
         >
           {{ trendLabel || subtitle }}
         </p>
       </div>
 
-      <!-- Icon -->
+      <!-- Icon - macOS style with softer background -->
       <div
         v-if="icon || $slots.icon"
-        :class="[iconBgClasses, 'p-3 rounded-xl flex-shrink-0']"
+        :class="[iconBgClasses, 'p-2.5 rounded-lg flex-shrink-0']"
       >
         <slot name="icon">
-          <div v-if="icon" :class="[icon, 'h-6 w-6']" />
+          <div v-if="icon" :class="[icon, 'h-5 w-5']" />
         </slot>
       </div>
     </div>
@@ -121,7 +128,7 @@ const iconBgClasses = computed(() => {
     </div>
 
     <!-- Optional footer slot -->
-    <div v-if="$slots.footer" class="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+    <div v-if="$slots.footer" class="mt-4 pt-3 border-t border-black/5 dark:border-white/5">
       <slot name="footer" />
     </div>
   </div>

@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+/**
+ * Dropdown Component - macOS Style
+ * A dropdown menu with macOS-inspired vibrancy and styling.
+ */
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 
 interface Props {
@@ -82,26 +86,29 @@ defineExpose({ open: () => (isOpen.value = true), close, toggle })
       <slot name="trigger" :is-open="isOpen" />
     </div>
 
-    <!-- Menu -->
+    <!-- Menu - macOS popover style -->
     <Transition
-      enter-active-class="transition duration-100 ease-out"
-      enter-from-class="opacity-0 scale-95"
-      enter-to-class="opacity-100 scale-100"
-      leave-active-class="transition duration-75 ease-in"
-      leave-from-class="opacity-100 scale-100"
-      leave-to-class="opacity-0 scale-95"
+      enter-active-class="transition duration-150 ease-out"
+      enter-from-class="opacity-0 scale-95 -translate-y-1"
+      enter-to-class="opacity-100 scale-100 translate-y-0"
+      leave-active-class="transition duration-100 ease-in"
+      leave-from-class="opacity-100 scale-100 translate-y-0"
+      leave-to-class="opacity-0 scale-95 -translate-y-1"
     >
       <div
         v-if="isOpen"
         ref="menuRef"
         :class="[
-          'absolute z-50 mt-2',
+          'absolute z-50 mt-1.5',
           widthClasses,
           alignClasses,
           'origin-top-right',
-          'bg-white dark:bg-neutral-800',
+          // macOS vibrancy popover
+          'bg-white/95 dark:bg-neutral-800/95',
+          'backdrop-blur-xl backdrop-saturate-150',
           'rounded-lg',
-          'shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-neutral-700',
+          'shadow-lg shadow-black/10 dark:shadow-black/30',
+          'border border-black/10 dark:border-white/10',
           'py-1',
           'focus:outline-none',
         ]"

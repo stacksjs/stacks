@@ -99,12 +99,13 @@ function isActiveRoute(path: string): boolean {
   <header
     :class="[
       'sticky top-0 z-40',
-      'h-16 flex items-center gap-4',
-      'bg-white/80 dark:bg-neutral-900/80',
-      'backdrop-blur-lg',
-      'border-b border-neutral-200/80 dark:border-neutral-800/80',
-      'px-4 lg:px-6',
-      'transition-all duration-300',
+      'h-13 flex items-center gap-3',
+      // macOS vibrancy toolbar
+      'bg-white/72 dark:bg-neutral-900/80',
+      'backdrop-blur-xl backdrop-saturate-150',
+      'border-b border-black/5 dark:border-white/5',
+      'px-4',
+      'transition-all duration-200',
     ]"
   >
     <!-- Window Controls (for desktop app) -->
@@ -154,75 +155,75 @@ function isActiveRoute(path: string): boolean {
     <!-- Spacer -->
     <div class="flex-1" />
 
-    <!-- Search -->
+    <!-- Search - macOS Spotlight style -->
     <div class="hidden sm:flex items-center">
       <div
         :class="[
           'relative flex items-center',
-          'w-64 lg:w-80',
+          'w-56 lg:w-72',
           'transition-all duration-200',
-          isSearchFocused ? 'w-72 lg:w-96' : '',
+          isSearchFocused ? 'w-64 lg:w-80' : '',
         ]"
       >
-        <div class="i-hugeicons-search-01 absolute left-3 w-4 h-4 text-neutral-400" />
+        <div class="i-hugeicons-search-01 absolute left-2.5 w-3.5 h-3.5 text-neutral-400" />
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search..."
-          class="w-full pl-9 pr-20 py-2 text-sm bg-neutral-100 dark:bg-neutral-800 border-0 rounded-lg text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+          placeholder="Search"
+          class="w-full pl-8 pr-16 py-1.5 text-[13px] bg-black/5 dark:bg-white/8 border border-black/8 dark:border-white/10 rounded-lg text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 transition-all"
           @focus="isSearchFocused = true"
           @blur="isSearchFocused = false"
         />
-        <div class="absolute right-3 flex items-center gap-1">
-          <kbd class="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-neutral-400 bg-neutral-200 dark:bg-neutral-700 rounded">
-            <span class="text-[10px]">⌘</span>K
+        <div class="absolute right-2.5 flex items-center gap-1">
+          <kbd class="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-neutral-400 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10 rounded">
+            <span>⌘</span>K
           </kbd>
         </div>
       </div>
     </div>
 
-    <!-- Right section -->
-    <div class="flex items-center gap-2">
+    <!-- Right section - macOS toolbar buttons -->
+    <div class="flex items-center gap-1">
       <!-- Error Tracking -->
       <RouterLink
         to="/monitoring/errors"
         :class="[
-          'p-2 rounded-lg transition-colors',
+          'p-1.5 rounded-md transition-all duration-150 active:scale-95',
           isActiveRoute('/monitoring/errors')
-            ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
-            : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800',
+            ? 'text-blue-600 dark:text-blue-400 bg-blue-500/15 dark:bg-blue-400/15'
+            : 'text-neutral-500 hover:text-neutral-700 hover:bg-black/5 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-white/8',
         ]"
       >
-        <div class="i-hugeicons-bug-01 w-5 h-5" />
+        <div class="i-hugeicons-bug-01 w-[18px] h-[18px]" />
       </RouterLink>
 
       <!-- Health -->
       <RouterLink
         to="/health"
         :class="[
-          'p-2 rounded-lg transition-colors',
+          'p-1.5 rounded-md transition-all duration-150 active:scale-95',
           isActiveRoute('/health')
-            ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
-            : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800',
+            ? 'text-blue-600 dark:text-blue-400 bg-blue-500/15 dark:bg-blue-400/15'
+            : 'text-neutral-500 hover:text-neutral-700 hover:bg-black/5 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-white/8',
         ]"
       >
-        <div class="i-hugeicons-pulse-02 w-5 h-5" />
+        <div class="i-hugeicons-pulse-02 w-[18px] h-[18px]" />
       </RouterLink>
 
       <!-- Notifications -->
       <RouterLink
         to="/notifications"
         :class="[
-          'relative p-2 rounded-lg transition-colors',
+          'relative p-1.5 rounded-md transition-all duration-150 active:scale-95',
           isActiveRoute('/notifications')
-            ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
-            : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800',
+            ? 'text-blue-600 dark:text-blue-400 bg-blue-500/15 dark:bg-blue-400/15'
+            : 'text-neutral-500 hover:text-neutral-700 hover:bg-black/5 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-white/8',
         ]"
       >
-        <div class="i-hugeicons-notification-02 w-5 h-5" />
+        <div class="i-hugeicons-notification-02 w-[18px] h-[18px]" />
         <span
           v-if="notificationCount > 0"
-          class="absolute top-1 right-1 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full"
+          class="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-4 px-1 text-[10px] font-bold text-white bg-red-500 rounded-full"
         >
           {{ notificationCount > 9 ? '9+' : notificationCount }}
         </span>
@@ -231,14 +232,14 @@ function isActiveRoute(path: string): boolean {
       <!-- Dark mode toggle -->
       <button
         type="button"
-        class="p-2 rounded-lg text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800 transition-colors"
+        class="p-1.5 rounded-md text-neutral-500 hover:text-neutral-700 hover:bg-black/5 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-white/8 transition-all duration-150 active:scale-95"
         @click="toggleDark"
       >
-        <div :class="[isDark ? 'i-hugeicons-sun-02' : 'i-hugeicons-moon-02', 'w-5 h-5']" />
+        <div :class="[isDark ? 'i-hugeicons-sun-02' : 'i-hugeicons-moon-02', 'w-[18px] h-[18px]']" />
       </button>
 
       <!-- Separator -->
-      <div class="w-px h-6 bg-neutral-200 dark:bg-neutral-700 mx-1" />
+      <div class="w-px h-5 bg-black/10 dark:bg-white/10 mx-1" />
 
       <!-- User dropdown -->
       <Dropdown align="right" width="md">

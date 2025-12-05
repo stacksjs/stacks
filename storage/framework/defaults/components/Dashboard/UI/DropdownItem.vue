@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+/**
+ * DropdownItem Component - macOS Style
+ * A menu item with macOS-inspired styling.
+ */
 import { computed } from 'vue'
 
 interface Props {
@@ -23,30 +27,32 @@ const emit = defineEmits<{
 
 const classes = computed(() => {
   const base = [
-    'w-full text-left px-4 py-2 text-sm',
-    'flex items-center gap-3',
-    'transition-colors duration-150',
+    // macOS menu item style - compact with rounded corners
+    'w-[calc(100%-8px)] mx-1 text-left px-2.5 py-1.5 text-[13px]',
+    'flex items-center gap-2.5',
+    'transition-colors duration-100',
     'focus:outline-none',
+    'rounded-md',
   ]
 
   if (props.disabled) {
-    base.push('opacity-50 cursor-not-allowed')
+    base.push('opacity-40 cursor-not-allowed')
   } else if (props.danger) {
     base.push(
       'text-red-600 dark:text-red-400',
-      'hover:bg-red-50 dark:hover:bg-red-900/30',
-      'focus:bg-red-50 dark:focus:bg-red-900/30',
+      'hover:bg-red-500 hover:text-white',
+      'focus:bg-red-500 focus:text-white',
     )
   } else if (props.active) {
+    // macOS blue selection
     base.push(
-      'bg-neutral-100 dark:bg-neutral-700',
-      'text-neutral-900 dark:text-neutral-100',
+      'bg-blue-500 text-white',
     )
   } else {
     base.push(
       'text-neutral-700 dark:text-neutral-200',
-      'hover:bg-neutral-100 dark:hover:bg-neutral-700',
-      'focus:bg-neutral-100 dark:focus:bg-neutral-700',
+      'hover:bg-black/5 dark:hover:bg-white/10',
+      'focus:bg-black/5 dark:focus:bg-white/10',
     )
   }
 
@@ -70,14 +76,16 @@ function handleClick(event: MouseEvent) {
     @click="handleClick"
   >
     <!-- Leading icon slot -->
-    <slot name="icon" />
+    <span class="w-4 h-4 flex items-center justify-center text-current opacity-70">
+      <slot name="icon" />
+    </span>
 
     <!-- Content -->
-    <span class="flex-1">
+    <span class="flex-1 truncate">
       <slot />
     </span>
 
-    <!-- Trailing content slot -->
+    <!-- Trailing content slot (for shortcuts, badges, etc.) -->
     <slot name="trailing" />
   </component>
 </template>

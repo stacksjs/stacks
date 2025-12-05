@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+/**
+ * Avatar Component - macOS Style
+ * A clean avatar with macOS-inspired styling.
+ */
 import { computed, ref } from 'vue'
 
 interface Props {
@@ -30,14 +34,15 @@ const initials = computed(() => {
 
 const showFallback = computed(() => !props.src || imageError.value)
 
+// macOS-style compact sizes
 const sizeClasses = computed(() => {
   const sizes = {
-    xs: 'h-6 w-6 text-xs',
-    sm: 'h-8 w-8 text-sm',
-    md: 'h-10 w-10 text-base',
-    lg: 'h-12 w-12 text-lg',
-    xl: 'h-14 w-14 text-xl',
-    '2xl': 'h-16 w-16 text-2xl',
+    xs: 'h-5 w-5 text-[10px]',
+    sm: 'h-7 w-7 text-[11px]',
+    md: 'h-8 w-8 text-[12px]',
+    lg: 'h-10 w-10 text-[13px]',
+    xl: 'h-12 w-12 text-[14px]',
+    '2xl': 'h-14 w-14 text-[16px]',
   }
   return sizes[props.size]
 })
@@ -52,56 +57,51 @@ const radiusClasses = computed(() => {
   return radii[props.rounded]
 })
 
+// macOS system colors for status dots
 const statusClasses = computed(() => {
   if (!props.status) return null
 
   const colors = {
-    online: 'bg-green-500',
+    online: 'bg-green-500', // macOS green #34c759
     offline: 'bg-neutral-400',
-    away: 'bg-amber-500',
-    busy: 'bg-red-500',
+    away: 'bg-orange-500', // macOS orange #ff9500
+    busy: 'bg-red-500', // macOS red #ff3b30
   }
 
   const sizeDot = {
     xs: 'h-1.5 w-1.5',
     sm: 'h-2 w-2',
-    md: 'h-2.5 w-2.5',
-    lg: 'h-3 w-3',
-    xl: 'h-3.5 w-3.5',
-    '2xl': 'h-4 w-4',
+    md: 'h-2 w-2',
+    lg: 'h-2.5 w-2.5',
+    xl: 'h-3 w-3',
+    '2xl': 'h-3.5 w-3.5',
   }
 
   return [
     'absolute bottom-0 right-0',
     'rounded-full',
-    'ring-2 ring-white dark:ring-neutral-800',
+    'ring-2 ring-white dark:ring-neutral-900',
     colors[props.status],
     sizeDot[props.size],
   ]
 })
 
-// Generate a consistent background color based on name
+// macOS-style softer background colors
 const bgColorClass = computed(() => {
-  if (!props.name) return 'bg-neutral-200 dark:bg-neutral-700'
+  if (!props.name) return 'bg-black/[0.06] text-neutral-500 dark:bg-white/10 dark:text-neutral-400'
 
+  // macOS-inspired pastel colors
   const colors = [
-    'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400',
-    'bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-400',
-    'bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400',
-    'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/50 dark:text-yellow-400',
-    'bg-lime-100 text-lime-600 dark:bg-lime-900/50 dark:text-lime-400',
-    'bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400',
-    'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400',
-    'bg-teal-100 text-teal-600 dark:bg-teal-900/50 dark:text-teal-400',
-    'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/50 dark:text-cyan-400',
-    'bg-sky-100 text-sky-600 dark:bg-sky-900/50 dark:text-sky-400',
-    'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400',
-    'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400',
-    'bg-violet-100 text-violet-600 dark:bg-violet-900/50 dark:text-violet-400',
-    'bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-400',
-    'bg-fuchsia-100 text-fuchsia-600 dark:bg-fuchsia-900/50 dark:text-fuchsia-400',
-    'bg-pink-100 text-pink-600 dark:bg-pink-900/50 dark:text-pink-400',
-    'bg-rose-100 text-rose-600 dark:bg-rose-900/50 dark:text-rose-400',
+    'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',
+    'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400',
+    'bg-yellow-500/15 text-yellow-600 dark:bg-yellow-400/20 dark:text-yellow-400',
+    'bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400',
+    'bg-teal-500/15 text-teal-600 dark:bg-teal-400/20 dark:text-teal-400',
+    'bg-cyan-500/15 text-cyan-600 dark:bg-cyan-400/20 dark:text-cyan-400',
+    'bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400',
+    'bg-indigo-500/15 text-indigo-600 dark:bg-indigo-400/20 dark:text-indigo-400',
+    'bg-purple-500/15 text-purple-600 dark:bg-purple-400/20 dark:text-purple-400',
+    'bg-pink-500/15 text-pink-600 dark:bg-pink-400/20 dark:text-pink-400',
   ]
 
   // Simple hash function to get consistent color

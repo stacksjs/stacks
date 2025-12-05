@@ -1,8 +1,12 @@
 <script lang="ts" setup>
+/**
+ * Card Component - macOS Style
+ * A clean card with subtle shadows and vibrancy options.
+ */
 import { computed } from 'vue'
 
 interface Props {
-  variant?: 'default' | 'elevated' | 'outline' | 'ghost'
+  variant?: 'default' | 'elevated' | 'outline' | 'ghost' | 'vibrancy'
   padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
   rounded?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
   hoverable?: boolean
@@ -12,7 +16,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   variant: 'default',
   padding: 'md',
-  rounded: 'xl',
+  rounded: 'lg', // macOS uses moderate rounding
   hoverable: false,
   clickable: false,
 })
@@ -23,64 +27,75 @@ const emit = defineEmits<{
 
 const classes = computed(() => {
   const base = [
-    'transition-all duration-200',
+    'transition-all duration-150',
   ]
 
-  // Variant styles
+  // Variant styles - macOS inspired
   const variants = {
     default: [
-      'bg-white dark:bg-neutral-800',
-      'border border-neutral-200 dark:border-neutral-700',
-      'shadow-sm',
+      // Clean white with subtle shadow like macOS windows
+      'bg-white dark:bg-neutral-800/90',
+      'border border-black/5 dark:border-white/5',
+      'shadow-sm shadow-black/5 dark:shadow-black/20',
     ],
     elevated: [
+      // Elevated like macOS popovers
       'bg-white dark:bg-neutral-800',
-      'shadow-lg dark:shadow-xl',
-      'border border-neutral-100 dark:border-neutral-700/50',
+      'shadow-lg shadow-black/10 dark:shadow-black/30',
+      'border border-black/5 dark:border-white/10',
     ],
     outline: [
+      // Subtle outline style
       'bg-transparent',
-      'border border-neutral-200 dark:border-neutral-700',
+      'border border-black/10 dark:border-white/10',
     ],
     ghost: [
-      'bg-neutral-50 dark:bg-neutral-800/50',
+      // Subtle background like macOS selection
+      'bg-black/[0.03] dark:bg-white/[0.05]',
       'border border-transparent',
+    ],
+    vibrancy: [
+      // macOS vibrancy effect
+      'bg-white/60 dark:bg-neutral-800/60',
+      'backdrop-blur-xl backdrop-saturate-150',
+      'border border-black/5 dark:border-white/10',
+      'shadow-sm shadow-black/5',
     ],
   }
   base.push(...variants[props.variant])
 
-  // Padding
+  // Padding - slightly tighter for macOS feel
   const paddings = {
     none: '',
-    sm: 'p-3',
+    sm: 'p-2.5',
     md: 'p-4',
-    lg: 'p-6',
-    xl: 'p-8',
+    lg: 'p-5',
+    xl: 'p-6',
   }
   base.push(paddings[props.padding])
 
-  // Border radius
+  // Border radius - macOS style
   const radiusMap = {
     sm: 'rounded-md',
     md: 'rounded-lg',
     lg: 'rounded-xl',
     xl: 'rounded-2xl',
-    '2xl': 'rounded-3xl',
-    '3xl': 'rounded-[2rem]',
+    '2xl': 'rounded-[20px]',
+    '3xl': 'rounded-[24px]',
   }
   base.push(radiusMap[props.rounded])
 
-  // Hover state
+  // Hover state - subtle like macOS
   if (props.hoverable || props.clickable) {
     base.push(
-      'hover:shadow-md dark:hover:shadow-lg',
-      'hover:border-neutral-300 dark:hover:border-neutral-600',
+      'hover:shadow-md hover:shadow-black/8 dark:hover:shadow-black/25',
+      'hover:border-black/8 dark:hover:border-white/15',
     )
   }
 
-  // Clickable
+  // Clickable - with press effect
   if (props.clickable) {
-    base.push('cursor-pointer', 'active:scale-[0.99]')
+    base.push('cursor-pointer', 'active:scale-[0.98]', 'active:shadow-sm')
   }
 
   return base
@@ -107,7 +122,7 @@ function handleClick(event: MouseEvent) {
     <slot />
 
     <!-- Footer slot -->
-    <div v-if="$slots.footer" class="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+    <div v-if="$slots.footer" class="mt-4 pt-3 border-t border-black/5 dark:border-white/5">
       <slot name="footer" />
     </div>
   </div>
