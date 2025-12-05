@@ -1,16 +1,29 @@
 <script lang="ts" setup>
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
+/**
+ * Health Dashboard - macOS Style
+ * System health monitoring with macOS-inspired design.
+ */
+import { ref } from 'vue'
+import Card from '../../../components/Dashboard/UI/Card.vue'
+import Badge from '../../../components/Dashboard/UI/Badge.vue'
+import StatsCard from '../../../components/Dashboard/UI/StatsCard.vue'
 
 useHead({
   title: 'Dashboard - Health',
 })
 
-const healthMetrics = [
+interface HealthMetric {
+  name: string
+  icon: string
+  status: 'success' | 'info' | 'warning' | 'danger'
+  description: string
+  metrics: { label: string; value: string }[]
+}
+
+const healthMetrics = ref<HealthMetric[]>([
   {
     name: 'Uptime',
-    icon: 'M13 10V3L4 14h7v7l9-11h-7z',
+    icon: 'i-hugeicons-flash',
     status: 'success',
     description: 'Your site is up. We last checked less than a minute ago.',
     metrics: [
@@ -21,7 +34,7 @@ const healthMetrics = [
   },
   {
     name: 'Performance',
-    icon: 'M13 10V3L4 14h7v7l9-11h-7z',
+    icon: 'i-hugeicons-rocket-01',
     status: 'success',
     description: "Your site is fast. Last checked 3 minutes ago.",
     metrics: [
@@ -31,7 +44,7 @@ const healthMetrics = [
   },
   {
     name: 'Certificate Health',
-    icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+    icon: 'i-hugeicons-shield-01',
     status: 'success',
     description: 'Your certificate is healthy. We last checked 3 minutes ago.',
     metrics: [
@@ -41,7 +54,7 @@ const healthMetrics = [
   },
   {
     name: 'Broken Links',
-    icon: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1', // Link icon
+    icon: 'i-hugeicons-link-01',
     status: 'success',
     description: 'Your site has no broken links.',
     metrics: [
@@ -51,7 +64,7 @@ const healthMetrics = [
   },
   {
     name: 'Mixed Content',
-    icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', // Lock
+    icon: 'i-hugeicons-lock-01',
     status: 'success',
     description: 'We did not find mixed content. We last checked an hour ago.',
     metrics: [
@@ -61,7 +74,7 @@ const healthMetrics = [
   },
   {
     name: 'Certificate Transparency',
-    icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+    icon: 'i-hugeicons-file-security',
     status: 'info',
     description: 'Your site is up. We last checked less than a minute ago.',
     metrics: [
@@ -71,7 +84,7 @@ const healthMetrics = [
   },
   {
     name: 'Application Health',
-    icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', // Check circle
+    icon: 'i-hugeicons-checkmark-circle-02',
     status: 'success',
     description: 'Your application seems to be healthy. We last checked 10 minutes ago.',
     metrics: [
@@ -82,7 +95,7 @@ const healthMetrics = [
   },
   {
     name: 'DNS',
-    icon: 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9', // Globe
+    icon: 'i-hugeicons-globe-02',
     status: 'success',
     description: 'DNS records found. We last checked an hour ago.',
     metrics: [
@@ -90,176 +103,120 @@ const healthMetrics = [
       { label: 'URLs Crawled', value: '20' },
     ],
   },
-]
+])
 
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      beginAtZero: true,
-      max: 100
-    }
+const getStatusVariant = (status: string) => {
+  const map: Record<string, 'success' | 'primary' | 'warning' | 'danger'> = {
+    success: 'success',
+    info: 'primary',
+    warning: 'warning',
+    danger: 'danger',
   }
+  return map[status] || 'default'
+}
+
+const getStatusIconBg = (status: string) => {
+  const map: Record<string, string> = {
+    success: 'bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400',
+    info: 'bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400',
+    warning: 'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400',
+    danger: 'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',
+  }
+  return map[status] || 'bg-neutral-500/15 text-neutral-600'
 }
 </script>
 
 <template>
-  <div class="px-4 py-8 lg:px-8 sm:px-6">
+  <div>
     <!-- Overview Stats -->
-    <div class="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-      <div v-for="(stat, index) in [
-        {
-          name: 'Uptime',
-          value: '100%',
-          trend: 'up',
-          icon: 'M13 10V3L4 14h7v7l9-11h-7z',
-          bgColor: 'bg-blue-500',
-          iconColor: 'text-white'
-        },
-        {
-          name: 'Health Checks',
-          value: '2/2',
-          subValue: '100%',
-          icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
-          bgColor: 'bg-green-500',
-          iconColor: 'text-white'
-        },
-        {
-          name: 'URLs Monitored',
-          value: '583',
-          icon: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1',
-          bgColor: 'bg-blue-500',
-          iconColor: 'text-white'
-        },
-        {
-          name: 'DNS Records',
-          value: '18',
-          icon: 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9',
-          bgColor: 'bg-blue-500',
-          iconColor: 'text-white'
-        }
-      ]" :key="index"
-        class="relative overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-        <div class="p-4">
-          <div class="flex items-center">
-            <div :class="['rounded-md p-2.5', stat.bgColor]">
-              <svg :class="['h-5 w-5', stat.iconColor]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="stat.icon" />
-              </svg>
-            </div>
-            <div class="ml-3 w-full">
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-300">{{ stat.name }}</p>
-              <div class="flex items-baseline space-x-2">
-                <p class="text-xl font-semibold text-gray-900 dark:text-gray-100">{{ stat.value }}</p>
-                <span v-if="stat.subValue" class="text-sm font-medium text-green-600 dark:text-green-400">{{ stat.subValue }}</span>
-                <svg v-if="stat.trend === 'up'" class="h-4 w-4 flex-shrink-0 self-center text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <StatsCard
+        title="Uptime"
+        value="100%"
+        :trend="0"
+        trend-label="Last 30 days"
+        icon="i-hugeicons-flash"
+        icon-bg="primary"
+      />
+      <StatsCard
+        title="Health Checks"
+        value="2/2"
+        subtitle="All checks passing"
+        icon="i-hugeicons-checkmark-circle-02"
+        icon-bg="success"
+      />
+      <StatsCard
+        title="URLs Monitored"
+        value="583"
+        subtitle="Across all pages"
+        icon="i-hugeicons-link-01"
+        icon-bg="primary"
+      />
+      <StatsCard
+        title="DNS Records"
+        value="18"
+        subtitle="Verified records"
+        icon="i-hugeicons-globe-02"
+        icon-bg="primary"
+      />
     </div>
 
     <!-- Detailed Health Cards -->
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-      <div
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <Card
         v-for="metric in healthMetrics"
         :key="metric.name"
-        class="relative overflow-hidden rounded-lg bg-white shadow transition-all duration-200 dark:bg-blue-gray-800"
+        variant="default"
+        padding="md"
+        hoverable
       >
-        <div class="p-6">
-          <div class="flex items-center">
-            <div :class="{
-              'flex h-10 w-10 items-center justify-center rounded-lg': true,
-              'bg-green-100 dark:bg-green-900': metric.status === 'success',
-              'bg-blue-100 dark:bg-blue-900': metric.status === 'info',
-              'bg-yellow-100 dark:bg-yellow-900': metric.status === 'warning',
-              'bg-red-100 dark:bg-red-900': metric.status === 'error'
-            }">
-              <svg class="h-5 w-5" :class="{
-                'text-green-600 dark:text-green-300': metric.status === 'success',
-                'text-blue-600 dark:text-blue-300': metric.status === 'info',
-                'text-yellow-600 dark:text-yellow-300': metric.status === 'warning',
-                'text-red-600 dark:text-red-300': metric.status === 'error'
-              }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="metric.icon" />
-              </svg>
-            </div>
-            <div class="ml-4 flex-1">
-              <div class="flex items-center justify-between">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                  {{ metric.name }}
-                </h3>
-                <span :class="{
-                  'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium': true,
-                  'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': metric.status === 'success',
-                  'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200': metric.status === 'info',
-                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': metric.status === 'warning',
-                  'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': metric.status === 'error'
-                }">
-                  {{ metric.status }}
-                </span>
-              </div>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
-                {{ metric.description }}
-              </p>
-            </div>
+        <div class="flex items-start gap-4">
+          <!-- Icon -->
+          <div :class="[getStatusIconBg(metric.status), 'p-2.5 rounded-lg flex-shrink-0']">
+            <div :class="[metric.icon, 'h-5 w-5']" />
           </div>
 
-          <div v-if="metric.metrics" class="mt-4">
-            <dl class="grid gap-4" :class="{
+          <!-- Content -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="text-[14px] font-medium text-neutral-900 dark:text-white truncate">
+                {{ metric.name }}
+              </h3>
+              <Badge :variant="getStatusVariant(metric.status)" size="sm">
+                {{ metric.status }}
+              </Badge>
+            </div>
+            <p class="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400 line-clamp-1">
+              {{ metric.description }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div v-if="metric.metrics" class="mt-4">
+          <dl
+            class="grid gap-3"
+            :class="{
               'grid-cols-3': metric.metrics.length === 3,
               'grid-cols-2': metric.metrics.length === 2,
               'grid-cols-1': metric.metrics.length === 1
-            }">
-              <div v-for="m in metric.metrics" :key="m.label"
-                   class="overflow-hidden rounded-lg bg-gray-50 px-4 py-3 dark:bg-blue-gray-700">
-                <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">
-                  {{ m.label }}
-                </dt>
-                <dd class="mt-1 text-lg font-semibold tracking-tight text-gray-900 dark:text-gray-100">
-                  {{ m.value }}
-                </dd>
-              </div>
-            </dl>
-          </div>
-
-          <div v-if="metric.exceptionList" class="mt-4 space-y-4">
-            <div v-for="exception in metric.exceptionList" :key="exception.name"
-                 class="relative">
-              <div class="flex justify-between">
-                <div class="flex-1">
-                  <p class="font-mono text-sm text-gray-900 dark:text-gray-100">{{ exception.name }}</p>
-                  <p class="mt-1 font-mono text-xs text-gray-500 dark:text-gray-400">{{ exception.path }}</p>
-                </div>
-                <div class="ml-4 flex flex-col items-end">
-                  <span class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ exception.count }}</span>
-                  <span class="text-sm text-gray-500 dark:text-gray-400">{{ exception.time }}</span>
-                </div>
-              </div>
-              <div class="absolute -left-2 top-2 w-0.5 h-full bg-red-500 dark:bg-red-400"></div>
+            }"
+          >
+            <div
+              v-for="m in metric.metrics"
+              :key="m.label"
+              class="overflow-hidden rounded-lg bg-black/[0.03] dark:bg-white/[0.05] px-3 py-2.5"
+            >
+              <dt class="truncate text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                {{ m.label }}
+              </dt>
+              <dd class="mt-0.5 text-[14px] font-semibold tracking-tight text-neutral-900 dark:text-white">
+                {{ m.value }}
+              </dd>
             </div>
-          </div>
+          </dl>
         </div>
-      </div>
+      </Card>
     </div>
   </div>
 </template>
-
-<style scoped>
-.status-badge {
-  @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
-}
-.status-badge.success {
-  @apply bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100;
-}
-.status-badge.warning {
-  @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100;
-}
-.status-badge.error {
-  @apply bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100;
-}
-</style>

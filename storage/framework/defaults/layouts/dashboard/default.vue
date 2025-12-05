@@ -1,54 +1,68 @@
 <script setup lang="ts">
-import { useLocalStorage } from '@vueuse/core'
-import { computed } from 'vue'
+/**
+ * Dashboard Default Layout - macOS Style
+ * Uses the modern DashboardLayout component for consistent styling.
+ */
+import DashboardLayout from '../../components/Dashboard/DashboardLayout.vue'
 
-// Import the sidebar collapsed state from localStorage
-const isSidebarCollapsed = useLocalStorage('sidebar-collapsed', false)
-
-// Compute classes for the main content area
-const contentClasses = computed(() => {
-  return {
-    'lg:pl-64': !isSidebarCollapsed.value,
-    'lg:pl-20': isSidebarCollapsed.value
+// Window control handlers for Tauri/Electron integration
+function handleMinimize() {
+  // @ts-ignore - Tauri API
+  if (window.__TAURI__) {
+    window.__TAURI__.window.appWindow.minimize()
   }
-})
+}
+
+function handleMaximize() {
+  // @ts-ignore - Tauri API
+  if (window.__TAURI__) {
+    window.__TAURI__.window.appWindow.toggleMaximize()
+  }
+}
+
+function handleClose() {
+  // @ts-ignore - Tauri API
+  if (window.__TAURI__) {
+    window.__TAURI__.window.appWindow.close()
+  }
+}
 </script>
 
 <template>
-  <div>
-    <!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
-    <MobileSidebar />
-    <Sidebar />
+  <DashboardLayout
+    :show-window-controls="true"
+    @minimize="handleMinimize"
+    @maximize="handleMaximize"
+    @close="handleClose"
+  >
+    <RouterView v-slot="{ Component }">
+      <Transition mode="out-in">
+        <Suspense timeout="0">
+          <Component :is="Component" />
+          <template #fallback>
+            <div class="flex items-center justify-center py-12">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+            </div>
+          </template>
+        </Suspense>
+      </Transition>
+    </RouterView>
 
-    <div :class="contentClasses" class="transition-all duration-300">
-      <Navbar />
-
-      <RouterView v-slot="{ Component }">
-        <main v-if="Component" class="bg-blue-gray-50 dark:bg-blue-gray-900">
-          <Transition mode="out-in">
-            <Suspense timeout="0">
-              <Component :is="Component" />
-              <template #fallback>
-                Loading...
-              </template>
-            </Suspense>
-          </Transition>
-        </main>
-      </RouterView>
-
+    <!-- Global toast notifications -->
+    <template #overlays>
       <Toast />
-    </div>
-  </div>
+    </template>
+  </DashboardLayout>
 </template>
 
 <style>
 body {
-  @apply dark:bg-blue-gray-900 bg-blue-gray-50;
+  @apply bg-neutral-100 dark:bg-neutral-950;
 }
 
 .v-enter-active,
 .v-leave-active {
-  transition: opacity 0.1s ease-in-out;
+  transition: opacity 0.15s ease-in-out;
 }
 
 .v-enter-from,

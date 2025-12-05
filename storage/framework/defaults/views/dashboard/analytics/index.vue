@@ -1,5 +1,93 @@
+<script lang="ts" setup>
+/**
+ * Analytics Dashboard - macOS Style
+ * Overview of analytics with macOS-inspired design.
+ */
+import { ref } from 'vue'
+import Card from '../../../components/Dashboard/UI/Card.vue'
+import StatsCard from '../../../components/Dashboard/UI/StatsCard.vue'
+
+useHead({
+  title: 'Dashboard - Analytics',
+})
+
+const analyticsCards = ref([
+  { name: 'Web Analytics', description: 'Page views, sessions, and user behavior', icon: 'i-hugeicons-chart-line-data-02', to: '/analytics/web' },
+  { name: 'Blog Analytics', description: 'Post performance and engagement', icon: 'i-hugeicons-edit-02', to: '/analytics/blog' },
+  { name: 'Commerce Analytics', description: 'Sales and revenue insights', icon: 'i-hugeicons-shopping-cart-01', to: '/analytics/commerce/sales' },
+  { name: 'Marketing Analytics', description: 'Campaign performance', icon: 'i-hugeicons-megaphone-02', to: '/analytics/marketing' },
+  { name: 'Events', description: 'Custom event tracking', icon: 'i-hugeicons-calendar-03', to: '/analytics/events' },
+  { name: 'Referrers', description: 'Traffic sources', icon: 'i-hugeicons-link-01', to: '/analytics/referrers' },
+  { name: 'Pages', description: 'Top performing pages', icon: 'i-hugeicons-file-02', to: '/analytics/pages' },
+  { name: 'Countries', description: 'Geographic distribution', icon: 'i-hugeicons-globe-02', to: '/analytics/countries' },
+  { name: 'Devices', description: 'Device breakdown', icon: 'i-hugeicons-smart-phone-01', to: '/analytics/devices' },
+  { name: 'Browsers', description: 'Browser usage', icon: 'i-hugeicons-browser', to: '/analytics/browsers' },
+])
+</script>
+
 <template>
   <div>
-    <h1>Analytics</h1>
+    <!-- Overview Stats -->
+    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <StatsCard
+        title="Page Views"
+        value="124,892"
+        :trend="12"
+        trend-label="vs last month"
+        icon="i-hugeicons-chart-line-data-02"
+        icon-bg="primary"
+      />
+      <StatsCard
+        title="Unique Visitors"
+        value="45,231"
+        :trend="8"
+        trend-label="vs last month"
+        icon="i-hugeicons-user-multiple-02"
+        icon-bg="success"
+      />
+      <StatsCard
+        title="Avg. Session"
+        value="4m 32s"
+        :trend="-5"
+        trend-label="vs last month"
+        icon="i-hugeicons-clock-01"
+        icon-bg="info"
+      />
+      <StatsCard
+        title="Bounce Rate"
+        value="32.4%"
+        :trend="-3"
+        trend-label="Lower is better"
+        icon="i-hugeicons-logout-02"
+        icon-bg="neutral"
+      />
+    </div>
+
+    <!-- Analytics Sections -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <RouterLink
+        v-for="card in analyticsCards"
+        :key="card.name"
+        :to="card.to"
+        class="block"
+      >
+        <Card variant="default" padding="md" hoverable clickable>
+          <div class="flex items-start gap-4">
+            <div class="p-2.5 rounded-lg bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400 flex-shrink-0">
+              <div :class="[card.icon, 'h-5 w-5']" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-[14px] font-medium text-neutral-900 dark:text-white">
+                {{ card.name }}
+              </h3>
+              <p class="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400">
+                {{ card.description }}
+              </p>
+            </div>
+            <div class="i-hugeicons-arrow-right-01 h-4 w-4 text-neutral-400 flex-shrink-0" />
+          </div>
+        </Card>
+      </RouterLink>
+    </div>
   </div>
 </template>
