@@ -2,6 +2,7 @@
 import * as coupons from './coupons'
 import * as customers from './customers'
 import * as devices from './devices'
+import * as errors from './errors'
 import * as giftCards from './gift-cards'
 import * as orders from './orders'
 import * as payments from './payments'
@@ -14,6 +15,7 @@ import * as restaurant from './waitlists/restaurant'
 
 type CouponsModule = typeof coupons
 type CustomersModule = typeof customers
+type ErrorsModule = typeof errors
 type ShippingsModule = typeof shippings
 type GiftCardsModule = typeof giftCards
 type OrdersModule = typeof orders
@@ -28,6 +30,7 @@ type ReceiptsModule = typeof receipts
 export interface CommerceNamespace {
   coupons: CouponsModule
   customers: CustomersModule
+  errors: ErrorsModule
   giftCards: GiftCardsModule
   orders: OrdersModule
   payments: PaymentsModule
@@ -44,6 +47,7 @@ export const commerce: CommerceNamespace = {
   coupons,
   customers,
   devices,
+  errors,
   giftCards,
   orders,
   payments,
@@ -61,6 +65,7 @@ export {
   coupons,
   customers,
   devices,
+  errors,
   giftCards,
   orders,
   payments,

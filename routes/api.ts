@@ -289,3 +289,17 @@ route.group({ prefix: '/queries' }, async () => {
 })
 
 route.get('/me', 'Actions/Auth/AuthUserAction').middleware('auth')
+
+// Error Tracking / Monitoring routes
+route.group({ prefix: '/monitoring' }, async () => {
+  // Errors
+  route.get('/errors', 'Actions/Monitoring/ErrorIndexAction')
+  route.get('/errors/stats', 'Actions/Monitoring/ErrorStatsAction')
+  route.get('/errors/timeline', 'Actions/Monitoring/ErrorTimelineAction')
+  route.get('/errors/group', 'Actions/Monitoring/ErrorGroupAction')
+  route.get('/errors/{id}', 'Actions/Monitoring/ErrorShowAction')
+  route.patch('/errors/resolve', 'Actions/Monitoring/ErrorResolveAction')
+  route.patch('/errors/ignore', 'Actions/Monitoring/ErrorIgnoreAction')
+  route.patch('/errors/unresolve', 'Actions/Monitoring/ErrorUnresolveAction')
+  route.delete('/errors', 'Actions/Monitoring/ErrorDestroyAction')
+})

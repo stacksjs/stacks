@@ -1,0 +1,249 @@
+<script lang="ts" setup>
+import type { GroupedError } from '../../../functions/monitoring/errors'
+
+interface Props {
+  errors: GroupedError[]
+  searchQuery: string
+  statusFilter: string
+  typeFilter: string
+  sortBy: string
+  sortOrder: string
+}
+
+interface Emits {
+  (e: 'toggleSort', column: string): void
+  (e: 'viewError', error: GroupedError): void
+  (e: 'resolveError', error: GroupedError): void
+  (e: 'ignoreError', error: GroupedError): void
+  (e: 'unresolveError', error: GroupedError): void
+  (e: 'deleteError', error: GroupedError): void
+}
+
+const props = defineProps<Props>()
+const emit = defineEmits<Emits>()
+
+function handleToggleSort(column: string): void {
+  emit('toggleSort', column)
+}
+
+function handleViewError(error: GroupedError): void {
+  emit('viewError', error)
+}
+
+function handleResolveError(error: GroupedError): void {
+  emit('resolveError', error)
+}
+
+function handleIgnoreError(error: GroupedError): void {
+  emit('ignoreError', error)
+}
+
+function handleUnresolveError(error: GroupedError): void {
+  emit('unresolveError', error)
+}
+
+function handleDeleteError(error: GroupedError): void {
+  emit('deleteError', error)
+}
+
+function getStatusClass(status: string): string {
+  switch (status) {
+    case 'resolved':
+      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
+    case 'ignored':
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+    case 'unresolved':
+    default:
+      return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
+  }
+}
+
+function getTypeClass(type: string): string {
+  const typeLC = type.toLowerCase()
+  if (typeLC.includes('error') || typeLC.includes('exception')) {
+    return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
+  }
+  if (typeLC.includes('warning')) {
+    return 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400'
+  }
+  if (typeLC.includes('info')) {
+    return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
+  }
+  return 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-400'
+}
+
+function formatTimeAgo(dateString: string): string {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffSecs = Math.floor(diffMs / 1000)
+  const diffMins = Math.floor(diffSecs / 60)
+  const diffHours = Math.floor(diffMins / 60)
+  const diffDays = Math.floor(diffHours / 24)
+
+  if (diffDays > 0)
+    return `${diffDays}d ago`
+  if (diffHours > 0)
+    return `${diffHours}h ago`
+  if (diffMins > 0)
+    return `${diffMins}m ago`
+  return 'Just now'
+}
+
+function truncateMessage(message: string, maxLength: number = 60): string {
+  if (message.length <= maxLength)
+    return message
+  return `${message.substring(0, maxLength)}...`
+}
+</script>
+
+<template>
+  <div class="overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+      <thead class="bg-gray-50 dark:bg-blue-gray-700">
+        <tr>
+          <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">
+            <button class="group inline-flex items-center" @click="handleToggleSort('type')">
+              Error
+              <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                <div
+                  v-if="props.sortBy === 'type'"
+                  :class="[
+                    props.sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                    'h-4 w-4',
+                  ]"
+                />
+                <div v-else class="i-hugeicons-arrows-up-down h-4 w-4" />
+              </span>
+            </button>
+          </th>
+          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+            <button class="group inline-flex items-center" @click="handleToggleSort('count')">
+              Events
+              <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                <div
+                  v-if="props.sortBy === 'count'"
+                  :class="[
+                    props.sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                    'h-4 w-4',
+                  ]"
+                />
+                <div v-else class="i-hugeicons-arrows-up-down h-4 w-4" />
+              </span>
+            </button>
+          </th>
+          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+            <button class="group inline-flex items-center" @click="handleToggleSort('last_seen')">
+              Last Seen
+              <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                <div
+                  v-if="props.sortBy === 'last_seen'"
+                  :class="[
+                    props.sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                    'h-4 w-4',
+                  ]"
+                />
+                <div v-else class="i-hugeicons-arrows-up-down h-4 w-4" />
+              </span>
+            </button>
+          </th>
+          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+            Status
+          </th>
+          <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+            <span class="sr-only">Actions</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
+        <tr
+          v-for="error in errors"
+          :key="`${error.type}-${error.message}`"
+          class="hover:bg-gray-50 dark:hover:bg-blue-gray-700 cursor-pointer"
+          @click="handleViewError(error)"
+        >
+          <td class="py-4 pl-4 pr-3 text-sm sm:pl-6">
+            <div class="flex flex-col">
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium" :class="getTypeClass(error.type)">
+                  {{ error.type }}
+                </span>
+              </div>
+              <div class="mt-1 text-gray-900 dark:text-white font-medium">
+                {{ truncateMessage(error.message) }}
+              </div>
+              <div class="text-gray-500 dark:text-gray-400 text-xs mt-0.5">
+                First seen: {{ formatTimeAgo(error.first_seen) }}
+              </div>
+            </div>
+          </td>
+          <td class="whitespace-nowrap px-3 py-4 text-sm">
+            <div class="flex items-center">
+              <span class="inline-flex items-center justify-center h-6 min-w-[24px] px-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium text-xs">
+                {{ error.count }}
+              </span>
+            </div>
+          </td>
+          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+            {{ formatTimeAgo(error.last_seen) }}
+          </td>
+          <td class="whitespace-nowrap px-3 py-4 text-sm">
+            <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium capitalize" :class="getStatusClass(error.status)">
+              {{ error.status }}
+            </span>
+          </td>
+          <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6" @click.stop>
+            <div class="flex items-center justify-end space-x-2">
+              <button
+                v-if="error.status !== 'resolved'"
+                type="button"
+                title="Mark as resolved"
+                class="text-green-400 transition-colors duration-150 hover:text-green-600 dark:text-green-400 dark:hover:text-green-300"
+                @click="handleResolveError(error)"
+              >
+                <div class="i-hugeicons-checkmark-circle-02 h-5 w-5" />
+              </button>
+              <button
+                v-if="error.status === 'resolved'"
+                type="button"
+                title="Reopen"
+                class="text-yellow-400 transition-colors duration-150 hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-300"
+                @click="handleUnresolveError(error)"
+              >
+                <div class="i-hugeicons-refresh h-5 w-5" />
+              </button>
+              <button
+                v-if="error.status !== 'ignored'"
+                type="button"
+                title="Ignore"
+                class="text-gray-400 transition-colors duration-150 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300"
+                @click="handleIgnoreError(error)"
+              >
+                <div class="i-hugeicons-eye-off h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                title="Delete"
+                class="text-red-400 transition-colors duration-150 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
+                @click="handleDeleteError(error)"
+              >
+                <div class="i-hugeicons-waste h-5 w-5" />
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr v-if="errors.length === 0">
+          <td colspan="5" class="px-6 py-12 text-center">
+            <div class="flex flex-col items-center">
+              <div class="i-hugeicons-checkmark-circle-02 h-12 w-12 text-green-400" />
+              <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No errors found</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {{ searchQuery || statusFilter !== 'all' || typeFilter !== 'all' ? 'Try adjusting your filters' : 'Your application is running smoothly!' }}
+              </p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
