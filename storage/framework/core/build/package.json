@@ -44,9 +44,9 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@babel/generator": "^7.26.2",
-    "@babel/traverse": "^7.26.4",
-    "better-dx": "^0.2.0"
+    "@babel/generator": "^7.28.5",
+    "@babel/traverse": "^7.28.5",
+    "better-dx": "^0.2.5"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
