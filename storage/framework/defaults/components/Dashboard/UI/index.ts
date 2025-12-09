@@ -3,9 +3,13 @@
  * ======================================
  * A modern, clean component library built with Vue 3 and Tailwind CSS.
  * Designed for use across Stacks Dashboard, HomeOS, and web demos.
+ *
+ * NOTE: Core primitives (Button, Card, Modal) are migrating to @stacksjs/stx-ui.
+ * These components are still available here for backward compatibility but
+ * new code should import from '@stacksjs/stx-ui/vue' when available.
  */
 
-// Core Primitives
+// Core Primitives (legacy - consider using @stacksjs/stx-ui for new code)
 export { default as Button } from './Button.vue'
 export { default as Input } from './Input.vue'
 export { default as Card } from './Card.vue'
@@ -41,3 +45,19 @@ export { default as EmptyState } from './EmptyState.vue'
 
 // Window Controls
 export { default as WindowControls } from './WindowControls.vue'
+
+// Re-export stx-ui components for gradual migration
+// export {
+//   StxButton,
+//   StxCard,
+//   StxModal,
+// } from '@stacksjs/stx-ui/vue'
+//
+// Re-export composables
+// export {
+//   useDarkMode,
+//   useMediaQuery,
+//   useModal,
+//   useClipboard,
+//   useLocalStorage,
+// } from '@stacksjs/stx-ui/composables'

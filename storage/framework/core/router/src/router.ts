@@ -444,15 +444,16 @@ export class StacksRouter implements RouterInterface {
 
   /**
    * Create a route group with shared attributes
+   * Supports both sync and async callbacks
    */
-  group(options: string | RouteGroupOptions, callback?: () => void): this {
+  group(options: string | RouteGroupOptions, callback?: (() => void) | (() => Promise<void>)): this {
     // Handle string prefix shorthand
     if (typeof options === 'string') {
       options = { prefix: options.startsWith('/') ? options.slice(1) : options }
     }
 
     // Handle function-only call
-    let cb: () => void
+    let cb: (() => void) | (() => Promise<void>)
     if (typeof options === 'function') {
       cb = options
       options = {}
@@ -479,18 +480,33 @@ export class StacksRouter implements RouterInterface {
     // Create temporary routes array to track routes in this group
     this._stacksRoutes = []
 
-    // Execute callback
-    cb()
+    // Execute callback (handle both sync and async)
+    const result = cb()
 
-    // Merge group routes back to main routes
-    for (const route of this._stacksRoutes) {
-      previousRoutes.push(route)
+    // If callback returns a promise, track it for later awaiting
+    if (result instanceof Promise) {
+      const groupPromise = result.then(() => {
+        // Merge group routes back to main routes after async completion
+        for (const route of this._stacksRoutes) {
+          previousRoutes.push(route)
+        }
+        // Restore previous state
+        this._groupPrefix = previousPrefix
+        this._groupMiddleware = previousMiddleware
+        this._stacksRoutes = previousRoutes
+      })
+      this._pendingRoutes.push(groupPromise)
     }
-
-    // Restore previous state
-    this._groupPrefix = previousPrefix
-    this._groupMiddleware = previousMiddleware
-    this._stacksRoutes = previousRoutes
+    else {
+      // Sync callback - merge immediately
+      for (const route of this._stacksRoutes) {
+        previousRoutes.push(route)
+      }
+      // Restore previous state
+      this._groupPrefix = previousPrefix
+      this._groupMiddleware = previousMiddleware
+      this._stacksRoutes = previousRoutes
+    }
 
     return this
   }
@@ -511,10 +527,13 @@ export class StacksRouter implements RouterInterface {
 
   /**
    * Set middleware for the last registered route
+   * Accepts a string name, array of strings, or middleware handlers
    */
-  middleware(middleware: StacksRoute['middleware']): this {
+  middleware(middleware: string | string[] | StacksRoute['middleware']): this {
     if (this._stacksRoutes.length > 0) {
-      this._stacksRoutes[this._stacksRoutes.length - 1].middleware = middleware
+      // Normalize to array if single string
+      const normalizedMiddleware = typeof middleware === 'string' ? [middleware] : middleware
+      this._stacksRoutes[this._stacksRoutes.length - 1].middleware = normalizedMiddleware
     }
     return this
   }
@@ -763,6 +782,10 @@ export class StacksRouter implements RouterInterface {
   prepareUri(path: string): string {
     if (path.startsWith('/')) path = path.slice(1)
     path = `/${path}`
+
+    // Normalize :param syntax to {param} syntax for bun-router compatibility
+    path = path.replace(/:(\w+)/g, '{$1}')
+
     return path.endsWith('/') ? path.slice(0, -1) : path
   }
 
