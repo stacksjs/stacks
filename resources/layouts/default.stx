@@ -1,5 +1,3 @@
-<template>
-  <main>
-    <RouterView />
-  </main>
-</template>
+<main>
+  {{ slot }}
+</main>

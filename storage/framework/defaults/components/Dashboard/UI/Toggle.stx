@@ -1,105 +1,82 @@
-<script setup lang="ts">
-/**
- * Toggle/Switch Component - macOS Style
- * A toggle switch inspired by macOS system preferences.
- */
-import { computed } from 'vue'
+<script>
+  export const checked = false
+  export const label = ''
+  export const description = ''
+  export const disabled = false
+  export const size = 'md' // 'sm' | 'md' | 'lg'
+  export const labelPosition = 'right' // 'left' | 'right'
+  export const name = ''
+  export const id = ''
 
-interface Props {
-  modelValue: boolean
-  label?: string
-  description?: string
-  disabled?: boolean
-  size?: 'sm' | 'md' | 'lg'
-  labelPosition?: 'left' | 'right'
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  size: 'md',
-  labelPosition: 'right',
-})
-
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void
-}>()
-
-// macOS-style compact toggle sizes
-const sizeClasses = computed(() => {
-  const sizes = {
-    sm: { track: 'h-4 w-7', thumb: 'h-3 w-3', translate: 'translate-x-3' },
-    md: { track: 'h-5 w-9', thumb: 'h-4 w-4', translate: 'translate-x-4' },
-    lg: { track: 'h-6 w-11', thumb: 'h-5 w-5', translate: 'translate-x-5' },
+  const trackSizes = {
+    sm: 'h-4 w-7',
+    md: 'h-5 w-9',
+    lg: 'h-6 w-11'
   }
-  return sizes[props.size]
-})
 
-function toggle() {
-  if (!props.disabled) {
-    emit('update:modelValue', !props.modelValue)
+  const thumbSizes = {
+    sm: 'h-3 w-3',
+    md: 'h-4 w-4',
+    lg: 'h-5 w-5'
   }
-}
+
+  const translateSizes = {
+    sm: 'translate-x-3',
+    md: 'translate-x-4',
+    lg: 'translate-x-5'
+  }
+
+  const toggleId = id || 'toggle-' + Math.random().toString(36).slice(2, 11)
 </script>
 
-<template>
-  <div
-    :class="[
-      'flex items-center gap-3',
-      labelPosition === 'left' ? 'flex-row-reverse justify-end' : '',
-      disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
-    ]"
-    @click="toggle"
+<div class="flex items-center gap-3 {{ labelPosition === 'left' ? 'flex-row-reverse justify-end' : '' }} {{ disabled ? 'opacity-60 cursor-not-allowed' : '' }}">
+  <input
+    type="checkbox"
+    id="{{ toggleId }}"
+    name="{{ name }}"
+    class="sr-only peer"
+    @if(checked) checked @endif
+    @if(disabled) disabled @endif
   >
-    <!-- Toggle switch - macOS style -->
-    <button
-      type="button"
-      role="switch"
-      :aria-checked="modelValue"
-      :disabled="disabled"
-      :class="[
-        'relative inline-flex shrink-0 rounded-full transition-all duration-150 ease-in-out',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-0',
-        sizeClasses.track,
-        // macOS green when on, gray when off
-        modelValue
-          ? 'bg-green-500' // macOS green #34c759
-          : 'bg-black/15 dark:bg-white/20',
-        disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer',
-      ]"
-    >
-      <span
-        :class="[
-          'pointer-events-none inline-block rounded-full bg-white shadow-sm ring-0 transition-transform duration-150 ease-in-out',
-          sizeClasses.thumb,
-          modelValue ? sizeClasses.translate : 'translate-x-0.5',
-        ]"
-      />
-    </button>
+  <label
+    for="{{ toggleId }}"
+    class="relative inline-flex shrink-0 rounded-full transition-all duration-150 focus-within:ring-2 focus-within:ring-blue-500/40 {{ trackSizes[size] }} {{ disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer' }} peer-checked:bg-green-500 bg-black/15 dark:bg-white/20"
+  >
+    <span
+      class="pointer-events-none inline-block rounded-full bg-white shadow-sm ring-0 transition-transform duration-150 ease-in-out {{ thumbSizes[size] }} peer-checked:{{ translateSizes[size] }} translate-x-0.5"
+    ></span>
+  </label>
 
-    <!-- Label and description - macOS style -->
-    <div v-if="label || description || $slots.default" class="flex-1 min-w-0">
-      <label
-        v-if="label"
-        :class="[
-          'text-[13px] font-medium tracking-tight',
-          disabled
-            ? 'text-neutral-400 dark:text-neutral-600'
-            : 'text-neutral-700 dark:text-neutral-200',
-        ]"
-      >
-        {{ label }}
-      </label>
-      <p
-        v-if="description"
-        :class="[
-          'text-[12px] mt-0.5',
-          disabled
-            ? 'text-neutral-300 dark:text-neutral-600'
-            : 'text-neutral-500 dark:text-neutral-400',
-        ]"
-      >
-        {{ description }}
-      </p>
-      <slot />
+  @if(label || description)
+    <div class="flex-1 min-w-0">
+      @if(label)
+        <label
+          for="{{ toggleId }}"
+          class="text-[13px] font-medium tracking-tight {{ disabled ? 'text-neutral-400 dark:text-neutral-600' : 'text-neutral-700 dark:text-neutral-200' }} {{ disabled ? '' : 'cursor-pointer' }}"
+        >
+          {{ label }}
+        </label>
+      @endif
+      @if(description)
+        <p class="text-[12px] mt-0.5 {{ disabled ? 'text-neutral-300 dark:text-neutral-600' : 'text-neutral-500 dark:text-neutral-400' }}">
+          {{ description }}
+        </p>
+      @endif
     </div>
-  </div>
-</template>
+  @endif
+</div>
+
+<style>
+input:checked + label {
+  background-color: rgb(34 197 94);
+}
+input:checked + label span {
+  transform: translateX(1rem);
+}
+input:checked + label span[class*="sm"] {
+  transform: translateX(0.75rem);
+}
+input:checked + label span[class*="lg"] {
+  transform: translateX(1.25rem);
+}
+</style>
