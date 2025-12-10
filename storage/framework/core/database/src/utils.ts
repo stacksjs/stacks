@@ -5,7 +5,20 @@
  * configured using the stacks database config.
  */
 
-import { createQueryBuilder, setConfig } from 'bun-query-builder'
+import { createQueryBuilder } from 'bun-query-builder'
+
+// Try to import setConfig if available (newer versions)
+let setConfig: ((config: any) => void) | undefined
+try {
+  // Dynamic import to handle both old and new versions
+  const mod = await import('bun-query-builder')
+  if ('setConfig' in mod && typeof mod.setConfig === 'function') {
+    setConfig = mod.setConfig
+  }
+}
+catch {
+  // setConfig not available in this version
+}
 
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
@@ -123,6 +136,11 @@ function getDbConfig(): { database: string, username?: string, password?: string
  * Update bun-query-builder configuration
  */
 function updateQueryBuilderConfig(): void {
+  if (!setConfig) {
+    // setConfig not available in this version, config will be passed to createQueryBuilder
+    return
+  }
+
   const dialect = getDialect()
   const dbConfigForQb = getDbConfig()
 
@@ -133,7 +151,12 @@ function updateQueryBuilderConfig(): void {
     timestamps: {
       createdAt: 'created_at',
       updatedAt: 'updated_at',
-      deletedAt: 'deleted_at',
+      defaultOrderColumn: 'created_at',
+    },
+    softDeletes: {
+      enabled: false,
+      column: 'deleted_at',
+      defaultFilter: true,
     },
   })
 }
@@ -177,9 +200,11 @@ export const db = new Proxy({} as ReturnType<typeof createQueryBuilder>, {
  */
 export {
   createQueryBuilder,
-  setConfig,
 } from 'bun-query-builder'
 
 export type {
   QueryBuilder,
 } from 'bun-query-builder'
+
+// Export setConfig if available
+export { setConfig }

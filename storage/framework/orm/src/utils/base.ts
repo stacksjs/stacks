@@ -4,6 +4,17 @@ import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
+/**
+ * BaseOrm - Base class for all generated ORM models
+ *
+ * This class provides the foundation for database operations using bun-query-builder.
+ * It implements a fluent query builder interface compatible with both Kysely-style
+ * and Laravel-style APIs.
+ *
+ * @template T - The model instance type
+ * @template C - The table columns type (for type-safe where clauses)
+ * @template J - The JSON response type
+ */
 export class BaseOrm<T, C, J> {
   protected tableName: string
 
@@ -15,11 +26,9 @@ export class BaseOrm<T, C, J> {
 
   constructor(tableName: string) {
     this.tableName = tableName
-    // TODO: bring back new instantiation from the this parent class
     this.selectFromQuery = DB.instance.selectFrom(this.tableName)
     this.updateFromQuery = DB.instance.updateTable(this.tableName)
     this.deleteFromQuery = DB.instance.deleteFrom(this.tableName)
-
     this.withRelations = []
   }
 
@@ -57,10 +66,16 @@ export class BaseOrm<T, C, J> {
     let model
 
     if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
+      // Use first() if available (bun-query-builder style), fallback to executeTakeFirst()
+      model = typeof this.selectFromQuery.first === 'function'
+        ? await this.selectFromQuery.first()
+        : await this.selectFromQuery.executeTakeFirst()
     }
     else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+      // Use first() if available, otherwise selectAll().executeTakeFirst()
+      model = typeof this.selectFromQuery.first === 'function'
+        ? await this.selectFromQuery.first()
+        : await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
     if (!model)
@@ -76,31 +91,29 @@ export class BaseOrm<T, C, J> {
 
   // The protected helper method that does the actual work
   protected async applyFind(id: number): Promise<T | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
-      .where('id', '=', id)
-      .selectAll()
-      .executeTakeFirst()
+    const query = DB.instance.selectFrom(this.tableName).where({ id })
+
+    // Use first() if available (bun-query-builder style)
+    const model = typeof query.first === 'function'
+      ? await query.first()
+      : await query.selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
     this.mapCustomGetters(model)
-
     await this.loadRelations(model)
-
-    // cache.getOrSet(`${this.tableName}:${id}`, JSON.stringify(model))
 
     return model
   }
 
   async applyFindMany(ids: number[]): Promise<T[]> {
-    let query = DB.instance.selectFrom('users').where('id', 'in', ids)
+    const query = DB.instance.selectFrom(this.tableName).whereIn('id', ids)
 
-    query = query.selectAll()
-
-    // TODO: Properly implement soft deletes
-
-    const models = await query.execute()
+    // Use get() if available (bun-query-builder style), fallback to execute()
+    const models = typeof query.get === 'function'
+      ? await query.get()
+      : await query.selectAll().execute()
 
     this.mapCustomGetters(models)
     await this.loadRelations(models)
@@ -113,9 +126,12 @@ export class BaseOrm<T, C, J> {
   }
 
   async all(): Promise<T[]> {
-    const models = await DB.instance.selectFrom(this.tableName)
-      .selectAll()
-      .execute()
+    const query = DB.instance.selectFrom(this.tableName)
+
+    // Use get() if available (bun-query-builder style), fallback to execute()
+    const models = typeof query.get === 'function'
+      ? await query.get()
+      : await query.selectAll().execute()
 
     this.mapCustomGetters(models)
     await this.loadRelations(models)
@@ -127,10 +143,14 @@ export class BaseOrm<T, C, J> {
     let model
 
     if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
+      model = typeof this.selectFromQuery.first === 'function'
+        ? await this.selectFromQuery.first()
+        : await this.selectFromQuery.executeTakeFirst()
     }
     else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+      model = typeof this.selectFromQuery.first === 'function'
+        ? await this.selectFromQuery.first()
+        : await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
     if (model) {
@@ -176,18 +196,18 @@ export class BaseOrm<T, C, J> {
   }
 
   protected async applyFindOrFail(id: number): Promise<T | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
-      .where('id', '=', id)
-      .selectAll()
-      .executeTakeFirst()
+    const query = DB.instance.selectFrom(this.tableName).where({ id })
+
+    // Use first() if available (bun-query-builder style)
+    const model = typeof query.first === 'function'
+      ? await query.first()
+      : await query.selectAll().executeTakeFirst()
 
     if (!model)
       throw new HttpError(404, `No ${this.tableName} results found for id ${id}`)
 
     this.mapCustomGetters(model)
     await this.loadRelations(model)
-
-    // cache.getOrSet(`${this.tableName}:${id}`, JSON.stringify(model))
 
     return model
   }
@@ -365,13 +385,21 @@ export class BaseOrm<T, C, J> {
   }
 
   async exists(): Promise<boolean> {
-    let model
+    // Use exists() if available (bun-query-builder style)
+    if (typeof this.selectFromQuery.exists === 'function') {
+      return await this.selectFromQuery.exists()
+    }
 
+    let model
     if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
+      model = typeof this.selectFromQuery.first === 'function'
+        ? await this.selectFromQuery.first()
+        : await this.selectFromQuery.executeTakeFirst()
     }
     else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+      model = typeof this.selectFromQuery.first === 'function'
+        ? await this.selectFromQuery.first()
+        : await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
     return model !== null && model !== undefined
@@ -389,12 +417,17 @@ export class BaseOrm<T, C, J> {
 
   async applyLast(): Promise<T | undefined> {
     let model
+    const query = this.selectFromQuery.orderBy('id', 'desc')
 
     if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
+      model = typeof query.first === 'function'
+        ? await query.first()
+        : await query.executeTakeFirst()
     }
     else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+      model = typeof query.first === 'function'
+        ? await query.first()
+        : await query.selectAll().executeTakeFirst()
     }
 
     if (model) {
@@ -418,10 +451,14 @@ export class BaseOrm<T, C, J> {
     let models
 
     if (this.hasSelect) {
-      models = await this.selectFromQuery.execute()
+      models = typeof this.selectFromQuery.get === 'function'
+        ? await this.selectFromQuery.get()
+        : await this.selectFromQuery.execute()
     }
     else {
-      models = await this.selectFromQuery.selectAll().execute()
+      models = typeof this.selectFromQuery.get === 'function'
+        ? await this.selectFromQuery.get()
+        : await this.selectFromQuery.selectAll().execute()
     }
 
     this.mapCustomGetters(models)
@@ -455,11 +492,16 @@ export class BaseOrm<T, C, J> {
   }
 
   async applyCount(): Promise<number> {
+    // Use count() if available (bun-query-builder style)
+    if (typeof this.selectFromQuery.count === 'function') {
+      return await this.selectFromQuery.count()
+    }
+
     const result = await this.selectFromQuery
       .select(sql`COUNT(*) as count`)
       .executeTakeFirst()
 
-    return result.count || 0
+    return result?.count || 0
   }
 
   async count(): Promise<number> {
@@ -652,22 +694,37 @@ export class BaseOrm<T, C, J> {
   }
 
   async applyPaginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{ data: T[], paging: { total_records: number, page: number, total_pages: number }, next_cursor: number | null }> {
-    const totalRecordsResult = await DB.instance.selectFrom(this.tableName)
-      .select(DB.instance.fn.count('id').as('total'))
-      .executeTakeFirst()
+    const perPage = options.limit ?? 10
+    const currentPage = options.page ?? 1
 
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+    // Get total count
+    const countQuery = DB.instance.selectFrom(this.tableName)
+    let totalRecords: number
 
-    const modelsWithExtra = await DB.instance.selectFrom(this.tableName)
-      .selectAll()
+    if (typeof countQuery.count === 'function') {
+      totalRecords = await countQuery.count()
+    }
+    else {
+      const totalRecordsResult = await countQuery
+        .select(sql`COUNT(*) as total`)
+        .executeTakeFirst()
+      totalRecords = Number(totalRecordsResult?.total) || 0
+    }
+
+    const totalPages = Math.ceil(totalRecords / perPage)
+
+    // Get data with one extra to check for next page
+    const dataQuery = DB.instance.selectFrom(this.tableName)
       .orderBy('id', 'asc')
-      .limit((options.limit ?? 10) + 1)
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10))
-      .execute()
+      .limit(perPage + 1)
+      .offset((currentPage - 1) * perPage)
+
+    const modelsWithExtra = typeof dataQuery.get === 'function'
+      ? await dataQuery.get()
+      : await dataQuery.selectAll().execute()
 
     let nextCursor = null
-    if (modelsWithExtra.length > (options.limit ?? 10))
+    if (modelsWithExtra.length > perPage)
       nextCursor = modelsWithExtra.pop()?.id ?? null
 
     this.mapCustomGetters(modelsWithExtra)
@@ -677,7 +734,7 @@ export class BaseOrm<T, C, J> {
       data: modelsWithExtra as T[],
       paging: {
         total_records: totalRecords,
-        page: options.page || 1,
+        page: currentPage,
         total_pages: totalPages,
       },
       next_cursor: nextCursor,
