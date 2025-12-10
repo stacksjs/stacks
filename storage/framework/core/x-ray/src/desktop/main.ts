@@ -1,6 +1,5 @@
 import { createApp } from 'vue'
-import App from './App.vue'
-import '@unocss/reset/tailwind.css'
+import App from './App.stx'
 
 // import { unifiedApp } from './plugins/unified/unified-app'
 const app = createApp(App)

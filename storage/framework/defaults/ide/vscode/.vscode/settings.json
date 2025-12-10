@@ -86,7 +86,6 @@
   },
   // TypeScript
   "typescript.tsdk": "${workspaceFolder}/node_modules/typescript/lib",
-  "unocss.root": "${workspaceFolder}/storage/framework/core/ui/src/uno.config.ts",
   // Shell
   "[shellscript]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"

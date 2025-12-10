@@ -39,7 +39,7 @@
     "@shikijs/vitepress-twoslash": "^3.12.2",
     "@vite-pwa/assets-generator": "^1.0.0",
     "@vite-pwa/vitepress": "^1.0.0",
-    "unocss": "^66.4.2",
+    "headwind": "link:headwind",
     "unplugin-icons": "^22.2.0",
     "unplugin-vue-components": "^28.8.0",
     "vite-plugin-pwa": "^1.0.3",

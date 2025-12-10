@@ -14,7 +14,6 @@ export default config({
   vue: false,
   jsonc: true,
   yaml: true,
-  unocss: true,
 
   ignores: [
     '**/fixtures',

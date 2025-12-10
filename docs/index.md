@@ -63,7 +63,7 @@ features:
     details: “An approachable, performant and versatile framework for building web UIs,” Vue.
   - title: Atomic CSS Engine
     icon: 🎨
-    details: “Instant on-demand atomic CSS engine,” UnoCSS. Easily create & manage your styles.
+    details: "Blazingly fast utility-first CSS framework," Headwind. Easily create & manage your styles.
   - title: Streamlined Testing
     icon: 🧪
     details: A fast built-in testing framework. Enjoyable support for both unit & feature tests.

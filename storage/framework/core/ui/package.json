@@ -26,8 +26,7 @@
     "styles",
     "stacks",
     "headwind",
-    "tailwind",
-    "unocss"
+    "tailwind"
   ],
   "sideEffects": false,
   "exports": {
@@ -57,7 +56,7 @@
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*",
-    "@stacksjs/headwind": "^0.1.3",
-    "@stacksjs/router": "workspace:*"
+    "@stacksjs/router": "workspace:*",
+    "headwind": "link:headwind"
   }
 }

@@ -1,10 +1,9 @@
-import type { UserConfig } from '@unocss/core'
-import type { UserShortcuts } from 'unocss'
+import type { HeadwindOptions } from 'headwind'
 
 export type Font = 'inter' | 'mona' | 'hubot'
 export type Icon = 'heroicons' | 'hugeicons'
 export type WebFontsProviders = 'google' | 'bunny' | 'fontshare'
-export type Shortcuts = UserShortcuts
+export type Shortcuts = HeadwindOptions['shortcuts']
 
 export interface FontInfo {
   title: string
@@ -119,7 +118,7 @@ export interface UiOptions {
    * reset styles are utilized. You may set this value to `null`
    * if you prefer not applying any default stylesheets.
    *
-   * @url https://www.npmjs.com/package/@unocss/reset
+   * @url https://github.com/stacksjs/headwind
    * @todo preset needs to be added via a Vite plugin on development & build
    * @example
    * ```ts
@@ -163,11 +162,10 @@ export interface UiOptions {
   icons: Icon | Icon[]
   // icons: Record<string, () => Promise<any>>
 
-  theme: UserConfig['theme']
-  // plugins: UserConfig['plugins']
-  // corePlugins: UserConfig['corePlugins']
-  variants: UserConfig['variants']
-  layers: UserConfig['layers']
+  theme: HeadwindOptions['theme']
+  // plugins: HeadwindOptions['plugins']
+  // corePlugins: HeadwindOptions['corePlugins']
+  variants: HeadwindOptions['variants']
   // darkMode: UserConfig['darkMode']
   // extend: UserConfig['extend']
   // screens: UserConfig['screens']

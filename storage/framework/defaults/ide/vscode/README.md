@@ -9,7 +9,7 @@ _Please note, the Stacks framework auto-configures any extension that needs to b
 - [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) - Language support
 - [ESlint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) - Linting & formatting
 - [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) - Markdown linting
-- [UnoCSS](https://marketplace.visualstudio.com/items?itemName=antfu.unocss) - Atomic CSS framework support
+- [Headwind](https://github.com/stacksjs/headwind) - Blazingly fast utility-first CSS framework
 - [Goto Definition Alias](https://marketplace.visualstudio.com/items?itemName=antfu.goto-definition-alias) - Allows jumping to the definition of an aliased import
 - [NPM Intellisense](https://marketplace.visualstudio.com/items?itemName=christian-kohler.npm-intellisense) - auto-completes npm modules in import statements
 - [Jumpy](https://marketplace.visualstudio.com/items?itemName=wmaurer.vscode-jumpy) - We lose a lot of time scanning with a mouse, time we can get back by using our keyboard instead. Jumpy provides fast cursor movement by giving you a couple of keys that offer a hook to get to another part of the document.
