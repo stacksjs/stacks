@@ -1,35 +1,21 @@
-<script setup lang="ts">
-import { computed, ref } from 'vue'
+<script>
+  export const buttonText = ''
+  export const loadingText = ''
+  export const passedClass = ''
+  export const loading = false
 
-interface Props {
-  buttonText: string
-  loadingText?: string
-  passedClass: string
-}
-
-const { buttonText, loadingText, passedClass } = defineProps<Props>()
-
-const loading = ref(false)
-
-const buttonString = computed(() => {
-  return loading.value ? loadingText : buttonText
-})
-
-const getClass = computed(() => {
+  const buttonString = loading ? loadingText : buttonText
   const disabledClass = ' disabled:opacity-50 disabled:cursor-not-allowed'
-  return passedClass + disabledClass
-})
+  const finalClass = passedClass + disabledClass
 </script>
 
-<template>
-  <button
-    type="button"
-    class="flex items-center"
-    :disabled="loading"
-    :class="getClass"
-  >
+<button
+  type="button"
+  class="flex items-center {{ finalClass }}"
+  @if(loading) disabled @endif
+>
+  @if(loading)
     <svg
-      v-if="loading"
       class="mr-3 h-5 w-5 animate-spin text-white -ml-1"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
@@ -42,17 +28,18 @@ const getClass = computed(() => {
         r="10"
         stroke="currentColor"
         stroke-width="4"
-      />
+      ></circle>
       <path
         class="opacity-75"
         fill="currentColor"
         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-      />
+      ></path>
     </svg>
-    <slot v-if="!loading" name="icon" />
+  @else
+    {{ iconSlot }}
+  @endif
 
-    <span>
-      {{ buttonString }}
-    </span>
-  </button>
-</template>
+  <span>
+    {{ buttonString }}
+  </span>
+</button>

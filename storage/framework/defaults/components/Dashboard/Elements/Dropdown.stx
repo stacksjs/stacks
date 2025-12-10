@@ -1,56 +1,53 @@
-<script setup lang="ts">
-import { ref, watch } from 'vue'
-
-const props = defineProps<{
-  label: string
-  open?: boolean
-  elements: {
-    to: string
-    label: string
-  }[]
-}>()
-
-const isOpen = ref(props.open)
-const list = ref<HTMLUListElement>()
-
-watch(isOpen, () => {
-  const elements = (list.value?.children ?? []) as HTMLLIElement[]
-
-  elements.forEach((element, index) => {
-    if (!isOpen.value)
-      element.style.display = 'none'
-
-    setTimeout(() => {
-      element.style.display = 'block'
-    }, 100 * index)
-  })
-})
+<script>
+  export const label = ''
+  export const open = false
+  export const elements = [] // Array of { to, label }
+  export const id = 'dropdown-nav-' + Math.random().toString(36).slice(2, 11)
 </script>
 
-<template>
-  <div class="flex flex-col gap-y-2 overflow-hidden">
-    <a class="flex items-center justify-between gap-x-2" @click="isOpen = !isOpen">
-      <span class="text-sm text-dark font-medium">
-        {{ props.label }}
-      </span>
+<div class="flex flex-col gap-y-2 overflow-hidden" data-dropdown-nav="{{ id }}">
+  <a class="flex items-center justify-between gap-x-2 cursor-pointer" data-toggle>
+    <span class="text-sm text-dark font-medium">
+      {{ label }}
+    </span>
 
-      <span
-        v-if="isOpen" class="i-hugeicons-minus"
-      />
-      <span
-        v-else class="i-hugeicons-chevron-down"
-      />
-    </a>
+    <span class="i-hugeicons-chevron-down" data-icon-closed></span>
+    <span class="i-hugeicons-minus hidden" data-icon-open></span>
+  </a>
 
-    <ul ref="list">
-      <li v-for="element in props.elements" :key="element.to">
-        <router-link
-          :to="element.to"
-          class="block"
-        >
+  <ul data-list class="{{ open ? '' : 'hidden' }}">
+    @foreach(elements as element)
+      <li>
+        <a href="{{ element.to }}" class="block">
           {{ element.label }}
-        </router-link>
+        </a>
       </li>
-    </ul>
-  </div>
-</template>
+    @endforeach
+  </ul>
+</div>
+
+@js
+(function() {
+  const nav = document.querySelector('[data-dropdown-nav="{{ id }}"]')
+  if (!nav) return
+
+  const toggle = nav.querySelector('[data-toggle]')
+  const list = nav.querySelector('[data-list]')
+  const iconClosed = nav.querySelector('[data-icon-closed]')
+  const iconOpen = nav.querySelector('[data-icon-open]')
+  let isOpen = {{ open ? 'true' : 'false' }}
+
+  function updateState() {
+    list.classList.toggle('hidden', !isOpen)
+    iconClosed.classList.toggle('hidden', isOpen)
+    iconOpen.classList.toggle('hidden', !isOpen)
+  }
+
+  toggle?.addEventListener('click', function() {
+    isOpen = !isOpen
+    updateState()
+  })
+
+  updateState()
+})()
+@endjs
