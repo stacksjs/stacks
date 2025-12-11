@@ -1,5 +1,3 @@
-<template>
-  <main>
-    Hello World
-  </main>
-</template>
+<main>
+  Hello World
+</main>

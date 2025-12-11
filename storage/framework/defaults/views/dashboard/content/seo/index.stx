@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script lang="ts">
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 
@@ -400,8 +400,7 @@ function getPostTitleById(id: number): string {
 }
 </script>
 
-<template>
-  <main>
+<main>
     <div class="px-6 py-6 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-7xl">
         <!-- Header -->
@@ -774,9 +773,9 @@ function getPostTitleById(id: number): string {
         </div>
       </div>
     </div>
-  </main>
+</main>
 
-  <!-- Edit SEO Modal -->
+<!-- Edit SEO Modal -->
   <div v-if="showEditModal" class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
 
@@ -1476,5 +1475,4 @@ function getPostTitleById(id: number): string {
         </div>
       </div>
     </div>
-  </div>
-</template>
+</div>

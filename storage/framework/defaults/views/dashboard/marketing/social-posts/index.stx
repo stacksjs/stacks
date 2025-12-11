@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script lang="ts">
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 
@@ -494,8 +494,7 @@ function truncateText(text: string, max: number): string {
 }
 </script>
 
-<template>
-  <main>
+<main>
     <div class="px-6 py-6 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-7xl">
         <!-- Header section -->
@@ -1194,4 +1193,3 @@ function truncateText(text: string, max: number): string {
       </div>
     </div>
   </main>
-</template>

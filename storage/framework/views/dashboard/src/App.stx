@@ -1,7 +1,5 @@
-<script setup lang="ts">
-import './globals.css'
+<script>
+  // import './globals.css'
 </script>
 
-<template>
-  <RouterView />
-</template>
+{{ slot }}

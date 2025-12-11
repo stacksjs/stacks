@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar, Doughnut } from 'vue-chartjs'
@@ -467,8 +467,7 @@ function formatDate(dateString: string): string {
 }
 </script>
 
-<template>
-  <main class="p-6 space-y-6">
+<main class="p-6 space-y-6">
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
@@ -1138,5 +1137,4 @@ function formatDate(dateString: string): string {
         </div>
       </div>
     </div>
-  </main>
-</template>
+</main>
