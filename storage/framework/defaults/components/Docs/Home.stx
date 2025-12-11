@@ -1,9 +1,7 @@
-<template>
-  <div class="home mt-4 flex flex-col items-center">
-    <HomeTeam />
+<div class="home mt-4 flex flex-col items-center">
+  <HomeTeam />
 
-    <HomeSponsors />
+  <HomeSponsors />
 
-    <HomeContributors />
-  </div>
-</template>
+  <HomeContributors />
+</div>

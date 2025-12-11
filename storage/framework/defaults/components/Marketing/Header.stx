@@ -1,61 +1,51 @@
-<script setup lang="ts">
-import Button from '../Button.vue'
+<script>
+// Header component
 </script>
 
-<template>
-  <header class="py-10">
-    <Container>
-      <nav class="relative z-50 flex justify-between">
-        <div class="flex items-center md:gap-x-12">
-          <router-link to="#" aria-label="Home">
-            <Logo class="h-10 w-auto pb-1" />
-          </router-link>
+<header class="py-10">
+  <Container>
+    <nav class="relative z-50 flex justify-between">
+      <div class="flex items-center md:gap-x-12">
+        <a href="#" aria-label="Home">
+          <Logo class="h-10 w-auto pb-1" />
+        </a>
 
-          <div class="hidden md:flex md:gap-x-6">
-            <NavLink href="#features">
-              Features
-            </NavLink>
+        <div class="hidden md:flex md:gap-x-6">
+          <a href="#features" class="inline-block rounded-lg px-2 py-1 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900">
+            Features
+          </a>
 
-            <NavLink href="#testimonials">
-              Testimonials
-            </NavLink>
+          <a href="#testimonials" class="inline-block rounded-lg px-2 py-1 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900">
+            Testimonials
+          </a>
 
-            <NavLink href="#pricing">
-              Dashboard
-            </NavLink>
+          <a href="#pricing" class="inline-block rounded-lg px-2 py-1 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900">
+            Dashboard
+          </a>
 
-            <NavLink href="/blog">
-              Blog
-            </NavLink>
-          </div>
+          <a href="/blog" class="inline-block rounded-lg px-2 py-1 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900">
+            Blog
+          </a>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-x-5 md:gap-x-8">
+        <div class="hidden md:block">
+          <a href="https://github.com/stacksjs/stacks/releases" class="inline-block rounded-lg px-2 py-1 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900">
+            Changelog
+          </a>
         </div>
 
-        <div class="flex items-center gap-x-5 md:gap-x-8">
-          <div class="hidden md:block">
-            <NavLink href="https://github.com/stacksjs/stacks/releases">
-              Changelog
-            </NavLink>
-          </div>
+        <a href="/docs" class="inline-flex items-center justify-center rounded-full py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-blue-600 text-white hover:text-slate-100 hover:bg-blue-500 active:bg-blue-800 active:text-blue-100 focus-visible:outline-blue-600">
+          <span>
+            Learn More
+          </span>
+        </a>
 
-          <!-- <div class="hidden md:block">
-            <NavLink href="/login">
-              Sign in
-            </NavLink>
-          </div> -->
-
-          <Button href="/docs" color="blue" variant="solid">
-            <span>
-              Learn More
-              <!-- Get started <span class="hidden lg:inline">today</span> -->
-            </span>
-          </Button>
-
-          <div class="-mr-1 md:hidden">
-            Mobile Navigation Component
-            <!-- <MobileNavigation /> -->
-          </div>
+        <div class="-mr-1 md:hidden">
+          <!-- Mobile Navigation Component -->
         </div>
-      </nav>
-    </Container>
-  </header>
-</template>
+      </div>
+    </nav>
+  </Container>
+</header>

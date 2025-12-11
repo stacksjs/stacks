@@ -1,55 +1,40 @@
-<script setup lang="ts">
-defineProps<{
-  name: string
-  price: string
-  description: string
-  href: string
-  features: Array<string>
-  featured: boolean
-}>()
+<script>
+export const name = ''
+export const price = ''
+export const description = ''
+export const href = ''
+export const features = []
+export const featured = false
 </script>
 
-<template>
-  <section
-    class="flex flex-col rounded-3xl px-6 sm:px-8"
-    :class="[
-      featured ? 'order-first bg-blue-600 py-8 lg:order-none' : 'lg:py-8',
-    ]"
+<section
+  class="flex flex-col rounded-3xl px-6 sm:px-8 {{ featured ? 'order-first bg-blue-600 py-8 lg:order-none' : 'lg:py-8' }}"
+>
+  <h3 class="font-display mt-5 text-lg text-white">
+    {{ name }}
+  </h3>
+  <p class="mt-2 text-base {{ featured ? 'text-white' : 'text-slate-400' }}">
+    {{ description }}
+  </p>
+  <p class="font-display order-first text-5xl text-white font-light tracking-tight">
+    {{ price }}
+  </p>
+  <ul
+    role="list"
+    class="order-last mt-10 flex flex-col gap-y-3 text-sm {{ featured ? 'text-white' : 'text-slate-200' }}"
   >
-    <h3 class="font-display mt-5 text-lg text-white">
-      {{ name }}
-    </h3>
-    <p
-      class="mt-2 text-base"
-      :class="[
-        featured ? 'text-white' : 'text-slate-400',
-      ]"
-    >
-      {{ description }}
-    </p>
-    <p class="font-display order-first text-5xl text-white font-light tracking-tight">
-      {{ price }}
-    </p>
-    <ul
-      role="list"
-      class="order-last mt-10 flex flex-col gap-y-3 text-sm"
-      :class="[
-        featured ? 'text-white' : 'text-slate-200',
-      ]"
-    >
-      <li v-for="(feature, index) in features" :key="index" class="flex">
-        <CheckIcon :class="featured ? 'text-white' : 'text-slate-400'" />
+    @foreach(features as feature)
+      <li class="flex">
+        <span class="i-hugeicons-checkmark-circle-02 h-5 w-5 {{ featured ? 'text-white' : 'text-slate-400' }}"></span>
         <span class="ml-4">{{ feature }}</span>
       </li>
-    </ul>
-    <Button
-      :href="href"
-      :variant="featured ? 'solid' : 'outline'"
-      color="white"
-      class="mt-8"
-      :aria-label="`Get started with the ${name} plan for ${price}`"
-    >
-      Get started
-    </Button>
-  </section>
-</template>
+    @endforeach
+  </ul>
+  <a
+    href="{{ href }}"
+    class="mt-8 inline-flex items-center justify-center rounded-full py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 {{ featured ? 'bg-white text-slate-900 hover:bg-blue-50 active:bg-blue-200 active:text-slate-600 focus-visible:outline-white' : 'ring-1 ring-slate-700 text-white hover:ring-slate-500 active:ring-slate-700 active:text-slate-400 focus-visible:outline-white' }}"
+    aria-label="Get started with the {{ name }} plan for {{ price }}"
+  >
+    Get started
+  </a>
+</section>
