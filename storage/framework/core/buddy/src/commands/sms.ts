@@ -33,6 +33,8 @@ const descriptions = {
   status: 'Show SMS service status',
   send: 'Send a test SMS',
   setup: 'Initialize SMS infrastructure',
+  verify: 'Verify a sandbox phone number',
+  'add-phone': 'Add a phone to sandbox for testing',
 }
 
 export function sms(buddy: CLI): void {
@@ -40,9 +42,11 @@ export function sms(buddy: CLI): void {
     .command('sms', descriptions.sms)
     .action(async () => {
       console.log('\n📱 SMS Service Commands\n')
-      console.log('  buddy sms:status  - Show SMS service status')
-      console.log('  buddy sms:send    - Send a test SMS')
-      console.log('  buddy sms:setup   - Initialize SMS infrastructure')
+      console.log('  buddy sms:status     - Show SMS service status')
+      console.log('  buddy sms:send       - Send a test SMS')
+      console.log('  buddy sms:setup      - Initialize SMS infrastructure')
+      console.log('  buddy sms:add-phone  - Add a phone to sandbox for testing')
+      console.log('  buddy sms:verify     - Verify a sandbox phone number with OTP')
       console.log('')
       process.exit(0)
     })
@@ -54,91 +58,161 @@ export function sms(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        const { PinpointClient } = await import('ts-cloud/aws')
-        const pinpoint = new PinpointClient(process.env.AWS_REGION || 'us-east-1')
+        const { getSmsInfrastructureStatus } = await import('ts-cloud/aws')
 
-        const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
+        const status = await withTimeout(
+          getSmsInfrastructureStatus({
+            region: process.env.AWS_REGION || 'us-east-1',
+            accountName: 'stacks',
+          }),
+          30000
+        )
 
-        console.log(`Looking for Pinpoint app: ${appName}-sms`)
-
-        const apps = await withTimeout(pinpoint.listApps({ PageSize: 100 }))
-        const app = apps.Item?.find(a => a.Name === `${appName}-sms`)
-
-        if (app?.Id) {
-          console.log('\n✅ SMS Service Active\n')
-          console.log(`  App ID: ${app.Id}`)
-          console.log(`  Name: ${app.Name}`)
-          console.log(`  Created: ${app.CreationDate}`)
-
-          // Get SMS channel status
-          try {
-            const channel = await withTimeout(pinpoint.getSmsChannel(app.Id))
-            console.log('\n  SMS Channel:')
-            console.log(`    Enabled: ${channel.Enabled ? 'Yes' : 'No'}`)
-            if (channel.SenderId) console.log(`    Sender ID: ${channel.SenderId}`)
-            if (channel.ShortCode) console.log(`    Short Code: ${channel.ShortCode}`)
-          }
-          catch {
-            console.log('\n  SMS Channel: Not configured')
-          }
+        // Phone Numbers
+        console.log('Phone Numbers:')
+        if (status.phoneNumbers.length === 0) {
+          console.log('  No phone numbers provisioned')
+          console.log('  Run `buddy sms:setup` to provision a phone number')
         }
         else {
-          console.log('\n❌ SMS service not deployed.')
-          console.log('\n💡 To set up SMS service:')
-          console.log('   1. Enable SMS in config/sms.ts')
-          console.log('   2. Run `buddy deploy`')
+          for (const phone of status.phoneNumbers) {
+            console.log(`  ${phone.phoneNumber}`)
+            console.log(`    Status: ${phone.status}`)
+            console.log(`    Two-Way: ${phone.twoWayEnabled ? 'Enabled' : 'Disabled'}`)
+            console.log(`    Capabilities: ${phone.capabilities.join(', ') || 'N/A'}`)
+          }
+        }
+
+        // Sandbox & Limits
+        console.log('\nAccount:')
+        console.log(`  Sandbox Status: ${status.sandboxStatus === 'IN_SANDBOX' ? '⚠️ In Sandbox' : '✅ Production'}`)
+        console.log(`  Spending Limit: $${status.spendingLimit}/month`)
+
+        // Topics
+        console.log('\nSNS Topics:')
+        if (status.topics.length === 0) {
+          console.log('  No SMS topics configured')
+        }
+        else {
+          for (const topic of status.topics) {
+            console.log(`  ${topic.name}`)
+          }
+        }
+
+        // Recommendations
+        if (status.sandboxStatus === 'IN_SANDBOX') {
+          console.log('\n💡 To exit sandbox mode:')
+          console.log('   Run `buddy sms:setup` to file a support request')
+          console.log('   Or visit AWS Console > End User Messaging > SMS > Request production access')
+        }
+
+        if (status.phoneNumbers.some(p => p.status === 'PENDING')) {
+          console.log('\n⏳ Note: Phone number verification can take 24-72 hours for toll-free numbers')
         }
       }
       catch (error: any) {
         console.error('Error checking status:', error.message)
+
+        // Try basic check with End User Messaging API
+        try {
+          const { PinpointSmsVoiceClient } = await import('ts-cloud/aws')
+          const smsClient = new PinpointSmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
+
+          const phoneNumbers = await withTimeout(smsClient.describePhoneNumbers({}))
+          const activeNumbers = phoneNumbers.PhoneNumbers?.filter(p => p.Status === 'ACTIVE' || p.Status === 'PENDING')
+
+          if (activeNumbers && activeNumbers.length > 0) {
+            console.log('\n✅ SMS Service Active (End User Messaging)')
+            for (const phone of activeNumbers) {
+              console.log(`  Phone: ${phone.PhoneNumber} (${phone.Status})`)
+            }
+          }
+          else {
+            console.log('\n❌ SMS service not deployed.')
+            console.log('   Run `buddy sms:setup` to initialize')
+          }
+        }
+        catch {
+          console.log('\n❌ Could not connect to AWS. Check credentials.')
+        }
       }
       process.exit(0)
     })
 
   buddy
     .command('sms:send <phone> [message]', descriptions.send)
-    .action(async (phone: string, message?: string) => {
+    .option('--template <name>', 'Use a message template')
+    .action(async (phone: string, message?: string, options?: { template?: string }) => {
       const msg = message || 'Test message from Stacks'
       console.log(`\n📱 Sending SMS to ${phone}...\n`)
       loadAwsCredentials()
 
       try {
-        const { PinpointClient } = await import('ts-cloud/aws')
-        const pinpoint = new PinpointClient(process.env.AWS_REGION || 'us-east-1')
+        // Try Pinpoint SMS Voice V2 first (more reliable)
+        const { SMSClient } = await import('ts-cloud/aws')
+        const smsClient = new SMSClient({
+          region: process.env.AWS_REGION || 'us-east-1',
+        })
 
-        const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
+        // Get origination number from config or existing phone numbers
+        const smsConfig = await import('@stacksjs/config').then(m => m.config?.sms)
+        let originationNumber = smsConfig?.originationNumber
 
-        const apps = await withTimeout(pinpoint.listApps({ PageSize: 100 }))
-        const app = apps.Item?.find(a => a.Name === `${appName}-sms`)
-
-        if (!app?.Id) {
-          console.log('SMS service not deployed. Run `buddy sms:setup` first.')
-          process.exit(1)
-          return
+        // If no configured origination number, try to find one
+        if (!originationNumber) {
+          const { PinpointSmsVoiceClient } = await import('ts-cloud/aws')
+          const pinpointV2 = new PinpointSmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
+          const phoneNumbers = await withTimeout(pinpointV2.describePhoneNumbers({}))
+          const activePhone = phoneNumbers.PhoneNumbers?.find(p => p.Status === 'ACTIVE')
+          originationNumber = activePhone?.PhoneNumber
         }
 
-        const result = await withTimeout(pinpoint.sendSms({
-          ApplicationId: app.Id,
-          PhoneNumber: phone,
-          Message: msg,
-          MessageType: 'TRANSACTIONAL',
-        }))
+        // Handle template if specified
+        let finalMessage = msg
+        if (options?.template && smsConfig?.templates) {
+          const template = smsConfig.templates.find(t => t.name === options.template)
+          if (template) {
+            finalMessage = template.body
+            console.log(`Using template: ${options.template}`)
+          }
+          else {
+            console.log(`Template "${options.template}" not found. Using default message.`)
+          }
+        }
 
-        if (result.DeliveryStatus === 'SUCCESSFUL') {
+        const result = await withTimeout(smsClient.send({
+          to: phone,
+          message: finalMessage,
+          originationNumber,
+        }), 30000)
+
+        if (result.messageId) {
           console.log('✅ SMS sent successfully!')
-          console.log(`   Message ID: ${result.MessageId}`)
+          console.log(`   Message ID: ${result.messageId}`)
+          if (originationNumber) {
+            console.log(`   From: ${originationNumber}`)
+          }
         }
         else {
-          console.log(`❌ SMS delivery status: ${result.DeliveryStatus}`)
-          if (result.StatusMessage) {
-            console.log(`   ${result.StatusMessage}`)
-          }
+          console.log('❌ SMS send failed')
         }
       }
       catch (error: any) {
         console.error('Error sending SMS:', error.message)
-        if (error.message.includes('not authorized')) {
-          console.log('\n💡 Make sure your AWS account has Pinpoint SMS permissions.')
+
+        if (error.message.includes('not found') || error.message.includes('No phone')) {
+          console.log('\n💡 No origination phone number available.')
+          console.log('   Run `buddy sms:setup` to provision a phone number.')
+        }
+        else if (error.message.includes('not authorized')) {
+          console.log('\n💡 Make sure your AWS account has SMS permissions.')
+        }
+        else if (error.message.includes('sandbox')) {
+          console.log('\n💡 Your account is in SMS sandbox. Run `buddy sms:setup` to request production access.')
+        }
+        else if (error.message.includes('PENDING')) {
+          console.log('\n💡 Phone number is still pending verification (24-72 hours for toll-free).')
+          console.log('   Run `buddy sms:status` to check current status.')
         }
       }
       process.exit(0)
@@ -146,26 +220,199 @@ export function sms(buddy: CLI): void {
 
   buddy
     .command('sms:setup', descriptions.setup)
-    .action(async () => {
+    .option('--dry-run', 'Show what would be done without making changes')
+    .action(async (options: { dryRun?: boolean }) => {
       console.log('\n📱 SMS Service Setup\n')
-      console.log('Steps to set up SMS service:\n')
-      console.log('1. Enable SMS in config/sms.ts:')
-      console.log('   enabled: true')
-      console.log('')
-      console.log('2. Configure your sender ID or origination number:')
-      console.log('   senderId: "YourApp"  // For supported countries')
-      console.log('   // OR')
-      console.log('   originationNumber: "+1234567890"  // Dedicated number')
-      console.log('')
-      console.log('3. Run `buddy deploy` to create the Pinpoint application')
-      console.log('')
-      console.log('4. For production use:')
-      console.log('   - Request production access in AWS Pinpoint console')
-      console.log('   - Register your sender ID (if required by country)')
-      console.log('   - Set up spend limits')
-      console.log('')
-      console.log('5. Use `buddy sms:status` to verify setup')
-      console.log('')
+      loadAwsCredentials()
+
+      try {
+        // Import SMS config
+        const smsConfig = await import('@stacksjs/config').then(m => m.config?.sms)
+
+        if (!smsConfig?.enabled) {
+          console.log('SMS is disabled in config/sms.ts')
+          console.log('\nTo enable SMS:')
+          console.log('1. Edit config/sms.ts and set enabled: true')
+          console.log('2. Run `buddy sms:setup` again')
+          process.exit(0)
+          return
+        }
+
+        if (options.dryRun) {
+          console.log('[Dry Run] Would set up SMS infrastructure with config:')
+          console.log(`  Provider: ${smsConfig.provider}`)
+          console.log(`  Country: ${smsConfig.defaultCountryCode}`)
+          console.log(`  Message Type: ${smsConfig.messageType}`)
+          console.log(`  Monthly Limit: $${smsConfig.maxSpendPerMonth || 1}`)
+          console.log(`  Two-Way: ${smsConfig.twoWay?.enabled ? 'Enabled' : 'Disabled'}`)
+          console.log(`  Inbox: ${smsConfig.inbox?.enabled ? 'Enabled' : 'Disabled'}`)
+          process.exit(0)
+          return
+        }
+
+        console.log('Setting up SMS infrastructure...\n')
+
+        const { createSmsInfrastructure } = await import('ts-cloud/aws')
+
+        const result = await withTimeout(
+          createSmsInfrastructure({
+            enabled: smsConfig.enabled,
+            provider: smsConfig.provider || 'pinpoint',
+            originationNumber: smsConfig.originationNumber,
+            defaultCountryCode: smsConfig.defaultCountryCode || 'US',
+            messageType: smsConfig.messageType || 'TRANSACTIONAL',
+            maxSpendPerMonth: smsConfig.maxSpendPerMonth,
+            inbox: smsConfig.inbox,
+            twoWay: smsConfig.twoWay,
+            optOut: smsConfig.optOut || { enabled: true, keywords: ['STOP'] },
+          }),
+          120000 // 2 minute timeout
+        )
+
+        if (result.success) {
+          console.log('\n✅ SMS infrastructure setup complete!\n')
+          if (result.phoneNumber) {
+            console.log(`  Phone Number: ${result.phoneNumber} (${result.phoneNumberStatus})`)
+          }
+          if (result.twoWayTopicArn) {
+            console.log(`  Two-Way Topic: ${result.twoWayTopicArn}`)
+          }
+          if (result.inboxBucket) {
+            console.log(`  Inbox: s3://${result.inboxBucket}/${result.inboxPrefix}`)
+          }
+          console.log(`  Spending Limit: $${result.spendingLimit}/month`)
+          console.log(`  Sandbox Status: ${result.sandboxStatus}`)
+
+          if (result.supportCaseId) {
+            console.log(`\n  📋 Support Case: ${result.supportCaseId}`)
+            console.log('     A support ticket has been filed for sandbox exit.')
+          }
+
+          if (result.warnings.length > 0) {
+            console.log('\n⚠️  Warnings:')
+            for (const warning of result.warnings) {
+              console.log(`   - ${warning}`)
+            }
+          }
+
+          console.log('\n💡 Next steps:')
+          console.log('   - Run `buddy sms:send +1234567890 "Test"` to send a test SMS')
+          console.log('   - Run `buddy sms:status` to check current status')
+        }
+        else {
+          console.log('\n❌ SMS setup completed with errors:\n')
+          for (const error of result.errors) {
+            console.log(`   - ${error}`)
+          }
+        }
+      }
+      catch (error: any) {
+        console.error('Error setting up SMS:', error.message)
+        if (error.message.includes('timeout')) {
+          console.log('\n💡 Setup timed out. Some operations may have completed.')
+          console.log('   Run `buddy sms:status` to check current status.')
+        }
+      }
+      process.exit(0)
+    })
+
+  buddy
+    .command('sms:add-phone <phone>', descriptions['add-phone'])
+    .action(async (phone: string) => {
+      console.log(`\n📱 Adding ${phone} to SMS sandbox...\n`)
+      loadAwsCredentials()
+
+      try {
+        const { PinpointSmsVoiceClient } = await import('ts-cloud/aws')
+        const smsClient = new PinpointSmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
+
+        const result = await withTimeout(smsClient.addSandboxPhone(phone), 30000)
+
+        if (result.status === 'VERIFIED') {
+          console.log('✅ Phone is already verified!')
+          console.log(`   ID: ${result.verifiedDestinationNumberId}`)
+        }
+        else if (result.status === 'PENDING') {
+          console.log('📨 Verification code sent to phone!')
+          console.log(`   ID: ${result.verifiedDestinationNumberId}`)
+          console.log('\n💡 Next step:')
+          console.log(`   Run: buddy sms:verify ${result.verifiedDestinationNumberId} <code>`)
+          console.log('   Replace <code> with the 6-digit code you received')
+        }
+        else {
+          console.log('❓ Unexpected status:', result.status)
+          console.log('   Message:', result.message)
+        }
+      }
+      catch (error: any) {
+        console.error('Error adding phone:', error.message)
+        if (error.message.includes('already exists')) {
+          console.log('\n💡 Phone number may already be in the sandbox.')
+          console.log('   Run `buddy sms:status` to check sandbox numbers.')
+        }
+      }
+      process.exit(0)
+    })
+
+  buddy
+    .command('sms:verify <id> <code>', descriptions.verify)
+    .action(async (id: string, code: string) => {
+      console.log(`\n📱 Verifying sandbox phone...\n`)
+      loadAwsCredentials()
+
+      try {
+        const { PinpointSmsVoiceClient } = await import('ts-cloud/aws')
+        const smsClient = new PinpointSmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
+
+        const result = await withTimeout(smsClient.verifySandboxPhone(id, code), 30000)
+
+        if (result.success) {
+          console.log('✅ Phone verified successfully!')
+          console.log(`   Phone: ${result.phoneNumber}`)
+          console.log('\n💡 You can now send SMS to this phone while in sandbox mode.')
+          console.log(`   Run: buddy sms:send ${result.phoneNumber} "Test message"`)
+        }
+        else {
+          console.log('❌ Verification failed')
+          console.log(`   Error: ${result.message}`)
+          console.log('\n💡 Make sure you entered the correct 6-digit code.')
+          console.log('   Run `buddy sms:add-phone <phone>` to resend the code.')
+        }
+      }
+      catch (error: any) {
+        console.error('Error verifying phone:', error.message)
+      }
+      process.exit(0)
+    })
+
+  buddy
+    .command('sms:sandbox-list', 'List sandbox verified phone numbers')
+    .action(async () => {
+      console.log('\n📱 Sandbox Verified Numbers\n')
+      loadAwsCredentials()
+
+      try {
+        const { PinpointSmsVoiceClient } = await import('ts-cloud/aws')
+        const smsClient = new PinpointSmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
+
+        const phones = await withTimeout(smsClient.listSandboxPhones(), 30000)
+
+        if (phones.length === 0) {
+          console.log('No verified sandbox numbers yet.')
+          console.log('\nTo add a phone:')
+          console.log('  buddy sms:add-phone +1234567890')
+        }
+        else {
+          for (const phone of phones) {
+            const statusIcon = phone.status === 'VERIFIED' ? '✅' : '⏳'
+            console.log(`  ${statusIcon} ${phone.phoneNumber} (${phone.status})`)
+            console.log(`     ID: ${phone.id}`)
+          }
+        }
+      }
+      catch (error: any) {
+        console.error('Error listing sandbox phones:', error.message)
+      }
       process.exit(0)
     })
 }

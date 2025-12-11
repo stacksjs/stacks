@@ -20,6 +20,13 @@ export interface SmsTwoWayConfig {
   snsTopicArn?: string
 }
 
+export interface SmsInboxConfig {
+  enabled: boolean
+  bucket: string
+  prefix?: string
+  retentionDays?: number
+}
+
 export interface SmsOptions {
   enabled: boolean
   provider: 'pinpoint' | 'sns' | 'end-user-messaging'
@@ -29,6 +36,7 @@ export interface SmsOptions {
   messageType: 'TRANSACTIONAL' | 'PROMOTIONAL'
   maxSpendPerMonth?: number // Budget limit
   optOut: SmsOptOutConfig
+  inbox?: SmsInboxConfig
   templates?: SmsTemplateConfig[]
   twoWay?: SmsTwoWayConfig
 }

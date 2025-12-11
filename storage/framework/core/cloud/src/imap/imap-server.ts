@@ -342,6 +342,18 @@ export function categorizeEmail(
   return 'primary'
 }
 
+interface PendingLiteral {
+  tag: string
+  command: string
+  args: string
+  size: number
+  data: Buffer
+  collected: number
+  mailbox?: string
+  flags?: string[]
+  date?: string
+}
+
 interface ImapSession {
   id: string
   socket: net.Socket
@@ -352,6 +364,7 @@ interface ImapSession {
   tag?: string
   idling?: boolean
   idleTag?: string
+  pendingLiteral?: PendingLiteral
 }
 
 interface EmailMessage {
@@ -460,6 +473,35 @@ export class ImapServer {
     let buffer = ''
 
     socket.on('data', async (data) => {
+      // If we're collecting literal data for APPEND
+      if (session.pendingLiteral) {
+        const pending = session.pendingLiteral
+        const bytesToRead = Math.min(data.length, pending.size - pending.collected)
+
+        // Copy bytes to the literal data buffer
+        data.copy(pending.data, pending.collected, 0, bytesToRead)
+        pending.collected += bytesToRead
+
+        // Check if we have all the literal data
+        if (pending.collected >= pending.size) {
+          // Process the completed APPEND
+          try {
+            await this.completeAppend(session, pending)
+          }
+          catch (err) {
+            console.error(`Error completing APPEND: ${err}`)
+            this.send(session, `${pending.tag} NO APPEND failed: ${err}`)
+          }
+          session.pendingLiteral = undefined
+
+          // Any remaining data after the literal goes back to the buffer
+          if (bytesToRead < data.length) {
+            buffer += data.subarray(bytesToRead).toString()
+          }
+        }
+        return
+      }
+
       buffer += data.toString()
 
       // Process complete lines
@@ -700,7 +742,11 @@ export class ImapServer {
     const messages = this.getMessagesForFolder(session.email || '', mailbox)
 
     const exists = messages.length
-    const recent = messages.filter(m => m.flags.includes('\\Recent')).length
+    // Per IMAP RFC 3501, \Recent is a session-level flag that indicates messages
+    // that arrived since the last time this mailbox was selected by ANY session.
+    // Since we don't track this properly across sessions, we return 0.
+    // Mail.app uses \Seen flag (not \Recent) to determine unread messages.
+    const recent = 0
     const unseenIdx = messages.findIndex(m => !m.flags.includes('\\Seen'))
     const unseen = unseenIdx >= 0 ? unseenIdx + 1 : 0
     const uidnext = this.getUidCounterForFolder(session.email || '', mailbox) + 1
@@ -742,8 +788,8 @@ export class ImapServer {
       // Notify client of changes
       if (newCount !== oldCount) {
         this.send(session, `* ${newCount} EXISTS`)
-        const recent = newMessages.filter(m => m.flags.includes('\\Recent')).length
-        this.send(session, `* ${recent} RECENT`)
+        // RECENT is always 0 - we don't track session-level \Recent flags
+        this.send(session, `* 0 RECENT`)
       }
     }
     this.send(session, `${tag} OK NOOP completed`)
@@ -898,7 +944,8 @@ export class ImapServer {
           results.push(`MESSAGES ${messages.length}`)
           break
         case 'RECENT':
-          results.push(`RECENT ${messages.filter(m => m.flags.includes('\\Recent')).length}`)
+          // RECENT is always 0 - we don't track session-level \Recent flags per RFC 3501
+          results.push(`RECENT 0`)
           break
         case 'UIDNEXT':
           results.push(`UIDNEXT ${this.getUidCounterForFolder(session.email || '', mailbox) + 1}`)
@@ -2544,17 +2591,25 @@ export class ImapServer {
 
   /**
    * Save flags to S3
+   * Note: \Recent flag is NOT persisted per IMAP RFC 3501 - it's a session-level flag
    */
   private async saveFlags(email: string): Promise<void> {
     const flags = this.flagsCache.get(email)
     if (!flags) return
 
     try {
+      // Filter out \Recent from all flag arrays before saving
+      // Per IMAP RFC 3501, \Recent should never be persisted
+      const persistableFlags: Record<string, string[]> = {}
+      for (const [key, flagList] of Object.entries(flags)) {
+        persistableFlags[key] = flagList.filter(f => f !== '\\Recent')
+      }
+
       const flagsKey = `flags/${email.replace('@', '_at_')}.json`
       await this.s3.putObject({
         bucket: this.config.bucket,
         key: flagsKey,
-        body: JSON.stringify(flags),
+        body: JSON.stringify(persistableFlags),
         contentType: 'application/json',
       })
       console.log(`Saved flags for ${email}`)
@@ -2799,6 +2854,7 @@ export class ImapServer {
 
   /**
    * Handle APPEND command
+   * Format: APPEND mailbox [(flags)] [date] {literal_size}
    */
   private async handleAppend(session: ImapSession, tag: string, args: string): Promise<void> {
     if (session.state === 'not_authenticated') {
@@ -2806,9 +2862,138 @@ export class ImapServer {
       return
     }
 
-    // APPEND adds a message to a mailbox
-    // For now, acknowledge but don't persist (would need S3 write)
-    this.send(session, `${tag} OK APPEND completed`)
+    console.log(`IMAP APPEND [${session.username}]: parsing args: ${args}`)
+
+    // Parse the APPEND command arguments
+    // Format: mailbox [(flags)] [date] {literal_size}
+    // Example: "Sent" (\Seen) "03-Dec-2025 17:27:15 -0800" {420}
+
+    // Extract literal size from {N} at the end
+    const literalMatch = args.match(/\{(\d+)\}$/)
+    if (!literalMatch) {
+      this.send(session, `${tag} BAD APPEND requires literal size`)
+      return
+    }
+
+    const literalSize = Number.parseInt(literalMatch[1], 10)
+    const argsWithoutLiteral = args.substring(0, args.lastIndexOf('{')).trim()
+
+    // Parse mailbox name (may be quoted)
+    let mailbox: string
+    let rest: string
+
+    if (argsWithoutLiteral.startsWith('"')) {
+      const endQuote = argsWithoutLiteral.indexOf('"', 1)
+      if (endQuote === -1) {
+        this.send(session, `${tag} BAD Invalid mailbox name`)
+        return
+      }
+      mailbox = argsWithoutLiteral.substring(1, endQuote)
+      rest = argsWithoutLiteral.substring(endQuote + 1).trim()
+    }
+    else {
+      const spaceIdx = argsWithoutLiteral.indexOf(' ')
+      if (spaceIdx === -1) {
+        mailbox = argsWithoutLiteral
+        rest = ''
+      }
+      else {
+        mailbox = argsWithoutLiteral.substring(0, spaceIdx)
+        rest = argsWithoutLiteral.substring(spaceIdx + 1).trim()
+      }
+    }
+
+    // Parse optional flags (in parentheses)
+    let flags: string[] = []
+    const flagsMatch = rest.match(/^\(([^)]*)\)/)
+    if (flagsMatch) {
+      flags = flagsMatch[1].split(/\s+/).filter(f => f.length > 0)
+      rest = rest.substring(flagsMatch[0].length).trim()
+    }
+
+    // Parse optional date (in quotes)
+    let date: string | undefined
+    if (rest.startsWith('"')) {
+      const endQuote = rest.indexOf('"', 1)
+      if (endQuote !== -1) {
+        date = rest.substring(1, endQuote)
+      }
+    }
+
+    console.log(`IMAP APPEND [${session.username}]: mailbox=${mailbox}, flags=[${flags.join(', ')}], date=${date}, size=${literalSize}`)
+
+    // Set up pending literal state
+    session.pendingLiteral = {
+      tag,
+      command: 'APPEND',
+      args,
+      size: literalSize,
+      data: Buffer.alloc(literalSize),
+      collected: 0,
+      mailbox,
+      flags,
+      date,
+    }
+
+    // Send continuation response to request literal data
+    this.send(session, '+ Ready for literal data')
+  }
+
+  /**
+   * Complete the APPEND command after literal data is collected
+   */
+  private async completeAppend(session: ImapSession, pending: PendingLiteral): Promise<void> {
+    const { tag, mailbox, flags, data } = pending
+
+    if (!mailbox) {
+      this.send(session, `${tag} NO APPEND failed: no mailbox specified`)
+      return
+    }
+
+    // Validate mailbox exists
+    const prefix = this.getFolderPrefix(mailbox)
+    if (this.isVirtualFolder(mailbox)) {
+      this.send(session, `${tag} NO [CANNOT] Cannot APPEND to virtual folder`)
+      return
+    }
+
+    console.log(`IMAP APPEND [${session.username}]: Saving ${data.length} bytes to ${mailbox} (prefix: ${prefix})`)
+
+    // Generate a unique message ID for S3 key
+    const messageId = `${Date.now()}-${crypto.randomUUID().substring(0, 8)}`
+    const s3Key = `${prefix}${messageId}`
+
+    // Save the message to S3
+    await this.s3.putObject({
+      bucket: this.config.bucket,
+      key: s3Key,
+      body: data.toString('utf-8'),
+      contentType: 'message/rfc822',
+    })
+
+    console.log(`IMAP APPEND [${session.username}]: Saved message to s3://${this.config.bucket}/${s3Key}`)
+
+    // Get or assign UID for this message
+    const userKey = session.email?.replace('@', '_at_') || session.username || 'unknown'
+    const uidMapping = await this.loadUidMapping(userKey)
+    const uid = uidMapping.nextUid++
+    uidMapping.mapping[s3Key] = uid
+    await this.saveUidMapping(userKey, uidMapping)
+
+    // Save flags if any (including \Seen which Mail.app often sets)
+    if (flags && flags.length > 0) {
+      const allFlags = await this.loadFlags(userKey)
+      allFlags[s3Key] = flags
+      await this.saveFlags(userKey, allFlags)
+    }
+
+    // Get UIDVALIDITY (use a fixed value for consistency)
+    const uidValidity = 1
+
+    console.log(`IMAP APPEND [${session.username}]: Assigned UID ${uid} to message`)
+
+    // Return success with APPENDUID response code
+    this.send(session, `${tag} OK [APPENDUID ${uidValidity} ${uid}] APPEND completed`)
   }
 }
 
