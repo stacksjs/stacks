@@ -7,9 +7,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useCustomers } from '../../../../functions/commerce/customers'
-import CustomersTable from '../../../../components/Dashboard/Commerce/CustomersTable.vue'
-import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
-import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
+import CustomersTable from '../../../../components/Dashboard/Commerce/CustomersTable.stx'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
+import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 
 useHead({
   title: 'Dashboard - Commerce Customers',

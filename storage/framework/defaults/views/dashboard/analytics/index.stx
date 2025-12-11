@@ -4,8 +4,8 @@
  * Overview of analytics with macOS-inspired design.
  */
 import { ref } from 'vue'
-import Card from '../../../components/Dashboard/UI/Card.vue'
-import StatsCard from '../../../components/Dashboard/UI/StatsCard.vue'
+import Card from '../../../components/Dashboard/UI/Card.stx'
+import StatsCard from '../../../components/Dashboard/UI/StatsCard.stx'
 
 useHead({
   title: 'Dashboard - Analytics',

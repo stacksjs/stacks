@@ -7,9 +7,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useOrders } from '../../../../functions/commerce/orders'
-import OrdersTable from '../../../../components/Dashboard/Commerce/OrdersTable.vue'
-import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
-import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
+import OrdersTable from '../../../../components/Dashboard/Commerce/OrdersTable.stx'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
+import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 
 useHead({
   title: 'Dashboard - Commerce Orders',

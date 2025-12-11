@@ -1,7 +1,7 @@
 <script>
 import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue'
 import { useHead } from '@vueuse/head'
-import CodeEditor from '../../../components/Dashboard/CodeEditor.vue'
+import CodeEditor from '../../../components/Dashboard/CodeEditor.stx'
 
 const envValues = ref('')
 const searchQuery = ref('')

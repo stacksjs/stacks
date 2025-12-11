@@ -1,8 +1,8 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
-import NotificationStatusBadge from '../../../components/Dashboard/NotificationStatusBadge.vue'
-import NotificationErrorModal from '../../../components/Dashboard/NotificationErrorModal.vue'
+import NotificationStatusBadge from '../../../components/Dashboard/NotificationStatusBadge.stx'
+import NotificationErrorModal from '../../../components/Dashboard/NotificationErrorModal.stx'
 
 useHead({
   title: 'Dashboard - Email Notifications',

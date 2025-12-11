@@ -9,10 +9,10 @@ import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
 import type { Coupons, NewCoupon } from '../../../../types/defaults'
 import { useCoupons } from '../../../../functions/commerce/coupons'
-import CouponsTable from '../../../../components/Dashboard/Commerce/CouponsTable.vue'
-import CouponsForm from '../../../../components/Dashboard/Commerce/Forms/CouponsForm.vue'
-import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
-import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
+import CouponsTable from '../../../../components/Dashboard/Commerce/CouponsTable.stx'
+import CouponsForm from '../../../../components/Dashboard/Commerce/Forms/CouponsForm.stx'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
+import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 import {
   Chart as ChartJS,
   CategoryScale,

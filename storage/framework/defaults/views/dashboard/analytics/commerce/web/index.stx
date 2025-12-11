@@ -2,10 +2,10 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
-import PageHeader from '../../../../components/Dashboard/PageHeader.vue'
-import MetricCard from '../../../../components/Dashboard/Cards/MetricCard.vue'
-import ChartCard from '../../../../components/Dashboard/Cards/ChartCard.vue'
-import TableCard from '../../../../components/Dashboard/Cards/TableCard.vue'
+import PageHeader from '../../../../components/Dashboard/PageHeader.stx'
+import MetricCard from '../../../../components/Dashboard/Cards/MetricCard.stx'
+import ChartCard from '../../../../components/Dashboard/Cards/ChartCard.stx'
+import TableCard from '../../../../components/Dashboard/Cards/TableCard.stx'
 
 // Register Chart.js components
 Chart.register(...registerables)

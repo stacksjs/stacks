@@ -2,8 +2,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useCategories } from '../../../../functions/commerce/products/categories'
-import CategoriesTable from '../../../../components/Dashboard/Commerce/CategoriesTable.vue'
-import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
+import CategoriesTable from '../../../../components/Dashboard/Commerce/CategoriesTable.stx'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
 import type { Categories } from '../../../../types/defaults'
 
 useHead({

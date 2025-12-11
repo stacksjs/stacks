@@ -10,9 +10,9 @@ import { useLocalStorage } from '@vueuse/core'
 import { useProducts } from '../../../../functions/commerce/products'
 import { useCategories } from '../../../../functions/commerce/products/categories'
 import { useManufacturers } from '../../../../functions/commerce/products/manufacturers'
-import ProductsTable from '../../../../components/Dashboard/Commerce/ProductsTable.vue'
-import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
-import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
+import ProductsTable from '../../../../components/Dashboard/Commerce/ProductsTable.stx'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
+import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 import type { Products } from '../../../../types/defaults'
 
 useHead({

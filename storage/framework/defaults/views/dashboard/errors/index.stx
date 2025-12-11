@@ -1,7 +1,7 @@
 <script>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
-import Tooltip from '../../../components/Dashboard/Tooltip.vue'
+import Tooltip from '../../../components/Dashboard/Tooltip.stx'
 
 useHead({
   title: 'Dashboard - Errors',

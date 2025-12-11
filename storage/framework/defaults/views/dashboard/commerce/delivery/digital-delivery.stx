@@ -6,10 +6,10 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
-import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.vue'
-import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
-import DigitalDeliveryTable from '../../../../components/Dashboard/Commerce/Delivery/DigitalDeliveryTable.vue'
-import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
+import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
+import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
+import DigitalDeliveryTable from '../../../../components/Dashboard/Commerce/Delivery/DigitalDeliveryTable.stx'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
 import { useDigitalDeliveries } from '../../../../functions/commerce/shippings/digital-deliveries'
 
 useHead({

@@ -6,10 +6,10 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
-import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.vue'
-import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
-import ShippingMethodsTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingMethodsTable.vue'
-import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
+import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
+import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
+import ShippingMethodsTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingMethodsTable.stx'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
 import { useShippingMethods } from '../../../../functions/commerce/shippings/shipping-methods'
 import type { NewShippingMethod } from '../../../../types/defaults'
 

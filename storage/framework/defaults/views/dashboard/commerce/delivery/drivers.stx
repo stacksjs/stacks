@@ -6,10 +6,10 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
-import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.vue'
-import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
-import DriversTable from '../../../../components/Dashboard/Commerce/Delivery/DriversTable.vue'
-import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
+import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
+import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
+import DriversTable from '../../../../components/Dashboard/Commerce/Delivery/DriversTable.stx'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
 import { useDrivers } from '../../../../functions/commerce/shippings/drivers'
 import type { Drivers } from '../../../../types/defaults'
 

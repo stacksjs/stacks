@@ -7,7 +7,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useErrors } from '../../../../functions/monitoring/errors'
-import DashboardLayout from '../../../../components/Dashboard/DashboardLayout.vue'
+import DashboardLayout from '../../../../components/Dashboard/DashboardLayout.stx'
 import { StatsCard, Card, Button, Input, Select, Badge, Table, Pagination, Modal } from '../../../../components/Dashboard/UI'
 
 useHead({

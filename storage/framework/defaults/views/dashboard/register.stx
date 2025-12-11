@@ -1,0 +1,53 @@
+<script>
+import Register from '../../components/Dashboard/Auth/Register.stx'
+import { useHead } from '@vueuse/head'
+import { useAuth } from '../../functions/auth'
+
+const router = useRouter()
+
+useHead({
+  title: 'Register - Stacks Dashboard',
+})
+
+const { register } = useAuth()
+
+// Form state
+export const isLoading = false
+export const error = ''
+
+async function handleRegister(credentials) {
+  isLoading = true
+  error = ''
+
+  try {
+    const result = await register(credentials)
+
+    if (result && 'errors' in result) {
+      error = result.message || 'Registration failed'
+      return
+    }
+
+    // Redirect to dashboard on success
+    router.push('/')
+  }
+  catch (err) {
+    error = err.message || 'An error occurred during registration'
+    console.error(err)
+  }
+  finally {
+    isLoading = false
+  }
+}
+</script>
+
+<Register
+  @submit="handleRegister"
+  :isLoading="isLoading"
+  :error="error"
+/>
+
+<route lang="yaml">
+meta:
+  layout: guest
+  requiresAuth: false
+</route>

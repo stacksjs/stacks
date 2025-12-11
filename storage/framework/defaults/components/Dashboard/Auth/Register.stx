@@ -1,0 +1,240 @@
+<script>
+/**
+ * Register Component
+ * A clean, modern registration form for the Stacks Dashboard.
+ */
+
+// Props
+export const title = 'Create an account'
+export const subtitle = 'Get started with your free account'
+export const showLogin = true
+
+// Form state
+export const name = ''
+export const email = ''
+export const password = ''
+export const passwordConfirmation = ''
+export const agreeToTerms = false
+export const isLoading = false
+export const error = ''
+export const errors = {}
+
+// Validation
+function validateForm() {
+  const newErrors = {}
+
+  if (!name.trim()) {
+    newErrors.name = 'Name is required'
+  }
+
+  if (!email.trim()) {
+    newErrors.email = 'Email is required'
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    newErrors.email = 'Please enter a valid email'
+  }
+
+  if (!password) {
+    newErrors.password = 'Password is required'
+  } else if (password.length < 8) {
+    newErrors.password = 'Password must be at least 8 characters'
+  }
+
+  if (password !== passwordConfirmation) {
+    newErrors.passwordConfirmation = 'Passwords do not match'
+  }
+
+  if (!agreeToTerms) {
+    newErrors.terms = 'You must agree to the terms'
+  }
+
+  errors = newErrors
+  return Object.keys(newErrors).length === 0
+}
+
+// Emit submit event with credentials
+function handleSubmit(event) {
+  event.preventDefault()
+
+  if (!validateForm()) {
+    return
+  }
+
+  // Emit the submit event - parent component handles the actual registration
+  $emit('submit', { name, email, password, password_confirmation: passwordConfirmation })
+}
+</script>
+
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+  <div class="w-full max-w-sm">
+    <!-- Logo/Brand -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/25 mb-4">
+        <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      </div>
+      <h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">
+        {{ title }}
+      </h1>
+      <p class="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+        {{ subtitle }}
+      </p>
+    </div>
+
+    <!-- Register Form -->
+    <div class="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-neutral-200/60 dark:border-neutral-800 p-6">
+      <!-- Error Message -->
+      @if(error)
+        <div class="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+          <div class="flex items-center gap-2">
+            <div class="i-hugeicons-alert-circle w-4 h-4 text-red-600 dark:text-red-400"></div>
+            <p class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+          </div>
+        </div>
+      @endif
+
+      <form @submit="handleSubmit">
+        <!-- Name Field -->
+        <div class="mb-4">
+          <Input
+            type="text"
+            label="Full name"
+            placeholder="John Doe"
+            :value="name"
+            @input="name = $event.target.value"
+            :error="errors.name"
+            required
+            :disabled="isLoading"
+          />
+        </div>
+
+        <!-- Email Field -->
+        <div class="mb-4">
+          <Input
+            type="email"
+            label="Email address"
+            placeholder="you@example.com"
+            :value="email"
+            @input="email = $event.target.value"
+            :error="errors.email"
+            required
+            :disabled="isLoading"
+          />
+        </div>
+
+        <!-- Password Field -->
+        <div class="mb-4">
+          <Input
+            type="password"
+            label="Password"
+            placeholder="At least 8 characters"
+            :value="password"
+            @input="password = $event.target.value"
+            :error="errors.password"
+            required
+            :disabled="isLoading"
+          />
+        </div>
+
+        <!-- Confirm Password Field -->
+        <div class="mb-4">
+          <Input
+            type="password"
+            label="Confirm password"
+            placeholder="Confirm your password"
+            :value="passwordConfirmation"
+            @input="passwordConfirmation = $event.target.value"
+            :error="errors.passwordConfirmation"
+            required
+            :disabled="isLoading"
+          />
+        </div>
+
+        <!-- Terms Checkbox -->
+        <div class="mb-6">
+          <label class="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              class="mt-0.5 w-4 h-4 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-blue-500/40 focus:ring-offset-0 bg-white dark:bg-neutral-800"
+              :checked="agreeToTerms"
+              @change="agreeToTerms = $event.target.checked"
+              :disabled="isLoading"
+            />
+            <span class="text-sm text-neutral-600 dark:text-neutral-400">
+              I agree to the
+              <a href="/terms" class="text-blue-600 hover:text-blue-500 dark:text-blue-400">Terms of Service</a>
+              and
+              <a href="/privacy" class="text-blue-600 hover:text-blue-500 dark:text-blue-400">Privacy Policy</a>
+            </span>
+          </label>
+          @if(errors.terms)
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.terms }}</p>
+          @endif
+        </div>
+
+        <!-- Submit Button -->
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          fullWidth
+          :loading="isLoading"
+          :disabled="isLoading"
+        >
+          @if(isLoading)
+            Creating account...
+          @else
+            Create account
+          @endif
+        </Button>
+      </form>
+
+      <!-- Divider -->
+      <div class="relative my-6">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-neutral-200 dark:border-neutral-700"></div>
+        </div>
+        <div class="relative flex justify-center text-xs">
+          <span class="px-2 bg-white dark:bg-neutral-900 text-neutral-400">or continue with</span>
+        </div>
+      </div>
+
+      <!-- Social Login -->
+      <div class="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+          :disabled="isLoading"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Google
+        </button>
+        <button
+          type="button"
+          class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+          :disabled="isLoading"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+          </svg>
+          GitHub
+        </button>
+      </div>
+    </div>
+
+    <!-- Login Link -->
+    @if(showLogin)
+      <p class="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
+        Already have an account?
+        <a href="/login" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+          Sign in
+        </a>
+      </p>
+    @endif
+  </div>
+</div>

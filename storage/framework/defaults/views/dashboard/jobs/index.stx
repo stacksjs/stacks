@@ -12,11 +12,11 @@ import {
   Legend,
   Filler,
 } from 'chart.js'
-import Card from '../../../components/Dashboard/UI/Card.vue'
-import Badge from '../../../components/Dashboard/UI/Badge.vue'
-import Button from '../../../components/Dashboard/UI/Button.vue'
-import StatsCard from '../../../components/Dashboard/UI/StatsCard.vue'
-import Select from '../../../components/Dashboard/UI/Select.vue'
+import Card from '../../../components/Dashboard/UI/Card.stx'
+import Badge from '../../../components/Dashboard/UI/Badge.stx'
+import Button from '../../../components/Dashboard/UI/Button.stx'
+import StatsCard from '../../../components/Dashboard/UI/StatsCard.stx'
+import Select from '../../../components/Dashboard/UI/Select.stx'
 
 ChartJS.register(
   CategoryScale,
