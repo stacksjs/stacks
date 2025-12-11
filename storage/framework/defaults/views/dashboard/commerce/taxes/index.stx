@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 
@@ -12,7 +12,7 @@ useHead({
 })
 
 // Sample taxes data
-const taxes = ref([
+export const taxes = ref([
   {
     id: 1,
     name: 'US Digital Services',
@@ -126,27 +126,27 @@ const taxes = ref([
 ])
 
 // Filter and sort options
-const searchQuery = ref('')
-const sortBy = ref('name')
-const sortOrder = ref('asc')
-const activeFilter = ref('all')
-const countryFilter = ref('all')
-const typeFilter = ref('all')
+export const searchQuery = ref('')
+export const sortBy = ref('name')
+export const sortOrder = ref('asc')
+export const activeFilter = ref('all')
+export const countryFilter = ref('all')
+export const typeFilter = ref('all')
 
 // Get unique countries for filter
-const countries = computed(() => {
+export const countries = computed(() => {
   const uniqueCountries = new Set(taxes.value.map(t => t.country))
   return Array.from(uniqueCountries).sort()
 })
 
 // Get unique tax types for filter
-const taxTypes = computed(() => {
+export const taxTypes = computed(() => {
   const uniqueTypes = new Set(taxes.value.map(t => t.type))
   return Array.from(uniqueTypes).sort()
 })
 
 // Computed filtered and sorted taxes
-const filteredTaxes = computed(() => {
+export const filteredTaxes = computed(() => {
   return taxes.value
     .filter(tax => {
       // Apply search filter
@@ -187,7 +187,7 @@ const filteredTaxes = computed(() => {
 })
 
 // Toggle sort order
-function toggleSort(column: string): void {
+export function toggleSort(column) {
   if (sortBy.value === column) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -197,16 +197,8 @@ function toggleSort(column: string): void {
 }
 
 // Modal state
-const showAddModal = ref(false)
-const newTax = ref<{
-  name: string;
-  rate: number;
-  type: string;
-  country: string;
-  region: string;
-  active: boolean;
-  isDefault: boolean;
-}>({
+export const showAddModal = ref(false)
+export const newTax = ref({
   name: '',
   rate: 0,
   type: 'Percentage',
@@ -216,7 +208,7 @@ const newTax = ref<{
   isDefault: false
 })
 
-function openAddModal(): void {
+export function openAddModal() {
   newTax.value = {
     name: '',
     rate: 0,
@@ -229,14 +221,14 @@ function openAddModal(): void {
   showAddModal.value = true
 }
 
-function closeAddModal(): void {
+export function closeAddModal() {
   showAddModal.value = false
 }
 
-function addTax(): void {
+export function addTax() {
   // In a real app, this would send data to the server
   const id = Math.max(...taxes.value.map(t => t.id)) + 1
-  const currentDate = new Date().toISOString().split('T')[0] as string;
+  const currentDate = new Date().toISOString().split('T')[0]
 
   // If this is set as default, update other taxes
   if (newTax.value.isDefault) {
@@ -260,138 +252,154 @@ function addTax(): void {
 }
 </script>
 
-<template>
-  <main>
-    <div class="px-6 py-6 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl">
-        <div class="sm:flex sm:items-center sm:justify-between">
-          <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Tax Rates</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              Manage tax rates for your products across different countries and regions. Digital services often have specific tax requirements based on customer location.
-            </p>
+<main>
+  <div class="px-6 py-6 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="sm:flex sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Tax Rates</h1>
+          <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            Manage tax rates for your products across different countries and regions. Digital services often have specific tax requirements based on customer location.
+          </p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+          <button
+            type="button"
+            @click="openAddModal"
+            class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          >
+            <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
+            Add tax
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="relative max-w-sm">
+          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
           </div>
-          <div class="mt-4 sm:mt-0">
-            <button
-              type="button"
-              @click="openAddModal"
-              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
-              Add tax
-            </button>
-          </div>
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+            placeholder="Search taxes..."
+          />
         </div>
 
-        <!-- Filters -->
-        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div class="relative max-w-sm">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
-            </div>
-            <input
-              v-model="searchQuery"
-              type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
-              placeholder="Search taxes..."
-            />
-          </div>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <select
+            v-model="activeFilter"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+          >
+            <option value="all">All Taxes</option>
+            <option value="active">Active Only</option>
+            <option value="inactive">Inactive Only</option>
+          </select>
 
-          <div class="flex flex-col sm:flex-row gap-4">
-            <select
-              v-model="activeFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option value="all">All Taxes</option>
-              <option value="active">Active Only</option>
-              <option value="inactive">Inactive Only</option>
-            </select>
+          <select
+            v-model="countryFilter"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+          >
+            <option value="all">All Countries</option>
+            @foreach(countries as country)
+              <option :key="country" :value="country">{{ country }}</option>
+            @endforeach
+          </select>
 
-            <select
-              v-model="countryFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option value="all">All Countries</option>
-              <option v-for="country in countries" :key="country" :value="country">{{ country }}</option>
-            </select>
-
-            <select
-              v-model="typeFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option value="all">All Types</option>
-              <option v-for="type in taxTypes" :key="type" :value="type">{{ type }}</option>
-            </select>
-          </div>
+          <select
+            v-model="typeFilter"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+          >
+            <option value="all">All Types</option>
+            @foreach(taxTypes as type)
+              <option :key="type" :value="type">{{ type }}</option>
+            @endforeach
+          </select>
         </div>
+      </div>
 
-        <!-- Taxes table -->
-        <div class="mt-6 flow-root">
-          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                  <thead class="bg-gray-50 dark:bg-blue-gray-700">
-                    <tr>
-                      <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">
-                        <button @click="toggleSort('name')" class="group inline-flex items-center">
-                          Name
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'name'" :class="[
+      <!-- Taxes table -->
+      <div class="mt-6 flow-root">
+        <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+            <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+              <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-blue-gray-700">
+                  <tr>
+                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">
+                      <button @click="toggleSort('name')" class="group inline-flex items-center">
+                        Name
+                        <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                          @if(sortBy === 'name')
+                            <div :class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('rate')" class="group inline-flex items-center">
-                          Rate (%)
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'rate'" :class="[
+                          @else
+                            <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                          @endif
+                        </span>
+                      </button>
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                      <button @click="toggleSort('rate')" class="group inline-flex items-center">
+                        Rate (%)
+                        <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                          @if(sortBy === 'rate')
+                            <div :class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Type</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('country')" class="group inline-flex items-center">
-                          Country
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'country'" :class="[
+                          @else
+                            <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                          @endif
+                        </span>
+                      </button>
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Type</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                      <button @click="toggleSort('country')" class="group inline-flex items-center">
+                        Country
+                        <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                          @if(sortBy === 'country')
+                            <div :class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Region</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Status</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Default</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200 text-right">
-                        <button @click="toggleSort('createdAt')" class="group inline-flex items-center text-right">
-                          Created
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'createdAt'" :class="[
+                          @else
+                            <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                          @endif
+                        </span>
+                      </button>
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Region</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Status</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Default</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200 text-right">
+                      <button @click="toggleSort('createdAt')" class="group inline-flex items-center text-right">
+                        Created
+                        <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                          @if(sortBy === 'createdAt')
+                            <div :class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                        <span class="sr-only">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
-                    <tr v-for="tax in filteredTaxes" :key="tax.id">
+                          @else
+                            <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                          @endif
+                        </span>
+                      </button>
+                    </th>
+                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                      <span class="sr-only">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
+                  @foreach(filteredTaxes as tax)
+                    <tr :key="tax.id">
                       <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
                         {{ tax.name }}
                       </td>
@@ -415,9 +423,11 @@ function addTax(): void {
                         </span>
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm">
-                        <span v-if="tax.isDefault" class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400">
-                          Default
-                        </span>
+                        @if(tax.isDefault)
+                          <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400">
+                            Default
+                          </span>
+                        @endif
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 text-right">
                         {{ tax.createdAt }}
@@ -433,22 +443,26 @@ function addTax(): void {
                         </div>
                       </td>
                     </tr>
-                    <tr v-if="filteredTaxes.length === 0">
+                  @endforeach
+                  @if(filteredTaxes.length === 0)
+                    <tr>
                       <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                         No taxes found matching your criteria
                       </td>
                     </tr>
-                  </tbody>
-                </table>
-              </div>
+                  @endif
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Add Tax Modal -->
-    <div v-if="showAddModal" class="fixed inset-0 z-10 overflow-y-auto">
+  <!-- Add Tax Modal -->
+  @if(showAddModal)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
           <div>
@@ -575,5 +589,5 @@ function addTax(): void {
         </div>
       </div>
     </div>
-  </main>
-</template>
+  @endif
+</main>

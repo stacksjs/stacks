@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script>
 import { ref } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Doughnut } from 'vue-chartjs'
@@ -95,8 +95,7 @@ interface User {
   requests: number
 }
 
-// Mock data for demonstration
-const systemMetrics = ref<SystemMetrics>({
+const systemMetrics = ref({
   cpu: 6,
   memory: {
     used: 786,
@@ -108,7 +107,7 @@ const systemMetrics = ref<SystemMetrics>({
   },
 })
 
-const queues = ref<Record<string, QueueStats>>({
+const queues = ref({
   default: {
     queued: 70,
     processing: 15,
@@ -125,7 +124,7 @@ const queues = ref<Record<string, QueueStats>>({
   },
 })
 
-const exceptions = ref<Exception[]>([
+const exceptions = ref([
   {
     type: 'App\\Exceptions\\FlightOverbookedException',
     location: 'app/Jobs/ProcessBooking.ts:33',
@@ -140,7 +139,7 @@ const exceptions = ref<Exception[]>([
   },
 ])
 
-const cache = ref<Cache>({
+const cache = ref({
   hits: 1675,
   misses: 284,
   hitRate: 85.5,
@@ -172,7 +171,7 @@ const cache = ref<Cache>({
   ],
 })
 
-const slowQueries = ref<SlowQuery[]>([
+const slowQueries = ref([
   {
     query: "insert into `tickets` (`flight_id`, `user_id`, `price`, `created_at`, `updated_at`) values (?, ?, ?, ?, ?)",
     location: "app/Actions/FlightAction.ts:26",
@@ -187,7 +186,7 @@ const slowQueries = ref<SlowQuery[]>([
   },
 ])
 
-const slowRoutes = ref<SlowRoute[]>([
+const slowRoutes = ref([
   {
     method: 'DELETE',
     route: '/flights/{flight}',
@@ -204,7 +203,7 @@ const slowRoutes = ref<SlowRoute[]>([
   },
 ])
 
-const users = ref<User[]>([
+const users = ref([
   { name: 'Chris Breuer', email: 'chris@stacksjs.com', requests: 68 },
   { name: 'Avery', email: 'avery@stacksjs.com', requests: 65 },
   { name: 'Michael', email: 'michael@stacksjs.com', requests: 51 },
@@ -212,7 +211,6 @@ const users = ref<User[]>([
   { name: 'Zoltan', email: 'zoltan@stacksjs.com', requests: 47 },
 ])
 
-// Chart data
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
@@ -264,7 +262,7 @@ const pieChartOptions = {
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      position: 'bottom' as const,
+      position: 'bottom',
       labels: {
         color: 'rgb(156, 163, 175)',
         font: {
@@ -341,8 +339,7 @@ const queueData = {
   ],
 }
 
-// Update to include all queue statuses
-const getQueueData = (name: string) => ({
+const getQueueData = (name) => ({
   labels: ['12am', '1am', '2am', '3am', '4am', '5am', '6am'],
   datasets: [
     {
@@ -383,7 +380,7 @@ const queueChartOptions = {
   }
 }
 
-const queueStatusColors: Record<string, string> = {
+const queueStatusColors = {
   queued: 'bg-blue-500',
   processing: 'bg-yellow-500',
   processed: 'bg-green-500',
@@ -391,11 +388,10 @@ const queueStatusColors: Record<string, string> = {
   failed: 'bg-red-500',
 }
 
-const getQueueStatusColor = (status: string): string => {
+const getQueueStatusColor = (status) => {
   return queueStatusColors[status] || 'bg-gray-500'
 }
 
-// Stats cards data
 const statsCards = [
   {
     title: 'Total Requests',
@@ -419,19 +415,40 @@ const statsCards = [
     icon: 'i-hugeicons-check-circle',
   },
 ]
+
+export {
+  systemMetrics,
+  queues,
+  exceptions,
+  cache,
+  slowQueries,
+  slowRoutes,
+  users,
+  chartOptions,
+  pieChartOptions,
+  cpuData,
+  memoryData,
+  storageData,
+  queueData,
+  getQueueData,
+  queueChartOptions,
+  queueStatusColors,
+  getQueueStatusColor,
+  statsCards,
+}
 </script>
 
-<template>
-  <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
-    <!-- Stats Overview -->
-    <div class="mb-8 px-4 lg:px-8 sm:px-6">
-      <div>
-        <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-          System Overview
-        </h3>
+<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+  <!-- Stats Overview -->
+  <div class="mb-8 px-4 lg:px-8 sm:px-6">
+    <div>
+      <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+        System Overview
+      </h3>
 
-        <dl class="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3 sm:grid-cols-2">
-          <div v-for="stat in statsCards" :key="stat.title"
+      <dl class="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3 sm:grid-cols-2">
+        @foreach(stat in statsCards)
+          <div
                class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
@@ -449,118 +466,123 @@ const statsCards = [
                 'ml-2 flex items-baseline text-sm font-semibold',
                 stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
               ]">
-                <span v-if="stat.changeType === 'increase'" class="i-hugeicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
-                <span v-else class="i-hugeicons-arrow-down-02 h-5 w-5 flex-shrink-0 self-center text-red-500" />
+                @if(stat.changeType === 'increase')
+                  <span class="i-hugeicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
+                @else
+                  <span class="i-hugeicons-arrow-down-02 h-5 w-5 flex-shrink-0 self-center text-red-500" />
+                @endif
                 {{ stat.change }}
               </p>
             </dd>
           </div>
-        </dl>
+        @endforeach
+      </dl>
+    </div>
+  </div>
+
+  <!-- System Metrics -->
+  <div class="px-4 lg:px-8 sm:px-6">
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+          System Metrics
+        </h1>
+        <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+          Real-time monitoring of your system's performance and resource usage.
+        </p>
       </div>
     </div>
 
-    <!-- System Metrics -->
-    <div class="px-4 lg:px-8 sm:px-6">
-      <div class="sm:flex sm:items-center">
-        <div class="sm:flex-auto">
-          <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-            System Metrics
-          </h1>
-          <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-            Real-time monitoring of your system's performance and resource usage.
-          </p>
+    <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <!-- CPU Usage -->
+      <div class="overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">CPU Usage</h3>
+            <span class="text-sm font-mono text-gray-500 dark:text-gray-400">{{ systemMetrics.cpu }}%</span>
+          </div>
+          <div class="mt-2 h-2 rounded-full bg-gray-200 dark:bg-blue-gray-600">
+            <div
+              class="h-2 rounded-full bg-blue-500"
+              :style="{ width: `${systemMetrics.cpu}%` }"
+            ></div>
+          </div>
+          <div class="mt-4 h-32">
+            <Line :data="cpuData" :options="chartOptions" />
+          </div>
         </div>
       </div>
 
-      <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <!-- CPU Usage -->
-        <div class="overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
-          <div class="p-6">
-            <div class="flex items-center justify-between">
-              <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">CPU Usage</h3>
-              <span class="text-sm font-mono text-gray-500 dark:text-gray-400">{{ systemMetrics.cpu }}%</span>
-            </div>
-            <div class="mt-2 h-2 rounded-full bg-gray-200 dark:bg-blue-gray-600">
-              <div
-                class="h-2 rounded-full bg-blue-500"
-                :style="{ width: `${systemMetrics.cpu}%` }"
-              ></div>
-            </div>
-            <div class="mt-4 h-32">
-              <Line :data="cpuData" :options="chartOptions" />
-            </div>
+      <!-- Memory Usage -->
+      <div class="overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Memory</h3>
+            <span class="text-sm font-mono text-gray-500 dark:text-gray-400">
+              {{ systemMetrics.memory.used }}MB / {{ systemMetrics.memory.total }}MB
+            </span>
+          </div>
+          <div class="mt-2 h-2 rounded-full bg-gray-200 dark:bg-blue-gray-600">
+            <div
+              class="h-2 rounded-full bg-blue-500"
+              :style="{ width: `${(systemMetrics.memory.used / systemMetrics.memory.total) * 100}%` }"
+            ></div>
+          </div>
+          <div class="mt-4 h-32">
+            <Line :data="memoryData" :options="chartOptions" />
           </div>
         </div>
+      </div>
 
-        <!-- Memory Usage -->
-        <div class="overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
-          <div class="p-6">
-            <div class="flex items-center justify-between">
-              <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Memory</h3>
-              <span class="text-sm font-mono text-gray-500 dark:text-gray-400">
-                {{ systemMetrics.memory.used }}MB / {{ systemMetrics.memory.total }}MB
-              </span>
-            </div>
-            <div class="mt-2 h-2 rounded-full bg-gray-200 dark:bg-blue-gray-600">
-              <div
-                class="h-2 rounded-full bg-blue-500"
-                :style="{ width: `${(systemMetrics.memory.used / systemMetrics.memory.total) * 100}%` }"
-              ></div>
-            </div>
-            <div class="mt-4 h-32">
-              <Line :data="memoryData" :options="chartOptions" />
-            </div>
+      <!-- Storage Usage -->
+      <div class="overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Storage</h3>
+            <span class="text-sm font-mono text-gray-500 dark:text-gray-400">
+              {{ systemMetrics.storage.used }}GB / {{ systemMetrics.storage.total }}GB
+            </span>
           </div>
-        </div>
-
-        <!-- Storage Usage -->
-        <div class="overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
-          <div class="p-6">
-            <div class="flex items-center justify-between">
-              <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Storage</h3>
-              <span class="text-sm font-mono text-gray-500 dark:text-gray-400">
-                {{ systemMetrics.storage.used }}GB / {{ systemMetrics.storage.total }}GB
-              </span>
+          <div class="mt-4 h-32">
+            <Doughnut :data="storageData" :options="pieChartOptions" />
+          </div>
+          <div class="mt-4 flex justify-center space-x-4">
+            <div class="flex items-center">
+              <div class="h-3 w-3 rounded-full bg-blue-500 mr-2"></div>
+              <span class="text-xs font-mono text-gray-500 dark:text-gray-400">Used ({{ systemMetrics.storage.used }}GB)</span>
             </div>
-            <div class="mt-4 h-32">
-              <Doughnut :data="storageData" :options="pieChartOptions" />
-            </div>
-            <div class="mt-4 flex justify-center space-x-4">
-              <div class="flex items-center">
-                <div class="h-3 w-3 rounded-full bg-blue-500 mr-2"></div>
-                <span class="text-xs font-mono text-gray-500 dark:text-gray-400">Used ({{ systemMetrics.storage.used }}GB)</span>
-              </div>
-              <div class="flex items-center">
-                <div class="h-3 w-3 rounded-full bg-gray-200 dark:bg-gray-600 mr-2"></div>
-                <span class="text-xs font-mono text-gray-500 dark:text-gray-400">Available ({{ systemMetrics.storage.total - systemMetrics.storage.used }}GB)</span>
-              </div>
+            <div class="flex items-center">
+              <div class="h-3 w-3 rounded-full bg-gray-200 dark:bg-gray-600 mr-2"></div>
+              <span class="text-xs font-mono text-gray-500 dark:text-gray-400">Available ({{ systemMetrics.storage.total - systemMetrics.storage.used }}GB)</span>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Queue Monitoring & Cache Performance -->
-    <div class="mt-8 px-4 lg:px-8 sm:px-6">
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <!-- Queue Monitoring -->
-        <div>
-          <div class="sm:flex sm:items-center">
-            <div class="sm:flex-auto">
-              <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-                Queue Monitoring
-              </h1>
-              <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                Real-time monitoring of your application's queue processing.
-              </p>
-            </div>
+  <!-- Queue Monitoring & Cache Performance -->
+  <div class="mt-8 px-4 lg:px-8 sm:px-6">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <!-- Queue Monitoring -->
+      <div>
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+              Queue Monitoring
+            </h1>
+            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+              Real-time monitoring of your application's queue processing.
+            </p>
           </div>
+        </div>
 
-          <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
-            <div class="p-6">
-              <div class="space-y-8">
-                <!-- Queue Stats -->
-                <div v-for="(stats, name) in queues" :key="name" class="space-y-4">
+        <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
+          <div class="p-6">
+            <div class="space-y-8">
+              <!-- Queue Stats -->
+              @foreach(stats, name in queues)
+                <div class="space-y-4">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-2">
                       <h4 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-blue-gray-600 dark:text-gray-200">
@@ -568,9 +590,9 @@ const statsCards = [
                       </h4>
                     </div>
                     <div class="flex items-center space-x-3">
-                      <div v-for="(value, status) in stats" :key="status"
-                           class="group relative">
-                        <div class="flex items-center space-x-2 cursor-help"
+                      @foreach(value, status in stats)
+                        <div class="group relative">
+                          <div class="flex items-center space-x-2 cursor-help"
                              :class="{
                                'text-blue-700 dark:text-blue-300': status === 'queued',
                                'text-yellow-700 dark:text-yellow-300': status === 'processing',
@@ -578,18 +600,19 @@ const statsCards = [
                                'text-purple-700 dark:text-purple-300': status === 'released',
                                'text-red-700 dark:text-red-300': status === 'failed'
                              }">
-                          <div :class="[getQueueStatusColor(status), 'h-2.5 w-2.5 rounded-full']"></div>
-                          <span class="text-xs font-mono">{{ value }}</span>
-                        </div>
-                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
-                          <div class="relative">
-                            <div class="px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-gray-700 rounded shadow-lg whitespace-nowrap">
-                              {{ status.charAt(0).toUpperCase() + status.slice(1) }} Jobs
+                            <div :class="[getQueueStatusColor(status), 'h-2.5 w-2.5 rounded-full']"></div>
+                            <span class="text-xs font-mono">{{ value }}</span>
+                          </div>
+                          <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
+                            <div class="relative">
+                              <div class="px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-gray-700 rounded shadow-lg whitespace-nowrap">
+                                {{ status.charAt(0).toUpperCase() + status.slice(1) }} Jobs
+                              </div>
+                              <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
                             </div>
-                            <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
                           </div>
                         </div>
-                      </div>
+                      @endforeach
                     </div>
                   </div>
 
@@ -610,46 +633,48 @@ const statsCards = [
                     </div>
                   </div>
                 </div>
-              </div>
+              @endforeach
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Cache Performance -->
-        <div>
-          <div class="sm:flex sm:items-center">
-            <div class="sm:flex-auto">
-              <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-                Cache Performance
-              </h1>
-              <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                Real-time monitoring of your application's cache performance and hit rates.
-              </p>
-            </div>
+      <!-- Cache Performance -->
+      <div>
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+              Cache Performance
+            </h1>
+            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+              Real-time monitoring of your application's cache performance and hit rates.
+            </p>
           </div>
+        </div>
 
-          <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
-            <div class="p-6">
-              <!-- Main Stats -->
-              <div class="grid grid-cols-3 gap-8">
-                <div class="text-center">
-                  <p class="text-3xl font-mono font-semibold text-gray-900 dark:text-gray-100">{{ cache.hits }}</p>
-                  <p class="mt-1.5 text-sm font-medium text-gray-500 dark:text-gray-400">Hits</p>
-                </div>
-                <div class="text-center">
-                  <p class="text-3xl font-mono font-semibold text-gray-900 dark:text-gray-100">{{ cache.misses }}</p>
-                  <p class="mt-1.5 text-sm font-medium text-gray-500 dark:text-gray-400">Misses</p>
-                </div>
-                <div class="text-center">
-                  <p class="text-3xl font-mono font-semibold text-gray-900 dark:text-gray-100">{{ cache.hitRate }}%</p>
-                  <p class="mt-1.5 text-sm font-medium text-gray-500 dark:text-gray-400">Hit Rate</p>
-                </div>
+        <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
+          <div class="p-6">
+            <!-- Main Stats -->
+            <div class="grid grid-cols-3 gap-8">
+              <div class="text-center">
+                <p class="text-3xl font-mono font-semibold text-gray-900 dark:text-gray-100">{{ cache.hits }}</p>
+                <p class="mt-1.5 text-sm font-medium text-gray-500 dark:text-gray-400">Hits</p>
               </div>
+              <div class="text-center">
+                <p class="text-3xl font-mono font-semibold text-gray-900 dark:text-gray-100">{{ cache.misses }}</p>
+                <p class="mt-1.5 text-sm font-medium text-gray-500 dark:text-gray-400">Misses</p>
+              </div>
+              <div class="text-center">
+                <p class="text-3xl font-mono font-semibold text-gray-900 dark:text-gray-100">{{ cache.hitRate }}%</p>
+                <p class="mt-1.5 text-sm font-medium text-gray-500 dark:text-gray-400">Hit Rate</p>
+              </div>
+            </div>
 
-              <!-- Cache Keys -->
-              <div class="mt-8">
-                <div class="space-y-4">
-                  <div v-for="key in cache.keys" :key="key.name"
+            <!-- Cache Keys -->
+            <div class="mt-8">
+              <div class="space-y-4">
+                @foreach(key in cache.keys)
+                  <div
                        class="rounded-lg border border-gray-100 dark:border-blue-gray-600 p-4 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-150">
                     <div class="flex items-center justify-between mb-3">
                       <div class="flex items-center space-x-3">
@@ -683,34 +708,36 @@ const statsCards = [
                       </div>
                     </div>
                   </div>
-                </div>
+                @endforeach
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Exceptions & Slow Queries -->
-    <div class="mt-8 px-4 lg:px-8 sm:px-6">
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <!-- Exceptions -->
-        <div>
-          <div class="sm:flex sm:items-center">
-            <div class="sm:flex-auto">
-              <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-                Exceptions
-              </h1>
-              <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                Recent application exceptions and their occurrence rates.
-              </p>
-            </div>
+  <!-- Exceptions & Slow Queries -->
+  <div class="mt-8 px-4 lg:px-8 sm:px-6">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <!-- Exceptions -->
+      <div>
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+              Exceptions
+            </h1>
+            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+              Recent application exceptions and their occurrence rates.
+            </p>
           </div>
+        </div>
 
-          <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
-            <div class="p-6">
-              <div class="space-y-4">
-                <div v-for="exception in exceptions" :key="exception.type"
+        <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
+          <div class="p-6">
+            <div class="space-y-4">
+              @foreach(exception in exceptions)
+                <div
                      class="group relative rounded-lg border border-gray-200 dark:border-blue-gray-600 p-4 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-150">
                   <div class="mb-3">
                     <div class="font-mono text-sm text-gray-900 dark:text-gray-100 leading-relaxed break-all">
@@ -735,28 +762,30 @@ const statsCards = [
                   </div>
                   <div class="absolute left-0 top-0 w-1 h-full bg-red-500 rounded-l-lg"></div>
                 </div>
-              </div>
+              @endforeach
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Slow Queries -->
-        <div>
-          <div class="sm:flex sm:items-center">
-            <div class="sm:flex-auto">
-              <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-                Slow Queries
-              </h1>
-              <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                Database queries that are taking longer than expected to execute.
-              </p>
-            </div>
+      <!-- Slow Queries -->
+      <div>
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+              Slow Queries
+            </h1>
+            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+              Database queries that are taking longer than expected to execute.
+            </p>
           </div>
+        </div>
 
-          <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
-            <div class="p-6">
-              <div class="space-y-4">
-                <div v-for="query in slowQueries" :key="query.location"
+        <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
+          <div class="p-6">
+            <div class="space-y-4">
+              @foreach(query in slowQueries)
+                <div
                      class="group rounded-lg border border-gray-200 dark:border-blue-gray-600 p-4 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-150">
                   <div class="mb-3">
                     <div class="font-mono text-sm text-gray-900 dark:text-gray-100 leading-relaxed break-all">
@@ -780,32 +809,34 @@ const statsCards = [
                     </div>
                   </div>
                 </div>
-              </div>
+              @endforeach
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Slow Routes & Documentation -->
-      <div class="mt-6">
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <!-- Slow Routes -->
-          <div>
-            <div class="sm:flex sm:items-center">
-              <div class="sm:flex-auto">
-                <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-                  Slow Routes
-                </h1>
-                <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                  Routes that are taking longer than expected to respond (>1000ms).
-                </p>
-              </div>
+    <!-- Slow Routes & Documentation -->
+    <div class="mt-6">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Slow Routes -->
+        <div>
+          <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+              <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+                Slow Routes
+              </h1>
+              <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                Routes that are taking longer than expected to respond (>1000ms).
+              </p>
             </div>
+          </div>
 
-            <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
-              <div class="p-6">
-                <div class="space-y-4">
-                  <div v-for="route in slowRoutes" :key="route.route"
+          <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
+            <div class="p-6">
+              <div class="space-y-4">
+                @foreach(route in slowRoutes)
+                  <div
                        class="group rounded-lg border border-gray-200 dark:border-blue-gray-600 p-4 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-150">
                     <div class="mb-3">
                       <div class="flex items-center space-x-3">
@@ -821,10 +852,12 @@ const statsCards = [
                         </span>
                         <span class="font-mono text-sm text-gray-900 dark:text-gray-100">{{ route.route }}</span>
                       </div>
-                      <div v-if="route.action" class="mt-2 flex items-center space-x-2">
-                        <div class="i-hugeicons-code-bracket-square h-4 w-4 text-gray-400" />
-                        <span class="font-mono text-xs text-gray-500 dark:text-gray-400">{{ route.action }}</span>
-                      </div>
+                      @if(route.action)
+                        <div class="mt-2 flex items-center space-x-2">
+                          <div class="i-hugeicons-code-bracket-square h-4 w-4 text-gray-400" />
+                          <span class="font-mono text-xs text-gray-500 dark:text-gray-400">{{ route.action }}</span>
+                        </div>
+                      @endif
                     </div>
                     <div class="flex items-center justify-between text-sm border-t border-gray-100 dark:border-blue-gray-600 pt-3">
                       <div class="flex items-center space-x-4">
@@ -839,28 +872,28 @@ const statsCards = [
                       </div>
                     </div>
                   </div>
-                </div>
+                @endforeach
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Documentation Card -->
-          <div>
-            <div class="overflow-hidden rounded-lg dark:bg-blue-gray-700 flex justify-center items-center h-full">
-              <div class="p-6">
-                <div class="flex flex-col items-center text-center">
-                  <div class="i-hugeicons-puzzle-piece h-12 w-12 text-blue-500 mb-4" />
-                  <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                    Extend Your Dashboard
-                  </h3>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
-                    Create custom insight cards to monitor your application's performance, user behavior, or any other metrics that matter to you.
-                  </p>
-                  <a href="https://stacksjs.com/docs/insights" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-blue-gray-800">
-                    <div class="i-hugeicons-book-open h-5 w-5 mr-2" />
-                    Read the Documentation
-                  </a>
-                </div>
+        <!-- Documentation Card -->
+        <div>
+          <div class="overflow-hidden rounded-lg dark:bg-blue-gray-700 flex justify-center items-center h-full">
+            <div class="p-6">
+              <div class="flex flex-col items-center text-center">
+                <div class="i-hugeicons-puzzle-piece h-12 w-12 text-blue-500 mb-4" />
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                  Extend Your Dashboard
+                </h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
+                  Create custom insight cards to monitor your application's performance, user behavior, or any other metrics that matter to you.
+                </p>
+                <a href="https://stacksjs.com/docs/insights" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-blue-gray-800">
+                  <div class="i-hugeicons-book-open h-5 w-5 mr-2" />
+                  Read the Documentation
+                </a>
               </div>
             </div>
           </div>
@@ -868,4 +901,4 @@ const statsCards = [
       </div>
     </div>
   </div>
-</template>
+</div>

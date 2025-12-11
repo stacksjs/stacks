@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script>
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
@@ -124,7 +124,7 @@ const chartConfig = reactive({
         },
         ticks: {
           maxTicksLimit: 4,
-          callback: function(value: any, index: number) {
+          callback: function(value, index) {
             const labels = ['Jan 2024', 'May 2024', 'Sep 2024', 'Jan 2025']
             return index % Math.floor(salesData.value.length / 4) === 0 ? labels[Math.floor(index / (salesData.value.length / 4))] || '' : ''
           }
@@ -141,7 +141,7 @@ const chartConfig = reactive({
         },
         ticks: {
           maxTicksLimit: 6,
-          callback: function(value: any) {
+          callback: function(value) {
             return '$' + value.toLocaleString()
           }
         }
@@ -168,7 +168,7 @@ const chartConfig = reactive({
         mode: 'index' as const,
         intersect: false,
         callbacks: {
-          label: function(context: any) {
+          label: function(context) {
             let label = context.dataset.label || '';
             if (label) {
               label += ': ';
@@ -245,17 +245,17 @@ customersData.value.forEach(customer => {
 })
 
 // Format numbers with commas
-function formatNumber(number: number): string {
+function formatNumber(number) {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
 // Format currency
-function formatCurrency(amount: number): string {
+function formatCurrency(amount) {
   return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 // Get percentage color class
-function getPercentageColorClass(percentage: number): string {
+function getPercentageColorClass(percentage) {
   if (percentage >= 70) return 'text-green-600 dark:text-green-400'
   if (percentage >= 40) return 'text-yellow-600 dark:text-yellow-400'
   return 'text-red-600 dark:text-red-400'
@@ -270,208 +270,125 @@ onMounted(() => {
     salesChart = new Chart(ctx, chartConfig)
   }
 })
+
+export {
+  dateRanges,
+  selectedDateRange,
+  dateRangeDisplay,
+  comparisonType,
+  customStartDate,
+  customEndDate,
+  showCustomDateRange,
+  salesOverview,
+  salesData,
+  chartConfig,
+  productsData,
+  totalProductRevenue,
+  categoriesData,
+  totalCategoryRevenue,
+  customersData,
+  totalCustomerSpent,
+  formatNumber,
+  formatCurrency,
+  getPercentageColorClass
+}
 </script>
 
-<template>
-  <main>
-    <div class="px-6 py-6 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl">
-        <!-- Header with date range selector -->
-        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div class="flex items-center space-x-2">
-            <div class="i-hugeicons-calendar-03 h-5 w-5 text-gray-500 dark:text-gray-400"></div>
-            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ dateRangeDisplay }}</span>
-          </div>
+<main>
+  <div class="px-6 py-6 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <!-- Header with date range selector -->
+      <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="flex items-center space-x-2">
+          <div class="i-hugeicons-calendar-03 h-5 w-5 text-gray-500 dark:text-gray-400"></div>
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ dateRangeDisplay }}</span>
+        </div>
 
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="text-sm text-gray-500 dark:text-gray-400">compared to</span>
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-sm text-gray-500 dark:text-gray-400">compared to</span>
 
-            <div class="relative">
-              <select
-                v-model="comparisonType"
-                class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-              >
-                <option value="no-comparison">No comparison</option>
-                <option value="previous-period">Previous period</option>
-                <option value="previous-year">Previous year</option>
-              </select>
-            </div>
-
-            <button
-              type="button"
-              class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+          <div class="relative">
+            <select
+              v-model="comparisonType"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
             >
-              <div class="i-hugeicons-settings-01 h-4 w-4 mr-1"></div>
-              Auto
-            </button>
+              <option value="no-comparison">No comparison</option>
+              <option value="previous-period">Previous period</option>
+              <option value="previous-year">Previous year</option>
+            </select>
           </div>
+
+          <button
+            type="button"
+            class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+          >
+            <div class="i-hugeicons-settings-01 h-4 w-4 mr-1"></div>
+            Auto
+          </button>
+        </div>
+      </div>
+
+      <!-- Overview Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8 bg-black dark:bg-blue-gray-900 rounded-lg p-4">
+        <!-- Total Revenue -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="text-4xl font-bold text-white">$1.25M</div>
+          <div class="text-sm text-gray-400">Total Revenue</div>
         </div>
 
-        <!-- Overview Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8 bg-black dark:bg-blue-gray-900 rounded-lg p-4">
-          <!-- Total Revenue -->
-          <div class="flex flex-col items-center justify-center">
-            <div class="text-4xl font-bold text-white">$1.25M</div>
-            <div class="text-sm text-gray-400">Total Revenue</div>
-          </div>
-
-          <!-- Total Orders -->
-          <div class="flex flex-col items-center justify-center">
-            <div class="text-4xl font-bold text-white">34.6k</div>
-            <div class="text-sm text-gray-400">Total Orders</div>
-          </div>
-
-          <!-- Average Order Value -->
-          <div class="flex flex-col items-center justify-center">
-            <div class="text-4xl font-bold text-white">${{ salesOverview.averageOrderValue }}</div>
-            <div class="text-sm text-gray-400">Avg Order Value</div>
-          </div>
-
-          <!-- Conversion Rate -->
-          <div class="flex flex-col items-center justify-center">
-            <div class="text-4xl font-bold text-white">{{ salesOverview.conversionRate }}</div>
-            <div class="text-sm text-gray-400">Conversion Rate</div>
-          </div>
-
-          <!-- Return Rate -->
-          <div class="flex flex-col items-center justify-center">
-            <div class="text-4xl font-bold text-white">{{ salesOverview.returnRate }}</div>
-            <div class="text-sm text-gray-400">Return Rate</div>
-          </div>
-
-          <!-- Repeat Customer Rate -->
-          <div class="flex flex-col items-center justify-center">
-            <div class="text-4xl font-bold text-white">{{ salesOverview.repeatCustomerRate }}</div>
-            <div class="text-sm text-gray-400">Repeat Customers</div>
-          </div>
+        <!-- Total Orders -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="text-4xl font-bold text-white">34.6k</div>
+          <div class="text-sm text-gray-400">Total Orders</div>
         </div>
 
-        <!-- Sales Chart -->
-        <div class="mb-8 bg-white dark:bg-blue-gray-800 rounded-lg p-4 shadow">
-          <!-- Chart header -->
+        <!-- Average Order Value -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="text-4xl font-bold text-white">${{ salesOverview.averageOrderValue }}</div>
+          <div class="text-sm text-gray-400">Avg Order Value</div>
+        </div>
+
+        <!-- Conversion Rate -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="text-4xl font-bold text-white">{{ salesOverview.conversionRate }}</div>
+          <div class="text-sm text-gray-400">Conversion Rate</div>
+        </div>
+
+        <!-- Return Rate -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="text-4xl font-bold text-white">{{ salesOverview.returnRate }}</div>
+          <div class="text-sm text-gray-400">Return Rate</div>
+        </div>
+
+        <!-- Repeat Customer Rate -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="text-4xl font-bold text-white">{{ salesOverview.repeatCustomerRate }}</div>
+          <div class="text-sm text-gray-400">Repeat Customers</div>
+        </div>
+      </div>
+
+      <!-- Sales Chart -->
+      <div class="mb-8 bg-white dark:bg-blue-gray-800 rounded-lg p-4 shadow">
+        <!-- Chart header -->
+        <div class="mb-4">
+          <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Sales Overview</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Revenue and order volume over time
+          </p>
+        </div>
+
+        <!-- Chart.js canvas -->
+        <div class="h-80 w-full">
+          <canvas id="salesChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Data Tables -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Top Products Table -->
+        <div>
           <div class="mb-4">
-            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Sales Overview</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Revenue and order volume over time
-            </p>
-          </div>
-
-          <!-- Chart.js canvas -->
-          <div class="h-80 w-full">
-            <canvas id="salesChart"></canvas>
-          </div>
-        </div>
-
-        <!-- Data Tables -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <!-- Top Products Table -->
-          <div>
-            <div class="mb-4">
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white">Top Products</h3>
-            </div>
-
-            <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
-                  <tr>
-                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                      Product
-                    </th>
-                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                      Sales
-                    </th>
-                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                      Revenue
-                    </th>
-                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                      %
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                  <tr v-for="(product, index) in productsData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      <div class="absolute inset-0 bg-green-100/50 dark:bg-green-900/50" :style="{ width: product.percentage + '%' }"></div>
-                      <span class="relative z-10">{{ product.name }}</span>
-                      <span class="relative z-10 text-xs text-gray-500 dark:text-gray-400 block">{{ product.sku }}</span>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
-                      <span class="relative z-10">{{ formatNumber(product.sales) }}</span>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
-                      <span class="relative z-10">{{ formatCurrency(product.revenue) }}</span>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
-                      <span class="relative z-10">{{ product.percentage }}%</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="mt-2 flex justify-end">
-              <a href="/dashboard/commerce/analytics/sales/products" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                View all products
-              </a>
-            </div>
-          </div>
-
-          <!-- Categories Table -->
-          <div>
-            <div class="mb-4">
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white">Categories</h3>
-            </div>
-
-            <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
-                  <tr>
-                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                      Category
-                    </th>
-                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                      Sales
-                    </th>
-                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                      Revenue
-                    </th>
-                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                      %
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                  <tr v-for="(category, index) in categoriesData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" :style="{ width: category.percentage + '%' }"></div>
-                      <span class="relative z-10">{{ category.name }}</span>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
-                      <span class="relative z-10">{{ formatNumber(category.sales) }}</span>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
-                      <span class="relative z-10">{{ formatCurrency(category.revenue) }}</span>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
-                      <span class="relative z-10">{{ category.percentage }}%</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="mt-2 flex justify-end">
-              <a href="/dashboard/commerce/analytics/sales/categories" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                View all categories
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Top Customers -->
-        <div class="mt-8">
-          <div class="mb-4">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Top Customers</h3>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Top Products</h3>
           </div>
 
           <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
@@ -479,13 +396,13 @@ onMounted(() => {
               <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
                 <tr>
                   <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    Customer
+                    Product
                   </th>
                   <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    Orders
+                    Sales
                   </th>
                   <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    Total Spent
+                    Revenue
                   </th>
                   <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                     %
@@ -493,32 +410,141 @@ onMounted(() => {
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                <tr v-for="(customer, index) in customersData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
+                @foreach(productsData as product)
+                <tr :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" :style="{ width: customer.percentage + '%' }"></div>
-                    <span class="relative z-10">{{ customer.name }}</span>
+                    <div class="absolute inset-0 bg-green-100/50 dark:bg-green-900/50" :style="{ width: product.percentage + '%' }"></div>
+                    <span class="relative z-10">{{ product.name }}</span>
+                    <span class="relative z-10 text-xs text-gray-500 dark:text-gray-400 block">{{ product.sku }}</span>
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
-                    <span class="relative z-10">{{ customer.orders }}</span>
+                    <span class="relative z-10">{{ formatNumber(product.sales) }}</span>
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
-                    <span class="relative z-10">{{ formatCurrency(customer.spent) }}</span>
+                    <span class="relative z-10">{{ formatCurrency(product.revenue) }}</span>
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
-                    <span class="relative z-10">{{ customer.percentage }}%</span>
+                    <span class="relative z-10">{{ product.percentage }}%</span>
                   </td>
                 </tr>
+                @endforeach
               </tbody>
             </table>
           </div>
 
           <div class="mt-2 flex justify-end">
-            <a href="/dashboard/commerce/analytics/sales/customers" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-              View all customers
+            <a href="/dashboard/commerce/analytics/sales/products" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+              View all products
+            </a>
+          </div>
+        </div>
+
+        <!-- Categories Table -->
+        <div>
+          <div class="mb-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Categories</h3>
+          </div>
+
+          <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+                <tr>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                    Category
+                  </th>
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                    Sales
+                  </th>
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                    Revenue
+                  </th>
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                    %
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
+                @foreach(categoriesData as category)
+                <tr :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" :style="{ width: category.percentage + '%' }"></div>
+                    <span class="relative z-10">{{ category.name }}</span>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                    <span class="relative z-10">{{ formatNumber(category.sales) }}</span>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                    <span class="relative z-10">{{ formatCurrency(category.revenue) }}</span>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                    <span class="relative z-10">{{ category.percentage }}%</span>
+                  </td>
+                </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-2 flex justify-end">
+            <a href="/dashboard/commerce/analytics/sales/categories" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+              View all categories
             </a>
           </div>
         </div>
       </div>
+
+      <!-- Top Customers -->
+      <div class="mt-8">
+        <div class="mb-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Top Customers</h3>
+        </div>
+
+        <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+              <tr>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  Customer
+                </th>
+                <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  Orders
+                </th>
+                <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  Total Spent
+                </th>
+                <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  %
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
+              @foreach(customersData as customer)
+              <tr :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" :style="{ width: customer.percentage + '%' }"></div>
+                  <span class="relative z-10">{{ customer.name }}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <span class="relative z-10">{{ customer.orders }}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <span class="relative z-10">{{ formatCurrency(customer.spent) }}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <span class="relative z-10">{{ customer.percentage }}%</span>
+                </td>
+              </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-2 flex justify-end">
+          <a href="/dashboard/commerce/analytics/sales/customers" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+            View all customers
+          </a>
+        </div>
+      </div>
     </div>
-  </main>
-</template>
+  </div>
+</main>

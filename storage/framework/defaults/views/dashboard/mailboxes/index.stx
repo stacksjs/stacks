@@ -1,9 +1,9 @@
 <script>
-import { ref, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
-import { Line } from 'vue-chartjs'
-import {
-  Chart as ChartJS,
+export const { ref, onMounted } = await import('vue')
+export const { useHead } = await import('@vueuse/head')
+export const { Line } = await import('vue-chartjs')
+export const {
+  Chart: ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
@@ -12,7 +12,7 @@ import {
   Tooltip,
   Legend,
   Filler,
-} from 'chart.js'
+} = await import('chart.js')
 
 ChartJS.register(
   CategoryScale,
@@ -29,11 +29,11 @@ useHead({
   title: 'Dashboard - Emails',
 })
 
-const timeRange = ref<'day' | 'week' | 'month' | 'year'>('day')
-const isLoading = ref(false)
+export const timeRange = ref('day')
+export const isLoading = ref(false)
 
 // Chart options
-const chartOptions = {
+export const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
@@ -64,8 +64,8 @@ const chartOptions = {
   plugins: {
     legend: {
       display: true,
-      position: 'top' as const,
-      align: 'end' as const,
+      position: 'top',
+      align: 'end',
       labels: {
         color: 'rgb(156, 163, 175)',
         font: {
@@ -76,14 +76,14 @@ const chartOptions = {
       },
     },
     tooltip: {
-      mode: 'index' as const,
+      mode: 'index',
       intersect: false,
     },
   },
 }
 
 // Generate mock email activity data
-const getEmailActivityData = () => {
+export const getEmailActivityData = () => {
   const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
   return {
     labels,
@@ -113,7 +113,7 @@ const getEmailActivityData = () => {
   }
 }
 
-const emailActivityData = ref(getEmailActivityData())
+export const emailActivityData = ref(getEmailActivityData())
 
 // Watch for time range changes
 watch(timeRange, async () => {

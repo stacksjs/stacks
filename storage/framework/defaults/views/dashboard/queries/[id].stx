@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useRoute, useRouter } from 'vue-router'
@@ -38,16 +38,13 @@ interface QueryRecord {
   explain_plan?: string
 }
 
-const query = ref<QueryRecord | null>(null)
+const query = ref(null)
 
-// Mock fetch function (replace with actual API call in production)
-const fetchQuery = async (id: string) => {
+const fetchQuery = async (id) => {
   isLoading.value = true
 
-  // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 500))
 
-  // Mock data for demonstration
   if (id === '1') {
     query.value = {
       id: '1',
@@ -98,7 +95,6 @@ const fetchQuery = async (id: string) => {
       explain_plan: 'EXPLAIN: id-1, select_type-SIMPLE, table-p, partitions-NULL, type-ALL, possible_keys-NULL, key-NULL, key_len-NULL, ref-NULL, rows-200, filtered-50.00, Extra-Using where; Using filesort...'
     }
   } else {
-    // Default fallback for demo
     query.value = {
       id: id,
       query: 'SELECT * FROM example_table WHERE id = ?',
@@ -125,27 +121,25 @@ const fetchQuery = async (id: string) => {
   isLoading.value = false
 }
 
-// Format functions
-const formatDuration = (duration: number): string => {
+const formatDuration = (duration) => {
   return duration.toFixed(2) + ' ms'
 }
 
-const formatBindings = (bindings: any[] = []): string => {
+const formatBindings = (bindings) => {
   return JSON.stringify(bindings, null, 2)
 }
 
-// Style mappings
-const statusColors: Record<string, string> = {
+const statusColors = {
   completed: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/50 ring-green-600/20',
   slow: 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 ring-yellow-600/20',
   failed: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/50 ring-red-600/20',
 }
 
-const getStatusColor = (status: string): string => {
+const getStatusColor = (status) => {
   return statusColors[status] || 'text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 ring-gray-600/20'
 }
 
-const getQueryType = (query: string): 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'OTHER' => {
+const getQueryType = (query) => {
   const upperQuery = query.trim().toUpperCase()
   if (upperQuery.startsWith('SELECT')) return 'SELECT'
   if (upperQuery.startsWith('INSERT')) return 'INSERT'
@@ -154,7 +148,7 @@ const getQueryType = (query: string): 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' 
   return 'OTHER'
 }
 
-const queryTypeBadges: Record<string, string> = {
+const queryTypeBadges = {
   SELECT: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 ring-blue-700/10 dark:ring-blue-400/30',
   INSERT: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 ring-green-700/10 dark:ring-green-400/30',
   UPDATE: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 ring-amber-700/10 dark:ring-amber-400/30',
@@ -162,55 +156,55 @@ const queryTypeBadges: Record<string, string> = {
   OTHER: 'bg-gray-50 dark:bg-gray-900/20 text-gray-700 dark:text-gray-300 ring-gray-700/10 dark:ring-gray-400/30'
 }
 
-// Dynamic page title
 useHead({
   title: computed(() => query.value ? `Query Details: ${query.value.id}` : 'Query Details')
 })
 
-// On mount, fetch query data
 onMounted(() => {
-  const id = route.params.id as string
+  const id = route.params.id
   fetchQuery(id)
 })
+
+export { query, isLoading, fetchQuery, formatDuration, formatBindings, statusColors, getStatusColor, getQueryType, queryTypeBadges }
 </script>
 
-<template>
-  <div class="min-h-screen">
-    <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-6 bg-white px-4 py-4 shadow-sm dark:bg-blue-gray-900 sm:px-6 lg:px-8">
-      <div>
-        <div class="flex items-center gap-2">
-          <button
-            @click="router.back()"
-            class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-blue-gray-800 transition-colors"
-          >
-            <div class="i-hugeicons-arrow-left h-5 w-5 text-gray-500 dark:text-gray-400"></div>
-          </button>
-          <h1 class="text-lg text-gray-900 font-semibold leading-7 dark:text-white">
-            Query Details
-          </h1>
-        </div>
-        <p class="mt-1 text-sm text-gray-500 leading-6 dark:text-gray-400 pl-7">
-          Detailed information about the database query
-        </p>
-      </div>
-      <div class="flex-shrink-0">
-        <router-link
-          to="/queries"
-          class="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+<div class="min-h-screen">
+  <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-6 bg-white px-4 py-4 shadow-sm dark:bg-blue-gray-900 sm:px-6 lg:px-8">
+    <div>
+      <div class="flex items-center gap-2">
+        <button
+          @click="router.back()"
+          class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-blue-gray-800 transition-colors"
         >
-          <div class="i-hugeicons-apps-04 h-5 w-5 -ml-0.5" aria-hidden="true"></div>
-          Dashboard
-        </router-link>
+          <div class="i-hugeicons-arrow-left h-5 w-5 text-gray-500 dark:text-gray-400"></div>
+        </button>
+        <h1 class="text-lg text-gray-900 font-semibold leading-7 dark:text-white">
+          Query Details
+        </h1>
       </div>
-    </header>
+      <p class="mt-1 text-sm text-gray-500 leading-6 dark:text-gray-400 pl-7">
+        Detailed information about the database query
+      </p>
+    </div>
+    <div class="flex-shrink-0">
+      <router-link
+        to="/queries"
+        class="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+      >
+        <div class="i-hugeicons-apps-04 h-5 w-5 -ml-0.5" aria-hidden="true"></div>
+        Dashboard
+      </router-link>
+    </div>
+  </header>
 
-    <main class="px-4 py-8 sm:px-6 lg:px-8">
-      <!-- Loading state -->
-      <div v-if="isLoading" class="flex justify-center items-center py-12">
+  <main class="px-4 py-8 sm:px-6 lg:px-8">
+    <!-- Loading state -->
+    @if(isLoading)
+      <div class="flex justify-center items-center py-12">
         <div class="i-hugeicons-loading-01 h-8 w-8 animate-spin text-blue-600 dark:text-blue-400"></div>
       </div>
-
-      <div v-else-if="query" class="space-y-6">
+    @elseif(query)
+      <div class="space-y-6">
         <!-- Query header section -->
         <div class="bg-white shadow dark:bg-blue-gray-900 sm:rounded-lg overflow-hidden">
           <div class="px-4 py-5 sm:px-6">
@@ -264,8 +258,11 @@ onMounted(() => {
               <div class="bg-gray-50 dark:bg-blue-gray-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Bindings</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
-                  <pre v-if="query.bindings && query.bindings.length" class="font-mono text-xs bg-gray-100 dark:bg-blue-gray-700 text-gray-800 dark:text-gray-200 p-3 rounded-md overflow-x-auto">{{ formatBindings(query.bindings) }}</pre>
-                  <p v-else class="text-sm text-gray-500 dark:text-gray-400">No bindings</p>
+                  @if(query.bindings && query.bindings.length)
+                    <pre class="font-mono text-xs bg-gray-100 dark:bg-blue-gray-700 text-gray-800 dark:text-gray-200 p-3 rounded-md overflow-x-auto">{{ formatBindings(query.bindings) }}</pre>
+                  @else
+                    <p class="text-sm text-gray-500 dark:text-gray-400">No bindings</p>
+                  @endif
                 </dd>
               </div>
               <div class="bg-white dark:bg-blue-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -276,13 +273,11 @@ onMounted(() => {
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Affected Tables</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                   <div class="flex flex-wrap gap-2">
-                    <span
-                      v-for="table in query.affected_tables"
-                      :key="table"
-                      class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/20 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 ring-1 ring-inset ring-blue-700/10 dark:ring-blue-400/30"
-                    >
-                      {{ table }}
-                    </span>
+                    @foreach(query.affected_tables as table)
+                      <span class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/20 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 ring-1 ring-inset ring-blue-700/10 dark:ring-blue-400/30">
+                        {{ table }}
+                      </span>
+                    @endforeach
                   </div>
                 </dd>
               </div>
@@ -292,29 +287,31 @@ onMounted(() => {
                   <div class="space-y-4">
                     <div>
                       <h4 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Used Indexes</h4>
-                      <div v-if="query.indexes_used && query.indexes_used.length" class="flex flex-wrap gap-2">
-                        <span
-                          v-for="index in query.indexes_used"
-                          :key="index"
-                          class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/20 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300 ring-1 ring-inset ring-green-700/10 dark:ring-green-400/30"
-                        >
-                          {{ index }}
-                        </span>
-                      </div>
-                      <p v-else class="text-xs text-gray-500 dark:text-gray-400">No indexes used</p>
+                      @if(query.indexes_used && query.indexes_used.length)
+                        <div class="flex flex-wrap gap-2">
+                          @foreach(query.indexes_used as index)
+                            <span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/20 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300 ring-1 ring-inset ring-green-700/10 dark:ring-green-400/30">
+                              {{ index }}
+                            </span>
+                          @endforeach
+                        </div>
+                      @else
+                        <p class="text-xs text-gray-500 dark:text-gray-400">No indexes used</p>
+                      @endif
                     </div>
                     <div>
                       <h4 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Missing Indexes</h4>
-                      <div v-if="query.missing_indexes && query.missing_indexes.length" class="flex flex-wrap gap-2">
-                        <span
-                          v-for="index in query.missing_indexes"
-                          :key="index"
-                          class="inline-flex items-center rounded-md bg-red-50 dark:bg-red-900/20 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 ring-1 ring-inset ring-red-700/10 dark:ring-red-400/30"
-                        >
-                          {{ index }}
-                        </span>
-                      </div>
-                      <p v-else class="text-xs text-gray-500 dark:text-gray-400">No missing indexes identified</p>
+                      @if(query.missing_indexes && query.missing_indexes.length)
+                        <div class="flex flex-wrap gap-2">
+                          @foreach(query.missing_indexes as index)
+                            <span class="inline-flex items-center rounded-md bg-red-50 dark:bg-red-900/20 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 ring-1 ring-inset ring-red-700/10 dark:ring-red-400/30">
+                              {{ index }}
+                            </span>
+                          @endforeach
+                        </div>
+                      @else
+                        <p class="text-xs text-gray-500 dark:text-gray-400">No missing indexes identified</p>
+                      @endif
                     </div>
                   </div>
                 </dd>
@@ -345,17 +342,21 @@ onMounted(() => {
                   <pre class="font-mono text-xs bg-gray-100 dark:bg-blue-gray-700 text-gray-800 dark:text-gray-200 p-3 rounded-md overflow-x-auto whitespace-pre-wrap">{{ query.explain_plan }}</pre>
                 </dd>
               </div>
-              <div v-if="query.optimization_suggestions && query.optimization_suggestions.length" class="bg-white dark:bg-blue-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Optimization Suggestions</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
-                  <ul class="space-y-2">
-                    <li v-for="(suggestion, i) in query.optimization_suggestions" :key="i" class="flex items-start">
-                      <div class="i-hugeicons-lightbulb-02 h-5 w-5 text-yellow-500 mr-2 flex-shrink-0 mt-0.5"></div>
-                      <span class="text-sm text-gray-800 dark:text-gray-200">{{ suggestion }}</span>
-                    </li>
-                  </ul>
-                </dd>
-              </div>
+              @if(query.optimization_suggestions && query.optimization_suggestions.length)
+                <div class="bg-white dark:bg-blue-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Optimization Suggestions</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
+                    <ul class="space-y-2">
+                      @foreach(query.optimization_suggestions as suggestion)
+                        <li class="flex items-start">
+                          <div class="i-hugeicons-lightbulb-02 h-5 w-5 text-yellow-500 mr-2 flex-shrink-0 mt-0.5"></div>
+                          <span class="text-sm text-gray-800 dark:text-gray-200">{{ suggestion }}</span>
+                        </li>
+                      @endforeach
+                    </ul>
+                  </dd>
+                </div>
+              @endif
             </dl>
           </div>
         </div>
@@ -367,20 +368,18 @@ onMounted(() => {
           </div>
           <div class="border-t border-gray-200 dark:border-blue-gray-700 px-4 py-5 sm:px-6">
             <div class="flex flex-wrap gap-2">
-              <span
-                v-for="tag in query.tags"
-                :key="tag"
-                class="inline-flex items-center rounded-md bg-gray-50 dark:bg-blue-gray-800 px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-700"
-              >
-                {{ tag }}
-              </span>
+              @foreach(query.tags as tag)
+                <span class="inline-flex items-center rounded-md bg-gray-50 dark:bg-blue-gray-800 px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-700">
+                  {{ tag }}
+                </span>
+              @endforeach
             </div>
           </div>
         </div>
       </div>
-
+    @else
       <!-- Error state -->
-      <div v-else class="bg-white shadow dark:bg-blue-gray-900 sm:rounded-lg overflow-hidden">
+      <div class="bg-white shadow dark:bg-blue-gray-900 sm:rounded-lg overflow-hidden">
         <div class="px-4 py-5 sm:p-6 text-center">
           <div class="i-hugeicons-file-broken h-12 w-12 text-gray-400 mx-auto mb-4"></div>
           <h3 class="text-base font-semibold text-gray-900 dark:text-white">Query not found</h3>
@@ -395,6 +394,6 @@ onMounted(() => {
           </div>
         </div>
       </div>
-    </main>
-  </div>
-</template>
+    @endif
+  </main>
+</div>

@@ -1,8 +1,4 @@
-<script lang="ts" setup>
-/**
- * Health Dashboard - macOS Style
- * System health monitoring with macOS-inspired design.
- */
+<script>
 import { ref } from 'vue'
 import Card from '../../../components/Dashboard/UI/Card.vue'
 import Badge from '../../../components/Dashboard/UI/Badge.vue'
@@ -20,7 +16,7 @@ interface HealthMetric {
   metrics: { label: string; value: string }[]
 }
 
-const healthMetrics = ref<HealthMetric[]>([
+const healthMetrics = ref([
   {
     name: 'Uptime',
     icon: 'i-hugeicons-flash',
@@ -105,8 +101,8 @@ const healthMetrics = ref<HealthMetric[]>([
   },
 ])
 
-const getStatusVariant = (status: string) => {
-  const map: Record<string, 'success' | 'primary' | 'warning' | 'danger'> = {
+const getStatusVariant = (status) => {
+  const map = {
     success: 'success',
     info: 'primary',
     warning: 'warning',
@@ -115,8 +111,8 @@ const getStatusVariant = (status: string) => {
   return map[status] || 'default'
 }
 
-const getStatusIconBg = (status: string) => {
-  const map: Record<string, string> = {
+const getStatusIconBg = (status) => {
+  const map = {
     success: 'bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400',
     info: 'bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400',
     warning: 'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400',
@@ -124,48 +120,52 @@ const getStatusIconBg = (status: string) => {
   }
   return map[status] || 'bg-neutral-500/15 text-neutral-600'
 }
+
+export {
+  healthMetrics,
+  getStatusVariant,
+  getStatusIconBg,
+}
 </script>
 
-<template>
-  <div>
-    <!-- Overview Stats -->
-    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <StatsCard
-        title="Uptime"
-        value="100%"
-        :trend="0"
-        trend-label="Last 30 days"
-        icon="i-hugeicons-flash"
-        icon-bg="primary"
-      />
-      <StatsCard
-        title="Health Checks"
-        value="2/2"
-        subtitle="All checks passing"
-        icon="i-hugeicons-checkmark-circle-02"
-        icon-bg="success"
-      />
-      <StatsCard
-        title="URLs Monitored"
-        value="583"
-        subtitle="Across all pages"
-        icon="i-hugeicons-link-01"
-        icon-bg="primary"
-      />
-      <StatsCard
-        title="DNS Records"
-        value="18"
-        subtitle="Verified records"
-        icon="i-hugeicons-globe-02"
-        icon-bg="primary"
-      />
-    </div>
+<div>
+  <!-- Overview Stats -->
+  <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <StatsCard
+      title="Uptime"
+      value="100%"
+      :trend="0"
+      trend-label="Last 30 days"
+      icon="i-hugeicons-flash"
+      icon-bg="primary"
+    />
+    <StatsCard
+      title="Health Checks"
+      value="2/2"
+      subtitle="All checks passing"
+      icon="i-hugeicons-checkmark-circle-02"
+      icon-bg="success"
+    />
+    <StatsCard
+      title="URLs Monitored"
+      value="583"
+      subtitle="Across all pages"
+      icon="i-hugeicons-link-01"
+      icon-bg="primary"
+    />
+    <StatsCard
+      title="DNS Records"
+      value="18"
+      subtitle="Verified records"
+      icon="i-hugeicons-globe-02"
+      icon-bg="primary"
+    />
+  </div>
 
-    <!-- Detailed Health Cards -->
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+  <!-- Detailed Health Cards -->
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    @foreach(metric in healthMetrics)
       <Card
-        v-for="metric in healthMetrics"
-        :key="metric.name"
         variant="default"
         padding="md"
         hoverable
@@ -193,30 +193,32 @@ const getStatusIconBg = (status: string) => {
         </div>
 
         <!-- Metrics Grid -->
-        <div v-if="metric.metrics" class="mt-4">
-          <dl
-            class="grid gap-3"
-            :class="{
-              'grid-cols-3': metric.metrics.length === 3,
-              'grid-cols-2': metric.metrics.length === 2,
-              'grid-cols-1': metric.metrics.length === 1
-            }"
-          >
-            <div
-              v-for="m in metric.metrics"
-              :key="m.label"
-              class="overflow-hidden rounded-lg bg-black/[0.03] dark:bg-white/[0.05] px-3 py-2.5"
+        @if(metric.metrics)
+          <div class="mt-4">
+            <dl
+              class="grid gap-3"
+              :class="{
+                'grid-cols-3': metric.metrics.length === 3,
+                'grid-cols-2': metric.metrics.length === 2,
+                'grid-cols-1': metric.metrics.length === 1
+              }"
             >
-              <dt class="truncate text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-                {{ m.label }}
-              </dt>
-              <dd class="mt-0.5 text-[14px] font-semibold tracking-tight text-neutral-900 dark:text-white">
-                {{ m.value }}
-              </dd>
-            </div>
-          </dl>
-        </div>
+              @foreach(m in metric.metrics)
+                <div
+                  class="overflow-hidden rounded-lg bg-black/[0.03] dark:bg-white/[0.05] px-3 py-2.5"
+                >
+                  <dt class="truncate text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                    {{ m.label }}
+                  </dt>
+                  <dd class="mt-0.5 text-[14px] font-semibold tracking-tight text-neutral-900 dark:text-white">
+                    {{ m.value }}
+                  </dd>
+                </div>
+              @endforeach
+            </dl>
+          </div>
+        @endif
       </Card>
-    </div>
+    @endforeach
   </div>
-</template>
+</div>

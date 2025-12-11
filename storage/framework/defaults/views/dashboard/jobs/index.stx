@@ -1,8 +1,4 @@
-<script lang="ts" setup>
-/**
- * Jobs Dashboard - macOS Style
- * Job queue monitoring with macOS-inspired design.
- */
+<script>
 import { ref, watch, onMounted } from 'vue'
 import { Line } from 'vue-chartjs'
 import {
@@ -53,7 +49,7 @@ interface Job {
   runtime?: number
 }
 
-const recentJobs = ref<Job[]>([
+const recentJobs = ref([
   {
     id: '1',
     name: 'ProcessPodcast',
@@ -106,7 +102,7 @@ const recentJobs = ref<Job[]>([
   },
 ])
 
-const timeRange = ref<string>('hour')
+const timeRange = ref('hour')
 const isLoading = ref(false)
 
 const timeRangeOptions = [
@@ -115,7 +111,6 @@ const timeRangeOptions = [
   { value: 'week', label: 'Last Week' },
 ]
 
-// Chart options - macOS style
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
@@ -149,8 +144,8 @@ const chartOptions = {
   plugins: {
     legend: {
       display: true,
-      position: 'top' as const,
-      align: 'end' as const,
+      position: 'top',
+      align: 'end',
       labels: {
         color: 'rgb(115, 115, 115)',
         font: {
@@ -162,7 +157,7 @@ const chartOptions = {
       },
     },
     tooltip: {
-      mode: 'index' as const,
+      mode: 'index',
       intersect: false,
       backgroundColor: 'rgba(255, 255, 255, 0.95)',
       titleColor: '#171717',
@@ -174,12 +169,11 @@ const chartOptions = {
     },
   },
   interaction: {
-    mode: 'index' as const,
+    mode: 'index',
     intersect: false,
   },
 }
 
-// Generate mock throughput data
 const getThroughputData = () => {
   const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
   return {
@@ -188,7 +182,7 @@ const getThroughputData = () => {
       {
         label: 'Processed',
         data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 100) + 50),
-        borderColor: 'rgb(52, 199, 89)', // macOS green
+        borderColor: 'rgb(52, 199, 89)',
         backgroundColor: 'rgba(52, 199, 89, 0.1)',
         fill: true,
         tension: 0.3,
@@ -196,7 +190,7 @@ const getThroughputData = () => {
       {
         label: 'Failed',
         data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 10)),
-        borderColor: 'rgb(255, 59, 48)', // macOS red
+        borderColor: 'rgb(255, 59, 48)',
         backgroundColor: 'rgba(255, 59, 48, 0.1)',
         fill: true,
         tension: 0.3,
@@ -205,7 +199,6 @@ const getThroughputData = () => {
   }
 }
 
-// Generate mock wait time data
 const getWaitTimeData = () => {
   const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
   return {
@@ -213,7 +206,7 @@ const getWaitTimeData = () => {
     datasets: [{
       label: 'Average Wait Time (seconds)',
       data: Array.from({ length: 24 }, () => Math.random() * 5 + 1),
-      borderColor: 'rgb(0, 122, 255)', // macOS blue
+      borderColor: 'rgb(0, 122, 255)',
       backgroundColor: 'rgba(0, 122, 255, 0.1)',
       fill: true,
       tension: 0.3,
@@ -224,8 +217,8 @@ const getWaitTimeData = () => {
 const throughputData = ref(getThroughputData())
 const waitTimeData = ref(getWaitTimeData())
 
-const getStatusVariant = (status: string) => {
-  const map: Record<string, 'primary' | 'warning' | 'success' | 'danger'> = {
+const getStatusVariant = (status) => {
+  const map = {
     queued: 'primary',
     processing: 'warning',
     completed: 'success',
@@ -234,7 +227,6 @@ const getStatusVariant = (status: string) => {
   return map[status] || 'default'
 }
 
-// Watch for time range changes
 watch(timeRange, async () => {
   isLoading.value = true
   await new Promise(resolve => setTimeout(resolve, 500))
@@ -243,122 +235,129 @@ watch(timeRange, async () => {
   isLoading.value = false
 })
 
-// Initial load
 onMounted(async () => {
   isLoading.value = true
   await new Promise(resolve => setTimeout(resolve, 500))
   isLoading.value = false
 })
+
+export { recentJobs, timeRange, isLoading, timeRangeOptions, chartOptions, throughputData, waitTimeData, getStatusVariant }
 </script>
 
-<template>
-  <div>
-    <!-- Stats Overview -->
-    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <StatsCard
-        title="Total Jobs"
-        value="71,897"
-        :trend="12"
-        trend-label="vs last hour"
-        icon="i-hugeicons-layers-01"
-        icon-bg="primary"
-      />
-      <StatsCard
-        title="Avg Processing Time"
-        value="2.3s"
-        :trend="-15"
-        trend-label="Faster than yesterday"
-        icon="i-hugeicons-clock-01"
-        icon-bg="success"
-      />
-      <StatsCard
-        title="Jobs Per Minute"
-        value="42"
-        :trend="-8"
-        trend-label="vs last hour"
-        icon="i-hugeicons-flash"
-        icon-bg="warning"
-      />
-    </div>
+<div>
+  <!-- Stats Overview -->
+  <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <StatsCard
+      title="Total Jobs"
+      value="71,897"
+      :trend="12"
+      trend-label="vs last hour"
+      icon="i-hugeicons-layers-01"
+      icon-bg="primary"
+    />
+    <StatsCard
+      title="Avg Processing Time"
+      value="2.3s"
+      :trend="-15"
+      trend-label="Faster than yesterday"
+      icon="i-hugeicons-clock-01"
+      icon-bg="success"
+    />
+    <StatsCard
+      title="Jobs Per Minute"
+      value="42"
+      :trend="-8"
+      trend-label="vs last hour"
+      icon="i-hugeicons-flash"
+      icon-bg="warning"
+    />
+  </div>
 
-    <!-- Queue Performance Charts -->
-    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 mb-6">
-      <!-- Throughput Chart -->
-      <Card variant="default" padding="lg">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h3 class="text-[14px] font-medium text-neutral-900 dark:text-white">Job Throughput</h3>
-            <p class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">Processed vs failed jobs over time</p>
-          </div>
-          <Select
-            v-model="timeRange"
-            :options="timeRangeOptions"
-            size="sm"
-            class="w-36"
-          />
+  <!-- Queue Performance Charts -->
+  <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 mb-6">
+    <!-- Throughput Chart -->
+    <Card variant="default" padding="lg">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-[14px] font-medium text-neutral-900 dark:text-white">Job Throughput</h3>
+          <p class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">Processed vs failed jobs over time</p>
         </div>
-        <div class="h-[280px] relative">
-          <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm z-10 rounded-lg">
+        <Select
+          v-model="timeRange"
+          :options="timeRangeOptions"
+          size="sm"
+          class="w-36"
+        />
+      </div>
+      <div class="h-[280px] relative">
+        @if(isLoading)
+          <div class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm z-10 rounded-lg">
             <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500" />
           </div>
-          <Line :data="throughputData" :options="chartOptions" />
-        </div>
-      </Card>
+        @endif
+        <Line :data="throughputData" :options="chartOptions" />
+      </div>
+    </Card>
 
-      <!-- Wait Time Chart -->
-      <Card variant="default" padding="lg">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h3 class="text-[14px] font-medium text-neutral-900 dark:text-white">Job Wait Time</h3>
-            <p class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">Average time jobs spend in queue</p>
-          </div>
-        </div>
-        <div class="h-[280px] relative">
-          <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm z-10 rounded-lg">
-            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500" />
-          </div>
-          <Line :data="waitTimeData" :options="chartOptions" />
-        </div>
-      </Card>
-    </div>
-
-    <!-- Recent Jobs -->
-    <Card variant="default" padding="none">
-      <div class="px-5 py-4 border-b border-black/5 dark:border-white/5">
-        <div class="flex items-center justify-between">
-          <h3 class="text-[14px] font-medium text-neutral-900 dark:text-white">Recent Jobs</h3>
-          <RouterLink
-            to="/jobs/history"
-            class="inline-flex items-center gap-1 text-[13px] text-blue-600 hover:text-blue-500 dark:text-blue-400"
-          >
-            <span>View All</span>
-            <div class="i-hugeicons-arrow-right-01 h-3.5 w-3.5" />
-          </RouterLink>
+    <!-- Wait Time Chart -->
+    <Card variant="default" padding="lg">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-[14px] font-medium text-neutral-900 dark:text-white">Job Wait Time</h3>
+          <p class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">Average time jobs spend in queue</p>
         </div>
       </div>
+      <div class="h-[280px] relative">
+        @if(isLoading)
+          <div class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm z-10 rounded-lg">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500" />
+          </div>
+        @endif
+        <Line :data="waitTimeData" :options="chartOptions" />
+      </div>
+    </Card>
+  </div>
 
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-black/5 dark:divide-white/5">
-          <thead>
-            <tr class="bg-black/[0.02] dark:bg-white/[0.02]">
-              <th scope="col" class="py-3 pl-5 pr-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Job</th>
-              <th scope="col" class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Queue</th>
-              <th scope="col" class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Status</th>
-              <th scope="col" class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Runtime</th>
-              <th scope="col" class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Started</th>
-              <th scope="col" class="relative py-3 pl-3 pr-5">
-                <span class="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-black/5 dark:divide-white/5">
-            <tr v-for="job in recentJobs" :key="job.id" class="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
+  <!-- Recent Jobs -->
+  <Card variant="default" padding="none">
+    <div class="px-5 py-4 border-b border-black/5 dark:border-white/5">
+      <div class="flex items-center justify-between">
+        <h3 class="text-[14px] font-medium text-neutral-900 dark:text-white">Recent Jobs</h3>
+        <RouterLink
+          to="/jobs/history"
+          class="inline-flex items-center gap-1 text-[13px] text-blue-600 hover:text-blue-500 dark:text-blue-400"
+        >
+          <span>View All</span>
+          <div class="i-hugeicons-arrow-right-01 h-3.5 w-3.5" />
+        </RouterLink>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-black/5 dark:divide-white/5">
+        <thead>
+          <tr class="bg-black/[0.02] dark:bg-white/[0.02]">
+            <th scope="col" class="py-3 pl-5 pr-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Job</th>
+            <th scope="col" class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Queue</th>
+            <th scope="col" class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Status</th>
+            <th scope="col" class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Runtime</th>
+            <th scope="col" class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Started</th>
+            <th scope="col" class="relative py-3 pl-3 pr-5">
+              <span class="sr-only">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-black/5 dark:divide-white/5">
+          @foreach(recentJobs as job)
+            <tr class="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
               <td class="whitespace-nowrap py-3.5 pl-5 pr-3">
                 <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ job.name }}</div>
                 <div class="mt-1 flex items-center gap-1">
-                  <Badge v-for="tag in job.tags" :key="tag" size="xs" variant="default">
-                    {{ tag }}
-                  </Badge>
+                  @foreach(job.tags as tag)
+                    <Badge size="xs" variant="default">
+                      {{ tag }}
+                    </Badge>
+                  @endforeach
                 </div>
               </td>
               <td class="whitespace-nowrap px-3 py-3.5">
@@ -369,9 +368,11 @@ onMounted(async () => {
                 <Badge :variant="getStatusVariant(job.status)" size="sm">
                   {{ job.status }}
                 </Badge>
-                <div v-if="job.status === 'failed'" class="mt-1 text-[11px] text-red-600 dark:text-red-400">
-                  Attempts: {{ job.attempts }}
-                </div>
+                @if(job.status === 'failed')
+                  <div class="mt-1 text-[11px] text-red-600 dark:text-red-400">
+                    Attempts: {{ job.attempts }}
+                  </div>
+                @endif
               </td>
               <td class="whitespace-nowrap px-3 py-3.5">
                 <div class="text-[13px] font-mono text-neutral-900 dark:text-white">
@@ -380,7 +381,9 @@ onMounted(async () => {
               </td>
               <td class="whitespace-nowrap px-3 py-3.5 text-[12px] text-neutral-500 dark:text-neutral-400">
                 <div>{{ job.started_at || '-' }}</div>
-                <div v-if="job.completed_at">Completed: {{ job.completed_at }}</div>
+                @if(job.completed_at)
+                  <div>Completed: {{ job.completed_at }}</div>
+                @endif
               </td>
               <td class="relative whitespace-nowrap py-3.5 pl-3 pr-5 text-right">
                 <Button
@@ -393,9 +396,9 @@ onMounted(async () => {
                 </Button>
               </td>
             </tr>
-          </tbody>
-        </table>
-      </div>
-    </Card>
-  </div>
-</template>
+          @endforeach
+        </tbody>
+      </table>
+    </div>
+  </Card>
+</div>

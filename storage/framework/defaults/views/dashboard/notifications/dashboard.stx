@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
@@ -54,13 +54,13 @@ interface ChannelStats {
 }
 
 // Mock data for demonstration
-const notificationStats = ref<NotificationStats>({
+export const notificationStats = ref<NotificationStats>({
   total_sent: 45_678,
   delivery_rate: 98.5,
   avg_delivery_time: 1.2,
 })
 
-const channelStats = ref<Record<string, ChannelStats>>({
+export const channelStats = ref<Record<string, ChannelStats>>({
   email: {
     sent: 25_000,
     delivered: 24_800,
@@ -93,7 +93,7 @@ const channelStats = ref<Record<string, ChannelStats>>({
   },
 })
 
-const recentNotifications = ref<NotificationEntry[]>([
+export const recentNotifications = ref<NotificationEntry[]>([
   {
     id: '1',
     type: 'email',
@@ -140,12 +140,12 @@ const recentNotifications = ref<NotificationEntry[]>([
   },
 ])
 
-const timeRange = ref<'hour' | 'day' | 'week'>('hour')
-const selectedChannel = ref<string>('all')
-const isLoading = ref(false)
+export const timeRange = ref<'hour' | 'day' | 'week'>('hour')
+export const selectedChannel = ref<string>('all')
+export const isLoading = ref(false)
 
 // Chart options
-const chartOptions = {
+export const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
@@ -199,7 +199,7 @@ const chartOptions = {
 }
 
 // Generate mock volume data
-const getVolumeData = () => {
+export const getVolumeData = () => {
   const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
   return {
     labels,
@@ -230,7 +230,7 @@ const getVolumeData = () => {
 }
 
 // Generate mock delivery time data
-const getDeliveryTimeData = () => {
+export const getDeliveryTimeData = () => {
   const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
   return {
     labels,
@@ -244,21 +244,21 @@ const getDeliveryTimeData = () => {
   }
 }
 
-const volumeData = ref(getVolumeData())
-const deliveryTimeData = ref(getDeliveryTimeData())
+export const volumeData = ref(getVolumeData())
+export const deliveryTimeData = ref(getDeliveryTimeData())
 
-const notificationStatusColors: Record<string, string> = {
+export const notificationStatusColors: Record<string, string> = {
   delivered: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/50 ring-green-600/20',
   sent: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/50 ring-blue-600/20',
   pending: 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 ring-yellow-600/20',
   failed: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/50 ring-red-600/20',
 }
 
-const getStatusColor = (status: string): string => {
+export const getStatusColor = (status: string): string => {
   return notificationStatusColors[status] || 'text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 ring-gray-600/20'
 }
 
-const getChannelIcon = (type: string): string => {
+export const getChannelIcon = (type: string): string => {
   switch (type) {
     case 'email':
       return 'i-hugeicons-mail-01'
@@ -293,242 +293,250 @@ onMounted(async () => {
 })
 
 // Add this helper function before the template
-const formatNumber = (num: number): string => {
+export const formatNumber = (num: number): string => {
   return num.toLocaleString()
 }
 </script>
 
-<template>
-  <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
-    <!-- Stats Overview -->
-    <div class="mb-8 px-4 lg:px-8 sm:px-6">
-      <div>
-        <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-          Notifications Overview
-        </h3>
+<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+  <!-- Stats Overview -->
+  <div class="mb-8 px-4 lg:px-8 sm:px-6">
+    <div>
+      <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+        Notifications Overview
+      </h3>
 
-        <dl class="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3 sm:grid-cols-2">
-          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
-            <dt>
-              <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-hugeicons-notification-03 h-6 w-6 text-white" />
-              </div>
-              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
-                Total Notifications
-              </p>
-            </dt>
-            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
-                {{ formatNumber(notificationStats.total_sent) }}
-              </p>
-              <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-                <div class="i-hugeicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
-                <span class="sr-only">Increased by</span>
-                122
-              </p>
-            </dd>
-          </div>
+      <dl class="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3 sm:grid-cols-2">
+        <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <dt>
+            <div class="absolute rounded-md bg-blue-500 p-3">
+              <div class="i-hugeicons-notification-03 h-6 w-6 text-white" />
+            </div>
+            <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
+              Total Notifications
+            </p>
+          </dt>
+          <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
+            <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+              {{ formatNumber(notificationStats.total_sent) }}
+            </p>
+            <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
+              <div class="i-hugeicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
+              <span class="sr-only">Increased by</span>
+              122
+            </p>
+          </dd>
+        </div>
 
-          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
-            <dt>
-              <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-hugeicons-checkmark-circle-02 h-6 w-6 text-white" />
-              </div>
-              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
-                Delivery Rate
-              </p>
-            </dt>
-            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
-                {{ notificationStats.delivery_rate }}%
-              </p>
-              <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-                <div class="i-hugeicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
-                <span class="sr-only">Increased by</span>
-                0.5%
-              </p>
-            </dd>
-          </div>
+        <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <dt>
+            <div class="absolute rounded-md bg-blue-500 p-3">
+              <div class="i-hugeicons-checkmark-circle-02 h-6 w-6 text-white" />
+            </div>
+            <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
+              Delivery Rate
+            </p>
+          </dt>
+          <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
+            <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+              {{ notificationStats.delivery_rate }}%
+            </p>
+            <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
+              <div class="i-hugeicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
+              <span class="sr-only">Increased by</span>
+              0.5%
+            </p>
+          </dd>
+        </div>
 
-          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
-            <dt>
-              <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-hugeicons-clock-01 h-6 w-6 text-white" />
-              </div>
-              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
-                Average Delivery Time
-              </p>
-            </dt>
-            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
-                {{ notificationStats.avg_delivery_time }}s
-              </p>
-              <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-                <div class="i-hugeicons-arrow-down-02 h-5 w-5 flex-shrink-0 self-center text-green-500" />
-                <span class="sr-only">Decreased by</span>
-                0.1s
-              </p>
-            </dd>
-          </div>
-        </dl>
-      </div>
+        <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <dt>
+            <div class="absolute rounded-md bg-blue-500 p-3">
+              <div class="i-hugeicons-clock-01 h-6 w-6 text-white" />
+            </div>
+            <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
+              Average Delivery Time
+            </p>
+          </dt>
+          <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
+            <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+              {{ notificationStats.avg_delivery_time }}s
+            </p>
+            <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
+              <div class="i-hugeicons-arrow-down-02 h-5 w-5 flex-shrink-0 self-center text-green-500" />
+              <span class="sr-only">Decreased by</span>
+              0.1s
+            </p>
+          </dd>
+        </div>
+      </dl>
     </div>
+  </div>
 
-    <!-- Recent Notifications -->
-    <div class="my-8 px-4 lg:px-8 sm:px-6">
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
-        <div class="px-4 py-5 sm:p-6">
-          <div class="flex items-center justify-between">
-            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">Recent Notifications</h3>
-            <router-link
-              to="/notifications/history"
-              class="inline-flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              <span>View All</span>
-              <div class="i-hugeicons-arrow-right-01  h-4 w-4" />
-            </router-link>
-          </div>
-          <div class="mt-4 flow-root">
-            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                <table class="min-w-full divide-y divide-gray-300 dark:divide-blue-gray-600">
-                  <thead>
-                    <tr>
-                      <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 sm:pl-0">Type</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Recipient</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Subject</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Status</th>
-                      <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">Sent</th>
-                      <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">Delivered</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200 dark:divide-blue-gray-600">
-                    <tr v-for="notification in recentNotifications" :key="notification.id">
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-100 sm:pl-0">
-                        <div class="flex items-center">
-                          <div :class="getChannelIcon(notification.type)" class="h-5 w-5 mr-2" />
-                          <span class="capitalize">{{ notification.type }}</span>
-                        </div>
-                      </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ notification.recipient }}</td>
-                      <td class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ notification.subject }}</td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm">
-                        <span
-                          class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
-                          :class="getStatusColor(notification.status)"
-                        >
-                          {{ notification.status }}
-                        </span>
-                      </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">{{ notification.sent_at }}</td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">{{ notification.delivered_at || '-' }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+  <!-- Recent Notifications -->
+  <div class="my-8 px-4 lg:px-8 sm:px-6">
+    <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="px-4 py-5 sm:p-6">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">Recent Notifications</h3>
+          <router-link
+            to="/notifications/history"
+            class="inline-flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            <span>View All</span>
+            <div class="i-hugeicons-arrow-right-01  h-4 w-4" />
+          </router-link>
         </div>
-      </div>
-    </div>
-
-    <!-- Notification Performance -->
-    <div class="px-4 lg:px-8 sm:px-6">
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <!-- Volume Chart -->
-        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-6">
-              <div>
-                <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Notification Volume</h3>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Notifications sent by channel</p>
-              </div>
-              <div class="flex items-center space-x-4">
-                <select
-                  v-model="timeRange"
-                  class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
-                >
-                  <option value="hour">Last Hour</option>
-                  <option value="day">Last 24 Hours</option>
-                  <option value="week">Last Week</option>
-                </select>
-              </div>
-            </div>
-            <div class="h-[300px] relative">
-              <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              </div>
-              <Line :data="volumeData" :options="chartOptions" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Delivery Time Chart -->
-        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-6">
-              <div>
-                <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Delivery Time</h3>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Average time to deliver notifications</p>
-              </div>
-            </div>
-            <div class="h-[300px] relative">
-              <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              </div>
-              <Line :data="deliveryTimeData" :options="chartOptions" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Channel Stats -->
-    <div class="mt-8 px-4 lg:px-8 sm:px-6">
-      <div class="sm:flex sm:items-center">
-        <div class="sm:flex-auto">
-          <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Channel Statistics</h3>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Detailed breakdown by notification channel</p>
-        </div>
-      </div>
-
-      <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2 sm:grid-cols-2">
-        <div v-for="(stats, name) in channelStats" :key="name" class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h4 class="inline-flex items-center space-x-2 px-2.5 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 dark:bg-blue-gray-600 dark:text-gray-200">
-              <div :class="getChannelIcon(name)" class="h-4 w-4" />
-              <span class="capitalize">{{ name }}</span>
-            </h4>
-          </div>
-
-          <div class="space-y-6">
-            <!-- Channel Stats -->
-            <div class="grid grid-cols-4 gap-4">
-              <div v-for="(value, status) in stats" :key="status" class="text-center">
-                <div class="text-2xl font-semibold font-mono" :class="{
-                  'text-blue-600 dark:text-blue-400': status === 'sent',
-                  'text-green-600 dark:text-green-400': status === 'delivered',
-                  'text-yellow-600 dark:text-yellow-400': status === 'pending',
-                  'text-red-600 dark:text-red-400': status === 'failed'
-                }">{{ formatNumber(value) }}</div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 capitalize">{{ status }}</div>
-              </div>
-            </div>
-
-            <!-- Delivery Progress -->
-            <div class="h-2.5 bg-gray-100 dark:bg-blue-gray-600 rounded-full overflow-hidden">
-              <div class="flex h-full">
-                <div class="bg-green-500 h-full" :style="{ width: `${(stats.delivered / stats.sent) * 100}%` }" />
-                <div class="bg-red-500 h-full" :style="{ width: `${(stats.failed / stats.sent) * 100}%` }" />
-              </div>
-            </div>
-            <div class="flex justify-between text-sm text-gray-500 dark:text-gray-400">
-              <span>Success Rate: {{ ((stats.delivered / stats.sent) * 100).toFixed(1) }}%</span>
-              <span>Failure Rate: {{ ((stats.failed / stats.sent) * 100).toFixed(1) }}%</span>
+        <div class="mt-4 flow-root">
+          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <table class="min-w-full divide-y divide-gray-300 dark:divide-blue-gray-600">
+                <thead>
+                  <tr>
+                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 sm:pl-0">Type</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Recipient</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Subject</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Status</th>
+                    <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">Sent</th>
+                    <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">Delivered</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-blue-gray-600">
+                  @foreach(recentNotifications as notification)
+                  <tr>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-100 sm:pl-0">
+                      <div class="flex items-center">
+                        <div :class="getChannelIcon(notification.type)" class="h-5 w-5 mr-2" />
+                        <span class="capitalize">{{ notification.type }}</span>
+                      </div>
+                    </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ notification.recipient }}</td>
+                    <td class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ notification.subject }}</td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm">
+                      <span
+                        class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
+                        :class="getStatusColor(notification.status)"
+                      >
+                        {{ notification.status }}
+                      </span>
+                    </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">{{ notification.sent_at }}</td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">{{ notification.delivered_at || '-' }}</td>
+                  </tr>
+                  @endforeach
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</template>
+
+  <!-- Notification Performance -->
+  <div class="px-4 lg:px-8 sm:px-6">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <!-- Volume Chart -->
+      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Notification Volume</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Notifications sent by channel</p>
+            </div>
+            <div class="flex items-center space-x-4">
+              <select
+                v-model="timeRange"
+                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+              >
+                <option value="hour">Last Hour</option>
+                <option value="day">Last 24 Hours</option>
+                <option value="week">Last Week</option>
+              </select>
+            </div>
+          </div>
+          <div class="h-[300px] relative">
+            @if(isLoading)
+            <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
+            @endif
+            <Line :data="volumeData" :options="chartOptions" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Delivery Time Chart -->
+      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Delivery Time</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Average time to deliver notifications</p>
+            </div>
+          </div>
+          <div class="h-[300px] relative">
+            @if(isLoading)
+            <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
+            @endif
+            <Line :data="deliveryTimeData" :options="chartOptions" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Channel Stats -->
+  <div class="mt-8 px-4 lg:px-8 sm:px-6">
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Channel Statistics</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Detailed breakdown by notification channel</p>
+      </div>
+    </div>
+
+    <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2 sm:grid-cols-2">
+      @foreach(channelStats as name, stats)
+      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h4 class="inline-flex items-center space-x-2 px-2.5 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 dark:bg-blue-gray-600 dark:text-gray-200">
+            <div :class="getChannelIcon(name)" class="h-4 w-4" />
+            <span class="capitalize">{{ name }}</span>
+          </h4>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Channel Stats -->
+          <div class="grid grid-cols-4 gap-4">
+            @foreach(stats as status, value)
+            <div class="text-center">
+              <div class="text-2xl font-semibold font-mono" :class="{
+                'text-blue-600 dark:text-blue-400': status === 'sent',
+                'text-green-600 dark:text-green-400': status === 'delivered',
+                'text-yellow-600 dark:text-yellow-400': status === 'pending',
+                'text-red-600 dark:text-red-400': status === 'failed'
+              }">{{ formatNumber(value) }}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 capitalize">{{ status }}</div>
+            </div>
+            @endforeach
+          </div>
+
+          <!-- Delivery Progress -->
+          <div class="h-2.5 bg-gray-100 dark:bg-blue-gray-600 rounded-full overflow-hidden">
+            <div class="flex h-full">
+              <div class="bg-green-500 h-full" :style="{ width: `${(stats.delivered / stats.sent) * 100}%` }" />
+              <div class="bg-red-500 h-full" :style="{ width: `${(stats.failed / stats.sent) * 100}%` }" />
+            </div>
+          </div>
+          <div class="flex justify-between text-sm text-gray-500 dark:text-gray-400">
+            <span>Success Rate: {{ ((stats.delivered / stats.sent) * 100).toFixed(1) }}%</span>
+            <span>Failure Rate: {{ ((stats.failed / stats.sent) * 100).toFixed(1) }}%</span>
+          </div>
+        </div>
+      </div>
+      @endforeach
+    </div>
+  </div>
+</div>

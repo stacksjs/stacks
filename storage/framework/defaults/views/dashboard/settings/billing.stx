@@ -11,9 +11,9 @@ import Plans from '../../../components/Dashboard/Billing/Plans.vue'
 import LoadingDetails from '../../../components/Dashboard/Skeleton/LoadingCard.vue'
 import TransactionHistory from '../../../components/Dashboard/Transaction/index.vue'
 
-const { isEmpty, showCurrentPlan } = useBillable()
+export const { isEmpty, showCurrentPlan } = useBillable()
 
-const paymentStore = usePaymentStore()
+export const paymentStore = usePaymentStore()
 
 onMounted(async () => {
   await paymentStore.fetchStripeCustomer(1).then(async () => {

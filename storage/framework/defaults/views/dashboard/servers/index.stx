@@ -451,18 +451,18 @@ const updateVisualization = () => {
 }
 
 // Update drag functions to handle undefined simulation
-function dragstarted(event: d3.D3DragEvent<SVGGElement, InfraNode, unknown>, d: InfraNode) {
+function dragstarted(event, d) {
   if (!event.active && simulation) simulation.alphaTarget(0.3).restart()
   d.fx = event.x
   d.fy = event.y
 }
 
-function dragged(event: d3.D3DragEvent<SVGGElement, InfraNode, unknown>, d: InfraNode) {
+function dragged(event, d) {
   d.fx = event.x
   d.fy = event.y
 }
 
-function dragended(event: d3.D3DragEvent<SVGGElement, InfraNode, unknown>, d: InfraNode) {
+function dragended(event, d) {
   if (!event.active && simulation) simulation.alphaTarget(0)
   d.fx = null
   d.fy = null
@@ -484,12 +484,12 @@ onMounted(() => {
 
 // Methods
 // Function to show node details
-const showNodeDetails = (node: InfraNode) => {
+const showNodeDetails = (node) => {
   selectedNode.value = node
 }
 
 // Function to format config details
-const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
+const formatConfigDetails = (config) => {
   if ('serverOS' in config) {
     // Server config
     return {
@@ -530,14 +530,14 @@ const nouns = [
   'unity', 'vortex', 'wave', 'xray', 'yeti', 'zephyr', 'atlas', 'byte', 'crest', 'delta'
 ]
 
-const generateServerName = (type: string) => {
+const generateServerName = (type) => {
   const adj = adjectives[Math.floor(Math.random() * adjectives.length)]
   const noun = nouns[Math.floor(Math.random() * nouns.length)]
   return `${adj}-${noun}`
 }
 
 // Update the updateServerDefaults function
-const updateServerDefaults = (server: ServerConfig) => {
+const updateServerDefaults = (server) => {
   // Reset database and search engine based on server type
   if (server.type === 'web') {
     server.database = ''
@@ -661,7 +661,7 @@ export const servers = ref<Record<string, ServerConfig>>({
 export const sortKey = ref<keyof ServerConfig>('name')
 export const sortOrder = ref<'asc' | 'desc'>('asc')
 
-const setSorting = (key: keyof ServerConfig) => {
+const setSorting = (key) => {
   if (sortKey.value === key) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -745,7 +745,7 @@ export const serverEvents = ref<ServerEvent[]>([
   }
 ])
 
-const getEventTypeColor = (type: string) => {
+const getEventTypeColor = (type) => {
   switch (type) {
     case 'success': return 'text-green-400'
     case 'error': return 'text-red-400'
@@ -754,7 +754,7 @@ const getEventTypeColor = (type: string) => {
   }
 }
 
-const getEventTypeIcon = (type: string) => {
+const getEventTypeIcon = (type) => {
   switch (type) {
     case 'success': return 'i-hugeicons-check-circle'
     case 'error': return 'i-hugeicons-x-circle'

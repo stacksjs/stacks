@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useHead } from '@vueuse/head'
 import Chart from 'chart.js/auto'
@@ -12,7 +12,6 @@ useHead({
   title: 'Dashboard - Marketing Waitlist',
 })
 
-// Define waitlist entry type
 interface WaitlistEntry {
   id: number
   name: string
@@ -30,7 +29,6 @@ interface WaitlistEntry {
   source: string
 }
 
-// Define product type for dropdown
 interface Product {
   id: number
   name: string
@@ -38,53 +36,38 @@ interface Product {
   count: number
 }
 
-// Available statuses
-const statuses = ['all', 'Waiting', 'Notified', 'Purchased', 'Cancelled']
+export const statuses = ['all', 'Waiting', 'Notified', 'Purchased', 'Cancelled']
+export const sources = ['all', 'Website', 'Mobile App', 'In-Store', 'Social Media', 'Email Campaign', 'Referral']
+export const notificationPreferences = ['sms', 'email', 'both']
+export const tablePreferences = []
 
-// Available sources
-const sources = ['all', 'Website', 'Mobile App', 'In-Store', 'Social Media', 'Email Campaign', 'Referral']
-
-// Notification preferences
-const notificationPreferences = ['sms', 'email', 'both']
-
-// Table preferences
-const tablePreferences: string[] = []
-
-// Calculate estimated wait time based on party size and current queue
-function calculateEstimatedWait(partySize: number): number {
-  const baseWait = 15 // Base wait time in minutes
+export function calculateEstimatedWait(partySize) {
+  const baseWait = 15
   const queueFactor = waitlistEntries.value.filter(e => e.status === 'Waiting').length * 5
   const partySizeFactor = Math.ceil(partySize / 2) * 5
   return baseWait + queueFactor + partySizeFactor
 }
 
-// Update queue positions
-function updateQueuePositions(): void {
-  // This function is no longer needed for product waitlist
+export function updateQueuePositions() {
   return
 }
 
-// Send SMS notification
-async function sendSMSNotification(entry: WaitlistEntry, message: string): Promise<void> {
-  // In a real app, this would integrate with Twilio or similar service
+export async function sendSMSNotification(entry, message) {
   console.log(`Sending SMS to ${entry.phone}: ${message}`)
 }
 
-// Send notification based on preference
-async function notifyCustomer(entry: WaitlistEntry, message: string): Promise<void> {
+export async function notifyCustomer(entry, message) {
   if (entry.notificationPreference === 'sms' || entry.notificationPreference === 'both') {
     await sendSMSNotification(entry, message)
   }
   if (entry.notificationPreference === 'email' || entry.notificationPreference === 'both') {
-    // Send email notification
     console.log(`Sending email to ${entry.email}: ${message}`)
   }
   entry.lastNotified = new Date().toISOString()
   entry.notified = true
 }
 
-// Calculate wait time statistics
-const waitTimeStats = computed(() => {
+export const waitTimeStats = computed(() => {
   const waitingEntries = waitlistEntries.value.filter(e => e.status === 'Waiting')
   return {
     totalWaiting: waitingEntries.length,
@@ -92,8 +75,7 @@ const waitTimeStats = computed(() => {
   }
 })
 
-// Sample waitlist data
-const waitlistEntries = ref<WaitlistEntry[]>([
+export const waitlistEntries = ref([
   {
     id: 1,
     name: 'John Smith',
@@ -224,9 +206,8 @@ const waitlistEntries = ref<WaitlistEntry[]>([
   }
 ])
 
-// Products derived from waitlist entries
-const products = computed<Product[]>(() => {
-  const productMap = new Map<string, number>()
+export const products = computed(() => {
+  const productMap = new Map()
 
   waitlistEntries.value.forEach(entry => {
     const count = productMap.get(entry.name) || 0
@@ -241,22 +222,18 @@ const products = computed<Product[]>(() => {
   }))
 })
 
-// Search and filter refs
-const searchQuery = ref<string>('')
-const statusFilter = ref<string>('all')
-const partySizeFilter = ref<string>('all')
-const tablePreferenceFilter = ref<string>('all')
+export const searchQuery = ref('')
+export const statusFilter = ref('all')
+export const partySizeFilter = ref('all')
+export const tablePreferenceFilter = ref('all')
 
-// Filter functions
-const filteredEntries = computed(() => {
+export const filteredEntries = computed(() => {
   return waitlistEntries.value.filter(entry => {
-    // Apply search filter
     const matchesSearch = searchQuery.value === '' ||
       entry.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       (entry.phone && entry.phone.includes(searchQuery.value)) ||
       entry.email.toLowerCase().includes(searchQuery.value.toLowerCase())
 
-    // Apply quantity filter
     let matchesQuantity = true
     if (partySizeFilter.value !== 'all') {
       const [minStr, maxStr] = partySizeFilter.value.split('-')
@@ -266,26 +243,21 @@ const filteredEntries = computed(() => {
         const max = parseInt(maxStr)
         matchesQuantity = entry.quantity >= min && entry.quantity <= max
       } else {
-        // For "7+" case
         matchesQuantity = entry.quantity >= min
       }
     }
 
-    // Apply status filter
     const matchesStatus = statusFilter.value === 'all' || entry.status === statusFilter.value
-
-    // Apply source filter
     const matchesSource = sourceFilter.value === 'all' || entry.source === sourceFilter.value
 
     return matchesSearch && matchesQuantity && matchesStatus && matchesSource
   })
 })
 
-// Sort refs and functions
-const sortBy = ref<'name' | 'dateAdded' | 'quantity'>('dateAdded')
-const sortOrder = ref<'asc' | 'desc'>('asc')
+export const sortBy = ref('dateAdded')
+export const sortOrder = ref('asc')
 
-function toggleSort(field: 'name' | 'dateAdded' | 'quantity') {
+export function toggleSort(field) {
   if (sortBy.value === field) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -294,8 +266,7 @@ function toggleSort(field: 'name' | 'dateAdded' | 'quantity') {
   }
 }
 
-// Sort entries
-const sortedEntries = computed(() => {
+export const sortedEntries = computed(() => {
   return [...filteredEntries.value].sort((a, b) => {
     if (sortBy.value === 'name') {
       return sortOrder.value === 'asc'
@@ -316,38 +287,36 @@ const sortedEntries = computed(() => {
   })
 })
 
-// Pagination
-const itemsPerPage = 10
-const currentPage = ref(1)
+export const itemsPerPage = 10
+export const currentPage = ref(1)
 
-const paginatedEntries = computed(() => {
+export const paginatedEntries = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
   return sortedEntries.value.slice(start, end)
 })
 
-const totalPages = computed(() => Math.ceil(sortedEntries.value.length / itemsPerPage))
+export const totalPages = computed(() => Math.ceil(sortedEntries.value.length / itemsPerPage))
 
-function nextPage() {
+export function nextPage() {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
   }
 }
 
-function prevPage() {
+export function prevPage() {
   if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
-function goToPage(page: number) {
+export function goToPage(page) {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
   }
 }
 
-// Get status badge class
-function getStatusClass(status: string): string {
+export function getStatusClass(status) {
   switch (status) {
     case 'Waiting':
       return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
@@ -362,8 +331,7 @@ function getStatusClass(status: string): string {
   }
 }
 
-// Get priority class
-function getPriorityClass(priority: number): string {
+export function getPriorityClass(priority) {
   switch (priority) {
     case 3:
       return 'text-red-600 dark:text-red-400 font-semibold'
@@ -376,40 +344,34 @@ function getPriorityClass(priority: number): string {
   }
 }
 
-// Modal state for adding/editing waitlist entry
-const showEntryModal = ref<boolean>(false)
-const isEditMode = ref<boolean>(false)
-const currentEntry = ref<WaitlistEntry | null>(null)
+export const showEntryModal = ref(false)
+export const isEditMode = ref(false)
+export const currentEntry = ref(null)
 
-// Calculate statistics
-const totalEntries = computed(() => waitlistEntries.value.length)
-const waitingEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Waiting').length)
-const notifiedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Notified').length)
-const purchasedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Purchased').length)
-const conversionRate = computed(() => {
+export const totalEntries = computed(() => waitlistEntries.value.length)
+export const waitingEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Waiting').length)
+export const notifiedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Notified').length)
+export const purchasedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Purchased').length)
+export const conversionRate = computed(() => {
   const total = totalEntries.value
   const purchased = purchasedEntries.value
   return total > 0 ? Math.round((purchased / total) * 100) : 0
 })
 
-// Form state for entry fields
-const entryName = ref<string>('')
-const entryEmail = ref<string>('')
-const entryPhone = ref<string | null>(null)
-const entryQuantity = ref<number>(2)
-const entryNotificationPreference = ref<'sms' | 'email' | 'both'>('sms')
-const entrySource = ref<string>('Website')
-const entryNotes = ref<string | null>(null)
-const entryPriority = ref<number>(1)
+export const entryName = ref('')
+export const entryEmail = ref('')
+export const entryPhone = ref(null)
+export const entryQuantity = ref(2)
+export const entryNotificationPreference = ref('sms')
+export const entrySource = ref('Website')
+export const entryNotes = ref(null)
+export const entryPriority = ref(1)
 
-// Add source filter with type
-const sourceFilter = ref<string>('all')
+export const sourceFilter = ref('all')
 
-// Initialize form fields when opening modal
-function openAddEntryModal(): void {
+export function openAddEntryModal() {
   isEditMode.value = false
 
-  // Reset form fields
   entryName.value = ''
   entryEmail.value = ''
   entryPhone.value = ''
@@ -422,11 +384,10 @@ function openAddEntryModal(): void {
   showEntryModal.value = true
 }
 
-function openEditEntryModal(entry: WaitlistEntry): void {
+export function openEditEntryModal(entry) {
   isEditMode.value = true
   currentEntry.value = { ...entry }
 
-  // Set form fields from entry
   entryName.value = entry.name
   entryEmail.value = entry.email
   entryPhone.value = entry.phone
@@ -439,15 +400,15 @@ function openEditEntryModal(entry: WaitlistEntry): void {
   showEntryModal.value = true
 }
 
-function saveEntry(): void {
+export function saveEntry() {
   const now = new Date()
   const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-  const entry: WaitlistEntry = {
+  const entry = {
     id: isEditMode.value && currentEntry.value ? currentEntry.value.id : Math.max(0, ...waitlistEntries.value.map(e => e.id)) + 1,
     name: entryName.value,
     email: entryEmail.value,
     phone: entryPhone.value || null,
-    productId: Math.floor(Math.random() * 1000), // Generate random product ID for demo
+    productId: Math.floor(Math.random() * 1000),
     quantity: entryQuantity.value,
     notificationPreference: entryNotificationPreference.value,
     notes: entryNotes.value || null,
@@ -460,7 +421,7 @@ function saveEntry(): void {
   }
 
   if (isEditMode.value && currentEntry.value) {
-    const index = waitlistEntries.value.findIndex(e => e.id === currentEntry.value!.id)
+    const index = waitlistEntries.value.findIndex(e => e.id === currentEntry.value.id)
     if (index !== -1) {
       waitlistEntries.value[index] = entry
     }
@@ -472,8 +433,7 @@ function saveEntry(): void {
   showEntryModal.value = false
 }
 
-// Function to delete an entry
-function deleteEntry(entryId: number): void {
+export function deleteEntry(entryId) {
   if (confirm('Are you sure you want to delete this waitlist entry?')) {
     const index = waitlistEntries.value.findIndex(e => e.id === entryId)
     if (index !== -1) {
@@ -482,31 +442,27 @@ function deleteEntry(entryId: number): void {
   }
 }
 
-// Function to mark an entry as notified
-function markAsNotified(entryId: number): void {
+export function markAsNotified(entryId) {
   const entry = waitlistEntries.value.find(e => e.id === entryId)
   if (entry) {
     entry.status = 'Notified'
   }
 }
 
-// Function to mark an entry as purchased
-function markAsPurchased(entryId: number): void {
+export function markAsPurchased(entryId) {
   const entry = waitlistEntries.value.find(e => e.id === entryId)
   if (entry) {
     entry.status = 'Purchased'
   }
 }
 
-// Notification system
-const showNotificationModal = ref<boolean>(false)
-const notificationSubject = ref<string>('Product Now Available')
-const notificationMessage = ref<string>('Good news! The product you were waiting for is now available for purchase.')
-const selectedEntries = ref<number[]>([])
-const selectAll = ref<boolean>(false)
+export const showNotificationModal = ref(false)
+export const notificationSubject = ref('Product Now Available')
+export const notificationMessage = ref('Good news! The product you were waiting for is now available for purchase.')
+export const selectedEntries = ref([])
+export const selectAll = ref(false)
 
-// Toggle select all entries
-function toggleSelectAll(): void {
+export function toggleSelectAll() {
   selectAll.value = !selectAll.value
   if (selectAll.value) {
     selectedEntries.value = paginatedEntries.value.map(entry => entry.id)
@@ -515,8 +471,7 @@ function toggleSelectAll(): void {
   }
 }
 
-// Toggle selection of a single entry
-function toggleEntrySelection(entryId: number): void {
+export function toggleEntrySelection(entryId) {
   const index = selectedEntries.value.indexOf(entryId)
   if (index === -1) {
     selectedEntries.value.push(entryId)
@@ -524,13 +479,11 @@ function toggleEntrySelection(entryId: number): void {
     selectedEntries.value.splice(index, 1)
   }
 
-  // Update selectAll based on whether all entries are selected
   selectAll.value = paginatedEntries.value.length > 0 &&
     paginatedEntries.value.every(entry => selectedEntries.value.includes(entry.id))
 }
 
-// Open notification modal
-function openNotificationModal(): void {
+export function openNotificationModal() {
   if (selectedEntries.value.length === 0) {
     alert('Please select at least one waitlist entry to notify')
     return
@@ -541,9 +494,7 @@ function openNotificationModal(): void {
   showNotificationModal.value = true
 }
 
-// Send notifications to selected entries
-function sendNotifications(): void {
-  // In a real app, this would send actual emails or notifications
+export function sendNotifications() {
   waitlistEntries.value.forEach(entry => {
     if (selectedEntries.value.includes(entry.id)) {
       entry.notified = true
@@ -551,23 +502,18 @@ function sendNotifications(): void {
     }
   })
 
-  // Reset selection and close modal
   selectedEntries.value = []
   selectAll.value = false
   showNotificationModal.value = false
 
-  // Show success message (in a real app, this would be a toast notification)
   alert(`Notifications sent to ${selectedEntries.value.length} customers`)
 }
 
-// Export waitlist data
-function exportWaitlist(): void {
-  // In a real app, this would generate a CSV or Excel file
+export function exportWaitlist() {
   alert('Waitlist data exported successfully')
 }
 
-// Bulk actions
-function bulkChangeStatus(status: string): void {
+export function bulkChangeStatus(status) {
   if (selectedEntries.value.length === 0) {
     alert('Please select at least one waitlist entry')
     return
@@ -582,13 +528,11 @@ function bulkChangeStatus(status: string): void {
     }
   })
 
-  // Reset selection
   selectedEntries.value = []
   selectAll.value = false
 }
 
-// Bulk delete
-function bulkDelete(): void {
+export function bulkDelete() {
   if (selectedEntries.value.length === 0) {
     alert('Please select at least one waitlist entry')
     return
@@ -597,25 +541,21 @@ function bulkDelete(): void {
   if (confirm(`Are you sure you want to delete ${selectedEntries.value.length} waitlist entries?`)) {
     waitlistEntries.value = waitlistEntries.value.filter(entry => !selectedEntries.value.includes(entry.id))
 
-    // Reset selection
     selectedEntries.value = []
     selectAll.value = false
   }
 }
 
-// Chart references
-const productChartRef = ref<HTMLCanvasElement | null>(null)
-const sourceChartRef = ref<HTMLCanvasElement | null>(null)
-const statusChartRef = ref<HTMLCanvasElement | null>(null)
-const trendChartRef = ref<HTMLCanvasElement | null>(null)
+export const productChartRef = ref(null)
+export const sourceChartRef = ref(null)
+export const statusChartRef = ref(null)
+export const trendChartRef = ref(null)
 
-// Chart instances
-let productChart: Chart | null = null
-let sourceChart: Chart | null = null
-let statusChart: Chart | null = null
-let trendChart: Chart | null = null
+let productChart = null
+let sourceChart = null
+let statusChart = null
+let trendChart = null
 
-// Generate random trend data for the past 30 days
 const generateTrendData = () => {
   const data = []
   const today = new Date()
@@ -624,16 +564,15 @@ const generateTrendData = () => {
     date.setDate(date.getDate() - i)
     data.push({
       date: date.toISOString().split('T')[0],
-      count: Math.floor(Math.random() * 5) // Random number of entries per day (0-4)
+      count: Math.floor(Math.random() * 5)
     })
   }
   return data
 }
 
-const trendData = ref(generateTrendData())
+export const trendData = ref(generateTrendData())
 
-// Chart colors with gradients
-const chartColors = {
+export const chartColors = {
   blue: {
     fill: 'rgba(59, 130, 246, 0.2)',
     stroke: 'rgba(59, 130, 246, 1)',
@@ -661,14 +600,13 @@ const chartColors = {
   },
 }
 
-// Base chart options
-const baseChartOptions = {
+export const baseChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
       display: true,
-      position: 'bottom' as const,
+      position: 'bottom',
       labels: {
         usePointStyle: true,
         padding: 20,
@@ -681,7 +619,7 @@ const baseChartOptions = {
       display: true,
       font: {
         size: 16,
-        weight: 'bold' as const
+        weight: 'bold'
       },
       padding: {
         top: 10,
@@ -691,8 +629,7 @@ const baseChartOptions = {
   }
 }
 
-// Base chart options with scales (for bar and line charts)
-const baseChartOptionsWithScales = {
+export const baseChartOptionsWithScales = {
   ...baseChartOptions,
   scales: {
     y: {
@@ -713,7 +650,6 @@ const baseChartOptionsWithScales = {
   }
 }
 
-// Initialize charts
 onMounted(() => {
   initProductChart()
   initSourceChart()
@@ -721,8 +657,7 @@ onMounted(() => {
   initTrendChart()
 })
 
-// Initialize product interest chart
-function initProductChart() {
+export function initProductChart() {
   if (!productChartRef.value) return
 
   const ctx = productChartRef.value.getContext('2d')
@@ -769,8 +704,7 @@ function initProductChart() {
   })
 }
 
-// Initialize source breakdown chart
-function initSourceChart() {
+export function initSourceChart() {
   if (!sourceChartRef.value) return
 
   const ctx = sourceChartRef.value.getContext('2d')
@@ -817,7 +751,7 @@ function initSourceChart() {
       },
       plugins: {
         legend: {
-          position: 'right' as const,
+          position: 'right',
           labels: {
             usePointStyle: true,
             padding: 20,
@@ -834,8 +768,7 @@ function initSourceChart() {
   })
 }
 
-// Initialize trend chart
-function initTrendChart() {
+export function initTrendChart() {
   if (!trendChartRef.value) return
 
   const ctx = trendChartRef.value.getContext('2d')
@@ -901,8 +834,7 @@ function initTrendChart() {
   })
 }
 
-// Initialize status breakdown chart
-function initStatusChart() {
+export function initStatusChart() {
   if (!statusChartRef.value) return
 
   const ctx = statusChartRef.value.getContext('2d')
@@ -944,7 +876,7 @@ function initStatusChart() {
       },
       plugins: {
         legend: {
-          position: 'right' as const,
+          position: 'right',
           labels: {
             usePointStyle: true,
             padding: 20,
@@ -961,10 +893,9 @@ function initStatusChart() {
   })
 }
 
-// Update charts when data changes
-function updateCharts(): void {
+export function updateCharts() {
   if (productChart && productChart.data) {
-    const chart = productChart as Chart<'bar'>
+    const chart = productChart
     const partySizes = [1, 2, 3, 4, 5, 6, '7+']
     const partySizeCounts = partySizes.map(size => {
       if (size === '7+') {
@@ -981,7 +912,7 @@ function updateCharts(): void {
   }
 
   if (sourceChart && sourceChart.data) {
-    const chart = sourceChart as Chart<'doughnut'>
+    const chart = sourceChart
     const sourceLabels = sources.slice(1)
     chart.data.labels = sourceLabels
     if (chart.data.datasets?.[0]) {
@@ -995,7 +926,7 @@ function updateCharts(): void {
   }
 
   if (statusChart && statusChart.data) {
-    const chart = statusChart as Chart<'pie'>
+    const chart = statusChart
     const statusLabels = statuses.slice(1)
     chart.data.labels = statusLabels
     if (chart.data.datasets?.[0]) {
@@ -1007,7 +938,7 @@ function updateCharts(): void {
   }
 
   if (trendChart && trendChart.data) {
-    const chart = trendChart as Chart<'line'>
+    const chart = trendChart
     const dates = trendData.value.map(d => d.date)
     chart.data.labels = dates
     if (chart.data.datasets?.[0]) {
@@ -1017,221 +948,226 @@ function updateCharts(): void {
   }
 }
 
-// Watch for changes in waitlist entries to update charts
 watch(waitlistEntries, () => {
   updateCharts()
 }, { deep: true })
 </script>
 
-<template>
-  <main>
-    <div class="px-6 py-6 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl">
-        <!-- Header section -->
-        <div class="sm:flex sm:items-center sm:justify-between">
-          <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Waitlist</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              Manage your product waitlist and notify customers when products become available
-            </p>
-          </div>
-          <div class="mt-4 flex space-x-3 sm:mt-0">
-            <button
-              type="button"
-              @click="openAddEntryModal"
-              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
-              Add to waitlist
-            </button>
-            <button
-              type="button"
-              @click="exportWaitlist"
-              class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-700"
-            >
-              <div class="i-hugeicons-download-01 h-5 w-5 mr-1"></div>
-              Export
-            </button>
-          </div>
+<main>
+  <div class="px-6 py-6 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="sm:flex sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Waitlist</h1>
+          <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            Manage your product waitlist and notify customers when products become available
+          </p>
+        </div>
+        <div class="mt-4 flex space-x-3 sm:mt-0">
+          <button
+            type="button"
+            @click="openAddEntryModal"
+            class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          >
+            <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
+            Add to waitlist
+          </button>
+          <button
+            type="button"
+            @click="exportWaitlist"
+            class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-700"
+          >
+            <div class="i-hugeicons-download-01 h-5 w-5 mr-1"></div>
+            Export
+          </button>
+        </div>
+      </div>
+
+      <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Waitlist</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
+            {{ totalEntries }}
+          </dd>
+          <dd class="mt-2 flex items-center text-sm text-blue-600 dark:text-blue-400">
+            <div class="i-hugeicons-hourglass h-4 w-4 mr-1"></div>
+            <span>{{ waitingEntries }} waiting</span>
+          </dd>
         </div>
 
-        <!-- Stats Cards -->
-        <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Waitlist</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
-              {{ totalEntries }}
-            </dd>
-            <dd class="mt-2 flex items-center text-sm text-blue-600 dark:text-blue-400">
-              <div class="i-hugeicons-hourglass h-4 w-4 mr-1"></div>
-              <span>{{ waitingEntries }} waiting</span>
-            </dd>
-          </div>
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Notified</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ notifiedEntries }}</dd>
+          <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+            <div class="i-hugeicons-notification-square h-4 w-4 mr-1"></div>
+            <span>Customers notified</span>
+          </dd>
+        </div>
 
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Notified</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ notifiedEntries }}</dd>
-            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-              <div class="i-hugeicons-notification-square h-4 w-4 mr-1"></div>
-              <span>Customers notified</span>
-            </dd>
-          </div>
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Purchased</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ purchasedEntries }}</dd>
+          <dd class="mt-2 flex items-center text-sm text-purple-600 dark:text-purple-400">
+            <div class="i-hugeicons-shopping-cart-02 h-4 w-4 mr-1"></div>
+            <span>Completed purchases</span>
+          </dd>
+        </div>
 
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Purchased</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ purchasedEntries }}</dd>
-            <dd class="mt-2 flex items-center text-sm text-purple-600 dark:text-purple-400">
-              <div class="i-hugeicons-shopping-cart-02 h-4 w-4 mr-1"></div>
-              <span>Completed purchases</span>
-            </dd>
-          </div>
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Conversion Rate</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
+            {{ conversionRate }}%
+          </dd>
+          <dd class="mt-2 flex items-center text-sm text-yellow-600 dark:text-yellow-400">
+            <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+            <span>Purchase rate</span>
+          </dd>
+        </div>
+      </dl>
 
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Conversion Rate</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
-              {{ conversionRate }}%
-            </dd>
-            <dd class="mt-2 flex items-center text-sm text-yellow-600 dark:text-yellow-400">
-              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
-              <span>Purchase rate</span>
-            </dd>
-          </div>
-        </dl>
-
-        <!-- Charts -->
-        <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <!-- Wait Time Trend Chart -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Waitlist Entries</h3>
-              <div class="mt-2 h-80">
-                <canvas ref="trendChartRef"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <!-- Party Size Distribution Chart -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Order Quantities</h3>
-              <div class="mt-2 h-80">
-                <canvas ref="productChartRef"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <!-- Source Distribution Chart -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Source Distribution</h3>
-              <div class="mt-2 h-80">
-                <canvas ref="sourceChartRef"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <!-- Status Distribution Chart -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Current Status</h3>
-              <div class="mt-2 h-80">
-                <canvas ref="statusChartRef"></canvas>
-              </div>
+      <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="p-6">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Waitlist Entries</h3>
+            <div class="mt-2 h-80">
+              <canvas ref="trendChartRef"></canvas>
             </div>
           </div>
         </div>
 
-        <!-- Filters and view options -->
-        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div class="relative max-w-sm">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="p-6">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Order Quantities</h3>
+            <div class="mt-2 h-80">
+              <canvas ref="productChartRef"></canvas>
             </div>
-            <input
-              v-model="searchQuery"
-              type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
-              placeholder="Search waitlist..."
-            />
           </div>
+        </div>
 
-          <div class="flex flex-col sm:flex-row gap-4">
-            <!-- Party Size filter -->
-            <select
-              v-model="partySizeFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option value="all">All Party Sizes</option>
-              <option value="1-2">1-2 People</option>
-              <option value="3-4">3-4 People</option>
-              <option value="5-6">5-6 People</option>
-              <option value="7+">7+ People</option>
-            </select>
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="p-6">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Source Distribution</h3>
+            <div class="mt-2 h-80">
+              <canvas ref="sourceChartRef"></canvas>
+            </div>
+          </div>
+        </div>
 
-            <!-- Status filter -->
-            <select
-              v-model="statusFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option value="all">All Statuses</option>
-              <option v-for="status in statuses.slice(1)" :key="status" :value="status">
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="p-6">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Current Status</h3>
+            <div class="mt-2 h-80">
+              <canvas ref="statusChartRef"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="relative max-w-sm">
+          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
+          </div>
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+            placeholder="Search waitlist..."
+          />
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-4">
+          <select
+            v-model="partySizeFilter"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+          >
+            <option value="all">All Party Sizes</option>
+            <option value="1-2">1-2 People</option>
+            <option value="3-4">3-4 People</option>
+            <option value="5-6">5-6 People</option>
+            <option value="7+">7+ People</option>
+          </select>
+
+          <select
+            v-model="statusFilter"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+          >
+            <option value="all">All Statuses</option>
+            @foreach(statuses.slice(1) as status)
+              <option :key="status" :value="status">
                 {{ status }}
               </option>
-            </select>
+            @endforeach
+          </select>
 
-            <!-- Table Preference filter -->
-            <select
-              v-model="tablePreferenceFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option value="all">All Table Types</option>
-              <option v-for="preference in tablePreferences.slice(1)" :key="preference" :value="preference">
+          <select
+            v-model="tablePreferenceFilter"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+          >
+            <option value="all">All Table Types</option>
+            @foreach(tablePreferences.slice(1) as preference)
+              <option :key="preference" :value="preference">
                 {{ preference }}
               </option>
-            </select>
-          </div>
+            @endforeach
+          </select>
         </div>
+      </div>
 
-        <!-- Sort options -->
-        <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
-          <span class="mr-2">Sort by:</span>
-          <button
-            @click="toggleSort('name')"
-            class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'name' }"
-          >
-            Name
-            <span v-if="sortBy === 'name'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+      <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
+        <span class="mr-2">Sort by:</span>
+        <button
+          @click="toggleSort('name')"
+          class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
+          :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'name' }"
+        >
+          Name
+          @if(sortBy === 'name')
+            <span class="ml-1">
+              @if(sortOrder === 'asc')
+                <div class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+              @else
+                <div class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+              @endif
             </span>
-          </button>
-          <button
-            @click="toggleSort('dateAdded')"
-            class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'dateAdded' }"
-          >
-            Date Added
-            <span v-if="sortBy === 'dateAdded'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+          @endif
+        </button>
+        <button
+          @click="toggleSort('dateAdded')"
+          class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
+          :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'dateAdded' }"
+        >
+          Date Added
+          @if(sortBy === 'dateAdded')
+            <span class="ml-1">
+              @if(sortOrder === 'asc')
+                <div class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+              @else
+                <div class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+              @endif
             </span>
-          </button>
-          <button
-            @click="toggleSort('quantity')"
-            class="flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'quantity' }"
-          >
-            Quantity
-            <span v-if="sortBy === 'quantity'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+          @endif
+        </button>
+        <button
+          @click="toggleSort('quantity')"
+          class="flex items-center hover:text-gray-700 dark:hover:text-gray-300"
+          :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'quantity' }"
+        >
+          Quantity
+          @if(sortBy === 'quantity')
+            <span class="ml-1">
+              @if(sortOrder === 'asc')
+                <div class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+              @else
+                <div class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+              @endif
             </span>
-          </button>
-        </div>
+          @endif
+        </button>
+      </div>
 
-        <!-- Bulk actions toolbar -->
-        <div v-if="selectedEntries.length > 0" class="mt-4 bg-blue-50 p-4 rounded-md dark:bg-blue-900/30">
+      @if(selectedEntries.length > 0)
+        <div class="mt-4 bg-blue-50 p-4 rounded-md dark:bg-blue-900/30">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
               <span class="text-sm font-medium text-blue-700 dark:text-blue-300">{{ selectedEntries.length }} parties selected</span>
@@ -1261,47 +1197,50 @@ watch(waitlistEntries, () => {
             </div>
           </div>
         </div>
+      @endif
 
-        <!-- Waitlist table -->
-        <div class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-blue-gray-900">
-              <tr>
-                <th scope="col" class="relative py-3.5 pl-4 pr-3 sm:pl-6">
-                  <input
-                    type="checkbox"
-                    :checked="selectAll"
-                    @change="toggleSelectAll"
-                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600"
-                  />
-                </th>
-                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
-                  Customer Details
-                </th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                  Quantity
-                </th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                  Status
-                </th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                  Date Added
-                </th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                  Source
-                </th>
-                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                  <span class="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
-              <tr v-if="paginatedEntries.length === 0" class="text-center">
+      <div class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+        <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-blue-gray-900">
+            <tr>
+              <th scope="col" class="relative py-3.5 pl-4 pr-3 sm:pl-6">
+                <input
+                  type="checkbox"
+                  :checked="selectAll"
+                  @change="toggleSelectAll"
+                  class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600"
+                />
+              </th>
+              <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
+                Customer Details
+              </th>
+              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                Quantity
+              </th>
+              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                Status
+              </th>
+              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                Date Added
+              </th>
+              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                Source
+              </th>
+              <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                <span class="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
+            @if(paginatedEntries.length === 0)
+              <tr class="text-center">
                 <td colspan="7" class="py-10 text-gray-500 dark:text-gray-400">
                   No entries in the waitlist.
                 </td>
               </tr>
-              <tr v-for="entry in paginatedEntries" :key="entry.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700">
+            @endif
+            @foreach(paginatedEntries as entry)
+              <tr :key="entry.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700">
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                   <input
                     type="checkbox"
@@ -1347,76 +1286,78 @@ watch(waitlistEntries, () => {
                       <div class="i-hugeicons-edit-01 h-5 w-5"></div>
                       <span class="sr-only">Edit</span>
                     </button>
-                    <button
-                      v-if="entry.status === 'Waiting'"
-                      @click="markAsNotified(entry.id)"
-                      class="text-gray-400 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors"
-                    >
-                      <div class="i-hugeicons-notification-square h-5 w-5"></div>
-                      <span class="sr-only">Notify</span>
-                    </button>
-                    <button
-                      v-if="entry.status === 'Notified'"
-                      @click="markAsPurchased(entry.id)"
-                      class="text-gray-400 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
-                    >
-                      <div class="i-hugeicons-shopping-cart-02 h-5 w-5"></div>
-                      <span class="sr-only">Purchase</span>
-                    </button>
+                    @if(entry.status === 'Waiting')
+                      <button
+                        @click="markAsNotified(entry.id)"
+                        class="text-gray-400 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors"
+                      >
+                        <div class="i-hugeicons-notification-square h-5 w-5"></div>
+                        <span class="sr-only">Notify</span>
+                      </button>
+                    @endif
+                    @if(entry.status === 'Notified')
+                      <button
+                        @click="markAsPurchased(entry.id)"
+                        class="text-gray-400 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
+                      >
+                        <div class="i-hugeicons-shopping-cart-02 h-5 w-5"></div>
+                        <span class="sr-only">Purchase</span>
+                      </button>
+                    @endif
                   </div>
                 </td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
 
-        <!-- Pagination -->
-        <div class="mt-5 flex items-center justify-between">
-          <div class="flex flex-1 justify-between sm:hidden">
-            <button
-              @click="prevPage"
-              :disabled="currentPage === 1"
-              :class="[
-                currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
-                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-white'
-              ]"
-            >
-              Previous
-            </button>
-            <button
-              @click="nextPage"
-              :disabled="currentPage === totalPages"
-              :class="[
-                currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
-                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-white'
-              ]"
-            >
-              Next
-            </button>
+      <div class="mt-5 flex items-center justify-between">
+        <div class="flex flex-1 justify-between sm:hidden">
+          <button
+            @click="prevPage"
+            :disabled="currentPage === 1"
+            :class="[
+              currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
+              'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-white'
+            ]"
+          >
+            Previous
+          </button>
+          <button
+            @click="nextPage"
+            :disabled="currentPage === totalPages"
+            :class="[
+              currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
+              'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-white'
+            ]"
+          >
+            Next
+          </button>
+        </div>
+        <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+              Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
+              <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredEntries.length) }}</span> of
+              <span class="font-medium">{{ filteredEntries.length }}</span> results
+            </p>
           </div>
-          <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-            <div>
-              <p class="text-sm text-gray-700 dark:text-gray-300">
-                Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
-                <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredEntries.length) }}</span> of
-                <span class="font-medium">{{ filteredEntries.length }}</span> results
-              </p>
-            </div>
-            <div>
-              <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+          <div>
+            <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+              <button
+                @click="goToPage(currentPage - 1)"
+                :disabled="currentPage === 1"
+                :class="[
+                  currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
+                  'relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600'
+                ]"
+              >
+                <span class="sr-only">Previous</span>
+                <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
+              </button>
+              @foreach(totalPages as page)
                 <button
-                  @click="goToPage(currentPage - 1)"
-                  :disabled="currentPage === 1"
-                  :class="[
-                    currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
-                    'relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600'
-                  ]"
-                >
-                  <span class="sr-only">Previous</span>
-                  <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
-                </button>
-                <button
-                  v-for="page in totalPages"
                   :key="page"
                   @click="goToPage(page)"
                   :class="[
@@ -1428,26 +1369,27 @@ watch(waitlistEntries, () => {
                 >
                   {{ page }}
                 </button>
-                <button
-                  @click="goToPage(currentPage + 1)"
-                  :disabled="currentPage === totalPages"
-                  :class="[
-                    currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
-                    'relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600'
-                  ]"
-                >
-                  <span class="sr-only">Next</span>
-                  <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
-                </button>
-              </nav>
-            </div>
+              @endforeach
+              <button
+                @click="goToPage(currentPage + 1)"
+                :disabled="currentPage === totalPages"
+                :class="[
+                  currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
+                  'relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600'
+                ]"
+              >
+                <span class="sr-only">Next</span>
+                <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
+              </button>
+            </nav>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Entry modal -->
-    <div v-if="showEntryModal" class="fixed inset-0 z-10 overflow-y-auto">
+  @if(showEntryModal)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
         <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
@@ -1467,7 +1409,6 @@ watch(waitlistEntries, () => {
           <div class="mt-5 sm:mt-6">
             <form @submit.prevent="saveEntry">
               <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                <!-- Name field -->
                 <div class="sm:col-span-3">
                   <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Name
@@ -1483,7 +1424,6 @@ watch(waitlistEntries, () => {
                   </div>
                 </div>
 
-                <!-- Email field -->
                 <div class="sm:col-span-3">
                   <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Email
@@ -1499,7 +1439,6 @@ watch(waitlistEntries, () => {
                   </div>
                 </div>
 
-                <!-- Phone field -->
                 <div class="sm:col-span-3">
                   <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Phone (optional)
@@ -1514,7 +1453,6 @@ watch(waitlistEntries, () => {
                   </div>
                 </div>
 
-                <!-- Party Size field -->
                 <div class="sm:col-span-3">
                   <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Party Size
@@ -1529,7 +1467,6 @@ watch(waitlistEntries, () => {
                   </div>
                 </div>
 
-                <!-- Notification Preference field -->
                 <div class="sm:col-span-3">
                   <label for="notificationPreference" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Notification Preference
@@ -1540,14 +1477,15 @@ watch(waitlistEntries, () => {
                       v-model="entryNotificationPreference"
                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
                     >
-                      <option v-for="preference in notificationPreferences" :key="preference" :value="preference">
-                        {{ preference }}
-                      </option>
+                      @foreach(notificationPreferences as preference)
+                        <option :key="preference" :value="preference">
+                          {{ preference }}
+                        </option>
+                      @endforeach
                     </select>
                   </div>
                 </div>
 
-                <!-- Source field -->
                 <div class="sm:col-span-3">
                   <label for="source" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Source
@@ -1562,7 +1500,6 @@ watch(waitlistEntries, () => {
                   </div>
                 </div>
 
-                <!-- Notes field -->
                 <div class="sm:col-span-6">
                   <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Notes (optional)
@@ -1598,9 +1535,10 @@ watch(waitlistEntries, () => {
         </div>
       </div>
     </div>
+  @endif
 
-    <!-- Notification modal -->
-    <div v-if="showNotificationModal" class="fixed inset-0 z-10 overflow-y-auto">
+  @if(showNotificationModal)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
         <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
@@ -1641,5 +1579,5 @@ watch(waitlistEntries, () => {
         </div>
       </div>
     </div>
-  </main>
-</template>
+  @endif
+</main>

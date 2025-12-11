@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 
@@ -32,8 +32,7 @@ interface QueryRecord {
   tags?: string[]
 }
 
-// Mock data for query history
-const queryHistory = ref<QueryRecord[]>([
+const queryHistory = ref([
   {
     id: '1',
     query: 'SELECT * FROM users WHERE email = ? LIMIT 1',
@@ -240,15 +239,14 @@ const queryHistory = ref<QueryRecord[]>([
   },
 ])
 
-const timeRange = ref<'day' | 'week' | 'month'>('day')
-const selectedConnection = ref<string>('all')
-const selectedStatus = ref<string>('all')
-const selectedType = ref<string>('all')
+const timeRange = ref('day')
+const selectedConnection = ref('all')
+const selectedStatus = ref('all')
+const selectedType = ref('all')
 const isLoading = ref(false)
 const searchQuery = ref('')
 
-// Add a function to determine query type
-const getQueryType = (query: string): 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'OTHER' => {
+const getQueryType = (query) => {
   const upperQuery = query.trim().toUpperCase()
   if (upperQuery.startsWith('SELECT')) return 'SELECT'
   if (upperQuery.startsWith('INSERT')) return 'INSERT'
@@ -257,8 +255,7 @@ const getQueryType = (query: string): 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' 
   return 'OTHER'
 }
 
-// Add styles for query type badges
-const queryTypeBadges: Record<string, string> = {
+const queryTypeBadges = {
   SELECT: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 ring-blue-700/10 dark:ring-blue-400/30',
   INSERT: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 ring-green-700/10 dark:ring-green-400/30',
   UPDATE: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 ring-amber-700/10 dark:ring-amber-400/30',
@@ -266,26 +263,21 @@ const queryTypeBadges: Record<string, string> = {
   OTHER: 'bg-gray-50 dark:bg-gray-900/20 text-gray-700 dark:text-gray-300 ring-gray-700/10 dark:ring-gray-400/30'
 }
 
-// Filter functions
 const filteredQueries = computed(() => {
   let filtered = [...queryHistory.value]
 
-  // Filter by connection
   if (selectedConnection.value !== 'all') {
     filtered = filtered.filter(query => query.connection === selectedConnection.value)
   }
 
-  // Filter by status
   if (selectedStatus.value !== 'all') {
     filtered = filtered.filter(query => query.status === selectedStatus.value)
   }
 
-  // Filter by query type
   if (selectedType.value !== 'all') {
     filtered = filtered.filter(query => getQueryType(query.query) === selectedType.value)
   }
 
-  // Filter by search query
   if (searchQuery.value) {
     const lowerSearch = searchQuery.value.toLowerCase()
     filtered = filtered.filter(query =>
@@ -298,30 +290,27 @@ const filteredQueries = computed(() => {
   return filtered
 })
 
-// Status colors
-const queryStatusColors: Record<string, string> = {
+const queryStatusColors = {
   completed: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/50 ring-green-600/20',
   slow: 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 ring-yellow-600/20',
   failed: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/50 ring-red-600/20',
 }
 
-const getQueryStatusColor = (status: string): string => {
+const getQueryStatusColor = (status) => {
   return queryStatusColors[status] || 'text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 ring-gray-600/20'
 }
 
-// Format helpers
-const formatQuery = (query: string): string => {
+const formatQuery = (query) => {
   if (query.length > 100) {
     return query.substring(0, 100) + '...'
   }
   return query
 }
 
-const formatDuration = (duration: number): string => {
+const formatDuration = (duration) => {
   return duration.toFixed(2) + ' ms'
 }
 
-// Refresh data
 const refreshData = () => {
   isLoading.value = true
   setTimeout(() => {
@@ -329,142 +318,145 @@ const refreshData = () => {
   }, 500)
 }
 
-// Watch for changes and refresh
 watch([timeRange, selectedConnection, selectedStatus, selectedType], () => {
   refreshData()
 })
+
+export { queryHistory, timeRange, selectedConnection, selectedStatus, selectedType, isLoading, searchQuery, getQueryType, queryTypeBadges, filteredQueries, queryStatusColors, getQueryStatusColor, formatQuery, formatDuration, refreshData }
 </script>
 
-<template>
-  <div class="min-h-screen">
-    <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-6 bg-white px-4 py-4 shadow-sm dark:bg-blue-gray-900 sm:px-6 lg:px-8">
+<div class="min-h-screen">
+  <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-6 bg-white px-4 py-4 shadow-sm dark:bg-blue-gray-900 sm:px-6 lg:px-8">
+    <div>
+      <h1 class="text-lg text-gray-900 font-semibold leading-7 dark:text-white">
+        Query History
+      </h1>
+      <p class="mt-1 text-sm text-gray-500 leading-6 dark:text-gray-400">
+        View and analyze past database queries
+      </p>
+    </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="inline-flex rounded-md shadow-sm">
+        <button
+          type="button"
+          class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-medium"
+          :class="timeRange === 'day' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-gray-200 dark:ring-blue-gray-700 dark:hover:bg-blue-gray-700'"
+          @click="timeRange = 'day'"
+        >
+          Day
+        </button>
+        <button
+          type="button"
+          class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-medium"
+          :class="timeRange === 'week' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-gray-200 dark:ring-blue-gray-700 dark:hover:bg-blue-gray-700'"
+          @click="timeRange = 'week'"
+        >
+          Week
+        </button>
+        <button
+          type="button"
+          class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-medium"
+          :class="timeRange === 'month' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-gray-200 dark:ring-blue-gray-700 dark:hover:bg-blue-gray-700'"
+          @click="timeRange = 'month'"
+        >
+          Month
+        </button>
+      </div>
       <div>
-        <h1 class="text-lg text-gray-900 font-semibold leading-7 dark:text-white">
-          Query History
-        </h1>
-        <p class="mt-1 text-sm text-gray-500 leading-6 dark:text-gray-400">
-          View and analyze past database queries
-        </p>
+        <select
+          id="connection"
+          name="connection"
+          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
+          v-model="selectedConnection"
+        >
+          <option value="all">All connections</option>
+          <option value="mysql">MySQL</option>
+          <option value="postgres">PostgreSQL</option>
+          <option value="sqlite">SQLite</option>
+          <option value="mongodb">MongoDB</option>
+        </select>
       </div>
-      <div class="flex flex-wrap items-center gap-3">
-        <div class="inline-flex rounded-md shadow-sm">
-          <button
-            type="button"
-            class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-medium"
-            :class="timeRange === 'day' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-gray-200 dark:ring-blue-gray-700 dark:hover:bg-blue-gray-700'"
-            @click="timeRange = 'day'"
-          >
-            Day
-          </button>
-          <button
-            type="button"
-            class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-medium"
-            :class="timeRange === 'week' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-gray-200 dark:ring-blue-gray-700 dark:hover:bg-blue-gray-700'"
-            @click="timeRange = 'week'"
-          >
-            Week
-          </button>
-          <button
-            type="button"
-            class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-medium"
-            :class="timeRange === 'month' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-gray-200 dark:ring-blue-gray-700 dark:hover:bg-blue-gray-700'"
-            @click="timeRange = 'month'"
-          >
-            Month
-          </button>
-        </div>
-        <div>
-          <select
-            id="connection"
-            name="connection"
-            class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
-            v-model="selectedConnection"
-          >
-            <option value="all">All connections</option>
-            <option value="mysql">MySQL</option>
-            <option value="postgres">PostgreSQL</option>
-            <option value="sqlite">SQLite</option>
-            <option value="mongodb">MongoDB</option>
-          </select>
-        </div>
-        <div>
-          <select
-            id="status"
-            name="status"
-            class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
-            v-model="selectedStatus"
-          >
-            <option value="all">All statuses</option>
-            <option value="completed">Completed</option>
-            <option value="slow">Slow</option>
-            <option value="failed">Failed</option>
-          </select>
-        </div>
-        <div>
-          <select
-            id="type"
-            name="type"
-            class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
-            v-model="selectedType"
-          >
-            <option value="all">All types</option>
-            <option value="SELECT">SELECT</option>
-            <option value="INSERT">INSERT</option>
-            <option value="UPDATE">UPDATE</option>
-            <option value="DELETE">DELETE</option>
-            <option value="OTHER">OTHER</option>
-          </select>
-        </div>
-        <div class="relative w-full sm:w-auto">
-          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
-          </div>
-          <input
-            type="text"
-            v-model="searchQuery"
-            class="block w-full rounded-md border-gray-300 py-2 pl-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
-            placeholder="Search queries..."
-          />
-        </div>
+      <div>
+        <select
+          id="status"
+          name="status"
+          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
+          v-model="selectedStatus"
+        >
+          <option value="all">All statuses</option>
+          <option value="completed">Completed</option>
+          <option value="slow">Slow</option>
+          <option value="failed">Failed</option>
+        </select>
       </div>
-    </header>
+      <div>
+        <select
+          id="type"
+          name="type"
+          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
+          v-model="selectedType"
+        >
+          <option value="all">All types</option>
+          <option value="SELECT">SELECT</option>
+          <option value="INSERT">INSERT</option>
+          <option value="UPDATE">UPDATE</option>
+          <option value="DELETE">DELETE</option>
+          <option value="OTHER">OTHER</option>
+        </select>
+      </div>
+      <div class="relative w-full sm:w-auto">
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+          <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
+        </div>
+        <input
+          type="text"
+          v-model="searchQuery"
+          class="block w-full rounded-md border-gray-300 py-2 pl-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
+          placeholder="Search queries..."
+        />
+      </div>
+    </div>
+  </header>
 
-    <main class="px-4 py-8 sm:px-6 lg:px-8">
-      <!-- Queries Table -->
-      <div class="mt-4">
-        <div class="relative">
-          <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-blue-gray-900/50 z-10">
+  <main class="px-4 py-8 sm:px-6 lg:px-8">
+    <!-- Queries Table -->
+    <div class="mt-4">
+      <div class="relative">
+        @if(isLoading)
+          <div class="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-blue-gray-900/50 z-10">
             <div class="i-hugeicons-loading-01 h-8 w-8 animate-spin text-blue-600 dark:text-blue-400"></div>
           </div>
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-300 dark:divide-blue-gray-700">
-              <thead class="bg-gray-50 dark:bg-blue-gray-800">
+        @endif
+        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-300 dark:divide-blue-gray-700">
+            <thead class="bg-gray-50 dark:bg-blue-gray-800">
+              <tr>
+                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
+                  Query
+                </th>
+                <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white lg:table-cell">
+                  Connection
+                </th>
+                <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white sm:table-cell">
+                  Duration
+                </th>
+                <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white lg:table-cell">
+                  Model / Method
+                </th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                  Status
+                </th>
+                <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white sm:table-cell">
+                  Executed At
+                </th>
+                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                  <span class="sr-only">View</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white dark:divide-blue-gray-700 dark:bg-blue-gray-900">
+              @foreach(filteredQueries as query)
                 <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
-                    Query
-                  </th>
-                  <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white lg:table-cell">
-                    Connection
-                  </th>
-                  <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white sm:table-cell">
-                    Duration
-                  </th>
-                  <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white lg:table-cell">
-                    Model / Method
-                  </th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                    Status
-                  </th>
-                  <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white sm:table-cell">
-                    Executed At
-                  </th>
-                  <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                    <span class="sr-only">View</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 bg-white dark:divide-blue-gray-700 dark:bg-blue-gray-900">
-                <tr v-for="query in filteredQueries" :key="query.id">
                   <td class="py-4 pl-4 pr-3 text-sm sm:pl-6">
                     <div class="flex items-center gap-2 mb-1">
                       <span
@@ -481,9 +473,11 @@ watch([timeRange, selectedConnection, selectedStatus, selectedType], () => {
                       </div>
                     </div>
                     <div class="hidden text-gray-500 dark:text-gray-400 xl:block mt-1">
-                      <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium mr-1" v-for="tag in query.tags" :key="tag">
-                        {{ tag }}
-                      </span>
+                      @foreach(query.tags as tag)
+                        <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium mr-1">
+                          {{ tag }}
+                        </span>
+                      @endforeach
                     </div>
                   </td>
                   <td class="hidden px-3 py-4 text-sm text-gray-500 dark:text-gray-400 lg:table-cell">
@@ -513,16 +507,18 @@ watch([timeRange, selectedConnection, selectedStatus, selectedType], () => {
                     </router-link>
                   </td>
                 </tr>
-                <tr v-if="filteredQueries.length === 0">
+              @endforeach
+              @if(filteredQueries.length === 0)
+                <tr>
                   <td colspan="7" class="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
                     No queries found matching your criteria.
                   </td>
                 </tr>
-              </tbody>
-            </table>
-          </div>
+              @endif
+            </tbody>
+          </table>
         </div>
       </div>
-    </main>
-  </div>
-</template>
+    </div>
+  </main>
+</div>

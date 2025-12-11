@@ -3,11 +3,10 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useErrors } from '../../../../functions/monitoring/errors'
-import type { GroupedError } from '../../../../functions/monitoring/errors'
 import DashboardLayout from '../../../../components/Dashboard/DashboardLayout.vue'
 import { StatsCard, Card, Button, Input, Select, Badge, Table, Pagination, Modal } from '../../../../components/Dashboard/UI'
 
@@ -26,7 +25,6 @@ const {
   deleteErrorGroup,
 } = useErrors()
 
-// Fetch data on mount
 onMounted(async () => {
   await Promise.all([
     fetchGroupedErrors(),
@@ -34,22 +32,19 @@ onMounted(async () => {
   ])
 })
 
-// Filters
 const searchQuery = ref('')
-const statusFilter = ref<string | null>(null)
-const typeFilter = ref<string | null>(null)
+const statusFilter = ref(null)
+const typeFilter = ref(null)
 const sortBy = ref('last_seen')
-const sortOrder = ref<'asc' | 'desc'>('desc')
+const sortOrder = ref('desc')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 
-// Modal state
-const selectedError = ref<GroupedError | null>(null)
+const selectedError = ref(null)
 const isDetailModalOpen = ref(false)
 const showDeleteModal = ref(false)
-const errorToDelete = ref<GroupedError | null>(null)
+const errorToDelete = ref(null)
 
-// Get unique error types for filter
 const typeOptions = computed(() => {
   const types = new Set(groupedErrors.value.map(e => e.type))
   return [
@@ -58,7 +53,6 @@ const typeOptions = computed(() => {
   ]
 })
 
-// Status options
 const statusOptions = [
   { value: '', label: 'All Statuses' },
   { value: 'unresolved', label: 'Unresolved' },
@@ -66,16 +60,14 @@ const statusOptions = [
   { value: 'ignored', label: 'Ignored' },
 ]
 
-// Table columns
 const columns = [
   { key: 'type', label: 'Type', sortable: true },
   { key: 'message', label: 'Message', sortable: false },
-  { key: 'count', label: 'Events', sortable: true, align: 'center' as const },
-  { key: 'status', label: 'Status', sortable: false, align: 'center' as const },
-  { key: 'last_seen', label: 'Last Seen', sortable: true, align: 'right' as const },
+  { key: 'count', label: 'Events', sortable: true, align: 'center' },
+  { key: 'status', label: 'Status', sortable: false, align: 'center' },
+  { key: 'last_seen', label: 'Last Seen', sortable: true, align: 'right' },
 ]
 
-// Computed filtered errors
 const filteredErrors = computed(() => {
   return groupedErrors.value
     .filter(error => {
@@ -111,13 +103,12 @@ const paginatedErrors = computed(() => {
 
 const totalPages = computed(() => Math.ceil(filteredErrors.value.length / itemsPerPage.value))
 
-// Event handlers
-function handleSort(column: string, direction: 'asc' | 'desc') {
+function handleSort(column, direction) {
   sortBy.value = column
   sortOrder.value = direction
 }
 
-function viewError(error: GroupedError) {
+function viewError(error) {
   selectedError.value = error
   isDetailModalOpen.value = true
 }
@@ -127,7 +118,7 @@ function closeDetailModal() {
   selectedError.value = null
 }
 
-async function handleResolveError(error: GroupedError) {
+async function handleResolveError(error) {
   await resolveErrorGroup(error.type, error.message)
   await fetchErrorStats()
   if (isDetailModalOpen.value && selectedError.value) {
@@ -135,7 +126,7 @@ async function handleResolveError(error: GroupedError) {
   }
 }
 
-async function handleIgnoreError(error: GroupedError) {
+async function handleIgnoreError(error) {
   await ignoreErrorGroup(error.type, error.message)
   await fetchErrorStats()
   if (isDetailModalOpen.value && selectedError.value) {
@@ -143,7 +134,7 @@ async function handleIgnoreError(error: GroupedError) {
   }
 }
 
-async function handleUnresolveError(error: GroupedError) {
+async function handleUnresolveError(error) {
   await unresolveErrorGroup(error.type, error.message)
   await fetchErrorStats()
   if (isDetailModalOpen.value && selectedError.value) {
@@ -151,7 +142,7 @@ async function handleUnresolveError(error: GroupedError) {
   }
 }
 
-function openDeleteModal(error: GroupedError) {
+function openDeleteModal(error) {
   errorToDelete.value = error
   showDeleteModal.value = true
   if (isDetailModalOpen.value) {
@@ -167,8 +158,8 @@ async function confirmDelete() {
   errorToDelete.value = null
 }
 
-function getStatusVariant(status: string): 'danger' | 'success' | 'warning' | 'default' {
-  const variants: Record<string, 'danger' | 'success' | 'warning' | 'default'> = {
+function getStatusVariant(status) {
+  const variants = {
     unresolved: 'danger',
     resolved: 'success',
     ignored: 'warning',
@@ -176,11 +167,11 @@ function getStatusVariant(status: string): 'danger' | 'success' | 'warning' | 'd
   return variants[status] || 'default'
 }
 
-function formatDate(date: string): string {
+function formatDate(date) {
   return new Date(date).toLocaleString()
 }
 
-function formatRelativeTime(date: string): string {
+function formatRelativeTime(date) {
   const now = new Date()
   const errorDate = new Date(date)
   const diffMs = now.getTime() - errorDate.getTime()
@@ -194,20 +185,53 @@ function formatRelativeTime(date: string): string {
   if (diffDays < 7) return `${diffDays}d ago`
   return errorDate.toLocaleDateString()
 }
+
+export {
+  groupedErrors,
+  errorStats,
+  searchQuery,
+  statusFilter,
+  typeFilter,
+  sortBy,
+  sortOrder,
+  currentPage,
+  itemsPerPage,
+  selectedError,
+  isDetailModalOpen,
+  showDeleteModal,
+  errorToDelete,
+  typeOptions,
+  statusOptions,
+  columns,
+  filteredErrors,
+  paginatedErrors,
+  totalPages,
+  handleSort,
+  viewError,
+  closeDetailModal,
+  handleResolveError,
+  handleIgnoreError,
+  handleUnresolveError,
+  openDeleteModal,
+  confirmDelete,
+  getStatusVariant,
+  formatDate,
+  formatRelativeTime,
+}
 </script>
 
-<template>
-  <DashboardLayout>
-    <!-- Page Header -->
-    <div class="mb-6">
-      <h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Error Tracking</h1>
-      <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-        Monitor and manage application errors. Similar errors are grouped together.
-      </p>
-    </div>
+<DashboardLayout>
+  <!-- Page Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Error Tracking</h1>
+    <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+      Monitor and manage application errors. Similar errors are grouped together.
+    </p>
+  </div>
 
-    <!-- Stats Cards -->
-    <div v-if="errorStats" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+  <!-- Stats Cards -->
+  @if(errorStats)
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
       <StatsCard
         title="Total Errors"
         :value="errorStats.total"
@@ -235,86 +259,87 @@ function formatRelativeTime(date: string): string {
         icon-bg="success"
       />
     </div>
+  @endif
 
-    <!-- Main Content -->
-    <Card>
-      <template #header>
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h2 class="text-lg font-semibold text-neutral-900 dark:text-white">Issues</h2>
-          <div class="flex flex-col sm:flex-row gap-3">
-            <Input
-              v-model="searchQuery"
-              placeholder="Search errors..."
-              size="sm"
-              class="w-full sm:w-64"
-            >
-              <template #iconLeft>
-                <div class="i-hugeicons-search-01 w-4 h-4" />
-              </template>
-            </Input>
-            <Select
-              v-model="statusFilter"
-              :options="statusOptions"
-              placeholder="Status"
-              size="sm"
-              class="w-full sm:w-40"
-            />
-            <Select
-              v-model="typeFilter"
-              :options="typeOptions"
-              placeholder="Type"
-              size="sm"
-              class="w-full sm:w-40"
-            />
-          </div>
+  <!-- Main Content -->
+  <Card>
+    <template #header>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h2 class="text-lg font-semibold text-neutral-900 dark:text-white">Issues</h2>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <Input
+            v-model="searchQuery"
+            placeholder="Search errors..."
+            size="sm"
+            class="w-full sm:w-64"
+          >
+            <template #iconLeft>
+              <div class="i-hugeicons-search-01 w-4 h-4" />
+            </template>
+          </Input>
+          <Select
+            v-model="statusFilter"
+            :options="statusOptions"
+            placeholder="Status"
+            size="sm"
+            class="w-full sm:w-40"
+          />
+          <Select
+            v-model="typeFilter"
+            :options="typeOptions"
+            placeholder="Type"
+            size="sm"
+            class="w-full sm:w-40"
+          />
         </div>
+      </div>
+    </template>
+
+    <!-- Errors Table -->
+    <Table
+      :columns="columns"
+      :data="paginatedErrors"
+      row-key="id"
+      hoverable
+      :empty-title="searchQuery || statusFilter || typeFilter ? 'No matching errors' : 'No errors found'"
+      :empty-description="searchQuery || statusFilter || typeFilter ? 'Try adjusting your filters' : 'Your application is running smoothly!'"
+      @sort="handleSort"
+      @row-click="viewError"
+    >
+      <template #cell-type="{ value }">
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200">
+          {{ value }}
+        </span>
       </template>
 
-      <!-- Errors Table -->
-      <Table
-        :columns="columns"
-        :data="paginatedErrors"
-        row-key="id"
-        hoverable
-        :empty-title="searchQuery || statusFilter || typeFilter ? 'No matching errors' : 'No errors found'"
-        :empty-description="searchQuery || statusFilter || typeFilter ? 'Try adjusting your filters' : 'Your application is running smoothly!'"
-        @sort="handleSort"
-        @row-click="viewError"
-      >
-        <template #cell-type="{ value }">
-          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200">
-            {{ value }}
-          </span>
-        </template>
+      <template #cell-message="{ value }">
+        <span class="text-neutral-700 dark:text-neutral-200 line-clamp-1">
+          {{ value }}
+        </span>
+      </template>
 
-        <template #cell-message="{ value }">
-          <span class="text-neutral-700 dark:text-neutral-200 line-clamp-1">
-            {{ value }}
-          </span>
-        </template>
+      <template #cell-count="{ value }">
+        <span class="inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200">
+          {{ value }}
+        </span>
+      </template>
 
-        <template #cell-count="{ value }">
-          <span class="inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200">
-            {{ value }}
-          </span>
-        </template>
+      <template #cell-status="{ value }">
+        <Badge :variant="getStatusVariant(value)" size="sm">
+          {{ value }}
+        </Badge>
+      </template>
 
-        <template #cell-status="{ value }">
-          <Badge :variant="getStatusVariant(value)" size="sm">
-            {{ value }}
-          </Badge>
-        </template>
+      <template #cell-last_seen="{ value }">
+        <span class="text-sm text-neutral-500 dark:text-neutral-400">
+          {{ formatRelativeTime(value) }}
+        </span>
+      </template>
 
-        <template #cell-last_seen="{ value }">
-          <span class="text-sm text-neutral-500 dark:text-neutral-400">
-            {{ formatRelativeTime(value) }}
-          </span>
-        </template>
-
-        <template #actions="{ row }">
-          <div class="flex items-center gap-1">
+      <template #actions="{ row }">
+        <div class="flex items-center gap-1">
+          @if(row.status === 'unresolved')
             <Button
-              v-if="row.status === 'unresolved'"
               variant="ghost"
               size="sm"
               title="Resolve"
@@ -322,8 +347,9 @@ function formatRelativeTime(date: string): string {
             >
               <div class="i-hugeicons-checkmark-circle-02 w-4 h-4 text-green-600" />
             </Button>
+          @endif
+          @if(row.status === 'unresolved')
             <Button
-              v-if="row.status === 'unresolved'"
               variant="ghost"
               size="sm"
               title="Ignore"
@@ -331,8 +357,9 @@ function formatRelativeTime(date: string): string {
             >
               <div class="i-hugeicons-eye-off w-4 h-4 text-amber-600" />
             </Button>
+          @endif
+          @if(row.status !== 'unresolved')
             <Button
-              v-if="row.status !== 'unresolved'"
               variant="ghost"
               size="sm"
               title="Unresolve"
@@ -340,37 +367,39 @@ function formatRelativeTime(date: string): string {
             >
               <div class="i-hugeicons-refresh w-4 h-4 text-blue-600" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              title="Delete"
-              @click.stop="openDeleteModal(row)"
-            >
-              <div class="i-hugeicons-delete-02 w-4 h-4 text-red-600" />
-            </Button>
-          </div>
-        </template>
-      </Table>
-
-      <!-- Pagination -->
-      <template #footer>
-        <Pagination
-          v-model:current-page="currentPage"
-          :total-pages="totalPages"
-          :total-items="filteredErrors.length"
-          :items-per-page="itemsPerPage"
-          show-total-items
-        />
+          @endif
+          <Button
+            variant="ghost"
+            size="sm"
+            title="Delete"
+            @click.stop="openDeleteModal(row)"
+          >
+            <div class="i-hugeicons-delete-02 w-4 h-4 text-red-600" />
+          </Button>
+        </div>
       </template>
-    </Card>
+    </Table>
 
-    <!-- Error Detail Modal -->
-    <Modal
-      v-model="isDetailModalOpen"
-      :title="selectedError?.type || 'Error Details'"
-      size="lg"
-    >
-      <div v-if="selectedError" class="space-y-6">
+    <!-- Pagination -->
+    <template #footer>
+      <Pagination
+        v-model:current-page="currentPage"
+        :total-pages="totalPages"
+        :total-items="filteredErrors.length"
+        :items-per-page="itemsPerPage"
+        show-total-items
+      />
+    </template>
+  </Card>
+
+  <!-- Error Detail Modal -->
+  <Modal
+    v-model="isDetailModalOpen"
+    :title="selectedError?.type || 'Error Details'"
+    size="lg"
+  >
+    @if(selectedError)
+      <div class="space-y-6">
         <!-- Error Message -->
         <div>
           <h4 class="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">Message</h4>
@@ -396,10 +425,12 @@ function formatRelativeTime(date: string): string {
         </div>
 
         <!-- Stack Trace (if available) -->
-        <div v-if="selectedError.stack_trace">
-          <h4 class="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">Stack Trace</h4>
-          <pre class="text-xs text-neutral-700 dark:text-neutral-300 bg-neutral-900 dark:bg-black rounded-lg p-4 overflow-x-auto max-h-64">{{ selectedError.stack_trace }}</pre>
-        </div>
+        @if(selectedError.stack_trace)
+          <div>
+            <h4 class="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">Stack Trace</h4>
+            <pre class="text-xs text-neutral-700 dark:text-neutral-300 bg-neutral-900 dark:bg-black rounded-lg p-4 overflow-x-auto max-h-64">{{ selectedError.stack_trace }}</pre>
+          </div>
+        @endif
 
         <!-- Status -->
         <div class="flex items-center gap-2">
@@ -409,12 +440,13 @@ function formatRelativeTime(date: string): string {
           </Badge>
         </div>
       </div>
+    @endif
 
-      <template #footer="{ close }">
-        <div class="flex items-center justify-between w-full">
-          <div class="flex items-center gap-2">
+    <template #footer="{ close }">
+      <div class="flex items-center justify-between w-full">
+        <div class="flex items-center gap-2">
+          @if(selectedError?.status === 'unresolved')
             <Button
-              v-if="selectedError?.status === 'unresolved'"
               variant="primary"
               size="sm"
               @click="handleResolveError(selectedError!)"
@@ -424,8 +456,9 @@ function formatRelativeTime(date: string): string {
               </template>
               Resolve
             </Button>
+          @endif
+          @if(selectedError?.status === 'unresolved')
             <Button
-              v-if="selectedError?.status === 'unresolved'"
               variant="outline"
               size="sm"
               @click="handleIgnoreError(selectedError!)"
@@ -435,8 +468,9 @@ function formatRelativeTime(date: string): string {
               </template>
               Ignore
             </Button>
+          @endif
+          @if(selectedError?.status !== 'unresolved')
             <Button
-              v-if="selectedError?.status !== 'unresolved'"
               variant="outline"
               size="sm"
               @click="handleUnresolveError(selectedError!)"
@@ -446,54 +480,54 @@ function formatRelativeTime(date: string): string {
               </template>
               Unresolve
             </Button>
-          </div>
-          <div class="flex items-center gap-2">
-            <Button
-              variant="danger"
-              size="sm"
-              @click="openDeleteModal(selectedError!)"
-            >
-              <template #iconLeft>
-                <div class="i-hugeicons-delete-02 w-4 h-4" />
-              </template>
-              Delete
-            </Button>
-            <Button variant="ghost" size="sm" @click="close">
-              Close
-            </Button>
-          </div>
+          @endif
         </div>
-      </template>
-    </Modal>
-
-    <!-- Delete Confirmation Modal -->
-    <Modal
-      v-model="showDeleteModal"
-      title="Delete Error Group"
-      size="sm"
-    >
-      <div class="text-center">
-        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
-          <div class="i-hugeicons-alert-02 h-6 w-6 text-red-600 dark:text-red-400" />
+        <div class="flex items-center gap-2">
+          <Button
+            variant="danger"
+            size="sm"
+            @click="openDeleteModal(selectedError!)"
+          >
+            <template #iconLeft>
+              <div class="i-hugeicons-delete-02 w-4 h-4" />
+            </template>
+            Delete
+          </Button>
+          <Button variant="ghost" size="sm" @click="close">
+            Close
+          </Button>
         </div>
-        <p class="text-sm text-neutral-600 dark:text-neutral-300">
-          Are you sure you want to delete all <strong>{{ errorToDelete?.count }}</strong> occurrences of this error? This action cannot be undone.
-        </p>
-        <p class="mt-2 text-sm font-medium text-neutral-900 dark:text-white">
-          {{ errorToDelete?.message }}
-        </p>
       </div>
+    </template>
+  </Modal>
 
-      <template #footer>
-        <div class="flex items-center justify-end gap-3 w-full">
-          <Button variant="ghost" @click="showDeleteModal = false">
-            Cancel
-          </Button>
-          <Button variant="danger" @click="confirmDelete">
-            Delete All
-          </Button>
-        </div>
-      </template>
-    </Modal>
-  </DashboardLayout>
-</template>
+  <!-- Delete Confirmation Modal -->
+  <Modal
+    v-model="showDeleteModal"
+    title="Delete Error Group"
+    size="sm"
+  >
+    <div class="text-center">
+      <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
+        <div class="i-hugeicons-alert-02 h-6 w-6 text-red-600 dark:text-red-400" />
+      </div>
+      <p class="text-sm text-neutral-600 dark:text-neutral-300">
+        Are you sure you want to delete all <strong>{{ errorToDelete?.count }}</strong> occurrences of this error? This action cannot be undone.
+      </p>
+      <p class="mt-2 text-sm font-medium text-neutral-900 dark:text-white">
+        {{ errorToDelete?.message }}
+      </p>
+    </div>
+
+    <template #footer>
+      <div class="flex items-center justify-end gap-3 w-full">
+        <Button variant="ghost" @click="showDeleteModal = false">
+          Cancel
+        </Button>
+        <Button variant="danger" @click="confirmDelete">
+          Delete All
+        </Button>
+      </div>
+    </template>
+  </Modal>
+</DashboardLayout>

@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useLocalStorage } from '@vueuse/core'
@@ -38,7 +38,7 @@ interface Subscriber {
 }
 
 // Sample lists data
-const lists = ref<List[]>([
+export const lists = ref<List[]>([
   {
     id: 1,
     name: 'Newsletter Subscribers',
@@ -162,7 +162,7 @@ const lists = ref<List[]>([
 ])
 
 // Sample subscribers data (not displayed directly but used for import/export functionality)
-const subscribers = ref<Subscriber[]>([
+export const subscribers = ref<Subscriber[]>([
   {
     id: 1,
     email: 'john.doe@example.com',
@@ -199,19 +199,19 @@ const subscribers = ref<Subscriber[]>([
 ])
 
 // Filter and sort options
-const searchQuery = ref('')
-const sortBy = ref('dateCreated')
-const sortOrder = ref('desc')
-const typeFilter = ref('all')
-const statusFilter = ref('all')
-const viewMode = useLocalStorage('lists-view-mode', 'list') // Default to list view and save in localStorage
+export const searchQuery = ref('')
+export const sortBy = ref('dateCreated')
+export const sortOrder = ref('desc')
+export const typeFilter = ref('all')
+export const statusFilter = ref('all')
+export const viewMode = useLocalStorage('lists-view-mode', 'list') // Default to list view and save in localStorage
 
 // Available list types and statuses
-const listTypes = ['all', 'email', 'sms', 'both']
-const statuses = ['all', 'Active', 'Draft', 'Archived']
+export const listTypes = ['all', 'email', 'sms', 'both']
+export const statuses = ['all', 'Active', 'Draft', 'Archived']
 
 // Computed filtered and sorted lists
-const filteredLists = computed(() => {
+export const filteredLists = computed(() => {
   return lists.value
     .filter(list => {
       // Apply search filter
@@ -248,34 +248,34 @@ const filteredLists = computed(() => {
 })
 
 // Pagination
-const currentPage = ref(1)
-const itemsPerPage = ref(8)
-const totalPages = computed(() => Math.ceil(filteredLists.value.length / itemsPerPage.value))
+export const currentPage = ref(1)
+export const itemsPerPage = ref(8)
+export const totalPages = computed(() => Math.ceil(filteredLists.value.length / itemsPerPage.value))
 
-const paginatedLists = computed(() => {
+export const paginatedLists = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return filteredLists.value.slice(start, end)
 })
 
-function changePage(page: number): void {
+export function changePage(page) {
   currentPage.value = page
 }
 
-function previousPage(): void {
+export function previousPage() {
   if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
-function nextPage(): void {
+export function nextPage() {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
   }
 }
 
 // Toggle sort order
-function toggleSort(column: string): void {
+export function toggleSort(column) {
   if (sortBy.value === column) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -285,7 +285,7 @@ function toggleSort(column: string): void {
 }
 
 // Get status badge class
-function getStatusClass(status: string): string {
+export function getStatusClass(status) {
   switch (status) {
     case 'Active':
       return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
@@ -299,7 +299,7 @@ function getStatusClass(status: string): string {
 }
 
 // Get type badge class
-function getTypeClass(type: string): string {
+export function getTypeClass(type) {
   switch (type) {
     case 'email':
       return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
@@ -313,27 +313,27 @@ function getTypeClass(type: string): string {
 }
 
 // Modal state for adding/editing list
-const showListModal = ref(false)
-const isEditMode = ref(false)
-const currentList = ref<List | null>(null)
+export const showListModal = ref(false)
+export const isEditMode = ref(false)
+export const currentList = ref<List | null>(null)
 
 // Computed properties for form fields to handle null currentList
-const listName = computed({
+export const listName = computed({
   get: () => currentList.value?.name || '',
   set: (value) => { if (currentList.value) currentList.value.name = value }
 })
 
-const listDescription = computed({
+export const listDescription = computed({
   get: () => currentList.value?.description || '',
   set: (value) => { if (currentList.value) currentList.value.description = value }
 })
 
-const listType = computed({
+export const listType = computed({
   get: () => currentList.value?.type || 'email',
   set: (value: 'email' | 'sms' | 'both') => { if (currentList.value) currentList.value.type = value }
 })
 
-const listTags = computed({
+export const listTags = computed({
   get: () => currentList.value?.tags.join(', ') || '',
   set: (value) => {
     if (currentList.value) {
@@ -342,18 +342,18 @@ const listTags = computed({
   }
 })
 
-const listStatus = computed({
+export const listStatus = computed({
   get: () => currentList.value?.status || 'Draft',
   set: (value: 'Active' | 'Draft' | 'Archived') => { if (currentList.value) currentList.value.status = value }
 })
 
-const listIsDefault = computed({
+export const listIsDefault = computed({
   get: () => currentList.value?.isDefault || false,
   set: (value) => { if (currentList.value) currentList.value.isDefault = value }
 })
 
 // Functions for managing lists
-function openAddListModal(): void {
+export function openAddListModal() {
   isEditMode.value = false
   currentList.value = {
     id: Math.max(...lists.value.map(l => l.id)) + 1,
@@ -373,17 +373,17 @@ function openAddListModal(): void {
   showListModal.value = true
 }
 
-function openEditListModal(list: List): void {
+export function openEditListModal(list) {
   isEditMode.value = true
   currentList.value = { ...list }
   showListModal.value = true
 }
 
-function closeListModal(): void {
+export function closeListModal() {
   showListModal.value = false
 }
 
-function saveList(): void {
+export function saveList() {
   if (!currentList.value) return
 
   // If setting this list as default, unset default on all other lists
@@ -410,7 +410,7 @@ function saveList(): void {
 }
 
 // Function to delete a list
-function deleteList(listId: number): void {
+export function deleteList(listId) {
   if (confirm('Are you sure you want to delete this list? This will not delete the subscribers.')) {
     const index = lists.value.findIndex(l => l.id === listId)
     if (index !== -1) {
@@ -425,7 +425,7 @@ function deleteList(listId: number): void {
 }
 
 // Function to duplicate a list
-function duplicateList(list: List): void {
+export function duplicateList(list) {
   const newList: List = {
     ...list,
     id: Math.max(...lists.value.map(l => l.id)) + 1,
@@ -439,7 +439,7 @@ function duplicateList(list: List): void {
 }
 
 // Function to export list subscribers
-function exportList(listId: number): void {
+export function exportList(listId) {
   // In a real application, this would generate a CSV file with subscriber data
   const list = lists.value.find(l => l.id === listId)
   if (!list) return
@@ -453,39 +453,39 @@ function exportList(listId: number): void {
 }
 
 // Function to import subscribers to a list
-function importSubscribers(listId: number): void {
+export function importSubscribers(listId) {
   // In a real application, this would open a file upload dialog
   alert('This would open a file upload dialog to import subscribers.')
 }
 
 // Calculate statistics
-const totalLists = computed(() => lists.value.length)
-const totalEmailLists = computed(() => lists.value.filter(l => l.type === 'email' || l.type === 'both').length)
-const totalSmsLists = computed(() => lists.value.filter(l => l.type === 'sms' || l.type === 'both').length)
-const totalSubscribers = computed(() => {
+export const totalLists = computed(() => lists.value.length)
+export const totalEmailLists = computed(() => lists.value.filter(l => l.type === 'email' || l.type === 'both').length)
+export const totalSmsLists = computed(() => lists.value.filter(l => l.type === 'sms' || l.type === 'both').length)
+export const totalSubscribers = computed(() => {
   // In a real application, this would count unique subscribers
   return lists.value.reduce((sum, list) => sum + list.subscriberCount, 0)
 })
 
 // Show import modal
-const showImportModal = ref(false)
-const importListId = ref<number | null>(null)
+export const showImportModal = ref(false)
+export const importListId = ref<number | null>(null)
 
-function openImportModal(listId: number): void {
+export function openImportModal(listId) {
   importListId.value = listId
   showImportModal.value = true
 }
 
-function closeImportModal(): void {
+export function closeImportModal() {
   showImportModal.value = false
   importListId.value = null
 }
 
 // Bulk operations
-const selectedLists = ref<number[]>([])
-const selectAll = ref(false)
+export const selectedLists = ref<number[]>([])
+export const selectAll = ref(false)
 
-function toggleSelectAll(): void {
+export function toggleSelectAll() {
   if (selectAll.value) {
     selectedLists.value = paginatedLists.value.map(list => list.id)
   } else {
@@ -493,7 +493,7 @@ function toggleSelectAll(): void {
   }
 }
 
-function toggleListSelection(listId: number): void {
+export function toggleListSelection(listId) {
   const index = selectedLists.value.indexOf(listId)
   if (index === -1) {
     selectedLists.value.push(listId)
@@ -505,7 +505,7 @@ function toggleListSelection(listId: number): void {
   selectAll.value = paginatedLists.value.every(list => selectedLists.value.includes(list.id))
 }
 
-function bulkDelete(): void {
+export function bulkDelete() {
   if (selectedLists.value.length === 0) return
 
   if (confirm(`Are you sure you want to delete ${selectedLists.value.length} lists?`)) {
@@ -523,7 +523,7 @@ function bulkDelete(): void {
   }
 }
 
-function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
+export function bulkChangeStatus(status) {
   if (selectedLists.value.length === 0) return
 
   lists.value.forEach(list => {
@@ -534,8 +534,7 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
 }
 </script>
 
-<template>
-  <main>
+<main>
     <div class="px-6 py-6 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-7xl">
         <!-- Header section -->
@@ -646,7 +645,8 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
         </div>
 
         <!-- Bulk actions toolbar (visible when items are selected) -->
-        <div v-if="selectedLists.length > 0" class="mt-6 bg-white p-4 shadow rounded-lg dark:bg-blue-gray-800">
+        @if(selectedLists.length > 0)
+        <div class="mt-6 bg-white p-4 shadow rounded-lg dark:bg-blue-gray-800">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
               <span class="text-sm text-gray-700 dark:text-gray-300">{{ selectedLists.length }} lists selected</span>
@@ -678,6 +678,7 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
             </div>
           </div>
         </div>
+        @endif
 
         <!-- Filters and view options -->
         <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -711,9 +712,11 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
               class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
             >
               <option value="all">All Statuses</option>
-              <option v-for="status in statuses.slice(1)" :key="status" :value="status">
+              @foreach(statuses.slice(1) as status)
+              <option :value="status">
                 {{ status }}
               </option>
+              @endforeach
             </select>
 
             <!-- View mode toggle -->
@@ -755,10 +758,15 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
             :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'name' }"
           >
             Name
-            <span v-if="sortBy === 'name'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+            @if(sortBy === 'name')
+            <span class="ml-1">
+              @if(sortOrder === 'asc')
+              <div class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+              @else
+              <div class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+              @endif
             </span>
+            @endif
           </button>
           <button
             @click="toggleSort('subscriberCount')"
@@ -766,10 +774,15 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
             :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'subscriberCount' }"
           >
             Subscribers
-            <span v-if="sortBy === 'subscriberCount'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+            @if(sortBy === 'subscriberCount')
+            <span class="ml-1">
+              @if(sortOrder === 'asc')
+              <div class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+              @else
+              <div class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+              @endif
             </span>
+            @endif
           </button>
           <button
             @click="toggleSort('openRate')"
@@ -777,10 +790,15 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
             :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'openRate' }"
           >
             Open Rate
-            <span v-if="sortBy === 'openRate'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+            @if(sortBy === 'openRate')
+            <span class="ml-1">
+              @if(sortOrder === 'asc')
+              <div class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+              @else
+              <div class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+              @endif
             </span>
+            @endif
           </button>
           <button
             @click="toggleSort('dateCreated')"
@@ -788,15 +806,21 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
             :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'dateCreated' }"
           >
             Date Created
-            <span v-if="sortBy === 'dateCreated'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+            @if(sortBy === 'dateCreated')
+            <span class="ml-1">
+              @if(sortOrder === 'asc')
+              <div class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+              @else
+              <div class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+              @endif
             </span>
+            @endif
           </button>
         </div>
 
         <!-- List view -->
-        <div v-if="viewMode === 'list'" class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+        @if(viewMode === 'list')
+        <div class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
           <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
             <thead class="bg-gray-50 dark:bg-blue-gray-700">
               <tr>
@@ -820,12 +844,15 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
-              <tr v-if="paginatedLists.length === 0">
+              @if(paginatedLists.length === 0)
+              <tr>
                 <td colspan="8" class="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                   No lists found. Try adjusting your search or filter.
                 </td>
               </tr>
-              <tr v-for="list in paginatedLists" :key="list.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700">
+              @endif
+              @foreach(paginatedLists as list)
+              <tr class="hover:bg-gray-50 dark:hover:bg-blue-gray-700">
                 <td class="relative px-7 sm:w-12 sm:px-6">
                   <div class="absolute left-4 top-1/2 -mt-2">
                     <input
@@ -839,16 +866,22 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                   <div class="flex items-center">
                     <div class="h-10 w-10 flex-shrink-0 bg-gray-100 rounded-md flex items-center justify-center dark:bg-gray-700">
-                      <div v-if="list.type === 'email'" class="i-hugeicons-mail h-6 w-6 text-blue-600 dark:text-blue-400"></div>
-                      <div v-else-if="list.type === 'sms'" class="i-hugeicons-message-square-01 h-6 w-6 text-purple-600 dark:text-purple-400"></div>
-                      <div v-else class="i-hugeicons-mail-message-square h-6 w-6 text-indigo-600 dark:text-indigo-400"></div>
+                      @if(list.type === 'email')
+                      <div class="i-hugeicons-mail h-6 w-6 text-blue-600 dark:text-blue-400"></div>
+                      @elseif(list.type === 'sms')
+                      <div class="i-hugeicons-message-square-01 h-6 w-6 text-purple-600 dark:text-purple-400"></div>
+                      @else
+                      <div class="i-hugeicons-mail-message-square h-6 w-6 text-indigo-600 dark:text-indigo-400"></div>
+                      @endif
                     </div>
                     <div class="ml-4">
                       <div class="font-medium text-gray-900 dark:text-white flex items-center">
                         {{ list.name }}
-                        <span v-if="list.isDefault" class="ml-2 inline-flex items-center rounded-full bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400">
+                        @if(list.isDefault)
+                        <span class="ml-2 inline-flex items-center rounded-full bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400">
                           Default
                         </span>
+                        @endif
                       </div>
                       <div class="text-gray-500 dark:text-gray-400 line-clamp-1">{{ list.description }}</div>
                     </div>
@@ -918,23 +951,26 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
                   </div>
                 </td>
               </tr>
+              @endforeach
             </tbody>
           </table>
         </div>
+        @endif
 
         <!-- Grid view -->
-        <div v-if="viewMode === 'grid'" class="mt-6">
-          <div v-if="paginatedLists.length === 0" class="py-12 text-center">
+        @if(viewMode === 'grid')
+        <div class="mt-6">
+          @if(paginatedLists.length === 0)
+          <div class="py-12 text-center">
             <div class="i-hugeicons-list-check mx-auto h-12 w-12 text-gray-400"></div>
             <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No lists found</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or filter to find what you're looking for.</p>
           </div>
-
-          <div v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          @else
+          <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <!-- List card -->
+            @foreach(paginatedLists as list)
             <div
-              v-for="list in paginatedLists"
-              :key="list.id"
               class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-blue-gray-800"
             >
               <!-- List header with type icon -->
@@ -942,16 +978,22 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
                     <div class="h-10 w-10 flex-shrink-0 bg-gray-100 rounded-md flex items-center justify-center dark:bg-gray-700">
-                      <div v-if="list.type === 'email'" class="i-hugeicons-mail h-6 w-6 text-blue-600 dark:text-blue-400"></div>
-                      <div v-else-if="list.type === 'sms'" class="i-hugeicons-message-square-01 h-6 w-6 text-purple-600 dark:text-purple-400"></div>
-                      <div v-else class="i-hugeicons-mail-message-square h-6 w-6 text-indigo-600 dark:text-indigo-400"></div>
+                      @if(list.type === 'email')
+                      <div class="i-hugeicons-mail h-6 w-6 text-blue-600 dark:text-blue-400"></div>
+                      @elseif(list.type === 'sms')
+                      <div class="i-hugeicons-message-square-01 h-6 w-6 text-purple-600 dark:text-purple-400"></div>
+                      @else
+                      <div class="i-hugeicons-mail-message-square h-6 w-6 text-indigo-600 dark:text-indigo-400"></div>
+                      @endif
                     </div>
                     <div class="ml-3">
                       <h3 class="text-sm font-medium text-gray-900 dark:text-white flex items-center">
                         {{ list.name }}
-                        <span v-if="list.isDefault" class="ml-2 inline-flex items-center rounded-full bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400">
+                        @if(list.isDefault)
+                        <span class="ml-2 inline-flex items-center rounded-full bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400">
                           Default
                         </span>
+                        @endif
                       </h3>
                       <span :class="[getTypeClass(list.type), 'mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium']">
                         {{ list.type === 'email' ? 'Email' : list.type === 'sms' ? 'SMS' : 'Email & SMS' }}
@@ -1016,11 +1058,15 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
                 </div>
               </div>
             </div>
+            @endforeach
           </div>
+          @endif
         </div>
+        @endif
 
         <!-- Pagination -->
-        <div v-if="totalPages > 1" class="mt-6 flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-gray-700 sm:px-6">
+        @if(totalPages > 1)
+        <div class="mt-6 flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-gray-700 sm:px-6">
           <div class="flex flex-1 justify-between sm:hidden">
             <button
               @click="previousPage"
@@ -1062,9 +1108,8 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
                   <span class="sr-only">Previous</span>
                   <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
                 </button>
+                @foreach(totalPages as page)
                 <button
-                  v-for="page in totalPages"
-                  :key="page"
                   @click="changePage(page)"
                   :class="[
                     'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-gray-600',
@@ -1075,6 +1120,7 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
                 >
                   {{ page }}
                 </button>
+                @endforeach
                 <button
                   @click="nextPage"
                   :disabled="currentPage === totalPages"
@@ -1088,11 +1134,13 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
             </div>
           </div>
         </div>
+        @endif
       </div>
     </div>
 
     <!-- Add/Edit List Modal -->
-    <div v-if="showListModal" class="fixed inset-0 z-10 overflow-y-auto">
+    @if(showListModal)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
 
@@ -1188,9 +1236,11 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
                       />
                       <label for="list-default" class="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Set as default list</label>
                     </div>
-                    <p v-if="listIsDefault" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    @if(listIsDefault)
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                       This will unset any other default list. New subscribers will be added to this list by default.
                     </p>
+                    @endif
                   </div>
 
                   <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
@@ -1215,9 +1265,11 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
         </div>
       </div>
     </div>
+    @endif
 
     <!-- Import Subscribers Modal -->
-    <div v-if="showImportModal" class="fixed inset-0 z-10 overflow-y-auto">
+    @if(showImportModal)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
 
@@ -1281,5 +1333,5 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
         </div>
       </div>
     </div>
+    @endif
   </main>
-</template>

@@ -2,9 +2,7 @@
 import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import CodeEditor from '../../../components/Dashboard/CodeEditor.vue'
-// import { useToast } from 'vue-toastification'
 
-// const toast = useToast()
 const envValues = ref('')
 const searchQuery = ref('')
 const showAddModal = ref(false)
@@ -78,15 +76,15 @@ const highlightedContent = computed(() => {
 })
 
 // Track cursor position for active line
-const updateActiveLine = (event: Event) => {
-  const textarea = event.target as HTMLTextAreaElement
+const updateActiveLine = (event) => {
+  const textarea = event.target
   const value = textarea.value
   const selectionStart = textarea.selectionStart
   activeLine.value = value.substr(0, selectionStart).split('\n').length
 }
 
 // Keyboard shortcuts
-const handleKeyboardShortcuts = (e: KeyboardEvent) => {
+const handleKeyboardShortcuts = (e) => {
   const isCmdOrCtrl = isMac.value ? e.metaKey : e.ctrlKey
 
   if (isCmdOrCtrl) {
@@ -125,10 +123,10 @@ const formatContent = () => {
 }
 
 // Enhanced validation
-const validateEnv = (content: string) => {
+const validateEnv = (content) => {
   const lines = content.split('\n')
-  const errors: string[] = []
-  const keys = new Set<string>()
+  const errors = []
+  const keys = new Set()
 
   lines.forEach((line, index) => {
     if (line.trim() && !line.startsWith('#')) {
@@ -159,18 +157,15 @@ const handleSave = async () => {
   try {
     const errors = validateEnv(envValues.value)
     if (errors.length) {
-      // errors.forEach(error => toast.error(error))
       return
     }
 
     formatContent() // Format before saving
     await new Promise(resolve => setTimeout(resolve, 1000))
-    // toast.success('Environment variables saved successfully')
 
     // Create backup
     backupContent.value = envValues.value
   } catch (error) {
-    // toast.error('Failed to save environment variables')
   } finally {
     isLoading.value = false
   }
@@ -179,13 +174,11 @@ const handleSave = async () => {
 // Add new variable with enhanced validation
 const addVariable = () => {
   if (!newVariable.value.key || !newVariable.value.value) {
-    // toast.error('Both key and value are required')
     return
   }
 
   // Validate key format
   if (!/^[A-Z_][A-Z0-9_]*$/.test(newVariable.value.key)) {
-    // toast.error('Invalid key format. Use uppercase letters, numbers, and underscores only')
     return
   }
 
@@ -198,7 +191,6 @@ const addVariable = () => {
 
   newVariable.value = { key: '', value: '', description: '' }
   showAddModal.value = false
-  // toast.success('Variable added successfully')
 }
 
 // Restore backup with confirmation
@@ -206,13 +198,12 @@ const restoreBackup = () => {
   if (backupContent.value) {
     envValues.value = backupContent.value
     showBackup.value = false
-    // toast.success('Backup restored successfully')
   }
 }
 
 // Handle scroll sync between editor and syntax highlighting
-const handleScroll = (event: Event) => {
-  const textarea = event.target as HTMLTextAreaElement
+const handleScroll = (event) => {
+  const textarea = event.target
   const pre = textarea.previousElementSibling
   if (pre instanceof HTMLPreElement) {
     pre.scrollTop = textarea.scrollTop

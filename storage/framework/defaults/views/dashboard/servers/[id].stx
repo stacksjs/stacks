@@ -121,7 +121,7 @@ const addRule = () => {
   isAddingRule.value = false
 }
 
-const removeRule = (id: number) => {
+const removeRule = (id) => {
   ufwRules.value = ufwRules.value.filter(rule => rule.id !== id)
 }
 

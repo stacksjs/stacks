@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.vue'
@@ -11,7 +11,6 @@ import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/Sea
 import DeliveryRoutesTable from '../../../../components/Dashboard/Commerce/Delivery/DeliveryRoutesTable.vue'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
 import { useDeliveryRoutes } from '../../../../functions/commerce/shippings/delivery-routes'
-import type { DeliveryRoutes, NewDeliveryRoute } from '../../../../types/defaults'
 
 useHead({
   title: 'Dashboard - Delivery Routes',
@@ -26,10 +25,10 @@ onMounted(async () => {
 })
 
 // Modal state
-const showAddModal = ref(false)
-const showEditModal = ref(false)
-const editingRoute = ref<DeliveryRoutes | null>(null)
-const newDeliveryRoute = ref<NewDeliveryRoute>({
+export const showAddModal = ref(false)
+export const showEditModal = ref(false)
+export const editingRoute = ref(null)
+export const newDeliveryRoute = ref({
   driver: '',
   vehicle: '',
   stops: 0,
@@ -37,7 +36,7 @@ const newDeliveryRoute = ref<NewDeliveryRoute>({
   total_distance: 0
 })
 
-function openAddModal(): void {
+export function openAddModal() {
   newDeliveryRoute.value = {
     driver: '',
     vehicle: '',
@@ -48,11 +47,11 @@ function openAddModal(): void {
   showAddModal.value = true
 }
 
-function closeAddModal(): void {
+export function closeAddModal() {
   showAddModal.value = false
 }
 
-function openEditModal(route: DeliveryRoutes): void {
+export function openEditModal(route) {
   editingRoute.value = route
   newDeliveryRoute.value = {
     driver: route.driver,
@@ -64,12 +63,12 @@ function openEditModal(route: DeliveryRoutes): void {
   showEditModal.value = true
 }
 
-function closeEditModal(): void {
+export function closeEditModal() {
   showEditModal.value = false
   editingRoute.value = null
 }
 
-async function addDeliveryRoute(): Promise<void> {
+export async function addDeliveryRoute() {
   try {
     await createDeliveryRoute(newDeliveryRoute.value)
     closeAddModal()
@@ -78,7 +77,7 @@ async function addDeliveryRoute(): Promise<void> {
   }
 }
 
-async function saveDeliveryRoute(): Promise<void> {
+export async function saveDeliveryRoute() {
   if (!editingRoute.value) return
 
   try {
@@ -93,13 +92,13 @@ async function saveDeliveryRoute(): Promise<void> {
 }
 
 // Search and filtering
-const searchQuery = ref('')
-const currentPage = ref(1)
+export const searchQuery = ref('')
+export const currentPage = ref(1)
 const itemsPerPage = 5
 
-const filteredRoutes = computed(() => {
+export const filteredRoutes = computed(() => {
   const routes = Array.isArray(deliveryRoutes.value) ? deliveryRoutes.value : []
-  
+
   if (!searchQuery.value) return routes
 
   const query = searchQuery.value.toLowerCase()
@@ -112,27 +111,27 @@ const filteredRoutes = computed(() => {
   )
 })
 
-const paginatedRoutes = computed(() => {
+export const paginatedRoutes = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
   return filteredRoutes.value.slice(start, end)
 })
 
 // Event handlers
-const handleSearch = (query: string) => {
+export const handleSearch = (query) => {
   searchQuery.value = query
   currentPage.value = 1
 }
 
-const handleAddRoute = () => {
+export const handleAddRoute = () => {
   openAddModal()
 }
 
-const handleEditRoute = (route: DeliveryRoutes) => {
+export const handleEditRoute = (route) => {
   openEditModal(route)
 }
 
-const handleDeleteRoute = async (route: DeliveryRoutes) => {
+export const handleDeleteRoute = async (route) => {
   if (confirm(`Are you sure you want to delete this delivery route?`)) {
     try {
       await deleteDeliveryRoute(route.id)
@@ -142,29 +141,29 @@ const handleDeleteRoute = async (route: DeliveryRoutes) => {
   }
 }
 
-const viewRouteOnMap = (route: DeliveryRoutes) => {
+export const viewRouteOnMap = (route) => {
   alert(`View route on map: ${route.driver} (${route.stops} stops)`)
 }
 
-const handlePrevPage = () => {
+export const handlePrevPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
-const handleNextPage = () => {
+export const handleNextPage = () => {
   const totalPages = Math.ceil(filteredRoutes.value.length / itemsPerPage)
   if (currentPage.value < totalPages) {
     currentPage.value++
   }
 }
 
-const handlePageChange = (page: number) => {
+export const handlePageChange = (page) => {
   currentPage.value = page
 }
 
 // Tab configuration
-const tabs = [
+export const tabs = [
   { name: 'Shipping Methods', value: 'methods', href: '/commerce/delivery/shipping-methods' },
   { name: 'Shipping Zones', value: 'zones', href: '/commerce/delivery/shipping-zones' },
   { name: 'Shipping Rates', value: 'rates', href: '/commerce/delivery/shipping-rates' },
@@ -175,59 +174,59 @@ const tabs = [
 ]
 </script>
 
-<template>
-  <div class="py-6">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
-      <!-- Tab Navigation -->
-      <TabNavigation
-        modelValue="routes"
-        :tabs="tabs"
-      />
+<div class="py-6">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
+    <!-- Tab Navigation -->
+    <TabNavigation
+      modelValue="routes"
+      :tabs="tabs"
+    />
 
-      <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-        <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-          <div class="flex justify-between items-center">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Delivery Routes</h2>
-            <button
-              @click="handleAddRoute"
-              type="button"
-              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
-              Add Route
-            </button>
-          </div>
-          <div class="mt-4">
-            <SearchFilter
-              placeholder="Search delivery routes..."
-              @search="handleSearch"
-              class="w-full md:w-96"
-            />
-          </div>
+    <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-medium text-gray-900 dark:text-white">Delivery Routes</h2>
+          <button
+            @click="handleAddRoute"
+            type="button"
+            class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          >
+            <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
+            Add Route
+          </button>
         </div>
-
-        <DeliveryRoutesTable
-          :routes="paginatedRoutes"
-          @view-map="viewRouteOnMap"
-          @edit="handleEditRoute"
-          @delete="handleDeleteRoute"
-        />
-
-        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-          <Pagination
-            :current-page="currentPage"
-            :total-items="filteredRoutes.length"
-            :items-per-page="itemsPerPage"
-            @prev="handlePrevPage"
-            @next="handleNextPage"
-            @page="handlePageChange"
+        <div class="mt-4">
+          <SearchFilter
+            placeholder="Search delivery routes..."
+            @search="handleSearch"
+            class="w-full md:w-96"
           />
         </div>
       </div>
-    </div>
 
-    <!-- Add Delivery Route Modal -->
-    <div v-if="showAddModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <DeliveryRoutesTable
+        :routes="paginatedRoutes"
+        @view-map="viewRouteOnMap"
+        @edit="handleEditRoute"
+        @delete="handleDeleteRoute"
+      />
+
+      <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+        <Pagination
+          :current-page="currentPage"
+          :total-items="filteredRoutes.length"
+          :items-per-page="itemsPerPage"
+          @prev="handlePrevPage"
+          @next="handleNextPage"
+          @page="handlePageChange"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Delivery Route Modal -->
+  @if(showAddModal)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal"></div>
 
@@ -328,9 +327,11 @@ const tabs = [
         </div>
       </div>
     </div>
+  @endif
 
-    <!-- Edit Delivery Route Modal -->
-    <div v-if="showEditModal" class="fixed inset-0 z-10 overflow-y-auto">
+  <!-- Edit Delivery Route Modal -->
+  @if(showEditModal)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeEditModal"></div>
 
@@ -431,5 +432,5 @@ const tabs = [
         </div>
       </div>
     </div>
-  </div>
-</template>
+  @endif
+</div>

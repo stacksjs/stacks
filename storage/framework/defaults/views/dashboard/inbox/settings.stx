@@ -1,19 +1,19 @@
 <script>
-import { ref, computed, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
-import { useRouter } from 'vue-router'
-import EmailSidebar from '../../../components/Dashboard/Email/EmailSidebar.vue'
+export const { ref, computed, onMounted } = await import('vue')
+export const { useHead } = await import('@vueuse/head')
+export const { useRouter } = await import('vue-router')
+export const EmailSidebar = (await import('../../../components/Dashboard/Email/EmailSidebar.vue')).default
 
 useHead({
   title: 'Mail - Settings',
 })
 
-const router = useRouter()
-const activeFolder = ref('inbox')
-const isLoading = ref(false)
+export const router = useRouter()
+export const activeFolder = ref('inbox')
+export const isLoading = ref(false)
 
 // Folder structure
-const folders = [
+export const folders = [
   { id: 'inbox', name: 'Inbox', icon: 'inbox' },
   { id: 'starred', name: 'Starred', icon: 'star' },
   { id: 'sent', name: 'Sent', icon: 'mail-send-01' },
@@ -24,7 +24,7 @@ const folders = [
 ]
 
 // Mock unread counts
-const unreadCounts = computed(() => {
+export const unreadCounts = computed(() => {
   return {
     inbox: 2,
     starred: 1,
@@ -37,7 +37,7 @@ const unreadCounts = computed(() => {
 })
 
 // Settings sections
-const settingsSections = ref([
+export const settingsSections = ref([
   {
     id: 'general',
     name: 'General',
@@ -77,7 +77,7 @@ const settingsSections = ref([
 ])
 
 // Settings form data
-const settings = ref({
+export const settings = ref({
   general: {
     displayDensity: 'default',
     defaultReplyBehavior: 'replyAll',
@@ -102,9 +102,9 @@ const settings = ref({
 })
 
 // Active section
-const activeSection = ref('general')
+export const activeSection = ref('general')
 
-const setActiveSection = (sectionId: string) => {
+export const setActiveSection = (sectionId) => {
   activeSection.value = sectionId
   settingsSections.value.forEach(section => {
     section.active = section.id === sectionId
@@ -112,7 +112,7 @@ const setActiveSection = (sectionId: string) => {
 }
 
 // Function to handle folder change
-const handleFolderChange = (folder: string) => {
+export const handleFolderChange = (folder) => {
   // Update the active folder
   activeFolder.value = folder
   // Navigate to the inbox page with the selected folder
@@ -123,12 +123,12 @@ const handleFolderChange = (folder: string) => {
 }
 
 // Function to handle compose
-const handleCompose = () => {
+export const handleCompose = () => {
   router.push('/inbox?compose=true')
 }
 
 // Save settings
-const saveSettings = () => {
+export const saveSettings = () => {
   isLoading.value = true
   // Simulate API call
   setTimeout(() => {
@@ -186,7 +186,7 @@ onMounted(async () => {
         <div class="w-64 border-r border-gray-200 dark:border-blue-gray-600 bg-white dark:bg-blue-gray-700 overflow-y-auto">
           <nav class="p-4">
             <ul class="space-y-1">
-              @foreach(section in settingsSections)
+              @foreach(settingsSections as section)
               <li :key="section.id">
                 <button
                   @click="setActiveSection(section.id)"

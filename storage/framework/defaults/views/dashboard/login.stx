@@ -2,7 +2,6 @@
 import Login from '../../../core/components/auth/src/components/Login.vue'
 import { useHead } from '@vueuse/head'
 import { useAuth } from '../../functions/auth'
-import type { AuthUser } from '../../types/dashboard'
 
 const router = useRouter()
 
@@ -12,7 +11,7 @@ useHead({
 
 const { login } = useAuth()
 
-async function handleLogin(user: AuthUser) {
+async function handleLogin(user) {
   try {
     await login(user)
 

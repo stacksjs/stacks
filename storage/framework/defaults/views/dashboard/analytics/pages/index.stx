@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script>
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
@@ -193,12 +193,12 @@ const topPagesChartConfig = reactive({
 })
 
 // Format numbers with commas
-function formatNumber(number: number): string {
+function formatNumber(number) {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
 // Get performance score color class
-function getPerformanceColorClass(score: string): string {
+function getPerformanceColorClass(score) {
   switch (score) {
     case 'Good':
       return 'text-green-600 dark:text-green-400'
@@ -212,12 +212,12 @@ function getPerformanceColorClass(score: string): string {
 }
 
 // Mock function to update data when date range changes
-function updateDataForDateRange(): void {
+function updateDataForDateRange() {
   console.log('Updating data for date range:', selectedDateRange.value)
 }
 
 // Watch for date range changes
-function handleDateRangeChange(): void {
+function handleDateRangeChange() {
   updateDataForDateRange()
 }
 
@@ -238,201 +238,219 @@ onMounted(() => {
 
   updateDataForDateRange()
 })
+
+export {
+  dateRanges,
+  selectedDateRange,
+  dateRangeDisplay,
+  comparisonType,
+  customStartDate,
+  customEndDate,
+  showCustomDateRange,
+  pagesData,
+  pagePerformanceData,
+  pageViewsTrendData,
+  formatNumber,
+  getPerformanceColorClass,
+  handleDateRangeChange
+}
 </script>
 
-<template>
-  <main>
-    <div class="px-6 py-6 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl">
-        <!-- Header with date range selector -->
-        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div class="flex items-center space-x-2">
-            <div class="i-hugeicons-calendar-03 h-5 w-5 text-gray-500 dark:text-gray-400"></div>
-            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ dateRangeDisplay }}</span>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="text-sm text-gray-500 dark:text-gray-400">compared to</span>
-
-            <div class="relative">
-              <select
-                v-model="comparisonType"
-                class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-              >
-                <option value="no-comparison">No comparison</option>
-                <option value="previous-period">Previous period</option>
-                <option value="previous-year">Previous year</option>
-              </select>
-            </div>
-
-            <button
-              type="button"
-              class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
-            >
-              <div class="i-hugeicons-settings-01 h-4 w-4 mr-1"></div>
-              Auto
-            </button>
-          </div>
+<main>
+  <div class="px-6 py-6 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <!-- Header with date range selector -->
+      <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="flex items-center space-x-2">
+          <div class="i-hugeicons-calendar-03 h-5 w-5 text-gray-500 dark:text-gray-400"></div>
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ dateRangeDisplay }}</span>
         </div>
 
-        <!-- Page Header -->
-        <div class="mb-8">
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Page Analytics</h1>
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-sm text-gray-500 dark:text-gray-400">compared to</span>
+
+          <div class="relative">
+            <select
+              v-model="comparisonType"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            >
+              <option value="no-comparison">No comparison</option>
+              <option value="previous-period">Previous period</option>
+              <option value="previous-year">Previous year</option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+          >
+            <div class="i-hugeicons-settings-01 h-4 w-4 mr-1"></div>
+            Auto
+          </button>
+        </div>
+      </div>
+
+      <!-- Page Header -->
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Page Analytics</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Detailed breakdown of page performance and visitor engagement
+        </p>
+      </div>
+
+      <!-- Page Views Trend Chart -->
+      <div class="mb-8 bg-white dark:bg-blue-gray-800 rounded-lg p-4 shadow">
+        <div class="mb-4">
+          <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Page Views Trend</h3>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Detailed breakdown of page performance and visitor engagement
+            Page views and visitors over time
           </p>
         </div>
 
-        <!-- Page Views Trend Chart -->
-        <div class="mb-8 bg-white dark:bg-blue-gray-800 rounded-lg p-4 shadow">
-          <div class="mb-4">
-            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Page Views Trend</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Page views and visitors over time
-            </p>
-          </div>
+        <div class="h-80 w-full">
+          <canvas id="pageViewsTrendChart"></canvas>
+        </div>
+      </div>
 
-          <div class="h-80 w-full">
-            <canvas id="pageViewsTrendChart"></canvas>
-          </div>
+      <!-- Top Pages Chart -->
+      <div class="mb-8 bg-white dark:bg-blue-gray-800 rounded-lg p-4 shadow">
+        <div class="mb-4">
+          <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Top Pages</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Most viewed pages on your website
+          </p>
         </div>
 
-        <!-- Top Pages Chart -->
-        <div class="mb-8 bg-white dark:bg-blue-gray-800 rounded-lg p-4 shadow">
-          <div class="mb-4">
-            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Top Pages</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Most viewed pages on your website
-            </p>
-          </div>
+        <div class="h-80 w-full">
+          <canvas id="topPagesChart"></canvas>
+        </div>
+      </div>
 
-          <div class="h-80 w-full">
-            <canvas id="topPagesChart"></canvas>
-          </div>
+      <!-- Pages Data Table -->
+      <div class="mb-8">
+        <div class="mb-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">All Pages</h3>
         </div>
 
-        <!-- Pages Data Table -->
-        <div class="mb-8">
-          <div class="mb-4">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white">All Pages</h3>
-          </div>
+        <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+              <tr>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  Page
+                </th>
+                <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  Entries
+                </th>
+                <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  Visitors
+                </th>
+                <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  Views
+                </th>
+                <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  Avg. Time
+                </th>
+                <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  Bounce Rate
+                </th>
+                <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  %
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
+              @foreach(pagesData as page)
+              <tr class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" :style="{ width: page.percentage + '%' }"></div>
+                  <span class="relative z-10">{{ page.path }}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <span class="relative z-10">{{ page.entries }}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <span class="relative z-10">{{ page.visitors }}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <span class="relative z-10">{{ page.views }}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <span class="relative z-10">{{ page.avgTimeOnPage }}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <span class="relative z-10">{{ page.bounceRate }}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <span class="relative z-10">{{ page.percentage }}%</span>
+                </td>
+              </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-          <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
-                <tr>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    Page
-                  </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    Entries
-                  </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    Visitors
-                  </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    Views
-                  </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    Avg. Time
-                  </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    Bounce Rate
-                  </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    %
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                <tr v-for="(page, index) in pagesData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" :style="{ width: page.percentage + '%' }"></div>
-                    <span class="relative z-10">{{ page.path }}</span>
-                  </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
-                    <span class="relative z-10">{{ page.entries }}</span>
-                  </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
-                    <span class="relative z-10">{{ page.visitors }}</span>
-                  </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
-                    <span class="relative z-10">{{ page.views }}</span>
-                  </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
-                    <span class="relative z-10">{{ page.avgTimeOnPage }}</span>
-                  </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
-                    <span class="relative z-10">{{ page.bounceRate }}</span>
-                  </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
-                    <span class="relative z-10">{{ page.percentage }}%</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+      <!-- Page Performance Data Table -->
+      <div>
+        <div class="mb-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Page Performance</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Core Web Vitals and performance metrics
+          </p>
         </div>
 
-        <!-- Page Performance Data Table -->
-        <div>
-          <div class="mb-4">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Page Performance</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Core Web Vitals and performance metrics
-            </p>
-          </div>
-
-          <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
-                <tr>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    Page
-                  </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    Load Time (s)
-                  </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    FCP (s)
-                  </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    LCP (s)
-                  </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    CLS
-                  </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                    Score
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                <tr v-for="(page, index) in pagePerformanceData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {{ page.path }}
-                  </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                    {{ page.loadTime.toFixed(1) }}
-                  </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                    {{ page.fcp.toFixed(1) }}
-                  </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                    {{ page.lcp.toFixed(1) }}
-                  </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                    {{ page.cls.toFixed(2) }}
-                  </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right font-medium" :class="getPerformanceColorClass(page.score)">
-                    {{ page.score }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+              <tr>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  Page
+                </th>
+                <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  Load Time (s)
+                </th>
+                <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  FCP (s)
+                </th>
+                <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  LCP (s)
+                </th>
+                <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  CLS
+                </th>
+                <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  Score
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
+              @foreach(pagePerformanceData as page)
+              <tr class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  {{ page.path }}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
+                  {{ page.loadTime.toFixed(1) }}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
+                  {{ page.fcp.toFixed(1) }}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
+                  {{ page.lcp.toFixed(1) }}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
+                  {{ page.cls.toFixed(2) }}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-right font-medium" :class="getPerformanceColorClass(page.score)">
+                  {{ page.score }}
+                </td>
+              </tr>
+              @endforeach
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
-  </main>
-</template>
+  </div>
+</main>

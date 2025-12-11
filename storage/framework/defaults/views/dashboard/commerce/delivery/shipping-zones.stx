@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.vue'
@@ -17,19 +17,16 @@ useHead({
   title: 'Dashboard - Shipping Zones',
 })
 
-// Get shipping zones data and functions from the composable
 const { shippingZones, createShippingZone, fetchShippingZones, updateShippingZone, deleteShippingZone } = useShippingZones()
 
-// Fetch shipping zones on component mount
 onMounted(async () => {
   await fetchShippingZones()
 })
 
-// Modal state
 const showAddModal = ref(false)
 const showEditModal = ref(false)
-const editingZone = ref<any>(null)
-const newShippingZone = ref<NewShippingZone>({
+const editingZone = ref(null)
+const newShippingZone = ref({
   name: '',
   countries: '',
   regions: '',
@@ -38,23 +35,23 @@ const newShippingZone = ref<NewShippingZone>({
   status: 'Active'
 })
 
-function openAddModal(): void {
+function openAddModal() {
   newShippingZone.value = {
     name: '',
     countries: '',
     regions: '',
-    postal_codes: '', 
+    postal_codes: '',
     shipping_method_id: 0,
     status: 'Active'
   }
   showAddModal.value = true
 }
 
-function closeAddModal(): void {
+function closeAddModal() {
   showAddModal.value = false
 }
 
-function openEditModal(zone: any): void {
+function openEditModal(zone) {
   editingZone.value = zone
   newShippingZone.value = {
     name: zone.name,
@@ -67,16 +64,16 @@ function openEditModal(zone: any): void {
   showEditModal.value = true
 }
 
-function closeEditModal(): void {
+function closeEditModal() {
   showEditModal.value = false
   editingZone.value = null
 }
 
-async function addShippingZone(): Promise<void> {
+async function addShippingZone() {
   try {
     const zoneData = {
       ...newShippingZone.value,
-      shipping_method_id: 1 // TODO: Get from selected shipping method
+      shipping_method_id: 1
     }
     await createShippingZone(zoneData)
     closeAddModal()
@@ -85,7 +82,7 @@ async function addShippingZone(): Promise<void> {
   }
 }
 
-async function saveShippingZone(): Promise<void> {
+async function saveShippingZone() {
   if (!editingZone.value) return
 
   try {
@@ -99,15 +96,13 @@ async function saveShippingZone(): Promise<void> {
   }
 }
 
-// Search and filtering
 const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = 5
 
 const filteredShippingZones = computed(() => {
-  // Ensure shippingZones.value is always an array
   const zones = Array.isArray(shippingZones.value) ? shippingZones.value : []
-  
+
   if (!searchQuery.value) return zones
 
   const query = searchQuery.value.toLowerCase()
@@ -122,8 +117,7 @@ const paginatedShippingZones = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
   const sliced = filteredShippingZones.value.slice(start, end)
-  
-  // Transform data to match the expected interface
+
   return sliced.map(zone => ({
     id: zone.id,
     name: zone.name,
@@ -135,8 +129,7 @@ const paginatedShippingZones = computed(() => {
   }))
 })
 
-// Event handlers
-const handleSearch = (query: string) => {
+const handleSearch = (query) => {
   searchQuery.value = query
   currentPage.value = 1
 }
@@ -145,11 +138,11 @@ const handleAddZone = () => {
   openAddModal()
 }
 
-const handleEditZone = (zone: any) => {
+const handleEditZone = (zone) => {
   openEditModal(zone)
 }
 
-const handleDeleteZone = async (zone: any) => {
+const handleDeleteZone = async (zone) => {
   if (confirm(`Are you sure you want to delete ${zone.name}?`)) {
     try {
       await deleteShippingZone(zone.id)
@@ -172,11 +165,10 @@ const handleNextPage = () => {
   }
 }
 
-const handlePageChange = (page: number) => {
+const handlePageChange = (page) => {
   currentPage.value = page
 }
 
-// Tab configuration
 const tabs = [
   { name: 'Shipping Methods', value: 'methods', href: '/commerce/delivery/shipping-methods' },
   { name: 'Shipping Zones', value: 'zones', href: '/commerce/delivery/shipping-zones' },
@@ -186,60 +178,62 @@ const tabs = [
   { name: 'Delivery Routes', value: 'routes', href: '/commerce/delivery/delivery-routes' },
   { name: 'Drivers', value: 'drivers', href: '/commerce/delivery/drivers' },
 ]
+
+export { shippingZones, showAddModal, showEditModal, editingZone, newShippingZone, openAddModal, closeAddModal, openEditModal, closeEditModal, addShippingZone, saveShippingZone, searchQuery, currentPage, itemsPerPage, filteredShippingZones, paginatedShippingZones, handleSearch, handleAddZone, handleEditZone, handleDeleteZone, handlePrevPage, handleNextPage, handlePageChange, tabs }
 </script>
 
-<template>
-  <div class="py-6">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
-      <!-- Tab Navigation -->
-      <TabNavigation
-        modelValue="zones"
-        :tabs="tabs"
-      />
+<div class="py-6">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
+    <!-- Tab Navigation -->
+    <TabNavigation
+      modelValue="zones"
+      :tabs="tabs"
+    />
 
-      <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-        <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-          <div class="flex justify-between items-center">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Shipping Zones</h2>
-            <button
-              @click="handleAddZone"
-              type="button"
-              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
-              Add Zone
-            </button>
-          </div>
-          <div class="mt-4">
-            <SearchFilter
-              placeholder="Search shipping zones..."
-              @search="handleSearch"
-              class="w-full md:w-96"
-            />
-          </div>
+    <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-medium text-gray-900 dark:text-white">Shipping Zones</h2>
+          <button
+            @click="handleAddZone"
+            type="button"
+            class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          >
+            <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
+            Add Zone
+          </button>
         </div>
-
-        <ShippingZonesTable
-          :zones="paginatedShippingZones"
-          @edit="handleEditZone"
-          @delete="handleDeleteZone"
-        />
-
-        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-          <Pagination
-            :current-page="currentPage"
-            :total-items="filteredShippingZones.length"
-            :items-per-page="itemsPerPage"
-            @prev="handlePrevPage"
-            @next="handleNextPage"
-            @page="handlePageChange"
+        <div class="mt-4">
+          <SearchFilter
+            placeholder="Search shipping zones..."
+            @search="handleSearch"
+            class="w-full md:w-96"
           />
         </div>
       </div>
-    </div>
 
-    <!-- Add Shipping Zone Modal -->
-    <div v-if="showAddModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <ShippingZonesTable
+        :zones="paginatedShippingZones"
+        @edit="handleEditZone"
+        @delete="handleDeleteZone"
+      />
+
+      <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+        <Pagination
+          :current-page="currentPage"
+          :total-items="filteredShippingZones.length"
+          :items-per-page="itemsPerPage"
+          @prev="handlePrevPage"
+          @next="handleNextPage"
+          @page="handlePageChange"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Shipping Zone Modal -->
+  @if(showAddModal)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal"></div>
 
@@ -337,9 +331,11 @@ const tabs = [
         </div>
       </div>
     </div>
+  @endif
 
-    <!-- Edit Shipping Zone Modal -->
-    <div v-if="showEditModal" class="fixed inset-0 z-10 overflow-y-auto">
+  <!-- Edit Shipping Zone Modal -->
+  @if(showEditModal)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeEditModal"></div>
 
@@ -437,5 +433,5 @@ const tabs = [
         </div>
       </div>
     </div>
-  </div>
-</template>
+  @endif
+</div>

@@ -1,8 +1,8 @@
 <script>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useHead } from '@vueuse/head'
-import { useRoute } from 'vue-router'
-import EmailSidebar from '../../../components/Dashboard/Email/EmailSidebar.vue'
+export const { ref, computed, onMounted, onUnmounted, watch } = await import('vue')
+export const { useHead } = await import('@vueuse/head')
+export const { useRoute } = await import('vue-router')
+export const EmailSidebar = (await import('../../../components/Dashboard/Email/EmailSidebar.vue')).default
 
 useHead({
   title: 'Mail - Your Inbox',
@@ -24,15 +24,15 @@ interface Email {
   labels?: string[] // Add labels for categorization
 }
 
-const sidebarOpen = ref(true)
-const activeFolder = ref('inbox')
-const selectedEmail = ref<Email | null>(null)
-const searchQuery = ref('')
-const isComposing = ref(false)
-const isLoading = ref(false)
+export const sidebarOpen = ref(true)
+export const activeFolder = ref('inbox')
+export const selectedEmail = ref(null)
+export const searchQuery = ref('')
+export const isComposing = ref(false)
+export const isLoading = ref(false)
 
 // Email data
-const emails = ref<Email[]>([
+export const emails = ref([
   {
     id: 1,
     from: 'William Smith',
@@ -242,7 +242,7 @@ const emails = ref<Email[]>([
 ])
 
 // Folder structure
-const folders = [
+export const folders = [
   { id: 'inbox', name: 'Inbox', icon: 'inbox' },
   { id: 'starred', name: 'Starred', icon: 'star' },
   { id: 'sent', name: 'Sent', icon: 'send' },
@@ -253,7 +253,7 @@ const folders = [
 ]
 
 // Filtered emails based on active folder and search
-const filteredEmails = computed(() => {
+export const filteredEmails = computed(() => {
   let filtered = emails.value.filter(email => {
     // Filter by folder or starred
     if (activeFolder.value === 'starred') {
@@ -278,7 +278,7 @@ const filteredEmails = computed(() => {
 })
 
 // Format the date to a readable format
-const formatDate = (dateString: string) => {
+export const formatDate = (dateString) => {
   const date = new Date(dateString)
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -295,7 +295,7 @@ const formatDate = (dateString: string) => {
 }
 
 // Toggle read status
-const toggleRead = (emailId: number) => {
+export const toggleRead = (emailId) => {
   const index = emails.value.findIndex(e => e.id === emailId)
   if (index !== -1) {
     const email = emails.value[index]
@@ -306,7 +306,7 @@ const toggleRead = (emailId: number) => {
 }
 
 // Toggle star status
-const toggleStar = (emailId: number) => {
+export const toggleStar = (emailId) => {
   const index = emails.value.findIndex(e => e.id === emailId)
   if (index !== -1) {
     const email = emails.value[index]
@@ -317,7 +317,7 @@ const toggleStar = (emailId: number) => {
 }
 
 // Get unread count for a folder
-const getUnreadCount = (folder: string) => {
+export const getUnreadCount = (folder) => {
   if (folder === 'starred') {
     return emails.value.filter(e => e.starred && !e.read).length
   }
@@ -325,8 +325,8 @@ const getUnreadCount = (folder: string) => {
 }
 
 // Unread counts for the sidebar
-const unreadCounts = computed(() => {
-  const counts: Record<string, number> = {}
+export const unreadCounts = computed(() => {
+  const counts = {}
   folders.forEach(folder => {
     counts[folder.id] = getUnreadCount(folder.id)
   })
@@ -334,7 +334,7 @@ const unreadCounts = computed(() => {
 })
 
 // Open email detail
-const openEmail = (email: Email) => {
+export const openEmail = (email) => {
   selectedEmail.value = email
   if (!email.read) {
     toggleRead(email.id)
@@ -342,7 +342,7 @@ const openEmail = (email: Email) => {
 }
 
 // Close email detail
-const closeEmail = () => {
+export const closeEmail = () => {
   selectedEmail.value = null
 }
 
@@ -353,13 +353,13 @@ interface NewEmail {
   body: string
 }
 
-const newEmail = ref<NewEmail>({
+export const newEmail = ref({
   to: '',
   subject: '',
   body: '',
 })
 
-const startCompose = () => {
+export const startCompose = () => {
   isComposing.value = true
   newEmail.value = {
     to: '',
@@ -368,11 +368,11 @@ const startCompose = () => {
   }
 }
 
-const cancelCompose = () => {
+export const cancelCompose = () => {
   isComposing.value = false
 }
 
-const sendEmail = () => {
+export const sendEmail = () => {
   // Simulate sending email
   const sentEmail = {
     id: emails.value.length + 1,
@@ -414,24 +414,24 @@ onMounted(async () => {
 })
 
 // Function to get icon for folder
-const getFolderIcon = (folderId: string) => {
+export const getFolderIcon = (folderId) => {
   const folder = folders.find(f => f.id === folderId)
   return folder ? folder.icon : 'document'
 }
 
 // Function to handle folder change
-const handleFolderChange = (folder: string) => {
+export const handleFolderChange = (folder) => {
   activeFolder.value = folder
 }
 
 // Function to handle compose
-const handleCompose = () => {
+export const handleCompose = () => {
   isComposing.value = true
 }
 
 // Add refresh functionality
-const isRefreshing = ref(false)
-const refreshEmails = async () => {
+export const isRefreshing = ref(false)
+export const refreshEmails = async () => {
   isRefreshing.value = true
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1000))
@@ -439,10 +439,10 @@ const refreshEmails = async () => {
 }
 
 // Add dropdown menu state
-const showMoreMenu = ref(false)
-const dropdownRef = ref<HTMLElement | null>(null)
+export const showMoreMenu = ref(false)
+export const dropdownRef = ref(null)
 
-const toggleMoreMenu = (event: MouseEvent) => {
+export const toggleMoreMenu = (event) => {
   event.stopPropagation()
   showMoreMenu.value = !showMoreMenu.value
 
@@ -454,8 +454,8 @@ const toggleMoreMenu = (event: MouseEvent) => {
   }
 }
 
-const handleClickOutside = (event: MouseEvent) => {
-  if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
+export const handleClickOutside = (event) => {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
     showMoreMenu.value = false
     document.removeEventListener('click', handleClickOutside)
   }
@@ -467,7 +467,7 @@ onUnmounted(() => {
 })
 
 // Fix the TypeScript error by accessing the value property
-const inboxUnreadCount = computed(() => {
+export const inboxUnreadCount = computed(() => {
   return unreadCounts.value['inbox'] || 0
 })
 </script>
@@ -537,7 +537,7 @@ const inboxUnreadCount = computed(() => {
       <!-- Email list and content area -->
       <div class="flex-1 flex overflow-hidden">
         <!-- Email list -->
-        @if(!selectedEmail || !isComposing)
+        @if(!selectedEmail && !isComposing)
         <div class="w-full md:w-1/3 lg:w-2/5 border-r border-gray-200 dark:border-blue-gray-600 flex flex-col">
           <!-- Search bar (moved to left section) -->
           <div class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 px-4 py-2">
@@ -556,7 +556,7 @@ const inboxUnreadCount = computed(() => {
 
           <div class="flex-1 overflow-y-auto">
             <ul class="divide-y divide-gray-200 dark:divide-blue-gray-600">
-              @foreach(email in filteredEmails)
+              @foreach(filteredEmails as email)
               <li
                 :key="email.id"
                 @click="openEmail(email)"
@@ -586,7 +586,7 @@ const inboxUnreadCount = computed(() => {
                   <!-- Email labels/tags -->
                   @if(email.labels && email.labels.length > 0)
                   <div class="mt-2 flex flex-wrap gap-1">
-                    @foreach(label in email.labels)
+                    @foreach(email.labels as label)
                     <span
                       :key="label"
                       class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"

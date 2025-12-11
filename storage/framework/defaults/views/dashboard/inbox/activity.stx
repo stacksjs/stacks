@@ -1,10 +1,10 @@
 <script>
-import { ref, computed, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
-import { useRouter } from 'vue-router'
-import { Line, Bar, Doughnut } from 'vue-chartjs'
-import {
-  Chart as ChartJS,
+export const { ref, computed, onMounted } = await import('vue')
+export const { useHead } = await import('@vueuse/head')
+export const { useRouter } = await import('vue-router')
+export const { Line, Bar, Doughnut } = await import('vue-chartjs')
+export const {
+  Chart: ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
@@ -15,7 +15,7 @@ import {
   Tooltip,
   Legend,
   Filler,
-} from 'chart.js'
+} = await import('chart.js')
 
 ChartJS.register(
   CategoryScale,
@@ -30,21 +30,21 @@ ChartJS.register(
   Filler,
 )
 
-import EmailSidebar from '../../../components/Dashboard/Email/EmailSidebar.vue'
+export const EmailSidebar = (await import('../../../components/Dashboard/Email/EmailSidebar.vue')).default
 
 useHead({
   title: 'Mail - Activity Dashboard',
 })
 
-const router = useRouter()
+export const router = useRouter()
 
 // Time range state
-const timeRange = ref<'day' | 'week' | 'month' | 'year'>('week')
-const activeFolder = ref('inbox')
-const isLoading = ref(false)
+export const timeRange = ref('week')
+export const activeFolder = ref('inbox')
+export const isLoading = ref(false)
 
 // Folder structure
-const folders = [
+export const folders = [
   { id: 'inbox', name: 'Inbox', icon: 'inbox' },
   { id: 'starred', name: 'Starred', icon: 'star' },
   { id: 'sent', name: 'Sent', icon: 'mail-send-01' },
@@ -55,7 +55,7 @@ const folders = [
 ]
 
 // Mock unread counts
-const unreadCounts = computed(() => {
+export const unreadCounts = computed(() => {
   return {
     inbox: 2,
     starred: 1,
@@ -68,7 +68,7 @@ const unreadCounts = computed(() => {
 })
 
 // Chart options
-const lineChartOptions = {
+export const lineChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
@@ -99,8 +99,8 @@ const lineChartOptions = {
   plugins: {
     legend: {
       display: true,
-      position: 'top' as const,
-      align: 'end' as const,
+      position: 'top',
+      align: 'end',
       labels: {
         color: 'rgb(156, 163, 175)',
         font: {
@@ -111,13 +111,13 @@ const lineChartOptions = {
       },
     },
     tooltip: {
-      mode: 'index' as const,
+      mode: 'index',
       intersect: false,
     },
   },
 }
 
-const barChartOptions = {
+export const barChartOptions = {
   ...lineChartOptions,
   plugins: {
     ...lineChartOptions.plugins,
@@ -128,13 +128,13 @@ const barChartOptions = {
   },
 }
 
-const doughnutChartOptions = {
+export const doughnutChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
       display: true,
-      position: 'right' as const,
+      position: 'right',
       labels: {
         color: 'rgb(156, 163, 175)',
         font: {
@@ -145,16 +145,16 @@ const doughnutChartOptions = {
       },
     },
     tooltip: {
-      mode: 'index' as const,
+      mode: 'index',
       intersect: false,
     },
   },
 }
 
 // Generate mock email activity data
-const getEmailActivityData = () => {
-  let labels: string[] = []
-  let dataPoints: number = 0
+export const getEmailActivityData = () => {
+  let labels = []
+  let dataPoints = 0
 
   if (timeRange.value === 'day') {
     labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
@@ -199,9 +199,9 @@ const getEmailActivityData = () => {
 }
 
 // Generate mock response time data
-const getResponseTimeData = () => {
-  let labels: string[] = []
-  let dataPoints: number = 0
+export const getResponseTimeData = () => {
+  let labels = []
+  let dataPoints = 0
 
   if (timeRange.value === 'day') {
     labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
@@ -230,7 +230,7 @@ const getResponseTimeData = () => {
 }
 
 // Generate mock email category data
-const getEmailCategoryData = () => {
+export const getEmailCategoryData = () => {
   return {
     labels: ['Work', 'Personal', 'Promotions', 'Updates', 'Forums'],
     datasets: [
@@ -250,7 +250,7 @@ const getEmailCategoryData = () => {
 }
 
 // Generate mock device usage data
-const getDeviceUsageData = () => {
+export const getDeviceUsageData = () => {
   return {
     labels: ['Desktop', 'Mobile', 'Tablet'],
     datasets: [
@@ -268,13 +268,13 @@ const getDeviceUsageData = () => {
 }
 
 // Initialize chart data
-const emailActivityData = ref(getEmailActivityData())
-const responseTimeData = ref(getResponseTimeData())
-const emailCategoryData = ref(getEmailCategoryData())
-const deviceUsageData = ref(getDeviceUsageData())
+export const emailActivityData = ref(getEmailActivityData())
+export const responseTimeData = ref(getResponseTimeData())
+export const emailCategoryData = ref(getEmailCategoryData())
+export const deviceUsageData = ref(getDeviceUsageData())
 
 // Stats data
-const stats = ref([
+export const stats = ref([
   { name: 'Total Emails', value: '1,284', change: '+12.3%', icon: 'i-hugeicons-mail-02 text-blue-500' },
   { name: 'Average Response Time', value: '28 min', change: '-8.1%', icon: 'i-hugeicons-clock-01 text-green-500' },
   { name: 'Spam Detected', value: '124', change: '+3.2%', icon: 'i-hugeicons-spam text-red-500' },
@@ -282,7 +282,7 @@ const stats = ref([
 ])
 
 // Update data when time range changes
-const updateChartData = async () => {
+export const updateChartData = async () => {
   isLoading.value = true
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500))
@@ -292,13 +292,13 @@ const updateChartData = async () => {
 }
 
 // Watch for time range changes
-const changeTimeRange = async (newRange: 'day' | 'week' | 'month' | 'year') => {
+export const changeTimeRange = async (newRange) => {
   timeRange.value = newRange
   await updateChartData()
 }
 
 // Function to handle folder change
-const handleFolderChange = (folder: string) => {
+export const handleFolderChange = (folder) => {
   // Update the active folder
   activeFolder.value = folder
   // Navigate to the inbox page with the selected folder
@@ -309,7 +309,7 @@ const handleFolderChange = (folder: string) => {
 }
 
 // Function to handle compose
-const handleCompose = () => {
+export const handleCompose = () => {
   router.push('/inbox?compose=true')
 }
 
@@ -389,7 +389,7 @@ onMounted(async () => {
 
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6">
-        @foreach((stat, index) in stats)
+        @foreach(stats as stat, index)
         <div :key="index" class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-4">
           <div class="flex items-center">
             <div class="flex-shrink-0 p-3 rounded-md bg-gray-100 dark:bg-blue-gray-600">
