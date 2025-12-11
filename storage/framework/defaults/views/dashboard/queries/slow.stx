@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script lang="ts">
 import { ref } from 'vue'
 import { useHead } from '@vueuse/head'
 
@@ -259,8 +259,7 @@ const copyQuery = (queryId: string, queryText: string) => {
 }
 </script>
 
-<template>
-  <div class="min-h-screen">
+<div class="min-h-screen">
     <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-6 bg-white px-4 py-4 shadow-sm dark:bg-blue-gray-900 sm:px-6 lg:px-8">
       <div>
         <h1 class="text-lg text-gray-900 font-semibold leading-7 dark:text-white">
@@ -500,4 +499,3 @@ const copyQuery = (queryId: string, queryText: string) => {
       </div>
     </main>
   </div>
-</template>

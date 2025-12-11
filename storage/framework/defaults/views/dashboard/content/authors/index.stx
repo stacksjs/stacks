@@ -4,7 +4,7 @@
 </route>
 
 
-<script lang="ts" setup>
+<script lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
@@ -877,8 +877,7 @@ function getRoleBadgeClass(role: string): string {
 }
 </script>
 
-<template>
-  <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
     <!-- Stats section -->
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
       <div>
@@ -1572,7 +1571,6 @@ function getRoleBadgeClass(role: string): string {
       </div>
     </div>
   </div>
-</template>
 
 <style scoped>
 /* Add these styles for the diagram */

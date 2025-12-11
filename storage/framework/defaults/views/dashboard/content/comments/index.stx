@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script lang="ts">
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar, Doughnut } from 'vue-chartjs'
@@ -527,8 +527,7 @@ const commentStats = computed(() => {
 })
 </script>
 
-<template>
-  <main>
+<main>
     <div class="px-6 py-6 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-7xl">
         <!-- Header -->
@@ -1177,4 +1176,3 @@ const commentStats = computed(() => {
       </div>
     </div>
   </div>
-</template>

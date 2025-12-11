@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script lang="ts">
 import { ref, reactive, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Pie, Bar } from 'vue-chartjs'
@@ -242,8 +242,7 @@ const deleteRole = (roleId: number) => {
 }
 </script>
 
-<template>
-  <main>
+<main>
     <div class="relative isolate overflow-hidden">
       <div class="px-6 py-6 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-7xl">
@@ -605,4 +604,3 @@ const deleteRole = (roleId: number) => {
       </div>
     </div>
   </main>
-</template>

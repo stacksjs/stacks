@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useHead } from '@vueuse/head'
 import Chart from 'chart.js/auto'
@@ -1095,8 +1095,7 @@ watch(waitlistEntries, () => {
 }, { deep: true })
 </script>
 
-<template>
-  <main>
+<main>
     <div class="px-6 py-6 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-7xl">
         <!-- Header section -->
@@ -1740,4 +1739,3 @@ watch(waitlistEntries, () => {
       </div>
     </div>
   </main>
-</template>
