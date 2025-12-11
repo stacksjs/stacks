@@ -2,28 +2,31 @@
 /**
  * Dashboard Default Layout - macOS Style
  * Uses the modern DashboardLayout component for consistent styling.
+ * Supports both web and native (Craft) environments.
  */
-import DashboardLayout from '../../components/Dashboard/DashboardLayout.vue'
+import DashboardLayout from '../../components/Dashboard/DashboardLayout.stx'
 
-// Window control handlers for Tauri/Electron integration
+// Check if running in Craft native environment
+function isCraftNative() {
+  return typeof window !== 'undefined' && window.craft?.window !== undefined
+}
+
+// Window control handlers for Craft native app integration
 export function handleMinimize() {
-  // @ts-ignore - Tauri API
-  if (window.__TAURI__) {
-    window.__TAURI__.window.appWindow.minimize()
+  if (isCraftNative()) {
+    window.craft.window.minimize()
   }
 }
 
 export function handleMaximize() {
-  // @ts-ignore - Tauri API
-  if (window.__TAURI__) {
-    window.__TAURI__.window.appWindow.toggleMaximize()
+  if (isCraftNative()) {
+    window.craft.window.toggle()
   }
 }
 
 export function handleClose() {
-  // @ts-ignore - Tauri API
-  if (window.__TAURI__) {
-    window.__TAURI__.window.appWindow.close()
+  if (isCraftNative()) {
+    window.craft.window.close()
   }
 }
 </script>
