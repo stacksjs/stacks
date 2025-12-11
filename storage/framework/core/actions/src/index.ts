@@ -30,3 +30,5 @@ export {
   makeStack,
   make as runMake,
 } from './make'
+
+export { makeJob } from './make-job'

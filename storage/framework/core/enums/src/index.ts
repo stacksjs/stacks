@@ -87,6 +87,11 @@ export enum Action {
   Prepublish = 'prepublish',
   QueueTable = 'queue/table',
   QueueWork = 'queue/work',
+  QueueRetry = 'queue/retry',
+  QueueFailed = 'queue/failed',
+  QueueClear = 'queue/clear',
+  QueueStatus = 'queue/status',
+  QueueFlush = 'queue/flush',
   Release = 'release', // ✅
   RouteList = 'route/list', // ✅
   StripeSetup = 'saas/setup',

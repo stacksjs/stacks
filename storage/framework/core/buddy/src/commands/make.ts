@@ -12,6 +12,7 @@ import {
   makeComponent,
   makeDatabase,
   makeFunction,
+  makeJob,
   makeLanguage,
   makePage,
   makeQueueTable,
@@ -30,6 +31,7 @@ export function make(buddy: CLI): void {
     component: 'Create a new component',
     page: 'Create a new page',
     function: 'Create a new function',
+    job: 'Create a new job',
     language: 'Create a new language',
     database: 'Create a new database',
     migration: 'Create a new migration',
@@ -90,6 +92,9 @@ export function make(buddy: CLI): void {
             break
           case 'function':
             await makeFunction(options)
+            break
+          case 'job':
+            await makeJob(options)
             break
           case 'language':
             await makeLanguage(options)
@@ -394,6 +399,46 @@ export function make(buddy: CLI): void {
       }
 
       await makePage(options)
+    })
+
+  buddy
+    .command('make:job [name]', descriptions.job)
+    .option('-n, --name [name]', descriptions.name, { default: false })
+    .option('-q, --queue [queue]', 'The queue to dispatch to', { default: 'default' })
+    .option('-c, --class', 'Create a class-based job', { default: false })
+    .option('-t, --tries [tries]', 'Number of retry attempts', { default: 3 })
+    .option('-b, --backoff [backoff]', 'Backoff delay in seconds', { default: 3 })
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (name: string, options: MakeOptions) => {
+      log.debug('Running `buddy make:job` ...', options)
+
+      const perf = await intro('buddy make:job')
+
+      name = name ?? options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a job name.')
+        log.info('Example: buddy make:job SendWelcomeEmail')
+        process.exit()
+      }
+
+      const result = await makeJob(options)
+
+      if (!result) {
+        await outro('While running the make:job command, there was an issue', {
+          startTime: perf,
+          useSeconds: true,
+        })
+        process.exit()
+      }
+
+      await outro(`Created your ${italic(name)} job.`, {
+        startTime: perf,
+        useSeconds: true,
+      })
+      process.exit(ExitCode.Success)
     })
 
   buddy.on('make:*', () => {
