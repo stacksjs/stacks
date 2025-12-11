@@ -1,0 +1,35 @@
+[package]
+name = "stacks-dashboard"
+version = "0.70.23"
+description = "Stacks Dashboard - Modern Admin Panel"
+authors = ["Chris Breuer <chris@stacksjs.com>"]
+edition = "2021"
+license = "MIT"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "macos-private-api"] }
+tauri-plugin-shell = "2"
+tauri-plugin-process = "2"
+tauri-plugin-os = "2"
+tauri-plugin-notification = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-http = "2"
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+hostname = "0.4"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
