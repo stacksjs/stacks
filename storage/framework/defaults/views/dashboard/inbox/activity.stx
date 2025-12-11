@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useRouter } from 'vue-router'
@@ -321,273 +321,277 @@ onMounted(async () => {
 })
 </script>
 
-<template>
-  <div class="min-h-screen dark:bg-blue-gray-800">
-    <div class="flex h-screen">
-      <!-- Sidebar -->
-      <EmailSidebar
-        :active-folder="activeFolder"
-        :folders="folders"
-        :unread-counts="unreadCounts"
-        @update:active-folder="(folder) => { activeFolder = folder; handleFolderChange(folder); }"
-        @compose="handleCompose"
-      />
+<div class="min-h-screen dark:bg-blue-gray-800">
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <EmailSidebar
+      :active-folder="activeFolder"
+      :folders="folders"
+      :unread-counts="unreadCounts"
+      @update:active-folder="(folder) => { activeFolder = folder; handleFolderChange(folder); }"
+      @compose="handleCompose"
+    />
 
-      <!-- Main Content -->
-      <div class="flex-1 flex flex-col overflow-hidden">
-        <!-- Header -->
-        <div class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 py-4 px-6">
-          <div class="flex items-center justify-between">
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Email Activity</h1>
-            <div class="flex space-x-2">
-              <button
-                @click="changeTimeRange('day')"
-                :class="[
-                  'px-3 py-1.5 text-sm font-medium rounded-md',
-                  timeRange === 'day'
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                    : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-blue-gray-600'
-                ]"
-              >
-                Day
-              </button>
-              <button
-                @click="changeTimeRange('week')"
-                :class="[
-                  'px-3 py-1.5 text-sm font-medium rounded-md',
-                  timeRange === 'week'
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                    : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-blue-gray-600'
-                ]"
-              >
-                Week
-              </button>
-              <button
-                @click="changeTimeRange('month')"
-                :class="[
-                  'px-3 py-1.5 text-sm font-medium rounded-md',
-                  timeRange === 'month'
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                    : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-blue-gray-600'
-                ]"
-              >
-                Month
-              </button>
-              <button
-                @click="changeTimeRange('year')"
-                :class="[
-                  'px-3 py-1.5 text-sm font-medium rounded-md',
-                  timeRange === 'year'
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                    : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-blue-gray-600'
-                ]"
-              >
-                Year
-              </button>
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Header -->
+      <div class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 py-4 px-6">
+        <div class="flex items-center justify-between">
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Email Activity</h1>
+          <div class="flex space-x-2">
+            <button
+              @click="changeTimeRange('day')"
+              :class="[
+                'px-3 py-1.5 text-sm font-medium rounded-md',
+                timeRange === 'day'
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
+                  : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-blue-gray-600'
+              ]"
+            >
+              Day
+            </button>
+            <button
+              @click="changeTimeRange('week')"
+              :class="[
+                'px-3 py-1.5 text-sm font-medium rounded-md',
+                timeRange === 'week'
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
+                  : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-blue-gray-600'
+              ]"
+            >
+              Week
+            </button>
+            <button
+              @click="changeTimeRange('month')"
+              :class="[
+                'px-3 py-1.5 text-sm font-medium rounded-md',
+                timeRange === 'month'
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
+                  : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-blue-gray-600'
+              ]"
+            >
+              Month
+            </button>
+            <button
+              @click="changeTimeRange('year')"
+              :class="[
+                'px-3 py-1.5 text-sm font-medium rounded-md',
+                timeRange === 'year'
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
+                  : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-blue-gray-600'
+              ]"
+            >
+              Year
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6">
+        @foreach((stat, index) in stats)
+        <div :key="index" class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-4">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 p-3 rounded-md bg-gray-100 dark:bg-blue-gray-600">
+              <i :class="stat.icon + ' text-xl'"></i>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ stat.name }}</p>
+              <div class="flex items-baseline">
+                <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ stat.value }}</p>
+                <p :class="[
+                  'ml-2 text-sm font-medium',
+                  stat.change.startsWith('+') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                ]">
+                  {{ stat.change }}
+                </p>
+              </div>
             </div>
           </div>
         </div>
+        @endforeach
+      </div>
 
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6">
-          <div v-for="(stat, index) in stats" :key="index" class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-4">
-            <div class="flex items-center">
-              <div class="flex-shrink-0 p-3 rounded-md bg-gray-100 dark:bg-blue-gray-600">
-                <i :class="stat.icon + ' text-xl'"></i>
-              </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ stat.name }}</p>
-                <div class="flex items-baseline">
-                  <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ stat.value }}</p>
-                  <p :class="[
-                    'ml-2 text-sm font-medium',
-                    stat.change.startsWith('+') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                  ]">
-                    {{ stat.change }}
-                  </p>
-                </div>
-              </div>
+      <!-- Main Charts -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-6">
+        <!-- Email Activity Chart -->
+        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Email Volume</h2>
+          </div>
+          <div class="h-80 relative">
+            @if(isLoading)
+            <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
+            @endif
+            <Line :data="emailActivityData" :options="lineChartOptions" />
           </div>
         </div>
 
-        <!-- Main Charts -->
-        <div class="flex-1 overflow-y-auto p-6 space-y-6">
-          <!-- Email Activity Chart -->
-          <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-4">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Email Volume</h2>
-            </div>
-            <div class="h-80 relative">
-              <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              </div>
-              <Line :data="emailActivityData" :options="lineChartOptions" />
-            </div>
+        <!-- Response Time Chart -->
+        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Average Response Time</h2>
           </div>
+          <div class="h-64 relative">
+            @if(isLoading)
+            <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
+            @endif
+            <Bar :data="responseTimeData" :options="barChartOptions" />
+          </div>
+        </div>
 
-          <!-- Response Time Chart -->
+        <!-- Category and Device Charts -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Email Categories -->
           <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-4">
             <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Average Response Time</h2>
+              <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Email Categories</h2>
             </div>
             <div class="h-64 relative">
-              <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              </div>
-              <Bar :data="responseTimeData" :options="barChartOptions" />
+              <Doughnut :data="emailCategoryData" :options="doughnutChartOptions" />
             </div>
           </div>
 
-          <!-- Category and Device Charts -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Email Categories -->
-            <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-4">
-              <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Email Categories</h2>
-              </div>
-              <div class="h-64 relative">
-                <Doughnut :data="emailCategoryData" :options="doughnutChartOptions" />
-              </div>
+          <!-- Device Usage -->
+          <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-4">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Device Usage</h2>
             </div>
-
-            <!-- Device Usage -->
-            <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-4">
-              <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Device Usage</h2>
-              </div>
-              <div class="h-64 relative">
-                <Doughnut :data="deviceUsageData" :options="doughnutChartOptions" />
-              </div>
+            <div class="h-64 relative">
+              <Doughnut :data="deviceUsageData" :options="doughnutChartOptions" />
             </div>
           </div>
+        </div>
 
-          <!-- Recent Activity Table -->
-          <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow overflow-hidden">
-            <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-blue-gray-600">
-              <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Recent Activity</h3>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-blue-gray-600">
-                <thead class="bg-gray-50 dark:bg-blue-gray-600">
-                  <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Action
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Time
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white dark:bg-blue-gray-700 divide-y divide-gray-200 dark:divide-blue-gray-600">
-                  <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                          <i class="i-hugeicons-mail-receive-02 text-blue-600"></i>
-                        </div>
-                        <div class="ml-4">
-                          <div class="text-sm font-medium text-gray-900 dark:text-white">Received Email</div>
-                        </div>
+        <!-- Recent Activity Table -->
+        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow overflow-hidden">
+          <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-blue-gray-600">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Recent Activity</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-blue-gray-600">
+              <thead class="bg-gray-50 dark:bg-blue-gray-600">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Action
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Time
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-blue-gray-700 divide-y divide-gray-200 dark:divide-blue-gray-600">
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                        <i class="i-hugeicons-mail-receive-02 text-blue-600"></i>
                       </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm text-gray-900 dark:text-white">New Project Roadmap</div>
-                      <div class="text-xs text-gray-500 dark:text-gray-400">From: Chris Breuer</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      10 minutes ago
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
-                        Delivered
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="flex-shrink-0 h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                          <i class="i-hugeicons-mail-send-02 text-green-600"></i>
-                        </div>
-                        <div class="ml-4">
-                          <div class="text-sm font-medium text-gray-900 dark:text-white">Sent Email</div>
-                        </div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">Received Email</div>
                       </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm text-gray-900 dark:text-white">Re: Design Review Scheduled</div>
-                      <div class="text-xs text-gray-500 dark:text-gray-400">To: Blake</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      1 hour ago
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
-                        Sent
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="flex-shrink-0 h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
-                          <i class="i-hugeicons-spam text-red-600"></i>
-                        </div>
-                        <div class="ml-4">
-                          <div class="text-sm font-medium text-gray-900 dark:text-white">Spam Detected</div>
-                        </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900 dark:text-white">New Project Roadmap</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">From: Chris Breuer</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    10 minutes ago
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                      Delivered
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                        <i class="i-hugeicons-mail-send-02 text-green-600"></i>
                       </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm text-gray-900 dark:text-white">Special Offer: Limited Time</div>
-                      <div class="text-xs text-gray-500 dark:text-gray-400">From: marketing@example.com</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      3 hours ago
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100">
-                        Blocked
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="flex-shrink-0 h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center">
-                          <i class="i-hugeicons-star text-yellow-600"></i>
-                        </div>
-                        <div class="ml-4">
-                          <div class="text-sm font-medium text-gray-900 dark:text-white">Starred Email</div>
-                        </div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">Sent Email</div>
                       </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm text-gray-900 dark:text-white">Weekly Team Update</div>
-                      <div class="text-xs text-gray-500 dark:text-gray-400">From: Sarah Johnson</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      Yesterday
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">
-                        Read
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900 dark:text-white">Re: Design Review Scheduled</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">To: Blake</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    1 hour ago
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                      Sent
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
+                        <i class="i-hugeicons-spam text-red-600"></i>
+                      </div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">Spam Detected</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900 dark:text-white">Special Offer: Limited Time</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">From: marketing@example.com</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    3 hours ago
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100">
+                      Blocked
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center">
+                        <i class="i-hugeicons-star text-yellow-600"></i>
+                      </div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">Starred Email</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900 dark:text-white">Weekly Team Update</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">From: Sarah Johnson</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    Yesterday
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">
+                      Read
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
   </div>
-</template>
+</div>

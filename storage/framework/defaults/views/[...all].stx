@@ -1,12 +1,10 @@
-<script setup lang="ts">
+<script>
 const { t } = useI18n()
 </script>
 
-<template>
-  <div>
-    {{ t('not-found') }}
-  </div>
-</template>
+<div>
+  {{ t('not-found') }}
+</div>
 
 <route lang="yaml">
 meta:

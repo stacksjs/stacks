@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script setup lang="ts">
+<script>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useHead } from '@vueuse/head'
 import * as d3 from 'd3'
@@ -54,9 +54,9 @@ interface ServerType {
 type InstanceType = keyof typeof workerSizes
 
 // Update default values
-const defaultServerOS = 'ubuntu-24-lts-x86_64'
-const defaultBunVersion = 'v1.2.3'
-const cloudConfig = ref<CloudConfig>({
+export const defaultServerOS = 'ubuntu-24-lts-x86_64'
+export const defaultBunVersion = 'v1.2.3'
+export const cloudConfig = ref<CloudConfig>({
   type: 'aws',
   useLoadBalancer: true,
   servers: {
@@ -135,7 +135,7 @@ type WorkerSizeSpecs = {
 }
 
 // Add worker state
-const workerConfig = ref<WorkerConfig>({
+export const workerConfig = ref<WorkerConfig>({
   name: 'Worker 1',
   size: 't3.micro',
   replicas: 1,
@@ -143,7 +143,7 @@ const workerConfig = ref<WorkerConfig>({
 })
 
 // Add visualization state
-const diagramContainer = ref<HTMLElement | null>(null)
+export const diagramContainer = ref<HTMLElement | null>(null)
 let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>
 let simulation: d3.Simulation<InfraNode, undefined> | undefined
 
@@ -151,21 +151,21 @@ let simulation: d3.Simulation<InfraNode, undefined> | undefined
 let zoomGroup: d3.Selection<SVGGElement, unknown, null, undefined>
 
 // Add selected node state
-const selectedNode = ref<InfraNode | null>(null)
+export const selectedNode = ref<InfraNode | null>(null)
 
 // Add save state
-const isSaving = ref(false)
-const saveError = ref<string | null>(null)
+export const isSaving = ref(false)
+export const saveError = ref<string | null>(null)
 
 // Add unsaved state
-const hasUnsavedChanges = ref(false)
+export const hasUnsavedChanges = ref(false)
 
 // Add initial state tracking for change detection
 const initialWorkerConfig = ref({ ...workerConfig.value })
 const initialCloudConfig = ref({ ...cloudConfig.value })
 
 // Add edit mode state
-const editMode = ref<Record<string, boolean>>({})
+export const editMode = ref<Record<string, boolean>>({})
 
 // Update watch to compare with initial state
 watch([cloudConfig, workerConfig], ([newCloud, newWorker]) => {
@@ -583,7 +583,7 @@ interface ServerConfig {
   userData?: string
 }
 
-const servers = ref<Record<string, ServerConfig>>({
+export const servers = ref<Record<string, ServerConfig>>({
   app1: {
     name: 'app-cosmic-nebula',
     domain: 'stacksjs.com',
@@ -658,8 +658,8 @@ const servers = ref<Record<string, ServerConfig>>({
   },
 })
 
-const sortKey = ref<keyof ServerConfig>('name')
-const sortOrder = ref<'asc' | 'desc'>('asc')
+export const sortKey = ref<keyof ServerConfig>('name')
+export const sortOrder = ref<'asc' | 'desc'>('asc')
 
 const setSorting = (key: keyof ServerConfig) => {
   if (sortKey.value === key) {
@@ -670,7 +670,7 @@ const setSorting = (key: keyof ServerConfig) => {
   }
 }
 
-const sortedServers = computed(() => {
+export const sortedServers = computed(() => {
   return Object.entries(servers.value).sort(([, a], [, b]) => {
     const aValue = a[sortKey.value]
     const bValue = b[sortKey.value]
@@ -683,8 +683,8 @@ const sortedServers = computed(() => {
   })
 })
 
-const searchQuery = ref('')
-const filteredServers = computed(() => {
+export const searchQuery = ref('')
+export const filteredServers = computed(() => {
   const query = searchQuery.value.toLowerCase()
   if (!query) return sortedServers.value
 
@@ -707,7 +707,7 @@ interface ServerEvent {
   timestamp: string
 }
 
-const serverEvents = ref<ServerEvent[]>([
+export const serverEvents = ref<ServerEvent[]>([
   {
     id: '1',
     service: 'App Server',
@@ -764,266 +764,272 @@ const getEventTypeIcon = (type: string) => {
 }
 </script>
 
-<template>
-  <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
-    <div class="px-4 lg:px-8 sm:px-6">
-      <!-- Header -->
-      <div class="mb-8">
-        <div class="flex justify-between items-center">
-          <div class="flex items-center gap-2">
-            <div>
-              <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-                Servers
-              </h3>
-              <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
-                Manage all your application servers.
-              </p>
-            </div>
+<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+  <div class="px-4 lg:px-8 sm:px-6">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <div>
+            <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+              Servers
+            </h3>
+            <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
+              Manage all your application servers.
+            </p>
           </div>
+        </div>
 
-          <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-            <button type="button" class="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm text-white font-semibold shadow-sm hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline">
-              Add Server
-            </button>
+        <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+          <button type="button" class="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm text-white font-semibold shadow-sm hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline">
+            Add Server
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="mb-6">
+      <div class="flex items-center gap-4">
+        <div class="flex-1">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <div class="i-hugeicons-search-01 w-5 h-5 text-gray-400"></div>
+            </div>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search servers..."
+              class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-blue-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Search and Filters -->
-      <div class="mb-6">
-        <div class="flex items-center gap-4">
-          <div class="flex-1">
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <div class="i-hugeicons-search-01 w-5 h-5 text-gray-400"></div>
-              </div>
-              <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="Search servers..."
-                class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-blue-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+    <!-- Servers Table -->
+    <div class="bg-white dark:bg-blue-gray-700 shadow rounded-lg overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+          <thead class="bg-gray-50 dark:bg-blue-gray-800">
+            <tr>
+              <th
+                v-for="header in ['Name', 'Type', 'Region', 'Size', 'OS', 'Database', 'Search']"
+                :key="header"
+                scope="col"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-300"
+                @click="setSorting(header.toLowerCase() as keyof ServerConfig)"
               >
+                <div class="flex items-center gap-1">
+                  {{ header }}
+                  @if(sortKey === header.toLowerCase())
+                  <div
+                    class="w-4 h-4"
+                    :class="sortOrder === 'asc' ? 'i-hugeicons-chevron-up' : 'i-hugeicons-chevron-down'"
+                  ></div>
+                  @endif
+                </div>
+              </th>
+              <th scope="col" class="relative px-6 py-3">
+                <span class="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-blue-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
+            <tr v-for="[key, server] in filteredServers" :key="key" class="hover:bg-gray-50 dark:hover:bg-blue-gray-600">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {{ server.name }}
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                  :class="{
+                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': server.type === 'app',
+                    'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300': server.type === 'web',
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': server.type === 'worker',
+                    'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300': server.type === 'cache',
+                    'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': server.type === 'database',
+                    'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300': server.type === 'search',
+                  }"
+                >
+                  {{ server.type }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                {{ server.region }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                {{ server.size }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                {{ server.serverOS }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                {{ server.database || 'None' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                {{ server.searchEngine || 'None' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex items-center justify-end gap-4">
+                  <router-link
+                    :to="`/servers/${key}`"
+                    class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
+                  >
+                    View
+                  </router-link>
+                  <router-link
+                    :to="`/servers/${key}`"
+                    class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    Edit
+                  </router-link>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Infrastructure Diagram -->
+    <div class="my-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Cloud Diagram</h4>
+            <!-- AWS Icon -->
+            <div class="flex items-center justify-center w-8 h-8 text-[#FF9900]">
+              <div class="i-hugeicons-amazon w-6 h-6"></div>
+            </div>
+            @if(hasUnsavedChanges)
+            <span class="text-sm text-amber-600 dark:text-amber-400 ml-2">(Unsaved changes)</span>
+            @endif
+          </div>
+        </div>
+        <div class="relative">
+          <div ref="diagramContainer" class="w-full h-[400px] bg-blue-gray-800 rounded-lg"></div>
+
+          <!-- Node Details Panel -->
+          @if(selectedNode)
+          <div
+            class="absolute top-4 right-4 w-80 bg-white dark:bg-blue-gray-700 rounded-lg shadow-lg p-4 z-10"
+            @click.stop
+          >
+            <div class="flex items-center justify-between mb-4">
+              <h5 class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {{ selectedNode.label }}
+              </h5>
+              <button
+                @click="selectedNode = null"
+                class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200 transition-colors duration-150"
+              >
+                <span class="sr-only">Close</span>
+                <div class="h-5 w-5">
+                  <span class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200 transition-colors duration-150">×</span>
+                </div>
+              </button>
+            </div>
+
+            <div class="space-y-3">
+              <div class="flex items-center gap-2">
+                <div
+                  class="w-8 h-8 rounded-full flex items-center justify-center"
+                  :class="{
+                    'bg-pink-100 text-pink-600 dark:bg-pink-900 dark:text-pink-300': selectedNode.type === 'user',
+                    'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300': selectedNode.type === 'loadbalancer',
+                    'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300': selectedNode.type === 'server',
+                    'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300': selectedNode.type === 'worker',
+                  }"
+                >
+                  <span class="text-lg">
+                    {{ selectedNode.type === 'user' ? '👤' : selectedNode.type === 'loadbalancer' ? '⚖️' : selectedNode.type === 'server' ? '🖥️' : '⚙️' }}
+                  </span>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Type</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ selectedNode.type.charAt(0).toUpperCase() + selectedNode.type.slice(1) }}
+                  </p>
+                </div>
+              </div>
+
+              @if(selectedNode.config)
+                <div
+                  v-for="(value, key) in formatConfigDetails(selectedNode.config)"
+                  :key="key"
+                  class="flex justify-between py-2 border-t border-gray-100 dark:border-gray-600"
+                >
+                  <span class="text-sm text-gray-500 dark:text-gray-400">{{ key }}</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ value }}</span>
+                </div>
+              @else
+                @if(selectedNode.type === 'user')
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                  Entry point for all incoming traffic to your infrastructure.
+                </div>
+                @endif
+                @if(selectedNode.type === 'loadbalancer')
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                  Distributes incoming traffic across multiple servers for improved reliability and performance.
+                </div>
+                @endif
+              @endif
             </div>
           </div>
+          @endif
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Events -->
+    <div>
+      <div class="flex justify-between items-center mb-8 mt-16">
+        <div>
+          <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+            Recent Events
+          </h3>
+          <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
+            Latest server events and notifications.
+          </p>
         </div>
       </div>
 
-      <!-- Servers Table -->
-      <div class="bg-white dark:bg-blue-gray-700 shadow rounded-lg overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
-            <thead class="bg-gray-50 dark:bg-blue-gray-800">
+      <div class="inline-block min-w-full align-middle">
+        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
+            <thead class="bg-gray-50 dark:bg-blue-gray-600">
               <tr>
-                <th
-                  v-for="header in ['Name', 'Type', 'Region', 'Size', 'OS', 'Database', 'Search']"
-                  :key="header"
-                  scope="col"
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-300"
-                  @click="setSorting(header.toLowerCase() as keyof ServerConfig)"
-                >
-                  <div class="flex items-center gap-1">
-                    {{ header }}
-                    <div
-                      v-if="sortKey === header.toLowerCase()"
-                      class="w-4 h-4"
-                      :class="sortOrder === 'asc' ? 'i-hugeicons-chevron-up' : 'i-hugeicons-chevron-down'"
-                    ></div>
-                  </div>
-                </th>
-                <th scope="col" class="relative px-6 py-3">
-                  <span class="sr-only">Actions</span>
-                </th>
+                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 sm:pl-6">Type</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Service</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Message</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 text-right">Timestamp</th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-blue-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
-              <tr v-for="[key, server] in filteredServers" :key="key" class="hover:bg-gray-50 dark:hover:bg-blue-gray-600">
-                <td class="px-6 py-4 whitespace-nowrap">
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-700">
+              <tr v-for="event in serverEvents" :key="event.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-600">
+                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                   <div class="flex items-center">
-                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {{ server.name }}
-                    </div>
+                    <div :class="[getEventTypeIcon(event.type), getEventTypeColor(event.type), 'w-5 h-5']" />
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                    :class="{
-                      'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': server.type === 'app',
-                      'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300': server.type === 'web',
-                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': server.type === 'worker',
-                      'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300': server.type === 'cache',
-                      'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': server.type === 'database',
-                      'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300': server.type === 'search',
-                    }"
-                  >
-                    {{ server.type }}
-                  </span>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-100">
+                  {{ event.service }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                  {{ server.region }}
+                <td class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                  {{ event.message }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                  {{ server.size }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                  {{ server.serverOS }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                  {{ server.database || 'None' }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                  {{ server.searchEngine || 'None' }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div class="flex items-center justify-end gap-4">
-                    <router-link
-                      :to="`/servers/${key}`"
-                      class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
-                    >
-                      View
-                    </router-link>
-                    <router-link
-                      :to="`/servers/${key}`"
-                      class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                    >
-                      Edit
-                    </router-link>
-                  </div>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">
+                  {{ event.timestamp }}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-
-      <!-- Infrastructure Diagram -->
-      <div class="my-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-              <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Cloud Diagram</h4>
-              <!-- AWS Icon -->
-              <div class="flex items-center justify-center w-8 h-8 text-[#FF9900]">
-                <div class="i-hugeicons-amazon w-6 h-6"></div>
-              </div>
-              <span v-if="hasUnsavedChanges" class="text-sm text-amber-600 dark:text-amber-400 ml-2">(Unsaved changes)</span>
-            </div>
-          </div>
-          <div class="relative">
-            <div ref="diagramContainer" class="w-full h-[400px] bg-blue-gray-800 rounded-lg"></div>
-
-            <!-- Node Details Panel -->
-            <div
-              v-if="selectedNode"
-              class="absolute top-4 right-4 w-80 bg-white dark:bg-blue-gray-700 rounded-lg shadow-lg p-4 z-10"
-              @click.stop
-            >
-              <div class="flex items-center justify-between mb-4">
-                <h5 class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {{ selectedNode.label }}
-                </h5>
-                <button
-                  @click="selectedNode = null"
-                  class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200 transition-colors duration-150"
-                >
-                  <span class="sr-only">Close</span>
-                  <div class="h-5 w-5">
-                    <span class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200 transition-colors duration-150">×</span>
-                  </div>
-                </button>
-              </div>
-
-              <div class="space-y-3">
-                <div class="flex items-center gap-2">
-                  <div
-                    class="w-8 h-8 rounded-full flex items-center justify-center"
-                    :class="{
-                      'bg-pink-100 text-pink-600 dark:bg-pink-900 dark:text-pink-300': selectedNode.type === 'user',
-                      'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300': selectedNode.type === 'loadbalancer',
-                      'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300': selectedNode.type === 'server',
-                      'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300': selectedNode.type === 'worker',
-                    }"
-                  >
-                    <span class="text-lg">
-                      {{ selectedNode.type === 'user' ? '👤' : selectedNode.type === 'loadbalancer' ? '⚖️' : selectedNode.type === 'server' ? '🖥️' : '⚙️' }}
-                    </span>
-                  </div>
-                  <div>
-                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Type</p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {{ selectedNode.type.charAt(0).toUpperCase() + selectedNode.type.slice(1) }}
-                    </p>
-                  </div>
-                </div>
-
-                <template v-if="selectedNode.config">
-                  <div
-                    v-for="(value, key) in formatConfigDetails(selectedNode.config)"
-                    :key="key"
-                    class="flex justify-between py-2 border-t border-gray-100 dark:border-gray-600"
-                  >
-                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ key }}</span>
-                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ value }}</span>
-                  </div>
-                </template>
-
-                <div v-else-if="selectedNode.type === 'user'" class="text-sm text-gray-500 dark:text-gray-400">
-                  Entry point for all incoming traffic to your infrastructure.
-                </div>
-                <div v-else-if="selectedNode.type === 'loadbalancer'" class="text-sm text-gray-500 dark:text-gray-400">
-                  Distributes incoming traffic across multiple servers for improved reliability and performance.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recent Events -->
-      <div>
-        <div class="flex justify-between items-center mb-8 mt-16">
-          <div>
-            <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-              Recent Events
-            </h3>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
-              Latest server events and notifications.
-            </p>
-          </div>
-        </div>
-
-        <div class="inline-block min-w-full align-middle">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
-              <thead class="bg-gray-50 dark:bg-blue-gray-600">
-                <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 sm:pl-6">Type</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Service</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Message</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 text-right">Timestamp</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-700">
-                <tr v-for="event in serverEvents" :key="event.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-600">
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                    <div class="flex items-center">
-                      <div :class="[getEventTypeIcon(event.type), getEventTypeColor(event.type), 'w-5 h-5']" />
-                    </div>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-100">
-                    {{ event.service }}
-                  </td>
-                  <td class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    {{ event.message }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">
-                    {{ event.timestamp }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
-</template>
+</div>

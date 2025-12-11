@@ -1,5 +1,4 @@
-
-<script setup lang="ts">
+<script>
 import Login from '../../../core/components/auth/src/components/Login.vue'
 import { useHead } from '@vueuse/head'
 import { useAuth } from '../../functions/auth'
@@ -25,11 +24,9 @@ async function handleLogin(user: AuthUser) {
 }
 </script>
 
-<template>
-  <div>
-    <Login @submit="handleLogin" />
-  </div>
-</template>
+<div>
+  <Login @submit="handleLogin" />
+</div>
 
 <route lang="yaml">
   meta:

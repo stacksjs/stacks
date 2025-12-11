@@ -1,18 +1,16 @@
-<script setup lang="ts">
+<script>
 /**
  * Marketing Button Component
  *
  * A simple button designed for marketing pages with solid/outline variants.
  * NOTE: For dashboard/app UIs, use @stacksjs/stx-ui components instead.
  */
-import { computed } from 'vue'
 
-const props = defineProps<{
-  variant?: 'solid' | 'outline'
-  color?: 'blue' | 'slate' | 'white' | 'black'
-  href?: string
-  className?: string
-}>()
+// Props
+export const variant = 'solid' // 'solid' | 'outline'
+export const color = 'slate' // 'blue' | 'slate' | 'white' | 'black'
+export const href = ''
+export const customClass = ''
 
 const baseStyles = {
   solid:
@@ -40,29 +38,30 @@ const variantStyles = {
   },
 }
 
-const className = computed(() => {
-  const variant = props.variant ?? 'solid'
-  const color = props.color ?? 'slate'
-  let classes = baseStyles[variant]
+function getClassName(variant, color, customClass) {
+  const v = variant || 'solid'
+  const c = color || 'slate'
+  let classes = baseStyles[v] || baseStyles.solid
 
-  const colorStyles = variantStyles[variant]?.[color]
+  const colorStyles = variantStyles[v]?.[c]
   if (colorStyles) {
     classes += ` ${colorStyles}`
   }
 
-  if (props.className) {
-    classes += ` ${props.className}`
+  if (customClass) {
+    classes += ` ${customClass}`
   }
 
   return classes
-})
+}
 </script>
 
-<template>
-  <button v-if="!props.href" :class="className">
+@if(!href)
+  <button class="{{ getClassName(variant, color, customClass) }}">
     <slot />
   </button>
-  <a v-else :href="href" :class="className">
+@else
+  <a href="{{ href }}" class="{{ getClassName(variant, color, customClass) }}">
     <slot />
   </a>
-</template>
+@endif

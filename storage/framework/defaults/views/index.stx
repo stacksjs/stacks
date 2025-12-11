@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script>
 defineOptions({
   name: 'HomePage',
 })
@@ -37,20 +37,18 @@ useHead({
 // const { t } = useI18n()
 </script>
 
-<template>
-  <!-- <Header /> -->
+<!-- <Header /> -->
 
-  <main>
-    <ComingSoon />
-    <!-- <Hero /> -->
-    <!-- <PrimaryFeatures /> -->
-    <!-- <PrimaryFeatures2 />
-    <SecondaryFeatures />
-    <CallToAction />
-    <Testimonials />
-    <Pricing />
-    <Faqs /> -->
-  </main>
+<main>
+  <ComingSoon />
+  <!-- <Hero /> -->
+  <!-- <PrimaryFeatures /> -->
+  <!-- <PrimaryFeatures2 />
+  <SecondaryFeatures />
+  <CallToAction />
+  <Testimonials />
+  <Pricing />
+  <Faqs /> -->
+</main>
 
-  <Footer />
-</template>
+<Footer />

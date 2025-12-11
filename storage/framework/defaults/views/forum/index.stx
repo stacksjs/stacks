@@ -1,10 +1,14 @@
-<template>
-  <ForumLayout :route="currentRoute">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div class="lg:col-span-2">
-        <ForumBreadcrumb :items="breadcrumbItems" />
+<script>
+export const filter = ''
+</script>
 
-        <div v-if="!filter">
+<ForumLayout :route="currentRoute">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="lg:col-span-2">
+      <ForumBreadcrumb :items="breadcrumbItems" />
+
+      @if (!filter)
+        <div>
           <ForumCategory title="Announcements">
             <ForumCategoryItem
               title="Welcome to the Stacks Community Forum"
@@ -133,10 +137,11 @@
             />
           </ForumCategory>
         </div>
+      @endif
 
-        <ForumTopicList :title="listTitle">
+      <ForumTopicList :title="listTitle">
+        @foreach (topic in topics)
           <ForumTopicItem
-            v-for="topic in topics"
             :key="topic.id"
             :title="topic.title"
             :link="topic.link"
@@ -155,322 +160,51 @@
             :lastReplyAuthorAvatar="topic.lastReplyAuthorAvatar || ''"
             :lastReplyAt="topic.lastReplyAt || ''"
           />
-        </ForumTopicList>
+        @endforeach
+      </ForumTopicList>
 
-        <ForumPagination :currentPage="1" :totalPages="5" />
-      </div>
-
-      <div class="lg:col-span-1">
-        <ForumSidebar
-          :stats="{
-            topics: 540,
-            posts: 3287,
-            members: 1245,
-            newestMember: 'NewUser123'
-          }"
-          :popularTopics="[
-            {
-              id: 1,
-              title: 'How to implement authentication in a new Stacks.js project?',
-              link: '/forum/topic/1',
-              replyCount: 3,
-              viewCount: 45
-            },
-            {
-              id: 2,
-              title: 'Best practices for database migrations in Stacks.js',
-              link: '/forum/topic/3',
-              replyCount: 15,
-              viewCount: 128
-            },
-            {
-              id: 3,
-              title: 'Introducing myself to the community!',
-              link: '/forum/topic/2',
-              replyCount: 8,
-              viewCount: 32
-            }
-          ]"
-          :onlineUsers="[
-            { id: 1, name: 'JohnDoe', avatar: '/images/avatars/default.png' },
-            { id: 2, name: 'DatabaseGuru', avatar: '/images/avatars/default.png' },
-            { id: 3, name: 'NewUser123', avatar: '/images/avatars/default.png' },
-            { id: 4, name: 'ExpertUser', avatar: '/images/avatars/default.png' },
-            { id: 5, name: 'StacksMaster', avatar: '/images/avatars/default.png' }
-          ]"
-        />
-      </div>
+      <ForumPagination :currentPage="1" :totalPages="5" />
     </div>
-  </ForumLayout>
-</template>
 
-<script setup lang="ts">
-import { computed } from 'vue'
-import ForumLayout from '../../components/Forum/ForumLayout.vue'
-import ForumBreadcrumb from '../../components/Forum/ForumBreadcrumb.vue'
-import ForumCategory from '../../components/Forum/ForumCategory.vue'
-import ForumCategoryItem from '../../components/Forum/ForumCategoryItem.vue'
-import ForumTopicList from '../../components/Forum/ForumTopicList.vue'
-import ForumTopicItem from '../../components/Forum/ForumTopicItem.vue'
-import ForumPagination from '../../components/Forum/ForumPagination.vue'
-import ForumSidebar from '../../components/Forum/ForumSidebar.vue'
-
-// In a real app, this would come from route params
-// For now, we'll simulate it
-const props = defineProps<{
-  filter?: string
-}>()
-
-const filter = computed(() => props.filter || '')
-
-const currentRoute = computed(() => {
-  if (filter.value === 'popular') return 'forum-popular'
-  if (filter.value === 'recent') return 'forum-recent'
-  if (filter.value === 'solved') return 'forum-solved'
-  return 'forum'
-})
-
-const breadcrumbItems = computed(() => {
-  const items = [{ label: 'Forum Home', link: '/forum' }]
-
-  if (filter.value) {
-    const filters: Record<string, string> = {
-      'popular': 'Popular',
-      'recent': 'Recent',
-      'solved': 'Solved'
-    }
-
-    const filterValue = filter.value as keyof typeof filters
-    if (filters[filterValue]) {
-      items.push({
-        label: filters[filterValue],
-        link: `/forum?filter=${filterValue}`
-      })
-    }
-  }
-
-  return items
-})
-
-const listTitle = computed(() => {
-  if (filter.value === 'popular') return 'Popular Topics'
-  if (filter.value === 'recent') return 'Recent Topics'
-  if (filter.value === 'solved') return 'Solved Topics'
-  return 'Recent Discussions'
-})
-
-// Define the Topic interface to fix type errors
-interface Topic {
-  id: number
-  title: string
-  link: string
-  authorName: string
-  authorAvatar: string
-  createdAt: string
-  viewCount: number
-  replyCount: number
-  likeCount: number
-  category: string
-  categoryLink: string
-  excerpt?: string
-  isPinned?: boolean
-  isSolved?: boolean
-  lastReplyAuthorName?: string
-  lastReplyAuthorAvatar?: string
-  lastReplyAt?: string
-}
-
-// Sample topics data based on filter
-const topics = computed((): Topic[] => {
-  if (filter.value === 'popular') {
-    return [
-      {
-        id: 3,
-        title: 'Best practices for database migrations in Stacks.js',
-        link: '/forum/topic/3',
-        authorName: 'DatabaseGuru',
-        authorAvatar: '/images/avatars/default.png',
-        createdAt: '1 day ago',
-        viewCount: 128,
-        replyCount: 15,
-        likeCount: 24,
-        category: 'General Discussion',
-        categoryLink: '/forum/category/general/chat',
-        isSolved: true,
-        lastReplyAuthorName: 'ExpertUser',
-        lastReplyAuthorAvatar: '/images/avatars/default.png',
-        lastReplyAt: '3 hours ago'
-      },
-      {
-        id: 6,
-        title: 'Stacks.js v2.0 Released!',
-        link: '/forum/topic/6',
-        authorName: 'StacksMaster',
-        authorAvatar: '/images/avatars/default.png',
-        createdAt: '3 days ago',
-        viewCount: 412,
-        replyCount: 28,
-        likeCount: 76,
-        category: 'Announcements',
-        categoryLink: '/forum/category/announcements',
-        excerpt: 'We\'re excited to announce the release of Stacks.js v2.0 with major performance improvements and new features...',
-        isPinned: true
-      },
-      {
-        id: 5,
-        title: 'Vue 3 composition API vs options API in Stacks.js components',
-        link: '/forum/topic/5',
-        authorName: 'JohnDoe',
-        authorAvatar: '/images/avatars/default.png',
-        createdAt: '3 days ago',
-        viewCount: 256,
-        replyCount: 32,
-        likeCount: 48,
-        category: 'General Discussion',
-        categoryLink: '/forum/category/general/chat'
-      }
-    ]
-  } else if (filter.value === 'recent') {
-    return [
-      {
-        id: 1,
-        title: 'How to implement authentication in a new Stacks.js project?',
-        link: '/forum/topic/1',
-        authorName: 'JohnDoe',
-        authorAvatar: '/images/avatars/default.png',
-        createdAt: '2 hours ago',
-        viewCount: 45,
-        replyCount: 3,
-        likeCount: 7,
-        category: 'Technical Support',
-        categoryLink: '/forum/category/support/installation',
-        excerpt: 'I\'m trying to implement authentication in my new project but I\'m having some issues with the middleware...'
-      },
-      {
-        id: 2,
-        title: 'Introducing myself to the community!',
-        link: '/forum/topic/2',
-        authorName: 'NewUser123',
-        authorAvatar: '/images/avatars/default.png',
-        createdAt: '5 hours ago',
-        viewCount: 32,
-        replyCount: 8,
-        likeCount: 12,
-        category: 'Introductions',
-        categoryLink: '/forum/category/general/introductions',
-        isPinned: true
-      },
-      {
-        id: 8,
-        title: 'TypeError when using the new API client',
-        link: '/forum/topic/8',
-        authorName: 'BugHunter',
-        authorAvatar: '/images/avatars/default.png',
-        createdAt: '6 hours ago',
-        viewCount: 67,
-        replyCount: 4,
-        likeCount: 3,
-        category: 'Troubleshooting',
-        categoryLink: '/forum/category/support/troubleshooting'
-      }
-    ]
-  } else if (filter.value === 'solved') {
-    return [
-      {
-        id: 3,
-        title: 'Best practices for database migrations in Stacks.js',
-        link: '/forum/topic/3',
-        authorName: 'DatabaseGuru',
-        authorAvatar: '/images/avatars/default.png',
-        createdAt: '1 day ago',
-        viewCount: 128,
-        replyCount: 15,
-        likeCount: 24,
-        category: 'General Discussion',
-        categoryLink: '/forum/category/general/chat',
-        isSolved: true,
-        lastReplyAuthorName: 'ExpertUser',
-        lastReplyAuthorAvatar: '/images/avatars/default.png',
-        lastReplyAt: '3 hours ago'
-      },
-      {
-        id: 12,
-        title: 'How to fix CORS issues with Stacks.js API',
-        link: '/forum/topic/12',
-        authorName: 'WebDev',
-        authorAvatar: '/images/avatars/default.png',
-        createdAt: '1 week ago',
-        viewCount: 98,
-        replyCount: 7,
-        likeCount: 15,
-        category: 'Troubleshooting',
-        categoryLink: '/forum/category/support/troubleshooting',
-        isSolved: true
-      },
-      {
-        id: 13,
-        title: 'Best way to structure a large Stacks.js project',
-        link: '/forum/topic/13',
-        authorName: 'ArchitectDev',
-        authorAvatar: '/images/avatars/default.png',
-        createdAt: '2 weeks ago',
-        viewCount: 156,
-        replyCount: 12,
-        likeCount: 28,
-        category: 'General Discussion',
-        categoryLink: '/forum/category/general/chat',
-        isSolved: true
-      }
-    ]
-  } else {
-    // Default topics for main forum page
-    return [
-      {
-        id: 1,
-        title: 'How to implement authentication in a new Stacks.js project?',
-        link: '/forum/topic/1',
-        authorName: 'JohnDoe',
-        authorAvatar: '/images/avatars/default.png',
-        createdAt: '2 hours ago',
-        viewCount: 45,
-        replyCount: 3,
-        likeCount: 7,
-        category: 'Technical Support',
-        categoryLink: '/forum/category/support/installation',
-        excerpt: 'I\'m trying to implement authentication in my new project but I\'m having some issues with the middleware...'
-      },
-      {
-        id: 2,
-        title: 'Introducing myself to the community!',
-        link: '/forum/topic/2',
-        authorName: 'NewUser123',
-        authorAvatar: '/images/avatars/default.png',
-        createdAt: '5 hours ago',
-        viewCount: 32,
-        replyCount: 8,
-        likeCount: 12,
-        category: 'Introductions',
-        categoryLink: '/forum/category/general/introductions',
-        isPinned: true
-      },
-      {
-        id: 3,
-        title: 'Best practices for database migrations in Stacks.js',
-        link: '/forum/topic/3',
-        authorName: 'DatabaseGuru',
-        authorAvatar: '/images/avatars/default.png',
-        createdAt: '1 day ago',
-        viewCount: 128,
-        replyCount: 15,
-        likeCount: 24,
-        category: 'General Discussion',
-        categoryLink: '/forum/category/general/chat',
-        isSolved: true,
-        lastReplyAuthorName: 'ExpertUser',
-        lastReplyAuthorAvatar: '/images/avatars/default.png',
-        lastReplyAt: '3 hours ago'
-      }
-    ]
-  }
-})
-</script>
+    <div class="lg:col-span-1">
+      <ForumSidebar
+        :stats="{
+          topics: 540,
+          posts: 3287,
+          members: 1245,
+          newestMember: 'NewUser123'
+        }"
+        :popularTopics="[
+          {
+            id: 1,
+            title: 'How to implement authentication in a new Stacks.js project?',
+            link: '/forum/topic/1',
+            replyCount: 3,
+            viewCount: 45
+          },
+          {
+            id: 2,
+            title: 'Best practices for database migrations in Stacks.js',
+            link: '/forum/topic/3',
+            replyCount: 15,
+            viewCount: 128
+          },
+          {
+            id: 3,
+            title: 'Introducing myself to the community!',
+            link: '/forum/topic/2',
+            replyCount: 8,
+            viewCount: 32
+          }
+        ]"
+        :onlineUsers="[
+          { id: 1, name: 'JohnDoe', avatar: '/images/avatars/default.png' },
+          { id: 2, name: 'DatabaseGuru', avatar: '/images/avatars/default.png' },
+          { id: 3, name: 'NewUser123', avatar: '/images/avatars/default.png' },
+          { id: 4, name: 'ExpertUser', avatar: '/images/avatars/default.png' },
+          { id: 5, name: 'StacksMaster', avatar: '/images/avatars/default.png' }
+        ]"
+      />
+    </div>
+  </div>
+</ForumLayout>

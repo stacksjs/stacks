@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script>
 import AIForm from './Forms/AIForm.vue'
 import AnalyticsForm from './Forms/AnalyticsForm.vue'
 import AppForm from './Forms/AppForm.vue'
@@ -18,10 +18,8 @@ import ServicesForm from './Forms/ServicesForm.vue'
 import StorageForm from './Forms/StorageForm.vue'
 import TeamsForm from './Forms/TeamsForm.vue'
 
-const props = defineProps({
-  name: String,
-})
-const { name } = toRefs(props)
+export const name = ''
+
 const options = [
   {
     key: 'ai',
@@ -112,89 +110,69 @@ const options = [
     label: 'UI',
   },
 ]
-const pageTitle = computed<string>(() => options.find(option => option.key === name.value)?.label || name.value)
+const pageTitle = computed<string>(() => options.find(option => option.key === name)?.label || name)
 </script>
 
-<template>
-  <main>
-    <div class="bg-white px-4 py-6 shadow-sm ring-1 ring-gray-900/5 md:col-span-2 sm:rounded-xl lg:px-8 sm:px-6">
-      <h2 class="text-base text-gray-900 font-semibold leading-7">
-        {{ pageTitle }} Configuration
-      </h2>
-      <p class="mt-1 text-sm text-gray-600 leading-6">
-        This configuration defines all of your {{ pageTitle }} options.
-      </p>
+<main>
+  <div class="bg-white px-4 py-6 shadow-sm ring-1 ring-gray-900/5 md:col-span-2 sm:rounded-xl lg:px-8 sm:px-6">
+    <h2 class="text-base text-gray-900 font-semibold leading-7">
+      {{ pageTitle }} Configuration
+    </h2>
+    <p class="mt-1 text-sm text-gray-600 leading-6">
+      This configuration defines all of your {{ pageTitle }} options.
+    </p>
 
-      <div class="mt-10">
-        <template v-if="name === 'ai'">
-          <AIForm />
-        </template>
-        <template v-else-if="name === 'analytics'">
-          <AnalyticsForm />
-        </template>
-        <template v-else-if="name === 'app'">
-          <AppForm />
-        </template>
-        <template v-else-if="name === 'cache'">
-          <CacheForm />
-        </template>
-        <template v-else-if="name === 'cli'">
-          <CliForm />
-        </template>
-        <template v-else-if="name === 'cloud'">
-          <CloudForm />
-        </template>
-        <template v-else-if="name === 'database'">
-          <DatabaseForm />
-        </template>
-        <template v-else-if="name === 'dns'">
-          <DNSForm />
-        </template>
-        <template v-else-if="name === 'email'">
-          <EmailForm />
-        </template>
-        <template v-else-if="name === 'file-system'">
-          <FileSystemForm />
-        </template>
-        <template v-else-if="name === 'hashing'">
-          <HashingForm />
-        </template>
-        <template v-else-if="name === 'library'">
-          <LibraryForm />
-        </template>
-        <template v-else-if="name === 'queue'">
-          <QueueForm />
-        </template>
-        <template v-else-if="name === 'search-engine'">
-          <SearchEngineForm />
-        </template>
-        <template v-else-if="name === 'security'">
-          <SecurityForm />
-        </template>
-        <template v-else-if="name === 'services'">
-          <ServicesForm />
-        </template>
-        <template v-else-if="name === 'storage'">
-          <StorageForm />
-        </template>
-        <template v-else-if="name === 'team'">
-          <TeamsForm />
-        </template>
-        <template v-else>
-          <div class="text-center">
-            <div class="i-hugeicons-cog-8-tooth h-12 w-12 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200" />
-            <h3 class="mt-2 text-sm text-gray-900 font-semibold">
-              Settings <span class="font-bold">{{ pageTitle }}</span> Form not created yet
-            </h3>
-            <p class="mt-1 text-sm text-gray-500">
-              Please ask the maintenance team to fix.
-            </p>
-          </div>
-        </template>
-      </div>
+    <div class="mt-10">
+      @if(name === 'ai')
+        <AIForm />
+      @elseif(name === 'analytics')
+        <AnalyticsForm />
+      @elseif(name === 'app')
+        <AppForm />
+      @elseif(name === 'cache')
+        <CacheForm />
+      @elseif(name === 'cli')
+        <CliForm />
+      @elseif(name === 'cloud')
+        <CloudForm />
+      @elseif(name === 'database')
+        <DatabaseForm />
+      @elseif(name === 'dns')
+        <DNSForm />
+      @elseif(name === 'email')
+        <EmailForm />
+      @elseif(name === 'file-system')
+        <FileSystemForm />
+      @elseif(name === 'hashing')
+        <HashingForm />
+      @elseif(name === 'library')
+        <LibraryForm />
+      @elseif(name === 'queue')
+        <QueueForm />
+      @elseif(name === 'search-engine')
+        <SearchEngineForm />
+      @elseif(name === 'security')
+        <SecurityForm />
+      @elseif(name === 'services')
+        <ServicesForm />
+      @elseif(name === 'storage')
+        <StorageForm />
+      @elseif(name === 'team')
+        <TeamsForm />
+      @else
+        <div class="text-center">
+          <div class="i-hugeicons-cog-8-tooth h-12 w-12 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200" />
+          <h3 class="mt-2 text-sm text-gray-900 font-semibold">
+            Settings <span class="font-bold">{{ pageTitle }}</span> Form not created yet
+          </h3>
+          <p class="mt-1 text-sm text-gray-500">
+            Please ask the maintenance team to fix.
+          </p>
+        </div>
+      @endif
     </div>
-  </main>
-</template>
+  </div>
+</main>
 
 <style scoped>
 
