@@ -1275,3 +1275,9 @@ stacks.trackEvent('{{ selectedEvent.name }}', {
     </div>
   </div>
 </main>
+
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

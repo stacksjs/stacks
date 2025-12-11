@@ -3,6 +3,11 @@ import { setupLayouts } from 'virtual:generated-layouts'
 import { ViteSSG } from 'vite-ssg'
 import { routes } from 'vue-router/auto-routes'
 import App from './App.stx'
+
+// UnoCSS - must be imported before other styles
+import 'virtual:uno.css'
+
+// Application styles
 import './styles/main.css'
 
 const pinia = createPinia()

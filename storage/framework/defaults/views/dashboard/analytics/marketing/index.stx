@@ -573,3 +573,9 @@ export {
   @apply space-y-6;
 }
 </style>
+
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

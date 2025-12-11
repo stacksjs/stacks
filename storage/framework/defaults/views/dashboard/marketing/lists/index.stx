@@ -1335,3 +1335,9 @@ export function bulkChangeStatus(status) {
     </div>
     @endif
   </main>
+
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

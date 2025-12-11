@@ -128,3 +128,9 @@ useHead({
     </div>
   </div>
 </div>
+
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

@@ -90,3 +90,9 @@ useHead({
     </div>
   </div>
 </main>
+
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: false
+</route>

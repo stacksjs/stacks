@@ -1193,3 +1193,9 @@ function truncateText(text: string, max: number): string {
       </div>
     </div>
   </main>
+
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

@@ -443,3 +443,9 @@ export async function handleDeleteCategory(category: Categories): Promise<void> 
     </div>
   @endif
 </main>
+
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

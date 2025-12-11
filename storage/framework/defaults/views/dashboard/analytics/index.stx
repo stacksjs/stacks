@@ -90,3 +90,9 @@ export const analyticsCards = ref([
     @endforeach
   </div>
 </div>
+
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

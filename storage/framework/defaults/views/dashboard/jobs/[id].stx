@@ -451,3 +451,9 @@ export { job, isLoading, showPayload, showTrace, getJobStatusColor, getLogLevelC
     @endif
   </div>
 </div>
+
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

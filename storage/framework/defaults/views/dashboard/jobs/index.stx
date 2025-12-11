@@ -402,3 +402,9 @@ export { recentJobs, timeRange, isLoading, timeRangeOptions, chartOptions, throu
     </div>
   </Card>
 </div>
+
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

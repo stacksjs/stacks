@@ -1,31 +1,49 @@
 <script>
-import Login from '../../../core/components/auth/src/components/Login.vue'
+import Login from '../../components/Dashboard/Auth/Login.stx'
 import { useHead } from '@vueuse/head'
 import { useAuth } from '../../functions/auth'
 
 const router = useRouter()
 
 useHead({
-  title: 'Login - Dashboard',
+  title: 'Login - Stacks Dashboard',
 })
 
 const { login } = useAuth()
 
-async function handleLogin(user) {
+// Form state
+export const isLoading = false
+export const error = ''
+
+async function handleLogin(credentials) {
+  isLoading = true
+  error = ''
+
   try {
-    await login(user)
+    const result = await login(credentials)
+
+    if (result && 'errors' in result) {
+      error = result.message || 'Invalid credentials'
+      return
+    }
 
     router.push('/')
   }
-  catch (error) {
-    console.error(error)
+  catch (err) {
+    error = err.message || 'An error occurred during login'
+    console.error(err)
+  }
+  finally {
+    isLoading = false
   }
 }
 </script>
 
-<div>
-  <Login @submit="handleLogin" />
-</div>
+<Login
+  @submit="handleLogin"
+  :isLoading="isLoading"
+  :error="error"
+/>
 
 <route lang="yaml">
   meta:

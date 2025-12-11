@@ -279,3 +279,9 @@ const isActive = computed(() => (id) => activeConversation.value === id)
   overflow: hidden;
 }
 </style>
+
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>
