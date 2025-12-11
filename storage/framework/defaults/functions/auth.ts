@@ -19,7 +19,7 @@ const user = useStorage<UserData | null>('user', null, undefined, {
   },
 })
 
-const baseUrl = 'http://localhost:3008'
+const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3008'
 
 // Create singleton state
 const isAuthenticated = ref(false)

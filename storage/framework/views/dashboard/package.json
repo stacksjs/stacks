@@ -36,7 +36,7 @@
   "scripts": {
     "dev": "bunx --bun vite",
     "dev:app": "bun run craft:dev",
-    "craft:dev": "craft http://localhost:5173 --title 'Stacks Dashboard' --width 1400 --height 900 --dark-mode --hot-reload --dev-tools",
+    "craft:dev": "bun run craft.ts",
     "build": "bunx --bun vite build",
     "build:app": "bun run build && craft build",
     "preview": "bunx --bun vite preview",
