@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
@@ -37,7 +37,7 @@ useHead({
 })
 
 // Chart options
-const chartOptions = {
+export const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -62,7 +62,7 @@ const chartOptions = {
 }
 
 // Generate monthly data for charts
-const monthlyChartData = computed(() => {
+export const monthlyChartData = computed(() => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   // Sample data - in a real app, this would be calculated from actual transaction data
@@ -111,8 +111,8 @@ const monthlyChartData = computed(() => {
 })
 
 // Time range selector
-const timeRange = ref('Last 30 days')
-const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
+export const timeRange = ref('Last 30 days')
+export const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Define payment transaction type
 interface PaymentTransaction {
@@ -129,7 +129,7 @@ interface PaymentTransaction {
 }
 
 // Sample payment transactions data
-const transactions = ref<PaymentTransaction[]>([
+export const transactions = ref<PaymentTransaction[]>([
   {
     id: 1,
     orderId: 'ORD-12345',
@@ -189,7 +189,7 @@ const transactions = ref<PaymentTransaction[]>([
 ])
 
 // Computed payment statistics
-const paymentStats = computed(() => {
+export const paymentStats = computed(() => {
   // Count transactions by status
   const completedTransactions = transactions.value.filter(t => t.status === 'Completed').length
   const pendingTransactions = transactions.value.filter(t => t.status === 'Pending').length
@@ -244,18 +244,18 @@ const paymentStats = computed(() => {
 })
 
 // Filter and sort options
-const searchQuery = ref('')
-const sortBy = ref('date')
-const sortOrder = ref('desc')
-const statusFilter = ref('all')
-const methodFilter = ref('all')
+export const searchQuery = ref('')
+export const sortBy = ref('date')
+export const sortOrder = ref('desc')
+export const statusFilter = ref('all')
+export const methodFilter = ref('all')
 
 // Available statuses and methods
-const statuses = ['all', 'Completed', 'Pending', 'Failed', 'Refunded']
-const methods = ['all', 'Credit Card', 'PayPal', 'Apple Pay', 'Google Pay', 'Bank Transfer']
+export const statuses = ['all', 'Completed', 'Pending', 'Failed', 'Refunded']
+export const methods = ['all', 'Credit Card', 'PayPal', 'Apple Pay', 'Google Pay', 'Bank Transfer']
 
 // Computed filtered and sorted transactions
-const filteredTransactions = computed(() => {
+export const filteredTransactions = computed(() => {
   return transactions.value
     .filter(transaction => {
       // Apply search filter
@@ -290,7 +290,7 @@ const filteredTransactions = computed(() => {
 })
 
 // Toggle sort order
-function toggleSort(column: string): void {
+export function toggleSort(column: string): void {
   if (sortBy.value === column) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -300,7 +300,7 @@ function toggleSort(column: string): void {
 }
 
 // Get status badge class
-function getStatusClass(status: string): string {
+export function getStatusClass(status: string): string {
   switch (status) {
     case 'Completed':
       return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
@@ -316,7 +316,7 @@ function getStatusClass(status: string): string {
 }
 
 // Get payment method icon
-function getPaymentMethodIcon(method: string): string {
+export function getPaymentMethodIcon(method: string): string {
   switch (method) {
     case 'Credit Card':
       return 'i-hugeicons-credit-card'
@@ -334,21 +334,21 @@ function getPaymentMethodIcon(method: string): string {
 }
 
 // Pagination
-const currentPage = ref(1)
-const itemsPerPage = 10
-const totalPages = computed(() => Math.ceil(filteredTransactions.value.length / itemsPerPage))
-const paginatedTransactions = computed(() => {
+export const currentPage = ref(1)
+export const itemsPerPage = 10
+export const totalPages = computed(() => Math.ceil(filteredTransactions.value.length / itemsPerPage))
+export const paginatedTransactions = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
   return filteredTransactions.value.slice(start, end)
 })
 
-function changePage(page: number): void {
+export function changePage(page: number): void {
   currentPage.value = page
 }
 
 // Calculate total amount
-const totalAmount = computed(() => {
+export const totalAmount = computed(() => {
   return filteredTransactions.value.reduce((sum, transaction) => {
     if (transaction.status === 'Completed') {
       return sum + transaction.amount
@@ -358,208 +358,226 @@ const totalAmount = computed(() => {
 })
 </script>
 
-<template>
-  <main>
-    <div class="px-6 py-6 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl">
-        <div class="sm:flex sm:items-center sm:justify-between">
-          <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Payments</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              Manage payment transactions for your store
-            </p>
-          </div>
-          <div class="mt-4 sm:mt-0">
-            <button
-              type="button"
-              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              <div class="i-hugeicons-download-04 h-5 w-5 mr-1"></div>
-              Export transactions
-            </button>
-          </div>
-        </div>
-
-        <!-- Time range selector -->
-        <div class="mt-4 flex items-center justify-between">
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            Overview of your payment transactions
+<main>
+  <div class="px-6 py-6 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="sm:flex sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Payments</h1>
+          <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            Manage payment transactions for your store
           </p>
-          <div class="relative">
-            <select v-model="timeRange" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700">
-              <option v-for="range in timeRanges" :key="range" :value="range">{{ range }}</option>
-            </select>
+        </div>
+        <div class="mt-4 sm:mt-0">
+          <button
+            type="button"
+            class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          >
+            <div class="i-hugeicons-download-04 h-5 w-5 mr-1"></div>
+            Export transactions
+          </button>
+        </div>
+      </div>
+
+      <!-- Time range selector -->
+      <div class="mt-4 flex items-center justify-between">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Overview of your payment transactions
+        </p>
+        <div class="relative">
+          <select v-model="timeRange" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700">
+            @foreach(timeRanges as range)
+              <option :value="range">{{ range }}</option>
+            @endforeach
+          </select>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Transactions</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ paymentStats.totalTransactions }}</dd>
+          <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+            <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+            <span>8.2% increase</span>
+          </dd>
+        </div>
+
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Success Rate</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ paymentStats.successRate }}%</dd>
+          <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+            <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+            <span>1.2% increase</span>
+          </dd>
+        </div>
+
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Revenue</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ parseFloat(paymentStats.totalAmount).toLocaleString() }}</dd>
+          <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+            <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+            <span>12.5% increase</span>
+          </dd>
+        </div>
+
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Avg. Transaction</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ paymentStats.avgTransactionValue }}</dd>
+          <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+            <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+            <span>3.7% increase</span>
+          </dd>
+        </div>
+      </dl>
+
+      <!-- Charts -->
+      <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="p-6">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Transaction Count</h3>
+            <div class="mt-2 h-80">
+              <Line :data="monthlyChartData.transactionCountChartData" :options="chartOptions" />
+            </div>
           </div>
         </div>
 
-        <!-- Stats -->
-        <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Transactions</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ paymentStats.totalTransactions }}</dd>
-            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
-              <span>8.2% increase</span>
-            </dd>
-          </div>
-
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Success Rate</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ paymentStats.successRate }}%</dd>
-            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
-              <span>1.2% increase</span>
-            </dd>
-          </div>
-
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Revenue</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ parseFloat(paymentStats.totalAmount).toLocaleString() }}</dd>
-            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
-              <span>12.5% increase</span>
-            </dd>
-          </div>
-
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Avg. Transaction</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ paymentStats.avgTransactionValue }}</dd>
-            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
-              <span>3.7% increase</span>
-            </dd>
-          </div>
-        </dl>
-
-        <!-- Charts -->
-        <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Transaction Count</h3>
-              <div class="mt-2 h-80">
-                <Line :data="monthlyChartData.transactionCountChartData" :options="chartOptions" />
-              </div>
-            </div>
-          </div>
-
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Revenue</h3>
-              <div class="mt-2 h-80">
-                <Bar :data="monthlyChartData.revenueChartData" :options="chartOptions" />
-              </div>
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="p-6">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Revenue</h3>
+            <div class="mt-2 h-80">
+              <Bar :data="monthlyChartData.revenueChartData" :options="chartOptions" />
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Filters -->
-        <div class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div class="relative max-w-sm">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
-            </div>
-            <input
-              v-model="searchQuery"
-              type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
-              placeholder="Search transactions..."
-            />
+      <!-- Filters -->
+      <div class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="relative max-w-sm">
+          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
           </div>
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+            placeholder="Search transactions..."
+          />
+        </div>
 
-          <div class="flex flex-col sm:flex-row gap-4">
-            <select
-              v-model="statusFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option value="all">All Statuses</option>
-              <option v-for="status in statuses.slice(1)" :key="status" :value="status">
+        <div class="flex flex-col sm:flex-row gap-4">
+          <select
+            v-model="statusFilter"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+          >
+            <option value="all">All Statuses</option>
+            @foreach(statuses.slice(1) as status)
+              <option :value="status">
                 {{ status }}
               </option>
-            </select>
+            @endforeach
+          </select>
 
-            <select
-              v-model="methodFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option value="all">All Payment Methods</option>
-              <option v-for="method in methods.slice(1)" :key="method" :value="method">
+          <select
+            v-model="methodFilter"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+          >
+            <option value="all">All Payment Methods</option>
+            @foreach(methods.slice(1) as method)
+              <option :value="method">
                 {{ method }}
               </option>
-            </select>
-          </div>
+            @endforeach
+          </select>
         </div>
+      </div>
 
-        <!-- Transactions table -->
-        <div class="mt-6 flow-root">
-          <div class="sm:flex sm:items-center sm:justify-between mb-4">
-            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">All Transactions</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              A list of all payment transactions including order ID, customer, amount, and status.
-            </p>
-          </div>
-          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                  <thead class="bg-gray-50 dark:bg-blue-gray-700">
+      <!-- Transactions table -->
+      <div class="mt-6 flow-root">
+        <div class="sm:flex sm:items-center sm:justify-between mb-4">
+          <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">All Transactions</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            A list of all payment transactions including order ID, customer, amount, and status.
+          </p>
+        </div>
+        <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+            <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+              <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-blue-gray-700">
+                  <tr>
+                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">
+                      <button @click="toggleSort('orderId')" class="group inline-flex items-center">
+                        Order ID
+                        <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                          @if(sortBy === 'orderId')
+                            <div :class="[
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                              'h-4 w-4'
+                            ]"></div>
+                          @else
+                            <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                          @endif
+                        </span>
+                      </button>
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                      <button @click="toggleSort('customer')" class="group inline-flex items-center">
+                        Customer
+                        <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                          @if(sortBy === 'customer')
+                            <div :class="[
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                              'h-4 w-4'
+                            ]"></div>
+                          @else
+                            <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                          @endif
+                        </span>
+                      </button>
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                      <button @click="toggleSort('amount')" class="group inline-flex items-center">
+                        Amount
+                        <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                          @if(sortBy === 'amount')
+                            <div :class="[
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                              'h-4 w-4'
+                            ]"></div>
+                          @else
+                            <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                          @endif
+                        </span>
+                      </button>
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Method</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Status</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                      <button @click="toggleSort('date')" class="group inline-flex items-center">
+                        Date
+                        <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                          @if(sortBy === 'date')
+                            <div :class="[
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                              'h-4 w-4'
+                            ]"></div>
+                          @else
+                            <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                          @endif
+                        </span>
+                      </button>
+                    </th>
+                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                      <span class="sr-only">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
+                  @foreach(paginatedTransactions as transaction)
                     <tr>
-                      <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">
-                        <button @click="toggleSort('orderId')" class="group inline-flex items-center">
-                          Order ID
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'orderId'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('customer')" class="group inline-flex items-center">
-                          Customer
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'customer'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('amount')" class="group inline-flex items-center">
-                          Amount
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'amount'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Method</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Status</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('date')" class="group inline-flex items-center">
-                          Date
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'date'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                        <span class="sr-only">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
-                    <tr v-for="transaction in paginatedTransactions" :key="transaction.id">
                       <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
                         {{ transaction.orderId }}
                       </td>
@@ -574,9 +592,11 @@ const totalAmount = computed(() => {
                         <div class="flex items-center">
                           <div :class="[getPaymentMethodIcon(transaction.method), 'h-5 w-5 mr-1.5 text-gray-500 dark:text-gray-400']"></div>
                           <span>{{ transaction.method }}</span>
-                          <span v-if="transaction.last4" class="ml-1 text-xs text-gray-400">
-                            ({{ transaction.cardType }} •••• {{ transaction.last4 }})
-                          </span>
+                          @if(transaction.last4)
+                            <span class="ml-1 text-xs text-gray-400">
+                              ({{ transaction.cardType }} •••• {{ transaction.last4 }})
+                            </span>
+                          @endif
                         </div>
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm">
@@ -598,20 +618,24 @@ const totalAmount = computed(() => {
                         </div>
                       </td>
                     </tr>
-                    <tr v-if="paginatedTransactions.length === 0">
+                  @endforeach
+                  @if(paginatedTransactions.length === 0)
+                    <tr>
                       <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                         No transactions found matching your criteria
                       </td>
                     </tr>
-                  </tbody>
-                </table>
-              </div>
+                  @endif
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Pagination -->
-        <div v-if="totalPages > 1" class="mt-6 flex items-center justify-between">
+      <!-- Pagination -->
+      @if(totalPages > 1)
+        <div class="mt-6 flex items-center justify-between">
           <div class="flex flex-1 justify-between sm:hidden">
             <button
               @click="changePage(Math.max(1, currentPage - 1))"
@@ -652,29 +676,26 @@ const totalAmount = computed(() => {
                   <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
                 </button>
 
-                <template v-for="page in totalPages" :key="page">
-                  <button
-                    v-if="page === currentPage ||
-                          page === 1 ||
-                          page === totalPages ||
-                          (page >= currentPage - 1 && page <= currentPage + 1)"
-                    @click="changePage(page)"
-                    :class="[
-                      page === currentPage
-                        ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                        : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-blue-gray-700',
-                    ]"
-                  >
-                    {{ page }}
-                  </button>
-                  <span
-                    v-else-if="(page === currentPage - 2 && currentPage > 3) ||
-                              (page === currentPage + 2 && currentPage < totalPages - 2)"
-                    class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0 dark:text-gray-400 dark:ring-gray-600"
-                  >
-                    ...
-                  </span>
-                </template>
+                @foreach(Array.from({ length: totalPages }, (_, i) => i + 1) as page)
+                  @if(page === currentPage || page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1))
+                    <button
+                      @click="changePage(page)"
+                      :class="[
+                        page === currentPage
+                          ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                          : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-blue-gray-700',
+                      ]"
+                    >
+                      {{ page }}
+                    </button>
+                  @elseif((page === currentPage - 2 && currentPage > 3) || (page === currentPage + 2 && currentPage < totalPages - 2))
+                    <span
+                      class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0 dark:text-gray-400 dark:ring-gray-600"
+                    >
+                      ...
+                    </span>
+                  @endif
+                @endforeach
 
                 <button
                   @click="changePage(Math.min(totalPages, currentPage + 1))"
@@ -689,7 +710,7 @@ const totalAmount = computed(() => {
             </div>
           </div>
         </div>
-      </div>
+      @endif
     </div>
-  </main>
-</template>
+  </div>
+</main>

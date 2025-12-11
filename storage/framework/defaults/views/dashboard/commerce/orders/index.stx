@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useOrders } from '../../../../functions/commerce/orders'
@@ -24,18 +24,18 @@ onMounted(async () => {
 })
 
 // Available statuses
-const statuses = ['all', 'Completed', 'Processing', 'Shipped', 'Cancelled', 'Refunded'] as const
-const statusFilter = ref('all')
-const sortBy = ref('date')
-const sortOrder = ref('desc')
+export const statuses = ['all', 'Completed', 'Processing', 'Shipped', 'Cancelled', 'Refunded'] as const
+export const statusFilter = ref('all')
+export const sortBy = ref('date')
+export const sortOrder = ref('desc')
 
 // Search and filtering
-const searchQuery = ref('')
-const currentPage = ref(1)
-const itemsPerPage = ref(5)
+export const searchQuery = ref('')
+export const currentPage = ref(1)
+export const itemsPerPage = ref(5)
 
 // Computed filtered orders
-const filteredOrders = computed(() => {
+export const filteredOrders = computed(() => {
   return orders.value
     .filter(order => {
       // Apply search filter
@@ -62,37 +62,37 @@ const filteredOrders = computed(() => {
     })
 })
 
-const paginatedOrders = computed(() => {
+export const paginatedOrders = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return filteredOrders.value.slice(start, end)
 })
 
 // Event handlers
-const handleSearch = (query: string) => {
+export const handleSearch = (query: string) => {
   searchQuery.value = query
   currentPage.value = 1
 }
 
-const handlePrevPage = () => {
+export const handlePrevPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
-const handleNextPage = () => {
+export const handleNextPage = () => {
   const totalPages = Math.ceil(filteredOrders.value.length / itemsPerPage.value)
   if (currentPage.value < totalPages) {
     currentPage.value++
   }
 }
 
-const handlePageChange = (page: number) => {
+export const handlePageChange = (page: number) => {
   currentPage.value = page
 }
 
 // Toggle sort order
-function toggleSort(column: string): void {
+export function toggleSort(column: string): void {
   if (sortBy.value === column) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -102,17 +102,17 @@ function toggleSort(column: string): void {
 }
 
 // Order actions
-function viewOrder(order: any): void {
+export function viewOrder(order: any): void {
   console.log('View order:', order)
   // Implement view order logic
 }
 
-function editOrder(order: any): void {
+export function editOrder(order: any): void {
   console.log('Edit order:', order)
   // Implement edit order logic
 }
 
-function removeOrder(order: any): void {
+export function removeOrder(order: any): void {
   orderToDelete.value = order
   showDeleteModal.value = true
 }
@@ -126,17 +126,17 @@ interface NewOrder {
 }
 
 // Modal state
-const showAddModal = ref(false)
-const showDeleteModal = ref(false)
-const orderToDelete = ref<any>(null)
-const newOrder = ref<NewOrder>({
+export const showAddModal = ref(false)
+export const showDeleteModal = ref(false)
+export const orderToDelete = ref<any>(null)
+export const newOrder = ref<NewOrder>({
   customer_id: 1,
   total_amount: 0,
   status: 'Processing',
   order_type: 'delivery'
 })
 
-function openAddModal(): void {
+export function openAddModal(): void {
   newOrder.value = {
     customer_id: 1,
     total_amount: 0,
@@ -146,23 +146,23 @@ function openAddModal(): void {
   showAddModal.value = true
 }
 
-function closeAddModal(): void {
+export function closeAddModal(): void {
   showAddModal.value = false
 }
 
-function closeDeleteModal(): void {
+export function closeDeleteModal(): void {
   showDeleteModal.value = false
   orderToDelete.value = null
 }
 
-async function confirmDelete(): Promise<void> {
+export async function confirmDelete(): Promise<void> {
   if (!orderToDelete.value) return
 
   const orderId = orderToDelete.value.id
-  
+
   // Remove from local state for immediate UI update
   orders.value = orders.value.filter(o => o.id !== orderId)
-  
+
   try {
     // Use the composable's deleteOrder function
     const success = await deleteOrder(orderId)
@@ -180,7 +180,7 @@ async function confirmDelete(): Promise<void> {
   }
 }
 
-async function addOrder(): Promise<void> {
+export async function addOrder(): Promise<void> {
   // First add to local state for immediate UI update
   const id = Math.max(...orders.value.map(o => o.id || 0)) + 1
   const newOrderData = {
@@ -211,83 +211,85 @@ async function addOrder(): Promise<void> {
 }
 </script>
 
-<template>
-  <div class="py-6">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
-      <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-        <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-          <div class="flex justify-between items-center">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Orders</h2>
-            <button
-              @click="openAddModal"
-              type="button"
-              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
-              Add Order
-            </button>
-          </div>
-          <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <SearchFilter
-              placeholder="Search orders..."
-              @search="handleSearch"
-              class="w-full md:w-96"
-            />
-            <div class="flex flex-col sm:flex-row gap-4">
-              <select
-                v-model="statusFilter"
-                class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-              >
-                <option v-for="status in statuses" :value="status">{{ status }}</option>
-              </select>
-
-              <select
-                v-model="itemsPerPage"
-                class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-              >
-                <option :value="5">5 per page</option>
-                <option :value="10">10 per page</option>
-                <option :value="25">25 per page</option>
-                <option :value="50">50 per page</option>
-              </select>
-            </div>
-          </div>
+<div class="py-6">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
+    <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-medium text-gray-900 dark:text-white">Orders</h2>
+          <button
+            @click="openAddModal"
+            type="button"
+            class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          >
+            <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
+            Add Order
+          </button>
         </div>
-
-        <!-- Orders Table Component -->
-        <OrdersTable
-          :orders="paginatedOrders"
-          :search-query="searchQuery"
-          :status-filter="statusFilter"
-          :sort-by="sortBy"
-          :sort-order="sortOrder"
-          :current-page="currentPage"
-          :items-per-page="itemsPerPage"
-          :statuses="statuses"
-          @toggle-sort="toggleSort"
-          @change-page="handlePageChange"
-          @previous-page="handlePrevPage"
-          @next-page="handleNextPage"
-          @view-order="viewOrder"
-          @edit-order="editOrder"
-          @delete-order="removeOrder"
-        />
-
-        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-          <Pagination
-            :current-page="currentPage"
-            :total-items="filteredOrders.length"
-            :items-per-page="itemsPerPage"
-            @prev="handlePrevPage"
-            @next="handleNextPage"
-            @page="handlePageChange"
+        <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <SearchFilter
+            placeholder="Search orders..."
+            @search="handleSearch"
+            class="w-full md:w-96"
           />
+          <div class="flex flex-col sm:flex-row gap-4">
+            <select
+              v-model="statusFilter"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            >
+              @foreach(statuses as status)
+                <option :value="status">{{ status }}</option>
+              @endforeach
+            </select>
+
+            <select
+              v-model="itemsPerPage"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            >
+              <option :value="5">5 per page</option>
+              <option :value="10">10 per page</option>
+              <option :value="25">25 per page</option>
+              <option :value="50">50 per page</option>
+            </select>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Add Order Modal -->
-    <div v-if="showAddModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <!-- Orders Table Component -->
+      <OrdersTable
+        :orders="paginatedOrders"
+        :search-query="searchQuery"
+        :status-filter="statusFilter"
+        :sort-by="sortBy"
+        :sort-order="sortOrder"
+        :current-page="currentPage"
+        :items-per-page="itemsPerPage"
+        :statuses="statuses"
+        @toggle-sort="toggleSort"
+        @change-page="handlePageChange"
+        @previous-page="handlePrevPage"
+        @next-page="handleNextPage"
+        @view-order="viewOrder"
+        @edit-order="editOrder"
+        @delete-order="removeOrder"
+      />
+
+      <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+        <Pagination
+          :current-page="currentPage"
+          :total-items="filteredOrders.length"
+          :items-per-page="itemsPerPage"
+          @prev="handlePrevPage"
+          @next="handleNextPage"
+          @page="handlePageChange"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Order Modal -->
+  @if(showAddModal)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal"></div>
 
@@ -347,7 +349,9 @@ async function addOrder(): Promise<void> {
                         v-model="newOrder.status"
                         class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
                       >
-                        <option v-for="status in statuses.slice(1)" :value="status">{{ status }}</option>
+                        @foreach(statuses.slice(1) as status)
+                          <option :value="status">{{ status }}</option>
+                        @endforeach
                       </select>
                     </div>
                   </div>
@@ -374,9 +378,11 @@ async function addOrder(): Promise<void> {
         </div>
       </div>
     </div>
+  @endif
 
-    <!-- Delete Order Confirmation Modal -->
-    <div v-if="showDeleteModal" class="fixed inset-0 z-10 overflow-y-auto">
+  <!-- Delete Order Confirmation Modal -->
+  @if(showDeleteModal)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeDeleteModal"></div>
 
@@ -413,5 +419,5 @@ async function addOrder(): Promise<void> {
         </div>
       </div>
     </div>
-  </div>
-</template>
+  @endif
+</div>

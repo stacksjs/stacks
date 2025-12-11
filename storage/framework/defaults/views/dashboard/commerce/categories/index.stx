@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useCategories } from '../../../../functions/commerce/products/categories'
@@ -19,17 +19,17 @@ onMounted(async () => {
 })
 
 // Filter and sort options
-const searchQuery = ref('')
-const sortBy = ref('name')
-const sortOrder = ref('asc')
-const featuredFilter = ref('all')
+export const searchQuery = ref('')
+export const sortBy = ref('name')
+export const sortOrder = ref('asc')
+export const featuredFilter = ref('all')
 
 // Pagination
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
+export const currentPage = ref(1)
+export const itemsPerPage = ref(10)
 
 // Computed filtered and sorted categories
-const filteredCategories = computed(() => {
+export const filteredCategories = computed(() => {
   return categories.value
     .filter(category => {
       // Apply search filter
@@ -57,38 +57,38 @@ const filteredCategories = computed(() => {
 })
 
 // Paginated categories
-const paginatedCategories = computed(() => {
+export const paginatedCategories = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return filteredCategories.value.slice(start, end)
 })
 
 // Pagination handlers
-const handlePrevPage = () => {
+export function handlePrevPage(): void {
   if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
-const handleNextPage = () => {
+export function handleNextPage(): void {
   const totalPages = Math.ceil(filteredCategories.value.length / itemsPerPage.value)
   if (currentPage.value < totalPages) {
     currentPage.value++
   }
 }
 
-const handlePageChange = (page: number) => {
+export function handlePageChange(page: number): void {
   currentPage.value = page
 }
 
 // Reset to first page when search changes
-const handleSearch = (query: string) => {
+export function handleSearch(query: string): void {
   searchQuery.value = query
   currentPage.value = 1
 }
 
 // Toggle sort order
-function toggleSort(column: string): void {
+export function toggleSort(column: string): void {
   if (sortBy.value === column) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -98,8 +98,8 @@ function toggleSort(column: string): void {
 }
 
 // Modal state
-const showAddModal = ref(false)
-const newCategory = ref<{
+export const showAddModal = ref(false)
+export const newCategory = ref<{
   name: string;
   description: string;
   is_active: boolean;
@@ -114,12 +114,12 @@ const newCategory = ref<{
 })
 
 // Image preview helper
-const imagePreview = computed(() => {
+export const imagePreview = computed(() => {
   return newCategory.value.image_url || '/images/categories/placeholder.jpg'
 })
 
 // Handle file upload
-function handleImageUpload(event: Event): void {
+export function handleImageUpload(event: Event): void {
   const input = event.target as HTMLInputElement
   if (input.files && input.files[0]) {
     const file = input.files[0]
@@ -138,7 +138,7 @@ function handleImageUpload(event: Event): void {
   }
 }
 
-function openAddModal(): void {
+export function openAddModal(): void {
   newCategory.value = {
     name: '',
     description: '',
@@ -149,14 +149,14 @@ function openAddModal(): void {
   showAddModal.value = true
 }
 
-function closeAddModal(): void {
+export function closeAddModal(): void {
   showAddModal.value = false
 }
 
-async function addCategory(): Promise<void> {
+export async function addCategory(): Promise<void> {
   // First add to local state for immediate UI update
   const id = Math.max(...categories.value.map(c => c.id || 0)) + 1
-  
+
   const newCategoryData = {
     id,
     name: newCategory.value.name,
@@ -188,12 +188,12 @@ async function addCategory(): Promise<void> {
 }
 
 // Category actions
-function viewCategory(category: Categories): void {
+export function viewCategory(category: Categories): void {
   console.log('View category:', category)
   // Implement view category logic
 }
 
-function editCategory(category: Categories): void {
+export function editCategory(category: Categories): void {
   console.log('Edit category:', category)
   // Populate the form with existing data
   newCategory.value = {
@@ -207,12 +207,12 @@ function editCategory(category: Categories): void {
   // TODO: Change modal title to "Edit Category" when editing
 }
 
-async function handleDeleteCategory(category: Categories): Promise<void> {
+export async function handleDeleteCategory(category: Categories): Promise<void> {
   if (confirm(`Are you sure you want to delete the category "${category.name}"?`)) {
     // Remove from local state immediately for better UX
     const originalCategories = [...categories.value]
     categories.value = categories.value.filter(c => c.id !== category.id)
-    
+
     try {
       // Then send delete request to server
       await deleteCategoryFromAPI(category.id)
@@ -225,104 +225,104 @@ async function handleDeleteCategory(category: Categories): Promise<void> {
 }
 </script>
 
-<template>
-  <main>
-    <div class="px-6 py-6 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl">
-        <div class="sm:flex sm:items-center sm:justify-between">
-          <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Categories</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              Manage your product categories
-            </p>
+<main>
+  <div class="px-6 py-6 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="sm:flex sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Categories</h1>
+          <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            Manage your product categories
+          </p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+          <button
+            type="button"
+            @click="openAddModal"
+            class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          >
+            <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
+            Add category
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="relative max-w-sm">
+          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
           </div>
-          <div class="mt-4 sm:mt-0">
-            <button
-              type="button"
-              @click="openAddModal"
-              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
-              Add category
-            </button>
-          </div>
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+            placeholder="Search categories..."
+            @input="(event) => handleSearch((event.target as HTMLInputElement).value)"
+          />
         </div>
 
-        <!-- Filters -->
-        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div class="relative max-w-sm">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
-            </div>
-            <input
-              v-model="searchQuery"
-              type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
-              placeholder="Search categories..."
-              @input="(event) => handleSearch((event.target as HTMLInputElement).value)"
-            />
-          </div>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <select
+            v-model="featuredFilter"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+          >
+            <option value="all">All Categories</option>
+            <option value="featured">Active Only</option>
+            <option value="not-featured">Inactive Only</option>
+          </select>
 
-          <div class="flex flex-col sm:flex-row gap-4">
-            <select
-              v-model="featuredFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option value="all">All Categories</option>
-              <option value="featured">Active Only</option>
-              <option value="not-featured">Inactive Only</option>
-            </select>
-
-            <select
-              v-model="itemsPerPage"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option :value="5">5 per page</option>
-              <option :value="10">10 per page</option>
-              <option :value="25">25 per page</option>
-              <option :value="50">50 per page</option>
-            </select>
-          </div>
+          <select
+            v-model="itemsPerPage"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+          >
+            <option :value="5">5 per page</option>
+            <option :value="10">10 per page</option>
+            <option :value="25">25 per page</option>
+            <option :value="50">50 per page</option>
+          </select>
         </div>
+      </div>
 
-        <!-- Categories table -->
-        <div class="mt-6 flow-root">
-          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                <CategoriesTable
-                  :categories="paginatedCategories"
-                  :search-query="searchQuery"
-                  :featured-filter="featuredFilter"
-                  :sort-by="sortBy"
-                  :sort-order="sortOrder"
-                  :current-page="currentPage"
-                  :items-per-page="itemsPerPage"
-                  @toggle-sort="toggleSort"
-                  @view-category="viewCategory"
-                  @edit-category="editCategory"
-                  @delete-category="handleDeleteCategory"
-                />
-              </div>
+      <!-- Categories table -->
+      <div class="mt-6 flow-root">
+        <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+            <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+              <CategoriesTable
+                :categories="paginatedCategories"
+                :search-query="searchQuery"
+                :featured-filter="featuredFilter"
+                :sort-by="sortBy"
+                :sort-order="sortOrder"
+                :current-page="currentPage"
+                :items-per-page="itemsPerPage"
+                @toggle-sort="toggleSort"
+                @view-category="viewCategory"
+                @edit-category="editCategory"
+                @delete-category="handleDeleteCategory"
+              />
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-      <Pagination
-        :current-page="currentPage"
-        :total-items="filteredCategories.length"
-        :items-per-page="itemsPerPage"
-        @prev="handlePrevPage"
-        @next="handleNextPage"
-        @page="handlePageChange"
-      />
-    </div>
+  <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+    <Pagination
+      :current-page="currentPage"
+      :total-items="filteredCategories.length"
+      :items-per-page="itemsPerPage"
+      @prev="handlePrevPage"
+      @next="handleNextPage"
+      @page="handlePageChange"
+    />
+  </div>
 
-    <!-- Add Category Modal -->
-    <div v-if="showAddModal" class="fixed inset-0 z-10 overflow-y-auto">
+  <!-- Add Category Modal -->
+  @if(showAddModal)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal"></div>
 
@@ -379,21 +379,20 @@ async function handleDeleteCategory(category: Categories): Promise<void> {
                       </div>
                     </div>
                     <div class="mt-2 flex justify-center">
-                      <template v-if="newCategory.image_url">
+                      @if(newCategory.image_url)
                         <img
                           :src="imagePreview"
                           alt="Category preview"
                           class="h-16 w-16 rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm"
                           onerror="this.src='/images/categories/placeholder.jpg'"
                         />
-                      </template>
-                      <template v-else>
+                      @else
                         <div
                           class="h-16 w-16 rounded-full flex items-center justify-center text-white font-medium shadow-sm bg-blue-500"
                         >
                           {{ newCategory.name ? newCategory.name.charAt(0).toUpperCase() : '?' }}
                         </div>
-                      </template>
+                      @endif
                     </div>
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 text-left">Enter the URL of the category image or upload a file</p>
                   </div>
@@ -442,5 +441,5 @@ async function handleDeleteCategory(category: Categories): Promise<void> {
         </div>
       </div>
     </div>
-  </main>
-</template>
+  @endif
+</main>

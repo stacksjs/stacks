@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useLocalStorage } from '@vueuse/core'
@@ -36,20 +36,20 @@ onMounted(async () => {
 })
 
 // View mode for grid/list toggle
-const viewMode = useLocalStorage('products-view-mode', 'list')
+export const viewMode = useLocalStorage('products-view-mode', 'list')
 
 // Filter and sort options
-const categoryFilter = ref('all')
-const sortBy = ref('name')
-const sortOrder = ref('asc')
+export const categoryFilter = ref('all')
+export const sortBy = ref('name')
+export const sortOrder = ref('asc')
 
 // Search and filtering
-const searchQuery = ref('')
-const currentPage = ref(1)
-const itemsPerPage = ref(5)
+export const searchQuery = ref('')
+export const currentPage = ref(1)
+export const itemsPerPage = ref(5)
 
 // Computed filtered products
-const filteredProducts = computed(() => {
+export const filteredProducts = computed(() => {
   return products.value
     .filter(product => {
       // Apply search filter
@@ -82,14 +82,14 @@ const filteredProducts = computed(() => {
     })
 })
 
-const paginatedProducts = computed(() => {
+export const paginatedProducts = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return filteredProducts.value.slice(start, end)
 })
 
 // Get unique categories for filter
-const categoriesForFilter = computed(() => {
+export const categoriesForFilter = computed(() => {
   const categoryCounts = products.value.reduce((acc, product) => {
     const categoryName = product.category?.name || 'Unknown'
     acc[categoryName] = (acc[categoryName] || 0) + 1
@@ -100,30 +100,30 @@ const categoriesForFilter = computed(() => {
 })
 
 // Event handlers
-const handleSearch = (query: string) => {
+export const handleSearch = (query: string) => {
   searchQuery.value = query
   currentPage.value = 1
 }
 
-const handlePrevPage = () => {
+export const handlePrevPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
-const handleNextPage = () => {
+export const handleNextPage = () => {
   const totalPages = Math.ceil(filteredProducts.value.length / itemsPerPage.value)
   if (currentPage.value < totalPages) {
     currentPage.value++
   }
 }
 
-const handlePageChange = (page: number) => {
+export const handlePageChange = (page: number) => {
   currentPage.value = page
 }
 
 // Toggle sort order
-function toggleSort(column: string): void {
+export function toggleSort(column: string): void {
   if (sortBy.value === column) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -133,12 +133,12 @@ function toggleSort(column: string): void {
 }
 
 // Product actions
-function viewProduct(product: Products): void {
+export function viewProduct(product: Products): void {
   console.log('View product:', product)
   // Implement view product logic
 }
 
-function editProduct(product: Products): void {
+export function editProduct(product: Products): void {
   console.log('Edit product:', product)
   // Implement edit product logic
 }
@@ -162,11 +162,11 @@ interface NewProduct {
 }
 
 // Status options for the dropdown
-const statuses = computed(() => ['Active', 'Inactive', 'Draft', 'Archived'])
+export const statuses = computed(() => ['Active', 'Inactive', 'Draft', 'Archived'])
 
 // Modal state
-const showProductModal = ref(false)
-const newProduct = ref<NewProduct>({
+export const showProductModal = ref(false)
+export const newProduct = ref<NewProduct>({
   name: '',
   description: '',
   price: 0,
@@ -183,7 +183,7 @@ const newProduct = ref<NewProduct>({
   dateAdded: new Date().toISOString().split('T')[0] || ''
 })
 
-function openAddProductModal(): void {
+export function openAddProductModal(): void {
   newProduct.value = {
     name: '',
     description: '',
@@ -203,18 +203,18 @@ function openAddProductModal(): void {
   showProductModal.value = true
 }
 
-function closeProductModal(): void {
+export function closeProductModal(): void {
   showProductModal.value = false
 }
 
-async function addProduct(): Promise<void> {
+export async function addProduct(): Promise<void> {
   // First add to local state for immediate UI update
   const id = Math.max(...products.value.map(p => p.id || 0)) + 1
-  
+
   // Find the selected category and manufacturer
   const selectedCategory = categories.value.find(c => c.id === newProduct.value.category_id)
   const selectedManufacturer = manufacturers.value.find(m => m.id === newProduct.value.manufacturer_id)
-  
+
   const newProductData = {
     id,
     uuid: `product-${id}`,
@@ -261,114 +261,116 @@ async function addProduct(): Promise<void> {
 }
 </script>
 
-<template>
-  <div class="py-6">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
-      <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-        <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-          <div class="flex justify-between items-center">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Products</h2>
-            <button
-              @click="openAddProductModal"
-              type="button"
-              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+<div class="py-6">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
+    <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-medium text-gray-900 dark:text-white">Products</h2>
+          <button
+            @click="openAddProductModal"
+            type="button"
+            class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          >
+            <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
+            Add Product
+          </button>
+        </div>
+        <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <SearchFilter
+            placeholder="Search products..."
+            @search="handleSearch"
+            class="w-full md:w-96"
+          />
+          <div class="flex flex-col sm:flex-row gap-4">
+            <!-- Category filter -->
+            <select
+              v-model="categoryFilter"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
             >
-              <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
-              Add Product
-            </button>
-          </div>
-          <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <SearchFilter
-              placeholder="Search products..."
-              @search="handleSearch"
-              class="w-full md:w-96"
-            />
-            <div class="flex flex-col sm:flex-row gap-4">
-              <!-- Category filter -->
-              <select
-                v-model="categoryFilter"
-                class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-              >
-                <option value="all">All Categories</option>
-                <option v-for="category in categoriesForFilter" :key="category.name" :value="category.name">
+              <option value="all">All Categories</option>
+              @foreach(categoriesForFilter as category)
+                <option :value="category.name">
                   {{ category.name }} ({{ category.count }})
                 </option>
-              </select>
+              @endforeach
+            </select>
 
-              <!-- View mode toggle -->
-              <div class="flex rounded-md shadow-sm">
-                <button
-                  type="button"
-                  @click="viewMode = 'grid'"
-                  :class="[
-                    'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                    viewMode === 'grid'
-                      ? 'bg-blue-600 text-white ring-blue-600'
-                      : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
-                  ]"
-                >
-                  <div class="i-hugeicons-grid h-5 w-5"></div>
-                </button>
-                <button
-                  type="button"
-                  @click="viewMode = 'list'"
-                  :class="[
-                    'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                    viewMode === 'list'
-                      ? 'bg-blue-600 text-white ring-blue-600'
-                      : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
-                  ]"
-                >
-                  <div class="i-hugeicons-right-to-left-list-number h-5 w-5"></div>
-                </button>
-              </div>
-
-              <select
-                v-model="itemsPerPage"
-                class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            <!-- View mode toggle -->
+            <div class="flex rounded-md shadow-sm">
+              <button
+                type="button"
+                @click="viewMode = 'grid'"
+                :class="[
+                  'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+                  viewMode === 'grid'
+                    ? 'bg-blue-600 text-white ring-blue-600'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
+                ]"
               >
-                <option :value="5">5 per page</option>
-                <option :value="10">10 per page</option>
-                <option :value="25">25 per page</option>
-                <option :value="50">50 per page</option>
-              </select>
+                <div class="i-hugeicons-grid h-5 w-5"></div>
+              </button>
+              <button
+                type="button"
+                @click="viewMode = 'list'"
+                :class="[
+                  'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+                  viewMode === 'list'
+                    ? 'bg-blue-600 text-white ring-blue-600'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
+                ]"
+              >
+                <div class="i-hugeicons-right-to-left-list-number h-5 w-5"></div>
+              </button>
             </div>
+
+            <select
+              v-model="itemsPerPage"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            >
+              <option :value="5">5 per page</option>
+              <option :value="10">10 per page</option>
+              <option :value="25">25 per page</option>
+              <option :value="50">50 per page</option>
+            </select>
           </div>
         </div>
+      </div>
 
-        <!-- Product Tables Component -->
-        <ProductsTable
-          :products="paginatedProducts"
-          :search-query="searchQuery"
-          :category-filter="categoryFilter"
-          :sort-by="sortBy"
-          :sort-order="sortOrder"
+      <!-- Product Tables Component -->
+      <ProductsTable
+        :products="paginatedProducts"
+        :search-query="searchQuery"
+        :category-filter="categoryFilter"
+        :sort-by="sortBy"
+        :sort-order="sortOrder"
+        :current-page="currentPage"
+        :items-per-page="itemsPerPage"
+        :categories="categoriesForFilter.map(c => c.name)"
+        @toggle-sort="toggleSort"
+        @change-page="handlePageChange"
+        @previous-page="handlePrevPage"
+        @next-page="handleNextPage"
+        @view-product="viewProduct"
+        @edit-product="editProduct"
+      />
+
+      <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+        <Pagination
           :current-page="currentPage"
+          :total-items="filteredProducts.length"
           :items-per-page="itemsPerPage"
-          :categories="categoriesForFilter.map(c => c.name)"
-          @toggle-sort="toggleSort"
-          @change-page="handlePageChange"
-          @previous-page="handlePrevPage"
-          @next-page="handleNextPage"
-          @view-product="viewProduct"
-          @edit-product="editProduct"
+          @prev="handlePrevPage"
+          @next="handleNextPage"
+          @page="handlePageChange"
         />
-
-        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-          <Pagination
-            :current-page="currentPage"
-            :total-items="filteredProducts.length"
-            :items-per-page="itemsPerPage"
-            @prev="handlePrevPage"
-            @next="handleNextPage"
-            @page="handlePageChange"
-          />
-        </div>
       </div>
     </div>
+  </div>
 
-    <!-- Add/Edit Product Modal -->
-    <div v-if="showProductModal" class="fixed inset-0 z-10 overflow-y-auto">
+  <!-- Add/Edit Product Modal -->
+  @if(showProductModal)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
 
@@ -451,7 +453,9 @@ async function addProduct(): Promise<void> {
                         required
                       >
                         <option value="">Select a category</option>
-                        <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
+                        @foreach(categories as category)
+                          <option :value="category.id">{{ category.name }}</option>
+                        @endforeach
                       </select>
                     </div>
                     <div>
@@ -463,7 +467,9 @@ async function addProduct(): Promise<void> {
                         required
                       >
                         <option value="">Select a manufacturer</option>
-                        <option v-for="manufacturer in manufacturers" :key="manufacturer.id" :value="manufacturer.id">{{ manufacturer.name }}</option>
+                        @foreach(manufacturers as manufacturer)
+                          <option :value="manufacturer.id">{{ manufacturer.name }}</option>
+                        @endforeach
                       </select>
                     </div>
                   </div>
@@ -488,7 +494,9 @@ async function addProduct(): Promise<void> {
                         v-model="newProduct.status"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                       >
-                        <option v-for="status in statuses.slice(1)" :key="status" :value="status">{{ status }}</option>
+                        @foreach(statuses.slice(1) as status)
+                          <option :value="status">{{ status }}</option>
+                        @endforeach
                       </select>
                     </div>
                   </div>
@@ -539,5 +547,5 @@ async function addProduct(): Promise<void> {
         </div>
       </div>
     </div>
-  </div>
-</template>
+  @endif
+</div>

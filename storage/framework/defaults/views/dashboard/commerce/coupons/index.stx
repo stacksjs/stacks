@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
@@ -43,7 +43,7 @@ useHead({
 })
 
 // Chart options
-const chartOptions = {
+export const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -68,7 +68,7 @@ const chartOptions = {
 }
 
 // Generate monthly data for charts
-const monthlyChartData = computed(() => {
+export const monthlyChartData = computed(() => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   // Sample data - in a real app, this would be calculated from actual usage data
@@ -117,8 +117,8 @@ const monthlyChartData = computed(() => {
 })
 
 // Time range selector
-const timeRange = ref('Last 30 days')
-const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
+export const timeRange = ref('Last 30 days')
+export const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Get coupons data and functions from the composable
 const { coupons, createCoupon, fetchCoupons, deleteCoupon, updateCoupon } = useCoupons()
@@ -129,20 +129,20 @@ onMounted(async () => {
 })
 
 // Filter and sort options
-const searchQuery = ref('')
-const sortBy = ref('code')
-const sortOrder = ref('asc')
-const statusFilter = ref('all')
+export const searchQuery = ref('')
+export const sortBy = ref('code')
+export const sortOrder = ref('asc')
+export const statusFilter = ref('all')
 
 // Available statuses
-const statuses = ['all', 'Active', 'Expired', 'Scheduled'] as const
+export const statuses = ['all', 'Active', 'Expired', 'Scheduled'] as const
 
 // Pagination
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
+export const currentPage = ref(1)
+export const itemsPerPage = ref(10)
 
 // Computed coupon statistics
-const couponStats = computed(() => {
+export const couponStats = computed(() => {
   const activeCoupons = coupons.value.filter(c => c.status === 'Active').length
   const totalRedemptions = coupons.value.reduce((sum, c) => sum + c.usage_count, 0)
 
@@ -173,7 +173,7 @@ const couponStats = computed(() => {
 })
 
 // Computed filtered and sorted coupons
-const filteredCoupons = computed(() => {
+export const filteredCoupons = computed(() => {
   return coupons.value
     .filter(coupon => {
       // Apply search filter
@@ -201,37 +201,37 @@ const filteredCoupons = computed(() => {
     })
 })
 
-const paginatedCoupons = computed(() => {
+export const paginatedCoupons = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return filteredCoupons.value.slice(start, end)
 })
 
 // Event handlers
-const handleSearch = (query: string) => {
+export function handleSearch(query: string): void {
   searchQuery.value = query
   currentPage.value = 1
 }
 
-const handlePrevPage = () => {
+export function handlePrevPage(): void {
   if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
-const handleNextPage = () => {
+export function handleNextPage(): void {
   const totalPages = Math.ceil(filteredCoupons.value.length / itemsPerPage.value)
   if (currentPage.value < totalPages) {
     currentPage.value++
   }
 }
 
-const handlePageChange = (page: number) => {
+export function handlePageChange(page: number): void {
   currentPage.value = page
 }
 
 // Toggle sort order
-function toggleSort(column: string): void {
+export function toggleSort(column: string): void {
   if (sortBy.value === column) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -241,31 +241,31 @@ function toggleSort(column: string): void {
 }
 
 // Modal state
-const showFormModal = ref(false)
-const formMode = ref<'add' | 'edit'>('add')
-const couponToEdit = ref<any>(null)
-const showDeleteModal = ref(false)
-const couponToDelete = ref<any>(null)
+export const showFormModal = ref(false)
+export const formMode = ref<'add' | 'edit'>('add')
+export const couponToEdit = ref<any>(null)
+export const showDeleteModal = ref(false)
+export const couponToDelete = ref<any>(null)
 
-function openAddModal(): void {
+export function openAddModal(): void {
   formMode.value = 'add'
   couponToEdit.value = null
   showFormModal.value = true
 }
 
-function closeFormModal(): void {
+export function closeFormModal(): void {
   showFormModal.value = false
   couponToEdit.value = null
 }
 
-function editCoupon(coupon: any): void {
+export function editCoupon(coupon: any): void {
   formMode.value = 'edit'
   couponToEdit.value = { ...coupon }
   showFormModal.value = true
 }
 
 // Form submission handlers
-async function handleFormSubmit(couponData: NewCoupon): Promise<void> {
+export async function handleFormSubmit(couponData: NewCoupon): Promise<void> {
 
   console.log(couponData)
   if (formMode.value === 'add') {
@@ -275,7 +275,7 @@ async function handleFormSubmit(couponData: NewCoupon): Promise<void> {
   }
 }
 
-async function addCoupon(couponData: NewCoupon): Promise<void> {
+export async function addCoupon(couponData: NewCoupon): Promise<void> {
   // First add to local state for immediate UI update
   const id = Math.max(...coupons.value.map(c => c.id || 0)) + 1
   const newCouponData = {
@@ -296,17 +296,17 @@ async function addCoupon(couponData: NewCoupon): Promise<void> {
   }
 }
 
-async function doUpdateCoupon(couponData: NewCoupon): Promise<void> {
+export async function doUpdateCoupon(couponData: NewCoupon): Promise<void> {
   if (!couponToEdit.value) return
 
   const couponId = couponToEdit.value.id
-  
+
   // Update local state for immediate UI update
   const index = coupons.value.findIndex(c => c.id === couponId)
   if (index !== -1) {
     coupons.value[index] = { ...coupons.value[index], ...couponData }
   }
-  
+
   try {
     // TODO: Implement actual API call to update coupon
     await updateCoupon(couponId, couponData)
@@ -318,29 +318,29 @@ async function doUpdateCoupon(couponData: NewCoupon): Promise<void> {
 }
 
 // Coupon actions
-function viewCoupon(coupon: any): void {
+export function viewCoupon(coupon: any): void {
   console.log('View coupon:', coupon)
   // Implement view coupon logic
 }
 
-function removeCoupon(coupon: any): void {
+export function removeCoupon(coupon: any): void {
   couponToDelete.value = coupon
   showDeleteModal.value = true
 }
 
-function closeDeleteModal(): void {
+export function closeDeleteModal(): void {
   showDeleteModal.value = false
   couponToDelete.value = null
 }
 
-async function confirmDelete(): Promise<void> {
+export async function confirmDelete(): Promise<void> {
   if (!couponToDelete.value) return
 
   const couponId = couponToDelete.value.id
-  
+
   // Remove from local state for immediate UI update
   coupons.value = coupons.value.filter(c => c.id !== couponId)
-  
+
   try {
     await deleteCoupon(couponId)
     closeDeleteModal()
@@ -352,188 +352,192 @@ async function confirmDelete(): Promise<void> {
 }
 </script>
 
-<template>
-  <main>
-    <div class="px-6 py-6 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl">
-        <div class="sm:flex sm:items-center sm:justify-between">
-          <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Coupons</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              Manage discount coupons for your store
-            </p>
-          </div>
-          <div class="mt-4 sm:mt-0">
-            <button
-              type="button"
-              @click="openAddModal"
-              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
-              Add coupon
-            </button>
-          </div>
-        </div>
-
-        <!-- Time range selector -->
-        <div class="mt-4 flex items-center justify-between">
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            Overview of your coupon performance
+<main>
+  <div class="px-6 py-6 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="sm:flex sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Coupons</h1>
+          <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            Manage discount coupons for your store
           </p>
-          <div class="relative">
-            <select v-model="timeRange" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700">
-              <option v-for="range in timeRanges" :key="range" :value="range">{{ range }}</option>
-            </select>
-          </div>
         </div>
-
-        <!-- Stats -->
-        <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Active Coupons</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ couponStats.activeCoupons }}</dd>
-            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
-              <span>1 more than last month</span>
-            </dd>
-          </div>
-
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Redemptions</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ couponStats.totalRedemptions.toLocaleString() }}</dd>
-            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
-              <span>12.5% increase</span>
-            </dd>
-          </div>
-
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Discount Amount</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ couponStats.totalDiscountAmount.toLocaleString() }}</dd>
-            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
-              <span>8.2% increase</span>
-            </dd>
-          </div>
-
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Avg. Discount per Order</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ couponStats.avgDiscountPerOrder }}</dd>
-            <dd class="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
-              <div class="i-hugeicons-analytics-down h-4 w-4 mr-1"></div>
-              <span>3.2% decrease</span>
-            </dd>
-          </div>
-        </dl>
-
-        <!-- Charts -->
-        <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Coupon Redemptions</h3>
-              <div class="mt-2 h-80">
-                <Line :data="monthlyChartData.couponUsageData" :options="chartOptions" />
-              </div>
-            </div>
-          </div>
-
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Discount Amount</h3>
-              <div class="mt-2 h-80">
-                <Bar :data="monthlyChartData.discountAmountData" :options="chartOptions" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Filters -->
-        <div class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <SearchFilter
-            placeholder="Search coupons..."
-            @search="handleSearch"
-            class="w-full md:w-96"
-          />
-          <div class="flex flex-col sm:flex-row gap-4">
-            <select
-              v-model="statusFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option v-for="status in statuses" :key="status" :value="status">
-                {{ status }}
-              </option>
-            </select>
-
-            <select
-              v-model="itemsPerPage"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-            >
-              <option :value="5">5 per page</option>
-              <option :value="10">10 per page</option>
-              <option :value="25">25 per page</option>
-              <option :value="50">50 per page</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Coupons table -->
-        <div class="mt-6 flow-root">
-          <div class="sm:flex sm:items-center sm:justify-between mb-4">
-            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">All Coupons</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              A list of all the coupons in your store including their code, value, and status.
-            </p>
-          </div>
-          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                <CouponsTable
-                  :coupons="paginatedCoupons"
-                  :search-query="searchQuery"
-                  :status-filter="statusFilter"
-                  :sort-by="sortBy"
-                  :sort-order="sortOrder"
-                  :current-page="currentPage"
-                  :items-per-page="itemsPerPage"
-                  :statuses="statuses"
-                  @toggle-sort="toggleSort"
-                  @change-page="handlePageChange"
-                  @previous-page="handlePrevPage"
-                  @next-page="handleNextPage"
-                  @view-coupon="viewCoupon"
-                  @edit-coupon="editCoupon"
-                  @delete-coupon="removeCoupon"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pagination -->
-        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-          <Pagination
-            :current-page="currentPage"
-            :total-items="filteredCoupons.length"
-            :items-per-page="itemsPerPage"
-            @prev="handlePrevPage"
-            @next="handleNextPage"
-            @page="handlePageChange"
-          />
+        <div class="mt-4 sm:mt-0">
+          <button
+            type="button"
+            @click="openAddModal"
+            class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          >
+            <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
+            Add coupon
+          </button>
         </div>
       </div>
+
+      <!-- Time range selector -->
+      <div class="mt-4 flex items-center justify-between">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Overview of your coupon performance
+        </p>
+        <div class="relative">
+          <select v-model="timeRange" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700">
+            @foreach(timeRanges as range)
+              <option :value="range">{{ range }}</option>
+            @endforeach
+          </select>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Active Coupons</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ couponStats.activeCoupons }}</dd>
+          <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+            <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+            <span>1 more than last month</span>
+          </dd>
+        </div>
+
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Redemptions</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ couponStats.totalRedemptions.toLocaleString() }}</dd>
+          <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+            <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+            <span>12.5% increase</span>
+          </dd>
+        </div>
+
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Discount Amount</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ couponStats.totalDiscountAmount.toLocaleString() }}</dd>
+          <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+            <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+            <span>8.2% increase</span>
+          </dd>
+        </div>
+
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Avg. Discount per Order</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ couponStats.avgDiscountPerOrder }}</dd>
+          <dd class="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
+            <div class="i-hugeicons-analytics-down h-4 w-4 mr-1"></div>
+            <span>3.2% decrease</span>
+          </dd>
+        </div>
+      </dl>
+
+      <!-- Charts -->
+      <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="p-6">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Coupon Redemptions</h3>
+            <div class="mt-2 h-80">
+              <Line :data="monthlyChartData.couponUsageData" :options="chartOptions" />
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="p-6">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Discount Amount</h3>
+            <div class="mt-2 h-80">
+              <Bar :data="monthlyChartData.discountAmountData" :options="chartOptions" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <SearchFilter
+          placeholder="Search coupons..."
+          @search="handleSearch"
+          class="w-full md:w-96"
+        />
+        <div class="flex flex-col sm:flex-row gap-4">
+          <select
+            v-model="statusFilter"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+          >
+            @foreach(statuses as status)
+              <option :value="status">
+                {{ status }}
+              </option>
+            @endforeach
+          </select>
+
+          <select
+            v-model="itemsPerPage"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+          >
+            <option :value="5">5 per page</option>
+            <option :value="10">10 per page</option>
+            <option :value="25">25 per page</option>
+            <option :value="50">50 per page</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Coupons table -->
+      <div class="mt-6 flow-root">
+        <div class="sm:flex sm:items-center sm:justify-between mb-4">
+          <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">All Coupons</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            A list of all the coupons in your store including their code, value, and status.
+          </p>
+        </div>
+        <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+            <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+              <CouponsTable
+                :coupons="paginatedCoupons"
+                :search-query="searchQuery"
+                :status-filter="statusFilter"
+                :sort-by="sortBy"
+                :sort-order="sortOrder"
+                :current-page="currentPage"
+                :items-per-page="itemsPerPage"
+                :statuses="statuses"
+                @toggle-sort="toggleSort"
+                @change-page="handlePageChange"
+                @previous-page="handlePrevPage"
+                @next-page="handleNextPage"
+                @view-coupon="viewCoupon"
+                @edit-coupon="editCoupon"
+                @delete-coupon="removeCoupon"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+        <Pagination
+          :current-page="currentPage"
+          :total-items="filteredCoupons.length"
+          :items-per-page="itemsPerPage"
+          @prev="handlePrevPage"
+          @next="handleNextPage"
+          @page="handlePageChange"
+        />
+      </div>
     </div>
+  </div>
 
-    <!-- Coupons Form Modal -->
-    <CouponsForm
-      :show="showFormModal"
-      :mode="formMode"
-      :coupon="couponToEdit"
-      @close="closeFormModal"
-      @submit="handleFormSubmit"
-    />
+  <!-- Coupons Form Modal -->
+  <CouponsForm
+    :show="showFormModal"
+    :mode="formMode"
+    :coupon="couponToEdit"
+    @close="closeFormModal"
+    @submit="handleFormSubmit"
+  />
 
-    <!-- Delete Coupon Confirmation Modal -->
-    <div v-if="showDeleteModal" class="fixed inset-0 z-10 overflow-y-auto">
+  <!-- Delete Coupon Confirmation Modal -->
+  @if(showDeleteModal)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeDeleteModal"></div>
 
@@ -570,5 +574,5 @@ async function confirmDelete(): Promise<void> {
         </div>
       </div>
     </div>
-  </main>
-</template>
+  @endif
+</main>

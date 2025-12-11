@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script lang="ts" setup>
+<script>
 import { ref, computed, reactive } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useLocalStorage } from '@vueuse/core'
@@ -58,7 +58,7 @@ interface Order {
 }
 
 // Sample menu items data
-const menuItems = ref<MenuItem[]>([
+export const menuItems = ref<MenuItem[]>([
   {
     id: 1,
     name: 'Classic Cheeseburger',
@@ -254,7 +254,7 @@ const menuItems = ref<MenuItem[]>([
 ])
 
 // Categories derived from menu items
-const categories = computed<Category[]>(() => {
+export const categories = computed<Category[]>(() => {
   const categoryMap = new Map<string, number>()
 
   menuItems.value.forEach(item => {
@@ -271,16 +271,16 @@ const categories = computed<Category[]>(() => {
 })
 
 // Current table number
-const tableNumber = ref(1)
-const availableTables = Array.from({ length: 20 }, (_, i) => i + 1)
+export const tableNumber = ref(1)
+export const availableTables = Array.from({ length: 20 }, (_, i) => i + 1)
 
 // Filter and sort options
-const searchQuery = ref('')
-const categoryFilter = ref('all')
-const viewMode = useLocalStorage('menu-view-mode', 'grid') // Default to grid view for better imagery
+export const searchQuery = ref('')
+export const categoryFilter = ref('all')
+export const viewMode = useLocalStorage('menu-view-mode', 'grid') // Default to grid view for better imagery
 
 // Computed filtered and sorted menu items
-const filteredMenuItems = computed(() => {
+export const filteredMenuItems = computed(() => {
   return menuItems.value
     .filter(item => {
       // Apply search filter
@@ -297,7 +297,7 @@ const filteredMenuItems = computed(() => {
 })
 
 // Current order
-const currentOrder = reactive<Order>({
+export const currentOrder = reactive<Order>({
   id: 1,
   tableNumber: 1,
   items: [],
@@ -307,7 +307,7 @@ const currentOrder = reactive<Order>({
 })
 
 // Add item to order
-function addToOrder(menuItem: MenuItem, quantity = 1): void {
+export function addToOrder(menuItem: MenuItem, quantity = 1): void {
   const existingItem = currentOrder.items.find(item => item.menuItemId === menuItem.id)
 
   if (existingItem) {
@@ -327,13 +327,13 @@ function addToOrder(menuItem: MenuItem, quantity = 1): void {
 }
 
 // Remove item from order
-function removeFromOrder(index: number): void {
+export function removeFromOrder(index: number): void {
   currentOrder.items.splice(index, 1)
   updateOrderTotal()
 }
 
 // Update item quantity
-function updateItemQuantity(index: number, quantity: number): void {
+export function updateItemQuantity(index: number, quantity: number): void {
   if (quantity <= 0) {
     removeFromOrder(index)
     return
@@ -347,18 +347,18 @@ function updateItemQuantity(index: number, quantity: number): void {
 }
 
 // Update order total
-function updateOrderTotal(): void {
+export function updateOrderTotal(): void {
   currentOrder.totalAmount = currentOrder.items.reduce((total, item) => {
     return total + (item.price * item.quantity)
   }, 0)
 }
 
 // Special instructions modal
-const showSpecialInstructionsModal = ref(false)
-const currentEditingItemIndex = ref(-1)
-const tempSpecialInstructions = ref('')
+export const showSpecialInstructionsModal = ref(false)
+export const currentEditingItemIndex = ref(-1)
+export const tempSpecialInstructions = ref('')
 
-function openSpecialInstructionsModal(index: number): void {
+export function openSpecialInstructionsModal(index: number): void {
   const item = currentOrder.items[index]
   if (item) {
     currentEditingItemIndex.value = index
@@ -367,7 +367,7 @@ function openSpecialInstructionsModal(index: number): void {
   }
 }
 
-function saveSpecialInstructions(): void {
+export function saveSpecialInstructions(): void {
   if (currentEditingItemIndex.value >= 0) {
     const item = currentOrder.items[currentEditingItemIndex.value]
     if (item) {
@@ -378,10 +378,10 @@ function saveSpecialInstructions(): void {
 }
 
 // Place order functionality
-const orderPlaced = ref(false)
-const orderSummary = ref<Order | null>(null)
+export const orderPlaced = ref(false)
+export const orderSummary = ref<Order | null>(null)
 
-function placeOrder(): void {
+export function placeOrder(): void {
   if (currentOrder.items.length === 0) {
     alert('Please add items to your order')
     return
@@ -409,12 +409,12 @@ function placeOrder(): void {
 }
 
 // Table selection
-function selectTable(table: number): void {
+export function selectTable(table: number): void {
   tableNumber.value = table
 }
 
 // Get allergy tag class
-function getAllergyClass(allergy: string): string {
+export function getAllergyClass(allergy: string): string {
   switch (allergy) {
     case 'dairy':
       return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
@@ -432,7 +432,7 @@ function getAllergyClass(allergy: string): string {
 }
 
 // Add the scrollToOrder function to the script
-function scrollToOrder(): void {
+export function scrollToOrder(): void {
   const orderElement = document.getElementById('order-section')
   if (orderElement) {
     orderElement.scrollIntoView({ behavior: 'smooth' })
@@ -440,112 +440,113 @@ function scrollToOrder(): void {
 }
 </script>
 
-<template>
-  <main>
-    <div class="px-6 py-6 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl">
-        <!-- Header section -->
-        <div class="sm:flex sm:items-center sm:justify-between">
+<main>
+  <div class="px-6 py-6 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <!-- Header section -->
+      <div class="sm:flex sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Self-Service Menu</h1>
+          <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            Device {{ tableNumber }} - Browse and order directly from your device
+          </p>
+        </div>
+        <div class="mt-4 sm:mt-0 flex items-center gap-4">
+          <!-- Device selection dropdown -->
           <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Self-Service Menu</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              Device {{ tableNumber }} - Browse and order directly from your device
-            </p>
-          </div>
-          <div class="mt-4 sm:mt-0 flex items-center gap-4">
-            <!-- Device selection dropdown -->
-            <div>
-              <label for="table-select" class="sr-only">Select Device</label>
-              <select
-                id="table-select"
-                v-model="tableNumber"
-                @change="selectTable(tableNumber)"
-                class="block rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-              >
-                <option v-for="table in availableTables" :key="table" :value="table">
+            <label for="table-select" class="sr-only">Select Device</label>
+            <select
+              id="table-select"
+              v-model="tableNumber"
+              @change="selectTable(tableNumber)"
+              class="block rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            >
+              @foreach(availableTables as table)
+                <option :value="table">
                   Device {{ table }}
                 </option>
-              </select>
-            </div>
+              @endforeach
+            </select>
+          </div>
 
-            <!-- View cart button -->
-            <button
-              type="button"
-              @click="scrollToOrder"
-              class="relative inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              <div class="i-hugeicons-shopping-cart-02 h-5 w-5 mr-1"></div>
-              View Receipt
+          <!-- View cart button -->
+          <button
+            type="button"
+            @click="scrollToOrder"
+            class="relative inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          >
+            <div class="i-hugeicons-shopping-cart-02 h-5 w-5 mr-1"></div>
+            View Receipt
+            @if(currentOrder.items.length > 0)
               <span
-                v-if="currentOrder.items.length > 0"
                 class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white"
               >
                 {{ currentOrder.items.length }}
               </span>
-            </button>
-          </div>
+            @endif
+          </button>
         </div>
+      </div>
 
-        <!-- Summary cards -->
-        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <!-- Total products card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-blue-100 p-2 dark:bg-blue-900">
-                    <div class="i-hugeicons-package h-6 w-6 text-blue-600 dark:text-blue-300"></div>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Items</dt>
-                    <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ menuItems.length }}</div>
-                    </dd>
-                  </dl>
+      <!-- Summary cards -->
+      <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- Total products card -->
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="h-10 w-10 rounded-md bg-blue-100 p-2 dark:bg-blue-900">
+                  <div class="i-hugeicons-package h-6 w-6 text-blue-600 dark:text-blue-300"></div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <!-- Device selection card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-yellow-100 p-2 dark:bg-yellow-900">
-                    <div class="i-hugeicons-tablet h-6 w-6 text-yellow-600 dark:text-yellow-300"></div>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Device</dt>
-                    <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ tableNumber }}</div>
-                    </dd>
-                  </dl>
-                </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Items</dt>
+                  <dd>
+                    <div class="text-lg font-medium text-gray-900 dark:text-white">{{ menuItems.length }}</div>
+                  </dd>
+                </dl>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Category navigation -->
-        <div class="mt-6 overflow-x-auto pb-2">
-          <div class="inline-flex space-x-2">
+        <!-- Device selection card -->
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="h-10 w-10 rounded-md bg-yellow-100 p-2 dark:bg-yellow-900">
+                  <div class="i-hugeicons-tablet h-6 w-6 text-yellow-600 dark:text-yellow-300"></div>
+                </div>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Device</dt>
+                  <dd>
+                    <div class="text-lg font-medium text-gray-900 dark:text-white">{{ tableNumber }}</div>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category navigation -->
+      <div class="mt-6 overflow-x-auto pb-2">
+        <div class="inline-flex space-x-2">
+          <button
+            @click="categoryFilter = 'all'"
+            class="rounded-full px-4 py-2 text-sm font-medium transition"
+            :class="categoryFilter === 'all'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-blue-gray-700 dark:text-white dark:hover:bg-blue-gray-600'"
+          >
+            All
+          </button>
+          @foreach(categories as category)
             <button
-              @click="categoryFilter = 'all'"
-              class="rounded-full px-4 py-2 text-sm font-medium transition"
-              :class="categoryFilter === 'all'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-blue-gray-700 dark:text-white dark:hover:bg-blue-gray-600'"
-            >
-              All
-            </button>
-            <button
-              v-for="category in categories"
-              :key="category.id"
               @click="categoryFilter = category.name"
               class="rounded-full px-4 py-2 text-sm font-medium transition"
               :class="categoryFilter === category.name
@@ -554,140 +555,150 @@ function scrollToOrder(): void {
             >
               {{ category.name }}
             </button>
+          @endforeach
+        </div>
+      </div>
+
+      <!-- Search bar -->
+      <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="relative max-w-sm">
+          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
           </div>
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+            placeholder="Search menu..."
+          />
         </div>
 
-        <!-- Search bar -->
-        <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div class="relative max-w-sm">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
+        <!-- View mode toggle -->
+        <div class="flex rounded-md shadow-sm">
+          <button
+            type="button"
+            @click="viewMode = 'grid'"
+            :class="[
+              'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+              viewMode === 'grid'
+                ? 'bg-blue-600 text-white ring-blue-600'
+                : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
+            ]"
+          >
+            <div class="i-hugeicons-grid h-5 w-5"></div>
+          </button>
+          <button
+            type="button"
+            @click="viewMode = 'list'"
+            :class="[
+              'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+              viewMode === 'list'
+                ? 'bg-blue-600 text-white ring-blue-600'
+                : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
+            ]"
+          >
+            <div class="i-hugeicons-right-to-left-list-number h-5 w-5"></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Menu items grid view -->
+      @if(viewMode === 'grid')
+        <div class="mt-6">
+          @if(filteredMenuItems.length === 0)
+            <div class="py-12 text-center">
+              <div class="i-hugeicons-box-01 mx-auto h-12 w-12 text-gray-400"></div>
+              <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No menu items found</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or category filter.</p>
             </div>
-            <input
-              v-model="searchQuery"
-              type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
-              placeholder="Search menu..."
-            />
-          </div>
-
-          <!-- View mode toggle -->
-          <div class="flex rounded-md shadow-sm">
-            <button
-              type="button"
-              @click="viewMode = 'grid'"
-              :class="[
-                'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                viewMode === 'grid'
-                  ? 'bg-blue-600 text-white ring-blue-600'
-                  : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
-              ]"
-            >
-              <div class="i-hugeicons-grid h-5 w-5"></div>
-            </button>
-            <button
-              type="button"
-              @click="viewMode = 'list'"
-              :class="[
-                'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                viewMode === 'list'
-                  ? 'bg-blue-600 text-white ring-blue-600'
-                  : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
-              ]"
-            >
-              <div class="i-hugeicons-right-to-left-list-number h-5 w-5"></div>
-            </button>
-          </div>
-        </div>
-
-        <!-- Menu items grid view -->
-        <div v-if="viewMode === 'grid'" class="mt-6">
-          <div v-if="filteredMenuItems.length === 0" class="py-12 text-center">
-            <div class="i-hugeicons-box-01 mx-auto h-12 w-12 text-gray-400"></div>
-            <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No menu items found</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or category filter.</p>
-          </div>
-
-          <div v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <!-- Menu item card -->
-            <div
-              v-for="item in filteredMenuItems"
-              :key="item.id"
-              class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-blue-gray-800"
-              :class="{ 'opacity-70': !item.available }"
-            >
-              <!-- Item image with badges -->
-              <div class="relative aspect-square overflow-hidden bg-gray-200 dark:bg-gray-700">
-                <img
-                  :src="item.imageUrl"
-                  :alt="item.name"
-                  class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <span
-                  v-if="!item.available"
-                  class="absolute top-2 right-2 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400"
+          @else
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <!-- Menu item card -->
+              @foreach(filteredMenuItems as item)
+                <div
+                  class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-blue-gray-800"
+                  :class="{ 'opacity-70': !item.available }"
                 >
-                  Unavailable
-                </span>
-                <span
-                  v-if="item.featured"
-                  class="absolute top-2 left-2 rounded-full bg-yellow-50 px-2 py-0.5 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400"
-                >
-                  Popular
-                </span>
-              </div>
-
-              <!-- Item info -->
-              <div class="p-4">
-                <div class="flex items-center justify-between">
-                  <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ item.name }}</h3>
-                  <div class="flex items-center">
-                    <div class="i-hugeicons-star h-4 w-4 text-yellow-400"></div>
-                    <span class="ml-1 text-sm text-gray-600 dark:text-gray-400">{{ item.rating }}</span>
+                  <!-- Item image with badges -->
+                  <div class="relative aspect-square overflow-hidden bg-gray-200 dark:bg-gray-700">
+                    <img
+                      :src="item.imageUrl"
+                      :alt="item.name"
+                      class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    @if(!item.available)
+                      <span
+                        class="absolute top-2 right-2 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400"
+                      >
+                        Unavailable
+                      </span>
+                    @endif
+                    @if(item.featured)
+                      <span
+                        class="absolute top-2 left-2 rounded-full bg-yellow-50 px-2 py-0.5 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400"
+                      >
+                        Popular
+                      </span>
+                    @endif
                   </div>
-                </div>
 
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{{ item.description }}</p>
+                  <!-- Item info -->
+                  <div class="p-4">
+                    <div class="flex items-center justify-between">
+                      <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ item.name }}</h3>
+                      <div class="flex items-center">
+                        <div class="i-hugeicons-star h-4 w-4 text-yellow-400"></div>
+                        <span class="ml-1 text-sm text-gray-600 dark:text-gray-400">{{ item.rating }}</span>
+                      </div>
+                    </div>
 
-                <div class="mt-2 flex flex-wrap gap-1">
-                  <span
-                    v-for="allergy in item.allergies"
-                    :key="allergy"
-                    :class="getAllergyClass(allergy)"
-                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-                  >
-                    {{ allergy }}
-                  </span>
-                </div>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{{ item.description }}</p>
 
-                <div class="mt-2 flex items-center justify-between">
-                  <div>
-                    <span v-if="item.salePrice !== null" class="text-sm font-medium text-gray-900 dark:text-white">${{ item.salePrice.toFixed(2) }}</span>
-                    <span
-                      :class="[item.salePrice !== null ? 'line-through ml-2 text-sm text-gray-500 dark:text-gray-400' : 'text-sm font-medium text-gray-900 dark:text-white']"
+                    <div class="mt-2 flex flex-wrap gap-1">
+                      @foreach(item.allergies as allergy)
+                        <span
+                          :class="getAllergyClass(allergy)"
+                          class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                        >
+                          {{ allergy }}
+                        </span>
+                      @endforeach
+                    </div>
+
+                    <div class="mt-2 flex items-center justify-between">
+                      <div>
+                        @if(item.salePrice !== null)
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">${{ item.salePrice.toFixed(2) }}</span>
+                        @endif
+                        <span
+                          :class="[item.salePrice !== null ? 'line-through ml-2 text-sm text-gray-500 dark:text-gray-400' : 'text-sm font-medium text-gray-900 dark:text-white']"
+                        >
+                          ${{ item.price.toFixed(2) }}
+                        </span>
+                      </div>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ item.preparationTime }}
+                      </span>
+                    </div>
+
+                    <button
+                      @click="addToOrder(item)"
+                      :disabled="!item.available"
+                      class="mt-3 w-full rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      ${{ item.price.toFixed(2) }}
-                    </span>
+                      Add to Order
+                    </button>
                   </div>
-                  <span class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ item.preparationTime }}
-                  </span>
                 </div>
-
-                <button
-                  @click="addToOrder(item)"
-                  :disabled="!item.available"
-                  class="mt-3 w-full rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Add to Order
-                </button>
-              </div>
+              @endforeach
             </div>
-          </div>
+          @endif
         </div>
+      @endif
 
-        <!-- Menu items list view -->
-        <div v-if="viewMode === 'list'" class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+      <!-- Menu items list view -->
+      @if(viewMode === 'list')
+        <div class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
           <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
             <thead class="bg-gray-50 dark:bg-blue-gray-700">
               <tr>
@@ -701,92 +712,105 @@ function scrollToOrder(): void {
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
-              <tr v-if="filteredMenuItems.length === 0">
-                <td colspan="5" class="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  No menu items found. Try adjusting your search or category filter.
-                </td>
-              </tr>
-              <tr v-for="item in filteredMenuItems" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700" :class="{ 'opacity-70': !item.available }">
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                  <div class="flex items-center">
-                    <div class="h-10 w-10 flex-shrink-0">
-                      <img :src="item.imageUrl" :alt="item.name" class="h-10 w-10 rounded-md object-cover" />
+              @if(filteredMenuItems.length === 0)
+                <tr>
+                  <td colspan="5" class="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                    No menu items found. Try adjusting your search or category filter.
+                  </td>
+                </tr>
+              @endif
+              @foreach(filteredMenuItems as item)
+                <tr class="hover:bg-gray-50 dark:hover:bg-blue-gray-700" :class="{ 'opacity-70': !item.available }">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                    <div class="flex items-center">
+                      <div class="h-10 w-10 flex-shrink-0">
+                        <img :src="item.imageUrl" :alt="item.name" class="h-10 w-10 rounded-md object-cover" />
+                      </div>
+                      <div class="ml-4">
+                        <div class="font-medium text-gray-900 dark:text-white">{{ item.name }}</div>
+                        <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 max-w-xs line-clamp-1">{{ item.description }}</div>
+                      </div>
                     </div>
-                    <div class="ml-4">
-                      <div class="font-medium text-gray-900 dark:text-white">{{ item.name }}</div>
-                      <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 max-w-xs line-clamp-1">{{ item.description }}</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ item.category }}</td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm">
-                  <div v-if="item.salePrice !== null">
-                    <div class="font-medium text-gray-900 dark:text-white">${{ item.salePrice.toFixed(2) }}</div>
-                    <div class="line-through text-xs text-gray-500 dark:text-gray-400">${{ item.price.toFixed(2) }}</div>
-                  </div>
-                  <div v-else class="font-medium text-gray-900 dark:text-white">${{ item.price.toFixed(2) }}</div>
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ item.preparationTime }}</td>
-                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                  <button
-                    @click="addToOrder(item)"
-                    :disabled="!item.available"
-                    class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Add
-                  </button>
-                </td>
-              </tr>
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ item.category }}</td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm">
+                    @if(item.salePrice !== null)
+                      <div class="font-medium text-gray-900 dark:text-white">${{ item.salePrice.toFixed(2) }}</div>
+                      <div class="line-through text-xs text-gray-500 dark:text-gray-400">${{ item.price.toFixed(2) }}</div>
+                    @else
+                      <div class="font-medium text-gray-900 dark:text-white">${{ item.price.toFixed(2) }}</div>
+                    @endif
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ item.preparationTime }}</td>
+                  <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                    <button
+                      @click="addToOrder(item)"
+                      :disabled="!item.available"
+                      class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Add
+                    </button>
+                  </td>
+                </tr>
+              @endforeach
             </tbody>
           </table>
         </div>
+      @endif
 
-        <!-- Current Order section (cart) -->
-        <div id="order-section" class="mt-8 bg-white shadow-sm rounded-lg overflow-hidden dark:bg-blue-gray-800">
-          <div class="receipt-container p-4">
-            <div class="receipt mx-auto max-w-sm bg-white p-4 shadow-md dark:bg-blue-gray-800">
-              <!-- Receipt header -->
-              <h1 class="logo text-center text-xl font-bold mb-3 dark:text-white">Self-Service Menu</h1>
-              <div class="address text-center mb-2 text-sm font-mono dark:text-gray-300">
-                Device #{{ tableNumber }} - Local Location
-              </div>
-              <div class="transactionDetails flex justify-between text-xs font-mono mb-2 dark:text-gray-400">
-                <div class="detail">REG#01</div>
-                <div class="detail">TRN#{{ currentOrder.id }}</div>
-                <div class="detail">DEV#{{ tableNumber }}</div>
-              </div>
-              <div class="transactionDetails text-center text-xs font-mono mb-2 dark:text-gray-400">
-                {{ new Date().toLocaleDateString() }} {{ new Date().toLocaleTimeString() }}
-              </div>
-              <div class="break text-center font-mono text-xs my-2 dark:text-gray-400">
-                *************************************
-              </div>
+      <!-- Current Order section (cart) -->
+      <div id="order-section" class="mt-8 bg-white shadow-sm rounded-lg overflow-hidden dark:bg-blue-gray-800">
+        <div class="receipt-container p-4">
+          <div class="receipt mx-auto max-w-sm bg-white p-4 shadow-md dark:bg-blue-gray-800">
+            <!-- Receipt header -->
+            <h1 class="logo text-center text-xl font-bold mb-3 dark:text-white">Self-Service Menu</h1>
+            <div class="address text-center mb-2 text-sm font-mono dark:text-gray-300">
+              Device #{{ tableNumber }} - Local Location
+            </div>
+            <div class="transactionDetails flex justify-between text-xs font-mono mb-2 dark:text-gray-400">
+              <div class="detail">REG#01</div>
+              <div class="detail">TRN#{{ currentOrder.id }}</div>
+              <div class="detail">DEV#{{ tableNumber }}</div>
+            </div>
+            <div class="transactionDetails text-center text-xs font-mono mb-2 dark:text-gray-400">
+              {{ new Date().toLocaleDateString() }} {{ new Date().toLocaleTimeString() }}
+            </div>
+            <div class="break text-center font-mono text-xs my-2 dark:text-gray-400">
+              *************************************
+            </div>
 
-              <div v-if="currentOrder.items.length === 0" class="p-6 text-center">
+            @if(currentOrder.items.length === 0)
+              <div class="p-6 text-center">
                 <div class="i-hugeicons-receipt h-12 w-12 mx-auto text-gray-400"></div>
                 <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">Your receipt is empty</h3>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 font-mono">Add items from the menu to get started.</p>
               </div>
-
-              <div v-else>
-                <!-- Receipt items -->
-                <div v-for="(item, index) in currentOrder.items" :key="index" class="transactionDetails flex justify-between text-xs font-mono my-1 dark:text-gray-300">
+            @else
+              <!-- Receipt items -->
+              @foreach(currentOrder.items as item, index)
+                <div class="transactionDetails flex justify-between text-xs font-mono my-1 dark:text-gray-300">
                   <div class="detail">{{ item.quantity }}</div>
                   <div class="detail flex-grow mx-2">{{ item.name }}</div>
                   <div class="detail">${{ (item.price * item.quantity).toFixed(2) }}</div>
                 </div>
+              @endforeach
 
-                <div v-for="(item, index) in currentOrder.items" :key="`note-${index}`" class="mt-0 mb-2">
-                  <p v-if="item.specialInstructions" class="text-xs text-gray-500 dark:text-gray-400 font-mono pl-5">
-                    {{ item.specialInstructions }}
-                  </p>
+              @foreach(currentOrder.items as item, index)
+                <div class="mt-0 mb-2">
+                  @if(item.specialInstructions)
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-mono pl-5">
+                      {{ item.specialInstructions }}
+                    </p>
+                  @endif
                 </div>
+              @endforeach
 
-                <div class="item-actions mt-2 mb-2 border-t border-dashed border-gray-200 dark:border-gray-700 pt-2">
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-xs font-mono text-gray-700 dark:text-gray-300">Edit Items:</span>
-                  </div>
-                  <div v-for="(item, index) in currentOrder.items" :key="`controls-${index}`" class="flex items-center justify-between mb-1 px-1 py-1 rounded bg-gray-50 dark:bg-blue-gray-700 text-xs">
+              <div class="item-actions mt-2 mb-2 border-t border-dashed border-gray-200 dark:border-gray-700 pt-2">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-mono text-gray-700 dark:text-gray-300">Edit Items:</span>
+                </div>
+                @foreach(currentOrder.items as item, index)
+                  <div class="flex items-center justify-between mb-1 px-1 py-1 rounded bg-gray-50 dark:bg-blue-gray-700 text-xs">
                     <div class="flex items-center">
                       <span class="font-mono">{{ item.name }}</span>
                     </div>
@@ -818,56 +842,58 @@ function scrollToOrder(): void {
                       </button>
                     </div>
                   </div>
-                </div>
+                @endforeach
+              </div>
 
-                <!-- Receipt total -->
-                <div class="break text-center font-mono text-xs my-2 dark:text-gray-400">
-                  *************************************
-                </div>
+              <!-- Receipt total -->
+              <div class="break text-center font-mono text-xs my-2 dark:text-gray-400">
+                *************************************
+              </div>
 
-                <div class="paymentDetails flex justify-between text-xs font-mono my-1 dark:text-gray-300">
-                  <div class="detail font-bold">SUBTOTAL</div>
-                  <div class="detail font-bold">${{ currentOrder.totalAmount.toFixed(2) }}</div>
-                </div>
-                <div class="paymentDetails flex justify-between text-xs font-mono my-1 dark:text-gray-300">
-                  <div class="detail">TAX</div>
-                  <div class="detail">${{ (currentOrder.totalAmount * 0.0825).toFixed(2) }}</div>
-                </div>
-                <div class="paymentDetails flex justify-between text-xs font-mono my-1 font-bold dark:text-gray-300 border-t border-dashed border-gray-200 dark:border-gray-700 pt-1">
-                  <div class="detail">TOTAL</div>
-                  <div class="detail">${{ (currentOrder.totalAmount * 1.0825).toFixed(2) }}</div>
-                </div>
+              <div class="paymentDetails flex justify-between text-xs font-mono my-1 dark:text-gray-300">
+                <div class="detail font-bold">SUBTOTAL</div>
+                <div class="detail font-bold">${{ currentOrder.totalAmount.toFixed(2) }}</div>
+              </div>
+              <div class="paymentDetails flex justify-between text-xs font-mono my-1 dark:text-gray-300">
+                <div class="detail">TAX</div>
+                <div class="detail">${{ (currentOrder.totalAmount * 0.0825).toFixed(2) }}</div>
+              </div>
+              <div class="paymentDetails flex justify-between text-xs font-mono my-1 font-bold dark:text-gray-300 border-t border-dashed border-gray-200 dark:border-gray-700 pt-1">
+                <div class="detail">TOTAL</div>
+                <div class="detail">${{ (currentOrder.totalAmount * 1.0825).toFixed(2) }}</div>
+              </div>
 
-                <div class="receiptBarcode my-4 text-center">
-                  <div class="barcode font-mono text-3xl dark:text-gray-300">
-                    |||||||||||||||||||
-                  </div>
-                  <div class="text-xs font-mono dark:text-gray-400">
-                    {{ Date.now().toString().substring(0, 12) }}
-                  </div>
+              <div class="receiptBarcode my-4 text-center">
+                <div class="barcode font-mono text-3xl dark:text-gray-300">
+                  |||||||||||||||||||
                 </div>
-
-                <div class="returnPolicy text-xs font-mono text-center mb-3 dark:text-gray-400">
-                  Thank you for your purchase!
-                </div>
-
-                <div class="mt-4">
-                  <button
-                    @click="placeOrder"
-                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
-                  >
-                    Complete Purchase
-                  </button>
+                <div class="text-xs font-mono dark:text-gray-400">
+                  {{ Date.now().toString().substring(0, 12) }}
                 </div>
               </div>
-            </div>
+
+              <div class="returnPolicy text-xs font-mono text-center mb-3 dark:text-gray-400">
+                Thank you for your purchase!
+              </div>
+
+              <div class="mt-4">
+                <button
+                  @click="placeOrder"
+                  class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
+                >
+                  Complete Purchase
+                </button>
+              </div>
+            @endif
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Special Instructions Modal -->
-    <div v-if="showSpecialInstructionsModal" class="fixed inset-0 z-10 overflow-y-auto">
+  <!-- Special Instructions Modal -->
+  @if(showSpecialInstructionsModal)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
 
@@ -916,9 +942,11 @@ function scrollToOrder(): void {
         </div>
       </div>
     </div>
+  @endif
 
-    <!-- Order Confirmation Modal -->
-    <div v-if="orderPlaced" class="fixed inset-0 z-10 overflow-y-auto">
+  <!-- Order Confirmation Modal -->
+  @if(orderPlaced)
+    <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
 
@@ -949,14 +977,15 @@ function scrollToOrder(): void {
                     *************************************
                   </div>
 
-                  <div v-for="(item, index) in orderSummary?.items || []" :key="index"
-                       class="flex justify-between text-sm text-gray-700 dark:text-gray-300 my-1">
-                    <div class="flex">
-                      <span class="mr-2">{{ item.quantity }}</span>
-                      <span>{{ item.name }}</span>
+                  @foreach(orderSummary?.items || [] as item, index)
+                    <div class="flex justify-between text-sm text-gray-700 dark:text-gray-300 my-1">
+                      <div class="flex">
+                        <span class="mr-2">{{ item.quantity }}</span>
+                        <span>{{ item.name }}</span>
+                      </div>
+                      <span>${{ (item.price * item.quantity).toFixed(2) }}</span>
                     </div>
-                    <span>${{ (item.price * item.quantity).toFixed(2) }}</span>
-                  </div>
+                  @endforeach
 
                   <div class="break text-center text-xs my-2 dark:text-gray-400">
                     *************************************
@@ -991,8 +1020,8 @@ function scrollToOrder(): void {
         </div>
       </div>
     </div>
-  </main>
-</template>
+  @endif
+</main>
 
 <style scoped>
 .receipt-container {

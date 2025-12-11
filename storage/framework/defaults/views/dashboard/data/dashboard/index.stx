@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useHead } from '@vueuse/head'
 import * as d3 from 'd3'
@@ -52,11 +52,11 @@ const relationshipColors = {
 }
 
 // Model definitions based on actual Models directory
-const models: ModelNode[] = [
+export const models: ModelNode[] = [
   {
     id: 'user',
     name: 'User',
-    emoji: '👤',
+    emoji: '',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'name', type: 'string', nullable: false },
@@ -84,7 +84,7 @@ const models: ModelNode[] = [
   {
     id: 'team',
     name: 'Team',
-    emoji: '👥',
+    emoji: '',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'name', type: 'string', nullable: false },
@@ -106,7 +106,7 @@ const models: ModelNode[] = [
   {
     id: 'post',
     name: 'Post',
-    emoji: '📝',
+    emoji: '',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'title', type: 'string', nullable: false },
@@ -124,7 +124,7 @@ const models: ModelNode[] = [
   {
     id: 'subscriber',
     name: 'Subscriber',
-    emoji: '📫',
+    emoji: '',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'email', type: 'string', nullable: false },
@@ -141,7 +141,7 @@ const models: ModelNode[] = [
   {
     id: 'subscriberEmail',
     name: 'SubscriberEmail',
-    emoji: '✉️',
+    emoji: '',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'subscriber_id', type: 'bigInteger', nullable: false },
@@ -157,7 +157,7 @@ const models: ModelNode[] = [
   {
     id: 'accessToken',
     name: 'AccessToken',
-    emoji: '🔑',
+    emoji: '',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'token', type: 'string', nullable: false },
@@ -174,7 +174,7 @@ const models: ModelNode[] = [
   {
     id: 'deployment',
     name: 'Deployment',
-    emoji: '🚀',
+    emoji: '',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'status', type: 'string', nullable: false },
@@ -191,7 +191,7 @@ const models: ModelNode[] = [
   {
     id: 'project',
     name: 'Project',
-    emoji: '📂',
+    emoji: '',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'name', type: 'string', nullable: false },
@@ -208,7 +208,7 @@ const models: ModelNode[] = [
   {
     id: 'release',
     name: 'Release',
-    emoji: '📦',
+    emoji: '',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'version', type: 'string', nullable: false },
@@ -224,7 +224,7 @@ const models: ModelNode[] = [
   {
     id: 'order',
     name: 'Order',
-    emoji: '🛒',
+    emoji: '',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'status', type: 'string', nullable: false },
@@ -242,7 +242,7 @@ const models: ModelNode[] = [
   {
     id: 'orderItem',
     name: 'OrderItem',
-    emoji: '📋',
+    emoji: '',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'quantity', type: 'integer', nullable: false },
@@ -257,7 +257,7 @@ const models: ModelNode[] = [
 ]
 
 // Define relationships between models
-const relationships: RelationshipLink[] = [
+export const relationships: RelationshipLink[] = [
   // User relationships
   { source: 'user', target: 'team', type: 'belongsToMany' },
   { source: 'user', target: 'accessToken', type: 'hasMany' },
@@ -304,17 +304,17 @@ const relationships: RelationshipLink[] = [
 ]
 
 // Visualization state
-const diagramContainer = ref<HTMLElement | null>(null)
+export const diagramContainer = ref<HTMLElement | null>(null)
 let simulation: d3.Simulation<ModelNode, undefined> | null = null
 
 // Add format state
-const downloadFormat = ref<'svg' | 'png'>('svg')
-const isDownloading = ref(false)
+export const downloadFormat = ref<'svg' | 'png'>('svg')
+export const isDownloading = ref(false)
 
 // Add filter and search functionality
-const searchQuery = ref('')
-const selectedModelType = ref('All')
-const modelTypes = computed(() => {
+export const searchQuery = ref('')
+export const selectedModelType = ref('All')
+export const modelTypes = computed(() => {
   const types = ['All']
   const uniqueColors = new Set(models.map(model => model.color))
   uniqueColors.forEach(color => {
@@ -329,7 +329,7 @@ const modelTypes = computed(() => {
 })
 
 // Filter models based on search and type
-const filteredModels = computed(() => {
+export const filteredModels = computed(() => {
   return models.filter(model => {
     const matchesSearch = searchQuery.value === '' ||
       model.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
@@ -359,10 +359,10 @@ function getModelTypeByColor(color: string): string {
 }
 
 // Selected model for details panel
-const selectedModel = ref<ModelNode | null>(null)
+export const selectedModel = ref<ModelNode | null>(null)
 
 // Model statistics
-const modelStats = computed(() => {
+export const modelStats = computed(() => {
   return {
     totalModels: models.length,
     totalRelationships: relationships.length,
@@ -377,7 +377,7 @@ const modelStats = computed(() => {
 })
 
 // Update download function to support both formats
-const downloadDiagram = async () => {
+export const downloadDiagram = async () => {
   if (!diagramContainer.value) {
     console.error('No diagram container found')
     return
@@ -467,7 +467,7 @@ const downloadDiagram = async () => {
 }
 
 // Create model diagram
-const createDiagram = () => {
+export const createDiagram = () => {
   if (!diagramContainer.value) return
 
   const width = diagramContainer.value.clientWidth
@@ -1099,109 +1099,114 @@ onUnmounted(() => {
 })
 </script>
 
-<template>
-  <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
-    <div class="px-4 lg:px-8 sm:px-6">
-      <!-- Stats Cards -->
-      <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Models</dt>
-          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelStats.totalModels }}</dd>
-          <dd class="mt-2 flex items-center text-sm text-blue-600 dark:text-blue-400">
-            <div class="i-hugeicons-database h-4 w-4 mr-1"></div>
-            <span>Application entities</span>
-          </dd>
-        </div>
-
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Properties</dt>
-          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelStats.totalProperties }}</dd>
-          <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-            <div class="i-hugeicons-check-list h-4 w-4 mr-1"></div>
-            <span>Model attributes</span>
-          </dd>
-        </div>
-
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Relationships</dt>
-          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelStats.totalRelationships }}</dd>
-          <dd class="mt-2 flex items-center text-sm text-purple-600 dark:text-purple-400">
-            <div class="i-hugeicons-link-01 h-4 w-4 mr-1"></div>
-            <span>Model connections</span>
-          </dd>
-        </div>
-
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Model Categories</dt>
-          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelTypes.length - 1 }}</dd>
-          <dd class="mt-2 flex items-center text-sm text-orange-600 dark:text-orange-400">
-            <div class="i-hugeicons-tag-01 h-4 w-4 mr-1"></div>
-            <span>Functional groups</span>
-          </dd>
-        </div>
-      </dl>
-
-      <!-- Search and Filter Controls -->
-      <div class="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div class="relative w-full sm:w-64">
-          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <div class="i-hugeicons-search-01 w-5 h-5 text-gray-400"></div>
-          </div>
-          <input
-            v-model="searchQuery"
-            type="text"
-            class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-blue-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 dark:text-white"
-            placeholder="Search models or properties..."
-          />
-        </div>
-
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <label for="model-type" class="text-sm font-medium text-gray-700 dark:text-gray-300">Filter by type:</label>
-          <select
-            id="model-type"
-            v-model="selectedModelType"
-            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700"
-          >
-            <option v-for="type in modelTypes" :key="type" :value="type">{{ type }}</option>
-          </select>
-        </div>
+<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+  <div class="px-4 lg:px-8 sm:px-6">
+    <!-- Stats Cards -->
+    <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Models</dt>
+        <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelStats.totalModels }}</dd>
+        <dd class="mt-2 flex items-center text-sm text-blue-600 dark:text-blue-400">
+          <div class="i-hugeicons-database h-4 w-4 mr-1"></div>
+          <span>Application entities</span>
+        </dd>
       </div>
 
-      <!-- Model Diagram -->
+      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Properties</dt>
+        <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelStats.totalProperties }}</dd>
+        <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+          <div class="i-hugeicons-check-list h-4 w-4 mr-1"></div>
+          <span>Model attributes</span>
+        </dd>
+      </div>
+
+      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Relationships</dt>
+        <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelStats.totalRelationships }}</dd>
+        <dd class="mt-2 flex items-center text-sm text-purple-600 dark:text-purple-400">
+          <div class="i-hugeicons-link-01 h-4 w-4 mr-1"></div>
+          <span>Model connections</span>
+        </dd>
+      </div>
+
+      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Model Categories</dt>
+        <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelTypes.length - 1 }}</dd>
+        <dd class="mt-2 flex items-center text-sm text-orange-600 dark:text-orange-400">
+          <div class="i-hugeicons-tag-01 h-4 w-4 mr-1"></div>
+          <span>Functional groups</span>
+        </dd>
+      </div>
+    </dl>
+
+    <!-- Search and Filter Controls -->
+    <div class="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
+      <div class="relative w-full sm:w-64">
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+          <div class="i-hugeicons-search-01 w-5 h-5 text-gray-400"></div>
+        </div>
+        <input
+          v-model="searchQuery"
+          type="text"
+          class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-blue-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 dark:text-white"
+          placeholder="Search models or properties..."
+        />
+      </div>
+
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <label for="model-type" class="text-sm font-medium text-gray-700 dark:text-gray-300">Filter by type:</label>
+        <select
+          id="model-type"
+          v-model="selectedModelType"
+          class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700"
+        >
+          @foreach(modelTypes as type)
+            <option :value="type">{{ type }}</option>
+          @endforeach
+        </select>
+      </div>
+    </div>
+
+    <!-- Model Diagram -->
+    <div class="mb-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <h4 class="text-base font-medium text-gray-900 dark:text-white">Entity Relationship Diagram</h4>
+            <span class="text-sm text-gray-500 dark:text-gray-400">
+              (Drag nodes to rearrange)
+            </span>
+          </div>
+          <div class="inline-flex rounded-md shadow-sm">
+            <select
+              v-model="downloadFormat"
+              class="h-9 text-sm border-0 rounded-l-md bg-white dark:bg-blue-gray-600 py-1.5 pl-3 pr-7 text-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+            >
+              <option value="svg">SVG</option>
+              <option value="png">PNG</option>
+            </select>
+            <button
+              @click="downloadDiagram"
+              :disabled="isDownloading"
+              class="relative inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-r-md shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              @if(isDownloading)
+                <div class="i-hugeicons-arrow-path w-4 h-4 animate-spin" />
+              @else
+                <div class="i-hugeicons-cloud-download w-4 h-4" />
+              @endif
+              Download
+            </button>
+          </div>
+        </div>
+        <div ref="diagramContainer" class="w-full h-[1200px] bg-gray-50 dark:bg-blue-gray-800 rounded-lg"></div>
+      </div>
+    </div>
+
+    <!-- Selected Model Details Panel -->
+    @if(selectedModel)
       <div class="mb-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-              <h4 class="text-base font-medium text-gray-900 dark:text-white">Entity Relationship Diagram</h4>
-              <span class="text-sm text-gray-500 dark:text-gray-400">
-                (Drag nodes to rearrange)
-              </span>
-            </div>
-            <div class="inline-flex rounded-md shadow-sm">
-              <select
-                v-model="downloadFormat"
-                class="h-9 text-sm border-0 rounded-l-md bg-white dark:bg-blue-gray-600 py-1.5 pl-3 pr-7 text-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
-              >
-                <option value="svg">SVG</option>
-                <option value="png">PNG</option>
-              </select>
-              <button
-                @click="downloadDiagram"
-                :disabled="isDownloading"
-                class="relative inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-r-md shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              >
-                <div v-if="isDownloading" class="i-hugeicons-arrow-path w-4 h-4 animate-spin" />
-                <div v-else class="i-hugeicons-cloud-download w-4 h-4" />
-                Download
-              </button>
-            </div>
-          </div>
-          <div ref="diagramContainer" class="w-full h-[1200px] bg-gray-50 dark:bg-blue-gray-800 rounded-lg"></div>
-        </div>
-      </div>
-
-      <!-- Selected Model Details Panel -->
-      <div v-if="selectedModel" class="mb-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
         <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -1231,15 +1236,17 @@ onUnmounted(() => {
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    <tr v-for="prop in selectedModel.properties" :key="prop.name">
-                      <td class="px-3 py-2 whitespace-nowrap text-sm font-medium" :class="prop.name === 'id' ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-900 dark:text-white'">{{ prop.name }}</td>
-                      <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ prop.type }}</td>
-                      <td class="px-3 py-2 whitespace-nowrap text-sm">
-                        <span :class="prop.nullable ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'">
-                          {{ prop.nullable ? 'Yes' : 'No' }}
-                        </span>
-                      </td>
-                    </tr>
+                    @foreach(selectedModel.properties as prop)
+                      <tr>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm font-medium" :class="prop.name === 'id' ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-900 dark:text-white'">{{ prop.name }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ prop.type }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm">
+                          <span :class="prop.nullable ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'">
+                            {{ prop.nullable ? 'Yes' : 'No' }}
+                          </span>
+                        </td>
+                      </tr>
+                    @endforeach
                   </tbody>
                 </table>
               </div>
@@ -1257,19 +1264,21 @@ onUnmounted(() => {
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    <tr v-for="(rel, index) in selectedModel.relationships" :key="index">
-                      <td class="px-3 py-2 whitespace-nowrap text-sm font-medium">
-                        <span :class="{
-                          'text-red-600 dark:text-red-400': rel.type === 'belongsTo',
-                          'text-blue-600 dark:text-blue-400': rel.type === 'hasMany',
-                          'text-green-600 dark:text-green-400': rel.type === 'hasOne',
-                          'text-purple-600 dark:text-purple-400': rel.type === 'belongsToMany'
-                        }">
-                          {{ rel.type }}
-                        </span>
-                      </td>
-                      <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ rel.model }}</td>
-                    </tr>
+                    @foreach(selectedModel.relationships as rel, index)
+                      <tr>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm font-medium">
+                          <span :class="{
+                            'text-red-600 dark:text-red-400': rel.type === 'belongsTo',
+                            'text-blue-600 dark:text-blue-400': rel.type === 'hasMany',
+                            'text-green-600 dark:text-green-400': rel.type === 'hasOne',
+                            'text-purple-600 dark:text-purple-400': rel.type === 'belongsToMany'
+                          }">
+                            {{ rel.type }}
+                          </span>
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ rel.model }}</td>
+                      </tr>
+                    @endforeach
                   </tbody>
                 </table>
               </div>
@@ -1277,6 +1286,6 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-    </div>
+    @endif
   </div>
-</template>
+</div>
