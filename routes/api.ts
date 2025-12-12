@@ -31,6 +31,19 @@ route.get('/install', 'Actions/InstallAction')
 route.post('/ai/ask', 'Actions/AI/AskAction')
 route.post('/ai/summary', 'Actions/AI/SummaryAction')
 
+// Buddy - Voice AI Code Assistant routes
+route.group({ prefix: '/buddy' }, async () => {
+  route.get('/state', 'Actions/Buddy/BuddyStateAction')
+  route.post('/repo', 'Actions/Buddy/BuddyRepoOpenAction')
+  route.post('/process', 'Actions/Buddy/BuddyProcessAction')
+  route.post('/commit', 'Actions/Buddy/BuddyCommitAction')
+  route.post('/push', 'Actions/Buddy/BuddyPushAction')
+  route.get('/settings', 'Actions/Buddy/BuddySettingsAction')
+  route.post('/settings', 'Actions/Buddy/BuddySettingsUpdateAction')
+  route.post('/github/connect', 'Actions/Buddy/BuddyGitHubConnectAction')
+  route.post('/github/disconnect', 'Actions/Buddy/BuddyGitHubDisconnectAction')
+})
+
 route.group({ prefix: '/payments' }, async () => {
   route.get('/fetch-customer/{id}', 'Actions/Payment/FetchPaymentCustomerAction')
   route.get('/fetch-transaction-history/{id}', 'Actions/Payment/FetchTransactionHistoryAction')
