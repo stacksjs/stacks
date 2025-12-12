@@ -308,7 +308,6 @@ export async function doUpdateCoupon(couponData: NewCoupon): Promise<void> {
   }
 
   try {
-    // TODO: Implement actual API call to update coupon
     await updateCoupon(couponId, couponData)
     closeFormModal()
   } catch (error) {

@@ -20,6 +20,7 @@ import {
   Filler,
 } from 'chart.js'
 import { useGiftCards } from '../../../../functions/commerce/gift-cards'
+import { useAuth } from '../../../../functions/auth'
 
 ChartJS.register(
   CategoryScale,
@@ -39,6 +40,7 @@ useHead({
 
 // Get gift cards data and functions from the composable
 const { giftCards, createGiftCard, fetchGiftCards } = useGiftCards()
+const { user } = useAuth()
 
 // Fetch gift cards on component mount
 onMounted(async () => {
@@ -276,7 +278,7 @@ export async function addGiftCard() {
     code: newGiftCard.value.code,
     initial_balance: newGiftCard.value.initialValue,
     current_balance: newGiftCard.value.initialValue,
-    customer_id: 1, // TODO: Get from auth
+    customer_id: user.value?.id || 1,
     status: 'Active',
     recipient_email: newGiftCard.value.email,
     recipient_name: newGiftCard.value.recipient,

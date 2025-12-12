@@ -163,6 +163,7 @@ declare global {
   const useCurrentElement: typeof import('@vueuse/core').useCurrentElement
   const useCycleList: typeof import('@vueuse/core').useCycleList
   const useDark: typeof import('@vueuse/core').useDark
+  const useDashboard: typeof import('../../../../defaults/functions/dashboard').useDashboard
   const useDateFormat: typeof import('@vueuse/core').useDateFormat
   const useDebounce: typeof import('@vueuse/core').useDebounce
   const useDebounceFn: typeof import('@vueuse/core').useDebounceFn
@@ -324,6 +325,9 @@ declare global {
   // @ts-ignore
   export type { AuthComposable } from '../../../../defaults/functions/auth'
   import('../../../../defaults/functions/auth')
+  // @ts-ignore
+  export type { DashboardStats, ActivityItem, SystemHealthItem } from '../../../../defaults/functions/dashboard'
+  import('../../../../defaults/functions/dashboard')
 }
 
 // for vue template auto import
@@ -488,6 +492,7 @@ declare module 'vue' {
     readonly useCurrentElement: UnwrapRef<typeof import('@vueuse/core')['useCurrentElement']>
     readonly useCycleList: UnwrapRef<typeof import('@vueuse/core')['useCycleList']>
     readonly useDark: UnwrapRef<typeof import('@vueuse/core')['useDark']>
+    readonly useDashboard: UnwrapRef<typeof import('../../../../defaults/functions/dashboard')['useDashboard']>
     readonly useDateFormat: UnwrapRef<typeof import('@vueuse/core')['useDateFormat']>
     readonly useDebounce: UnwrapRef<typeof import('@vueuse/core')['useDebounce']>
     readonly useDebounceFn: UnwrapRef<typeof import('@vueuse/core')['useDebounceFn']>

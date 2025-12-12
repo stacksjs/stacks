@@ -669,12 +669,26 @@ const saveWorkerConfig = async () => {
   saveError.value = null
 
   try {
-    // TODO: Implement actual API call to save worker config
-    await new Promise(resolve => setTimeout(resolve, 1000)) // Simulated API call
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3008'
+    const response = await fetch(`${baseUrl}/api/cloud/config`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        worker: workerConfig.value,
+        cloud: cloudConfig.value,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to save configuration')
+    }
+
     initialWorkerConfig.value = { ...workerConfig.value }
     initialCloudConfig.value = { ...cloudConfig.value }
     hasUnsavedChanges.value = false
-    // Show success notification here
   } catch (error) {
     saveError.value = error instanceof Error ? error.message : 'Failed to save worker configuration'
   } finally {

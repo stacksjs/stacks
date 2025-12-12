@@ -1,4 +1,17 @@
 <script>
+import { onMounted, watch } from 'vue'
+import { useDashboard } from '../../functions/dashboard'
+
+// Dashboard data from composable
+const {
+  stats,
+  recentActivity,
+  systemHealth,
+  isLoading,
+  fetchAll,
+  fetchDashboardStats,
+} = useDashboard()
+
 // Time range filter
 export const timeRange = '7d'
 const timeRangeOptions = [
@@ -10,22 +23,7 @@ const timeRangeOptions = [
   { value: 'all', label: 'All time' },
 ]
 
-// Sample data for the dashboard
-const stats = [
-  { title: 'Total Users', value: '8,294', trend: 12.5, trendLabel: 'vs last period', icon: 'i-hugeicons-user-group', iconBg: 'primary' },
-  { title: 'Active Projects', value: '124', trend: 8.2, trendLabel: 'vs last period', icon: 'i-hugeicons-folder-02', iconBg: 'success' },
-  { title: 'Cloud Uptime', value: '99.98%', trend: 0.1, trendLabel: 'vs last period', icon: 'i-hugeicons-cloud', iconBg: 'info' },
-  { title: 'Response Time', value: '42ms', trend: -3.7, trendLabel: 'faster than before', icon: 'i-hugeicons-time-02', iconBg: 'warning' },
-]
-
-const recentActivity = [
-  { id: 1, type: 'deployment', title: 'Production deployment successful', time: '10 minutes ago', status: 'success' },
-  { id: 2, type: 'blog', title: 'New blog post published', time: '1 hour ago', status: 'success' },
-  { id: 3, type: 'server', title: 'Server maintenance completed', time: '3 hours ago', status: 'success' },
-  { id: 4, type: 'error', title: 'API rate limit exceeded', time: '5 hours ago', status: 'error' },
-  { id: 5, type: 'commerce', title: 'New order received', time: '12 hours ago', status: 'success' },
-]
-
+// Quick links (static navigation)
 const quickLinks = [
   { name: 'Blog', description: 'Manage your blog posts and categories', icon: 'i-hugeicons-document-validation', href: '/content/dashboard', color: 'bg-blue-500' },
   { name: 'Commerce', description: 'View orders and manage products', icon: 'i-hugeicons-shopping-cart-02', href: '/commerce/dashboard', color: 'bg-green-500' },
@@ -33,15 +31,15 @@ const quickLinks = [
   { name: 'Settings', description: 'Configure your application settings', icon: 'i-hugeicons-settings-01', href: '/settings', color: 'bg-neutral-500' },
 ]
 
-// Sample data for system health
-const systemHealth = [
-  { name: 'API', status: 'healthy', latency: '38ms', uptime: '99.99%' },
-  { name: 'Database', status: 'healthy', latency: '45ms', uptime: '99.98%' },
-  { name: 'Storage', status: 'healthy', latency: '22ms', uptime: '100%' },
-  { name: 'Cache', status: 'healthy', latency: '12ms', uptime: '99.95%' },
-  { name: 'Queue', status: 'degraded', latency: '120ms', uptime: '99.90%' },
-  { name: 'Notifications', status: 'healthy', latency: '12ms', uptime: '99.95%' },
-]
+// Fetch dashboard data on mount
+onMounted(() => {
+  fetchAll(timeRange)
+})
+
+// Watch for time range changes
+watch(() => timeRange, (newRange) => {
+  fetchDashboardStats(newRange)
+})
 
 // Get icon based on activity type
 function getActivityIcon(type) {
