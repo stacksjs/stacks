@@ -164,9 +164,10 @@ export class StacksRouter implements RouterInterface {
   }
 
   private getCacheBuster(): string {
-    if (!isProduction) {
-      return `?t=${globalThis.__cacheBuster}`
-    }
+    // NOTE: Bun doesn't support query strings in dynamic imports like browsers/Vite do.
+    // The cache buster was causing ENOENT errors because Bun treats the query string
+    // as part of the filename. In development, Bun's loader already handles HMR differently.
+    // For now, we disable the cache buster until a Bun-compatible solution is found.
     return ''
   }
 
@@ -725,9 +726,7 @@ export class StacksRouter implements RouterInterface {
         await customValidate(actionModule.default.validations, requestInstance.all())
       }
 
-      log.debug('Calling action handle() method')
       const result = await actionModule.default.handle(requestInstance)
-      log.debug('Action returned:', typeof result, result)
       return this.formatHandlerResult(result)
     }
     catch (error: any) {
@@ -747,10 +746,7 @@ export class StacksRouter implements RouterInterface {
    * Format handler result to Response
    */
   private formatHandlerResult(result: any): Response {
-    log.debug('formatHandlerResult called with:', typeof result, result instanceof Response ? 'Response' : JSON.stringify(result).slice(0, 200))
-
     if (result instanceof Response) {
-      log.debug('Returning existing Response')
       return result
     }
 
