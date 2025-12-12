@@ -39,6 +39,6 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*",
-    "ts-mocker": "^0.1.4"
+    "ts-mocker": "^0.1.5"
   }
 }

@@ -80,8 +80,8 @@
     "!storage/framework/cache/**"
   ],
   "devDependencies": {
-    "buddy-bot": "^0.9.11",
+    "buddy-bot": "^0.9.12",
     "ts-pantry": "workspace:*",
-    "typescript": "5.9.2"
+    "typescript": "5.9.3"
   }
 }
