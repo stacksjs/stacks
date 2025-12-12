@@ -36,7 +36,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.911.0"
+    "@aws-sdk/client-ses": "^3.948.0"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
@@ -44,7 +44,7 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "aws-sdk": "^2.1692.0",
+    "aws-sdk": "^2.1693.0",
     "vue-email": "^0.8.11"
   }
 }
