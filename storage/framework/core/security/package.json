@@ -35,7 +35,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "ts-security-crypto": "link:ts-security-crypto"
+    "ts-security-crypto": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",

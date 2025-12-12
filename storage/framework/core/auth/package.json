@@ -35,7 +35,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "ts-auth": "link:ts-auth"
+    "ts-auth": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",

@@ -19,6 +19,6 @@
     "@vueuse/head": "^2.0.0"
   },
   "devDependencies": {
-    "ts-md": "link:ts-md"
+    "ts-md": "workspace:*"
   }
 }

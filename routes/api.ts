@@ -290,6 +290,12 @@ route.group({ prefix: '/queries' }, async () => {
 
 route.get('/me', 'Actions/Auth/AuthUserAction').middleware('auth')
 
+// Dashboard routes
+route.group({ prefix: '/dashboard' }, async () => {
+  route.get('/stats', 'Actions/Dashboard/DashboardStatsAction')
+  route.get('/activity', 'Actions/Dashboard/DashboardActivityAction')
+})
+
 // Error Tracking / Monitoring routes
 route.group({ prefix: '/monitoring' }, async () => {
   // Errors

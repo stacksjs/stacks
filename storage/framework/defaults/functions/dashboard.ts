@@ -63,7 +63,7 @@ export function useDashboard() {
     error.value = null
 
     try {
-      const response = await fetch(`${baseUrl}/api/dashboard/stats?range=${timeRange}`, {
+      const response = await fetch(`${baseUrl}/dashboard/stats?range=${timeRange}`, {
         headers: {
           'Accept': 'application/json',
         },
@@ -83,7 +83,7 @@ export function useDashboard() {
 
   async function fetchRecentActivity() {
     try {
-      const response = await fetch(`${baseUrl}/api/dashboard/activity`, {
+      const response = await fetch(`${baseUrl}/dashboard/activity`, {
         headers: {
           'Accept': 'application/json',
         },
@@ -100,7 +100,7 @@ export function useDashboard() {
 
   async function fetchSystemHealth() {
     try {
-      const response = await fetch(`${baseUrl}/api/health`, {
+      const response = await fetch(`${baseUrl}/health`, {
         headers: {
           'Accept': 'application/json',
         },

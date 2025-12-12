@@ -11,6 +11,6 @@
     }
   },
   "dependencies": {
-    "ts-cloud": "link:ts-cloud"
+    "ts-cloud": "workspace:*"
   }
 }

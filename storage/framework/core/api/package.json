@@ -45,6 +45,6 @@
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "ts-open-api": "link:ts-open-api"
+    "ts-open-api": "workspace:*"
   }
 }
