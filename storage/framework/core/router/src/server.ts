@@ -102,7 +102,7 @@ export interface ServeOptions {
  */
 export async function serve(options: ServeOptions = {}): Promise<Server> {
   const port = options.port || Number(process.env.PORT) || 3000
-  const hostname = options.host || process.env.HOST || '0.0.0.0'
+  const hostname = options.host || process.env.HOST || '127.0.0.1'
   const staticFiles = options.staticFiles ?? true
   const staticCacheMaxAge = options.staticCacheMaxAge ?? 31536000
   const staticCors = options.staticCors ?? true
@@ -178,6 +178,19 @@ interface StaticFileOptions {
 }
 
 /**
+ * Check if a path is a regular file (not a directory, socket, symlink, etc.)
+ */
+function isRegularFile(filePath: string): boolean {
+  try {
+    const stat = fs.statSync(filePath)
+    return stat.isFile()
+  }
+  catch {
+    return false
+  }
+}
+
+/**
  * Serve a static file if it exists
  */
 async function serveStaticFile(
@@ -199,14 +212,14 @@ async function serveStaticFile(
   // Try public directory first (compiled assets)
   if (pathname.startsWith('/assets/')) {
     const publicPath = path.publicPath(pathname.slice(1)) // Remove leading /
-    if (fs.existsSync(publicPath)) {
+    if (isRegularFile(publicPath)) {
       const file = Bun.file(publicPath)
       return new Response(file, { headers })
     }
 
     // Try resources/assets (source assets - CSS, JS, etc.)
     const assetsPath = path.resourcesPath(pathname.slice(1))
-    if (fs.existsSync(assetsPath)) {
+    if (isRegularFile(assetsPath)) {
       const file = Bun.file(assetsPath)
       return new Response(file, { headers })
     }
@@ -214,7 +227,7 @@ async function serveStaticFile(
 
   // Try public directory for other static files
   const publicFilePath = path.publicPath(pathname.slice(1))
-  if (fs.existsSync(publicFilePath)) {
+  if (isRegularFile(publicFilePath)) {
     const file = Bun.file(publicFilePath)
     return new Response(file, { headers })
   }

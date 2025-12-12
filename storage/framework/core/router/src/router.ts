@@ -633,8 +633,10 @@ export class StacksRouter implements RouterInterface {
           return Response.json(result)
         }
 
-        // Primitive types
-        return new Response(String(result))
+        // Primitive types (string, number, boolean)
+        return new Response(String(result), {
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+        })
       }
 
       // Promise (lazy-loaded module)
@@ -764,7 +766,9 @@ export class StacksRouter implements RouterInterface {
     }
 
     log.debug('Creating Response from string')
-    return new Response(String(result))
+    return new Response(String(result), {
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    })
   }
 
   // ============================================================================

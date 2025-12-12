@@ -11,6 +11,7 @@ import { route } from '@stacksjs/router'
 route.get('/foo/bar/{id}', () => 'hello world, foo bar') // $API_URL/hello/world
 route.get('/', () => 'hello world') // $API_URL
 route.get('/hello/world', () => 'hello world, buddy') // $API_URL/hello/world
+route.get('/json', () => ({ message: 'Hello JSON!', status: 'ok', timestamp: Date.now() }))
 
 // Email subscription endpoint
 route.post('/api/email/subscribe', 'Actions/SubscriberEmailAction')
