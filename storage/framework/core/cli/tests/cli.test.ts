@@ -130,7 +130,7 @@ describe('@stacksjs/cli', () => {
   describe('runCommand', () => {
     it('runs a command', async () => {
       const result = await runCommand('echo test')
-      expect(result.isOk()).toBe(true)
+      expect(result.isOk).toBe(true)
       expect(mockExec).toHaveBeenCalledWith('echo test')
     })
   })
@@ -147,7 +147,7 @@ describe('@stacksjs/cli', () => {
     it('runs multiple commands', async () => {
       const results = await runCommands(['echo test1', 'echo test2'])
       expect(results.length).toBe(2)
-      expect(results.every(r => r.isOk())).toBe(true)
+      expect(results.every(r => r.isOk)).toBe(true)
       expect(mockExec).toHaveBeenCalledTimes(3)
     })
   })
@@ -200,7 +200,7 @@ describe('@stacksjs/cli', () => {
   describe('exec', () => {
     it('executes a command', async () => {
       const result = await exec('echo test')
-      expect(result.isOk()).toBe(true)
+      expect(result.isOk).toBe(true)
       expect(mockExec).toHaveBeenCalledWith('echo test')
     })
   })

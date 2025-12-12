@@ -68,7 +68,7 @@ if (!options.domain) {
 
 const result = purchaseDomain(options.domain, options)
 
-if (result.isErr()) {
+if (result.isErr) {
   handleError(result.error)
   process.exit(ExitCode.FatalError)
 }

@@ -15,7 +15,7 @@ import { italic, log } from './'
  * ```ts
  * const result = await exec('ls')
  *
- * if (result.isErr())
+ * if (result.isErr)
  *   console.error(result.error)
  * else
  *   console.log(result)

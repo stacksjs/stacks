@@ -27,7 +27,7 @@ export function release(buddy: CLI): void {
       const startTime = await intro('buddy release')
       const result = await runAction(Action.Release, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         log.error('Failed to release', result.error)
         process.exit(ExitCode.FatalError)
       }

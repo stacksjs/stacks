@@ -14,7 +14,7 @@ const result = await runCommand('bun install', {
   cwd: projectPath(),
 })
 
-if (result.isErr()) {
+if (result.isErr) {
   handleError(result.error)
   process.exit(ExitCode.FatalError)
 }

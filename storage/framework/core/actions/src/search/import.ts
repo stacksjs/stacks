@@ -9,7 +9,7 @@ const modelOption = options.model as string
 
 const result = await importModelDocuments(modelOption)
 
-if (result?.isErr()) {
+if (result?.isErr) {
   console.error(result.error)
   log.error('Import to search engine failed', result.error)
 }

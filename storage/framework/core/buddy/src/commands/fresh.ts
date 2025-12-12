@@ -39,7 +39,7 @@ export function fresh(buddy: CLI): void {
         stdout: 'inherit',
       })
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running `buddy fresh`, there was an issue',
           { startTime: perf, useSeconds: true },

@@ -230,7 +230,7 @@ export class Schedule implements UntimedSchedule {
         log.info(`Executing command: ${cmd}`)
         const result = await runCommand(cmd)
 
-        if (result.isErr()) {
+        if (result.isErr) {
           log.error(result.error)
           throw result.error
         }

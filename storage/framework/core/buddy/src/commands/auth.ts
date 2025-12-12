@@ -22,7 +22,7 @@ export function auth(buddy: CLI): void {
       const perf = await intro('buddy auth:token')
       const result = await runAction(Action.CreatePersonalAccessClient, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While creating the personal access client token, there was an issue',
           { startTime: perf, useSeconds: true },

@@ -66,7 +66,7 @@ async function main() {
       log.info('Generating application key...')
       const result = await runAction(Action.KeyGenerate)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         log.error('Failed to set random application key.', result.error)
         process.exit()
       }

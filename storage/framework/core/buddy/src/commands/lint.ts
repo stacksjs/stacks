@@ -40,7 +40,7 @@ export function lint(buddy: CLI): void {
       log.info('Fixing lint errors...')
       const result = await runAction(Action.LintFix, { cwd: path.projectPath(), ...options })
 
-      if (result.isErr()) {
+      if (result.isErr) {
         log.error('There was an error lint fixing your code.', result.error)
         process.exit()
       }

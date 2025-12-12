@@ -47,7 +47,7 @@ export function search(buddy: CLI): void {
       const perf = await intro(introString)
       const result = await runAction(actionString, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the stripe:setup command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -77,7 +77,7 @@ export function search(buddy: CLI): void {
       const perf = await intro('search-engine:settings')
       const result = await runAction(Action.SearchEngineListSettings, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the stripe:setup command, there was an issue',
           { startTime: perf, useSeconds: true },

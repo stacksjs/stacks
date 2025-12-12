@@ -17,7 +17,7 @@ log.info('Upgrading `stacks`...')
 // ensure the latest binary is generated
 const result = await runCommand('bun compile.ts', { cwd: path.buddyPath() })
 
-if (result.isErr()) {
+if (result.isErr) {
   log.error('There was an error compiling the binary', result.error)
   process.exit()
 }

@@ -294,7 +294,11 @@ route.get('/me', 'Actions/Auth/AuthUserAction').middleware('auth')
 route.group({ prefix: '/dashboard' }, async () => {
   route.get('/stats', 'Actions/Dashboard/DashboardStatsAction')
   route.get('/activity', 'Actions/Dashboard/DashboardActivityAction')
+  route.get('/health', 'Actions/Dashboard/DashboardHealthAction')
 })
+
+// Direct test route without action resolution
+route.get('/test/direct', () => ({ message: 'Direct route works!' }))
 
 // Error Tracking / Monitoring routes
 route.group({ prefix: '/monitoring' }, async () => {

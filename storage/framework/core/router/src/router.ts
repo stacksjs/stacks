@@ -192,8 +192,11 @@ export class StacksRouter implements RouterInterface {
     uri: string,
     callback: StacksRoute['callback'] | string,
     statusCode: StatusCode,
+    explicitPrefix?: string,
   ): Promise<this> {
-    const fullUri = this._groupPrefix ? `${this._groupPrefix}${uri}` : uri
+    // Use explicit prefix if provided, otherwise use current group prefix
+    const prefix = explicitPrefix !== undefined ? explicitPrefix : this._groupPrefix
+    const fullUri = prefix ? `${prefix}${uri}` : uri
     const name = fullUri.replace(/\//g, '.').replace(/\{/g, '').replace(/\}/g, '').replace(/^\./, '')
     const pattern = new RegExp(
       `^${fullUri.replace(/\{[a-z]+\}/gi, () => '([a-zA-Z0-9-]+)')}$`,
@@ -250,6 +253,7 @@ export class StacksRouter implements RouterInterface {
 
   /**
    * Synchronous wrapper for route registration (maintains chaining API)
+   * Captures the current group prefix at call time for async safety
    */
   private addRoute(
     method: StacksRoute['method'],
@@ -257,7 +261,9 @@ export class StacksRouter implements RouterInterface {
     callback: StacksRoute['callback'] | string,
     statusCode: StatusCode,
   ): this {
-    const promise = this.addRouteAsync(method, uri, callback, statusCode)
+    // Capture the current prefix at call time to handle async groups correctly
+    const capturedPrefix = this._groupPrefix
+    const promise = this.addRouteAsync(method, uri, callback, statusCode, capturedPrefix)
     this._pendingRoutes.push(promise)
     return this
   }
@@ -445,6 +451,9 @@ export class StacksRouter implements RouterInterface {
   /**
    * Create a route group with shared attributes
    * Supports both sync and async callbacks
+   *
+   * The prefix is captured synchronously when routes are registered via addRoute(),
+   * so async callbacks work correctly.
    */
   group(options: string | RouteGroupOptions, callback?: (() => void) | (() => Promise<void>)): this {
     // Handle string prefix shorthand
@@ -470,43 +479,26 @@ export class StacksRouter implements RouterInterface {
     // Save current state
     const previousPrefix = this._groupPrefix
     const previousMiddleware = [...this._groupMiddleware]
-    const previousRoutes = this._stacksRoutes
 
-    // Set new group state
+    // Set new group state - routes registered synchronously within cb() will
+    // capture this prefix via addRoute() before it changes
     const formattedPrefix = prefix ? (prefix.startsWith('/') ? prefix : `/${prefix}`) : ''
     this._groupPrefix = previousPrefix + formattedPrefix
     this._groupMiddleware = [...previousMiddleware, ...middleware]
 
-    // Create temporary routes array to track routes in this group
-    this._stacksRoutes = []
-
-    // Execute callback (handle both sync and async)
+    // Execute callback - route registrations inside will synchronously
+    // capture the current _groupPrefix value
     const result = cb()
 
     // If callback returns a promise, track it for later awaiting
     if (result instanceof Promise) {
-      const groupPromise = result.then(() => {
-        // Merge group routes back to main routes after async completion
-        for (const route of this._stacksRoutes) {
-          previousRoutes.push(route)
-        }
-        // Restore previous state
-        this._groupPrefix = previousPrefix
-        this._groupMiddleware = previousMiddleware
-        this._stacksRoutes = previousRoutes
-      })
-      this._pendingRoutes.push(groupPromise)
+      this._pendingRoutes.push(result)
     }
-    else {
-      // Sync callback - merge immediately
-      for (const route of this._stacksRoutes) {
-        previousRoutes.push(route)
-      }
-      // Restore previous state
-      this._groupPrefix = previousPrefix
-      this._groupMiddleware = previousMiddleware
-      this._stacksRoutes = previousRoutes
-    }
+
+    // Restore previous state immediately
+    // Routes have already captured their prefixes in addRoute()
+    this._groupPrefix = previousPrefix
+    this._groupMiddleware = previousMiddleware
 
     return this
   }
@@ -733,7 +725,9 @@ export class StacksRouter implements RouterInterface {
         await customValidate(actionModule.default.validations, requestInstance.all())
       }
 
+      log.debug('Calling action handle() method')
       const result = await actionModule.default.handle(requestInstance)
+      log.debug('Action returned:', typeof result, result)
       return this.formatHandlerResult(result)
     }
     catch (error: any) {
@@ -753,11 +747,15 @@ export class StacksRouter implements RouterInterface {
    * Format handler result to Response
    */
   private formatHandlerResult(result: any): Response {
+    log.debug('formatHandlerResult called with:', typeof result, result instanceof Response ? 'Response' : JSON.stringify(result).slice(0, 200))
+
     if (result instanceof Response) {
+      log.debug('Returning existing Response')
       return result
     }
 
     if (isObject(result) && 'status' in result && typeof result.status === 'number' && 'headers' in result && isObject(result.headers) && 'body' in result) {
+      log.debug('Creating Response from response-like object with status:', result.status)
       return new Response(result.body, {
         status: result.status,
         headers: result.headers as HeadersInit,
@@ -765,9 +763,11 @@ export class StacksRouter implements RouterInterface {
     }
 
     if (isObject(result)) {
+      log.debug('Creating Response.json from object')
       return Response.json(result)
     }
 
+    log.debug('Creating Response from string')
     return new Response(String(result))
   }
 

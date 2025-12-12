@@ -28,7 +28,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:work')
       const result = await runAction(Action.QueueWork, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the queue:work command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -51,7 +51,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:failed')
       const result = await runAction(Action.QueueFailed, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the queue:failed command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -79,7 +79,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:retry')
       const result = await runAction(Action.QueueRetry, { ...options, id })
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the queue:retry command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -108,7 +108,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:clear')
       const result = await runAction(Action.QueueClear, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the queue:clear command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -136,7 +136,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:status')
       const result = await runAction(Action.QueueStatus, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the queue:status command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -164,7 +164,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:flush')
       const result = await runAction(Action.QueueFlush, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the queue:flush command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -190,7 +190,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:table')
       const result = await runAction(Action.QueueTable, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the queue:table command, there was an issue',
           { startTime: perf, useSeconds: true },

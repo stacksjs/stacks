@@ -42,7 +42,7 @@ export async function generateLibEntries(options: GeneratorOptions): Promise<voi
     cwd: projectPath(),
   })
 
-  if (result.isErr()) {
+  if (result.isErr) {
     log.error('There was an error generating your library entry points', result.error)
     process.exit()
   }
@@ -53,7 +53,7 @@ export async function generateLibEntries(options: GeneratorOptions): Promise<voi
 export async function generateWebTypes(options?: GeneratorOptions): Promise<void> {
   const result = await runNpmScript(NpmScript.GenerateWebTypes, options)
 
-  if (result.isErr()) {
+  if (result.isErr) {
     log.error('There was an error generating the web-types.json file.', result.error)
     process.exit()
   }
@@ -64,7 +64,7 @@ export async function generateWebTypes(options?: GeneratorOptions): Promise<void
 export async function generateVsCodeCustomData(): Promise<void> {
   const result = await genVsCodeCustomData()
 
-  if (result.isErr()) {
+  if (result.isErr) {
     log.error('There was an error generating the custom-elements.json file.', result.error)
     process.exit()
   }
@@ -77,7 +77,7 @@ export async function generateVsCodeCustomData(): Promise<void> {
 export async function generateIdeHelpers(options?: GeneratorOptions): Promise<void> {
   const result = await runNpmScript(NpmScript.GenerateIdeHelpers, options)
 
-  if (result.isErr()) {
+  if (result.isErr) {
     log.error('There was an error generating IDE helpers.', result.error)
     process.exit()
   }
@@ -89,7 +89,7 @@ export async function generateIdeHelpers(options?: GeneratorOptions): Promise<vo
 export async function generateComponentMeta(): Promise<void> {
   const result = await genVsCodeCustomData()
 
-  if (result.isErr()) {
+  if (result.isErr) {
     log.error('There was an error generating your component meta information.', result.error)
     process.exit()
   }
@@ -104,7 +104,7 @@ export async function generateTypes(options?: GeneratorOptions): Promise<void> {
     ...options,
   })
 
-  if (result.isErr()) {
+  if (result.isErr) {
     log.error('There was an error generating your types.', result.error)
     process.exit()
   }

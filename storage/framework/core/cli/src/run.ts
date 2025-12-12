@@ -16,7 +16,7 @@ import { log } from '@stacksjs/logging'
  * ```ts
  * const result = await runCommand('ls')
  *
- * if (result.isErr())
+ * if (result.isErr)
  *   console.error(result.error)
  * else
  *   console.log(result)
@@ -25,7 +25,7 @@ import { log } from '@stacksjs/logging'
  * ```ts
  * const result = await runCommand('ls', { cwd: '/home' })
  *
- * if (result.isErr())
+ * if (result.isErr)
  *   console.error(result.error)
  * else
  *   console.log(result)
@@ -66,7 +66,7 @@ export async function runProcess(command: string, options?: CliOptions): Promise
  * ```ts
  * const result = runCommandSync('ls')
  *
- * if (result.isErr())
+ * if (result.isErr)
  *   console.error(result.error)
  * else
  *   console.log(result)
@@ -75,7 +75,7 @@ export async function runProcess(command: string, options?: CliOptions): Promise
  * ```ts
  * const result = runCommandSync('ls', { cwd: '/home' })
  *
- * if (result.isErr())
+ * if (result.isErr)
  *   console.error(result.error)
  * else
  *   console.log(result)
@@ -109,7 +109,7 @@ export async function runCommands(
   for (const command of commands) {
     const result = await runCommand(command, options)
 
-    if (result.isErr()) {
+    if (result.isErr) {
       handleError('Error during runCommands', result.error)
       process.exit(ExitCode.FatalError)
     }

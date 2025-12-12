@@ -645,13 +645,13 @@ export async function addJumpBox(stackName?: string): Promise<Result<string, str
   const ec2 = new EC2({ region: 'us-east-1' })
   const r = await getJumpBoxSecurityGroupName()
 
-  if (r.isErr())
+  if (r.isErr)
     return err(r.error)
   if (!r.value)
     return err('Security group not found when adding jump-box')
 
   const result = await getSecurityGroupId(r.value)
-  if (result.isErr())
+  if (result.isErr)
     return err(result.error)
   const sgId = result.value
 
@@ -682,7 +682,7 @@ git clone https://github.com/stacksjs/stacks.git /mnt/efs
   const base64UserData = btoa(userDataScript)
   const res = await getJumpBoxInstanceProfileName()
 
-  if (res.isErr())
+  if (res.isErr)
     return err(res.error)
 
   const jumpBoxInstanceProfileName: string | undefined = res.value

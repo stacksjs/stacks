@@ -57,7 +57,7 @@ export function create(buddy: CLI): void {
 
       const result = await download(name, path, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         log.error(result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -117,14 +117,14 @@ async function install(path: string, options: CreateOptions) {
   log.info('Installing & setting up Stacks')
   let result = await runCommand('bun install', { ...options, cwd: path })
 
-  if (result?.isErr()) {
+  if (result?.isErr) {
     log.error(result.error)
     process.exit()
   }
 
   result = await runCommand('cp .env.example .env', { ...options, cwd: path })
 
-  if (result?.isErr()) {
+  if (result?.isErr) {
     log.error(result.error)
     process.exit(ExitCode.FatalError)
   }
@@ -134,7 +134,7 @@ async function install(path: string, options: CreateOptions) {
   // TODO: we should ask quite a few questions here, similar how we do in `buddy new my-project`, so we can generate a custom pantry.yaml file
 
   result = await runCommand('git init', { ...options, cwd: path }) // do we need this? or does giget do this already?
-  if (result.isErr()) {
+  if (result.isErr) {
     log.error(result.error)
     process.exit(ExitCode.FatalError)
   }

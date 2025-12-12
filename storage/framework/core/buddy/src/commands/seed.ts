@@ -23,7 +23,7 @@ export function seed(buddy: CLI): void {
       const perf = await intro('buddy seed')
       const result = await runAction(Action.Seed, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the seed command, there was an issue',
           { startTime: perf, useSeconds: true },

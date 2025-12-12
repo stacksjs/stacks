@@ -9,7 +9,7 @@ const modelOption = options.model as string
 
 const result = await flushModelDocuments(modelOption)
 
-if (result?.isErr()) {
+if (result?.isErr) {
   console.error(result.error)
   log.error('Flushing search engine failed', result.error)
 }

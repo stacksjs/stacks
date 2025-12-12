@@ -8,7 +8,7 @@ const queue = options.queue
 
 const result = await processJobs(queue)
 
-if (result?.isErr()) {
+if (result?.isErr) {
   console.error(result.error)
   log.error('generateMigrations failed', result.error)
   process.exit(1)

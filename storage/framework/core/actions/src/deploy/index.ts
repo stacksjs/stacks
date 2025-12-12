@@ -819,7 +819,7 @@ try {
 // const result = await runCommand(`bunx --bun cdk deploy --require-approval never --profile="${profile}"`, {
 //   cwd: p.frameworkCloudPath(),
 // })
-// if (result.isErr()) {
+// if (result.isErr) {
 //   log.error(result.error)
 //   process.exit(ExitCode.FatalError)
 // }

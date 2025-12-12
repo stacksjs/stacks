@@ -57,7 +57,7 @@ export function dev(buddy: CLI): void {
       // // check if port 443 is open
       // const result = await runCommand('lsof -i :443', { silent: true })
 
-      // if (result.isErr())
+      // if (result.isErr)
       //   log.warn('While checking if port 443 is open, we noticed it may be in use')
 
       switch (server) {
@@ -159,7 +159,7 @@ export function dev(buddy: CLI): void {
       if (options.verbose)
         log.info('buddy dev:components result', result)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the dev:components command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -183,7 +183,7 @@ export function dev(buddy: CLI): void {
       const perf = await intro('buddy dev:docs')
       const result = await runAction(Action.DevDocs, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the dev:docs command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -207,7 +207,7 @@ export function dev(buddy: CLI): void {
       const perf = await intro('buddy dev:desktop')
       const result = await runAction(Action.DevDesktop, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the dev:desktop command, there was an issue',
           { startTime: perf, useSeconds: true },

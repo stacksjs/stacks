@@ -13,7 +13,7 @@ log.info('Checking Code Style...')
 // })
 
 // if (Array.isArray(result)) {
-//   if (result.map((r) => r.isErr()).includes(true)) process.exit(ExitCode.FatalError)
+//   if (result.map((r) => r.isErr).includes(true)) process.exit(ExitCode.FatalError)
 // }
 
 log.success('Linted')

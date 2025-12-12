@@ -71,7 +71,7 @@ export function upgrade(buddy: CLI): void {
 
       const result = await runAction(Action.Upgrade, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the buddy:upgrade command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -116,7 +116,7 @@ export function upgrade(buddy: CLI): void {
       const perf = await intro('buddy upgrade:bun')
       const result = await runAction(Action.UpgradeBun, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the buddy upgrade:bun command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -147,7 +147,7 @@ export function upgrade(buddy: CLI): void {
       const perf = await intro('buddy upgrade:shell')
       const result = await runAction(Action.UpgradeShell, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the buddy upgrade:shell command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -174,7 +174,7 @@ export function upgrade(buddy: CLI): void {
       const perf = await intro('buddy upgrade:binary')
       const result = await runAction(Action.UpgradeBinary, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the buddy upgrade:binary command, there was an issue',
           { startTime: perf, useSeconds: true },

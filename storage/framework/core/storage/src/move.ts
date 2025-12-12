@@ -21,7 +21,7 @@ export async function move(
         const to = path.resolve(dest, path.basename(file))
         const result = await rename(from, to, options)
 
-        if (result.isErr())
+        if (result.isErr)
           return log.error(result.error)
       })
 
@@ -34,7 +34,7 @@ export async function move(
     const to = dest
     const result = await rename(from, to, options)
 
-    if (result.isErr()) {
+    if (result.isErr) {
       log.error(result.error)
       return err(handleError(result.error))
     }

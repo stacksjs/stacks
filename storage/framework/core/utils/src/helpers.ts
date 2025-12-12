@@ -25,7 +25,7 @@ export async function initProject(): Promise<Result<Subprocess, Error>> {
 
   const result = await runAction(Action.KeyGenerate, { cwd: projectPath() })
 
-  if (result.isErr())
+  if (result.isErr)
     return err(handleError(result.error))
 
   log.info('Application key generated.')

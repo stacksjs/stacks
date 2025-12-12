@@ -58,7 +58,7 @@ export async function updateDependencies(): Promise<void> {
     cwd: projectPath(),
   })
 
-  if (result.isErr()) {
+  if (result.isErr) {
     await outro(
       'While running the upgrade:dependencies command, there was an issue',
       { startTime: perf, useSeconds: true },

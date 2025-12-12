@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX "users_users_email_unique" ON "users" ("email");

@@ -22,7 +22,7 @@ export function tinker(buddy: CLI): void {
         stdin: 'inherit',
       })
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the tinker command, there was an issue',
           { startTime: perf, useSeconds: true },

@@ -18,7 +18,7 @@ export function route(buddy: CLI): void {
       const perf = await intro('buddy route:list')
       const result = await runAction(Action.RouteList, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the migrate command, there was an issue',
           { startTime: perf, useSeconds: true },

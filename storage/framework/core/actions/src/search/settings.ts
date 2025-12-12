@@ -4,7 +4,7 @@ import { updateIndexSettings } from '@stacksjs/search-engine'
 
 const result = await updateIndexSettings()
 
-if (result?.isErr()) {
+if (result?.isErr) {
   console.error(result.error)
   log.error('generateMigrations failed', result.error)
 }

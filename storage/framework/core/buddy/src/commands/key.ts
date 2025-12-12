@@ -21,7 +21,7 @@ export function key(buddy: CLI): void {
       await intro('buddy key:generate')
       const result = await runAction(Action.KeyGenerate, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         log.error('Failed to set random application key.', result.error)
         process.exit()
       }

@@ -105,7 +105,7 @@ export async function deleteGlob(path: string): Promise<Result<string, Error>> {
 
   for (const directory of directories) {
     const result = await deleteFolder(directory)
-    if (result.isErr()) {
+    if (result.isErr) {
       log.error(result.error)
       return result
     }

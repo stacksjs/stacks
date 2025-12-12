@@ -9,7 +9,7 @@ const modelOption = options.model as string
 
 const result = await listIndexSettings(modelOption)
 
-if (result?.isErr()) {
+if (result?.isErr) {
   console.error(result.error)
   log.error('Listing index settings failed', result.error)
 }

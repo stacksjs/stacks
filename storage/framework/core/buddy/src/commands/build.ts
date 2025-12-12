@@ -223,7 +223,7 @@ export function build(buddy: CLI): void {
       const startTime = await intro('buddy build:core')
       const result = await runAction(Action.BuildCore, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         log.error('Failed to build the Stacks core.', result.error)
         process.exit()
       }
@@ -245,7 +245,7 @@ export function build(buddy: CLI): void {
       const perf = await intro('buddy build:desktop')
       const result = await runAction(Action.BuildDesktop, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the build:desktop command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -270,7 +270,7 @@ export function build(buddy: CLI): void {
       const startTime = await intro('buddy build:stacks')
       const result = await runAction(Action.BuildStacks, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         log.error('Failed to build Stacks.', result.error)
         process.exit()
       }

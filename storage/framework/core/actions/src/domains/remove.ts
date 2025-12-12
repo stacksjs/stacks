@@ -32,7 +32,7 @@ if (options.verbose)
 // const result = await deleteHostedZone(options.domain)
 const result = await deleteHostedZoneRecords(options.domain)
 
-if (result.isErr()) {
+if (result.isErr) {
   handleError(result.error)
   process.exit(1)
 }

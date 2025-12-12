@@ -27,7 +27,7 @@ export function changelog(buddy: CLI): void {
       const perf = await intro('buddy changelog')
       const result = await runAction(Action.Changelog, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the changelog command, there was an issue',
           { ...options, startTime: perf, useSeconds: true },

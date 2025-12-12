@@ -7,8 +7,15 @@
  * Re-exports all bun-router functionality plus Stacks adapters.
  */
 
-// Re-export everything from bun-router
-export * from 'bun-router'
+// Re-export specific items from bun-router (avoiding Router conflict)
+export {
+  router,
+  Router as BunRouter,
+  FluentRouter,
+  RouterUtils,
+  SubdomainRouter,
+  createFluentRouter,
+} from 'bun-router'
 
 // Export Stacks-specific modules
 export * from './middleware'
@@ -20,7 +27,7 @@ export * from './static'
 export * from './utils'
 export * from './uploaded-file'
 
-// Re-export commonly used bun-router types explicitly for convenience
+// Re-export commonly used types
 export type {
   EnhancedRequest,
   Route,

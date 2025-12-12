@@ -24,7 +24,7 @@ export function migrate(buddy: CLI): void {
       const perf = await intro('buddy migrate')
       const result = await runAction(Action.Migrate, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the migrate command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -54,7 +54,7 @@ export function migrate(buddy: CLI): void {
       const perf = await intro('buddy migrate:fresh')
       const result = await runAction(Action.MigrateFresh, options)
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the migrate:fresh command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -81,7 +81,7 @@ export function migrate(buddy: CLI): void {
       const perf = await intro('buddy migrate:dns')
       const result = await runAction(Action.MigrateDns, { ...options })
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the migrate:dns command, there was an issue',
           { startTime: perf, useSeconds: true },

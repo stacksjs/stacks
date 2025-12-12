@@ -72,7 +72,7 @@ async function configureAws(options?: ConfigureOptions) {
     input, // the actual input to write
   })
 
-  if (result.isErr()) {
+  if (result.isErr) {
     await outro('While running the cloud command, there was an issue', { startTime, useSeconds: true }, result.error)
     process.exit(ExitCode.FatalError)
   }

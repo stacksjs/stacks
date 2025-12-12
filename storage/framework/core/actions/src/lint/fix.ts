@@ -13,7 +13,7 @@ const result = await runCommand(NpmScript.LintFix, {
   ...options,
 })
 
-if (result.isErr()) {
+if (result.isErr) {
   log.error('There was an error fixing your code style.')
   console.error(result.error)
   process.exit(1)

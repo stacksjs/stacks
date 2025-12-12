@@ -207,7 +207,7 @@ export function cloud(buddy: CLI): void {
           stdin: 'pipe',
         })
 
-        if (result.isErr()) {
+        if (result.isErr) {
           await outro(
             'While running the cloud command, there was an issue',
             { startTime, useSeconds: true },
@@ -258,7 +258,7 @@ export function cloud(buddy: CLI): void {
           stdin: 'pipe',
         })
 
-        if (result.isErr()) {
+        if (result.isErr) {
           await outro(
             'While running the cloud diff command, there was an issue',
             { startTime, useSeconds: true },
@@ -305,7 +305,7 @@ export function cloud(buddy: CLI): void {
 
         const result = await addJumpBox()
 
-        if (result.isErr()) {
+        if (result.isErr) {
           await outro(
             'While running the cloud:add command, there was an issue',
             { startTime, useSeconds: true },
@@ -364,7 +364,7 @@ export function cloud(buddy: CLI): void {
 
         const result = await deleteJumpBox()
 
-        if (result.isErr()) {
+        if (result.isErr) {
           await outro('While removing your jump-box, there was an issue', { startTime, useSeconds: true }, result.error)
           process.exit(ExitCode.FatalError)
         }
@@ -539,7 +539,7 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any jump-boxes...')
       try {
         const result = await deleteJumpBox()
-        if (result && typeof result.isErr === 'function' && result.isErr()) {
+        if (result && typeof result.isErr === 'function' && result.isErr) {
           if (result.error !== 'Jump-box not found') {
             log.warn(`Jump-box cleanup issue: ${result.error}`)
           }
@@ -552,7 +552,7 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any retained S3 buckets...')
       try {
         const result2 = await deleteStacksBuckets()
-        if (result2 && typeof result2.isErr === 'function' && result2.isErr()) {
+        if (result2 && typeof result2.isErr === 'function' && result2.isErr) {
           log.warn(`S3 cleanup issue: ${result2.error}`)
         }
       }
@@ -563,7 +563,7 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any retained Lambda functions...')
       try {
         const result3 = await deleteStacksFunctions()
-        if (result3 && typeof result3.isErr === 'function' && result3.isErr()) {
+        if (result3 && typeof result3.isErr === 'function' && result3.isErr) {
           if (result3.error !== 'No stacks functions found') {
             log.warn(`Lambda cleanup issue: ${result3.error}`)
           }
@@ -579,7 +579,7 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any remaining Stacks logs...')
       try {
         const result4 = await deleteLogGroups()
-        if (result4 && typeof result4.isErr === 'function' && result4.isErr()) {
+        if (result4 && typeof result4.isErr === 'function' && result4.isErr) {
           log.warn(`Log groups cleanup issue: ${result4.error}`)
         }
       }
@@ -590,7 +590,7 @@ export function cloud(buddy: CLI): void {
       // log.info('Removing any Backup Vaults...')
       // const result5 = await deleteBackupVaults()
 
-      // if (result5.isErr()) {
+      // if (result5.isErr) {
       //   await outro('While deleting the Backup Vaults, there was an issue', { startTime, useSeconds: true }, result5.error)
       //   process.exit(ExitCode.FatalError)
       // }
@@ -598,7 +598,7 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any stored parameters...')
       try {
         const result7 = await deleteParameterStore()
-        if (result7 && typeof result7.isErr === 'function' && result7.isErr()) {
+        if (result7 && typeof result7.isErr === 'function' && result7.isErr) {
           log.warn(`Parameter store cleanup issue: ${result7.error}`)
         }
       }
@@ -610,7 +610,7 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any VPCs...')
       try {
         const result9 = await deleteVpcs()
-        if (result9 && typeof result9.isErr === 'function' && result9.isErr()) {
+        if (result9 && typeof result9.isErr === 'function' && result9.isErr) {
           log.warn(`VPC cleanup issue: ${result9.error}`)
         }
       }
@@ -621,7 +621,7 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any Subnets...')
       try {
         const result10 = await deleteSubnets()
-        if (result10 && typeof result10.isErr === 'function' && result10.isErr()) {
+        if (result10 && typeof result10.isErr === 'function' && result10.isErr) {
           log.warn(`Subnet cleanup issue: ${result10.error}`)
         }
       }
@@ -632,7 +632,7 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any CDK remnants...')
       try {
         const result6 = await deleteCdkRemnants()
-        if (result6 && typeof result6.isErr === 'function' && result6.isErr()) {
+        if (result6 && typeof result6.isErr === 'function' && result6.isErr) {
           log.warn(`CDK remnants cleanup issue: ${result6.error}`)
         }
       }
@@ -643,7 +643,7 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any IAM users...')
       try {
         const result8 = await deleteIamUsers()
-        if (result8 && typeof result8.isErr === 'function' && result8.isErr()) {
+        if (result8 && typeof result8.isErr === 'function' && result8.isErr) {
           log.warn(`IAM users cleanup issue: ${result8.error}`)
         }
       }
@@ -699,7 +699,7 @@ export function cloud(buddy: CLI): void {
           },
         ) // TODO: this should be the cloud path
 
-        if (result.isErr()) {
+        if (result.isErr) {
           await outro(
             'While running the cloud command, there was an issue',
             { startTime, useSeconds: true },
@@ -730,7 +730,7 @@ export function cloud(buddy: CLI): void {
         stdin: 'pipe',
       })
 
-      if (result.isErr()) {
+      if (result.isErr) {
         await outro(
           'While running the cloud diff command, there was an issue',
           { startTime, useSeconds: true },
