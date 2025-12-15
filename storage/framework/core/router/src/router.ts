@@ -732,6 +732,8 @@ export class StacksRouter implements RouterInterface {
       return this.formatHandlerResult(result)
     }
     catch (error: any) {
+      log.error(`Action resolution error for "${callbackPath}":`, error.message)
+
       if (error.status === 422) {
         return Response.json(JSON.parse(error.message), { status: 422 })
       }
