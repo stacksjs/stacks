@@ -3,6 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import type { DeliveryRouteModelType } from './DeliveryRouteType'
 import type { UserModelType } from './UserType'
 
+
 export interface DriversTable {
   id: Generated<number>
   name: string
@@ -53,7 +54,7 @@ export interface DriverModelType {
   set status(value: string | string[])
   get delivery_route(): DeliveryRouteModelType[] | []
   get user(): UserModelType | undefined
-
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -128,5 +129,5 @@ export interface DriverModelType {
   toJSON: () => DriverJsonResponse
   parseResult: (model: DriverModelType) => DriverModelType
 
-  userBelong: () => Promise<UserModelType>
+    userBelong: () => Promise<UserModelType>
 }

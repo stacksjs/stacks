@@ -2,6 +2,7 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { UserModelType } from './UserType'
 
+
 export interface SubscriptionsTable {
   id: Generated<number>
   type: string
@@ -67,7 +68,7 @@ export interface SubscriptionModelType {
   get lastUsedAt(): Date | string | undefined
   set lastUsedAt(value: Date | string)
   get user(): UserModelType | undefined
-
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -138,5 +139,5 @@ export interface SubscriptionModelType {
   toJSON: () => SubscriptionJsonResponse
   parseResult: (model: SubscriptionModelType) => SubscriptionModelType
 
-  userBelong: () => Promise<UserModelType>
+    userBelong: () => Promise<UserModelType>
 }

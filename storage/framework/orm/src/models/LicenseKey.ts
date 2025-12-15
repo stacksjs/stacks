@@ -1,25 +1,40 @@
-import type { RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
-import type { LicenseKeyJsonResponse, LicenseKeysTable, LicenseKeyUpdate, NewLicenseKey } from '../types/LicenseKeyType'
-import type { CustomerModel } from './Customer'
-import type { OrderModel } from './Order'
-import type { ProductModel } from './Product'
-import { randomUUIDv7 } from 'bun'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
+import Stripe from 'stripe'
 import { sql } from '@stacksjs/database'
+import { DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
+import type { Operator } from '@stacksjs/orm'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { randomUUIDv7 } from 'bun'
+import type { LicenseKeyModelType, LicenseKeyJsonResponse, NewLicenseKey, LicenseKeyUpdate, LicenseKeysTable } from '../types/LicenseKeyType'
 
-import { DB } from '@stacksjs/orm'
+import type {CustomerModel} from './Customer'
 
-import { BaseOrm } from '../utils/base'
+import type {ProductModel} from './Product'
+
+import type {OrderModel} from './Order'
+
+
+
+
+import type { Model } from '@stacksjs/types';
+import { schema } from '@stacksjs/validation';
+
+
+
 
 export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, LicenseKeyJsonResponse> {
   private readonly hidden: Array<keyof LicenseKeyJsonResponse> = []
-  private readonly fillable: Array<keyof LicenseKeyJsonResponse> = ['key', 'template', 'expiry_date', 'status', 'uuid', 'customer_id', 'product_id', 'order_id']
+  private readonly fillable: Array<keyof LicenseKeyJsonResponse> = ["key","template","expiry_date","status","uuid","customer_id","product_id","order_id"]
   private readonly guarded: Array<keyof LicenseKeyJsonResponse> = []
   protected attributes = {} as LicenseKeyJsonResponse
   protected originalAttributes = {} as LicenseKeyJsonResponse
-
+  
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -37,12 +52,13 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
   constructor(licenseKey: LicenseKeyJsonResponse | undefined) {
     super('license_keys')
     if (licenseKey) {
+
       this.attributes = { ...licenseKey }
       this.originalAttributes = { ...licenseKey }
 
-      Object.keys(licenseKey).forEach((key) => {
+      Object.keys(licenseKey).forEach(key => {
         if (!(key in this)) {
-          this.customColumns[key] = (licenseKey as LicenseKeyJsonResponse)[key]
+           this.customColumns[key] = (licenseKey as LicenseKeyJsonResponse)[key]
         }
       })
     }
@@ -57,8 +73,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
   protected async loadRelations(models: LicenseKeyJsonResponse | LicenseKeyJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length)
-      return
+    if (!modelArray.length) return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -78,8 +93,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      }
-      else {
+      } else {
         const records = relatedRecords.filter((record: { licenseKey_id: number }) => {
           return record.licenseKey_id === models.id
         })
@@ -100,10 +114,12 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
 
     if (Array.isArray(data)) {
       data.map((model: LicenseKeyJsonResponse) => {
+
         const customGetter = {
           default: () => {
           },
 
+          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -112,14 +128,14 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
 
         return model
       })
-    }
-    else {
+    } else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
+        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -133,92 +149,96 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
       default: () => {
       },
 
+      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      (model as any)[key] = await fn()
+        (model as any)[key] = await fn()
     }
   }
 
   get customer_id(): number {
-    return this.attributes.customer_id
-  }
+        return this.attributes.customer_id
+      }
 
-  get customer(): CustomerModel | undefined {
-    return this.attributes.customer
-  }
+get customer(): CustomerModel | undefined {
+        return this.attributes.customer
+      }
 
-  get product_id(): number {
-    return this.attributes.product_id
-  }
+get product_id(): number {
+        return this.attributes.product_id
+      }
 
-  get product(): ProductModel | undefined {
-    return this.attributes.product
-  }
+get product(): ProductModel | undefined {
+        return this.attributes.product
+      }
 
-  get order_id(): number {
-    return this.attributes.order_id
-  }
+get order_id(): number {
+        return this.attributes.order_id
+      }
 
-  get order(): OrderModel | undefined {
-    return this.attributes.order
-  }
+get order(): OrderModel | undefined {
+        return this.attributes.order
+      }
 
-  get id(): number {
+get id(): number {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
-    return this.attributes.uuid
-  }
+get uuid(): string | undefined {
+      return this.attributes.uuid
+    }
 
-  get key(): string {
-    return this.attributes.key
-  }
+get key(): string {
+      return this.attributes.key
+    }
 
-  get template(): string | string[] {
-    return this.attributes.template
-  }
+get template(): string | string[] {
+      return this.attributes.template
+    }
 
-  get expiry_date(): Date | string {
-    return this.attributes.expiry_date
-  }
+get expiry_date(): Date | string {
+      return this.attributes.expiry_date
+    }
 
-  get status(): string | string[] | undefined {
-    return this.attributes.status
-  }
+get status(): string | string[] | undefined {
+      return this.attributes.status
+    }
 
-  get created_at(): string | undefined {
-    return this.attributes.created_at
-  }
+get created_at(): string | undefined {
+      return this.attributes.created_at
+    }
 
-  get updated_at(): string | undefined {
-    return this.attributes.updated_at
-  }
+    get updated_at(): string | undefined {
+      return this.attributes.updated_at
+    }
+
 
   set uuid(value: string) {
-    this.attributes.uuid = value
-  }
+      this.attributes.uuid = value
+    }
 
-  set key(value: string) {
-    this.attributes.key = value
-  }
+set key(value: string) {
+      this.attributes.key = value
+    }
 
-  set template(value: string | string[]) {
-    this.attributes.template = value
-  }
+set template(value: string | string[]) {
+      this.attributes.template = value
+    }
 
-  set expiry_date(value: Date | string) {
-    this.attributes.expiry_date = value
-  }
+set expiry_date(value: Date | string) {
+      this.attributes.expiry_date = value
+    }
 
-  set status(value: string | string[]) {
-    this.attributes.status = value
-  }
+set status(value: string | string[]) {
+      this.attributes.status = value
+    }
 
-  set updated_at(value: string) {
-    this.attributes.updated_at = value
-  }
+set updated_at(value: string) {
+      this.attributes.updated_at = value
+    }
+
+
 
   static select(params: (keyof LicenseKeyJsonResponse)[] | RawBuilder<string> | string): LicenseKeyModel {
     const instance = new LicenseKeyModel(undefined)
@@ -228,12 +248,11 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
 
   // Method to find a LicenseKey by ID
   static async find(id: number): Promise<LicenseKeyModel | undefined> {
-    const query = DB.instance.selectFrom('license_keys').where('id', '=', id).selectAll()
+    let query = DB.instance.selectFrom('license_keys').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     const instance = new LicenseKeyModel(undefined)
     return instance.createInstance(model)
@@ -254,8 +273,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
 
     const model = await instance.applyLast()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new LicenseKeyModel(model)
   }
@@ -288,7 +306,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
 
   static async findMany(ids: number[]): Promise<LicenseKeyModel[]> {
     const instance = new LicenseKeyModel(undefined)
-
+     
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: LicenseKeyJsonResponse) => instance.parseResult(new LicenseKeyModel(modelItem)))
@@ -303,8 +321,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new LicenseKeyModel(model)
   }
@@ -318,8 +335,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new LicenseKeyModel(model)
   }
@@ -486,12 +502,12 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: LicenseKeyModel[]
+    data: LicenseKeyModel[],
     paging: {
-      total_records: number
-      page: number
+      total_records: number,
+      page: number,
       total_pages: number
-    }
+    },
     next_cursor: number | null
   }> {
     const instance = new LicenseKeyModel(undefined)
@@ -501,7 +517,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
     return {
       data: result.data.map((item: LicenseKeyJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor,
+      next_cursor: result.next_cursor
     }
   }
 
@@ -513,13 +529,13 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
   async applyCreate(newLicenseKey: NewLicenseKey): Promise<LicenseKeyModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newLicenseKey).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as NewLicenseKey
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues.uuid = randomUUIDv7()
+    filteredValues['uuid'] = randomUUIDv7()
 
     const result = await DB.instance.insertInto('license_keys')
       .values(filteredValues)
@@ -535,7 +551,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
     }
 
     if (model)
-      dispatch('licenseKey:created', model)
+ dispatch('licenseKey:created', model)
     return this.createInstance(model)
   }
 
@@ -604,7 +620,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
   async update(newLicenseKey: LicenseKeyUpdate): Promise<LicenseKeyModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newLicenseKey).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as LicenseKeyUpdate
 
@@ -629,7 +645,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
       }
 
       if (model)
-        dispatch('licenseKey:updated', model)
+ dispatch('licenseKey:updated', model)
       return this.createInstance(model)
     }
 
@@ -654,7 +670,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
       }
 
       if (this)
-        dispatch('licenseKey:updated', model)
+ dispatch('licenseKey:updated', model)
       return this.createInstance(model)
     }
 
@@ -681,10 +697,9 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
       }
 
       if (this)
-        dispatch('licenseKey:updated', model)
+ dispatch('licenseKey:updated', model)
       return this.createInstance(model)
-    }
-    else {
+    } else {
       // Create new record
       const result = await DB.instance.insertInto('license_keys')
         .values(this.attributes as NewLicenseKey)
@@ -701,7 +716,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
       }
 
       if (this)
-        dispatch('licenseKey:created', model)
+ dispatch('licenseKey:created', model)
       return this.createInstance(model)
     }
   }
@@ -716,7 +731,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
         ),
       ) as NewLicenseKey
 
-      filteredValues.uuid = randomUUIDv7()
+      filteredValues['uuid'] = randomUUIDv7()
 
       return filteredValues
     })
@@ -742,7 +757,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
     }
 
     if (model)
-      dispatch('licenseKey:created', model)
+ dispatch('licenseKey:created', model)
 
     return instance.createInstance(model)
   }
@@ -752,9 +767,9 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-
+    
     if (model)
-      dispatch('licenseKey:deleted', model)
+ dispatch('licenseKey:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('license_keys')
       .where('id', '=', this.id)
@@ -768,8 +783,10 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
 
     const model = await instance.find(Number(id))
 
+    
+
     if (model)
-      dispatch('licenseKey:deleted', model)
+ dispatch('licenseKey:deleted', model)
 
     return await DB.instance.deleteFrom('license_keys')
       .where('id', '=', id)
@@ -777,36 +794,38 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
   }
 
   static whereKey(value: string): LicenseKeyModel {
-    const instance = new LicenseKeyModel(undefined)
+          const instance = new LicenseKeyModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('key', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('key', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereTemplate(value: string): LicenseKeyModel {
-    const instance = new LicenseKeyModel(undefined)
+static whereTemplate(value: string): LicenseKeyModel {
+          const instance = new LicenseKeyModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('template', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('template', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereExpiryDate(value: string): LicenseKeyModel {
-    const instance = new LicenseKeyModel(undefined)
+static whereExpiryDate(value: string): LicenseKeyModel {
+          const instance = new LicenseKeyModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('expiry_date', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('expiry_date', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereStatus(value: string): LicenseKeyModel {
-    const instance = new LicenseKeyModel(undefined)
+static whereStatus(value: string): LicenseKeyModel {
+          const instance = new LicenseKeyModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
+
+
 
   static whereIn<V = number>(column: keyof LicenseKeysTable, values: V[]): LicenseKeyModel {
     const instance = new LicenseKeyModel(undefined)
@@ -814,57 +833,68 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
     return instance.applyWhereIn<V>(column, values)
   }
 
-  async customerBelong(): Promise<CustomerModel> {
-    if (this.customer_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
+  
+        async customerBelong(): Promise<CustomerModel> {
+          if (this.customer_id === undefined)
+            throw new HttpError(500, 'Relation Error!')
 
-    const model = await Customer
-      .where('id', '=', this.customer_id)
-      .first()
+          const model = await Customer
+            .where('id', '=', this.customer_id)
+            .first()
 
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
+          if (! model)
+            throw new HttpError(500, 'Model Relation Not Found!')
 
-    return model
-  }
+          return model
+        }
 
-  async productBelong(): Promise<ProductModel> {
-    if (this.product_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
 
-    const model = await Product
-      .where('id', '=', this.product_id)
-      .first()
+        async productBelong(): Promise<ProductModel> {
+          if (this.product_id === undefined)
+            throw new HttpError(500, 'Relation Error!')
 
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
+          const model = await Product
+            .where('id', '=', this.product_id)
+            .first()
 
-    return model
-  }
+          if (! model)
+            throw new HttpError(500, 'Model Relation Not Found!')
 
-  async orderBelong(): Promise<OrderModel> {
-    if (this.order_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
+          return model
+        }
 
-    const model = await Order
-      .where('id', '=', this.order_id)
-      .first()
 
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
+        async orderBelong(): Promise<OrderModel> {
+          if (this.order_id === undefined)
+            throw new HttpError(500, 'Relation Error!')
 
-    return model
-  }
+          const model = await Order
+            .where('id', '=', this.order_id)
+            .first()
 
-  toSearchableObject(): Partial<LicenseKeyJsonResponse> {
-    return {
-      id: this.id,
-      key: this.key,
-      template: this.template,
-      expiry_date: this.expiry_date,
-      status: this.status,
-    }
-  }
+          if (! model)
+            throw new HttpError(500, 'Model Relation Not Found!')
+
+          return model
+        }
+
+
+
+  
+      toSearchableObject(): Partial<LicenseKeyJsonResponse> {
+        return {
+          id: this.id,
+key: this.key,
+template: this.template,
+expiry_date: this.expiry_date,
+status: this.status
+        }
+      }
+    
+
+  
+
+  
 
   static distinct(column: keyof LicenseKeyJsonResponse): LicenseKeyModel {
     const instance = new LicenseKeyModel(undefined)
@@ -881,26 +911,26 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
   toJSON(): LicenseKeyJsonResponse {
     const output = {
 
-      uuid: this.uuid,
+ uuid: this.uuid,
 
-      id: this.id,
-      key: this.key,
-      template: this.template,
-      expiry_date: this.expiry_date,
-      status: this.status,
+id: this.id,
+key: this.key,
+   template: this.template,
+   expiry_date: this.expiry_date,
+   status: this.status,
+   
+        created_at: this.created_at,
 
-      created_at: this.created_at,
-
-      updated_at: this.updated_at,
+        updated_at: this.updated_at,
 
       customer_id: this.customer_id,
-      customer: this.customer,
-      product_id: this.product_id,
-      product: this.product,
-      order_id: this.order_id,
-      order: this.order,
-      ...this.customColumns,
-    }
+   customer: this.customer,
+product_id: this.product_id,
+   product: this.product,
+order_id: this.order_id,
+   order: this.order,
+...this.customColumns,
+}
 
     return output
   }
@@ -912,6 +942,8 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
 
     return model
   }
+
+  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<LicenseKeyModel | undefined> {
@@ -930,15 +962,16 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
+
+  
 }
 
 export async function find(id: number): Promise<LicenseKeyModel | undefined> {
-  const query = DB.instance.selectFrom('license_keys').where('id', '=', id).selectAll()
+  let query = DB.instance.selectFrom('license_keys').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model)
-    return undefined
+  if (!model) return undefined
 
   const instance = new LicenseKeyModel(undefined)
   return instance.createInstance(model)
@@ -966,32 +999,34 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereKey(value: string): Promise<LicenseKeyModel[]> {
-  const query = DB.instance.selectFrom('license_keys').where('key', '=', value)
-  const results: LicenseKeyJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('license_keys').where('key', '=', value)
+          const results: LicenseKeyJsonResponse = await query.execute()
 
-  return results.map((modelItem: LicenseKeyJsonResponse) => new LicenseKeyModel(modelItem))
-}
+          return results.map((modelItem: LicenseKeyJsonResponse) => new LicenseKeyModel(modelItem))
+        } 
 
 export async function whereTemplate(value: string | string[]): Promise<LicenseKeyModel[]> {
-  const query = DB.instance.selectFrom('license_keys').where('template', '=', value)
-  const results: LicenseKeyJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('license_keys').where('template', '=', value)
+          const results: LicenseKeyJsonResponse = await query.execute()
 
-  return results.map((modelItem: LicenseKeyJsonResponse) => new LicenseKeyModel(modelItem))
-}
+          return results.map((modelItem: LicenseKeyJsonResponse) => new LicenseKeyModel(modelItem))
+        } 
 
 export async function whereExpiryDate(value: Date | string): Promise<LicenseKeyModel[]> {
-  const query = DB.instance.selectFrom('license_keys').where('expiry_date', '=', value)
-  const results: LicenseKeyJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('license_keys').where('expiry_date', '=', value)
+          const results: LicenseKeyJsonResponse = await query.execute()
 
-  return results.map((modelItem: LicenseKeyJsonResponse) => new LicenseKeyModel(modelItem))
-}
+          return results.map((modelItem: LicenseKeyJsonResponse) => new LicenseKeyModel(modelItem))
+        } 
 
 export async function whereStatus(value: string | string[]): Promise<LicenseKeyModel[]> {
-  const query = DB.instance.selectFrom('license_keys').where('status', '=', value)
-  const results: LicenseKeyJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('license_keys').where('status', '=', value)
+          const results: LicenseKeyJsonResponse = await query.execute()
 
-  return results.map((modelItem: LicenseKeyJsonResponse) => new LicenseKeyModel(modelItem))
-}
+          return results.map((modelItem: LicenseKeyJsonResponse) => new LicenseKeyModel(modelItem))
+        } 
+
+
 
 export const LicenseKey = LicenseKeyModel
 

@@ -1,7 +1,8 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { ShippingRateModelType } from './ShippingRateType'
 import type { ShippingZoneModelType } from './ShippingZoneType'
+import type { ShippingRateModelType } from './ShippingRateType'
+
 
 export interface ShippingMethodsTable {
   id: Generated<number>

@@ -1,44 +1,43 @@
-import type { schema } from '@stacksjs/validation'
-import type { ShippingRateRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
-import { customValidate, validateField } from '@stacksjs/validation'
+import { validateField, customValidate, type schema } from '@stacksjs/validation'
+import type { ShippingRateRequestType } from '../types/requests'
 
 interface ValidationField {
-  rule: ReturnType<typeof schema.string>
-  message: Record<string, string>
-}
+      rule: ReturnType<typeof schema.string>
+      message: Record<string, string>
+    }
 
 interface CustomAttributes {
-  [key: string]: ValidationField
-}
+      [key: string]: ValidationField
+    }
 interface RequestDataShippingRate {
-  id: number
-  weight_from: float
-  weight_to: float
-  rate: number
-  shipping_zone_id: number
-  shipping_method_id: number
-  created_at?: string
-  updated_at?: string
-}
+       id: number
+ weight_from: float
+      weight_to: float
+      rate: number
+      shipping_zone_id: number
+      shipping_method_id: number
+     created_at?: string
+      updated_at?: string
+    }
 export class ShippingRateRequest extends Request<RequestDataShippingRate> implements ShippingRateRequestType {
-  public id = 1
-  public weight_from = ''
-  public weight_to = ''
-  public rate = 0
-  public shipping_zone_id = 0
-  public shipping_method_id = 0
-  public created_at = ''
-  public updated_at = ''
-  public uuid = ''
-  public async validate(attributes?: CustomAttributes): Promise<void> {
-    if (attributes === undefined || attributes === null) {
-      await validateField('ShippingRate', this.all())
+      public id = 1
+public weight_from = ''
+public weight_to = ''
+public rate = 0
+public shipping_zone_id = 0
+public shipping_method_id = 0
+public created_at = ''
+        public updated_at = ''
+      public uuid = ''
+      public async validate(attributes?: CustomAttributes): Promise<void> {
+        if (attributes === undefined || attributes === null) {
+          await validateField('ShippingRate', this.all())
+        } else {
+          await customValidate(attributes, this.all())
+        }
+      }
     }
-    else {
-      await customValidate(attributes, this.all())
-    }
-  }
-}
 
-export const shippingRateRequest = new ShippingRateRequest()
+    export const shippingRateRequest = new ShippingRateRequest()
+    

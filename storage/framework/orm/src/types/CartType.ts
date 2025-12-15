@@ -1,8 +1,9 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { CartItemModelType } from './CartItemType'
-import type { CouponModelType } from './CouponType'
 import type { CustomerModelType } from './CustomerType'
+import type { CouponModelType } from './CouponType'
+
 
 export interface CartsTable {
   id: Generated<number>
@@ -69,8 +70,8 @@ export interface CartModelType {
   set appliedCouponId(value: string)
   get cart_item(): CartItemModelType[] | []
   get customer(): CustomerModelType | undefined
-  get coupon(): CouponModelType | undefined
-
+        get coupon(): CouponModelType | undefined
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -145,6 +146,6 @@ export interface CartModelType {
   toJSON: () => CartJsonResponse
   parseResult: (model: CartModelType) => CartModelType
 
-  customerBelong: () => Promise<CustomerModelType>
-  couponBelong: () => Promise<CouponModelType>
+    customerBelong: () => Promise<CustomerModelType>
+    couponBelong: () => Promise<CouponModelType>
 }

@@ -1,13 +1,14 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { GiftCardModelType } from './GiftCardType'
-import type { LicenseKeyModelType } from './LicenseKeyType'
 import type { OrderModelType } from './OrderType'
-import type { PaymentModelType } from './PaymentType'
+import type { GiftCardModelType } from './GiftCardType'
 import type { ReviewModelType } from './ReviewType'
-import type { UserModelType } from './UserType'
+import type { PaymentModelType } from './PaymentType'
+import type { LicenseKeyModelType } from './LicenseKeyType'
 import type { WaitlistProductModelType } from './WaitlistProductType'
 import type { WaitlistRestaurantModelType } from './WaitlistRestaurantType'
+import type { UserModelType } from './UserType'
+
 
 export interface CustomersTable {
   id: Generated<number>
@@ -71,7 +72,7 @@ export interface CustomerModelType {
   get waitlist_product(): WaitlistProductModelType[] | []
   get waitlist_restaurant(): WaitlistRestaurantModelType[] | []
   get user(): UserModelType | undefined
-
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -146,5 +147,5 @@ export interface CustomerModelType {
   toJSON: () => CustomerJsonResponse
   parseResult: (model: CustomerModelType) => CustomerModelType
 
-  userBelong: () => Promise<UserModelType>
+    userBelong: () => Promise<UserModelType>
 }

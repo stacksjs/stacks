@@ -2,6 +2,7 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { PrintDeviceModelType } from './PrintDeviceType'
 
+
 export interface ReceiptsTable {
   id: Generated<number>
   printer?: string
@@ -60,7 +61,7 @@ export interface ReceiptModelType {
   get metadata(): string | undefined
   set metadata(value: string)
   get print_device(): PrintDeviceModelType | undefined
-
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -135,5 +136,5 @@ export interface ReceiptModelType {
   toJSON: () => ReceiptJsonResponse
   parseResult: (model: ReceiptModelType) => ReceiptModelType
 
-  printDeviceBelong: () => Promise<PrintDeviceModelType>
+    printDeviceBelong: () => Promise<PrintDeviceModelType>
 }

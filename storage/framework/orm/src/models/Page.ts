@@ -1,21 +1,36 @@
-import type { RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
-import type { NewPage, PageJsonResponse, PagesTable, PageUpdate } from '../types/PageType'
-import type { AuthorModel } from './Author'
-import { randomUUIDv7 } from 'bun'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
+import Stripe from 'stripe'
 import { sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
-
 import { BaseOrm } from '../utils/base'
+import type { Operator } from '@stacksjs/orm'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import { HttpError } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { randomUUIDv7 } from 'bun'
+import type { PageModelType, PageJsonResponse, NewPage, PageUpdate, PagesTable } from '../types/PageType'
+
+import type {AuthorModel} from './Author'
+
+
+
+
+import type { Model } from '@stacksjs/types';
+import { schema } from '@stacksjs/validation';
+
+
+
 
 export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> {
   private readonly hidden: Array<keyof PageJsonResponse> = []
-  private readonly fillable: Array<keyof PageJsonResponse> = ['title', 'template', 'views', 'published_at', 'conversions', 'uuid']
+  private readonly fillable: Array<keyof PageJsonResponse> = ["title","template","views","published_at","conversions","uuid"]
   private readonly guarded: Array<keyof PageJsonResponse> = []
   protected attributes = {} as PageJsonResponse
   protected originalAttributes = {} as PageJsonResponse
-
+  
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -33,12 +48,13 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
   constructor(page: PageJsonResponse | undefined) {
     super('pages')
     if (page) {
+
       this.attributes = { ...page }
       this.originalAttributes = { ...page }
 
-      Object.keys(page).forEach((key) => {
+      Object.keys(page).forEach(key => {
         if (!(key in this)) {
-          this.customColumns[key] = (page as PageJsonResponse)[key]
+           this.customColumns[key] = (page as PageJsonResponse)[key]
         }
       })
     }
@@ -53,8 +69,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
   protected async loadRelations(models: PageJsonResponse | PageJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length)
-      return
+    if (!modelArray.length) return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -74,8 +89,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      }
-      else {
+      } else {
         const records = relatedRecords.filter((record: { page_id: number }) => {
           return record.page_id === models.id
         })
@@ -96,10 +110,12 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
 
     if (Array.isArray(data)) {
       data.map((model: PageJsonResponse) => {
+
         const customGetter = {
           default: () => {
           },
 
+          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -108,14 +124,14 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
 
         return model
       })
-    }
-    else {
+    } else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
+        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -129,84 +145,88 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
       default: () => {
       },
 
+      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      (model as any)[key] = await fn()
+        (model as any)[key] = await fn()
     }
   }
 
   get author_id(): number {
-    return this.attributes.author_id
-  }
+        return this.attributes.author_id
+      }
 
-  get author(): AuthorModel | undefined {
-    return this.attributes.author
-  }
+get author(): AuthorModel | undefined {
+        return this.attributes.author
+      }
 
-  get id(): number {
+get id(): number {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
-    return this.attributes.uuid
-  }
+get uuid(): string | undefined {
+      return this.attributes.uuid
+    }
 
-  get title(): string | undefined {
-    return this.attributes.title
-  }
+get title(): string | undefined {
+      return this.attributes.title
+    }
 
-  get template(): string | undefined {
-    return this.attributes.template
-  }
+get template(): string | undefined {
+      return this.attributes.template
+    }
 
-  get views(): number | undefined {
-    return this.attributes.views
-  }
+get views(): number | undefined {
+      return this.attributes.views
+    }
 
-  get published_at(): Date | string | undefined {
-    return this.attributes.published_at
-  }
+get published_at(): Date | string | undefined {
+      return this.attributes.published_at
+    }
 
-  get conversions(): number | undefined {
-    return this.attributes.conversions
-  }
+get conversions(): number | undefined {
+      return this.attributes.conversions
+    }
 
-  get created_at(): string | undefined {
-    return this.attributes.created_at
-  }
+get created_at(): string | undefined {
+      return this.attributes.created_at
+    }
 
-  get updated_at(): string | undefined {
-    return this.attributes.updated_at
-  }
+    get updated_at(): string | undefined {
+      return this.attributes.updated_at
+    }
+
 
   set uuid(value: string) {
-    this.attributes.uuid = value
-  }
+      this.attributes.uuid = value
+    }
 
-  set title(value: string) {
-    this.attributes.title = value
-  }
+set title(value: string) {
+      this.attributes.title = value
+    }
 
-  set template(value: string) {
-    this.attributes.template = value
-  }
+set template(value: string) {
+      this.attributes.template = value
+    }
 
-  set views(value: number) {
-    this.attributes.views = value
-  }
+set views(value: number) {
+      this.attributes.views = value
+    }
 
-  set published_at(value: Date | string) {
-    this.attributes.published_at = value
-  }
+set published_at(value: Date | string) {
+      this.attributes.published_at = value
+    }
 
-  set conversions(value: number) {
-    this.attributes.conversions = value
-  }
+set conversions(value: number) {
+      this.attributes.conversions = value
+    }
 
-  set updated_at(value: string) {
-    this.attributes.updated_at = value
-  }
+set updated_at(value: string) {
+      this.attributes.updated_at = value
+    }
+
+
 
   static select(params: (keyof PageJsonResponse)[] | RawBuilder<string> | string): PageModel {
     const instance = new PageModel(undefined)
@@ -216,12 +236,11 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
 
   // Method to find a Page by ID
   static async find(id: number): Promise<PageModel | undefined> {
-    const query = DB.instance.selectFrom('pages').where('id', '=', id).selectAll()
+    let query = DB.instance.selectFrom('pages').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     const instance = new PageModel(undefined)
     return instance.createInstance(model)
@@ -242,8 +261,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
 
     const model = await instance.applyLast()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new PageModel(model)
   }
@@ -276,7 +294,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
 
   static async findMany(ids: number[]): Promise<PageModel[]> {
     const instance = new PageModel(undefined)
-
+     
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: PageJsonResponse) => instance.parseResult(new PageModel(modelItem)))
@@ -291,8 +309,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new PageModel(model)
   }
@@ -306,8 +323,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new PageModel(model)
   }
@@ -474,12 +490,12 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: PageModel[]
+    data: PageModel[],
     paging: {
-      total_records: number
-      page: number
+      total_records: number,
+      page: number,
       total_pages: number
-    }
+    },
     next_cursor: number | null
   }> {
     const instance = new PageModel(undefined)
@@ -489,7 +505,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
     return {
       data: result.data.map((item: PageJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor,
+      next_cursor: result.next_cursor
     }
   }
 
@@ -501,13 +517,13 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
   async applyCreate(newPage: NewPage): Promise<PageModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPage).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as NewPage
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues.uuid = randomUUIDv7()
+    filteredValues['uuid'] = randomUUIDv7()
 
     const result = await DB.instance.insertInto('pages')
       .values(filteredValues)
@@ -522,6 +538,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
       throw new HttpError(500, 'Failed to retrieve created Page')
     }
 
+    
     return this.createInstance(model)
   }
 
@@ -590,7 +607,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
   async update(newPage: PageUpdate): Promise<PageModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPage).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as PageUpdate
 
@@ -614,6 +631,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve updated Page')
       }
 
+      
       return this.createInstance(model)
     }
 
@@ -637,6 +655,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve updated Page')
       }
 
+      
       return this.createInstance(model)
     }
 
@@ -662,9 +681,9 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve updated Page')
       }
 
+      
       return this.createInstance(model)
-    }
-    else {
+    } else {
       // Create new record
       const result = await DB.instance.insertInto('pages')
         .values(this.attributes as NewPage)
@@ -680,6 +699,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
         throw new HttpError(500, 'Failed to retrieve created Page')
       }
 
+      
       return this.createInstance(model)
     }
   }
@@ -694,7 +714,7 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
         ),
       ) as NewPage
 
-      filteredValues.uuid = randomUUIDv7()
+      filteredValues['uuid'] = randomUUIDv7()
 
       return filteredValues
     })
@@ -719,6 +739,8 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
       throw new HttpError(500, 'Failed to retrieve created Page')
     }
 
+    
+
     return instance.createInstance(model)
   }
 
@@ -726,6 +748,9 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
   async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
+    
+    
+    
 
     const deleted = await DB.instance.deleteFrom('pages')
       .where('id', '=', this.id)
@@ -735,50 +760,60 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
   }
 
   static async remove(id: number): Promise<any> {
+    
+
+    
+
+    
+
+    
+
     return await DB.instance.deleteFrom('pages')
       .where('id', '=', id)
       .execute()
   }
 
   static whereTitle(value: string): PageModel {
-    const instance = new PageModel(undefined)
+          const instance = new PageModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('title', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('title', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereTemplate(value: string): PageModel {
-    const instance = new PageModel(undefined)
+static whereTemplate(value: string): PageModel {
+          const instance = new PageModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('template', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('template', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereViews(value: string): PageModel {
-    const instance = new PageModel(undefined)
+static whereViews(value: string): PageModel {
+          const instance = new PageModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('views', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('views', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static wherePublishedAt(value: string): PageModel {
-    const instance = new PageModel(undefined)
+static wherePublishedAt(value: string): PageModel {
+          const instance = new PageModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('published_at', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('published_at', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereConversions(value: string): PageModel {
-    const instance = new PageModel(undefined)
+static whereConversions(value: string): PageModel {
+          const instance = new PageModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('conversions', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('conversions', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
+
+
 
   static whereIn<V = number>(column: keyof PagesTable, values: V[]): PageModel {
     const instance = new PageModel(undefined)
@@ -786,30 +821,39 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
     return instance.applyWhereIn<V>(column, values)
   }
 
-  async authorBelong(): Promise<AuthorModel> {
-    if (this.author_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
+  
+        async authorBelong(): Promise<AuthorModel> {
+          if (this.author_id === undefined)
+            throw new HttpError(500, 'Relation Error!')
 
-    const model = await Author
-      .where('id', '=', this.author_id)
-      .first()
+          const model = await Author
+            .where('id', '=', this.author_id)
+            .first()
 
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
+          if (! model)
+            throw new HttpError(500, 'Model Relation Not Found!')
 
-    return model
-  }
+          return model
+        }
 
-  toSearchableObject(): Partial<PageJsonResponse> {
-    return {
-      id: this.id,
-      title: this.title,
-      author: this.author,
-      template: this.template,
-      views: this.views,
-      conversions: this.conversions,
-    }
-  }
+
+
+  
+      toSearchableObject(): Partial<PageJsonResponse> {
+        return {
+          id: this.id,
+title: this.title,
+author: this.author,
+template: this.template,
+views: this.views,
+conversions: this.conversions
+        }
+      }
+    
+
+  
+
+  
 
   static distinct(column: keyof PageJsonResponse): PageModel {
     const instance = new PageModel(undefined)
@@ -826,23 +870,23 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
   toJSON(): PageJsonResponse {
     const output = {
 
-      uuid: this.uuid,
+ uuid: this.uuid,
 
-      id: this.id,
-      title: this.title,
-      template: this.template,
-      views: this.views,
-      published_at: this.published_at,
-      conversions: this.conversions,
+id: this.id,
+title: this.title,
+   template: this.template,
+   views: this.views,
+   published_at: this.published_at,
+   conversions: this.conversions,
+   
+        created_at: this.created_at,
 
-      created_at: this.created_at,
-
-      updated_at: this.updated_at,
+        updated_at: this.updated_at,
 
       author_id: this.author_id,
-      author: this.author,
-      ...this.customColumns,
-    }
+   author: this.author,
+...this.customColumns,
+}
 
     return output
   }
@@ -854,6 +898,8 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
 
     return model
   }
+
+  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<PageModel | undefined> {
@@ -872,15 +918,16 @@ export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> 
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
+
+  
 }
 
 export async function find(id: number): Promise<PageModel | undefined> {
-  const query = DB.instance.selectFrom('pages').where('id', '=', id).selectAll()
+  let query = DB.instance.selectFrom('pages').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model)
-    return undefined
+  if (!model) return undefined
 
   const instance = new PageModel(undefined)
   return instance.createInstance(model)
@@ -908,39 +955,41 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereTitle(value: string): Promise<PageModel[]> {
-  const query = DB.instance.selectFrom('pages').where('title', '=', value)
-  const results: PageJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('pages').where('title', '=', value)
+          const results: PageJsonResponse = await query.execute()
 
-  return results.map((modelItem: PageJsonResponse) => new PageModel(modelItem))
-}
+          return results.map((modelItem: PageJsonResponse) => new PageModel(modelItem))
+        } 
 
 export async function whereTemplate(value: string): Promise<PageModel[]> {
-  const query = DB.instance.selectFrom('pages').where('template', '=', value)
-  const results: PageJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('pages').where('template', '=', value)
+          const results: PageJsonResponse = await query.execute()
 
-  return results.map((modelItem: PageJsonResponse) => new PageModel(modelItem))
-}
+          return results.map((modelItem: PageJsonResponse) => new PageModel(modelItem))
+        } 
 
 export async function whereViews(value: number): Promise<PageModel[]> {
-  const query = DB.instance.selectFrom('pages').where('views', '=', value)
-  const results: PageJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('pages').where('views', '=', value)
+          const results: PageJsonResponse = await query.execute()
 
-  return results.map((modelItem: PageJsonResponse) => new PageModel(modelItem))
-}
+          return results.map((modelItem: PageJsonResponse) => new PageModel(modelItem))
+        } 
 
 export async function wherePublishedAt(value: Date | string): Promise<PageModel[]> {
-  const query = DB.instance.selectFrom('pages').where('published_at', '=', value)
-  const results: PageJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('pages').where('published_at', '=', value)
+          const results: PageJsonResponse = await query.execute()
 
-  return results.map((modelItem: PageJsonResponse) => new PageModel(modelItem))
-}
+          return results.map((modelItem: PageJsonResponse) => new PageModel(modelItem))
+        } 
 
 export async function whereConversions(value: number): Promise<PageModel[]> {
-  const query = DB.instance.selectFrom('pages').where('conversions', '=', value)
-  const results: PageJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('pages').where('conversions', '=', value)
+          const results: PageJsonResponse = await query.execute()
 
-  return results.map((modelItem: PageJsonResponse) => new PageModel(modelItem))
-}
+          return results.map((modelItem: PageJsonResponse) => new PageModel(modelItem))
+        } 
+
+
 
 export const Page = PageModel
 

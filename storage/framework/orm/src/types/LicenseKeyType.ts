@@ -1,8 +1,9 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { CustomerModelType } from './CustomerType'
-import type { OrderModelType } from './OrderType'
 import type { ProductModelType } from './ProductType'
+import type { OrderModelType } from './OrderType'
+
 
 export interface LicenseKeysTable {
   id: Generated<number>
@@ -50,9 +51,9 @@ export interface LicenseKeyModelType {
   get status(): string | string[] | undefined
   set status(value: string | string[])
   get customer(): CustomerModelType | undefined
-  get product(): ProductModelType | undefined
-  get order(): OrderModelType | undefined
-
+        get product(): ProductModelType | undefined
+        get order(): OrderModelType | undefined
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -127,7 +128,7 @@ export interface LicenseKeyModelType {
   toJSON: () => LicenseKeyJsonResponse
   parseResult: (model: LicenseKeyModelType) => LicenseKeyModelType
 
-  customerBelong: () => Promise<CustomerModelType>
-  productBelong: () => Promise<ProductModelType>
-  orderBelong: () => Promise<OrderModelType>
+    customerBelong: () => Promise<CustomerModelType>
+    productBelong: () => Promise<ProductModelType>
+    orderBelong: () => Promise<OrderModelType>
 }

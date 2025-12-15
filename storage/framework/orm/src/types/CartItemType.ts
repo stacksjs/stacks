@@ -2,6 +2,7 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { CartModelType } from './CartType'
 
+
 export interface CartItemsTable {
   id: Generated<number>
   quantity: number
@@ -69,7 +70,7 @@ export interface CartItemModelType {
   get notes(): string | undefined
   set notes(value: string)
   get cart(): CartModelType | undefined
-
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -144,5 +145,5 @@ export interface CartItemModelType {
   toJSON: () => CartItemJsonResponse
   parseResult: (model: CartItemModelType) => CartItemModelType
 
-  cartBelong: () => Promise<CartModelType>
+    cartBelong: () => Promise<CartModelType>
 }

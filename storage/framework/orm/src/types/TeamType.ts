@@ -2,6 +2,7 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { PersonalAccessTokenModelType } from './PersonalAccessTokenType'
 
+
 export interface TeamsTable {
   id: Generated<number>
   name: string

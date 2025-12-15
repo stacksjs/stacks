@@ -3,6 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import type { ShippingMethodModelType } from './ShippingMethodType'
 import type { ShippingZoneModelType } from './ShippingZoneType'
 
+
 export interface ShippingRatesTable {
   id: Generated<number>
   weight_from: number
@@ -46,8 +47,8 @@ export interface ShippingRateModelType {
   get rate(): number
   set rate(value: number)
   get shipping_method(): ShippingMethodModelType | undefined
-  get shipping_zone(): ShippingZoneModelType | undefined
-
+        get shipping_zone(): ShippingZoneModelType | undefined
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -122,6 +123,6 @@ export interface ShippingRateModelType {
   toJSON: () => ShippingRateJsonResponse
   parseResult: (model: ShippingRateModelType) => ShippingRateModelType
 
-  shippingMethodBelong: () => Promise<ShippingMethodModelType>
-  shippingZoneBelong: () => Promise<ShippingZoneModelType>
+    shippingMethodBelong: () => Promise<ShippingMethodModelType>
+    shippingZoneBelong: () => Promise<ShippingZoneModelType>
 }

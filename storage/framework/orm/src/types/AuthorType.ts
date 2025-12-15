@@ -3,6 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import type { PostModelType } from './PostType'
 import type { UserModelType } from './UserType'
 
+
 export interface AuthorsTable {
   id: Generated<number>
   name: string
@@ -44,7 +45,7 @@ export interface AuthorModelType {
   set email(value: string)
   get post(): PostModelType[] | []
   get user(): UserModelType | undefined
-
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -119,5 +120,5 @@ export interface AuthorModelType {
   toJSON: () => AuthorJsonResponse
   parseResult: (model: AuthorModelType) => AuthorModelType
 
-  userBelong: () => Promise<UserModelType>
+    userBelong: () => Promise<UserModelType>
 }

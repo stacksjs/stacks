@@ -1,13 +1,14 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CategoryModelType } from './CategoryType'
-import type { CouponModelType } from './CouponType'
-import type { LicenseKeyModelType } from './LicenseKeyType'
-import type { ManufacturerModelType } from './ManufacturerType'
+import type { ReviewModelType } from './ReviewType'
 import type { ProductUnitModelType } from './ProductUnitType'
 import type { ProductVariantModelType } from './ProductVariantType'
-import type { ReviewModelType } from './ReviewType'
+import type { LicenseKeyModelType } from './LicenseKeyType'
 import type { WaitlistProductModelType } from './WaitlistProductType'
+import type { CouponModelType } from './CouponType'
+import type { CategoryModelType } from './CategoryType'
+import type { ManufacturerModelType } from './ManufacturerType'
+
 
 export interface ProductsTable {
   id: Generated<number>
@@ -76,8 +77,8 @@ export interface ProductModelType {
   get waitlist_product(): WaitlistProductModelType[] | []
   get coupon(): CouponModelType[] | []
   get category(): CategoryModelType | undefined
-  get manufacturer(): ManufacturerModelType | undefined
-
+        get manufacturer(): ManufacturerModelType | undefined
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -152,6 +153,6 @@ export interface ProductModelType {
   toJSON: () => ProductJsonResponse
   parseResult: (model: ProductModelType) => ProductModelType
 
-  categoryBelong: () => Promise<CategoryModelType>
-  manufacturerBelong: () => Promise<ManufacturerModelType>
+    categoryBelong: () => Promise<CategoryModelType>
+    manufacturerBelong: () => Promise<ManufacturerModelType>
 }

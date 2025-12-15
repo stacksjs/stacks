@@ -1,20 +1,34 @@
-import type { RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
-import type { NewWebsocket, WebsocketJsonResponse, WebsocketsTable, WebsocketUpdate } from '../types/WebsocketType'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
+import Stripe from 'stripe'
 import { sql } from '@stacksjs/database'
+import { DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
+import type { Operator } from '@stacksjs/orm'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { DB } from '@stacksjs/orm'
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { randomUUIDv7 } from 'bun'
+import type { WebsocketModelType, WebsocketJsonResponse, NewWebsocket, WebsocketUpdate, WebsocketsTable } from '../types/WebsocketType'
 
-import { BaseOrm } from '../utils/base'
+
+
+
+import type { Model } from '@stacksjs/types';
+import { schema } from '@stacksjs/validation';
+
+
+
 
 export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, WebsocketJsonResponse> {
   private readonly hidden: Array<keyof WebsocketJsonResponse> = []
-  private readonly fillable: Array<keyof WebsocketJsonResponse> = ['type', 'socket', 'details', 'time']
+  private readonly fillable: Array<keyof WebsocketJsonResponse> = ["type","socket","details","time"]
   private readonly guarded: Array<keyof WebsocketJsonResponse> = []
   protected attributes = {} as WebsocketJsonResponse
   protected originalAttributes = {} as WebsocketJsonResponse
-
+  
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -32,12 +46,13 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
   constructor(websocket: WebsocketJsonResponse | undefined) {
     super('websockets')
     if (websocket) {
+
       this.attributes = { ...websocket }
       this.originalAttributes = { ...websocket }
 
-      Object.keys(websocket).forEach((key) => {
+      Object.keys(websocket).forEach(key => {
         if (!(key in this)) {
-          this.customColumns[key] = (websocket as WebsocketJsonResponse)[key]
+           this.customColumns[key] = (websocket as WebsocketJsonResponse)[key]
         }
       })
     }
@@ -52,8 +67,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
   protected async loadRelations(models: WebsocketJsonResponse | WebsocketJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length)
-      return
+    if (!modelArray.length) return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -73,8 +87,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      }
-      else {
+      } else {
         const records = relatedRecords.filter((record: { websocket_id: number }) => {
           return record.websocket_id === models.id
         })
@@ -95,10 +108,12 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
 
     if (Array.isArray(data)) {
       data.map((model: WebsocketJsonResponse) => {
+
         const customGetter = {
           default: () => {
           },
 
+          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -107,14 +122,14 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
 
         return model
       })
-    }
-    else {
+    } else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
+        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -128,10 +143,11 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
       default: () => {
       },
 
+      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      (model as any)[key] = await fn()
+        (model as any)[key] = await fn()
     }
   }
 
@@ -139,49 +155,52 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
     return this.attributes.id
   }
 
-  get type(): string | string[] | undefined {
-    return this.attributes.type
-  }
+get type(): string | string[] | undefined {
+      return this.attributes.type
+    }
 
-  get socket(): string | undefined {
-    return this.attributes.socket
-  }
+get socket(): string | undefined {
+      return this.attributes.socket
+    }
 
-  get details(): string | undefined {
-    return this.attributes.details
-  }
+get details(): string | undefined {
+      return this.attributes.details
+    }
 
-  get time(): number | undefined {
-    return this.attributes.time
-  }
+get time(): number | undefined {
+      return this.attributes.time
+    }
 
-  get created_at(): string | undefined {
-    return this.attributes.created_at
-  }
+get created_at(): string | undefined {
+      return this.attributes.created_at
+    }
 
-  get updated_at(): string | undefined {
-    return this.attributes.updated_at
-  }
+    get updated_at(): string | undefined {
+      return this.attributes.updated_at
+    }
+
 
   set type(value: string | string[]) {
-    this.attributes.type = value
-  }
+      this.attributes.type = value
+    }
 
-  set socket(value: string) {
-    this.attributes.socket = value
-  }
+set socket(value: string) {
+      this.attributes.socket = value
+    }
 
-  set details(value: string) {
-    this.attributes.details = value
-  }
+set details(value: string) {
+      this.attributes.details = value
+    }
 
-  set time(value: number) {
-    this.attributes.time = value
-  }
+set time(value: number) {
+      this.attributes.time = value
+    }
 
-  set updated_at(value: string) {
-    this.attributes.updated_at = value
-  }
+set updated_at(value: string) {
+      this.attributes.updated_at = value
+    }
+
+
 
   static select(params: (keyof WebsocketJsonResponse)[] | RawBuilder<string> | string): WebsocketModel {
     const instance = new WebsocketModel(undefined)
@@ -191,12 +210,11 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
 
   // Method to find a Websocket by ID
   static async find(id: number): Promise<WebsocketModel | undefined> {
-    const query = DB.instance.selectFrom('websockets').where('id', '=', id).selectAll()
+    let query = DB.instance.selectFrom('websockets').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     const instance = new WebsocketModel(undefined)
     return instance.createInstance(model)
@@ -217,8 +235,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
 
     const model = await instance.applyLast()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new WebsocketModel(model)
   }
@@ -251,7 +268,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
 
   static async findMany(ids: number[]): Promise<WebsocketModel[]> {
     const instance = new WebsocketModel(undefined)
-
+     
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: WebsocketJsonResponse) => instance.parseResult(new WebsocketModel(modelItem)))
@@ -266,8 +283,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new WebsocketModel(model)
   }
@@ -281,8 +297,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new WebsocketModel(model)
   }
@@ -449,12 +464,12 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: WebsocketModel[]
+    data: WebsocketModel[],
     paging: {
-      total_records: number
-      page: number
+      total_records: number,
+      page: number,
       total_pages: number
-    }
+    },
     next_cursor: number | null
   }> {
     const instance = new WebsocketModel(undefined)
@@ -464,7 +479,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
     return {
       data: result.data.map((item: WebsocketJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor,
+      next_cursor: result.next_cursor
     }
   }
 
@@ -476,11 +491,13 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
   async applyCreate(newWebsocket: NewWebsocket): Promise<WebsocketModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newWebsocket).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as NewWebsocket
 
     await this.mapCustomSetters(filteredValues)
+
+    
 
     const result = await DB.instance.insertInto('websockets')
       .values(filteredValues)
@@ -496,7 +513,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
     }
 
     if (model)
-      dispatch('websocket:created', model)
+ dispatch('websocket:created', model)
     return this.createInstance(model)
   }
 
@@ -565,7 +582,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
   async update(newWebsocket: WebsocketUpdate): Promise<WebsocketModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newWebsocket).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as WebsocketUpdate
 
@@ -590,7 +607,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
       }
 
       if (model)
-        dispatch('websocket:updated', model)
+ dispatch('websocket:updated', model)
       return this.createInstance(model)
     }
 
@@ -615,7 +632,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
       }
 
       if (this)
-        dispatch('websocket:updated', model)
+ dispatch('websocket:updated', model)
       return this.createInstance(model)
     }
 
@@ -642,10 +659,9 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
       }
 
       if (this)
-        dispatch('websocket:updated', model)
+ dispatch('websocket:updated', model)
       return this.createInstance(model)
-    }
-    else {
+    } else {
       // Create new record
       const result = await DB.instance.insertInto('websockets')
         .values(this.attributes as NewWebsocket)
@@ -662,7 +678,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
       }
 
       if (this)
-        dispatch('websocket:created', model)
+ dispatch('websocket:created', model)
       return this.createInstance(model)
     }
   }
@@ -676,6 +692,8 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewWebsocket
+
+      
 
       return filteredValues
     })
@@ -701,7 +719,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
     }
 
     if (model)
-      dispatch('websocket:created', model)
+ dispatch('websocket:created', model)
 
     return instance.createInstance(model)
   }
@@ -711,9 +729,9 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-
+    
     if (model)
-      dispatch('websocket:deleted', model)
+ dispatch('websocket:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('websockets')
       .where('id', '=', this.id)
@@ -727,8 +745,10 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
 
     const model = await instance.find(Number(id))
 
+    
+
     if (model)
-      dispatch('websocket:deleted', model)
+ dispatch('websocket:deleted', model)
 
     return await DB.instance.deleteFrom('websockets')
       .where('id', '=', id)
@@ -736,42 +756,52 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
   }
 
   static whereType(value: string): WebsocketModel {
-    const instance = new WebsocketModel(undefined)
+          const instance = new WebsocketModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereSocket(value: string): WebsocketModel {
-    const instance = new WebsocketModel(undefined)
+static whereSocket(value: string): WebsocketModel {
+          const instance = new WebsocketModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('socket', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('socket', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereDetails(value: string): WebsocketModel {
-    const instance = new WebsocketModel(undefined)
+static whereDetails(value: string): WebsocketModel {
+          const instance = new WebsocketModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('details', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('details', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereTime(value: string): WebsocketModel {
-    const instance = new WebsocketModel(undefined)
+static whereTime(value: string): WebsocketModel {
+          const instance = new WebsocketModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('time', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('time', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
+
+
 
   static whereIn<V = number>(column: keyof WebsocketsTable, values: V[]): WebsocketModel {
     const instance = new WebsocketModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
+
+  
+
+  
+
+  
+
+  
 
   static distinct(column: keyof WebsocketJsonResponse): WebsocketModel {
     const instance = new WebsocketModel(undefined)
@@ -788,18 +818,18 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
   toJSON(): WebsocketJsonResponse {
     const output = {
 
-      id: this.id,
-      type: this.type,
-      socket: this.socket,
-      details: this.details,
-      time: this.time,
+id: this.id,
+type: this.type,
+   socket: this.socket,
+   details: this.details,
+   time: this.time,
+   
+        created_at: this.created_at,
 
-      created_at: this.created_at,
-
-      updated_at: this.updated_at,
+        updated_at: this.updated_at,
 
       ...this.customColumns,
-    }
+}
 
     return output
   }
@@ -811,6 +841,8 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
 
     return model
   }
+
+  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<WebsocketModel | undefined> {
@@ -829,15 +861,16 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
+
+  
 }
 
 export async function find(id: number): Promise<WebsocketModel | undefined> {
-  const query = DB.instance.selectFrom('websockets').where('id', '=', id).selectAll()
+  let query = DB.instance.selectFrom('websockets').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model)
-    return undefined
+  if (!model) return undefined
 
   const instance = new WebsocketModel(undefined)
   return instance.createInstance(model)
@@ -865,32 +898,34 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereType(value: string | string[]): Promise<WebsocketModel[]> {
-  const query = DB.instance.selectFrom('websockets').where('type', '=', value)
-  const results: WebsocketJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('websockets').where('type', '=', value)
+          const results: WebsocketJsonResponse = await query.execute()
 
-  return results.map((modelItem: WebsocketJsonResponse) => new WebsocketModel(modelItem))
-}
+          return results.map((modelItem: WebsocketJsonResponse) => new WebsocketModel(modelItem))
+        } 
 
 export async function whereSocket(value: string): Promise<WebsocketModel[]> {
-  const query = DB.instance.selectFrom('websockets').where('socket', '=', value)
-  const results: WebsocketJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('websockets').where('socket', '=', value)
+          const results: WebsocketJsonResponse = await query.execute()
 
-  return results.map((modelItem: WebsocketJsonResponse) => new WebsocketModel(modelItem))
-}
+          return results.map((modelItem: WebsocketJsonResponse) => new WebsocketModel(modelItem))
+        } 
 
 export async function whereDetails(value: string): Promise<WebsocketModel[]> {
-  const query = DB.instance.selectFrom('websockets').where('details', '=', value)
-  const results: WebsocketJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('websockets').where('details', '=', value)
+          const results: WebsocketJsonResponse = await query.execute()
 
-  return results.map((modelItem: WebsocketJsonResponse) => new WebsocketModel(modelItem))
-}
+          return results.map((modelItem: WebsocketJsonResponse) => new WebsocketModel(modelItem))
+        } 
 
 export async function whereTime(value: number): Promise<WebsocketModel[]> {
-  const query = DB.instance.selectFrom('websockets').where('time', '=', value)
-  const results: WebsocketJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('websockets').where('time', '=', value)
+          const results: WebsocketJsonResponse = await query.execute()
 
-  return results.map((modelItem: WebsocketJsonResponse) => new WebsocketModel(modelItem))
-}
+          return results.map((modelItem: WebsocketJsonResponse) => new WebsocketModel(modelItem))
+        } 
+
+
 
 export const Websocket = WebsocketModel
 

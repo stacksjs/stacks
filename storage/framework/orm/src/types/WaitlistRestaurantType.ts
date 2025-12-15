@@ -2,6 +2,7 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { CustomerModelType } from './CustomerType'
 
+
 export interface WaitlistRestaurantsTable {
   id: Generated<number>
   name: string
@@ -75,7 +76,7 @@ export interface WaitlistRestaurantModelType {
   get cancelledAt(): Date | string | undefined
   set cancelledAt(value: Date | string)
   get customer(): CustomerModelType | undefined
-
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -150,5 +151,5 @@ export interface WaitlistRestaurantModelType {
   toJSON: () => WaitlistRestaurantJsonResponse
   parseResult: (model: WaitlistRestaurantModelType) => WaitlistRestaurantModelType
 
-  customerBelong: () => Promise<CustomerModelType>
+    customerBelong: () => Promise<CustomerModelType>
 }

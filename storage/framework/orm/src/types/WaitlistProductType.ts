@@ -1,7 +1,8 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CustomerModelType } from './CustomerType'
 import type { ProductModelType } from './ProductType'
+import type { CustomerModelType } from './CustomerType'
+
 
 export interface WaitlistProductsTable {
   id: Generated<number>
@@ -70,8 +71,8 @@ export interface WaitlistProductModelType {
   get cancelledAt(): unix | undefined
   set cancelledAt(value: unix)
   get product(): ProductModelType | undefined
-  get customer(): CustomerModelType | undefined
-
+        get customer(): CustomerModelType | undefined
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -146,6 +147,6 @@ export interface WaitlistProductModelType {
   toJSON: () => WaitlistProductJsonResponse
   parseResult: (model: WaitlistProductModelType) => WaitlistProductModelType
 
-  productBelong: () => Promise<ProductModelType>
-  customerBelong: () => Promise<CustomerModelType>
+    productBelong: () => Promise<ProductModelType>
+    customerBelong: () => Promise<CustomerModelType>
 }

@@ -2,6 +2,7 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { UserModelType } from './UserType'
 
+
 export interface DeploymentsTable {
   id: Generated<number>
   commit_sha?: string
@@ -57,7 +58,7 @@ export interface DeploymentModelType {
   get terminalOutput(): string | undefined
   set terminalOutput(value: string)
   get user(): UserModelType | undefined
-
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -132,5 +133,5 @@ export interface DeploymentModelType {
   toJSON: () => DeploymentJsonResponse
   parseResult: (model: DeploymentModelType) => DeploymentModelType
 
-  userBelong: () => Promise<UserModelType>
+    userBelong: () => Promise<UserModelType>
 }

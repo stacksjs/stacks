@@ -1,33 +1,50 @@
-import type { RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
-import type { CustomerJsonResponse, CustomersTable, CustomerUpdate, NewCustomer } from '../types/CustomerType'
-import type { GiftCardModel } from './GiftCard'
-import type { LicenseKeyModel } from './LicenseKey'
-import type { OrderModel } from './Order'
-import type { PaymentModel } from './Payment'
-import type { ReviewModel } from './Review'
-import type { UserModel } from './User'
-import type { WaitlistProductModel } from './WaitlistProduct'
-import type { WaitlistRestaurantModel } from './WaitlistRestaurant'
-import { randomUUIDv7 } from 'bun'
-
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
+import Stripe from 'stripe'
 import { sql } from '@stacksjs/database'
-
-import { HttpError } from '@stacksjs/error-handling'
-
-import { dispatch } from '@stacksjs/events'
-
 import { DB } from '@stacksjs/orm'
-
 import { BaseOrm } from '../utils/base'
+import type { Operator } from '@stacksjs/orm'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import { HttpError } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { randomUUIDv7 } from 'bun'
+import type { CustomerModelType, CustomerJsonResponse, NewCustomer, CustomerUpdate, CustomersTable } from '../types/CustomerType'
+
+import type {OrderModel} from './Order'
+
+import type {GiftCardModel} from './GiftCard'
+
+import type {ReviewModel} from './Review'
+
+import type {PaymentModel} from './Payment'
+
+import type {LicenseKeyModel} from './LicenseKey'
+
+import type {WaitlistProductModel} from './WaitlistProduct'
+
+import type {WaitlistRestaurantModel} from './WaitlistRestaurant'
+
+import type {UserModel} from './User'
+
+
+
+
+import type { Attributes, Model } from '@stacksjs/types';
+import { schema } from '@stacksjs/validation';
+
+
+
 
 export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, CustomerJsonResponse> {
   private readonly hidden: Array<keyof CustomerJsonResponse> = []
-  private readonly fillable: Array<keyof CustomerJsonResponse> = ['name', 'email', 'phone', 'total_spent', 'last_order', 'status', 'avatar', 'uuid', 'user_id']
+  private readonly fillable: Array<keyof CustomerJsonResponse> = ["name","email","phone","total_spent","last_order","status","avatar","uuid","user_id"]
   private readonly guarded: Array<keyof CustomerJsonResponse> = []
   protected attributes = {} as CustomerJsonResponse
   protected originalAttributes = {} as CustomerJsonResponse
-
+  
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -45,12 +62,13 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
   constructor(customer: CustomerJsonResponse | undefined) {
     super('customers')
     if (customer) {
+
       this.attributes = { ...customer }
       this.originalAttributes = { ...customer }
 
-      Object.keys(customer).forEach((key) => {
+      Object.keys(customer).forEach(key => {
         if (!(key in this)) {
-          this.customColumns[key] = (customer as CustomerJsonResponse)[key]
+           this.customColumns[key] = (customer as CustomerJsonResponse)[key]
         }
       })
     }
@@ -65,8 +83,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
   protected async loadRelations(models: CustomerJsonResponse | CustomerJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length)
-      return
+    if (!modelArray.length) return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -86,8 +103,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      }
-      else {
+      } else {
         const records = relatedRecords.filter((record: { customer_id: number }) => {
           return record.customer_id === models.id
         })
@@ -108,13 +124,14 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
 
     if (Array.isArray(data)) {
       data.map((model: CustomerJsonResponse) => {
+
         const customGetter = {
           default: () => {
           },
 
           fullContactInfo: () => {
-            return `${model.name} (${model.email}, ${model.phone})`
-          },
+      return `${model.name} (${model.email}, ${model.phone})`;
+    }, 
 
         }
 
@@ -124,8 +141,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
 
         return model
       })
-    }
-    else {
+    } else {
       const model = data
 
       const customGetter = {
@@ -133,8 +149,8 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
         },
 
         fullContactInfo: () => {
-          return `${model.name} (${model.email}, ${model.phone})`
-        },
+      return `${model.name} (${model.email}, ${model.phone})`;
+    }, 
 
       }
 
@@ -149,128 +165,132 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
       default: () => {
       },
 
+      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      (model as any)[key] = await fn()
+        (model as any)[key] = await fn()
     }
   }
 
-  get orders(): OrderModel[] | [] {
-    return this.attributes.orders
-  }
+  get orders():OrderModel[] | [] {
+        return this.attributes.orders
+      }
 
-  get gift_cards(): GiftCardModel[] | [] {
-    return this.attributes.gift_cards
-  }
+get gift_cards():GiftCardModel[] | [] {
+        return this.attributes.gift_cards
+      }
 
-  get reviews(): ReviewModel[] | [] {
-    return this.attributes.reviews
-  }
+get reviews():ReviewModel[] | [] {
+        return this.attributes.reviews
+      }
 
-  get payments(): PaymentModel[] | [] {
-    return this.attributes.payments
-  }
+get payments():PaymentModel[] | [] {
+        return this.attributes.payments
+      }
 
-  get license_keys(): LicenseKeyModel[] | [] {
-    return this.attributes.license_keys
-  }
+get license_keys():LicenseKeyModel[] | [] {
+        return this.attributes.license_keys
+      }
 
-  get waitlist_products(): WaitlistProductModel[] | [] {
-    return this.attributes.waitlist_products
-  }
+get waitlist_products():WaitlistProductModel[] | [] {
+        return this.attributes.waitlist_products
+      }
 
-  get waitlist_restaurants(): WaitlistRestaurantModel[] | [] {
-    return this.attributes.waitlist_restaurants
-  }
+get waitlist_restaurants():WaitlistRestaurantModel[] | [] {
+        return this.attributes.waitlist_restaurants
+      }
 
-  get user_id(): number {
-    return this.attributes.user_id
-  }
+get user_id(): number {
+        return this.attributes.user_id
+      }
 
-  get user(): UserModel | undefined {
-    return this.attributes.user
-  }
+get user(): UserModel | undefined {
+        return this.attributes.user
+      }
 
-  get id(): number {
+get id(): number {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
-    return this.attributes.uuid
-  }
+get uuid(): string | undefined {
+      return this.attributes.uuid
+    }
 
-  get name(): string {
-    return this.attributes.name
-  }
+get name(): string {
+      return this.attributes.name
+    }
 
-  get email(): string {
-    return this.attributes.email
-  }
+get email(): string {
+      return this.attributes.email
+    }
 
-  get phone(): string {
-    return this.attributes.phone
-  }
+get phone(): string {
+      return this.attributes.phone
+    }
 
-  get total_spent(): number | undefined {
-    return this.attributes.total_spent
-  }
+get total_spent(): number | undefined {
+      return this.attributes.total_spent
+    }
 
-  get last_order(): string | undefined {
-    return this.attributes.last_order
-  }
+get last_order(): string | undefined {
+      return this.attributes.last_order
+    }
 
-  get status(): string | string[] {
-    return this.attributes.status
-  }
+get status(): string | string[] {
+      return this.attributes.status
+    }
 
-  get avatar(): string {
-    return this.attributes.avatar
-  }
+get avatar(): string {
+      return this.attributes.avatar
+    }
 
-  get created_at(): string | undefined {
-    return this.attributes.created_at
-  }
+get created_at(): string | undefined {
+      return this.attributes.created_at
+    }
 
-  get updated_at(): string | undefined {
-    return this.attributes.updated_at
-  }
+    get updated_at(): string | undefined {
+      return this.attributes.updated_at
+    }
+
 
   set uuid(value: string) {
-    this.attributes.uuid = value
-  }
+      this.attributes.uuid = value
+    }
 
-  set name(value: string) {
-    this.attributes.name = value
-  }
+set name(value: string) {
+      this.attributes.name = value
+    }
 
-  set email(value: string) {
-    this.attributes.email = value
-  }
+set email(value: string) {
+      this.attributes.email = value
+    }
 
-  set phone(value: string) {
-    this.attributes.phone = value
-  }
+set phone(value: string) {
+      this.attributes.phone = value
+    }
 
-  set total_spent(value: number) {
-    this.attributes.total_spent = value
-  }
+set total_spent(value: number) {
+      this.attributes.total_spent = value
+    }
 
-  set last_order(value: string) {
-    this.attributes.last_order = value
-  }
+set last_order(value: string) {
+      this.attributes.last_order = value
+    }
 
-  set status(value: string | string[]) {
-    this.attributes.status = value
-  }
+set status(value: string | string[]) {
+      this.attributes.status = value
+    }
 
-  set avatar(value: string) {
-    this.attributes.avatar = value
-  }
+set avatar(value: string) {
+      this.attributes.avatar = value
+    }
 
-  set updated_at(value: string) {
-    this.attributes.updated_at = value
-  }
+set updated_at(value: string) {
+      this.attributes.updated_at = value
+    }
+
+
 
   static select(params: (keyof CustomerJsonResponse)[] | RawBuilder<string> | string): CustomerModel {
     const instance = new CustomerModel(undefined)
@@ -280,12 +300,11 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
 
   // Method to find a Customer by ID
   static async find(id: number): Promise<CustomerModel | undefined> {
-    const query = DB.instance.selectFrom('customers').where('id', '=', id).selectAll()
+    let query = DB.instance.selectFrom('customers').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     const instance = new CustomerModel(undefined)
     return instance.createInstance(model)
@@ -306,8 +325,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
 
     const model = await instance.applyLast()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new CustomerModel(model)
   }
@@ -340,7 +358,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
 
   static async findMany(ids: number[]): Promise<CustomerModel[]> {
     const instance = new CustomerModel(undefined)
-
+     
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: CustomerJsonResponse) => instance.parseResult(new CustomerModel(modelItem)))
@@ -355,8 +373,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new CustomerModel(model)
   }
@@ -370,8 +387,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new CustomerModel(model)
   }
@@ -538,12 +554,12 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: CustomerModel[]
+    data: CustomerModel[],
     paging: {
-      total_records: number
-      page: number
+      total_records: number,
+      page: number,
       total_pages: number
-    }
+    },
     next_cursor: number | null
   }> {
     const instance = new CustomerModel(undefined)
@@ -553,7 +569,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return {
       data: result.data.map((item: CustomerJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor,
+      next_cursor: result.next_cursor
     }
   }
 
@@ -565,13 +581,13 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
   async applyCreate(newCustomer: NewCustomer): Promise<CustomerModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newCustomer).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as NewCustomer
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues.uuid = randomUUIDv7()
+    filteredValues['uuid'] = randomUUIDv7()
 
     const result = await DB.instance.insertInto('customers')
       .values(filteredValues)
@@ -587,7 +603,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     }
 
     if (model)
-      dispatch('customer:created', model)
+ dispatch('customer:created', model)
     return this.createInstance(model)
   }
 
@@ -656,7 +672,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
   async update(newCustomer: CustomerUpdate): Promise<CustomerModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newCustomer).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as CustomerUpdate
 
@@ -681,7 +697,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
       }
 
       if (model)
-        dispatch('customer:updated', model)
+ dispatch('customer:updated', model)
       return this.createInstance(model)
     }
 
@@ -706,7 +722,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
       }
 
       if (this)
-        dispatch('customer:updated', model)
+ dispatch('customer:updated', model)
       return this.createInstance(model)
     }
 
@@ -733,10 +749,9 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
       }
 
       if (this)
-        dispatch('customer:updated', model)
+ dispatch('customer:updated', model)
       return this.createInstance(model)
-    }
-    else {
+    } else {
       // Create new record
       const result = await DB.instance.insertInto('customers')
         .values(this.attributes as NewCustomer)
@@ -753,7 +768,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
       }
 
       if (this)
-        dispatch('customer:created', model)
+ dispatch('customer:created', model)
       return this.createInstance(model)
     }
   }
@@ -768,7 +783,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
         ),
       ) as NewCustomer
 
-      filteredValues.uuid = randomUUIDv7()
+      filteredValues['uuid'] = randomUUIDv7()
 
       return filteredValues
     })
@@ -794,7 +809,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     }
 
     if (model)
-      dispatch('customer:created', model)
+ dispatch('customer:created', model)
 
     return instance.createInstance(model)
   }
@@ -804,9 +819,9 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-
+    
     if (model)
-      dispatch('customer:deleted', model)
+ dispatch('customer:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('customers')
       .where('id', '=', this.id)
@@ -820,8 +835,10 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
 
     const model = await instance.find(Number(id))
 
+    
+
     if (model)
-      dispatch('customer:deleted', model)
+ dispatch('customer:deleted', model)
 
     return await DB.instance.deleteFrom('customers')
       .where('id', '=', id)
@@ -829,60 +846,62 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
   }
 
   static whereName(value: string): CustomerModel {
-    const instance = new CustomerModel(undefined)
+          const instance = new CustomerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereEmail(value: string): CustomerModel {
-    const instance = new CustomerModel(undefined)
+static whereEmail(value: string): CustomerModel {
+          const instance = new CustomerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static wherePhone(value: string): CustomerModel {
-    const instance = new CustomerModel(undefined)
+static wherePhone(value: string): CustomerModel {
+          const instance = new CustomerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('phone', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('phone', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereTotalSpent(value: string): CustomerModel {
-    const instance = new CustomerModel(undefined)
+static whereTotalSpent(value: string): CustomerModel {
+          const instance = new CustomerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('total_spent', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('total_spent', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereLastOrder(value: string): CustomerModel {
-    const instance = new CustomerModel(undefined)
+static whereLastOrder(value: string): CustomerModel {
+          const instance = new CustomerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('last_order', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('last_order', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereStatus(value: string): CustomerModel {
-    const instance = new CustomerModel(undefined)
+static whereStatus(value: string): CustomerModel {
+          const instance = new CustomerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereAvatar(value: string): CustomerModel {
-    const instance = new CustomerModel(undefined)
+static whereAvatar(value: string): CustomerModel {
+          const instance = new CustomerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('avatar', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('avatar', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
+
+
 
   static whereIn<V = number>(column: keyof CustomersTable, values: V[]): CustomerModel {
     const instance = new CustomerModel(undefined)
@@ -890,29 +909,38 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return instance.applyWhereIn<V>(column, values)
   }
 
-  async userBelong(): Promise<UserModel> {
-    if (this.user_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
+  
+        async userBelong(): Promise<UserModel> {
+          if (this.user_id === undefined)
+            throw new HttpError(500, 'Relation Error!')
 
-    const model = await User
-      .where('id', '=', this.user_id)
-      .first()
+          const model = await User
+            .where('id', '=', this.user_id)
+            .first()
 
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
+          if (! model)
+            throw new HttpError(500, 'Model Relation Not Found!')
 
-    return model
-  }
+          return model
+        }
 
-  toSearchableObject(): Partial<CustomerJsonResponse> {
-    return {
-      id: this.id,
-      name: this.name,
-      email: this.email,
-      phone: this.phone,
-      status: this.status,
-    }
-  }
+
+
+  
+      toSearchableObject(): Partial<CustomerJsonResponse> {
+        return {
+          id: this.id,
+name: this.name,
+email: this.email,
+phone: this.phone,
+status: this.status
+        }
+      }
+    
+
+  
+
+  
 
   static distinct(column: keyof CustomerJsonResponse): CustomerModel {
     const instance = new CustomerModel(undefined)
@@ -929,32 +957,32 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
   toJSON(): CustomerJsonResponse {
     const output = {
 
-      uuid: this.uuid,
+ uuid: this.uuid,
 
-      id: this.id,
-      name: this.name,
-      email: this.email,
-      phone: this.phone,
-      total_spent: this.total_spent,
-      last_order: this.last_order,
-      status: this.status,
-      avatar: this.avatar,
+id: this.id,
+name: this.name,
+   email: this.email,
+   phone: this.phone,
+   total_spent: this.total_spent,
+   last_order: this.last_order,
+   status: this.status,
+   avatar: this.avatar,
+   
+        created_at: this.created_at,
 
-      created_at: this.created_at,
-
-      updated_at: this.updated_at,
+        updated_at: this.updated_at,
 
       orders: this.orders,
-      gift_cards: this.gift_cards,
-      reviews: this.reviews,
-      payments: this.payments,
-      license_keys: this.license_keys,
-      waitlist_products: this.waitlist_products,
-      waitlist_restaurants: this.waitlist_restaurants,
-      user_id: this.user_id,
-      user: this.user,
-      ...this.customColumns,
-    }
+gift_cards: this.gift_cards,
+reviews: this.reviews,
+payments: this.payments,
+license_keys: this.license_keys,
+waitlist_products: this.waitlist_products,
+waitlist_restaurants: this.waitlist_restaurants,
+user_id: this.user_id,
+   user: this.user,
+...this.customColumns,
+}
 
     return output
   }
@@ -966,6 +994,8 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
 
     return model
   }
+
+  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<CustomerModel | undefined> {
@@ -984,15 +1014,16 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
+
+  
 }
 
 export async function find(id: number): Promise<CustomerModel | undefined> {
-  const query = DB.instance.selectFrom('customers').where('id', '=', id).selectAll()
+  let query = DB.instance.selectFrom('customers').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model)
-    return undefined
+  if (!model) return undefined
 
   const instance = new CustomerModel(undefined)
   return instance.createInstance(model)
@@ -1020,53 +1051,55 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<CustomerModel[]> {
-  const query = DB.instance.selectFrom('customers').where('name', '=', value)
-  const results: CustomerJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('customers').where('name', '=', value)
+          const results: CustomerJsonResponse = await query.execute()
 
-  return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
-}
+          return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
+        } 
 
 export async function whereEmail(value: string): Promise<CustomerModel[]> {
-  const query = DB.instance.selectFrom('customers').where('email', '=', value)
-  const results: CustomerJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('customers').where('email', '=', value)
+          const results: CustomerJsonResponse = await query.execute()
 
-  return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
-}
+          return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
+        } 
 
 export async function wherePhone(value: string): Promise<CustomerModel[]> {
-  const query = DB.instance.selectFrom('customers').where('phone', '=', value)
-  const results: CustomerJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('customers').where('phone', '=', value)
+          const results: CustomerJsonResponse = await query.execute()
 
-  return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
-}
+          return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
+        } 
 
 export async function whereTotalSpent(value: number): Promise<CustomerModel[]> {
-  const query = DB.instance.selectFrom('customers').where('total_spent', '=', value)
-  const results: CustomerJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('customers').where('total_spent', '=', value)
+          const results: CustomerJsonResponse = await query.execute()
 
-  return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
-}
+          return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
+        } 
 
 export async function whereLastOrder(value: string): Promise<CustomerModel[]> {
-  const query = DB.instance.selectFrom('customers').where('last_order', '=', value)
-  const results: CustomerJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('customers').where('last_order', '=', value)
+          const results: CustomerJsonResponse = await query.execute()
 
-  return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
-}
+          return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
+        } 
 
 export async function whereStatus(value: string | string[]): Promise<CustomerModel[]> {
-  const query = DB.instance.selectFrom('customers').where('status', '=', value)
-  const results: CustomerJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('customers').where('status', '=', value)
+          const results: CustomerJsonResponse = await query.execute()
 
-  return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
-}
+          return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
+        } 
 
 export async function whereAvatar(value: string): Promise<CustomerModel[]> {
-  const query = DB.instance.selectFrom('customers').where('avatar', '=', value)
-  const results: CustomerJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('customers').where('avatar', '=', value)
+          const results: CustomerJsonResponse = await query.execute()
 
-  return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
-}
+          return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
+        } 
+
+
 
 export const Customer = CustomerModel
 

@@ -2,6 +2,7 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { AuthorModelType } from './AuthorType'
 
+
 export interface PostsTable {
   id: Generated<number>
   title?: string
@@ -60,7 +61,7 @@ export interface PostModelType {
   get isFeatured(): number | undefined
   set isFeatured(value: number)
   get author(): AuthorModelType | undefined
-
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -135,5 +136,5 @@ export interface PostModelType {
   toJSON: () => PostJsonResponse
   parseResult: (model: PostModelType) => PostModelType
 
-  authorBelong: () => Promise<AuthorModelType>
+    authorBelong: () => Promise<AuthorModelType>
 }

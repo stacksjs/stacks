@@ -1,6 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { response } from '@stacksjs/router'
 import { buddyState, getAvailableDrivers } from './BuddyService'
 
 /**
@@ -12,7 +11,7 @@ export default new Action({
   method: 'GET',
   async handle(_request: RequestInstance) {
     const state = buddyState.getState()
-    return response.json({
+    return {
       repo: state.repo,
       currentDriver: state.currentDriver,
       historyLength: state.conversationHistory.length,
@@ -22,6 +21,6 @@ export default new Action({
         name: state.github.name,
         email: state.github.email,
       } : null,
-    })
+    }
   },
 })

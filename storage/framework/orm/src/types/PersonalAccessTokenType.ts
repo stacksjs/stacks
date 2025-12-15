@@ -2,6 +2,7 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { UserModelType } from './UserType'
 
+
 export interface PersonalAccessTokensTable {
   id: Generated<number>
   name: string
@@ -65,7 +66,7 @@ export interface PersonalAccessTokenModelType {
   get isSingleUse(): boolean
   set isSingleUse(value: boolean)
   get user(): UserModelType | undefined
-
+      
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)
@@ -137,5 +138,5 @@ export interface PersonalAccessTokenModelType {
   toJSON: () => PersonalAccessTokenJsonResponse
   parseResult: (model: PersonalAccessTokenModelType) => PersonalAccessTokenModelType
 
-  userBelong: () => Promise<UserModelType>
+    userBelong: () => Promise<UserModelType>
 }

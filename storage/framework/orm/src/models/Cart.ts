@@ -1,25 +1,40 @@
-import type { RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
-import type { CartJsonResponse, CartsTable, CartUpdate, NewCart } from '../types/CartType'
-import type { CartItemModel } from './CartItem'
-import type { CouponModel } from './Coupon'
-import type { CustomerModel } from './Customer'
-import { randomUUIDv7 } from 'bun'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
+import Stripe from 'stripe'
 import { sql } from '@stacksjs/database'
+import { DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
+import type { Operator } from '@stacksjs/orm'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
+import { generateTwoFactorSecret } from '@stacksjs/auth'
+import { verifyTwoFactorCode } from '@stacksjs/auth'
+import { randomUUIDv7 } from 'bun'
+import type { CartModelType, CartJsonResponse, NewCart, CartUpdate, CartsTable } from '../types/CartType'
 
-import { DB } from '@stacksjs/orm'
+import type {CartItemModel} from './CartItem'
 
-import { BaseOrm } from '../utils/base'
+import type {CustomerModel} from './Customer'
+
+import type {CouponModel} from './Coupon'
+
+
+
+
+import type { Model } from '@stacksjs/types';
+import { schema } from '@stacksjs/validation';
+
+
+
 
 export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> {
   private readonly hidden: Array<keyof CartJsonResponse> = []
-  private readonly fillable: Array<keyof CartJsonResponse> = ['status', 'total_items', 'subtotal', 'tax_amount', 'discount_amount', 'total', 'expires_at', 'currency', 'notes', 'applied_coupon_id', 'uuid']
+  private readonly fillable: Array<keyof CartJsonResponse> = ["status","total_items","subtotal","tax_amount","discount_amount","total","expires_at","currency","notes","applied_coupon_id","uuid"]
   private readonly guarded: Array<keyof CartJsonResponse> = []
   protected attributes = {} as CartJsonResponse
   protected originalAttributes = {} as CartJsonResponse
-
+  
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
@@ -37,12 +52,13 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
   constructor(cart: CartJsonResponse | undefined) {
     super('carts')
     if (cart) {
+
       this.attributes = { ...cart }
       this.originalAttributes = { ...cart }
 
-      Object.keys(cart).forEach((key) => {
+      Object.keys(cart).forEach(key => {
         if (!(key in this)) {
-          this.customColumns[key] = (cart as CartJsonResponse)[key]
+           this.customColumns[key] = (cart as CartJsonResponse)[key]
         }
       })
     }
@@ -57,8 +73,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
   protected async loadRelations(models: CartJsonResponse | CartJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
-    if (!modelArray.length)
-      return
+    if (!modelArray.length) return
 
     const modelIds = modelArray.map(model => model.id)
 
@@ -78,8 +93,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
           model[relation] = records.length === 1 ? records[0] : records
           return model
         })
-      }
-      else {
+      } else {
         const records = relatedRecords.filter((record: { cart_id: number }) => {
           return record.cart_id === models.id
         })
@@ -100,10 +114,12 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
 
     if (Array.isArray(data)) {
       data.map((model: CartJsonResponse) => {
+
         const customGetter = {
           default: () => {
           },
 
+          
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -112,14 +128,14 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
 
         return model
       })
-    }
-    else {
+    } else {
       const model = data
 
       const customGetter = {
         default: () => {
         },
 
+        
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -133,136 +149,140 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
       default: () => {
       },
 
+      
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      (model as any)[key] = await fn()
+        (model as any)[key] = await fn()
     }
   }
 
-  get cart_items(): CartItemModel[] | [] {
-    return this.attributes.cart_items
-  }
+  get cart_items():CartItemModel[] | [] {
+        return this.attributes.cart_items
+      }
 
-  get customer_id(): number {
-    return this.attributes.customer_id
-  }
+get customer_id(): number {
+        return this.attributes.customer_id
+      }
 
-  get customer(): CustomerModel | undefined {
-    return this.attributes.customer
-  }
+get customer(): CustomerModel | undefined {
+        return this.attributes.customer
+      }
 
-  get coupon_id(): number {
-    return this.attributes.coupon_id
-  }
+get coupon_id(): number {
+        return this.attributes.coupon_id
+      }
 
-  get coupon(): CouponModel | undefined {
-    return this.attributes.coupon
-  }
+get coupon(): CouponModel | undefined {
+        return this.attributes.coupon
+      }
 
-  get id(): number {
+get id(): number {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
-    return this.attributes.uuid
-  }
+get uuid(): string | undefined {
+      return this.attributes.uuid
+    }
 
-  get status(): string | string[] | undefined {
-    return this.attributes.status
-  }
+get status(): string | string[] | undefined {
+      return this.attributes.status
+    }
 
-  get total_items(): number | undefined {
-    return this.attributes.total_items
-  }
+get total_items(): number | undefined {
+      return this.attributes.total_items
+    }
 
-  get subtotal(): number | undefined {
-    return this.attributes.subtotal
-  }
+get subtotal(): number | undefined {
+      return this.attributes.subtotal
+    }
 
-  get tax_amount(): number | undefined {
-    return this.attributes.tax_amount
-  }
+get tax_amount(): number | undefined {
+      return this.attributes.tax_amount
+    }
 
-  get discount_amount(): number | undefined {
-    return this.attributes.discount_amount
-  }
+get discount_amount(): number | undefined {
+      return this.attributes.discount_amount
+    }
 
-  get total(): number | undefined {
-    return this.attributes.total
-  }
+get total(): number | undefined {
+      return this.attributes.total
+    }
 
-  get expires_at(): Date | string {
-    return this.attributes.expires_at
-  }
+get expires_at(): Date | string {
+      return this.attributes.expires_at
+    }
 
-  get currency(): string | undefined {
-    return this.attributes.currency
-  }
+get currency(): string | undefined {
+      return this.attributes.currency
+    }
 
-  get notes(): string | undefined {
-    return this.attributes.notes
-  }
+get notes(): string | undefined {
+      return this.attributes.notes
+    }
 
-  get applied_coupon_id(): string {
-    return this.attributes.applied_coupon_id
-  }
+get applied_coupon_id(): string {
+      return this.attributes.applied_coupon_id
+    }
 
-  get created_at(): string | undefined {
-    return this.attributes.created_at
-  }
+get created_at(): string | undefined {
+      return this.attributes.created_at
+    }
 
-  get updated_at(): string | undefined {
-    return this.attributes.updated_at
-  }
+    get updated_at(): string | undefined {
+      return this.attributes.updated_at
+    }
+
 
   set uuid(value: string) {
-    this.attributes.uuid = value
-  }
+      this.attributes.uuid = value
+    }
 
-  set status(value: string | string[]) {
-    this.attributes.status = value
-  }
+set status(value: string | string[]) {
+      this.attributes.status = value
+    }
 
-  set total_items(value: number) {
-    this.attributes.total_items = value
-  }
+set total_items(value: number) {
+      this.attributes.total_items = value
+    }
 
-  set subtotal(value: number) {
-    this.attributes.subtotal = value
-  }
+set subtotal(value: number) {
+      this.attributes.subtotal = value
+    }
 
-  set tax_amount(value: number) {
-    this.attributes.tax_amount = value
-  }
+set tax_amount(value: number) {
+      this.attributes.tax_amount = value
+    }
 
-  set discount_amount(value: number) {
-    this.attributes.discount_amount = value
-  }
+set discount_amount(value: number) {
+      this.attributes.discount_amount = value
+    }
 
-  set total(value: number) {
-    this.attributes.total = value
-  }
+set total(value: number) {
+      this.attributes.total = value
+    }
 
-  set expires_at(value: Date | string) {
-    this.attributes.expires_at = value
-  }
+set expires_at(value: Date | string) {
+      this.attributes.expires_at = value
+    }
 
-  set currency(value: string) {
-    this.attributes.currency = value
-  }
+set currency(value: string) {
+      this.attributes.currency = value
+    }
 
-  set notes(value: string) {
-    this.attributes.notes = value
-  }
+set notes(value: string) {
+      this.attributes.notes = value
+    }
 
-  set applied_coupon_id(value: string) {
-    this.attributes.applied_coupon_id = value
-  }
+set applied_coupon_id(value: string) {
+      this.attributes.applied_coupon_id = value
+    }
 
-  set updated_at(value: string) {
-    this.attributes.updated_at = value
-  }
+set updated_at(value: string) {
+      this.attributes.updated_at = value
+    }
+
+
 
   static select(params: (keyof CartJsonResponse)[] | RawBuilder<string> | string): CartModel {
     const instance = new CartModel(undefined)
@@ -272,12 +292,11 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
 
   // Method to find a Cart by ID
   static async find(id: number): Promise<CartModel | undefined> {
-    const query = DB.instance.selectFrom('carts').where('id', '=', id).selectAll()
+    let query = DB.instance.selectFrom('carts').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     const instance = new CartModel(undefined)
     return instance.createInstance(model)
@@ -298,8 +317,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
 
     const model = await instance.applyLast()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new CartModel(model)
   }
@@ -332,7 +350,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
 
   static async findMany(ids: number[]): Promise<CartModel[]> {
     const instance = new CartModel(undefined)
-
+     
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: CartJsonResponse) => instance.parseResult(new CartModel(modelItem)))
@@ -347,8 +365,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new CartModel(model)
   }
@@ -362,8 +379,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
       .limit(1)
       .executeTakeFirst()
 
-    if (!model)
-      return undefined
+    if (!model) return undefined
 
     return new CartModel(model)
   }
@@ -530,12 +546,12 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
-    data: CartModel[]
+    data: CartModel[],
     paging: {
-      total_records: number
-      page: number
+      total_records: number,
+      page: number,
       total_pages: number
-    }
+    },
     next_cursor: number | null
   }> {
     const instance = new CartModel(undefined)
@@ -545,7 +561,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
     return {
       data: result.data.map((item: CartJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
-      next_cursor: result.next_cursor,
+      next_cursor: result.next_cursor
     }
   }
 
@@ -557,13 +573,13 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
   async applyCreate(newCart: NewCart): Promise<CartModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newCart).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as NewCart
 
     await this.mapCustomSetters(filteredValues)
 
-    filteredValues.uuid = randomUUIDv7()
+    filteredValues['uuid'] = randomUUIDv7()
 
     const result = await DB.instance.insertInto('carts')
       .values(filteredValues)
@@ -579,7 +595,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
     }
 
     if (model)
-      dispatch('cart:created', model)
+ dispatch('cart:created', model)
     return this.createInstance(model)
   }
 
@@ -648,7 +664,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
   async update(newCart: CartUpdate): Promise<CartModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newCart).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key)
       ),
     ) as CartUpdate
 
@@ -673,7 +689,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
       }
 
       if (model)
-        dispatch('cart:updated', model)
+ dispatch('cart:updated', model)
       return this.createInstance(model)
     }
 
@@ -698,7 +714,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
       }
 
       if (this)
-        dispatch('cart:updated', model)
+ dispatch('cart:updated', model)
       return this.createInstance(model)
     }
 
@@ -725,10 +741,9 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
       }
 
       if (this)
-        dispatch('cart:updated', model)
+ dispatch('cart:updated', model)
       return this.createInstance(model)
-    }
-    else {
+    } else {
       // Create new record
       const result = await DB.instance.insertInto('carts')
         .values(this.attributes as NewCart)
@@ -745,7 +760,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
       }
 
       if (this)
-        dispatch('cart:created', model)
+ dispatch('cart:created', model)
       return this.createInstance(model)
     }
   }
@@ -760,7 +775,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
         ),
       ) as NewCart
 
-      filteredValues.uuid = randomUUIDv7()
+      filteredValues['uuid'] = randomUUIDv7()
 
       return filteredValues
     })
@@ -786,7 +801,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
     }
 
     if (model)
-      dispatch('cart:created', model)
+ dispatch('cart:created', model)
 
     return instance.createInstance(model)
   }
@@ -796,9 +811,9 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
-
+    
     if (model)
-      dispatch('cart:deleted', model)
+ dispatch('cart:deleted', model)
 
     const deleted = await DB.instance.deleteFrom('carts')
       .where('id', '=', this.id)
@@ -812,8 +827,10 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
 
     const model = await instance.find(Number(id))
 
+    
+
     if (model)
-      dispatch('cart:deleted', model)
+ dispatch('cart:deleted', model)
 
     return await DB.instance.deleteFrom('carts')
       .where('id', '=', id)
@@ -821,84 +838,86 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
   }
 
   static whereStatus(value: string): CartModel {
-    const instance = new CartModel(undefined)
+          const instance = new CartModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereTotalItems(value: string): CartModel {
-    const instance = new CartModel(undefined)
+static whereTotalItems(value: string): CartModel {
+          const instance = new CartModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('total_items', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('total_items', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereSubtotal(value: string): CartModel {
-    const instance = new CartModel(undefined)
+static whereSubtotal(value: string): CartModel {
+          const instance = new CartModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('subtotal', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('subtotal', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereTaxAmount(value: string): CartModel {
-    const instance = new CartModel(undefined)
+static whereTaxAmount(value: string): CartModel {
+          const instance = new CartModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('tax_amount', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('tax_amount', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereDiscountAmount(value: string): CartModel {
-    const instance = new CartModel(undefined)
+static whereDiscountAmount(value: string): CartModel {
+          const instance = new CartModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('discount_amount', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('discount_amount', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereTotal(value: string): CartModel {
-    const instance = new CartModel(undefined)
+static whereTotal(value: string): CartModel {
+          const instance = new CartModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('total', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('total', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereExpiresAt(value: string): CartModel {
-    const instance = new CartModel(undefined)
+static whereExpiresAt(value: string): CartModel {
+          const instance = new CartModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('expires_at', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('expires_at', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereCurrency(value: string): CartModel {
-    const instance = new CartModel(undefined)
+static whereCurrency(value: string): CartModel {
+          const instance = new CartModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('currency', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('currency', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereNotes(value: string): CartModel {
-    const instance = new CartModel(undefined)
+static whereNotes(value: string): CartModel {
+          const instance = new CartModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('notes', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('notes', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
 
-  static whereAppliedCouponId(value: string): CartModel {
-    const instance = new CartModel(undefined)
+static whereAppliedCouponId(value: string): CartModel {
+          const instance = new CartModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('applied_coupon_id', '=', value)
+          instance.selectFromQuery = instance.selectFromQuery.where('applied_coupon_id', '=', value)
 
-    return instance
-  }
+          return instance
+        } 
+
+
 
   static whereIn<V = number>(column: keyof CartsTable, values: V[]): CartModel {
     const instance = new CartModel(undefined)
@@ -906,45 +925,55 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
     return instance.applyWhereIn<V>(column, values)
   }
 
-  async customerBelong(): Promise<CustomerModel> {
-    if (this.customer_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
+  
+        async customerBelong(): Promise<CustomerModel> {
+          if (this.customer_id === undefined)
+            throw new HttpError(500, 'Relation Error!')
 
-    const model = await Customer
-      .where('id', '=', this.customer_id)
-      .first()
+          const model = await Customer
+            .where('id', '=', this.customer_id)
+            .first()
 
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
+          if (! model)
+            throw new HttpError(500, 'Model Relation Not Found!')
 
-    return model
-  }
+          return model
+        }
 
-  async couponBelong(): Promise<CouponModel> {
-    if (this.coupon_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
 
-    const model = await Coupon
-      .where('id', '=', this.coupon_id)
-      .first()
+        async couponBelong(): Promise<CouponModel> {
+          if (this.coupon_id === undefined)
+            throw new HttpError(500, 'Relation Error!')
 
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
+          const model = await Coupon
+            .where('id', '=', this.coupon_id)
+            .first()
 
-    return model
-  }
+          if (! model)
+            throw new HttpError(500, 'Model Relation Not Found!')
 
-  toSearchableObject(): Partial<CartJsonResponse> {
-    return {
-      id: this.id,
-      customer_id: this.customer_id,
-      status: this.status,
-      total_items: this.total_items,
-      subtotal: this.subtotal,
-      total: this.total,
-      expires_at: this.expires_at,
-    }
-  }
+          return model
+        }
+
+
+
+  
+      toSearchableObject(): Partial<CartJsonResponse> {
+        return {
+          id: this.id,
+customer_id: this.customer_id,
+status: this.status,
+total_items: this.total_items,
+subtotal: this.subtotal,
+total: this.total,
+expires_at: this.expires_at
+        }
+      }
+    
+
+  
+
+  
 
   static distinct(column: keyof CartJsonResponse): CartModel {
     const instance = new CartModel(undefined)
@@ -961,31 +990,31 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
   toJSON(): CartJsonResponse {
     const output = {
 
-      uuid: this.uuid,
+ uuid: this.uuid,
 
-      id: this.id,
-      status: this.status,
-      total_items: this.total_items,
-      subtotal: this.subtotal,
-      tax_amount: this.tax_amount,
-      discount_amount: this.discount_amount,
-      total: this.total,
-      expires_at: this.expires_at,
-      currency: this.currency,
-      notes: this.notes,
-      applied_coupon_id: this.applied_coupon_id,
+id: this.id,
+status: this.status,
+   total_items: this.total_items,
+   subtotal: this.subtotal,
+   tax_amount: this.tax_amount,
+   discount_amount: this.discount_amount,
+   total: this.total,
+   expires_at: this.expires_at,
+   currency: this.currency,
+   notes: this.notes,
+   applied_coupon_id: this.applied_coupon_id,
+   
+        created_at: this.created_at,
 
-      created_at: this.created_at,
-
-      updated_at: this.updated_at,
+        updated_at: this.updated_at,
 
       cart_items: this.cart_items,
-      customer_id: this.customer_id,
-      customer: this.customer,
-      coupon_id: this.coupon_id,
-      coupon: this.coupon,
-      ...this.customColumns,
-    }
+customer_id: this.customer_id,
+   customer: this.customer,
+coupon_id: this.coupon_id,
+   coupon: this.coupon,
+...this.customColumns,
+}
 
     return output
   }
@@ -997,6 +1026,8 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
 
     return model
   }
+
+  
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<CartModel | undefined> {
@@ -1015,15 +1046,16 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
     // Return a proper instance using the factory method
     return this.createInstance(model)
   }
+
+  
 }
 
 export async function find(id: number): Promise<CartModel | undefined> {
-  const query = DB.instance.selectFrom('carts').where('id', '=', id).selectAll()
+  let query = DB.instance.selectFrom('carts').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
-  if (!model)
-    return undefined
+  if (!model) return undefined
 
   const instance = new CartModel(undefined)
   return instance.createInstance(model)
@@ -1051,74 +1083,76 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereStatus(value: string | string[]): Promise<CartModel[]> {
-  const query = DB.instance.selectFrom('carts').where('status', '=', value)
-  const results: CartJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('carts').where('status', '=', value)
+          const results: CartJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
-}
+          return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
+        } 
 
 export async function whereTotalItems(value: number): Promise<CartModel[]> {
-  const query = DB.instance.selectFrom('carts').where('total_items', '=', value)
-  const results: CartJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('carts').where('total_items', '=', value)
+          const results: CartJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
-}
+          return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
+        } 
 
 export async function whereSubtotal(value: number): Promise<CartModel[]> {
-  const query = DB.instance.selectFrom('carts').where('subtotal', '=', value)
-  const results: CartJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('carts').where('subtotal', '=', value)
+          const results: CartJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
-}
+          return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
+        } 
 
 export async function whereTaxAmount(value: number): Promise<CartModel[]> {
-  const query = DB.instance.selectFrom('carts').where('tax_amount', '=', value)
-  const results: CartJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('carts').where('tax_amount', '=', value)
+          const results: CartJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
-}
+          return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
+        } 
 
 export async function whereDiscountAmount(value: number): Promise<CartModel[]> {
-  const query = DB.instance.selectFrom('carts').where('discount_amount', '=', value)
-  const results: CartJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('carts').where('discount_amount', '=', value)
+          const results: CartJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
-}
+          return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
+        } 
 
 export async function whereTotal(value: number): Promise<CartModel[]> {
-  const query = DB.instance.selectFrom('carts').where('total', '=', value)
-  const results: CartJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('carts').where('total', '=', value)
+          const results: CartJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
-}
+          return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
+        } 
 
 export async function whereExpiresAt(value: Date | string): Promise<CartModel[]> {
-  const query = DB.instance.selectFrom('carts').where('expires_at', '=', value)
-  const results: CartJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('carts').where('expires_at', '=', value)
+          const results: CartJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
-}
+          return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
+        } 
 
 export async function whereCurrency(value: string): Promise<CartModel[]> {
-  const query = DB.instance.selectFrom('carts').where('currency', '=', value)
-  const results: CartJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('carts').where('currency', '=', value)
+          const results: CartJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
-}
+          return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
+        } 
 
 export async function whereNotes(value: string): Promise<CartModel[]> {
-  const query = DB.instance.selectFrom('carts').where('notes', '=', value)
-  const results: CartJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('carts').where('notes', '=', value)
+          const results: CartJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
-}
+          return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
+        } 
 
 export async function whereAppliedCouponId(value: string): Promise<CartModel[]> {
-  const query = DB.instance.selectFrom('carts').where('applied_coupon_id', '=', value)
-  const results: CartJsonResponse = await query.execute()
+          const query = DB.instance.selectFrom('carts').where('applied_coupon_id', '=', value)
+          const results: CartJsonResponse = await query.execute()
 
-  return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
-}
+          return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
+        } 
+
+
 
 export const Cart = CartModel
 

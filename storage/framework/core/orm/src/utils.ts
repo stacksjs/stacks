@@ -18,7 +18,7 @@ import { italic, log } from '@stacksjs/cli'
 import { getTraitTables } from '@stacksjs/database'
 import { handleError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
-import { fs } from '@stacksjs/storage'
+import { fs, globSync } from '@stacksjs/storage'
 import { camelCase, kebabCase, pascalCase, plural, singular, slugify, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
 import { generateModelString } from './generate'
@@ -577,7 +577,7 @@ export async function writeModelAttributes(): Promise<void> {
 
   fieldString += '} \n'
 
-  await fs.writeFile(attributesTypeFile, fieldString)
+  await Bun.write(attributesTypeFile, fieldString)
 }
 
 export async function writeModelEvents(): Promise<void> {
@@ -842,7 +842,7 @@ export async function writeModelRequest(): Promise<void> {
 
   const requestD = path.frameworkPath('types/requests.d.ts')
 
-  await fs.writeFile(requestD, typeString)
+  await Bun.write(requestD, typeString)
 }
 
 export async function writeOrmActions(apiRoute: string, modelName: string, actionPath?: string): Promise<void> {
@@ -1154,7 +1154,7 @@ export async function deleteExistingModels(modelStringFile?: string): Promise<vo
   try {
     const typePath = path.frameworkPath(`orm/src/types.ts`)
 
-    await fs.writeFile(typePath, '')
+    await Bun.write(typePath, '')
 
     if (modelStringFile) {
       const modelPath = path.frameworkPath(`orm/src/models/${modelStringFile}.ts`)
@@ -1209,30 +1209,30 @@ export async function deleteExistingOrmActions(modelStringFile?: string): Promis
 
 export async function deleteExistingModelNameTypes(): Promise<void> {
   const typeFile = path.corePath('types/src/model-names.ts')
-  await fs.writeFile(typeFile, '')
+  await Bun.write(typeFile, '')
 }
 
 export async function deleteAttributeTypes(): Promise<void> {
   const typeFile = path.frameworkPath('types/attributes.ts')
 
-  await fs.writeFile(typeFile, '')
+  await Bun.write(typeFile, '')
 }
 
 export async function deleteModelEvents(): Promise<void> {
   const eventFile = path.frameworkPath('types/events.ts')
 
-  await fs.writeFile(eventFile, '')
+  await Bun.write(eventFile, '')
 }
 
 export async function deleteOrmImports(): Promise<void> {
   const ormImportFile = path.frameworkPath(`orm/src/index.ts`)
 
-  await fs.writeFile(ormImportFile, '')
+  await Bun.write(ormImportFile, '')
 }
 
 export async function deleteExistingModelRequest(modelStringFile?: string): Promise<void> {
   const requestD = path.frameworkPath('types/requests.d.ts')
-  await fs.writeFile(requestD, '')
+  await Bun.write(requestD, '')
 
   if (modelStringFile) {
     const requestFile = path.frameworkPath(`requests/${modelStringFile}.ts`)
@@ -1251,7 +1251,7 @@ export async function deleteExistingModelRequest(modelStringFile?: string): Prom
 
 export async function deleteExistingOrmRoute(): Promise<void> {
   const ormRoute = path.frameworkPath('orm/routes.ts')
-  await fs.writeFile(ormRoute, '')
+  await Bun.write(ormRoute, '')
 }
 
 export function generateTraitBasedTables(): string {
@@ -1535,6 +1535,26 @@ async function writeModelOrmImports(modelFiles: string[]): Promise<void> {
   const writer = file.writer()
 
   writer.write(ormImportString)
+
+  await writer.end()
+
+  // Also write models/index.ts barrel file for auto-imports
+  await writeModelsBarrelFile(modelFiles)
+}
+
+async function writeModelsBarrelFile(modelFiles: string[]): Promise<void> {
+  let modelsBarrelString = ``
+  for (const modelFile of modelFiles) {
+    const model = (await import(modelFile)).default as Model
+    const modelName = getModelName(model, modelFile)
+
+    modelsBarrelString += `export { default as ${modelName}, ${modelName}Model } from './${modelName}'\n`
+  }
+
+  const file = Bun.file(path.frameworkPath(`orm/src/models/index.ts`))
+  const writer = file.writer()
+
+  writer.write(modelsBarrelString)
 
   await writer.end()
 }

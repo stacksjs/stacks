@@ -660,9 +660,12 @@ export class StacksRouter implements RouterInterface {
         return Response.json(JSON.parse(error.message), { status: 422 })
       }
 
+      // Ensure valid status code (must be 200-599)
+      const statusCode = (error.status && error.status >= 200 && error.status <= 599) ? error.status : 500
+
       return Response.json(
         { error: error.message || 'Internal server error' },
-        { status: error.status || 500 },
+        { status: statusCode },
       )
     }
   }
@@ -733,16 +736,16 @@ export class StacksRouter implements RouterInterface {
     }
     catch (error: any) {
       log.error(`Action resolution error for "${callbackPath}":`, error.message)
+      log.error('Full error:', error)
 
       if (error.status === 422) {
         return Response.json(JSON.parse(error.message), { status: 422 })
       }
 
-      if (!error.status) {
-        return Response.json({ error: error.message }, { status: 500 })
-      }
+      // Ensure valid status code (must be 200-599)
+      const statusCode = (error.status && error.status >= 200 && error.status <= 599) ? error.status : 500
 
-      return Response.json({ error: error.message }, { status: error.status })
+      return Response.json({ error: error.message || 'Unknown error' }, { status: statusCode })
     }
   }
 

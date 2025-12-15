@@ -2,6 +2,7 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { OrderModelType } from './OrderType'
 
+
 export interface TransactionsTable {
   id: Generated<number>
   amount: number
@@ -57,7 +58,7 @@ export interface TransactionModelType {
   get loyaltyPointsRedeemed(): number | undefined
   set loyaltyPointsRedeemed(value: number)
   get order(): OrderModelType | undefined
-
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -132,5 +133,5 @@ export interface TransactionModelType {
   toJSON: () => TransactionJsonResponse
   parseResult: (model: TransactionModelType) => TransactionModelType
 
-  orderBelong: () => Promise<OrderModelType>
+    orderBelong: () => Promise<OrderModelType>
 }

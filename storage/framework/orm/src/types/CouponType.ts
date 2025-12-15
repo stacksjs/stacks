@@ -3,6 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import type { OrderModelType } from './OrderType'
 import type { ProductModelType } from './ProductType'
 
+
 export interface CouponsTable {
   id: Generated<number>
   code: string
@@ -77,7 +78,7 @@ export interface CouponModelType {
   set endDate(value: Date | string)
   get order(): OrderModelType[] | []
   get product(): ProductModelType | undefined
-
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -152,5 +153,5 @@ export interface CouponModelType {
   toJSON: () => CouponJsonResponse
   parseResult: (model: CouponModelType) => CouponModelType
 
-  productBelong: () => Promise<ProductModelType>
+    productBelong: () => Promise<ProductModelType>
 }

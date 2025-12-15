@@ -3,6 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import type { OrderModelType } from './OrderType'
 import type { ProductModelType } from './ProductType'
 
+
 export interface OrderItemsTable {
   id: Generated<number>
   quantity: number
@@ -45,8 +46,8 @@ export interface OrderItemModelType {
   get specialInstructions(): string | undefined
   set specialInstructions(value: string)
   get order(): OrderModelType | undefined
-  get product(): ProductModelType | undefined
-
+        get product(): ProductModelType | undefined
+      
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)
@@ -118,6 +119,6 @@ export interface OrderItemModelType {
   toJSON: () => OrderItemJsonResponse
   parseResult: (model: OrderItemModelType) => OrderItemModelType
 
-  orderBelong: () => Promise<OrderModelType>
-  productBelong: () => Promise<ProductModelType>
+    orderBelong: () => Promise<OrderModelType>
+    productBelong: () => Promise<ProductModelType>
 }

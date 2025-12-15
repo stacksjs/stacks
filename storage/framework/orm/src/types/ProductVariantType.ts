@@ -2,6 +2,7 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { ProductModelType } from './ProductType'
 
+
 export interface ProductVariantsTable {
   id: Generated<number>
   variant: string
@@ -51,7 +52,7 @@ export interface ProductVariantModelType {
   get status(): string | string[]
   set status(value: string | string[])
   get product(): ProductModelType | undefined
-
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -126,5 +127,5 @@ export interface ProductVariantModelType {
   toJSON: () => ProductVariantJsonResponse
   parseResult: (model: ProductVariantModelType) => ProductVariantModelType
 
-  productBelong: () => Promise<ProductModelType>
+    productBelong: () => Promise<ProductModelType>
 }

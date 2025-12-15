@@ -3,6 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import type { PaymentTransactionModelType } from './PaymentTransactionType'
 import type { UserModelType } from './UserType'
 
+
 export interface PaymentMethodsTable {
   id: Generated<number>
   type: string
@@ -57,7 +58,7 @@ export interface PaymentMethodModelType {
   set providerId(value: string)
   get payment_transaction(): PaymentTransactionModelType[] | []
   get user(): UserModelType | undefined
-
+      
   get uuid(): string | undefined
   set uuid(value: string)
 
@@ -128,5 +129,5 @@ export interface PaymentMethodModelType {
   toJSON: () => PaymentMethodJsonResponse
   parseResult: (model: PaymentMethodModelType) => PaymentMethodModelType
 
-  userBelong: () => Promise<UserModelType>
+    userBelong: () => Promise<UserModelType>
 }
