@@ -138,9 +138,11 @@ export async function serve(options: ServeOptions = {}): Promise<Server> {
 
     async fetch(req: Request): Promise<Response> {
       const url = new URL(req.url)
+      log.debug(`[CORS] Incoming request: ${req.method} ${url.pathname}`)
 
       // Handle CORS preflight requests
       if (req.method === 'OPTIONS') {
+        log.debug(`[CORS] Handling OPTIONS preflight for ${url.pathname}`)
         return new Response(null, {
           status: 204,
           headers: {
@@ -159,18 +161,25 @@ export async function serve(options: ServeOptions = {}): Promise<Server> {
           cors: staticCors,
         })
         if (staticResponse) {
+          log.debug(`[CORS] Serving static file for ${url.pathname}`)
           return staticResponse
         }
       }
 
       // Delegate to bun-router for route handling
       try {
+        log.debug(`[CORS] Delegating to bun-router for ${url.pathname}`)
         const response = await route.bunRouter.handleRequest(req)
+        log.debug(`[CORS] Got response from bun-router: status=${response.status}, headers=${JSON.stringify(Object.fromEntries(response.headers.entries()))}`)
+
         // Add CORS headers to all API responses
         const corsHeaders = new Headers(response.headers)
         corsHeaders.set('Access-Control-Allow-Origin', '*')
         corsHeaders.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
         corsHeaders.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+
+        log.debug(`[CORS] Final response headers: ${JSON.stringify(Object.fromEntries(corsHeaders.entries()))}`)
+
         return new Response(response.body, {
           status: response.status,
           statusText: response.statusText,
@@ -178,7 +187,8 @@ export async function serve(options: ServeOptions = {}): Promise<Server> {
         })
       }
       catch (error: any) {
-        log.error('Request handling error:', error)
+        log.error('[CORS] Request handling error:', error)
+        log.error('[CORS] Error stack:', error.stack)
         return Response.json(
           { error: error.message || 'Internal server error' },
           {

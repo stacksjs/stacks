@@ -674,6 +674,8 @@ export class StacksRouter implements RouterInterface {
    * Resolve a string handler (Action or Controller path)
    */
   private async resolveStringHandler(callbackPath: string, req: EnhancedRequest): Promise<Response> {
+    log.debug(`[Router] resolveStringHandler called with: "${callbackPath}"`)
+
     let modulePath = callbackPath
     let importPathFunction = p.appPath
 
@@ -683,13 +685,17 @@ export class StacksRouter implements RouterInterface {
     // Remove trailing .ts if present
     modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath
 
-    let requestInstance: RequestInstance = await extractDefaultRequest()
+    // Create request instance from bun-router's EnhancedRequest to get body data
+    const { Request: StacksRequest } = await import('./request')
+    let requestInstance: RequestInstance = StacksRequest.fromEnhancedRequest(req)
 
     try {
       // Handle controller-based routing
       if (modulePath.includes('Controller')) {
+        log.debug(`[Router] Handling controller: ${modulePath}`)
         const [controllerPath, methodName = 'index'] = modulePath.split('@')
         const controllerPathWithCacheBuster = importPathFunction(controllerPath) + this.getCacheBuster()
+        log.debug(`[Router] Importing controller from: ${controllerPathWithCacheBuster}`)
         const controller = await import(controllerPathWithCacheBuster)
         // eslint-disable-next-line new-cap
         const instance = new controller.default()
@@ -699,44 +705,65 @@ export class StacksRouter implements RouterInterface {
         }
 
         const result = await instance[methodName](requestInstance)
+        log.debug(`[Router] Controller method returned, formatting result`)
         return this.formatHandlerResult(result)
       }
 
       // Handle action-based routing
+      log.debug(`[Router] Handling action: ${modulePath}`)
       let actionModule = null
+      let importPath = ''
 
       if (modulePath.includes('storage/framework/orm')) {
-        actionModule = await import(modulePath + this.getCacheBuster())
+        importPath = modulePath + this.getCacheBuster()
+        log.debug(`[Router] Importing ORM action from: ${importPath}`)
+        actionModule = await import(importPath)
       }
       else if (modulePath.includes('Actions')) {
-        actionModule = await import(p.projectPath(`app/${modulePath}.ts`) + this.getCacheBuster())
+        importPath = p.projectPath(`app/${modulePath}.ts`) + this.getCacheBuster()
+        log.debug(`[Router] Importing action from: ${importPath}`)
+        actionModule = await import(importPath)
       }
       else if (modulePath.includes('OrmAction')) {
-        actionModule = await import(p.storagePath(`/framework/actions/src/${modulePath}.ts`) + this.getCacheBuster())
+        importPath = p.storagePath(`/framework/actions/src/${modulePath}.ts`) + this.getCacheBuster()
+        log.debug(`[Router] Importing OrmAction from: ${importPath}`)
+        actionModule = await import(importPath)
       }
       else {
-        actionModule = await import(importPathFunction(modulePath) + this.getCacheBuster())
+        importPath = importPathFunction(modulePath) + this.getCacheBuster()
+        log.debug(`[Router] Importing from default path: ${importPath}`)
+        actionModule = await import(importPath)
       }
+
+      log.debug(`[Router] Action module loaded successfully`)
 
       // Get request instance based on model
       if (actionModule.default.model) {
+        log.debug(`[Router] Action has model, finding request instance`)
         requestInstance = await findRequestInstanceFromAction(actionModule.default.model)
       }
       else {
+        log.debug(`[Router] Using default request instance`)
         requestInstance = await extractDefaultRequest()
       }
 
       // Run validation if defined
       if (isObjectNotEmpty(actionModule.default.validations) && requestInstance) {
+        log.debug(`[Router] Running validation`)
         await customValidate(actionModule.default.validations, requestInstance.all())
       }
 
+      log.debug(`[Router] Calling action handle method`)
       const result = await actionModule.default.handle(requestInstance)
-      return this.formatHandlerResult(result)
+      log.debug(`[Router] Action handle returned, formatting result`)
+      const formattedResult = this.formatHandlerResult(result)
+      log.debug(`[Router] Formatted response status: ${formattedResult.status}`)
+      return formattedResult
     }
     catch (error: any) {
-      log.error(`Action resolution error for "${callbackPath}":`, error.message)
-      log.error('Full error:', error)
+      log.error(`[Router] Action resolution error for "${callbackPath}":`, error.message)
+      log.error('[Router] Full error:', error)
+      log.error('[Router] Error stack:', error.stack)
 
       if (error.status === 422) {
         return Response.json(JSON.parse(error.message), { status: 422 })
@@ -822,7 +849,9 @@ export class StacksRouter implements RouterInterface {
 
     modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath
 
-    let requestInstance: RequestInstance = await extractDefaultRequest()
+    // Create request instance from bun-router's EnhancedRequest to get body data
+    const { Request: StacksRequest } = await import('./request')
+    let requestInstance: RequestInstance = StacksRequest.fromEnhancedRequest(req)
 
     try {
       if (modulePath.includes('Controller')) {

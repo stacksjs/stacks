@@ -43,6 +43,7 @@ export interface RequestInstance {
   Header: (element: string) => string | number | boolean | null
   getHeaders: () => any
   all: () => RequestData
+  json: <T = any>() => Promise<T>
   validate: (attributes?: CustomAttributes) => Promise<void>
   has: (element: string) => boolean
   isEmpty: () => boolean

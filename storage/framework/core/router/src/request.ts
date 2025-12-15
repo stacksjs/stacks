@@ -221,9 +221,26 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
       request.params = bunRequest.params as RouteParams
     }
 
-    // Copy query
+    // Copy query params from URL
     if (bunRequest.query) {
       request.query = bunRequest.query as unknown as T
+    }
+
+    // Copy JSON body (POST/PUT/PATCH requests)
+    // jsonBody takes precedence over query params for the request data
+    if ((bunRequest as any).jsonBody) {
+      request.query = {
+        ...request.query,
+        ...(bunRequest as any).jsonBody,
+      } as T
+    }
+
+    // Copy form body if available
+    if ((bunRequest as any).formBody) {
+      request.query = {
+        ...request.query,
+        ...(bunRequest as any).formBody,
+      } as T
     }
 
     // Copy headers
@@ -298,6 +315,14 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
    */
   all(): T {
     return this.query
+  }
+
+  /**
+   * Get request body as JSON
+   * Alias for all() for compatibility with Actions using request.json()
+   */
+  async json<V = T>(): Promise<V> {
+    return this.query as unknown as V
   }
 
   /**
