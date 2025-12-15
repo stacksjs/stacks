@@ -139,6 +139,19 @@ export async function serve(options: ServeOptions = {}): Promise<Server> {
     async fetch(req: Request): Promise<Response> {
       const url = new URL(req.url)
 
+      // Handle CORS preflight requests
+      if (req.method === 'OPTIONS') {
+        return new Response(null, {
+          status: 204,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+            'Access-Control-Max-Age': '86400',
+          },
+        })
+      }
+
       // Serve static files first (if enabled)
       if (staticFiles && req.method === 'GET') {
         const staticResponse = await serveStaticFile(url.pathname, {
@@ -152,13 +165,28 @@ export async function serve(options: ServeOptions = {}): Promise<Server> {
 
       // Delegate to bun-router for route handling
       try {
-        return await route.bunRouter.handleRequest(req)
+        const response = await route.bunRouter.handleRequest(req)
+        // Add CORS headers to all API responses
+        const corsHeaders = new Headers(response.headers)
+        corsHeaders.set('Access-Control-Allow-Origin', '*')
+        corsHeaders.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+        corsHeaders.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+        return new Response(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: corsHeaders,
+        })
       }
       catch (error: any) {
         log.error('Request handling error:', error)
         return Response.json(
           { error: error.message || 'Internal server error' },
-          { status: error.status || 500 },
+          {
+            status: error.status || 500,
+            headers: {
+              'Access-Control-Allow-Origin': '*',
+            },
+          },
         )
       }
     },
