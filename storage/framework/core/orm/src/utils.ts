@@ -1271,7 +1271,7 @@ export function generateTraitBasedTables(): string {
   return text
 }
 
-export async function generateKyselyTypes(): Promise<void> {
+export async function generateDatabaseTypes(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('**/*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
   let text = ``
@@ -1502,7 +1502,7 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     }
 
     log.info('Generating Query Builder types...')
-    await generateKyselyTypes()
+    await generateDatabaseTypes()
     log.success('Generated Query Builder types')
 
     log.info('Writing Model Orm Imports...')

@@ -27,6 +27,6 @@ export class Table {
   // Method to simulate the execution of the schema definition
   execute(): void {
     log.info(`Creating table with columns: ${this.columns.map(col => col.name).join(', ')}`)
-    // run kysely mirgration
+    // run migration
   }
 }

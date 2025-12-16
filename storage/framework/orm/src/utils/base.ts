@@ -8,8 +8,7 @@ import { DB } from '@stacksjs/orm'
  * BaseOrm - Base class for all generated ORM models
  *
  * This class provides the foundation for database operations using bun-query-builder.
- * It implements a fluent query builder interface compatible with both Kysely-style
- * and Laravel-style APIs.
+ * It implements a fluent query builder interface compatible with Laravel-style APIs.
  *
  * @template T - The model instance type
  * @template C - The table columns type (for type-safe where clauses)
