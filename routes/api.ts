@@ -31,8 +31,8 @@ route.get('/install', 'Actions/InstallAction')
 route.post('/ai/ask', 'Actions/AI/AskAction')
 route.post('/ai/summary', 'Actions/AI/SummaryAction')
 
-// Buddy - Voice AI Code Assistant routes
-route.group({ prefix: '/buddy' }, async () => {
+// Voide - Voice AI Code Assistant routes (Voice + Claude)
+route.group({ prefix: '/voide' }, async () => {
   route.get('/state', 'Actions/Buddy/BuddyStateAction')
   route.post('/repo', 'Actions/Buddy/BuddyRepoOpenAction')
   route.post('/process', 'Actions/Buddy/BuddyProcessAction')
