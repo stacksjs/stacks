@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -62,9 +61,9 @@ export class ReviewModel extends BaseOrm<ReviewModel, ReviewsTable, ReviewJsonRe
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('reviews')
-    this.updateFromQuery = DB.instance.updateTable('reviews')
-    this.deleteFromQuery = DB.instance.deleteFrom('reviews')
+    this.selectFromQuery = db.selectFrom('reviews')
+    this.updateFromQuery = db.updateTable('reviews')
+    this.deleteFromQuery = db.deleteFrom('reviews')
     this.hasSelect = false
   }
 
@@ -76,7 +75,7 @@ export class ReviewModel extends BaseOrm<ReviewModel, ReviewsTable, ReviewJsonRe
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('review_id', 'in', modelIds)
         .selectAll()
@@ -286,7 +285,7 @@ set updated_at(value: string) {
 
   // Method to find a Review by ID
   static async find(id: number): Promise<ReviewModel | undefined> {
-    let query = DB.instance.selectFrom('reviews').where('id', '=', id).selectAll()
+    let query = db.selectFrom('reviews').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -325,7 +324,7 @@ set updated_at(value: string) {
   static async all(): Promise<ReviewModel[]> {
     const instance = new ReviewModel(undefined)
 
-    const models = await DB.instance.selectFrom('reviews').selectAll().execute()
+    const models = await db.selectFrom('reviews').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -575,11 +574,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('reviews')
+    const result = await db.insertInto('reviews')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('reviews')
+    const model = await db.selectFrom('reviews')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -666,14 +665,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('reviews')
+    await db.updateTable('reviews')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('reviews')
+      const model = await db.selectFrom('reviews')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -691,14 +690,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newReview: ReviewUpdate): Promise<ReviewModel | undefined> {
-    await DB.instance.updateTable('reviews')
+    await db.updateTable('reviews')
       .set(newReview)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('reviews')
+      const model = await db.selectFrom('reviews')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -719,13 +718,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('reviews')
+      await db.updateTable('reviews')
         .set(this.attributes as ReviewUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('reviews')
+      const model = await db.selectFrom('reviews')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -739,12 +738,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('reviews')
+      const result = await db.insertInto('reviews')
         .values(this.attributes as NewReview)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('reviews')
+      const model = await db.selectFrom('reviews')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -774,18 +773,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('reviews')
+    await db.insertInto('reviews')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newReview: NewReview): Promise<ReviewModel> {
-    const result = await DB.instance.insertInto('reviews')
+    const result = await db.insertInto('reviews')
       .values(newReview)
       .executeTakeFirst()
 
     const instance = new ReviewModel(undefined)
-    const model = await DB.instance.selectFrom('reviews')
+    const model = await db.selectFrom('reviews')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -809,7 +808,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('review:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('reviews')
+    const deleted = await db.deleteFrom('reviews')
       .where('id', '=', this.id)
       .execute()
 
@@ -826,7 +825,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('review:deleted', model)
 
-    return await DB.instance.deleteFrom('reviews')
+    return await db.deleteFrom('reviews')
       .where('id', '=', id)
       .execute()
   }
@@ -1024,7 +1023,7 @@ customer_id: this.customer_id,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<ReviewModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -1044,7 +1043,7 @@ customer_id: this.customer_id,
 }
 
 export async function find(id: number): Promise<ReviewModel | undefined> {
-  let query = DB.instance.selectFrom('reviews').where('id', '=', id).selectAll()
+  let query = db.selectFrom('reviews').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1066,80 +1065,80 @@ export async function create(newReview: NewReview): Promise<ReviewModel> {
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('reviews')
+  await db.deleteFrom('reviews')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereRating(value: number): Promise<ReviewModel[]> {
-          const query = DB.instance.selectFrom('reviews').where('rating', '=', value)
+          const query = db.selectFrom('reviews').where('rating', '=', value)
           const results: ReviewJsonResponse = await query.execute()
 
           return results.map((modelItem: ReviewJsonResponse) => new ReviewModel(modelItem))
         } 
 
 export async function whereTitle(value: string): Promise<ReviewModel[]> {
-          const query = DB.instance.selectFrom('reviews').where('title', '=', value)
+          const query = db.selectFrom('reviews').where('title', '=', value)
           const results: ReviewJsonResponse = await query.execute()
 
           return results.map((modelItem: ReviewJsonResponse) => new ReviewModel(modelItem))
         } 
 
 export async function whereContent(value: string): Promise<ReviewModel[]> {
-          const query = DB.instance.selectFrom('reviews').where('content', '=', value)
+          const query = db.selectFrom('reviews').where('content', '=', value)
           const results: ReviewJsonResponse = await query.execute()
 
           return results.map((modelItem: ReviewJsonResponse) => new ReviewModel(modelItem))
         } 
 
 export async function whereIsVerifiedPurchase(value: boolean): Promise<ReviewModel[]> {
-          const query = DB.instance.selectFrom('reviews').where('is_verified_purchase', '=', value)
+          const query = db.selectFrom('reviews').where('is_verified_purchase', '=', value)
           const results: ReviewJsonResponse = await query.execute()
 
           return results.map((modelItem: ReviewJsonResponse) => new ReviewModel(modelItem))
         } 
 
 export async function whereIsApproved(value: boolean): Promise<ReviewModel[]> {
-          const query = DB.instance.selectFrom('reviews').where('is_approved', '=', value)
+          const query = db.selectFrom('reviews').where('is_approved', '=', value)
           const results: ReviewJsonResponse = await query.execute()
 
           return results.map((modelItem: ReviewJsonResponse) => new ReviewModel(modelItem))
         } 
 
 export async function whereIsFeatured(value: boolean): Promise<ReviewModel[]> {
-          const query = DB.instance.selectFrom('reviews').where('is_featured', '=', value)
+          const query = db.selectFrom('reviews').where('is_featured', '=', value)
           const results: ReviewJsonResponse = await query.execute()
 
           return results.map((modelItem: ReviewJsonResponse) => new ReviewModel(modelItem))
         } 
 
 export async function whereHelpfulVotes(value: number): Promise<ReviewModel[]> {
-          const query = DB.instance.selectFrom('reviews').where('helpful_votes', '=', value)
+          const query = db.selectFrom('reviews').where('helpful_votes', '=', value)
           const results: ReviewJsonResponse = await query.execute()
 
           return results.map((modelItem: ReviewJsonResponse) => new ReviewModel(modelItem))
         } 
 
 export async function whereUnhelpfulVotes(value: number): Promise<ReviewModel[]> {
-          const query = DB.instance.selectFrom('reviews').where('unhelpful_votes', '=', value)
+          const query = db.selectFrom('reviews').where('unhelpful_votes', '=', value)
           const results: ReviewJsonResponse = await query.execute()
 
           return results.map((modelItem: ReviewJsonResponse) => new ReviewModel(modelItem))
         } 
 
 export async function wherePurchaseDate(value: string): Promise<ReviewModel[]> {
-          const query = DB.instance.selectFrom('reviews').where('purchase_date', '=', value)
+          const query = db.selectFrom('reviews').where('purchase_date', '=', value)
           const results: ReviewJsonResponse = await query.execute()
 
           return results.map((modelItem: ReviewJsonResponse) => new ReviewModel(modelItem))
         } 
 
 export async function whereImages(value: string): Promise<ReviewModel[]> {
-          const query = DB.instance.selectFrom('reviews').where('images', '=', value)
+          const query = db.selectFrom('reviews').where('images', '=', value)
           const results: ReviewJsonResponse = await query.execute()
 
           return results.map((modelItem: ReviewJsonResponse) => new ReviewModel(modelItem))

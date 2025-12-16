@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -62,9 +61,9 @@ export class ShippingZoneModel extends BaseOrm<ShippingZoneModel, ShippingZonesT
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('shipping_zones')
-    this.updateFromQuery = DB.instance.updateTable('shipping_zones')
-    this.deleteFromQuery = DB.instance.deleteFrom('shipping_zones')
+    this.selectFromQuery = db.selectFrom('shipping_zones')
+    this.updateFromQuery = db.updateTable('shipping_zones')
+    this.deleteFromQuery = db.deleteFrom('shipping_zones')
     this.hasSelect = false
   }
 
@@ -76,7 +75,7 @@ export class ShippingZoneModel extends BaseOrm<ShippingZoneModel, ShippingZonesT
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('shippingZone_id', 'in', modelIds)
         .selectAll()
@@ -242,7 +241,7 @@ set updated_at(value: string) {
 
   // Method to find a ShippingZone by ID
   static async find(id: number): Promise<ShippingZoneModel | undefined> {
-    let query = DB.instance.selectFrom('shipping_zones').where('id', '=', id).selectAll()
+    let query = db.selectFrom('shipping_zones').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -281,7 +280,7 @@ set updated_at(value: string) {
   static async all(): Promise<ShippingZoneModel[]> {
     const instance = new ShippingZoneModel(undefined)
 
-    const models = await DB.instance.selectFrom('shipping_zones').selectAll().execute()
+    const models = await db.selectFrom('shipping_zones').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -531,11 +530,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('shipping_zones')
+    const result = await db.insertInto('shipping_zones')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('shipping_zones')
+    const model = await db.selectFrom('shipping_zones')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -622,14 +621,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('shipping_zones')
+    await db.updateTable('shipping_zones')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('shipping_zones')
+      const model = await db.selectFrom('shipping_zones')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -647,14 +646,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newShippingZone: ShippingZoneUpdate): Promise<ShippingZoneModel | undefined> {
-    await DB.instance.updateTable('shipping_zones')
+    await db.updateTable('shipping_zones')
       .set(newShippingZone)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('shipping_zones')
+      const model = await db.selectFrom('shipping_zones')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -675,13 +674,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('shipping_zones')
+      await db.updateTable('shipping_zones')
         .set(this.attributes as ShippingZoneUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('shipping_zones')
+      const model = await db.selectFrom('shipping_zones')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -695,12 +694,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('shipping_zones')
+      const result = await db.insertInto('shipping_zones')
         .values(this.attributes as NewShippingZone)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('shipping_zones')
+      const model = await db.selectFrom('shipping_zones')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -730,18 +729,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('shipping_zones')
+    await db.insertInto('shipping_zones')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newShippingZone: NewShippingZone): Promise<ShippingZoneModel> {
-    const result = await DB.instance.insertInto('shipping_zones')
+    const result = await db.insertInto('shipping_zones')
       .values(newShippingZone)
       .executeTakeFirst()
 
     const instance = new ShippingZoneModel(undefined)
-    const model = await DB.instance.selectFrom('shipping_zones')
+    const model = await db.selectFrom('shipping_zones')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -765,7 +764,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('shippingZone:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('shipping_zones')
+    const deleted = await db.deleteFrom('shipping_zones')
       .where('id', '=', this.id)
       .execute()
 
@@ -782,7 +781,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('shippingZone:deleted', model)
 
-    return await DB.instance.deleteFrom('shipping_zones')
+    return await db.deleteFrom('shipping_zones')
       .where('id', '=', id)
       .execute()
   }
@@ -918,7 +917,7 @@ shipping_method_id: this.shipping_method_id,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<ShippingZoneModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -938,7 +937,7 @@ shipping_method_id: this.shipping_method_id,
 }
 
 export async function find(id: number): Promise<ShippingZoneModel | undefined> {
-  let query = DB.instance.selectFrom('shipping_zones').where('id', '=', id).selectAll()
+  let query = db.selectFrom('shipping_zones').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -960,45 +959,45 @@ export async function create(newShippingZone: NewShippingZone): Promise<Shipping
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('shipping_zones')
+  await db.deleteFrom('shipping_zones')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereName(value: string): Promise<ShippingZoneModel[]> {
-          const query = DB.instance.selectFrom('shipping_zones').where('name', '=', value)
+          const query = db.selectFrom('shipping_zones').where('name', '=', value)
           const results: ShippingZoneJsonResponse = await query.execute()
 
           return results.map((modelItem: ShippingZoneJsonResponse) => new ShippingZoneModel(modelItem))
         } 
 
 export async function whereCountries(value: string): Promise<ShippingZoneModel[]> {
-          const query = DB.instance.selectFrom('shipping_zones').where('countries', '=', value)
+          const query = db.selectFrom('shipping_zones').where('countries', '=', value)
           const results: ShippingZoneJsonResponse = await query.execute()
 
           return results.map((modelItem: ShippingZoneJsonResponse) => new ShippingZoneModel(modelItem))
         } 
 
 export async function whereRegions(value: string): Promise<ShippingZoneModel[]> {
-          const query = DB.instance.selectFrom('shipping_zones').where('regions', '=', value)
+          const query = db.selectFrom('shipping_zones').where('regions', '=', value)
           const results: ShippingZoneJsonResponse = await query.execute()
 
           return results.map((modelItem: ShippingZoneJsonResponse) => new ShippingZoneModel(modelItem))
         } 
 
 export async function wherePostalCodes(value: string): Promise<ShippingZoneModel[]> {
-          const query = DB.instance.selectFrom('shipping_zones').where('postal_codes', '=', value)
+          const query = db.selectFrom('shipping_zones').where('postal_codes', '=', value)
           const results: ShippingZoneJsonResponse = await query.execute()
 
           return results.map((modelItem: ShippingZoneJsonResponse) => new ShippingZoneModel(modelItem))
         } 
 
 export async function whereStatus(value: string | string[]): Promise<ShippingZoneModel[]> {
-          const query = DB.instance.selectFrom('shipping_zones').where('status', '=', value)
+          const query = db.selectFrom('shipping_zones').where('status', '=', value)
           const results: ShippingZoneJsonResponse = await query.execute()
 
           return results.map((modelItem: ShippingZoneJsonResponse) => new ShippingZoneModel(modelItem))

@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -60,9 +59,9 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('receipts')
-    this.updateFromQuery = DB.instance.updateTable('receipts')
-    this.deleteFromQuery = DB.instance.deleteFrom('receipts')
+    this.selectFromQuery = db.selectFrom('receipts')
+    this.updateFromQuery = db.updateTable('receipts')
+    this.deleteFromQuery = db.deleteFrom('receipts')
     this.hasSelect = false
   }
 
@@ -74,7 +73,7 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('receipt_id', 'in', modelIds)
         .selectAll()
@@ -260,7 +259,7 @@ set updated_at(value: string) {
 
   // Method to find a Receipt by ID
   static async find(id: number): Promise<ReceiptModel | undefined> {
-    let query = DB.instance.selectFrom('receipts').where('id', '=', id).selectAll()
+    let query = db.selectFrom('receipts').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -299,7 +298,7 @@ set updated_at(value: string) {
   static async all(): Promise<ReceiptModel[]> {
     const instance = new ReceiptModel(undefined)
 
-    const models = await DB.instance.selectFrom('receipts').selectAll().execute()
+    const models = await db.selectFrom('receipts').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -549,11 +548,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('receipts')
+    const result = await db.insertInto('receipts')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('receipts')
+    const model = await db.selectFrom('receipts')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -640,14 +639,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('receipts')
+    await db.updateTable('receipts')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('receipts')
+      const model = await db.selectFrom('receipts')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -665,14 +664,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newReceipt: ReceiptUpdate): Promise<ReceiptModel | undefined> {
-    await DB.instance.updateTable('receipts')
+    await db.updateTable('receipts')
       .set(newReceipt)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('receipts')
+      const model = await db.selectFrom('receipts')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -693,13 +692,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('receipts')
+      await db.updateTable('receipts')
         .set(this.attributes as ReceiptUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('receipts')
+      const model = await db.selectFrom('receipts')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -713,12 +712,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('receipts')
+      const result = await db.insertInto('receipts')
         .values(this.attributes as NewReceipt)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('receipts')
+      const model = await db.selectFrom('receipts')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -748,18 +747,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('receipts')
+    await db.insertInto('receipts')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newReceipt: NewReceipt): Promise<ReceiptModel> {
-    const result = await DB.instance.insertInto('receipts')
+    const result = await db.insertInto('receipts')
       .values(newReceipt)
       .executeTakeFirst()
 
     const instance = new ReceiptModel(undefined)
-    const model = await DB.instance.selectFrom('receipts')
+    const model = await db.selectFrom('receipts')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -783,7 +782,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('receipt:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('receipts')
+    const deleted = await db.deleteFrom('receipts')
       .where('id', '=', this.id)
       .execute()
 
@@ -800,7 +799,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('receipt:deleted', model)
 
-    return await DB.instance.deleteFrom('receipts')
+    return await db.deleteFrom('receipts')
       .where('id', '=', id)
       .execute()
   }
@@ -964,7 +963,7 @@ printer: this.printer,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<ReceiptModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -984,7 +983,7 @@ printer: this.printer,
 }
 
 export async function find(id: number): Promise<ReceiptModel | undefined> {
-  let query = DB.instance.selectFrom('receipts').where('id', '=', id).selectAll()
+  let query = db.selectFrom('receipts').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1006,66 +1005,66 @@ export async function create(newReceipt: NewReceipt): Promise<ReceiptModel> {
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('receipts')
+  await db.deleteFrom('receipts')
     .where('id', '=', id)
     .execute()
 }
 
 export async function wherePrinter(value: string): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('printer', '=', value)
+          const query = db.selectFrom('receipts').where('printer', '=', value)
           const results: ReceiptJsonResponse = await query.execute()
 
           return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
         } 
 
 export async function whereDocument(value: string): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('document', '=', value)
+          const query = db.selectFrom('receipts').where('document', '=', value)
           const results: ReceiptJsonResponse = await query.execute()
 
           return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
         } 
 
 export async function whereTimestamp(value: Date | string): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('timestamp', '=', value)
+          const query = db.selectFrom('receipts').where('timestamp', '=', value)
           const results: ReceiptJsonResponse = await query.execute()
 
           return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
         } 
 
 export async function whereStatus(value: string | string[]): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('status', '=', value)
+          const query = db.selectFrom('receipts').where('status', '=', value)
           const results: ReceiptJsonResponse = await query.execute()
 
           return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
         } 
 
 export async function whereSize(value: number): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('size', '=', value)
+          const query = db.selectFrom('receipts').where('size', '=', value)
           const results: ReceiptJsonResponse = await query.execute()
 
           return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
         } 
 
 export async function wherePages(value: number): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('pages', '=', value)
+          const query = db.selectFrom('receipts').where('pages', '=', value)
           const results: ReceiptJsonResponse = await query.execute()
 
           return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
         } 
 
 export async function whereDuration(value: number): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('duration', '=', value)
+          const query = db.selectFrom('receipts').where('duration', '=', value)
           const results: ReceiptJsonResponse = await query.execute()
 
           return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
         } 
 
 export async function whereMetadata(value: string): Promise<ReceiptModel[]> {
-          const query = DB.instance.selectFrom('receipts').where('metadata', '=', value)
+          const query = db.selectFrom('receipts').where('metadata', '=', value)
           const results: ReceiptJsonResponse = await query.execute()
 
           return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))

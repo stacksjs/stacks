@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -62,9 +61,9 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJs
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('payments')
-    this.updateFromQuery = DB.instance.updateTable('payments')
-    this.deleteFromQuery = DB.instance.deleteFrom('payments')
+    this.selectFromQuery = db.selectFrom('payments')
+    this.updateFromQuery = db.updateTable('payments')
+    this.deleteFromQuery = db.deleteFrom('payments')
     this.hasSelect = false
   }
 
@@ -76,7 +75,7 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJs
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('payment_id', 'in', modelIds)
         .selectAll()
@@ -302,7 +301,7 @@ set updated_at(value: string) {
 
   // Method to find a Payment by ID
   static async find(id: number): Promise<PaymentModel | undefined> {
-    let query = DB.instance.selectFrom('payments').where('id', '=', id).selectAll()
+    let query = db.selectFrom('payments').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -341,7 +340,7 @@ set updated_at(value: string) {
   static async all(): Promise<PaymentModel[]> {
     const instance = new PaymentModel(undefined)
 
-    const models = await DB.instance.selectFrom('payments').selectAll().execute()
+    const models = await db.selectFrom('payments').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -591,11 +590,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('payments')
+    const result = await db.insertInto('payments')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('payments')
+    const model = await db.selectFrom('payments')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -682,14 +681,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('payments')
+    await db.updateTable('payments')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('payments')
+      const model = await db.selectFrom('payments')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -707,14 +706,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newPayment: PaymentUpdate): Promise<PaymentModel | undefined> {
-    await DB.instance.updateTable('payments')
+    await db.updateTable('payments')
       .set(newPayment)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('payments')
+      const model = await db.selectFrom('payments')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -735,13 +734,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('payments')
+      await db.updateTable('payments')
         .set(this.attributes as PaymentUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('payments')
+      const model = await db.selectFrom('payments')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -755,12 +754,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('payments')
+      const result = await db.insertInto('payments')
         .values(this.attributes as NewPayment)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('payments')
+      const model = await db.selectFrom('payments')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -790,18 +789,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('payments')
+    await db.insertInto('payments')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newPayment: NewPayment): Promise<PaymentModel> {
-    const result = await DB.instance.insertInto('payments')
+    const result = await db.insertInto('payments')
       .values(newPayment)
       .executeTakeFirst()
 
     const instance = new PaymentModel(undefined)
-    const model = await DB.instance.selectFrom('payments')
+    const model = await db.selectFrom('payments')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -825,7 +824,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('payment:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('payments')
+    const deleted = await db.deleteFrom('payments')
       .where('id', '=', this.id)
       .execute()
 
@@ -842,7 +841,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('payment:deleted', model)
 
-    return await DB.instance.deleteFrom('payments')
+    return await db.deleteFrom('payments')
       .where('id', '=', id)
       .execute()
   }
@@ -1058,7 +1057,7 @@ customer_id: this.customer_id,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<PaymentModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -1078,7 +1077,7 @@ customer_id: this.customer_id,
 }
 
 export async function find(id: number): Promise<PaymentModel | undefined> {
-  let query = DB.instance.selectFrom('payments').where('id', '=', id).selectAll()
+  let query = db.selectFrom('payments').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1100,94 +1099,94 @@ export async function create(newPayment: NewPayment): Promise<PaymentModel> {
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('payments')
+  await db.deleteFrom('payments')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereAmount(value: number): Promise<PaymentModel[]> {
-          const query = DB.instance.selectFrom('payments').where('amount', '=', value)
+          const query = db.selectFrom('payments').where('amount', '=', value)
           const results: PaymentJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentJsonResponse) => new PaymentModel(modelItem))
         } 
 
 export async function whereMethod(value: string): Promise<PaymentModel[]> {
-          const query = DB.instance.selectFrom('payments').where('method', '=', value)
+          const query = db.selectFrom('payments').where('method', '=', value)
           const results: PaymentJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentJsonResponse) => new PaymentModel(modelItem))
         } 
 
 export async function whereStatus(value: string): Promise<PaymentModel[]> {
-          const query = DB.instance.selectFrom('payments').where('status', '=', value)
+          const query = db.selectFrom('payments').where('status', '=', value)
           const results: PaymentJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentJsonResponse) => new PaymentModel(modelItem))
         } 
 
 export async function whereCurrency(value: string): Promise<PaymentModel[]> {
-          const query = DB.instance.selectFrom('payments').where('currency', '=', value)
+          const query = db.selectFrom('payments').where('currency', '=', value)
           const results: PaymentJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentJsonResponse) => new PaymentModel(modelItem))
         } 
 
 export async function whereReferenceNumber(value: string): Promise<PaymentModel[]> {
-          const query = DB.instance.selectFrom('payments').where('reference_number', '=', value)
+          const query = db.selectFrom('payments').where('reference_number', '=', value)
           const results: PaymentJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentJsonResponse) => new PaymentModel(modelItem))
         } 
 
 export async function whereCardLastFour(value: string): Promise<PaymentModel[]> {
-          const query = DB.instance.selectFrom('payments').where('card_last_four', '=', value)
+          const query = db.selectFrom('payments').where('card_last_four', '=', value)
           const results: PaymentJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentJsonResponse) => new PaymentModel(modelItem))
         } 
 
 export async function whereCardBrand(value: string): Promise<PaymentModel[]> {
-          const query = DB.instance.selectFrom('payments').where('card_brand', '=', value)
+          const query = db.selectFrom('payments').where('card_brand', '=', value)
           const results: PaymentJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentJsonResponse) => new PaymentModel(modelItem))
         } 
 
 export async function whereBillingEmail(value: string): Promise<PaymentModel[]> {
-          const query = DB.instance.selectFrom('payments').where('billing_email', '=', value)
+          const query = db.selectFrom('payments').where('billing_email', '=', value)
           const results: PaymentJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentJsonResponse) => new PaymentModel(modelItem))
         } 
 
 export async function whereTransactionId(value: string): Promise<PaymentModel[]> {
-          const query = DB.instance.selectFrom('payments').where('transaction_id', '=', value)
+          const query = db.selectFrom('payments').where('transaction_id', '=', value)
           const results: PaymentJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentJsonResponse) => new PaymentModel(modelItem))
         } 
 
 export async function wherePaymentProvider(value: string): Promise<PaymentModel[]> {
-          const query = DB.instance.selectFrom('payments').where('payment_provider', '=', value)
+          const query = db.selectFrom('payments').where('payment_provider', '=', value)
           const results: PaymentJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentJsonResponse) => new PaymentModel(modelItem))
         } 
 
 export async function whereRefundAmount(value: number): Promise<PaymentModel[]> {
-          const query = DB.instance.selectFrom('payments').where('refund_amount', '=', value)
+          const query = db.selectFrom('payments').where('refund_amount', '=', value)
           const results: PaymentJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentJsonResponse) => new PaymentModel(modelItem))
         } 
 
 export async function whereNotes(value: string): Promise<PaymentModel[]> {
-          const query = DB.instance.selectFrom('payments').where('notes', '=', value)
+          const query = db.selectFrom('payments').where('notes', '=', value)
           const results: PaymentJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentJsonResponse) => new PaymentModel(modelItem))

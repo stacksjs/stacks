@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -74,9 +73,9 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('products')
-    this.updateFromQuery = DB.instance.updateTable('products')
-    this.deleteFromQuery = DB.instance.deleteFrom('products')
+    this.selectFromQuery = db.selectFrom('products')
+    this.updateFromQuery = db.updateTable('products')
+    this.deleteFromQuery = db.deleteFrom('products')
     this.hasSelect = false
   }
 
@@ -88,7 +87,7 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('product_id', 'in', modelIds)
         .selectAll()
@@ -314,7 +313,7 @@ set updated_at(value: string) {
 
   // Method to find a Product by ID
   static async find(id: number): Promise<ProductModel | undefined> {
-    let query = DB.instance.selectFrom('products').where('id', '=', id).selectAll()
+    let query = db.selectFrom('products').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -353,7 +352,7 @@ set updated_at(value: string) {
   static async all(): Promise<ProductModel[]> {
     const instance = new ProductModel(undefined)
 
-    const models = await DB.instance.selectFrom('products').selectAll().execute()
+    const models = await db.selectFrom('products').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -603,11 +602,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('products')
+    const result = await db.insertInto('products')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('products')
+    const model = await db.selectFrom('products')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -694,14 +693,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('products')
+    await db.updateTable('products')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('products')
+      const model = await db.selectFrom('products')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -719,14 +718,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newProduct: ProductUpdate): Promise<ProductModel | undefined> {
-    await DB.instance.updateTable('products')
+    await db.updateTable('products')
       .set(newProduct)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('products')
+      const model = await db.selectFrom('products')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -747,13 +746,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('products')
+      await db.updateTable('products')
         .set(this.attributes as ProductUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('products')
+      const model = await db.selectFrom('products')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -767,12 +766,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('products')
+      const result = await db.insertInto('products')
         .values(this.attributes as NewProduct)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('products')
+      const model = await db.selectFrom('products')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -802,18 +801,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('products')
+    await db.insertInto('products')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newProduct: NewProduct): Promise<ProductModel> {
-    const result = await DB.instance.insertInto('products')
+    const result = await db.insertInto('products')
       .values(newProduct)
       .executeTakeFirst()
 
     const instance = new ProductModel(undefined)
-    const model = await DB.instance.selectFrom('products')
+    const model = await db.selectFrom('products')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -837,7 +836,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('product:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('products')
+    const deleted = await db.deleteFrom('products')
       .where('id', '=', this.id)
       .execute()
 
@@ -854,7 +853,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('product:deleted', model)
 
-    return await DB.instance.deleteFrom('products')
+    return await db.deleteFrom('products')
       .where('id', '=', id)
       .execute()
   }
@@ -1049,7 +1048,7 @@ manufacturer_id: this.manufacturer_id,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<ProductModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -1069,7 +1068,7 @@ manufacturer_id: this.manufacturer_id,
 }
 
 export async function find(id: number): Promise<ProductModel | undefined> {
-  let query = DB.instance.selectFrom('products').where('id', '=', id).selectAll()
+  let query = db.selectFrom('products').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1091,73 +1090,73 @@ export async function create(newProduct: NewProduct): Promise<ProductModel> {
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('products')
+  await db.deleteFrom('products')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereName(value: string): Promise<ProductModel[]> {
-          const query = DB.instance.selectFrom('products').where('name', '=', value)
+          const query = db.selectFrom('products').where('name', '=', value)
           const results: ProductJsonResponse = await query.execute()
 
           return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
         } 
 
 export async function whereDescription(value: string): Promise<ProductModel[]> {
-          const query = DB.instance.selectFrom('products').where('description', '=', value)
+          const query = db.selectFrom('products').where('description', '=', value)
           const results: ProductJsonResponse = await query.execute()
 
           return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
         } 
 
 export async function wherePrice(value: number): Promise<ProductModel[]> {
-          const query = DB.instance.selectFrom('products').where('price', '=', value)
+          const query = db.selectFrom('products').where('price', '=', value)
           const results: ProductJsonResponse = await query.execute()
 
           return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
         } 
 
 export async function whereImageUrl(value: string): Promise<ProductModel[]> {
-          const query = DB.instance.selectFrom('products').where('image_url', '=', value)
+          const query = db.selectFrom('products').where('image_url', '=', value)
           const results: ProductJsonResponse = await query.execute()
 
           return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
         } 
 
 export async function whereIsAvailable(value: boolean): Promise<ProductModel[]> {
-          const query = DB.instance.selectFrom('products').where('is_available', '=', value)
+          const query = db.selectFrom('products').where('is_available', '=', value)
           const results: ProductJsonResponse = await query.execute()
 
           return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
         } 
 
 export async function whereInventoryCount(value: number): Promise<ProductModel[]> {
-          const query = DB.instance.selectFrom('products').where('inventory_count', '=', value)
+          const query = db.selectFrom('products').where('inventory_count', '=', value)
           const results: ProductJsonResponse = await query.execute()
 
           return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
         } 
 
 export async function wherePreparationTime(value: number): Promise<ProductModel[]> {
-          const query = DB.instance.selectFrom('products').where('preparation_time', '=', value)
+          const query = db.selectFrom('products').where('preparation_time', '=', value)
           const results: ProductJsonResponse = await query.execute()
 
           return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
         } 
 
 export async function whereAllergens(value: string): Promise<ProductModel[]> {
-          const query = DB.instance.selectFrom('products').where('allergens', '=', value)
+          const query = db.selectFrom('products').where('allergens', '=', value)
           const results: ProductJsonResponse = await query.execute()
 
           return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
         } 
 
 export async function whereNutritionalInfo(value: string): Promise<ProductModel[]> {
-          const query = DB.instance.selectFrom('products').where('nutritional_info', '=', value)
+          const query = db.selectFrom('products').where('nutritional_info', '=', value)
           const results: ProductJsonResponse = await query.execute()
 
           return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))

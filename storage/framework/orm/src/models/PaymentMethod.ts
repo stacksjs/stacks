@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -63,9 +62,9 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('payment_methods')
-    this.updateFromQuery = DB.instance.updateTable('payment_methods')
-    this.deleteFromQuery = DB.instance.deleteFrom('payment_methods')
+    this.selectFromQuery = db.selectFrom('payment_methods')
+    this.updateFromQuery = db.updateTable('payment_methods')
+    this.deleteFromQuery = db.deleteFrom('payment_methods')
     this.hasSelect = false
   }
 
@@ -77,7 +76,7 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('paymentMethod_id', 'in', modelIds)
         .selectAll()
@@ -259,7 +258,7 @@ set updated_at(value: string) {
 
   // Method to find a PaymentMethod by ID
   static async find(id: number): Promise<PaymentMethodModel | undefined> {
-    let query = DB.instance.selectFrom('payment_methods').where('id', '=', id).selectAll()
+    let query = db.selectFrom('payment_methods').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -298,7 +297,7 @@ set updated_at(value: string) {
   static async all(): Promise<PaymentMethodModel[]> {
     const instance = new PaymentMethodModel(undefined)
 
-    const models = await DB.instance.selectFrom('payment_methods').selectAll().execute()
+    const models = await db.selectFrom('payment_methods').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -548,11 +547,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('payment_methods')
+    const result = await db.insertInto('payment_methods')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('payment_methods')
+    const model = await db.selectFrom('payment_methods')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -638,14 +637,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('payment_methods')
+    await db.updateTable('payment_methods')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('payment_methods')
+      const model = await db.selectFrom('payment_methods')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -662,14 +661,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newPaymentMethod: PaymentMethodUpdate): Promise<PaymentMethodModel | undefined> {
-    await DB.instance.updateTable('payment_methods')
+    await db.updateTable('payment_methods')
       .set(newPaymentMethod)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('payment_methods')
+      const model = await db.selectFrom('payment_methods')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -689,13 +688,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('payment_methods')
+      await db.updateTable('payment_methods')
         .set(this.attributes as PaymentMethodUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('payment_methods')
+      const model = await db.selectFrom('payment_methods')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -708,12 +707,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('payment_methods')
+      const result = await db.insertInto('payment_methods')
         .values(this.attributes as NewPaymentMethod)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('payment_methods')
+      const model = await db.selectFrom('payment_methods')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -742,18 +741,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('payment_methods')
+    await db.insertInto('payment_methods')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {
-    const result = await DB.instance.insertInto('payment_methods')
+    const result = await db.insertInto('payment_methods')
       .values(newPaymentMethod)
       .executeTakeFirst()
 
     const instance = new PaymentMethodModel(undefined)
-    const model = await DB.instance.selectFrom('payment_methods')
+    const model = await db.selectFrom('payment_methods')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -775,7 +774,7 @@ set updated_at(value: string) {
     
     
 
-    const deleted = await DB.instance.deleteFrom('payment_methods')
+    const deleted = await db.deleteFrom('payment_methods')
       .where('id', '=', this.id)
       .execute()
 
@@ -791,7 +790,7 @@ set updated_at(value: string) {
 
     
 
-    return await DB.instance.deleteFrom('payment_methods')
+    return await db.deleteFrom('payment_methods')
       .where('id', '=', id)
       .execute()
   }
@@ -934,7 +933,7 @@ user_id: this.user_id,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<PaymentMethodModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -954,7 +953,7 @@ user_id: this.user_id,
 }
 
 export async function find(id: number): Promise<PaymentMethodModel | undefined> {
-  let query = DB.instance.selectFrom('payment_methods').where('id', '=', id).selectAll()
+  let query = db.selectFrom('payment_methods').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -976,59 +975,59 @@ export async function create(newPaymentMethod: NewPaymentMethod): Promise<Paymen
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('payment_methods')
+  await db.deleteFrom('payment_methods')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereType(value: string): Promise<PaymentMethodModel[]> {
-          const query = DB.instance.selectFrom('payment_methods').where('type', '=', value)
+          const query = db.selectFrom('payment_methods').where('type', '=', value)
           const results: PaymentMethodJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentMethodJsonResponse) => new PaymentMethodModel(modelItem))
         } 
 
 export async function whereLastFour(value: number): Promise<PaymentMethodModel[]> {
-          const query = DB.instance.selectFrom('payment_methods').where('last_four', '=', value)
+          const query = db.selectFrom('payment_methods').where('last_four', '=', value)
           const results: PaymentMethodJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentMethodJsonResponse) => new PaymentMethodModel(modelItem))
         } 
 
 export async function whereBrand(value: string): Promise<PaymentMethodModel[]> {
-          const query = DB.instance.selectFrom('payment_methods').where('brand', '=', value)
+          const query = db.selectFrom('payment_methods').where('brand', '=', value)
           const results: PaymentMethodJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentMethodJsonResponse) => new PaymentMethodModel(modelItem))
         } 
 
 export async function whereExpMonth(value: number): Promise<PaymentMethodModel[]> {
-          const query = DB.instance.selectFrom('payment_methods').where('exp_month', '=', value)
+          const query = db.selectFrom('payment_methods').where('exp_month', '=', value)
           const results: PaymentMethodJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentMethodJsonResponse) => new PaymentMethodModel(modelItem))
         } 
 
 export async function whereExpYear(value: number): Promise<PaymentMethodModel[]> {
-          const query = DB.instance.selectFrom('payment_methods').where('exp_year', '=', value)
+          const query = db.selectFrom('payment_methods').where('exp_year', '=', value)
           const results: PaymentMethodJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentMethodJsonResponse) => new PaymentMethodModel(modelItem))
         } 
 
 export async function whereIsDefault(value: boolean): Promise<PaymentMethodModel[]> {
-          const query = DB.instance.selectFrom('payment_methods').where('is_default', '=', value)
+          const query = db.selectFrom('payment_methods').where('is_default', '=', value)
           const results: PaymentMethodJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentMethodJsonResponse) => new PaymentMethodModel(modelItem))
         } 
 
 export async function whereProviderId(value: string): Promise<PaymentMethodModel[]> {
-          const query = DB.instance.selectFrom('payment_methods').where('provider_id', '=', value)
+          const query = db.selectFrom('payment_methods').where('provider_id', '=', value)
           const results: PaymentMethodJsonResponse = await query.execute()
 
           return results.map((modelItem: PaymentMethodJsonResponse) => new PaymentMethodModel(modelItem))

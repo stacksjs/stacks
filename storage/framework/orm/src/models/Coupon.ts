@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -62,9 +61,9 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('coupons')
-    this.updateFromQuery = DB.instance.updateTable('coupons')
-    this.deleteFromQuery = DB.instance.deleteFrom('coupons')
+    this.selectFromQuery = db.selectFrom('coupons')
+    this.updateFromQuery = db.updateTable('coupons')
+    this.deleteFromQuery = db.deleteFrom('coupons')
     this.hasSelect = false
   }
 
@@ -76,7 +75,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('coupon_id', 'in', modelIds)
         .selectAll()
@@ -306,7 +305,7 @@ set updated_at(value: string) {
 
   // Method to find a Coupon by ID
   static async find(id: number): Promise<CouponModel | undefined> {
-    let query = DB.instance.selectFrom('coupons').where('id', '=', id).selectAll()
+    let query = db.selectFrom('coupons').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -345,7 +344,7 @@ set updated_at(value: string) {
   static async all(): Promise<CouponModel[]> {
     const instance = new CouponModel(undefined)
 
-    const models = await DB.instance.selectFrom('coupons').selectAll().execute()
+    const models = await db.selectFrom('coupons').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -595,11 +594,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('coupons')
+    const result = await db.insertInto('coupons')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('coupons')
+    const model = await db.selectFrom('coupons')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -686,14 +685,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('coupons')
+    await db.updateTable('coupons')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('coupons')
+      const model = await db.selectFrom('coupons')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -711,14 +710,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newCoupon: CouponUpdate): Promise<CouponModel | undefined> {
-    await DB.instance.updateTable('coupons')
+    await db.updateTable('coupons')
       .set(newCoupon)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('coupons')
+      const model = await db.selectFrom('coupons')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -739,13 +738,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('coupons')
+      await db.updateTable('coupons')
         .set(this.attributes as CouponUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('coupons')
+      const model = await db.selectFrom('coupons')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -759,12 +758,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('coupons')
+      const result = await db.insertInto('coupons')
         .values(this.attributes as NewCoupon)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('coupons')
+      const model = await db.selectFrom('coupons')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -794,18 +793,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('coupons')
+    await db.insertInto('coupons')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newCoupon: NewCoupon): Promise<CouponModel> {
-    const result = await DB.instance.insertInto('coupons')
+    const result = await db.insertInto('coupons')
       .values(newCoupon)
       .executeTakeFirst()
 
     const instance = new CouponModel(undefined)
-    const model = await DB.instance.selectFrom('coupons')
+    const model = await db.selectFrom('coupons')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -829,7 +828,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('coupon:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('coupons')
+    const deleted = await db.deleteFrom('coupons')
       .where('id', '=', this.id)
       .execute()
 
@@ -846,7 +845,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('coupon:deleted', model)
 
-    return await DB.instance.deleteFrom('coupons')
+    return await db.deleteFrom('coupons')
       .where('id', '=', id)
       .execute()
   }
@@ -1054,7 +1053,7 @@ product_id: this.product_id,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<CouponModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -1074,7 +1073,7 @@ product_id: this.product_id,
 }
 
 export async function find(id: number): Promise<CouponModel | undefined> {
-  let query = DB.instance.selectFrom('coupons').where('id', '=', id).selectAll()
+  let query = db.selectFrom('coupons').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1096,101 +1095,101 @@ export async function create(newCoupon: NewCoupon): Promise<CouponModel> {
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('coupons')
+  await db.deleteFrom('coupons')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereCode(value: string): Promise<CouponModel[]> {
-          const query = DB.instance.selectFrom('coupons').where('code', '=', value)
+          const query = db.selectFrom('coupons').where('code', '=', value)
           const results: CouponJsonResponse = await query.execute()
 
           return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
         } 
 
 export async function whereDescription(value: string): Promise<CouponModel[]> {
-          const query = DB.instance.selectFrom('coupons').where('description', '=', value)
+          const query = db.selectFrom('coupons').where('description', '=', value)
           const results: CouponJsonResponse = await query.execute()
 
           return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
         } 
 
 export async function whereStatus(value: string | string[]): Promise<CouponModel[]> {
-          const query = DB.instance.selectFrom('coupons').where('status', '=', value)
+          const query = db.selectFrom('coupons').where('status', '=', value)
           const results: CouponJsonResponse = await query.execute()
 
           return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
         } 
 
 export async function whereIsActive(value: boolean): Promise<CouponModel[]> {
-          const query = DB.instance.selectFrom('coupons').where('is_active', '=', value)
+          const query = db.selectFrom('coupons').where('is_active', '=', value)
           const results: CouponJsonResponse = await query.execute()
 
           return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
         } 
 
 export async function whereDiscountType(value: string | string[]): Promise<CouponModel[]> {
-          const query = DB.instance.selectFrom('coupons').where('discount_type', '=', value)
+          const query = db.selectFrom('coupons').where('discount_type', '=', value)
           const results: CouponJsonResponse = await query.execute()
 
           return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
         } 
 
 export async function whereDiscountValue(value: number): Promise<CouponModel[]> {
-          const query = DB.instance.selectFrom('coupons').where('discount_value', '=', value)
+          const query = db.selectFrom('coupons').where('discount_value', '=', value)
           const results: CouponJsonResponse = await query.execute()
 
           return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
         } 
 
 export async function whereMinOrderAmount(value: number): Promise<CouponModel[]> {
-          const query = DB.instance.selectFrom('coupons').where('min_order_amount', '=', value)
+          const query = db.selectFrom('coupons').where('min_order_amount', '=', value)
           const results: CouponJsonResponse = await query.execute()
 
           return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
         } 
 
 export async function whereMaxDiscountAmount(value: number): Promise<CouponModel[]> {
-          const query = DB.instance.selectFrom('coupons').where('max_discount_amount', '=', value)
+          const query = db.selectFrom('coupons').where('max_discount_amount', '=', value)
           const results: CouponJsonResponse = await query.execute()
 
           return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
         } 
 
 export async function whereFreeProductId(value: string): Promise<CouponModel[]> {
-          const query = DB.instance.selectFrom('coupons').where('free_product_id', '=', value)
+          const query = db.selectFrom('coupons').where('free_product_id', '=', value)
           const results: CouponJsonResponse = await query.execute()
 
           return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
         } 
 
 export async function whereUsageLimit(value: number): Promise<CouponModel[]> {
-          const query = DB.instance.selectFrom('coupons').where('usage_limit', '=', value)
+          const query = db.selectFrom('coupons').where('usage_limit', '=', value)
           const results: CouponJsonResponse = await query.execute()
 
           return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
         } 
 
 export async function whereUsageCount(value: number): Promise<CouponModel[]> {
-          const query = DB.instance.selectFrom('coupons').where('usage_count', '=', value)
+          const query = db.selectFrom('coupons').where('usage_count', '=', value)
           const results: CouponJsonResponse = await query.execute()
 
           return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
         } 
 
 export async function whereStartDate(value: Date | string): Promise<CouponModel[]> {
-          const query = DB.instance.selectFrom('coupons').where('start_date', '=', value)
+          const query = db.selectFrom('coupons').where('start_date', '=', value)
           const results: CouponJsonResponse = await query.execute()
 
           return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
         } 
 
 export async function whereEndDate(value: Date | string): Promise<CouponModel[]> {
-          const query = DB.instance.selectFrom('coupons').where('end_date', '=', value)
+          const query = db.selectFrom('coupons').where('end_date', '=', value)
           const results: CouponJsonResponse = await query.execute()
 
           return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))

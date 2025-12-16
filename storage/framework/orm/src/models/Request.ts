@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -58,9 +57,9 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('requests')
-    this.updateFromQuery = DB.instance.updateTable('requests')
-    this.deleteFromQuery = DB.instance.deleteFrom('requests')
+    this.selectFromQuery = db.selectFrom('requests')
+    this.updateFromQuery = db.updateTable('requests')
+    this.deleteFromQuery = db.deleteFrom('requests')
     this.hasSelect = false
   }
 
@@ -72,7 +71,7 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('request_id', 'in', modelIds)
         .selectAll()
@@ -250,7 +249,7 @@ set deleted_at(value: string) {
 
   // Method to find a Request by ID
   static async find(id: number): Promise<RequestModel | undefined> {
-    let query = DB.instance.selectFrom('requests').where('id', '=', id).selectAll()
+    let query = db.selectFrom('requests').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -289,7 +288,7 @@ set deleted_at(value: string) {
   static async all(): Promise<RequestModel[]> {
     const instance = new RequestModel(undefined)
 
-    const models = await DB.instance.selectFrom('requests').selectAll().execute()
+    const models = await db.selectFrom('requests').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -541,11 +540,11 @@ set deleted_at(value: string) {
 
     
 
-    const result = await DB.instance.insertInto('requests')
+    const result = await db.insertInto('requests')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('requests')
+    const model = await db.selectFrom('requests')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -631,14 +630,14 @@ set deleted_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('requests')
+    await db.updateTable('requests')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('requests')
+      const model = await db.selectFrom('requests')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -655,14 +654,14 @@ set deleted_at(value: string) {
   }
 
   async forceUpdate(newRequest: RequestUpdate): Promise<RequestModel | undefined> {
-    await DB.instance.updateTable('requests')
+    await db.updateTable('requests')
       .set(newRequest)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('requests')
+      const model = await db.selectFrom('requests')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -682,13 +681,13 @@ set deleted_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('requests')
+      await db.updateTable('requests')
         .set(this.attributes as RequestUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('requests')
+      const model = await db.selectFrom('requests')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -701,12 +700,12 @@ set deleted_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('requests')
+      const result = await db.insertInto('requests')
         .values(this.attributes as NewRequest)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('requests')
+      const model = await db.selectFrom('requests')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -735,18 +734,18 @@ set deleted_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('requests')
+    await db.insertInto('requests')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newRequest: NewRequest): Promise<RequestModel> {
-    const result = await DB.instance.insertInto('requests')
+    const result = await db.insertInto('requests')
       .values(newRequest)
       .executeTakeFirst()
 
     const instance = new RequestModel(undefined)
-    const model = await DB.instance.selectFrom('requests')
+    const model = await db.selectFrom('requests')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -766,7 +765,7 @@ set deleted_at(value: string) {
       this.deleteFromQuery.execute()
     
     if (this.softDeletes) {
-        return await DB.instance.updateTable('requests')
+        return await db.updateTable('requests')
         .set({
             deleted_at: sql.raw('CURRENT_TIMESTAMP')
         })
@@ -775,7 +774,7 @@ set deleted_at(value: string) {
       }
     
 
-    const deleted = await DB.instance.deleteFrom('requests')
+    const deleted = await db.deleteFrom('requests')
       .where('id', '=', this.id)
       .execute()
 
@@ -791,7 +790,7 @@ set deleted_at(value: string) {
         const instance = new RequestModel(undefined)
 
         if (instance.softDeletes) {
-          return await DB.instance.updateTable('requests')
+          return await db.updateTable('requests')
           .set({
             deleted_at: sql.raw('CURRENT_TIMESTAMP'),
           })
@@ -802,7 +801,7 @@ set deleted_at(value: string) {
 
     
 
-    return await DB.instance.deleteFrom('requests')
+    return await db.deleteFrom('requests')
       .where('id', '=', id)
       .execute()
   }
@@ -937,7 +936,7 @@ method: this.method,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<RequestModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -957,7 +956,7 @@ method: this.method,
 }
 
 export async function find(id: number): Promise<RequestModel | undefined> {
-  let query = DB.instance.selectFrom('requests').where('id', '=', id).selectAll()
+  let query = db.selectFrom('requests').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -979,66 +978,66 @@ export async function create(newRequest: NewRequest): Promise<RequestModel> {
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('requests')
+  await db.deleteFrom('requests')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereMethod(value: string | string[]): Promise<RequestModel[]> {
-          const query = DB.instance.selectFrom('requests').where('method', '=', value)
+          const query = db.selectFrom('requests').where('method', '=', value)
           const results: RequestJsonResponse = await query.execute()
 
           return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))
         } 
 
 export async function wherePath(value: string): Promise<RequestModel[]> {
-          const query = DB.instance.selectFrom('requests').where('path', '=', value)
+          const query = db.selectFrom('requests').where('path', '=', value)
           const results: RequestJsonResponse = await query.execute()
 
           return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))
         } 
 
 export async function whereStatusCode(value: number): Promise<RequestModel[]> {
-          const query = DB.instance.selectFrom('requests').where('status_code', '=', value)
+          const query = db.selectFrom('requests').where('status_code', '=', value)
           const results: RequestJsonResponse = await query.execute()
 
           return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))
         } 
 
 export async function whereDurationMs(value: number): Promise<RequestModel[]> {
-          const query = DB.instance.selectFrom('requests').where('duration_ms', '=', value)
+          const query = db.selectFrom('requests').where('duration_ms', '=', value)
           const results: RequestJsonResponse = await query.execute()
 
           return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))
         } 
 
 export async function whereIpAddress(value: string): Promise<RequestModel[]> {
-          const query = DB.instance.selectFrom('requests').where('ip_address', '=', value)
+          const query = db.selectFrom('requests').where('ip_address', '=', value)
           const results: RequestJsonResponse = await query.execute()
 
           return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))
         } 
 
 export async function whereMemoryUsage(value: number): Promise<RequestModel[]> {
-          const query = DB.instance.selectFrom('requests').where('memory_usage', '=', value)
+          const query = db.selectFrom('requests').where('memory_usage', '=', value)
           const results: RequestJsonResponse = await query.execute()
 
           return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))
         } 
 
 export async function whereUserAgent(value: string): Promise<RequestModel[]> {
-          const query = DB.instance.selectFrom('requests').where('user_agent', '=', value)
+          const query = db.selectFrom('requests').where('user_agent', '=', value)
           const results: RequestJsonResponse = await query.execute()
 
           return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))
         } 
 
 export async function whereErrorMessage(value: string): Promise<RequestModel[]> {
-          const query = DB.instance.selectFrom('requests').where('error_message', '=', value)
+          const query = db.selectFrom('requests').where('error_message', '=', value)
           const results: RequestJsonResponse = await query.execute()
 
           return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))

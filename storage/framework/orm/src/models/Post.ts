@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -63,9 +62,9 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('posts')
-    this.updateFromQuery = DB.instance.updateTable('posts')
-    this.deleteFromQuery = DB.instance.deleteFrom('posts')
+    this.selectFromQuery = db.selectFrom('posts')
+    this.updateFromQuery = db.updateTable('posts')
+    this.deleteFromQuery = db.deleteFrom('posts')
     this.hasSelect = false
   }
 
@@ -77,7 +76,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('post_id', 'in', modelIds)
         .selectAll()
@@ -263,7 +262,7 @@ set updated_at(value: string) {
 
   // Method to find a Post by ID
   static async find(id: number): Promise<PostModel | undefined> {
-    let query = DB.instance.selectFrom('posts').where('id', '=', id).selectAll()
+    let query = db.selectFrom('posts').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -302,7 +301,7 @@ set updated_at(value: string) {
   static async all(): Promise<PostModel[]> {
     const instance = new PostModel(undefined)
 
-    const models = await DB.instance.selectFrom('posts').selectAll().execute()
+    const models = await db.selectFrom('posts').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -552,11 +551,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('posts')
+    const result = await db.insertInto('posts')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('posts')
+    const model = await db.selectFrom('posts')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -642,14 +641,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('posts')
+    await db.updateTable('posts')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('posts')
+      const model = await db.selectFrom('posts')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -666,14 +665,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newPost: PostUpdate): Promise<PostModel | undefined> {
-    await DB.instance.updateTable('posts')
+    await db.updateTable('posts')
       .set(newPost)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('posts')
+      const model = await db.selectFrom('posts')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -693,13 +692,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('posts')
+      await db.updateTable('posts')
         .set(this.attributes as PostUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('posts')
+      const model = await db.selectFrom('posts')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -712,12 +711,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('posts')
+      const result = await db.insertInto('posts')
         .values(this.attributes as NewPost)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('posts')
+      const model = await db.selectFrom('posts')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -746,18 +745,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('posts')
+    await db.insertInto('posts')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newPost: NewPost): Promise<PostModel> {
-    const result = await DB.instance.insertInto('posts')
+    const result = await db.insertInto('posts')
       .values(newPost)
       .executeTakeFirst()
 
     const instance = new PostModel(undefined)
-    const model = await DB.instance.selectFrom('posts')
+    const model = await db.selectFrom('posts')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -779,7 +778,7 @@ set updated_at(value: string) {
     
     
 
-    const deleted = await DB.instance.deleteFrom('posts')
+    const deleted = await db.deleteFrom('posts')
       .where('id', '=', this.id)
       .execute()
 
@@ -795,7 +794,7 @@ set updated_at(value: string) {
 
     
 
-    return await DB.instance.deleteFrom('posts')
+    return await db.deleteFrom('posts')
       .where('id', '=', id)
       .execute()
   }
@@ -1029,7 +1028,7 @@ title: this.title,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<PostModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -1049,7 +1048,7 @@ title: this.title,
 }
 
 export async function find(id: number): Promise<PostModel | undefined> {
-  let query = DB.instance.selectFrom('posts').where('id', '=', id).selectAll()
+  let query = db.selectFrom('posts').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1071,66 +1070,66 @@ export async function create(newPost: NewPost): Promise<PostModel> {
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('posts')
+  await db.deleteFrom('posts')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereTitle(value: string): Promise<PostModel[]> {
-          const query = DB.instance.selectFrom('posts').where('title', '=', value)
+          const query = db.selectFrom('posts').where('title', '=', value)
           const results: PostJsonResponse = await query.execute()
 
           return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
         } 
 
 export async function wherePoster(value: string): Promise<PostModel[]> {
-          const query = DB.instance.selectFrom('posts').where('poster', '=', value)
+          const query = db.selectFrom('posts').where('poster', '=', value)
           const results: PostJsonResponse = await query.execute()
 
           return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
         } 
 
 export async function whereContent(value: string): Promise<PostModel[]> {
-          const query = DB.instance.selectFrom('posts').where('content', '=', value)
+          const query = db.selectFrom('posts').where('content', '=', value)
           const results: PostJsonResponse = await query.execute()
 
           return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
         } 
 
 export async function whereExcerpt(value: string): Promise<PostModel[]> {
-          const query = DB.instance.selectFrom('posts').where('excerpt', '=', value)
+          const query = db.selectFrom('posts').where('excerpt', '=', value)
           const results: PostJsonResponse = await query.execute()
 
           return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
         } 
 
 export async function whereViews(value: number): Promise<PostModel[]> {
-          const query = DB.instance.selectFrom('posts').where('views', '=', value)
+          const query = db.selectFrom('posts').where('views', '=', value)
           const results: PostJsonResponse = await query.execute()
 
           return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
         } 
 
 export async function wherePublishedAt(value: Date | string): Promise<PostModel[]> {
-          const query = DB.instance.selectFrom('posts').where('published_at', '=', value)
+          const query = db.selectFrom('posts').where('published_at', '=', value)
           const results: PostJsonResponse = await query.execute()
 
           return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
         } 
 
 export async function whereStatus(value: string | string[]): Promise<PostModel[]> {
-          const query = DB.instance.selectFrom('posts').where('status', '=', value)
+          const query = db.selectFrom('posts').where('status', '=', value)
           const results: PostJsonResponse = await query.execute()
 
           return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
         } 
 
 export async function whereIsFeatured(value: number): Promise<PostModel[]> {
-          const query = DB.instance.selectFrom('posts').where('is_featured', '=', value)
+          const query = db.selectFrom('posts').where('is_featured', '=', value)
           const results: PostJsonResponse = await query.execute()
 
           return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))

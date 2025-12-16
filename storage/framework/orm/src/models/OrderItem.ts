@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -62,9 +61,9 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('order_items')
-    this.updateFromQuery = DB.instance.updateTable('order_items')
-    this.deleteFromQuery = DB.instance.deleteFrom('order_items')
+    this.selectFromQuery = db.selectFrom('order_items')
+    this.updateFromQuery = db.updateTable('order_items')
+    this.deleteFromQuery = db.deleteFrom('order_items')
     this.hasSelect = false
   }
 
@@ -76,7 +75,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('orderItem_id', 'in', modelIds)
         .selectAll()
@@ -222,7 +221,7 @@ set updated_at(value: string) {
 
   // Method to find a OrderItem by ID
   static async find(id: number): Promise<OrderItemModel | undefined> {
-    let query = DB.instance.selectFrom('order_items').where('id', '=', id).selectAll()
+    let query = db.selectFrom('order_items').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -261,7 +260,7 @@ set updated_at(value: string) {
   static async all(): Promise<OrderItemModel[]> {
     const instance = new OrderItemModel(undefined)
 
-    const models = await DB.instance.selectFrom('order_items').selectAll().execute()
+    const models = await db.selectFrom('order_items').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -511,11 +510,11 @@ set updated_at(value: string) {
 
     
 
-    const result = await DB.instance.insertInto('order_items')
+    const result = await db.insertInto('order_items')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('order_items')
+    const model = await db.selectFrom('order_items')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -601,14 +600,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('order_items')
+    await db.updateTable('order_items')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('order_items')
+      const model = await db.selectFrom('order_items')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -625,14 +624,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newOrderItem: OrderItemUpdate): Promise<OrderItemModel | undefined> {
-    await DB.instance.updateTable('order_items')
+    await db.updateTable('order_items')
       .set(newOrderItem)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('order_items')
+      const model = await db.selectFrom('order_items')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -652,13 +651,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('order_items')
+      await db.updateTable('order_items')
         .set(this.attributes as OrderItemUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('order_items')
+      const model = await db.selectFrom('order_items')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -671,12 +670,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('order_items')
+      const result = await db.insertInto('order_items')
         .values(this.attributes as NewOrderItem)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('order_items')
+      const model = await db.selectFrom('order_items')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -705,18 +704,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('order_items')
+    await db.insertInto('order_items')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newOrderItem: NewOrderItem): Promise<OrderItemModel> {
-    const result = await DB.instance.insertInto('order_items')
+    const result = await db.insertInto('order_items')
       .values(newOrderItem)
       .executeTakeFirst()
 
     const instance = new OrderItemModel(undefined)
-    const model = await DB.instance.selectFrom('order_items')
+    const model = await db.selectFrom('order_items')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -738,7 +737,7 @@ set updated_at(value: string) {
     
     
 
-    const deleted = await DB.instance.deleteFrom('order_items')
+    const deleted = await db.deleteFrom('order_items')
       .where('id', '=', this.id)
       .execute()
 
@@ -754,7 +753,7 @@ set updated_at(value: string) {
 
     
 
-    return await DB.instance.deleteFrom('order_items')
+    return await db.deleteFrom('order_items')
       .where('id', '=', id)
       .execute()
   }
@@ -875,7 +874,7 @@ product_id: this.product_id,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<OrderItemModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -895,7 +894,7 @@ product_id: this.product_id,
 }
 
 export async function find(id: number): Promise<OrderItemModel | undefined> {
-  let query = DB.instance.selectFrom('order_items').where('id', '=', id).selectAll()
+  let query = db.selectFrom('order_items').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -917,31 +916,31 @@ export async function create(newOrderItem: NewOrderItem): Promise<OrderItemModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('order_items')
+  await db.deleteFrom('order_items')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereQuantity(value: number): Promise<OrderItemModel[]> {
-          const query = DB.instance.selectFrom('order_items').where('quantity', '=', value)
+          const query = db.selectFrom('order_items').where('quantity', '=', value)
           const results: OrderItemJsonResponse = await query.execute()
 
           return results.map((modelItem: OrderItemJsonResponse) => new OrderItemModel(modelItem))
         } 
 
 export async function wherePrice(value: number): Promise<OrderItemModel[]> {
-          const query = DB.instance.selectFrom('order_items').where('price', '=', value)
+          const query = db.selectFrom('order_items').where('price', '=', value)
           const results: OrderItemJsonResponse = await query.execute()
 
           return results.map((modelItem: OrderItemJsonResponse) => new OrderItemModel(modelItem))
         } 
 
 export async function whereSpecialInstructions(value: string): Promise<OrderItemModel[]> {
-          const query = DB.instance.selectFrom('order_items').where('special_instructions', '=', value)
+          const query = db.selectFrom('order_items').where('special_instructions', '=', value)
           const results: OrderItemJsonResponse = await query.execute()
 
           return results.map((modelItem: OrderItemJsonResponse) => new OrderItemModel(modelItem))

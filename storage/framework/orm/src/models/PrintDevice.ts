@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -60,9 +59,9 @@ export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTabl
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('print_devices')
-    this.updateFromQuery = DB.instance.updateTable('print_devices')
-    this.deleteFromQuery = DB.instance.deleteFrom('print_devices')
+    this.selectFromQuery = db.selectFrom('print_devices')
+    this.updateFromQuery = db.updateTable('print_devices')
+    this.deleteFromQuery = db.deleteFrom('print_devices')
     this.hasSelect = false
   }
 
@@ -74,7 +73,7 @@ export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTabl
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('printDevice_id', 'in', modelIds)
         .selectAll()
@@ -248,7 +247,7 @@ set updated_at(value: string) {
 
   // Method to find a PrintDevice by ID
   static async find(id: number): Promise<PrintDeviceModel | undefined> {
-    let query = DB.instance.selectFrom('print_devices').where('id', '=', id).selectAll()
+    let query = db.selectFrom('print_devices').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -287,7 +286,7 @@ set updated_at(value: string) {
   static async all(): Promise<PrintDeviceModel[]> {
     const instance = new PrintDeviceModel(undefined)
 
-    const models = await DB.instance.selectFrom('print_devices').selectAll().execute()
+    const models = await db.selectFrom('print_devices').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -537,11 +536,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('print_devices')
+    const result = await db.insertInto('print_devices')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('print_devices')
+    const model = await db.selectFrom('print_devices')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -628,14 +627,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('print_devices')
+    await db.updateTable('print_devices')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('print_devices')
+      const model = await db.selectFrom('print_devices')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -653,14 +652,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newPrintDevice: PrintDeviceUpdate): Promise<PrintDeviceModel | undefined> {
-    await DB.instance.updateTable('print_devices')
+    await db.updateTable('print_devices')
       .set(newPrintDevice)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('print_devices')
+      const model = await db.selectFrom('print_devices')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -681,13 +680,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('print_devices')
+      await db.updateTable('print_devices')
         .set(this.attributes as PrintDeviceUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('print_devices')
+      const model = await db.selectFrom('print_devices')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -701,12 +700,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('print_devices')
+      const result = await db.insertInto('print_devices')
         .values(this.attributes as NewPrintDevice)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('print_devices')
+      const model = await db.selectFrom('print_devices')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -736,18 +735,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('print_devices')
+    await db.insertInto('print_devices')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newPrintDevice: NewPrintDevice): Promise<PrintDeviceModel> {
-    const result = await DB.instance.insertInto('print_devices')
+    const result = await db.insertInto('print_devices')
       .values(newPrintDevice)
       .executeTakeFirst()
 
     const instance = new PrintDeviceModel(undefined)
-    const model = await DB.instance.selectFrom('print_devices')
+    const model = await db.selectFrom('print_devices')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -771,7 +770,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('printDevice:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('print_devices')
+    const deleted = await db.deleteFrom('print_devices')
       .where('id', '=', this.id)
       .execute()
 
@@ -788,7 +787,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('printDevice:deleted', model)
 
-    return await DB.instance.deleteFrom('print_devices')
+    return await db.deleteFrom('print_devices')
       .where('id', '=', id)
       .execute()
   }
@@ -927,7 +926,7 @@ name: this.name,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<PrintDeviceModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -947,7 +946,7 @@ name: this.name,
 }
 
 export async function find(id: number): Promise<PrintDeviceModel | undefined> {
-  let query = DB.instance.selectFrom('print_devices').where('id', '=', id).selectAll()
+  let query = db.selectFrom('print_devices').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -969,59 +968,59 @@ export async function create(newPrintDevice: NewPrintDevice): Promise<PrintDevic
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('print_devices')
+  await db.deleteFrom('print_devices')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereName(value: string): Promise<PrintDeviceModel[]> {
-          const query = DB.instance.selectFrom('print_devices').where('name', '=', value)
+          const query = db.selectFrom('print_devices').where('name', '=', value)
           const results: PrintDeviceJsonResponse = await query.execute()
 
           return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
         } 
 
 export async function whereMacAddress(value: string): Promise<PrintDeviceModel[]> {
-          const query = DB.instance.selectFrom('print_devices').where('mac_address', '=', value)
+          const query = db.selectFrom('print_devices').where('mac_address', '=', value)
           const results: PrintDeviceJsonResponse = await query.execute()
 
           return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
         } 
 
 export async function whereLocation(value: string): Promise<PrintDeviceModel[]> {
-          const query = DB.instance.selectFrom('print_devices').where('location', '=', value)
+          const query = db.selectFrom('print_devices').where('location', '=', value)
           const results: PrintDeviceJsonResponse = await query.execute()
 
           return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
         } 
 
 export async function whereTerminal(value: string): Promise<PrintDeviceModel[]> {
-          const query = DB.instance.selectFrom('print_devices').where('terminal', '=', value)
+          const query = db.selectFrom('print_devices').where('terminal', '=', value)
           const results: PrintDeviceJsonResponse = await query.execute()
 
           return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
         } 
 
 export async function whereStatus(value: string | string[]): Promise<PrintDeviceModel[]> {
-          const query = DB.instance.selectFrom('print_devices').where('status', '=', value)
+          const query = db.selectFrom('print_devices').where('status', '=', value)
           const results: PrintDeviceJsonResponse = await query.execute()
 
           return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
         } 
 
 export async function whereLastPing(value: unix): Promise<PrintDeviceModel[]> {
-          const query = DB.instance.selectFrom('print_devices').where('last_ping', '=', value)
+          const query = db.selectFrom('print_devices').where('last_ping', '=', value)
           const results: PrintDeviceJsonResponse = await query.execute()
 
           return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))
         } 
 
 export async function wherePrintCount(value: number): Promise<PrintDeviceModel[]> {
-          const query = DB.instance.selectFrom('print_devices').where('print_count', '=', value)
+          const query = db.selectFrom('print_devices').where('print_count', '=', value)
           const results: PrintDeviceJsonResponse = await query.execute()
 
           return results.map((modelItem: PrintDeviceJsonResponse) => new PrintDeviceModel(modelItem))

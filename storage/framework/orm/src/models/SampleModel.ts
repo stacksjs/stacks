@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -57,9 +56,9 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('sample_models')
-    this.updateFromQuery = DB.instance.updateTable('sample_models')
-    this.deleteFromQuery = DB.instance.deleteFrom('sample_models')
+    this.selectFromQuery = db.selectFrom('sample_models')
+    this.updateFromQuery = db.updateTable('sample_models')
+    this.deleteFromQuery = db.deleteFrom('sample_models')
     this.hasSelect = false
   }
 
@@ -71,7 +70,7 @@ export class SampleModelModel extends BaseOrm<SampleModelModel, SampleModelsTabl
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('sampleModel_id', 'in', modelIds)
         .selectAll()
@@ -177,7 +176,7 @@ get created_at(): string | undefined {
 
   // Method to find a SampleModel by ID
   static async find(id: number): Promise<SampleModelModel | undefined> {
-    let query = DB.instance.selectFrom('sample_models').where('id', '=', id).selectAll()
+    let query = db.selectFrom('sample_models').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -216,7 +215,7 @@ get created_at(): string | undefined {
   static async all(): Promise<SampleModelModel[]> {
     const instance = new SampleModelModel(undefined)
 
-    const models = await DB.instance.selectFrom('sample_models').selectAll().execute()
+    const models = await db.selectFrom('sample_models').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -466,11 +465,11 @@ get created_at(): string | undefined {
 
     
 
-    const result = await DB.instance.insertInto('sample_models')
+    const result = await db.insertInto('sample_models')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('sample_models')
+    const model = await db.selectFrom('sample_models')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -556,14 +555,14 @@ get created_at(): string | undefined {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('sample_models')
+    await db.updateTable('sample_models')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('sample_models')
+      const model = await db.selectFrom('sample_models')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -580,14 +579,14 @@ get created_at(): string | undefined {
   }
 
   async forceUpdate(newSampleModel: SampleModelUpdate): Promise<SampleModelModel | undefined> {
-    await DB.instance.updateTable('sample_models')
+    await db.updateTable('sample_models')
       .set(newSampleModel)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('sample_models')
+      const model = await db.selectFrom('sample_models')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -607,13 +606,13 @@ get created_at(): string | undefined {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('sample_models')
+      await db.updateTable('sample_models')
         .set(this.attributes as SampleModelUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('sample_models')
+      const model = await db.selectFrom('sample_models')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -626,12 +625,12 @@ get created_at(): string | undefined {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('sample_models')
+      const result = await db.insertInto('sample_models')
         .values(this.attributes as NewSampleModel)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('sample_models')
+      const model = await db.selectFrom('sample_models')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -660,18 +659,18 @@ get created_at(): string | undefined {
       return filteredValues
     })
 
-    await DB.instance.insertInto('sample_models')
+    await db.insertInto('sample_models')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newSampleModel: NewSampleModel): Promise<SampleModelModel> {
-    const result = await DB.instance.insertInto('sample_models')
+    const result = await db.insertInto('sample_models')
       .values(newSampleModel)
       .executeTakeFirst()
 
     const instance = new SampleModelModel(undefined)
-    const model = await DB.instance.selectFrom('sample_models')
+    const model = await db.selectFrom('sample_models')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -693,7 +692,7 @@ get created_at(): string | undefined {
     
     
 
-    const deleted = await DB.instance.deleteFrom('sample_models')
+    const deleted = await db.deleteFrom('sample_models')
       .where('id', '=', this.id)
       .execute()
 
@@ -709,7 +708,7 @@ get created_at(): string | undefined {
 
     
 
-    return await DB.instance.deleteFrom('sample_models')
+    return await db.deleteFrom('sample_models')
       .where('id', '=', id)
       .execute()
   }
@@ -769,7 +768,7 @@ id: this.id,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<SampleModelModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -789,7 +788,7 @@ id: this.id,
 }
 
 export async function find(id: number): Promise<SampleModelModel | undefined> {
-  let query = DB.instance.selectFrom('sample_models').where('id', '=', id).selectAll()
+  let query = db.selectFrom('sample_models').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -811,11 +810,11 @@ export async function create(newSampleModel: NewSampleModel): Promise<SampleMode
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('sample_models')
+  await db.deleteFrom('sample_models')
     .where('id', '=', id)
     .execute()
 }

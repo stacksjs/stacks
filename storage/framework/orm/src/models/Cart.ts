@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -64,9 +63,9 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('carts')
-    this.updateFromQuery = DB.instance.updateTable('carts')
-    this.deleteFromQuery = DB.instance.deleteFrom('carts')
+    this.selectFromQuery = db.selectFrom('carts')
+    this.updateFromQuery = db.updateTable('carts')
+    this.deleteFromQuery = db.deleteFrom('carts')
     this.hasSelect = false
   }
 
@@ -78,7 +77,7 @@ export class CartModel extends BaseOrm<CartModel, CartsTable, CartJsonResponse> 
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('cart_id', 'in', modelIds)
         .selectAll()
@@ -292,7 +291,7 @@ set updated_at(value: string) {
 
   // Method to find a Cart by ID
   static async find(id: number): Promise<CartModel | undefined> {
-    let query = DB.instance.selectFrom('carts').where('id', '=', id).selectAll()
+    let query = db.selectFrom('carts').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -331,7 +330,7 @@ set updated_at(value: string) {
   static async all(): Promise<CartModel[]> {
     const instance = new CartModel(undefined)
 
-    const models = await DB.instance.selectFrom('carts').selectAll().execute()
+    const models = await db.selectFrom('carts').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -581,11 +580,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('carts')
+    const result = await db.insertInto('carts')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('carts')
+    const model = await db.selectFrom('carts')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -672,14 +671,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('carts')
+    await db.updateTable('carts')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('carts')
+      const model = await db.selectFrom('carts')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -697,14 +696,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newCart: CartUpdate): Promise<CartModel | undefined> {
-    await DB.instance.updateTable('carts')
+    await db.updateTable('carts')
       .set(newCart)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('carts')
+      const model = await db.selectFrom('carts')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -725,13 +724,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('carts')
+      await db.updateTable('carts')
         .set(this.attributes as CartUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('carts')
+      const model = await db.selectFrom('carts')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -745,12 +744,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('carts')
+      const result = await db.insertInto('carts')
         .values(this.attributes as NewCart)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('carts')
+      const model = await db.selectFrom('carts')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -780,18 +779,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('carts')
+    await db.insertInto('carts')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newCart: NewCart): Promise<CartModel> {
-    const result = await DB.instance.insertInto('carts')
+    const result = await db.insertInto('carts')
       .values(newCart)
       .executeTakeFirst()
 
     const instance = new CartModel(undefined)
-    const model = await DB.instance.selectFrom('carts')
+    const model = await db.selectFrom('carts')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -815,7 +814,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('cart:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('carts')
+    const deleted = await db.deleteFrom('carts')
       .where('id', '=', this.id)
       .execute()
 
@@ -832,7 +831,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('cart:deleted', model)
 
-    return await DB.instance.deleteFrom('carts')
+    return await db.deleteFrom('carts')
       .where('id', '=', id)
       .execute()
   }
@@ -1031,7 +1030,7 @@ coupon_id: this.coupon_id,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<CartModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -1051,7 +1050,7 @@ coupon_id: this.coupon_id,
 }
 
 export async function find(id: number): Promise<CartModel | undefined> {
-  let query = DB.instance.selectFrom('carts').where('id', '=', id).selectAll()
+  let query = db.selectFrom('carts').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1073,80 +1072,80 @@ export async function create(newCart: NewCart): Promise<CartModel> {
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('carts')
+  await db.deleteFrom('carts')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereStatus(value: string | string[]): Promise<CartModel[]> {
-          const query = DB.instance.selectFrom('carts').where('status', '=', value)
+          const query = db.selectFrom('carts').where('status', '=', value)
           const results: CartJsonResponse = await query.execute()
 
           return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
         } 
 
 export async function whereTotalItems(value: number): Promise<CartModel[]> {
-          const query = DB.instance.selectFrom('carts').where('total_items', '=', value)
+          const query = db.selectFrom('carts').where('total_items', '=', value)
           const results: CartJsonResponse = await query.execute()
 
           return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
         } 
 
 export async function whereSubtotal(value: number): Promise<CartModel[]> {
-          const query = DB.instance.selectFrom('carts').where('subtotal', '=', value)
+          const query = db.selectFrom('carts').where('subtotal', '=', value)
           const results: CartJsonResponse = await query.execute()
 
           return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
         } 
 
 export async function whereTaxAmount(value: number): Promise<CartModel[]> {
-          const query = DB.instance.selectFrom('carts').where('tax_amount', '=', value)
+          const query = db.selectFrom('carts').where('tax_amount', '=', value)
           const results: CartJsonResponse = await query.execute()
 
           return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
         } 
 
 export async function whereDiscountAmount(value: number): Promise<CartModel[]> {
-          const query = DB.instance.selectFrom('carts').where('discount_amount', '=', value)
+          const query = db.selectFrom('carts').where('discount_amount', '=', value)
           const results: CartJsonResponse = await query.execute()
 
           return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
         } 
 
 export async function whereTotal(value: number): Promise<CartModel[]> {
-          const query = DB.instance.selectFrom('carts').where('total', '=', value)
+          const query = db.selectFrom('carts').where('total', '=', value)
           const results: CartJsonResponse = await query.execute()
 
           return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
         } 
 
 export async function whereExpiresAt(value: Date | string): Promise<CartModel[]> {
-          const query = DB.instance.selectFrom('carts').where('expires_at', '=', value)
+          const query = db.selectFrom('carts').where('expires_at', '=', value)
           const results: CartJsonResponse = await query.execute()
 
           return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
         } 
 
 export async function whereCurrency(value: string): Promise<CartModel[]> {
-          const query = DB.instance.selectFrom('carts').where('currency', '=', value)
+          const query = db.selectFrom('carts').where('currency', '=', value)
           const results: CartJsonResponse = await query.execute()
 
           return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
         } 
 
 export async function whereNotes(value: string): Promise<CartModel[]> {
-          const query = DB.instance.selectFrom('carts').where('notes', '=', value)
+          const query = db.selectFrom('carts').where('notes', '=', value)
           const results: CartJsonResponse = await query.execute()
 
           return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))
         } 
 
 export async function whereAppliedCouponId(value: string): Promise<CartModel[]> {
-          const query = DB.instance.selectFrom('carts').where('applied_coupon_id', '=', value)
+          const query = db.selectFrom('carts').where('applied_coupon_id', '=', value)
           const results: CartJsonResponse = await query.execute()
 
           return results.map((modelItem: CartJsonResponse) => new CartModel(modelItem))

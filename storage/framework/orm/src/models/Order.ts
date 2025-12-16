@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -68,9 +67,9 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('orders')
-    this.updateFromQuery = DB.instance.updateTable('orders')
-    this.deleteFromQuery = DB.instance.deleteFrom('orders')
+    this.selectFromQuery = db.selectFrom('orders')
+    this.updateFromQuery = db.updateTable('orders')
+    this.deleteFromQuery = db.deleteFrom('orders')
     this.hasSelect = false
   }
 
@@ -82,7 +81,7 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('order_id', 'in', modelIds)
         .selectAll()
@@ -312,7 +311,7 @@ set updated_at(value: string) {
 
   // Method to find a Order by ID
   static async find(id: number): Promise<OrderModel | undefined> {
-    let query = DB.instance.selectFrom('orders').where('id', '=', id).selectAll()
+    let query = db.selectFrom('orders').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -351,7 +350,7 @@ set updated_at(value: string) {
   static async all(): Promise<OrderModel[]> {
     const instance = new OrderModel(undefined)
 
-    const models = await DB.instance.selectFrom('orders').selectAll().execute()
+    const models = await db.selectFrom('orders').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -601,11 +600,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('orders')
+    const result = await db.insertInto('orders')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('orders')
+    const model = await db.selectFrom('orders')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -692,14 +691,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('orders')
+    await db.updateTable('orders')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('orders')
+      const model = await db.selectFrom('orders')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -717,14 +716,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newOrder: OrderUpdate): Promise<OrderModel | undefined> {
-    await DB.instance.updateTable('orders')
+    await db.updateTable('orders')
       .set(newOrder)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('orders')
+      const model = await db.selectFrom('orders')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -745,13 +744,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('orders')
+      await db.updateTable('orders')
         .set(this.attributes as OrderUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('orders')
+      const model = await db.selectFrom('orders')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -765,12 +764,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('orders')
+      const result = await db.insertInto('orders')
         .values(this.attributes as NewOrder)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('orders')
+      const model = await db.selectFrom('orders')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -800,18 +799,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('orders')
+    await db.insertInto('orders')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newOrder: NewOrder): Promise<OrderModel> {
-    const result = await DB.instance.insertInto('orders')
+    const result = await db.insertInto('orders')
       .values(newOrder)
       .executeTakeFirst()
 
     const instance = new OrderModel(undefined)
-    const model = await DB.instance.selectFrom('orders')
+    const model = await db.selectFrom('orders')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -835,7 +834,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('order:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('orders')
+    const deleted = await db.deleteFrom('orders')
       .where('id', '=', this.id)
       .execute()
 
@@ -852,7 +851,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('order:deleted', model)
 
-    return await DB.instance.deleteFrom('orders')
+    return await db.deleteFrom('orders')
       .where('id', '=', id)
       .execute()
   }
@@ -1061,7 +1060,7 @@ coupon_id: this.coupon_id,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<OrderModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -1081,7 +1080,7 @@ coupon_id: this.coupon_id,
 }
 
 export async function find(id: number): Promise<OrderModel | undefined> {
-  let query = DB.instance.selectFrom('orders').where('id', '=', id).selectAll()
+  let query = db.selectFrom('orders').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1103,87 +1102,87 @@ export async function create(newOrder: NewOrder): Promise<OrderModel> {
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('orders')
+  await db.deleteFrom('orders')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereStatus(value: string): Promise<OrderModel[]> {
-          const query = DB.instance.selectFrom('orders').where('status', '=', value)
+          const query = db.selectFrom('orders').where('status', '=', value)
           const results: OrderJsonResponse = await query.execute()
 
           return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
         } 
 
 export async function whereTotalAmount(value: number): Promise<OrderModel[]> {
-          const query = DB.instance.selectFrom('orders').where('total_amount', '=', value)
+          const query = db.selectFrom('orders').where('total_amount', '=', value)
           const results: OrderJsonResponse = await query.execute()
 
           return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
         } 
 
 export async function whereTaxAmount(value: number): Promise<OrderModel[]> {
-          const query = DB.instance.selectFrom('orders').where('tax_amount', '=', value)
+          const query = db.selectFrom('orders').where('tax_amount', '=', value)
           const results: OrderJsonResponse = await query.execute()
 
           return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
         } 
 
 export async function whereDiscountAmount(value: number): Promise<OrderModel[]> {
-          const query = DB.instance.selectFrom('orders').where('discount_amount', '=', value)
+          const query = db.selectFrom('orders').where('discount_amount', '=', value)
           const results: OrderJsonResponse = await query.execute()
 
           return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
         } 
 
 export async function whereDeliveryFee(value: number): Promise<OrderModel[]> {
-          const query = DB.instance.selectFrom('orders').where('delivery_fee', '=', value)
+          const query = db.selectFrom('orders').where('delivery_fee', '=', value)
           const results: OrderJsonResponse = await query.execute()
 
           return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
         } 
 
 export async function whereTipAmount(value: number): Promise<OrderModel[]> {
-          const query = DB.instance.selectFrom('orders').where('tip_amount', '=', value)
+          const query = db.selectFrom('orders').where('tip_amount', '=', value)
           const results: OrderJsonResponse = await query.execute()
 
           return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
         } 
 
 export async function whereOrderType(value: string): Promise<OrderModel[]> {
-          const query = DB.instance.selectFrom('orders').where('order_type', '=', value)
+          const query = db.selectFrom('orders').where('order_type', '=', value)
           const results: OrderJsonResponse = await query.execute()
 
           return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
         } 
 
 export async function whereDeliveryAddress(value: string): Promise<OrderModel[]> {
-          const query = DB.instance.selectFrom('orders').where('delivery_address', '=', value)
+          const query = db.selectFrom('orders').where('delivery_address', '=', value)
           const results: OrderJsonResponse = await query.execute()
 
           return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
         } 
 
 export async function whereSpecialInstructions(value: string): Promise<OrderModel[]> {
-          const query = DB.instance.selectFrom('orders').where('special_instructions', '=', value)
+          const query = db.selectFrom('orders').where('special_instructions', '=', value)
           const results: OrderJsonResponse = await query.execute()
 
           return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
         } 
 
 export async function whereEstimatedDeliveryTime(value: string): Promise<OrderModel[]> {
-          const query = DB.instance.selectFrom('orders').where('estimated_delivery_time', '=', value)
+          const query = db.selectFrom('orders').where('estimated_delivery_time', '=', value)
           const results: OrderJsonResponse = await query.execute()
 
           return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
         } 
 
 export async function whereAppliedCouponId(value: string): Promise<OrderModel[]> {
-          const query = DB.instance.selectFrom('orders').where('applied_coupon_id', '=', value)
+          const query = db.selectFrom('orders').where('applied_coupon_id', '=', value)
           const results: OrderJsonResponse = await query.execute()
 
           return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))

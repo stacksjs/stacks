@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { DB } from '@stacksjs/orm'
+import { db } from '@stacksjs/database'
 import { refreshDatabase } from '@stacksjs/testing'
 
 import User from '../models/User'
@@ -686,7 +686,7 @@ describe('Models test', () => {
     })
 
     // Create some posts for the user
-    await DB.instance.insertInto('posts').values([
+    await db.insertInto('posts').values([
       { user_id: user.id, title: 'Post 1', body: 'lorem ipsum' },
       { user_id: user.id, title: 'Post 2', body: 'lorem ipsum' },
     ]).execute()
@@ -943,11 +943,11 @@ describe('Models test', () => {
     })
 
     // Create some related records
-    await DB.instance.insertInto('posts').values([
+    await db.insertInto('posts').values([
       { user_id: user.id, title: 'Post 1', body: 'lorem ipsum' },
     ]).execute()
 
-    await DB.instance.insertInto('subscriptions').values([
+    await db.insertInto('subscriptions').values([
       { user_id: user.id, plan: 'basic', type: 'monthly', provider_id: '1234567890', provider_status: 'active', provider_type: 'stripe' },
     ]).execute()
 

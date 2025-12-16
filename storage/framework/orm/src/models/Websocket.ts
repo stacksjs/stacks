@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -58,9 +57,9 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('websockets')
-    this.updateFromQuery = DB.instance.updateTable('websockets')
-    this.deleteFromQuery = DB.instance.deleteFrom('websockets')
+    this.selectFromQuery = db.selectFrom('websockets')
+    this.updateFromQuery = db.updateTable('websockets')
+    this.deleteFromQuery = db.deleteFrom('websockets')
     this.hasSelect = false
   }
 
@@ -72,7 +71,7 @@ export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, Web
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('websocket_id', 'in', modelIds)
         .selectAll()
@@ -210,7 +209,7 @@ set updated_at(value: string) {
 
   // Method to find a Websocket by ID
   static async find(id: number): Promise<WebsocketModel | undefined> {
-    let query = DB.instance.selectFrom('websockets').where('id', '=', id).selectAll()
+    let query = db.selectFrom('websockets').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -249,7 +248,7 @@ set updated_at(value: string) {
   static async all(): Promise<WebsocketModel[]> {
     const instance = new WebsocketModel(undefined)
 
-    const models = await DB.instance.selectFrom('websockets').selectAll().execute()
+    const models = await db.selectFrom('websockets').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -499,11 +498,11 @@ set updated_at(value: string) {
 
     
 
-    const result = await DB.instance.insertInto('websockets')
+    const result = await db.insertInto('websockets')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('websockets')
+    const model = await db.selectFrom('websockets')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -590,14 +589,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('websockets')
+    await db.updateTable('websockets')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('websockets')
+      const model = await db.selectFrom('websockets')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -615,14 +614,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newWebsocket: WebsocketUpdate): Promise<WebsocketModel | undefined> {
-    await DB.instance.updateTable('websockets')
+    await db.updateTable('websockets')
       .set(newWebsocket)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('websockets')
+      const model = await db.selectFrom('websockets')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -643,13 +642,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('websockets')
+      await db.updateTable('websockets')
         .set(this.attributes as WebsocketUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('websockets')
+      const model = await db.selectFrom('websockets')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -663,12 +662,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('websockets')
+      const result = await db.insertInto('websockets')
         .values(this.attributes as NewWebsocket)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('websockets')
+      const model = await db.selectFrom('websockets')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -698,18 +697,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('websockets')
+    await db.insertInto('websockets')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newWebsocket: NewWebsocket): Promise<WebsocketModel> {
-    const result = await DB.instance.insertInto('websockets')
+    const result = await db.insertInto('websockets')
       .values(newWebsocket)
       .executeTakeFirst()
 
     const instance = new WebsocketModel(undefined)
-    const model = await DB.instance.selectFrom('websockets')
+    const model = await db.selectFrom('websockets')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -733,7 +732,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('websocket:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('websockets')
+    const deleted = await db.deleteFrom('websockets')
       .where('id', '=', this.id)
       .execute()
 
@@ -750,7 +749,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('websocket:deleted', model)
 
-    return await DB.instance.deleteFrom('websockets')
+    return await db.deleteFrom('websockets')
       .where('id', '=', id)
       .execute()
   }
@@ -846,7 +845,7 @@ type: this.type,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<WebsocketModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -866,7 +865,7 @@ type: this.type,
 }
 
 export async function find(id: number): Promise<WebsocketModel | undefined> {
-  let query = DB.instance.selectFrom('websockets').where('id', '=', id).selectAll()
+  let query = db.selectFrom('websockets').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -888,38 +887,38 @@ export async function create(newWebsocket: NewWebsocket): Promise<WebsocketModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('websockets')
+  await db.deleteFrom('websockets')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereType(value: string | string[]): Promise<WebsocketModel[]> {
-          const query = DB.instance.selectFrom('websockets').where('type', '=', value)
+          const query = db.selectFrom('websockets').where('type', '=', value)
           const results: WebsocketJsonResponse = await query.execute()
 
           return results.map((modelItem: WebsocketJsonResponse) => new WebsocketModel(modelItem))
         } 
 
 export async function whereSocket(value: string): Promise<WebsocketModel[]> {
-          const query = DB.instance.selectFrom('websockets').where('socket', '=', value)
+          const query = db.selectFrom('websockets').where('socket', '=', value)
           const results: WebsocketJsonResponse = await query.execute()
 
           return results.map((modelItem: WebsocketJsonResponse) => new WebsocketModel(modelItem))
         } 
 
 export async function whereDetails(value: string): Promise<WebsocketModel[]> {
-          const query = DB.instance.selectFrom('websockets').where('details', '=', value)
+          const query = db.selectFrom('websockets').where('details', '=', value)
           const results: WebsocketJsonResponse = await query.execute()
 
           return results.map((modelItem: WebsocketJsonResponse) => new WebsocketModel(modelItem))
         } 
 
 export async function whereTime(value: number): Promise<WebsocketModel[]> {
-          const query = DB.instance.selectFrom('websockets').where('time', '=', value)
+          const query = db.selectFrom('websockets').where('time', '=', value)
           const results: WebsocketJsonResponse = await query.execute()
 
           return results.map((modelItem: WebsocketJsonResponse) => new WebsocketModel(modelItem))

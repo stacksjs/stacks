@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -64,9 +63,9 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('license_keys')
-    this.updateFromQuery = DB.instance.updateTable('license_keys')
-    this.deleteFromQuery = DB.instance.deleteFrom('license_keys')
+    this.selectFromQuery = db.selectFrom('license_keys')
+    this.updateFromQuery = db.updateTable('license_keys')
+    this.deleteFromQuery = db.deleteFrom('license_keys')
     this.hasSelect = false
   }
 
@@ -78,7 +77,7 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('licenseKey_id', 'in', modelIds)
         .selectAll()
@@ -248,7 +247,7 @@ set updated_at(value: string) {
 
   // Method to find a LicenseKey by ID
   static async find(id: number): Promise<LicenseKeyModel | undefined> {
-    let query = DB.instance.selectFrom('license_keys').where('id', '=', id).selectAll()
+    let query = db.selectFrom('license_keys').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -287,7 +286,7 @@ set updated_at(value: string) {
   static async all(): Promise<LicenseKeyModel[]> {
     const instance = new LicenseKeyModel(undefined)
 
-    const models = await DB.instance.selectFrom('license_keys').selectAll().execute()
+    const models = await db.selectFrom('license_keys').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -537,11 +536,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('license_keys')
+    const result = await db.insertInto('license_keys')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('license_keys')
+    const model = await db.selectFrom('license_keys')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -628,14 +627,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('license_keys')
+    await db.updateTable('license_keys')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('license_keys')
+      const model = await db.selectFrom('license_keys')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -653,14 +652,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newLicenseKey: LicenseKeyUpdate): Promise<LicenseKeyModel | undefined> {
-    await DB.instance.updateTable('license_keys')
+    await db.updateTable('license_keys')
       .set(newLicenseKey)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('license_keys')
+      const model = await db.selectFrom('license_keys')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -681,13 +680,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('license_keys')
+      await db.updateTable('license_keys')
         .set(this.attributes as LicenseKeyUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('license_keys')
+      const model = await db.selectFrom('license_keys')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -701,12 +700,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('license_keys')
+      const result = await db.insertInto('license_keys')
         .values(this.attributes as NewLicenseKey)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('license_keys')
+      const model = await db.selectFrom('license_keys')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -736,18 +735,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('license_keys')
+    await db.insertInto('license_keys')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newLicenseKey: NewLicenseKey): Promise<LicenseKeyModel> {
-    const result = await DB.instance.insertInto('license_keys')
+    const result = await db.insertInto('license_keys')
       .values(newLicenseKey)
       .executeTakeFirst()
 
     const instance = new LicenseKeyModel(undefined)
-    const model = await DB.instance.selectFrom('license_keys')
+    const model = await db.selectFrom('license_keys')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -771,7 +770,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('licenseKey:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('license_keys')
+    const deleted = await db.deleteFrom('license_keys')
       .where('id', '=', this.id)
       .execute()
 
@@ -788,7 +787,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('licenseKey:deleted', model)
 
-    return await DB.instance.deleteFrom('license_keys')
+    return await db.deleteFrom('license_keys')
       .where('id', '=', id)
       .execute()
   }
@@ -947,7 +946,7 @@ order_id: this.order_id,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<LicenseKeyModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -967,7 +966,7 @@ order_id: this.order_id,
 }
 
 export async function find(id: number): Promise<LicenseKeyModel | undefined> {
-  let query = DB.instance.selectFrom('license_keys').where('id', '=', id).selectAll()
+  let query = db.selectFrom('license_keys').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -989,38 +988,38 @@ export async function create(newLicenseKey: NewLicenseKey): Promise<LicenseKeyMo
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('license_keys')
+  await db.deleteFrom('license_keys')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereKey(value: string): Promise<LicenseKeyModel[]> {
-          const query = DB.instance.selectFrom('license_keys').where('key', '=', value)
+          const query = db.selectFrom('license_keys').where('key', '=', value)
           const results: LicenseKeyJsonResponse = await query.execute()
 
           return results.map((modelItem: LicenseKeyJsonResponse) => new LicenseKeyModel(modelItem))
         } 
 
 export async function whereTemplate(value: string | string[]): Promise<LicenseKeyModel[]> {
-          const query = DB.instance.selectFrom('license_keys').where('template', '=', value)
+          const query = db.selectFrom('license_keys').where('template', '=', value)
           const results: LicenseKeyJsonResponse = await query.execute()
 
           return results.map((modelItem: LicenseKeyJsonResponse) => new LicenseKeyModel(modelItem))
         } 
 
 export async function whereExpiryDate(value: Date | string): Promise<LicenseKeyModel[]> {
-          const query = DB.instance.selectFrom('license_keys').where('expiry_date', '=', value)
+          const query = db.selectFrom('license_keys').where('expiry_date', '=', value)
           const results: LicenseKeyJsonResponse = await query.execute()
 
           return results.map((modelItem: LicenseKeyJsonResponse) => new LicenseKeyModel(modelItem))
         } 
 
 export async function whereStatus(value: string | string[]): Promise<LicenseKeyModel[]> {
-          const query = DB.instance.selectFrom('license_keys').where('status', '=', value)
+          const query = db.selectFrom('license_keys').where('status', '=', value)
           const results: LicenseKeyJsonResponse = await query.execute()
 
           return results.map((modelItem: LicenseKeyJsonResponse) => new LicenseKeyModel(modelItem))

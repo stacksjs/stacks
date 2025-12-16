@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -58,9 +57,9 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('jobs')
-    this.updateFromQuery = DB.instance.updateTable('jobs')
-    this.deleteFromQuery = DB.instance.deleteFrom('jobs')
+    this.selectFromQuery = db.selectFrom('jobs')
+    this.updateFromQuery = db.updateTable('jobs')
+    this.deleteFromQuery = db.deleteFrom('jobs')
     this.hasSelect = false
   }
 
@@ -72,7 +71,7 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('job_id', 'in', modelIds)
         .selectAll()
@@ -218,7 +217,7 @@ set updated_at(value: string) {
 
   // Method to find a Job by ID
   static async find(id: number): Promise<JobModel | undefined> {
-    let query = DB.instance.selectFrom('jobs').where('id', '=', id).selectAll()
+    let query = db.selectFrom('jobs').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -257,7 +256,7 @@ set updated_at(value: string) {
   static async all(): Promise<JobModel[]> {
     const instance = new JobModel(undefined)
 
-    const models = await DB.instance.selectFrom('jobs').selectAll().execute()
+    const models = await db.selectFrom('jobs').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -507,11 +506,11 @@ set updated_at(value: string) {
 
     
 
-    const result = await DB.instance.insertInto('jobs')
+    const result = await db.insertInto('jobs')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('jobs')
+    const model = await db.selectFrom('jobs')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -597,14 +596,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('jobs')
+    await db.updateTable('jobs')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('jobs')
+      const model = await db.selectFrom('jobs')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -621,14 +620,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newJob: JobUpdate): Promise<JobModel | undefined> {
-    await DB.instance.updateTable('jobs')
+    await db.updateTable('jobs')
       .set(newJob)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('jobs')
+      const model = await db.selectFrom('jobs')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -648,13 +647,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('jobs')
+      await db.updateTable('jobs')
         .set(this.attributes as JobUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('jobs')
+      const model = await db.selectFrom('jobs')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -667,12 +666,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('jobs')
+      const result = await db.insertInto('jobs')
         .values(this.attributes as NewJob)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('jobs')
+      const model = await db.selectFrom('jobs')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -701,18 +700,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('jobs')
+    await db.insertInto('jobs')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newJob: NewJob): Promise<JobModel> {
-    const result = await DB.instance.insertInto('jobs')
+    const result = await db.insertInto('jobs')
       .values(newJob)
       .executeTakeFirst()
 
     const instance = new JobModel(undefined)
-    const model = await DB.instance.selectFrom('jobs')
+    const model = await db.selectFrom('jobs')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -734,7 +733,7 @@ set updated_at(value: string) {
     
     
 
-    const deleted = await DB.instance.deleteFrom('jobs')
+    const deleted = await db.deleteFrom('jobs')
       .where('id', '=', this.id)
       .execute()
 
@@ -750,7 +749,7 @@ set updated_at(value: string) {
 
     
 
-    return await DB.instance.deleteFrom('jobs')
+    return await db.deleteFrom('jobs')
       .where('id', '=', id)
       .execute()
   }
@@ -855,7 +854,7 @@ queue: this.queue,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<JobModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -875,7 +874,7 @@ queue: this.queue,
 }
 
 export async function find(id: number): Promise<JobModel | undefined> {
-  let query = DB.instance.selectFrom('jobs').where('id', '=', id).selectAll()
+  let query = db.selectFrom('jobs').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -897,45 +896,45 @@ export async function create(newJob: NewJob): Promise<JobModel> {
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('jobs')
+  await db.deleteFrom('jobs')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereQueue(value: string): Promise<JobModel[]> {
-          const query = DB.instance.selectFrom('jobs').where('queue', '=', value)
+          const query = db.selectFrom('jobs').where('queue', '=', value)
           const results: JobJsonResponse = await query.execute()
 
           return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
         } 
 
 export async function wherePayload(value: string): Promise<JobModel[]> {
-          const query = DB.instance.selectFrom('jobs').where('payload', '=', value)
+          const query = db.selectFrom('jobs').where('payload', '=', value)
           const results: JobJsonResponse = await query.execute()
 
           return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
         } 
 
 export async function whereAttempts(value: number): Promise<JobModel[]> {
-          const query = DB.instance.selectFrom('jobs').where('attempts', '=', value)
+          const query = db.selectFrom('jobs').where('attempts', '=', value)
           const results: JobJsonResponse = await query.execute()
 
           return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
         } 
 
 export async function whereAvailableAt(value: number): Promise<JobModel[]> {
-          const query = DB.instance.selectFrom('jobs').where('available_at', '=', value)
+          const query = db.selectFrom('jobs').where('available_at', '=', value)
           const results: JobJsonResponse = await query.execute()
 
           return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
         } 
 
 export async function whereReservedAt(value: Date | string): Promise<JobModel[]> {
-          const query = DB.instance.selectFrom('jobs').where('reserved_at', '=', value)
+          const query = db.selectFrom('jobs').where('reserved_at', '=', value)
           const results: JobJsonResponse = await query.execute()
 
           return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))

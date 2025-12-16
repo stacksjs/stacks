@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -58,9 +57,9 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('failed_jobs')
-    this.updateFromQuery = DB.instance.updateTable('failed_jobs')
-    this.deleteFromQuery = DB.instance.deleteFrom('failed_jobs')
+    this.selectFromQuery = db.selectFrom('failed_jobs')
+    this.updateFromQuery = db.updateTable('failed_jobs')
+    this.deleteFromQuery = db.deleteFrom('failed_jobs')
     this.hasSelect = false
   }
 
@@ -72,7 +71,7 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('failedJob_id', 'in', modelIds)
         .selectAll()
@@ -218,7 +217,7 @@ set updated_at(value: string) {
 
   // Method to find a FailedJob by ID
   static async find(id: number): Promise<FailedJobModel | undefined> {
-    let query = DB.instance.selectFrom('failed_jobs').where('id', '=', id).selectAll()
+    let query = db.selectFrom('failed_jobs').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -257,7 +256,7 @@ set updated_at(value: string) {
   static async all(): Promise<FailedJobModel[]> {
     const instance = new FailedJobModel(undefined)
 
-    const models = await DB.instance.selectFrom('failed_jobs').selectAll().execute()
+    const models = await db.selectFrom('failed_jobs').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -507,11 +506,11 @@ set updated_at(value: string) {
 
     
 
-    const result = await DB.instance.insertInto('failed_jobs')
+    const result = await db.insertInto('failed_jobs')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('failed_jobs')
+    const model = await db.selectFrom('failed_jobs')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -597,14 +596,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('failed_jobs')
+    await db.updateTable('failed_jobs')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('failed_jobs')
+      const model = await db.selectFrom('failed_jobs')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -621,14 +620,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newFailedJob: FailedJobUpdate): Promise<FailedJobModel | undefined> {
-    await DB.instance.updateTable('failed_jobs')
+    await db.updateTable('failed_jobs')
       .set(newFailedJob)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('failed_jobs')
+      const model = await db.selectFrom('failed_jobs')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -648,13 +647,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('failed_jobs')
+      await db.updateTable('failed_jobs')
         .set(this.attributes as FailedJobUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('failed_jobs')
+      const model = await db.selectFrom('failed_jobs')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -667,12 +666,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('failed_jobs')
+      const result = await db.insertInto('failed_jobs')
         .values(this.attributes as NewFailedJob)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('failed_jobs')
+      const model = await db.selectFrom('failed_jobs')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -701,18 +700,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('failed_jobs')
+    await db.insertInto('failed_jobs')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
-    const result = await DB.instance.insertInto('failed_jobs')
+    const result = await db.insertInto('failed_jobs')
       .values(newFailedJob)
       .executeTakeFirst()
 
     const instance = new FailedJobModel(undefined)
-    const model = await DB.instance.selectFrom('failed_jobs')
+    const model = await db.selectFrom('failed_jobs')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -734,7 +733,7 @@ set updated_at(value: string) {
     
     
 
-    const deleted = await DB.instance.deleteFrom('failed_jobs')
+    const deleted = await db.deleteFrom('failed_jobs')
       .where('id', '=', this.id)
       .execute()
 
@@ -750,7 +749,7 @@ set updated_at(value: string) {
 
     
 
-    return await DB.instance.deleteFrom('failed_jobs')
+    return await db.deleteFrom('failed_jobs')
       .where('id', '=', id)
       .execute()
   }
@@ -855,7 +854,7 @@ connection: this.connection,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<FailedJobModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -875,7 +874,7 @@ connection: this.connection,
 }
 
 export async function find(id: number): Promise<FailedJobModel | undefined> {
-  let query = DB.instance.selectFrom('failed_jobs').where('id', '=', id).selectAll()
+  let query = db.selectFrom('failed_jobs').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -897,45 +896,45 @@ export async function create(newFailedJob: NewFailedJob): Promise<FailedJobModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('failed_jobs')
+  await db.deleteFrom('failed_jobs')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereConnection(value: string): Promise<FailedJobModel[]> {
-          const query = DB.instance.selectFrom('failed_jobs').where('connection', '=', value)
+          const query = db.selectFrom('failed_jobs').where('connection', '=', value)
           const results: FailedJobJsonResponse = await query.execute()
 
           return results.map((modelItem: FailedJobJsonResponse) => new FailedJobModel(modelItem))
         } 
 
 export async function whereQueue(value: string): Promise<FailedJobModel[]> {
-          const query = DB.instance.selectFrom('failed_jobs').where('queue', '=', value)
+          const query = db.selectFrom('failed_jobs').where('queue', '=', value)
           const results: FailedJobJsonResponse = await query.execute()
 
           return results.map((modelItem: FailedJobJsonResponse) => new FailedJobModel(modelItem))
         } 
 
 export async function wherePayload(value: string): Promise<FailedJobModel[]> {
-          const query = DB.instance.selectFrom('failed_jobs').where('payload', '=', value)
+          const query = db.selectFrom('failed_jobs').where('payload', '=', value)
           const results: FailedJobJsonResponse = await query.execute()
 
           return results.map((modelItem: FailedJobJsonResponse) => new FailedJobModel(modelItem))
         } 
 
 export async function whereException(value: string): Promise<FailedJobModel[]> {
-          const query = DB.instance.selectFrom('failed_jobs').where('exception', '=', value)
+          const query = db.selectFrom('failed_jobs').where('exception', '=', value)
           const results: FailedJobJsonResponse = await query.execute()
 
           return results.map((modelItem: FailedJobJsonResponse) => new FailedJobModel(modelItem))
         } 
 
 export async function whereFailedAt(value: Date | string): Promise<FailedJobModel[]> {
-          const query = DB.instance.selectFrom('failed_jobs').where('failed_at', '=', value)
+          const query = db.selectFrom('failed_jobs').where('failed_at', '=', value)
           const results: FailedJobJsonResponse = await query.execute()
 
           return results.map((modelItem: FailedJobJsonResponse) => new FailedJobModel(modelItem))

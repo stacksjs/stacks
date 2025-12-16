@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -62,9 +61,9 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('gift_cards')
-    this.updateFromQuery = DB.instance.updateTable('gift_cards')
-    this.deleteFromQuery = DB.instance.deleteFrom('gift_cards')
+    this.selectFromQuery = db.selectFrom('gift_cards')
+    this.updateFromQuery = db.updateTable('gift_cards')
+    this.deleteFromQuery = db.deleteFrom('gift_cards')
     this.hasSelect = false
   }
 
@@ -76,7 +75,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('giftCard_id', 'in', modelIds)
         .selectAll()
@@ -322,7 +321,7 @@ set updated_at(value: string) {
 
   // Method to find a GiftCard by ID
   static async find(id: number): Promise<GiftCardModel | undefined> {
-    let query = DB.instance.selectFrom('gift_cards').where('id', '=', id).selectAll()
+    let query = db.selectFrom('gift_cards').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -361,7 +360,7 @@ set updated_at(value: string) {
   static async all(): Promise<GiftCardModel[]> {
     const instance = new GiftCardModel(undefined)
 
-    const models = await DB.instance.selectFrom('gift_cards').selectAll().execute()
+    const models = await db.selectFrom('gift_cards').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -611,11 +610,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('gift_cards')
+    const result = await db.insertInto('gift_cards')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('gift_cards')
+    const model = await db.selectFrom('gift_cards')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -702,14 +701,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('gift_cards')
+    await db.updateTable('gift_cards')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('gift_cards')
+      const model = await db.selectFrom('gift_cards')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -727,14 +726,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newGiftCard: GiftCardUpdate): Promise<GiftCardModel | undefined> {
-    await DB.instance.updateTable('gift_cards')
+    await db.updateTable('gift_cards')
       .set(newGiftCard)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('gift_cards')
+      const model = await db.selectFrom('gift_cards')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -755,13 +754,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('gift_cards')
+      await db.updateTable('gift_cards')
         .set(this.attributes as GiftCardUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('gift_cards')
+      const model = await db.selectFrom('gift_cards')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -775,12 +774,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('gift_cards')
+      const result = await db.insertInto('gift_cards')
         .values(this.attributes as NewGiftCard)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('gift_cards')
+      const model = await db.selectFrom('gift_cards')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -810,18 +809,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('gift_cards')
+    await db.insertInto('gift_cards')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newGiftCard: NewGiftCard): Promise<GiftCardModel> {
-    const result = await DB.instance.insertInto('gift_cards')
+    const result = await db.insertInto('gift_cards')
       .values(newGiftCard)
       .executeTakeFirst()
 
     const instance = new GiftCardModel(undefined)
-    const model = await DB.instance.selectFrom('gift_cards')
+    const model = await db.selectFrom('gift_cards')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -845,7 +844,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('giftCard:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('gift_cards')
+    const deleted = await db.deleteFrom('gift_cards')
       .where('id', '=', this.id)
       .execute()
 
@@ -862,7 +861,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('giftCard:deleted', model)
 
-    return await DB.instance.deleteFrom('gift_cards')
+    return await db.deleteFrom('gift_cards')
       .where('id', '=', id)
       .execute()
   }
@@ -1089,7 +1088,7 @@ customer_id: this.customer_id,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<GiftCardModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -1109,7 +1108,7 @@ customer_id: this.customer_id,
 }
 
 export async function find(id: number): Promise<GiftCardModel | undefined> {
-  let query = DB.instance.selectFrom('gift_cards').where('id', '=', id).selectAll()
+  let query = db.selectFrom('gift_cards').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1131,115 +1130,115 @@ export async function create(newGiftCard: NewGiftCard): Promise<GiftCardModel> {
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('gift_cards')
+  await db.deleteFrom('gift_cards')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereCode(value: string): Promise<GiftCardModel[]> {
-          const query = DB.instance.selectFrom('gift_cards').where('code', '=', value)
+          const query = db.selectFrom('gift_cards').where('code', '=', value)
           const results: GiftCardJsonResponse = await query.execute()
 
           return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
         } 
 
 export async function whereInitialBalance(value: number): Promise<GiftCardModel[]> {
-          const query = DB.instance.selectFrom('gift_cards').where('initial_balance', '=', value)
+          const query = db.selectFrom('gift_cards').where('initial_balance', '=', value)
           const results: GiftCardJsonResponse = await query.execute()
 
           return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
         } 
 
 export async function whereCurrentBalance(value: number): Promise<GiftCardModel[]> {
-          const query = DB.instance.selectFrom('gift_cards').where('current_balance', '=', value)
+          const query = db.selectFrom('gift_cards').where('current_balance', '=', value)
           const results: GiftCardJsonResponse = await query.execute()
 
           return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
         } 
 
 export async function whereCurrency(value: string): Promise<GiftCardModel[]> {
-          const query = DB.instance.selectFrom('gift_cards').where('currency', '=', value)
+          const query = db.selectFrom('gift_cards').where('currency', '=', value)
           const results: GiftCardJsonResponse = await query.execute()
 
           return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
         } 
 
 export async function whereStatus(value: string): Promise<GiftCardModel[]> {
-          const query = DB.instance.selectFrom('gift_cards').where('status', '=', value)
+          const query = db.selectFrom('gift_cards').where('status', '=', value)
           const results: GiftCardJsonResponse = await query.execute()
 
           return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
         } 
 
 export async function wherePurchaserId(value: string): Promise<GiftCardModel[]> {
-          const query = DB.instance.selectFrom('gift_cards').where('purchaser_id', '=', value)
+          const query = db.selectFrom('gift_cards').where('purchaser_id', '=', value)
           const results: GiftCardJsonResponse = await query.execute()
 
           return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
         } 
 
 export async function whereRecipientEmail(value: string): Promise<GiftCardModel[]> {
-          const query = DB.instance.selectFrom('gift_cards').where('recipient_email', '=', value)
+          const query = db.selectFrom('gift_cards').where('recipient_email', '=', value)
           const results: GiftCardJsonResponse = await query.execute()
 
           return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
         } 
 
 export async function whereRecipientName(value: string): Promise<GiftCardModel[]> {
-          const query = DB.instance.selectFrom('gift_cards').where('recipient_name', '=', value)
+          const query = db.selectFrom('gift_cards').where('recipient_name', '=', value)
           const results: GiftCardJsonResponse = await query.execute()
 
           return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
         } 
 
 export async function wherePersonalMessage(value: string): Promise<GiftCardModel[]> {
-          const query = DB.instance.selectFrom('gift_cards').where('personal_message', '=', value)
+          const query = db.selectFrom('gift_cards').where('personal_message', '=', value)
           const results: GiftCardJsonResponse = await query.execute()
 
           return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
         } 
 
 export async function whereIsDigital(value: boolean): Promise<GiftCardModel[]> {
-          const query = DB.instance.selectFrom('gift_cards').where('is_digital', '=', value)
+          const query = db.selectFrom('gift_cards').where('is_digital', '=', value)
           const results: GiftCardJsonResponse = await query.execute()
 
           return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
         } 
 
 export async function whereIsReloadable(value: boolean): Promise<GiftCardModel[]> {
-          const query = DB.instance.selectFrom('gift_cards').where('is_reloadable', '=', value)
+          const query = db.selectFrom('gift_cards').where('is_reloadable', '=', value)
           const results: GiftCardJsonResponse = await query.execute()
 
           return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
         } 
 
 export async function whereIsActive(value: boolean): Promise<GiftCardModel[]> {
-          const query = DB.instance.selectFrom('gift_cards').where('is_active', '=', value)
+          const query = db.selectFrom('gift_cards').where('is_active', '=', value)
           const results: GiftCardJsonResponse = await query.execute()
 
           return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
         } 
 
 export async function whereExpiryDate(value: Date | string): Promise<GiftCardModel[]> {
-          const query = DB.instance.selectFrom('gift_cards').where('expiry_date', '=', value)
+          const query = db.selectFrom('gift_cards').where('expiry_date', '=', value)
           const results: GiftCardJsonResponse = await query.execute()
 
           return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
         } 
 
 export async function whereLastUsedDate(value: Date | string): Promise<GiftCardModel[]> {
-          const query = DB.instance.selectFrom('gift_cards').where('last_used_date', '=', value)
+          const query = db.selectFrom('gift_cards').where('last_used_date', '=', value)
           const results: GiftCardJsonResponse = await query.execute()
 
           return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
         } 
 
 export async function whereTemplateId(value: string): Promise<GiftCardModel[]> {
-          const query = DB.instance.selectFrom('gift_cards').where('template_id', '=', value)
+          const query = db.selectFrom('gift_cards').where('template_id', '=', value)
           const results: GiftCardJsonResponse = await query.execute()
 
           return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))

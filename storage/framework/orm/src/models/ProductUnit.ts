@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -60,9 +59,9 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('product_units')
-    this.updateFromQuery = DB.instance.updateTable('product_units')
-    this.deleteFromQuery = DB.instance.deleteFrom('product_units')
+    this.selectFromQuery = db.selectFrom('product_units')
+    this.updateFromQuery = db.updateTable('product_units')
+    this.deleteFromQuery = db.deleteFrom('product_units')
     this.hasSelect = false
   }
 
@@ -74,7 +73,7 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('productUnit_id', 'in', modelIds)
         .selectAll()
@@ -236,7 +235,7 @@ set updated_at(value: string) {
 
   // Method to find a ProductUnit by ID
   static async find(id: number): Promise<ProductUnitModel | undefined> {
-    let query = DB.instance.selectFrom('product_units').where('id', '=', id).selectAll()
+    let query = db.selectFrom('product_units').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -275,7 +274,7 @@ set updated_at(value: string) {
   static async all(): Promise<ProductUnitModel[]> {
     const instance = new ProductUnitModel(undefined)
 
-    const models = await DB.instance.selectFrom('product_units').selectAll().execute()
+    const models = await db.selectFrom('product_units').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -525,11 +524,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('product_units')
+    const result = await db.insertInto('product_units')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('product_units')
+    const model = await db.selectFrom('product_units')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -616,14 +615,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('product_units')
+    await db.updateTable('product_units')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('product_units')
+      const model = await db.selectFrom('product_units')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -641,14 +640,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newProductUnit: ProductUnitUpdate): Promise<ProductUnitModel | undefined> {
-    await DB.instance.updateTable('product_units')
+    await db.updateTable('product_units')
       .set(newProductUnit)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('product_units')
+      const model = await db.selectFrom('product_units')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -669,13 +668,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('product_units')
+      await db.updateTable('product_units')
         .set(this.attributes as ProductUnitUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('product_units')
+      const model = await db.selectFrom('product_units')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -689,12 +688,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('product_units')
+      const result = await db.insertInto('product_units')
         .values(this.attributes as NewProductUnit)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('product_units')
+      const model = await db.selectFrom('product_units')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -724,18 +723,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('product_units')
+    await db.insertInto('product_units')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newProductUnit: NewProductUnit): Promise<ProductUnitModel> {
-    const result = await DB.instance.insertInto('product_units')
+    const result = await db.insertInto('product_units')
       .values(newProductUnit)
       .executeTakeFirst()
 
     const instance = new ProductUnitModel(undefined)
-    const model = await DB.instance.selectFrom('product_units')
+    const model = await db.selectFrom('product_units')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -759,7 +758,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('productUnit:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('product_units')
+    const deleted = await db.deleteFrom('product_units')
       .where('id', '=', this.id)
       .execute()
 
@@ -776,7 +775,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('productUnit:deleted', model)
 
-    return await DB.instance.deleteFrom('product_units')
+    return await db.deleteFrom('product_units')
       .where('id', '=', id)
       .execute()
   }
@@ -911,7 +910,7 @@ name: this.name,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<ProductUnitModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -931,7 +930,7 @@ name: this.name,
 }
 
 export async function find(id: number): Promise<ProductUnitModel | undefined> {
-  let query = DB.instance.selectFrom('product_units').where('id', '=', id).selectAll()
+  let query = db.selectFrom('product_units').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -953,45 +952,45 @@ export async function create(newProductUnit: NewProductUnit): Promise<ProductUni
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('product_units')
+  await db.deleteFrom('product_units')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereName(value: string): Promise<ProductUnitModel[]> {
-          const query = DB.instance.selectFrom('product_units').where('name', '=', value)
+          const query = db.selectFrom('product_units').where('name', '=', value)
           const results: ProductUnitJsonResponse = await query.execute()
 
           return results.map((modelItem: ProductUnitJsonResponse) => new ProductUnitModel(modelItem))
         } 
 
 export async function whereAbbreviation(value: string): Promise<ProductUnitModel[]> {
-          const query = DB.instance.selectFrom('product_units').where('abbreviation', '=', value)
+          const query = db.selectFrom('product_units').where('abbreviation', '=', value)
           const results: ProductUnitJsonResponse = await query.execute()
 
           return results.map((modelItem: ProductUnitJsonResponse) => new ProductUnitModel(modelItem))
         } 
 
 export async function whereType(value: string): Promise<ProductUnitModel[]> {
-          const query = DB.instance.selectFrom('product_units').where('type', '=', value)
+          const query = db.selectFrom('product_units').where('type', '=', value)
           const results: ProductUnitJsonResponse = await query.execute()
 
           return results.map((modelItem: ProductUnitJsonResponse) => new ProductUnitModel(modelItem))
         } 
 
 export async function whereDescription(value: string): Promise<ProductUnitModel[]> {
-          const query = DB.instance.selectFrom('product_units').where('description', '=', value)
+          const query = db.selectFrom('product_units').where('description', '=', value)
           const results: ProductUnitJsonResponse = await query.execute()
 
           return results.map((modelItem: ProductUnitJsonResponse) => new ProductUnitModel(modelItem))
         } 
 
 export async function whereIsDefault(value: boolean): Promise<ProductUnitModel[]> {
-          const query = DB.instance.selectFrom('product_units').where('is_default', '=', value)
+          const query = db.selectFrom('product_units').where('is_default', '=', value)
           const results: ProductUnitJsonResponse = await query.execute()
 
           return results.map((modelItem: ProductUnitJsonResponse) => new ProductUnitModel(modelItem))

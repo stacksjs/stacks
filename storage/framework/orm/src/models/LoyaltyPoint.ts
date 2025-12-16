@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -58,9 +57,9 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('loyalty_points')
-    this.updateFromQuery = DB.instance.updateTable('loyalty_points')
-    this.deleteFromQuery = DB.instance.deleteFrom('loyalty_points')
+    this.selectFromQuery = db.selectFrom('loyalty_points')
+    this.updateFromQuery = db.updateTable('loyalty_points')
+    this.deleteFromQuery = db.deleteFrom('loyalty_points')
     this.hasSelect = false
   }
 
@@ -72,7 +71,7 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('loyaltyPoint_id', 'in', modelIds)
         .selectAll()
@@ -242,7 +241,7 @@ set updated_at(value: string) {
 
   // Method to find a LoyaltyPoint by ID
   static async find(id: number): Promise<LoyaltyPointModel | undefined> {
-    let query = DB.instance.selectFrom('loyalty_points').where('id', '=', id).selectAll()
+    let query = db.selectFrom('loyalty_points').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -281,7 +280,7 @@ set updated_at(value: string) {
   static async all(): Promise<LoyaltyPointModel[]> {
     const instance = new LoyaltyPointModel(undefined)
 
-    const models = await DB.instance.selectFrom('loyalty_points').selectAll().execute()
+    const models = await db.selectFrom('loyalty_points').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -531,11 +530,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('loyalty_points')
+    const result = await db.insertInto('loyalty_points')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('loyalty_points')
+    const model = await db.selectFrom('loyalty_points')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -622,14 +621,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('loyalty_points')
+    await db.updateTable('loyalty_points')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('loyalty_points')
+      const model = await db.selectFrom('loyalty_points')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -647,14 +646,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newLoyaltyPoint: LoyaltyPointUpdate): Promise<LoyaltyPointModel | undefined> {
-    await DB.instance.updateTable('loyalty_points')
+    await db.updateTable('loyalty_points')
       .set(newLoyaltyPoint)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('loyalty_points')
+      const model = await db.selectFrom('loyalty_points')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -675,13 +674,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('loyalty_points')
+      await db.updateTable('loyalty_points')
         .set(this.attributes as LoyaltyPointUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('loyalty_points')
+      const model = await db.selectFrom('loyalty_points')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -695,12 +694,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('loyalty_points')
+      const result = await db.insertInto('loyalty_points')
         .values(this.attributes as NewLoyaltyPoint)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('loyalty_points')
+      const model = await db.selectFrom('loyalty_points')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -730,18 +729,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('loyalty_points')
+    await db.insertInto('loyalty_points')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newLoyaltyPoint: NewLoyaltyPoint): Promise<LoyaltyPointModel> {
-    const result = await DB.instance.insertInto('loyalty_points')
+    const result = await db.insertInto('loyalty_points')
       .values(newLoyaltyPoint)
       .executeTakeFirst()
 
     const instance = new LoyaltyPointModel(undefined)
-    const model = await DB.instance.selectFrom('loyalty_points')
+    const model = await db.selectFrom('loyalty_points')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -765,7 +764,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('loyaltyPoint:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('loyalty_points')
+    const deleted = await db.deleteFrom('loyalty_points')
       .where('id', '=', this.id)
       .execute()
 
@@ -782,7 +781,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('loyaltyPoint:deleted', model)
 
-    return await DB.instance.deleteFrom('loyalty_points')
+    return await db.deleteFrom('loyalty_points')
       .where('id', '=', id)
       .execute()
   }
@@ -919,7 +918,7 @@ wallet_id: this.wallet_id,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<LoyaltyPointModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -939,7 +938,7 @@ wallet_id: this.wallet_id,
 }
 
 export async function find(id: number): Promise<LoyaltyPointModel | undefined> {
-  let query = DB.instance.selectFrom('loyalty_points').where('id', '=', id).selectAll()
+  let query = db.selectFrom('loyalty_points').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -961,59 +960,59 @@ export async function create(newLoyaltyPoint: NewLoyaltyPoint): Promise<LoyaltyP
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('loyalty_points')
+  await db.deleteFrom('loyalty_points')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereWalletId(value: string): Promise<LoyaltyPointModel[]> {
-          const query = DB.instance.selectFrom('loyalty_points').where('wallet_id', '=', value)
+          const query = db.selectFrom('loyalty_points').where('wallet_id', '=', value)
           const results: LoyaltyPointJsonResponse = await query.execute()
 
           return results.map((modelItem: LoyaltyPointJsonResponse) => new LoyaltyPointModel(modelItem))
         } 
 
 export async function wherePoints(value: number): Promise<LoyaltyPointModel[]> {
-          const query = DB.instance.selectFrom('loyalty_points').where('points', '=', value)
+          const query = db.selectFrom('loyalty_points').where('points', '=', value)
           const results: LoyaltyPointJsonResponse = await query.execute()
 
           return results.map((modelItem: LoyaltyPointJsonResponse) => new LoyaltyPointModel(modelItem))
         } 
 
 export async function whereSource(value: string): Promise<LoyaltyPointModel[]> {
-          const query = DB.instance.selectFrom('loyalty_points').where('source', '=', value)
+          const query = db.selectFrom('loyalty_points').where('source', '=', value)
           const results: LoyaltyPointJsonResponse = await query.execute()
 
           return results.map((modelItem: LoyaltyPointJsonResponse) => new LoyaltyPointModel(modelItem))
         } 
 
 export async function whereSourceReferenceId(value: string): Promise<LoyaltyPointModel[]> {
-          const query = DB.instance.selectFrom('loyalty_points').where('source_reference_id', '=', value)
+          const query = db.selectFrom('loyalty_points').where('source_reference_id', '=', value)
           const results: LoyaltyPointJsonResponse = await query.execute()
 
           return results.map((modelItem: LoyaltyPointJsonResponse) => new LoyaltyPointModel(modelItem))
         } 
 
 export async function whereDescription(value: string): Promise<LoyaltyPointModel[]> {
-          const query = DB.instance.selectFrom('loyalty_points').where('description', '=', value)
+          const query = db.selectFrom('loyalty_points').where('description', '=', value)
           const results: LoyaltyPointJsonResponse = await query.execute()
 
           return results.map((modelItem: LoyaltyPointJsonResponse) => new LoyaltyPointModel(modelItem))
         } 
 
 export async function whereExpiryDate(value: Date | string): Promise<LoyaltyPointModel[]> {
-          const query = DB.instance.selectFrom('loyalty_points').where('expiry_date', '=', value)
+          const query = db.selectFrom('loyalty_points').where('expiry_date', '=', value)
           const results: LoyaltyPointJsonResponse = await query.execute()
 
           return results.map((modelItem: LoyaltyPointJsonResponse) => new LoyaltyPointModel(modelItem))
         } 
 
 export async function whereIsUsed(value: boolean): Promise<LoyaltyPointModel[]> {
-          const query = DB.instance.selectFrom('loyalty_points').where('is_used', '=', value)
+          const query = db.selectFrom('loyalty_points').where('is_used', '=', value)
           const results: LoyaltyPointJsonResponse = await query.execute()
 
           return results.map((modelItem: LoyaltyPointJsonResponse) => new LoyaltyPointModel(modelItem))

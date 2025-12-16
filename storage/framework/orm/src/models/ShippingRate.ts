@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -62,9 +61,9 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('shipping_rates')
-    this.updateFromQuery = DB.instance.updateTable('shipping_rates')
-    this.deleteFromQuery = DB.instance.deleteFrom('shipping_rates')
+    this.selectFromQuery = db.selectFrom('shipping_rates')
+    this.updateFromQuery = db.updateTable('shipping_rates')
+    this.deleteFromQuery = db.deleteFrom('shipping_rates')
     this.hasSelect = false
   }
 
@@ -76,7 +75,7 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('shippingRate_id', 'in', modelIds)
         .selectAll()
@@ -230,7 +229,7 @@ set updated_at(value: string) {
 
   // Method to find a ShippingRate by ID
   static async find(id: number): Promise<ShippingRateModel | undefined> {
-    let query = DB.instance.selectFrom('shipping_rates').where('id', '=', id).selectAll()
+    let query = db.selectFrom('shipping_rates').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -269,7 +268,7 @@ set updated_at(value: string) {
   static async all(): Promise<ShippingRateModel[]> {
     const instance = new ShippingRateModel(undefined)
 
-    const models = await DB.instance.selectFrom('shipping_rates').selectAll().execute()
+    const models = await db.selectFrom('shipping_rates').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -519,11 +518,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('shipping_rates')
+    const result = await db.insertInto('shipping_rates')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('shipping_rates')
+    const model = await db.selectFrom('shipping_rates')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -610,14 +609,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('shipping_rates')
+    await db.updateTable('shipping_rates')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('shipping_rates')
+      const model = await db.selectFrom('shipping_rates')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -635,14 +634,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newShippingRate: ShippingRateUpdate): Promise<ShippingRateModel | undefined> {
-    await DB.instance.updateTable('shipping_rates')
+    await db.updateTable('shipping_rates')
       .set(newShippingRate)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('shipping_rates')
+      const model = await db.selectFrom('shipping_rates')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -663,13 +662,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('shipping_rates')
+      await db.updateTable('shipping_rates')
         .set(this.attributes as ShippingRateUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('shipping_rates')
+      const model = await db.selectFrom('shipping_rates')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -683,12 +682,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('shipping_rates')
+      const result = await db.insertInto('shipping_rates')
         .values(this.attributes as NewShippingRate)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('shipping_rates')
+      const model = await db.selectFrom('shipping_rates')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -718,18 +717,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('shipping_rates')
+    await db.insertInto('shipping_rates')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newShippingRate: NewShippingRate): Promise<ShippingRateModel> {
-    const result = await DB.instance.insertInto('shipping_rates')
+    const result = await db.insertInto('shipping_rates')
       .values(newShippingRate)
       .executeTakeFirst()
 
     const instance = new ShippingRateModel(undefined)
-    const model = await DB.instance.selectFrom('shipping_rates')
+    const model = await db.selectFrom('shipping_rates')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -753,7 +752,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('shippingRate:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('shipping_rates')
+    const deleted = await db.deleteFrom('shipping_rates')
       .where('id', '=', this.id)
       .execute()
 
@@ -770,7 +769,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('shippingRate:deleted', model)
 
-    return await DB.instance.deleteFrom('shipping_rates')
+    return await db.deleteFrom('shipping_rates')
       .where('id', '=', id)
       .execute()
   }
@@ -903,7 +902,7 @@ shipping_zone_id: this.shipping_zone_id,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<ShippingRateModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -923,7 +922,7 @@ shipping_zone_id: this.shipping_zone_id,
 }
 
 export async function find(id: number): Promise<ShippingRateModel | undefined> {
-  let query = DB.instance.selectFrom('shipping_rates').where('id', '=', id).selectAll()
+  let query = db.selectFrom('shipping_rates').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -945,31 +944,31 @@ export async function create(newShippingRate: NewShippingRate): Promise<Shipping
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('shipping_rates')
+  await db.deleteFrom('shipping_rates')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereWeightFrom(value: number): Promise<ShippingRateModel[]> {
-          const query = DB.instance.selectFrom('shipping_rates').where('weight_from', '=', value)
+          const query = db.selectFrom('shipping_rates').where('weight_from', '=', value)
           const results: ShippingRateJsonResponse = await query.execute()
 
           return results.map((modelItem: ShippingRateJsonResponse) => new ShippingRateModel(modelItem))
         } 
 
 export async function whereWeightTo(value: number): Promise<ShippingRateModel[]> {
-          const query = DB.instance.selectFrom('shipping_rates').where('weight_to', '=', value)
+          const query = db.selectFrom('shipping_rates').where('weight_to', '=', value)
           const results: ShippingRateJsonResponse = await query.execute()
 
           return results.map((modelItem: ShippingRateJsonResponse) => new ShippingRateModel(modelItem))
         } 
 
 export async function whereRate(value: number): Promise<ShippingRateModel[]> {
-          const query = DB.instance.selectFrom('shipping_rates').where('rate', '=', value)
+          const query = db.selectFrom('shipping_rates').where('rate', '=', value)
           const results: ShippingRateJsonResponse = await query.execute()
 
           return results.map((modelItem: ShippingRateJsonResponse) => new ShippingRateModel(modelItem))

@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -60,9 +59,9 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('manufacturers')
-    this.updateFromQuery = DB.instance.updateTable('manufacturers')
-    this.deleteFromQuery = DB.instance.deleteFrom('manufacturers')
+    this.selectFromQuery = db.selectFrom('manufacturers')
+    this.updateFromQuery = db.updateTable('manufacturers')
+    this.deleteFromQuery = db.deleteFrom('manufacturers')
     this.hasSelect = false
   }
 
@@ -74,7 +73,7 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('manufacturer_id', 'in', modelIds)
         .selectAll()
@@ -224,7 +223,7 @@ set updated_at(value: string) {
 
   // Method to find a Manufacturer by ID
   static async find(id: number): Promise<ManufacturerModel | undefined> {
-    let query = DB.instance.selectFrom('manufacturers').where('id', '=', id).selectAll()
+    let query = db.selectFrom('manufacturers').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -263,7 +262,7 @@ set updated_at(value: string) {
   static async all(): Promise<ManufacturerModel[]> {
     const instance = new ManufacturerModel(undefined)
 
-    const models = await DB.instance.selectFrom('manufacturers').selectAll().execute()
+    const models = await db.selectFrom('manufacturers').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -513,11 +512,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('manufacturers')
+    const result = await db.insertInto('manufacturers')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('manufacturers')
+    const model = await db.selectFrom('manufacturers')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -604,14 +603,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('manufacturers')
+    await db.updateTable('manufacturers')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('manufacturers')
+      const model = await db.selectFrom('manufacturers')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -629,14 +628,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newManufacturer: ManufacturerUpdate): Promise<ManufacturerModel | undefined> {
-    await DB.instance.updateTable('manufacturers')
+    await db.updateTable('manufacturers')
       .set(newManufacturer)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('manufacturers')
+      const model = await db.selectFrom('manufacturers')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -657,13 +656,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('manufacturers')
+      await db.updateTable('manufacturers')
         .set(this.attributes as ManufacturerUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('manufacturers')
+      const model = await db.selectFrom('manufacturers')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -677,12 +676,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('manufacturers')
+      const result = await db.insertInto('manufacturers')
         .values(this.attributes as NewManufacturer)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('manufacturers')
+      const model = await db.selectFrom('manufacturers')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -712,18 +711,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('manufacturers')
+    await db.insertInto('manufacturers')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newManufacturer: NewManufacturer): Promise<ManufacturerModel> {
-    const result = await DB.instance.insertInto('manufacturers')
+    const result = await db.insertInto('manufacturers')
       .values(newManufacturer)
       .executeTakeFirst()
 
     const instance = new ManufacturerModel(undefined)
-    const model = await DB.instance.selectFrom('manufacturers')
+    const model = await db.selectFrom('manufacturers')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -747,7 +746,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('manufacturer:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('manufacturers')
+    const deleted = await db.deleteFrom('manufacturers')
       .where('id', '=', this.id)
       .execute()
 
@@ -764,7 +763,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('manufacturer:deleted', model)
 
-    return await DB.instance.deleteFrom('manufacturers')
+    return await db.deleteFrom('manufacturers')
       .where('id', '=', id)
       .execute()
   }
@@ -873,7 +872,7 @@ manufacturer: this.manufacturer,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<ManufacturerModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -893,7 +892,7 @@ manufacturer: this.manufacturer,
 }
 
 export async function find(id: number): Promise<ManufacturerModel | undefined> {
-  let query = DB.instance.selectFrom('manufacturers').where('id', '=', id).selectAll()
+  let query = db.selectFrom('manufacturers').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -915,38 +914,38 @@ export async function create(newManufacturer: NewManufacturer): Promise<Manufact
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('manufacturers')
+  await db.deleteFrom('manufacturers')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereManufacturer(value: string): Promise<ManufacturerModel[]> {
-          const query = DB.instance.selectFrom('manufacturers').where('manufacturer', '=', value)
+          const query = db.selectFrom('manufacturers').where('manufacturer', '=', value)
           const results: ManufacturerJsonResponse = await query.execute()
 
           return results.map((modelItem: ManufacturerJsonResponse) => new ManufacturerModel(modelItem))
         } 
 
 export async function whereDescription(value: string): Promise<ManufacturerModel[]> {
-          const query = DB.instance.selectFrom('manufacturers').where('description', '=', value)
+          const query = db.selectFrom('manufacturers').where('description', '=', value)
           const results: ManufacturerJsonResponse = await query.execute()
 
           return results.map((modelItem: ManufacturerJsonResponse) => new ManufacturerModel(modelItem))
         } 
 
 export async function whereCountry(value: string): Promise<ManufacturerModel[]> {
-          const query = DB.instance.selectFrom('manufacturers').where('country', '=', value)
+          const query = db.selectFrom('manufacturers').where('country', '=', value)
           const results: ManufacturerJsonResponse = await query.execute()
 
           return results.map((modelItem: ManufacturerJsonResponse) => new ManufacturerModel(modelItem))
         } 
 
 export async function whereFeatured(value: boolean): Promise<ManufacturerModel[]> {
-          const query = DB.instance.selectFrom('manufacturers').where('featured', '=', value)
+          const query = db.selectFrom('manufacturers').where('featured', '=', value)
           const results: ManufacturerJsonResponse = await query.execute()
 
           return results.map((modelItem: ManufacturerJsonResponse) => new ManufacturerModel(modelItem))

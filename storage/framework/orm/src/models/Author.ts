@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -62,9 +61,9 @@ export class AuthorModel extends BaseOrm<AuthorModel, AuthorsTable, AuthorJsonRe
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('authors')
-    this.updateFromQuery = DB.instance.updateTable('authors')
-    this.deleteFromQuery = DB.instance.deleteFrom('authors')
+    this.selectFromQuery = db.selectFrom('authors')
+    this.updateFromQuery = db.updateTable('authors')
+    this.deleteFromQuery = db.deleteFrom('authors')
     this.hasSelect = false
   }
 
@@ -76,7 +75,7 @@ export class AuthorModel extends BaseOrm<AuthorModel, AuthorsTable, AuthorJsonRe
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('author_id', 'in', modelIds)
         .selectAll()
@@ -226,7 +225,7 @@ set updated_at(value: string) {
 
   // Method to find a Author by ID
   static async find(id: number): Promise<AuthorModel | undefined> {
-    let query = DB.instance.selectFrom('authors').where('id', '=', id).selectAll()
+    let query = db.selectFrom('authors').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -265,7 +264,7 @@ set updated_at(value: string) {
   static async all(): Promise<AuthorModel[]> {
     const instance = new AuthorModel(undefined)
 
-    const models = await DB.instance.selectFrom('authors').selectAll().execute()
+    const models = await db.selectFrom('authors').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -515,11 +514,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('authors')
+    const result = await db.insertInto('authors')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('authors')
+    const model = await db.selectFrom('authors')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -606,14 +605,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('authors')
+    await db.updateTable('authors')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('authors')
+      const model = await db.selectFrom('authors')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -631,14 +630,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newAuthor: AuthorUpdate): Promise<AuthorModel | undefined> {
-    await DB.instance.updateTable('authors')
+    await db.updateTable('authors')
       .set(newAuthor)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('authors')
+      const model = await db.selectFrom('authors')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -659,13 +658,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('authors')
+      await db.updateTable('authors')
         .set(this.attributes as AuthorUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('authors')
+      const model = await db.selectFrom('authors')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -679,12 +678,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('authors')
+      const result = await db.insertInto('authors')
         .values(this.attributes as NewAuthor)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('authors')
+      const model = await db.selectFrom('authors')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -714,18 +713,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('authors')
+    await db.insertInto('authors')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newAuthor: NewAuthor): Promise<AuthorModel> {
-    const result = await DB.instance.insertInto('authors')
+    const result = await db.insertInto('authors')
       .values(newAuthor)
       .executeTakeFirst()
 
     const instance = new AuthorModel(undefined)
-    const model = await DB.instance.selectFrom('authors')
+    const model = await db.selectFrom('authors')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -749,7 +748,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('author:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('authors')
+    const deleted = await db.deleteFrom('authors')
       .where('id', '=', this.id)
       .execute()
 
@@ -766,7 +765,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('author:deleted', model)
 
-    return await DB.instance.deleteFrom('authors')
+    return await db.deleteFrom('authors')
       .where('id', '=', id)
       .execute()
   }
@@ -872,7 +871,7 @@ user_id: this.user_id,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<AuthorModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -892,7 +891,7 @@ user_id: this.user_id,
 }
 
 export async function find(id: number): Promise<AuthorModel | undefined> {
-  let query = DB.instance.selectFrom('authors').where('id', '=', id).selectAll()
+  let query = db.selectFrom('authors').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -914,24 +913,24 @@ export async function create(newAuthor: NewAuthor): Promise<AuthorModel> {
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('authors')
+  await db.deleteFrom('authors')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereName(value: string): Promise<AuthorModel[]> {
-          const query = DB.instance.selectFrom('authors').where('name', '=', value)
+          const query = db.selectFrom('authors').where('name', '=', value)
           const results: AuthorJsonResponse = await query.execute()
 
           return results.map((modelItem: AuthorJsonResponse) => new AuthorModel(modelItem))
         } 
 
 export async function whereEmail(value: string): Promise<AuthorModel[]> {
-          const query = DB.instance.selectFrom('authors').where('email', '=', value)
+          const query = db.selectFrom('authors').where('email', '=', value)
           const results: AuthorJsonResponse = await query.execute()
 
           return results.map((modelItem: AuthorJsonResponse) => new AuthorModel(modelItem))

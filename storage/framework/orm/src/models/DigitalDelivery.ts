@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -58,9 +57,9 @@ export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalD
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('digital_deliveries')
-    this.updateFromQuery = DB.instance.updateTable('digital_deliveries')
-    this.deleteFromQuery = DB.instance.deleteFrom('digital_deliveries')
+    this.selectFromQuery = db.selectFrom('digital_deliveries')
+    this.updateFromQuery = db.updateTable('digital_deliveries')
+    this.deleteFromQuery = db.deleteFrom('digital_deliveries')
     this.hasSelect = false
   }
 
@@ -72,7 +71,7 @@ export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalD
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('digitalDelivery_id', 'in', modelIds)
         .selectAll()
@@ -242,7 +241,7 @@ set updated_at(value: string) {
 
   // Method to find a DigitalDelivery by ID
   static async find(id: number): Promise<DigitalDeliveryModel | undefined> {
-    let query = DB.instance.selectFrom('digital_deliveries').where('id', '=', id).selectAll()
+    let query = db.selectFrom('digital_deliveries').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -281,7 +280,7 @@ set updated_at(value: string) {
   static async all(): Promise<DigitalDeliveryModel[]> {
     const instance = new DigitalDeliveryModel(undefined)
 
-    const models = await DB.instance.selectFrom('digital_deliveries').selectAll().execute()
+    const models = await db.selectFrom('digital_deliveries').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -531,11 +530,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('digital_deliveries')
+    const result = await db.insertInto('digital_deliveries')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('digital_deliveries')
+    const model = await db.selectFrom('digital_deliveries')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -622,14 +621,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('digital_deliveries')
+    await db.updateTable('digital_deliveries')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('digital_deliveries')
+      const model = await db.selectFrom('digital_deliveries')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -647,14 +646,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newDigitalDelivery: DigitalDeliveryUpdate): Promise<DigitalDeliveryModel | undefined> {
-    await DB.instance.updateTable('digital_deliveries')
+    await db.updateTable('digital_deliveries')
       .set(newDigitalDelivery)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('digital_deliveries')
+      const model = await db.selectFrom('digital_deliveries')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -675,13 +674,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('digital_deliveries')
+      await db.updateTable('digital_deliveries')
         .set(this.attributes as DigitalDeliveryUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('digital_deliveries')
+      const model = await db.selectFrom('digital_deliveries')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -695,12 +694,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('digital_deliveries')
+      const result = await db.insertInto('digital_deliveries')
         .values(this.attributes as NewDigitalDelivery)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('digital_deliveries')
+      const model = await db.selectFrom('digital_deliveries')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -730,18 +729,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('digital_deliveries')
+    await db.insertInto('digital_deliveries')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newDigitalDelivery: NewDigitalDelivery): Promise<DigitalDeliveryModel> {
-    const result = await DB.instance.insertInto('digital_deliveries')
+    const result = await db.insertInto('digital_deliveries')
       .values(newDigitalDelivery)
       .executeTakeFirst()
 
     const instance = new DigitalDeliveryModel(undefined)
-    const model = await DB.instance.selectFrom('digital_deliveries')
+    const model = await db.selectFrom('digital_deliveries')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -765,7 +764,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('digitalDelivery:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('digital_deliveries')
+    const deleted = await db.deleteFrom('digital_deliveries')
       .where('id', '=', this.id)
       .execute()
 
@@ -782,7 +781,7 @@ set updated_at(value: string) {
     if (model)
  dispatch('digitalDelivery:deleted', model)
 
-    return await DB.instance.deleteFrom('digital_deliveries')
+    return await db.deleteFrom('digital_deliveries')
       .where('id', '=', id)
       .execute()
   }
@@ -918,7 +917,7 @@ name: this.name,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<DigitalDeliveryModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -938,7 +937,7 @@ name: this.name,
 }
 
 export async function find(id: number): Promise<DigitalDeliveryModel | undefined> {
-  let query = DB.instance.selectFrom('digital_deliveries').where('id', '=', id).selectAll()
+  let query = db.selectFrom('digital_deliveries').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -960,59 +959,59 @@ export async function create(newDigitalDelivery: NewDigitalDelivery): Promise<Di
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('digital_deliveries')
+  await db.deleteFrom('digital_deliveries')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereName(value: string): Promise<DigitalDeliveryModel[]> {
-          const query = DB.instance.selectFrom('digital_deliveries').where('name', '=', value)
+          const query = db.selectFrom('digital_deliveries').where('name', '=', value)
           const results: DigitalDeliveryJsonResponse = await query.execute()
 
           return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
         } 
 
 export async function whereDescription(value: string): Promise<DigitalDeliveryModel[]> {
-          const query = DB.instance.selectFrom('digital_deliveries').where('description', '=', value)
+          const query = db.selectFrom('digital_deliveries').where('description', '=', value)
           const results: DigitalDeliveryJsonResponse = await query.execute()
 
           return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
         } 
 
 export async function whereDownloadLimit(value: number): Promise<DigitalDeliveryModel[]> {
-          const query = DB.instance.selectFrom('digital_deliveries').where('download_limit', '=', value)
+          const query = db.selectFrom('digital_deliveries').where('download_limit', '=', value)
           const results: DigitalDeliveryJsonResponse = await query.execute()
 
           return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
         } 
 
 export async function whereExpiryDays(value: number): Promise<DigitalDeliveryModel[]> {
-          const query = DB.instance.selectFrom('digital_deliveries').where('expiry_days', '=', value)
+          const query = db.selectFrom('digital_deliveries').where('expiry_days', '=', value)
           const results: DigitalDeliveryJsonResponse = await query.execute()
 
           return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
         } 
 
 export async function whereRequiresLogin(value: boolean): Promise<DigitalDeliveryModel[]> {
-          const query = DB.instance.selectFrom('digital_deliveries').where('requires_login', '=', value)
+          const query = db.selectFrom('digital_deliveries').where('requires_login', '=', value)
           const results: DigitalDeliveryJsonResponse = await query.execute()
 
           return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
         } 
 
 export async function whereAutomaticDelivery(value: boolean): Promise<DigitalDeliveryModel[]> {
-          const query = DB.instance.selectFrom('digital_deliveries').where('automatic_delivery', '=', value)
+          const query = db.selectFrom('digital_deliveries').where('automatic_delivery', '=', value)
           const results: DigitalDeliveryJsonResponse = await query.execute()
 
           return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))
         } 
 
 export async function whereStatus(value: string | string[]): Promise<DigitalDeliveryModel[]> {
-          const query = DB.instance.selectFrom('digital_deliveries').where('status', '=', value)
+          const query = db.selectFrom('digital_deliveries').where('status', '=', value)
           const results: DigitalDeliveryJsonResponse = await query.execute()
 
           return results.map((modelItem: DigitalDeliveryJsonResponse) => new DigitalDeliveryModel(modelItem))

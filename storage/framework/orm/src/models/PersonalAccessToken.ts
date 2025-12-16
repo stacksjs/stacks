@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -61,9 +60,9 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('personal_access_tokens')
-    this.updateFromQuery = DB.instance.updateTable('personal_access_tokens')
-    this.deleteFromQuery = DB.instance.deleteFrom('personal_access_tokens')
+    this.selectFromQuery = db.selectFrom('personal_access_tokens')
+    this.updateFromQuery = db.updateTable('personal_access_tokens')
+    this.deleteFromQuery = db.deleteFrom('personal_access_tokens')
     this.hasSelect = false
   }
 
@@ -75,7 +74,7 @@ export class PersonalAccessTokenModel extends BaseOrm<PersonalAccessTokenModel, 
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('personalAccessToken_id', 'in', modelIds)
         .selectAll()
@@ -269,7 +268,7 @@ set updated_at(value: string) {
 
   // Method to find a PersonalAccessToken by ID
   static async find(id: number): Promise<PersonalAccessTokenModel | undefined> {
-    let query = DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
+    let query = db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -308,7 +307,7 @@ set updated_at(value: string) {
   static async all(): Promise<PersonalAccessTokenModel[]> {
     const instance = new PersonalAccessTokenModel(undefined)
 
-    const models = await DB.instance.selectFrom('personal_access_tokens').selectAll().execute()
+    const models = await db.selectFrom('personal_access_tokens').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -558,11 +557,11 @@ set updated_at(value: string) {
 
     
 
-    const result = await DB.instance.insertInto('personal_access_tokens')
+    const result = await db.insertInto('personal_access_tokens')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('personal_access_tokens')
+    const model = await db.selectFrom('personal_access_tokens')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -648,14 +647,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('personal_access_tokens')
+    await db.updateTable('personal_access_tokens')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('personal_access_tokens')
+      const model = await db.selectFrom('personal_access_tokens')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -672,14 +671,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newPersonalAccessToken: PersonalAccessTokenUpdate): Promise<PersonalAccessTokenModel | undefined> {
-    await DB.instance.updateTable('personal_access_tokens')
+    await db.updateTable('personal_access_tokens')
       .set(newPersonalAccessToken)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('personal_access_tokens')
+      const model = await db.selectFrom('personal_access_tokens')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -699,13 +698,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('personal_access_tokens')
+      await db.updateTable('personal_access_tokens')
         .set(this.attributes as PersonalAccessTokenUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('personal_access_tokens')
+      const model = await db.selectFrom('personal_access_tokens')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -718,12 +717,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('personal_access_tokens')
+      const result = await db.insertInto('personal_access_tokens')
         .values(this.attributes as NewPersonalAccessToken)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('personal_access_tokens')
+      const model = await db.selectFrom('personal_access_tokens')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -752,18 +751,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('personal_access_tokens')
+    await db.insertInto('personal_access_tokens')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newPersonalAccessToken: NewPersonalAccessToken): Promise<PersonalAccessTokenModel> {
-    const result = await DB.instance.insertInto('personal_access_tokens')
+    const result = await db.insertInto('personal_access_tokens')
       .values(newPersonalAccessToken)
       .executeTakeFirst()
 
     const instance = new PersonalAccessTokenModel(undefined)
-    const model = await DB.instance.selectFrom('personal_access_tokens')
+    const model = await db.selectFrom('personal_access_tokens')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -785,7 +784,7 @@ set updated_at(value: string) {
     
     
 
-    const deleted = await DB.instance.deleteFrom('personal_access_tokens')
+    const deleted = await db.deleteFrom('personal_access_tokens')
       .where('id', '=', this.id)
       .execute()
 
@@ -801,7 +800,7 @@ set updated_at(value: string) {
 
     
 
-    return await DB.instance.deleteFrom('personal_access_tokens')
+    return await db.deleteFrom('personal_access_tokens')
       .where('id', '=', id)
       .execute()
   }
@@ -968,7 +967,7 @@ name: this.name,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<PersonalAccessTokenModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -988,7 +987,7 @@ name: this.name,
 }
 
 export async function find(id: number): Promise<PersonalAccessTokenModel | undefined> {
-  let query = DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
+  let query = db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1010,80 +1009,80 @@ export async function create(newPersonalAccessToken: NewPersonalAccessToken): Pr
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('personal_access_tokens')
+  await db.deleteFrom('personal_access_tokens')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereName(value: string): Promise<PersonalAccessTokenModel[]> {
-          const query = DB.instance.selectFrom('personal_access_tokens').where('name', '=', value)
+          const query = db.selectFrom('personal_access_tokens').where('name', '=', value)
           const results: PersonalAccessTokenJsonResponse = await query.execute()
 
           return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
         } 
 
 export async function whereToken(value: string): Promise<PersonalAccessTokenModel[]> {
-          const query = DB.instance.selectFrom('personal_access_tokens').where('token', '=', value)
+          const query = db.selectFrom('personal_access_tokens').where('token', '=', value)
           const results: PersonalAccessTokenJsonResponse = await query.execute()
 
           return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
         } 
 
 export async function wherePlainTextToken(value: string): Promise<PersonalAccessTokenModel[]> {
-          const query = DB.instance.selectFrom('personal_access_tokens').where('plain_text_token', '=', value)
+          const query = db.selectFrom('personal_access_tokens').where('plain_text_token', '=', value)
           const results: PersonalAccessTokenJsonResponse = await query.execute()
 
           return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
         } 
 
 export async function whereAbilities(value: string): Promise<PersonalAccessTokenModel[]> {
-          const query = DB.instance.selectFrom('personal_access_tokens').where('abilities', '=', value)
+          const query = db.selectFrom('personal_access_tokens').where('abilities', '=', value)
           const results: PersonalAccessTokenJsonResponse = await query.execute()
 
           return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
         } 
 
 export async function whereLastUsedAt(value: Date | string): Promise<PersonalAccessTokenModel[]> {
-          const query = DB.instance.selectFrom('personal_access_tokens').where('last_used_at', '=', value)
+          const query = db.selectFrom('personal_access_tokens').where('last_used_at', '=', value)
           const results: PersonalAccessTokenJsonResponse = await query.execute()
 
           return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
         } 
 
 export async function whereExpiresAt(value: Date | string): Promise<PersonalAccessTokenModel[]> {
-          const query = DB.instance.selectFrom('personal_access_tokens').where('expires_at', '=', value)
+          const query = db.selectFrom('personal_access_tokens').where('expires_at', '=', value)
           const results: PersonalAccessTokenJsonResponse = await query.execute()
 
           return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
         } 
 
 export async function whereRevokedAt(value: Date | string): Promise<PersonalAccessTokenModel[]> {
-          const query = DB.instance.selectFrom('personal_access_tokens').where('revoked_at', '=', value)
+          const query = db.selectFrom('personal_access_tokens').where('revoked_at', '=', value)
           const results: PersonalAccessTokenJsonResponse = await query.execute()
 
           return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
         } 
 
 export async function whereIpAddress(value: string): Promise<PersonalAccessTokenModel[]> {
-          const query = DB.instance.selectFrom('personal_access_tokens').where('ip_address', '=', value)
+          const query = db.selectFrom('personal_access_tokens').where('ip_address', '=', value)
           const results: PersonalAccessTokenJsonResponse = await query.execute()
 
           return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
         } 
 
 export async function whereDeviceName(value: string): Promise<PersonalAccessTokenModel[]> {
-          const query = DB.instance.selectFrom('personal_access_tokens').where('device_name', '=', value)
+          const query = db.selectFrom('personal_access_tokens').where('device_name', '=', value)
           const results: PersonalAccessTokenJsonResponse = await query.execute()
 
           return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))
         } 
 
 export async function whereIsSingleUse(value: boolean): Promise<PersonalAccessTokenModel[]> {
-          const query = DB.instance.selectFrom('personal_access_tokens').where('is_single_use', '=', value)
+          const query = db.selectFrom('personal_access_tokens').where('is_single_use', '=', value)
           const results: PersonalAccessTokenJsonResponse = await query.execute()
 
           return results.map((modelItem: PersonalAccessTokenJsonResponse) => new PersonalAccessTokenModel(modelItem))

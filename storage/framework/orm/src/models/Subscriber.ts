@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -58,9 +57,9 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('subscribers')
-    this.updateFromQuery = DB.instance.updateTable('subscribers')
-    this.deleteFromQuery = DB.instance.deleteFrom('subscribers')
+    this.selectFromQuery = db.selectFrom('subscribers')
+    this.updateFromQuery = db.updateTable('subscribers')
+    this.deleteFromQuery = db.deleteFrom('subscribers')
     this.hasSelect = false
   }
 
@@ -72,7 +71,7 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('subscriber_id', 'in', modelIds)
         .selectAll()
@@ -186,7 +185,7 @@ set updated_at(value: string) {
 
   // Method to find a Subscriber by ID
   static async find(id: number): Promise<SubscriberModel | undefined> {
-    let query = DB.instance.selectFrom('subscribers').where('id', '=', id).selectAll()
+    let query = db.selectFrom('subscribers').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -225,7 +224,7 @@ set updated_at(value: string) {
   static async all(): Promise<SubscriberModel[]> {
     const instance = new SubscriberModel(undefined)
 
-    const models = await DB.instance.selectFrom('subscribers').selectAll().execute()
+    const models = await db.selectFrom('subscribers').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -475,11 +474,11 @@ set updated_at(value: string) {
 
     
 
-    const result = await DB.instance.insertInto('subscribers')
+    const result = await db.insertInto('subscribers')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('subscribers')
+    const model = await db.selectFrom('subscribers')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -565,14 +564,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('subscribers')
+    await db.updateTable('subscribers')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('subscribers')
+      const model = await db.selectFrom('subscribers')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -589,14 +588,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newSubscriber: SubscriberUpdate): Promise<SubscriberModel | undefined> {
-    await DB.instance.updateTable('subscribers')
+    await db.updateTable('subscribers')
       .set(newSubscriber)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('subscribers')
+      const model = await db.selectFrom('subscribers')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -616,13 +615,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('subscribers')
+      await db.updateTable('subscribers')
         .set(this.attributes as SubscriberUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('subscribers')
+      const model = await db.selectFrom('subscribers')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -635,12 +634,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('subscribers')
+      const result = await db.insertInto('subscribers')
         .values(this.attributes as NewSubscriber)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('subscribers')
+      const model = await db.selectFrom('subscribers')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -669,18 +668,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('subscribers')
+    await db.insertInto('subscribers')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
-    const result = await DB.instance.insertInto('subscribers')
+    const result = await db.insertInto('subscribers')
       .values(newSubscriber)
       .executeTakeFirst()
 
     const instance = new SubscriberModel(undefined)
-    const model = await DB.instance.selectFrom('subscribers')
+    const model = await db.selectFrom('subscribers')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -702,7 +701,7 @@ set updated_at(value: string) {
     
     
 
-    const deleted = await DB.instance.deleteFrom('subscribers')
+    const deleted = await db.deleteFrom('subscribers')
       .where('id', '=', this.id)
       .execute()
 
@@ -718,7 +717,7 @@ set updated_at(value: string) {
 
     
 
-    return await DB.instance.deleteFrom('subscribers')
+    return await db.deleteFrom('subscribers')
       .where('id', '=', id)
       .execute()
   }
@@ -787,7 +786,7 @@ subscribed: this.subscribed,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<SubscriberModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -807,7 +806,7 @@ subscribed: this.subscribed,
 }
 
 export async function find(id: number): Promise<SubscriberModel | undefined> {
-  let query = DB.instance.selectFrom('subscribers').where('id', '=', id).selectAll()
+  let query = db.selectFrom('subscribers').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -829,17 +828,17 @@ export async function create(newSubscriber: NewSubscriber): Promise<SubscriberMo
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('subscribers')
+  await db.deleteFrom('subscribers')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereSubscribed(value: boolean): Promise<SubscriberModel[]> {
-          const query = DB.instance.selectFrom('subscribers').where('subscribed', '=', value)
+          const query = db.selectFrom('subscribers').where('subscribed', '=', value)
           const results: SubscriberJsonResponse = await query.execute()
 
           return results.map((modelItem: SubscriberJsonResponse) => new SubscriberModel(modelItem))

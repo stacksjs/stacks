@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -61,9 +60,9 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('deployments')
-    this.updateFromQuery = DB.instance.updateTable('deployments')
-    this.deleteFromQuery = DB.instance.deleteFrom('deployments')
+    this.selectFromQuery = db.selectFrom('deployments')
+    this.updateFromQuery = db.updateTable('deployments')
+    this.deleteFromQuery = db.deleteFrom('deployments')
     this.hasSelect = false
   }
 
@@ -75,7 +74,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('deployment_id', 'in', modelIds)
         .selectAll()
@@ -253,7 +252,7 @@ set updated_at(value: string) {
 
   // Method to find a Deployment by ID
   static async find(id: number): Promise<DeploymentModel | undefined> {
-    let query = DB.instance.selectFrom('deployments').where('id', '=', id).selectAll()
+    let query = db.selectFrom('deployments').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -292,7 +291,7 @@ set updated_at(value: string) {
   static async all(): Promise<DeploymentModel[]> {
     const instance = new DeploymentModel(undefined)
 
-    const models = await DB.instance.selectFrom('deployments').selectAll().execute()
+    const models = await db.selectFrom('deployments').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -542,11 +541,11 @@ set updated_at(value: string) {
 
     filteredValues['uuid'] = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('deployments')
+    const result = await db.insertInto('deployments')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('deployments')
+    const model = await db.selectFrom('deployments')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -632,14 +631,14 @@ set updated_at(value: string) {
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('deployments')
+    await db.updateTable('deployments')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('deployments')
+      const model = await db.selectFrom('deployments')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -656,14 +655,14 @@ set updated_at(value: string) {
   }
 
   async forceUpdate(newDeployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
-    await DB.instance.updateTable('deployments')
+    await db.updateTable('deployments')
       .set(newDeployment)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('deployments')
+      const model = await db.selectFrom('deployments')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -683,13 +682,13 @@ set updated_at(value: string) {
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('deployments')
+      await db.updateTable('deployments')
         .set(this.attributes as DeploymentUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('deployments')
+      const model = await db.selectFrom('deployments')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -702,12 +701,12 @@ set updated_at(value: string) {
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('deployments')
+      const result = await db.insertInto('deployments')
         .values(this.attributes as NewDeployment)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('deployments')
+      const model = await db.selectFrom('deployments')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -736,18 +735,18 @@ set updated_at(value: string) {
       return filteredValues
     })
 
-    await DB.instance.insertInto('deployments')
+    await db.insertInto('deployments')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newDeployment: NewDeployment): Promise<DeploymentModel> {
-    const result = await DB.instance.insertInto('deployments')
+    const result = await db.insertInto('deployments')
       .values(newDeployment)
       .executeTakeFirst()
 
     const instance = new DeploymentModel(undefined)
-    const model = await DB.instance.selectFrom('deployments')
+    const model = await db.selectFrom('deployments')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -769,7 +768,7 @@ set updated_at(value: string) {
     
     
 
-    const deleted = await DB.instance.deleteFrom('deployments')
+    const deleted = await db.deleteFrom('deployments')
       .where('id', '=', this.id)
       .execute()
 
@@ -785,7 +784,7 @@ set updated_at(value: string) {
 
     
 
-    return await DB.instance.deleteFrom('deployments')
+    return await db.deleteFrom('deployments')
       .where('id', '=', id)
       .execute()
   }
@@ -927,7 +926,7 @@ commit_sha: this.commit_sha,
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<DeploymentModel | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -947,7 +946,7 @@ commit_sha: this.commit_sha,
 }
 
 export async function find(id: number): Promise<DeploymentModel | undefined> {
-  let query = DB.instance.selectFrom('deployments').where('id', '=', id).selectAll()
+  let query = db.selectFrom('deployments').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -969,59 +968,59 @@ export async function create(newDeployment: NewDeployment): Promise<DeploymentMo
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(DB.instance)
+  return await sql`${rawQuery}`.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('deployments')
+  await db.deleteFrom('deployments')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereCommitSha(value: string): Promise<DeploymentModel[]> {
-          const query = DB.instance.selectFrom('deployments').where('commit_sha', '=', value)
+          const query = db.selectFrom('deployments').where('commit_sha', '=', value)
           const results: DeploymentJsonResponse = await query.execute()
 
           return results.map((modelItem: DeploymentJsonResponse) => new DeploymentModel(modelItem))
         } 
 
 export async function whereCommitMessage(value: string): Promise<DeploymentModel[]> {
-          const query = DB.instance.selectFrom('deployments').where('commit_message', '=', value)
+          const query = db.selectFrom('deployments').where('commit_message', '=', value)
           const results: DeploymentJsonResponse = await query.execute()
 
           return results.map((modelItem: DeploymentJsonResponse) => new DeploymentModel(modelItem))
         } 
 
 export async function whereBranch(value: string): Promise<DeploymentModel[]> {
-          const query = DB.instance.selectFrom('deployments').where('branch', '=', value)
+          const query = db.selectFrom('deployments').where('branch', '=', value)
           const results: DeploymentJsonResponse = await query.execute()
 
           return results.map((modelItem: DeploymentJsonResponse) => new DeploymentModel(modelItem))
         } 
 
 export async function whereStatus(value: string): Promise<DeploymentModel[]> {
-          const query = DB.instance.selectFrom('deployments').where('status', '=', value)
+          const query = db.selectFrom('deployments').where('status', '=', value)
           const results: DeploymentJsonResponse = await query.execute()
 
           return results.map((modelItem: DeploymentJsonResponse) => new DeploymentModel(modelItem))
         } 
 
 export async function whereExecutionTime(value: number): Promise<DeploymentModel[]> {
-          const query = DB.instance.selectFrom('deployments').where('execution_time', '=', value)
+          const query = db.selectFrom('deployments').where('execution_time', '=', value)
           const results: DeploymentJsonResponse = await query.execute()
 
           return results.map((modelItem: DeploymentJsonResponse) => new DeploymentModel(modelItem))
         } 
 
 export async function whereDeployScript(value: string): Promise<DeploymentModel[]> {
-          const query = DB.instance.selectFrom('deployments').where('deploy_script', '=', value)
+          const query = db.selectFrom('deployments').where('deploy_script', '=', value)
           const results: DeploymentJsonResponse = await query.execute()
 
           return results.map((modelItem: DeploymentJsonResponse) => new DeploymentModel(modelItem))
         } 
 
 export async function whereTerminalOutput(value: string): Promise<DeploymentModel[]> {
-          const query = DB.instance.selectFrom('deployments').where('terminal_output', '=', value)
+          const query = db.selectFrom('deployments').where('terminal_output', '=', value)
           const results: DeploymentJsonResponse = await query.execute()
 
           return results.map((modelItem: DeploymentJsonResponse) => new DeploymentModel(modelItem))
