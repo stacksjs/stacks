@@ -15,8 +15,22 @@ export default new Action({
   method: 'POST',
   async handle(request: RequestInstance) {
     try {
-      const body = await request.json() as { input: string }
-      const { input } = body
+      let input: string | undefined
+
+      // Try to get input from query params first, then from body
+      const url = new URL(request.url)
+      input = url.searchParams.get('input') || undefined
+
+      if (!input) {
+        // Try to get from JSON body
+        try {
+          const body = await request.json() as { input: string }
+          input = body.input
+        }
+        catch {
+          // No body or invalid JSON
+        }
+      }
 
       if (!input) {
         return response.json({ success: false, error: 'Repository input is required' }, { status: 400 })

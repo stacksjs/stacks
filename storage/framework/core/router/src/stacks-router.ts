@@ -61,17 +61,25 @@ async function resolveStringHandler(handlerPath: string): Promise<ActionHandler>
     const [controllerPath, methodName = 'index'] = modulePath.split('@')
     const fullPath = p.appPath(`${controllerPath}.ts`)
 
-    const controller = await import(fullPath)
-    // eslint-disable-next-line new-cap
-    const instance = new controller.default()
+    log.debug(`[Router] Loading controller: ${fullPath}`)
 
-    if (typeof instance[methodName] !== 'function') {
-      throw new Error(`Method ${methodName} not found in controller ${controllerPath}`)
+    try {
+      const controller = await import(fullPath)
+      // eslint-disable-next-line new-cap
+      const instance = new controller.default()
+
+      if (typeof instance[methodName] !== 'function') {
+        throw new Error(`Method ${methodName} not found in controller ${controllerPath}`)
+      }
+
+      return async (req: EnhancedRequest) => {
+        const result = await instance[methodName](req)
+        return formatResult(result)
+      }
     }
-
-    return async (req: EnhancedRequest) => {
-      const result = await instance[methodName](req)
-      return formatResult(result)
+    catch (error) {
+      log.error(`[Router] Failed to load controller '${fullPath}':`, error)
+      throw error
     }
   }
 
@@ -91,12 +99,35 @@ async function resolveStringHandler(handlerPath: string): Promise<ActionHandler>
     fullPath = p.appPath(`${modulePath}.ts`)
   }
 
-  const actionModule = await import(fullPath)
-  const action = actionModule.default
+  log.debug(`[Router] Loading action: ${fullPath}`)
 
-  return async (req: EnhancedRequest) => {
-    const result = await action.handle(req)
-    return formatResult(result)
+  try {
+    const actionModule = await import(fullPath)
+    const action = actionModule.default
+
+    if (!action) {
+      throw new Error(`Action '${handlerPath}' has no default export`)
+    }
+
+    if (typeof action.handle !== 'function') {
+      log.error(`[Router] Action '${handlerPath}' structure:`, Object.keys(action))
+      throw new Error(`Action '${handlerPath}' has no handle() method. Got: ${typeof action.handle}`)
+    }
+
+    return async (req: EnhancedRequest) => {
+      try {
+        const result = await action.handle(req)
+        return formatResult(result)
+      }
+      catch (handleError) {
+        log.error(`[Router] Error in action.handle() for '${handlerPath}':`, handleError)
+        throw handleError
+      }
+    }
+  }
+  catch (importError) {
+    log.error(`[Router] Failed to import action '${fullPath}':`, importError)
+    throw importError
   }
 }
 
@@ -129,10 +160,24 @@ function wrapHandler(handler: StacksHandler): ActionHandler {
         return resolvedHandler(req)
       }
       catch (error) {
-        log.error(`Error handling request for '${handlerPath}':`, error)
-        return Response.json(
-          { error: 'Internal Server Error', message: error instanceof Error ? error.message : String(error) },
-          { status: 500 },
+        log.error(`[Router] Error handling request for '${handlerPath}':`, error)
+        // Return error with CORS headers so browsers can see the error
+        return new Response(
+          JSON.stringify({
+            error: 'Internal Server Error',
+            message: error instanceof Error ? error.message : String(error),
+            handler: handlerPath,
+            stack: process.env.NODE_ENV !== 'production' && error instanceof Error ? error.stack : undefined,
+          }),
+          {
+            status: 500,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+              'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            },
+          },
         )
       }
     }
