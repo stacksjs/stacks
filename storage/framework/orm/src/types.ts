@@ -49,7 +49,7 @@ import type { ShippingRatesTable } from '../src/types/ShippingRateType'
 import type { CartsTable } from '../src/types/CartType'
 import type { DeliveryRoutesTable } from '../src/types/DeliveryRouteType'
 import type { CartItemsTable } from '../src/types/CartItemType'
-import type { Generated } from 'kysely'
+import type { Generated } from '@stacksjs/database'
 
 
 export interface MigrationsTable {
