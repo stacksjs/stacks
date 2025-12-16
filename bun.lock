@@ -19,7 +19,7 @@
     },
     "bun-queue": {
       "name": "bun-queue",
-      "version": "1.0.0",
+      "version": "0.1.0",
     },
     "storage/framework": {
       "name": "stacks-framework",
@@ -1219,31 +1219,31 @@
     },
     "ts-auth": {
       "name": "ts-auth",
-      "version": "1.0.0",
+      "version": "0.1.0",
     },
     "ts-cloud": {
       "name": "ts-cloud",
-      "version": "1.0.0",
+      "version": "0.1.0",
     },
     "ts-craft": {
       "name": "ts-craft",
-      "version": "1.0.0",
+      "version": "0.1.0",
     },
     "ts-md": {
       "name": "ts-md",
-      "version": "1.0.0",
+      "version": "0.1.0",
     },
     "ts-open-api": {
       "name": "ts-open-api",
-      "version": "1.0.0",
+      "version": "0.1.0",
     },
     "ts-pantry": {
       "name": "ts-pantry",
-      "version": "1.0.0",
+      "version": "0.1.0",
     },
     "ts-security-crypto": {
       "name": "ts-security-crypto",
-      "version": "1.0.0",
+      "version": "0.1.0",
     },
   },
   "packages": {

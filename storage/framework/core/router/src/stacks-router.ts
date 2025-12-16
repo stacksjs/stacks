@@ -122,9 +122,19 @@ function formatResult(result: unknown): Response {
  */
 function wrapHandler(handler: StacksHandler): ActionHandler {
   if (typeof handler === 'string') {
+    const handlerPath = handler // capture for error messages
     return async (req: EnhancedRequest) => {
-      const resolvedHandler = await resolveStringHandler(handler)
-      return resolvedHandler(req)
+      try {
+        const resolvedHandler = await resolveStringHandler(handlerPath)
+        return resolvedHandler(req)
+      }
+      catch (error) {
+        log.error(`Error handling request for '${handlerPath}':`, error)
+        return Response.json(
+          { error: 'Internal Server Error', message: error instanceof Error ? error.message : String(error) },
+          { status: 500 },
+        )
+      }
     }
   }
   return handler

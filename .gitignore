@@ -43,3 +43,15 @@ stacks.log
 .env.keys
 /storage/framework/frontend-dist
 /.qb
+
+# Stub workspace packages (temporary)
+/ts-auth
+/ts-cloud
+/ts-craft
+/ts-md
+/ts-open-api
+/ts-pantry
+/ts-security-crypto
+/bun-queue
+/headwind
+/bun-plugin-stx
