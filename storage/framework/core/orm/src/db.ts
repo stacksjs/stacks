@@ -1,17 +1,8 @@
-import { db } from '@stacksjs/database'
+/**
+ * Database access re-export
+ *
+ * This module re-exports the db instance from @stacksjs/database
+ * for convenience within the ORM package.
+ */
 
-export class DB {
-  private static dbInstance: any = null
-
-  static get instance(): DB | any {
-    return this.dbInstance || db
-  }
-
-  static setTransaction(transaction: any): void {
-    this.dbInstance = transaction
-  }
-
-  static clearTransaction(): void {
-    this.dbInstance = db
-  }
-}
+export { db } from '@stacksjs/database'

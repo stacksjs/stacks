@@ -155,7 +155,7 @@ export async function generateModelString(
         const instance = new ${modelName}Model(undefined)
 
         if (instance.softDeletes) {
-          return await DB.instance.updateTable('${tableName}')
+          return await db.updateTable('${tableName}')
           .set({
             deleted_at: sql.raw('CURRENT_TIMESTAMP'),
           })
@@ -165,7 +165,7 @@ export async function generateModelString(
       `
 
     thisSoftDeleteStatementsUpdateFrom += `if (this.softDeletes) {
-        return await DB.instance.updateTable('${tableName}')
+        return await db.updateTable('${tableName}')
         .set({
             deleted_at: sql.raw('CURRENT_TIMESTAMP')
         })
@@ -316,7 +316,7 @@ export async function generateModelString(
           if (this.id === undefined)
             throw new HttpError(500, 'Relation Error!')
 
-          const firstModel = await DB.instance.selectFrom('${throughTableRelation}')
+          const firstModel = await db.selectFrom('${throughTableRelation}')
             .where('${foreignKeyRelation}', '=', this.id)
             .selectAll()
             .executeTakeFirst()
@@ -450,7 +450,7 @@ export async function generateModelString(
           if (this.id === undefined)
             throw new HttpError(500, 'Relation Error!')
 
-          const results = await DB.instance.selectFrom('${pivotTable}')
+          const results = await db.selectFrom('${pivotTable}')
             .where('${pivotKey}', '=', this.id)
             .selectAll()
             .execute()
@@ -504,7 +504,7 @@ export async function generateModelString(
   if (useLikeable) {
     likeableStatements += `
       async getLikeCount(): Promise<number> {
-        const result = await DB.instance
+        const result = await db
           .selectFrom('${likeableTable}')
           .select('count(*) as count')
           .where('${likeableForeignKey}', '=', this.id)
@@ -520,7 +520,7 @@ export async function generateModelString(
       async like(userId: number): Promise<void> {
         const authUserId = userId || 1
 
-        await DB.instance
+        await db
           .insertInto('${likeableTable}')
           .values({
             ${likeableForeignKey}: this.id,
@@ -531,7 +531,7 @@ export async function generateModelString(
 
       async unlike(userId: number): Promise<void> {
         const authUserId = userId || 1
-        await DB.instance
+        await db
           .deleteFrom('${likeableTable}')
           .where('${likeableForeignKey}', '=', this.id)
           .where('user_id', '=', authUserId)
@@ -541,7 +541,7 @@ export async function generateModelString(
       async isLiked(userId: number): Promise<boolean> {
         const authUserId = userId || 1
 
-        const like = await DB.instance
+        const like = await db
           .selectFrom('${likeableTable}')
           .select('id')
           .where('${likeableForeignKey}', '=', this.id)
@@ -690,7 +690,7 @@ export async function generateModelString(
       }
 
       async activeSubscription() {
-        const subscription = await DB.instance.selectFrom('subscriptions')
+        const subscription = await db.selectFrom('subscriptions')
           .where('user_id', '=', this.id)
           .where('provider_status', '=', 'active')
           .selectAll()
@@ -899,7 +899,7 @@ export async function generateModelString(
         } \n\n`
 
     whereFunctionStatements += `export async function where${pascalCase(attribute.field)}(value: ${entity}): Promise<${modelName}Model[]> {
-          const query = DB.instance.selectFrom('${tableName}').where('${snakeCase(attribute.field)}', '=', value)
+          const query = db.selectFrom('${tableName}').where('${snakeCase(attribute.field)}', '=', value)
           const results: ${modelName}JsonResponse = await query.execute()
 
           return results.map((modelItem: ${modelName}JsonResponse) => new ${modelName}Model(modelItem))
@@ -1033,8 +1033,7 @@ export async function generateModelString(
   const classString = `import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent } from '@stacksjs/payments'
 import Stripe from 'stripe'
-import { sql } from '@stacksjs/database'
-import { DB } from '@stacksjs/orm'
+import { db, sql } from '@stacksjs/database'
 import { BaseOrm } from '../utils/base'
 import type { Operator } from '@stacksjs/orm'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -1087,9 +1086,9 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('${tableName}')
-    this.updateFromQuery = DB.instance.updateTable('${tableName}')
-    this.deleteFromQuery = DB.instance.deleteFrom('${tableName}')
+    this.selectFromQuery = db.selectFrom('${tableName}')
+    this.updateFromQuery = db.updateTable('${tableName}')
+    this.deleteFromQuery = db.deleteFrom('${tableName}')
     this.hasSelect = false
   }
 
@@ -1101,7 +1100,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
     const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
-      const relatedRecords = await DB.instance
+      const relatedRecords = await db
         .selectFrom(relation)
         .where('${formattedModelName}_id', 'in', modelIds)
         .selectAll()
@@ -1191,7 +1190,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
 
   // Method to find a ${modelName} by ID
   static async find(id: number): Promise<${modelName}Model | undefined> {
-    let query = DB.instance.selectFrom('${tableName}').where('id', '=', id).selectAll()
+    let query = db.selectFrom('${tableName}').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -1230,7 +1229,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
   static async all(): Promise<${modelName}Model[]> {
     const instance = new ${modelName}Model(undefined)
 
-    const models = await DB.instance.selectFrom('${tableName}').selectAll().execute()
+    const models = await db.selectFrom('${tableName}').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -1480,11 +1479,11 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
 
     ${uuidQuery}
 
-    const result = await DB.instance.insertInto('${tableName}')
+    const result = await db.insertInto('${tableName}')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('${tableName}')
+    const model = await db.selectFrom('${tableName}')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -1570,14 +1569,14 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('${tableName}')
+    await db.updateTable('${tableName}')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('${tableName}')
+      const model = await db.selectFrom('${tableName}')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -1594,14 +1593,14 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
   }
 
   async forceUpdate(new${modelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
-    await DB.instance.updateTable('${tableName}')
+    await db.updateTable('${tableName}')
       .set(new${modelName})
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('${tableName}')
+      const model = await db.selectFrom('${tableName}')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -1621,13 +1620,13 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('${tableName}')
+      await db.updateTable('${tableName}')
         .set(this.attributes as ${modelName}Update)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('${tableName}')
+      const model = await db.selectFrom('${tableName}')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -1640,12 +1639,12 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
       return this.createInstance(model)
     } else {
       // Create new record
-      const result = await DB.instance.insertInto('${tableName}')
+      const result = await db.insertInto('${tableName}')
         .values(this.attributes as New${modelName})
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('${tableName}')
+      const model = await db.selectFrom('${tableName}')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -1674,18 +1673,18 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
       return filteredValues
     })
 
-    await DB.instance.insertInto('${tableName}')
+    await db.insertInto('${tableName}')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(new${modelName}: New${modelName}): Promise<${modelName}Model> {
-    const result = await DB.instance.insertInto('${tableName}')
+    const result = await db.insertInto('${tableName}')
       .values(new${modelName})
       .executeTakeFirst()
 
     const instance = new ${modelName}Model(undefined)
-    const model = await DB.instance.selectFrom('${tableName}')
+    const model = await db.selectFrom('${tableName}')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -1707,7 +1706,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
     ${thisSoftDeleteStatementsUpdateFrom}
     ${mittDeleteStatement}
 
-    const deleted = await DB.instance.deleteFrom('${tableName}')
+    const deleted = await db.deleteFrom('${tableName}')
       .where('id', '=', this.id)
       .execute()
 
@@ -1723,7 +1722,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
 
     ${mittDeleteStatement}
 
-    return await DB.instance.deleteFrom('${tableName}')
+    return await db.deleteFrom('${tableName}')
       .where('id', '=', id)
       .execute()
   }
@@ -1774,7 +1773,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
 
   // Add a protected applyFind implementation
   protected async applyFind(id: number): Promise<${modelName}Model | undefined> {
-    const model = await DB.instance.selectFrom(this.tableName)
+    const model = await db.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -1794,7 +1793,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
 }
 
 export async function find(id: number): Promise<${modelName}Model | undefined> {
-  let query = DB.instance.selectFrom('${tableName}').where('id', '=', id).selectAll()
+  let query = db.selectFrom('${tableName}').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1816,11 +1815,11 @@ export async function create(new${modelName}: New${modelName}): Promise<${modelN
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql\`\${rawQuery}\`\.execute(DB.instance)
+  return await sql\`\${rawQuery}\`\.execute(db)
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('${tableName}')
+  await db.deleteFrom('${tableName}')
     .where('id', '=', id)
     .execute()
 }

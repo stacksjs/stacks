@@ -1,8 +1,7 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import { sql } from '@stacksjs/database'
+import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-import { DB } from '@stacksjs/orm'
 
 /**
  * BaseOrm - Base class for all generated ORM models
@@ -25,9 +24,9 @@ export class BaseOrm<T, C, J> {
 
   constructor(tableName: string) {
     this.tableName = tableName
-    this.selectFromQuery = DB.instance.selectFrom(this.tableName)
-    this.updateFromQuery = DB.instance.updateTable(this.tableName)
-    this.deleteFromQuery = DB.instance.deleteFrom(this.tableName)
+    this.selectFromQuery = db.selectFrom(this.tableName)
+    this.updateFromQuery = db.updateTable(this.tableName)
+    this.deleteFromQuery = db.deleteFrom(this.tableName)
     this.withRelations = []
   }
 
@@ -90,7 +89,7 @@ export class BaseOrm<T, C, J> {
 
   // The protected helper method that does the actual work
   protected async applyFind(id: number): Promise<T | undefined> {
-    const query = DB.instance.selectFrom(this.tableName).where({ id })
+    const query = db.selectFrom(this.tableName).where({ id })
 
     // Use first() if available (bun-query-builder style)
     const model = typeof query.first === 'function'
@@ -107,7 +106,7 @@ export class BaseOrm<T, C, J> {
   }
 
   async applyFindMany(ids: number[]): Promise<T[]> {
-    const query = DB.instance.selectFrom(this.tableName).whereIn('id', ids)
+    const query = db.selectFrom(this.tableName).whereIn('id', ids)
 
     // Use get() if available (bun-query-builder style), fallback to execute()
     const models = typeof query.get === 'function'
@@ -125,7 +124,7 @@ export class BaseOrm<T, C, J> {
   }
 
   async all(): Promise<T[]> {
-    const query = DB.instance.selectFrom(this.tableName)
+    const query = db.selectFrom(this.tableName)
 
     // Use get() if available (bun-query-builder style), fallback to execute()
     const models = typeof query.get === 'function'
@@ -195,7 +194,7 @@ export class BaseOrm<T, C, J> {
   }
 
   protected async applyFindOrFail(id: number): Promise<T | undefined> {
-    const query = DB.instance.selectFrom(this.tableName).where({ id })
+    const query = db.selectFrom(this.tableName).where({ id })
 
     // Use first() if available (bun-query-builder style)
     const model = typeof query.first === 'function'
@@ -697,7 +696,7 @@ export class BaseOrm<T, C, J> {
     const currentPage = options.page ?? 1
 
     // Get total count
-    const countQuery = DB.instance.selectFrom(this.tableName)
+    const countQuery = db.selectFrom(this.tableName)
     let totalRecords: number
 
     if (typeof countQuery.count === 'function') {
@@ -713,7 +712,7 @@ export class BaseOrm<T, C, J> {
     const totalPages = Math.ceil(totalRecords / perPage)
 
     // Get data with one extra to check for next page
-    const dataQuery = DB.instance.selectFrom(this.tableName)
+    const dataQuery = db.selectFrom(this.tableName)
       .orderBy('id', 'asc')
       .limit(perPage + 1)
       .offset((currentPage - 1) * perPage)
@@ -922,7 +921,7 @@ export class BaseOrm<T, C, J> {
 
   // Base implementations for categorizable trait
   protected async getCategoryIds(id: number): Promise<number[]> {
-    const categoryLinks = await DB.instance
+    const categoryLinks = await db
       .selectFrom('categorizable_models')
       .where('categorizable_id', '=', id)
       .where('categorizable_type', '=', this.tableName)
@@ -938,7 +937,7 @@ export class BaseOrm<T, C, J> {
     if (categoryIds.length === 0)
       return []
 
-    return await DB.instance
+    return await db
       .selectFrom('categorizable')
       .where('id', 'in', categoryIds)
       .selectAll()
@@ -952,14 +951,14 @@ export class BaseOrm<T, C, J> {
 
   protected async baseAddCategory(id: number, category: { name: string, description?: string }): Promise<any> {
     // First check if category exists or create it
-    let categoryRecord = await DB.instance
+    let categoryRecord = await db
       .selectFrom('categorizable')
       .where('name', '=', category.name)
       .selectAll()
       .executeTakeFirst()
 
     if (!categoryRecord) {
-      categoryRecord = await DB.instance
+      categoryRecord = await db
         .insertInto('categorizable')
         .values({
           name: category.name,
@@ -974,7 +973,7 @@ export class BaseOrm<T, C, J> {
     }
 
     // Then create the relationship
-    return await DB.instance
+    return await db
       .insertInto('categorizable_models')
       .values({
         categorizable_id: id,
@@ -993,7 +992,7 @@ export class BaseOrm<T, C, J> {
     if (categoryIds.length === 0)
       return []
 
-    return await DB.instance
+    return await db
       .selectFrom('categorizable')
       .where('id', 'in', categoryIds)
       .where('is_active', '=', true)
@@ -1007,7 +1006,7 @@ export class BaseOrm<T, C, J> {
     if (categoryIds.length === 0)
       return []
 
-    return await DB.instance
+    return await db
       .selectFrom('categorizable')
       .where('id', 'in', categoryIds)
       .where('is_active', '=', false)
@@ -1016,7 +1015,7 @@ export class BaseOrm<T, C, J> {
   }
 
   protected async baseRemoveCategory(categoryId: number): Promise<void> {
-    await DB.instance
+    await db
       .deleteFrom('categorizable')
       .where('categorizable_type', '=', this.tableName)
       .where('id', '=', categoryId)
@@ -1025,7 +1024,7 @@ export class BaseOrm<T, C, J> {
 
   // Base implementations for taggable trait
   protected async baseTags(id: number): Promise<any[]> {
-    return await DB.instance
+    return await db
       .selectFrom('taggable')
       .where('taggable_id', '=', id)
       .where('taggable_type', '=', this.tableName)
@@ -1034,7 +1033,7 @@ export class BaseOrm<T, C, J> {
   }
 
   protected async baseTagCount(id: number): Promise<number> {
-    const result = await DB.instance
+    const result = await db
       .selectFrom('taggable')
       .select(sql`count(*) as count`)
       .where('taggable_id', '=', id)
@@ -1045,7 +1044,7 @@ export class BaseOrm<T, C, J> {
   }
 
   protected async baseAddTag(id: number, tag: { name: string, description?: string }): Promise<any> {
-    return await DB.instance
+    return await db
       .insertInto('taggable')
       .values({
         ...tag,
@@ -1062,7 +1061,7 @@ export class BaseOrm<T, C, J> {
   }
 
   protected async baseActiveTags(id: number): Promise<any[]> {
-    return await DB.instance
+    return await db
       .selectFrom('taggable')
       .where('taggable_id', '=', id)
       .where('taggable_type', '=', this.tableName)
@@ -1072,7 +1071,7 @@ export class BaseOrm<T, C, J> {
   }
 
   protected async baseInactiveTags(id: number): Promise<any[]> {
-    return await DB.instance
+    return await db
       .selectFrom('taggable')
       .where('taggable_id', '=', id)
       .where('taggable_type', '=', this.tableName)
@@ -1082,7 +1081,7 @@ export class BaseOrm<T, C, J> {
   }
 
   protected async baseRemoveTag(id: number, tagId: number): Promise<void> {
-    await DB.instance
+    await db
       .deleteFrom('taggable')
       .where('taggable_id', '=', id)
       .where('taggable_type', '=', this.tableName)
@@ -1092,7 +1091,7 @@ export class BaseOrm<T, C, J> {
 
   // Base implementations for commentable trait
   protected async baseComments(id: number): Promise<any[]> {
-    return await DB.instance
+    return await db
       .selectFrom('comments')
       .where('commentables_id', '=', id)
       .where('commentables_type', '=', this.tableName)
@@ -1101,7 +1100,7 @@ export class BaseOrm<T, C, J> {
   }
 
   protected async baseCommentCount(id: number): Promise<number> {
-    const result = await DB.instance
+    const result = await db
       .selectFrom('comments')
       .select(sql`count(*) as count`)
       .where('commentables_id', '=', id)
@@ -1112,7 +1111,7 @@ export class BaseOrm<T, C, J> {
   }
 
   protected async baseAddComment(id: number, comment: { title: string, body: string }): Promise<any> {
-    return await DB.instance
+    return await db
       .insertInto('comments')
       .values({
         ...comment,
@@ -1127,7 +1126,7 @@ export class BaseOrm<T, C, J> {
   }
 
   protected async baseApprovedComments(id: number): Promise<any[]> {
-    return await DB.instance
+    return await db
       .selectFrom('comments')
       .where('commentables_id', '=', id)
       .where('commentables_type', '=', this.tableName)
@@ -1137,7 +1136,7 @@ export class BaseOrm<T, C, J> {
   }
 
   protected async basePendingComments(id: number): Promise<any[]> {
-    return await DB.instance
+    return await db
       .selectFrom('comments')
       .where('commentables_id', '=', id)
       .where('commentables_type', '=', this.tableName)
@@ -1147,7 +1146,7 @@ export class BaseOrm<T, C, J> {
   }
 
   protected async baseRejectedComments(id: number): Promise<any[]> {
-    return await DB.instance
+    return await db
       .selectFrom('comments')
       .where('commentables_id', '=', id)
       .where('commentables_type', '=', this.tableName)
