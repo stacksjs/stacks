@@ -42,7 +42,7 @@ route.group({ prefix: '/voide' }, async () => {
   route.post('/settings', 'Actions/Buddy/BuddySettingsUpdateAction')
   route.post('/github/connect', 'Actions/Buddy/BuddyGitHubConnectAction')
   route.post('/github/disconnect', 'Actions/Buddy/BuddyGitHubDisconnectAction')
-})
+})  
 
 route.group({ prefix: '/payments' }, async () => {
   route.get('/fetch-customer/{id}', 'Actions/Payment/FetchPaymentCustomerAction')
