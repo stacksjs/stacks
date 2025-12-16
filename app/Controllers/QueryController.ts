@@ -1,7 +1,6 @@
 import { config } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+import { db, sql } from '@stacksjs/database'
 import { Controller } from '@stacksjs/server'
-import { sql } from 'kysely'
 
 export default class QueryController extends Controller {
   /**

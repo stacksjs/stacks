@@ -1286,7 +1286,7 @@ export async function generateKyselyTypes(): Promise<void> {
     text += `import type { ${pivotFormatted}Table } from '../src/types/${modelName}Type'\n`
   }
 
-  text += `import type { Generated } from 'kysely'\n\n`
+  text += `import type { Generated } from '@stacksjs/database'\n\n`
 
   let pivotFormatted = ''
   for (const modelFile of modelFiles) {

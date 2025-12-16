@@ -96,9 +96,9 @@ export default {
   },
 } satisfies Model`,
 
-  migration: `import { Kysely } from 'kysely'
+  migration: `import type { Database } from '@stacksjs/database'
 
-export async function up(db: Kysely<any>): Promise<void> {
+export async function up(db: Database): Promise<void> {
   await db.schema
     .createTable('{0}')
     .addColumn('id', 'integer', col => col.autoIncrement().primaryKey())
