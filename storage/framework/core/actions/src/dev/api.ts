@@ -1,14 +1,19 @@
 import { log, parseOptions } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
-import { serve } from '@stacksjs/router'
-import { initiateImports } from '@stacksjs/server'
+import { cors, route } from '@stacksjs/router'
 
 const options = parseOptions()
 
 log.debug('Starting API dev server...', options)
 
-initiateImports()
+// Enable CORS middleware
+route.use(cors().handle.bind(cors()))
 
-await serve({
-  port: config.ports?.api, // defaults to 3008
+// Import routes
+await route.importRoutes()
+
+// Start server
+await route.serve({
+  port: config.ports?.api || 3008,
+  hostname: '127.0.0.1',
 })

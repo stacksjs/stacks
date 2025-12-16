@@ -1,38 +1,17 @@
 /**
  * @stacksjs/router - Stacks Router
  *
- * A comprehensive router built on top of bun-router with Stacks-specific
- * features like Action/Controller resolution, ORM integration, and more.
+ * A thin wrapper around bun-router that adds Stacks-specific
+ * action/controller resolution for string-based route handlers.
  *
- * Re-exports all bun-router functionality plus Stacks adapters.
+ * All routing functionality comes directly from bun-router.
  */
 
-// Re-export specific items from bun-router (avoiding Router conflict)
-export {
-  router,
-  Router as BunRouter,
-  FluentRouter,
-  RouterUtils,
-  SubdomainRouter,
-  createFluentRouter,
-} from 'bun-router'
+// Re-export everything from bun-router
+export * from 'bun-router'
 
-// Export Stacks-specific modules
-export * from './middleware'
-export * from './request'
-export * from './response'
-export * from './router'
-export * from './server'
-export * from './static'
-export * from './utils'
-export * from './uploaded-file'
+// Export Stacks-specific action resolver
+export { createStacksRouter, route, serve } from './stacks-router'
 
-// Re-export commonly used types
-export type {
-  EnhancedRequest,
-  Route,
-  RouterConfig,
-  MiddlewareHandler,
-  ActionHandler,
-  NextFunction,
-} from 'bun-router'
+// Export response helpers for Stacks actions
+export { response } from './response'
