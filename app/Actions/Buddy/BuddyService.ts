@@ -382,9 +382,15 @@ export async function processCommand(command: string, driverName?: string): Prom
     throw new Error('No repository opened')
   }
 
-  const driver = drivers[driverName || currentState.currentDriver]
+  // Normalize driver name (claude-cli -> claude, etc.)
+  let normalizedDriver = driverName || currentState.currentDriver
+  if (normalizedDriver === 'claude-cli' || normalizedDriver === 'anthropic') {
+    normalizedDriver = 'claude'
+  }
+
+  const driver = drivers[normalizedDriver]
   if (!driver) {
-    throw new Error(`Unknown driver: ${driverName || currentState.currentDriver}`)
+    throw new Error(`Unknown driver: ${normalizedDriver}. Available: ${Object.keys(drivers).join(', ')}`)
   }
 
   if (driverName) {
