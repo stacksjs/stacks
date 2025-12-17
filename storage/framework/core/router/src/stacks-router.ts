@@ -116,6 +116,21 @@ async function resolveStringHandler(handlerPath: string): Promise<ActionHandler>
 
     return async (req: EnhancedRequest) => {
       try {
+        // Validate action input if validations are defined
+        if (action.validations) {
+          const validationResult = await validateActionInput(req, action.validations)
+          if (!validationResult.valid) {
+            return new Response(JSON.stringify({
+              success: false,
+              message: 'Validation failed',
+              errors: validationResult.errors,
+            }), {
+              status: 422,
+              headers: { 'Content-Type': 'application/json' },
+            })
+          }
+        }
+
         const result = await action.handle(req)
         return formatResult(result)
       }
@@ -129,6 +144,97 @@ async function resolveStringHandler(handlerPath: string): Promise<ActionHandler>
     log.error(`[Router] Failed to import action '${fullPath}':`, importError)
     throw importError
   }
+}
+
+/**
+ * Validation result interface
+ */
+interface ValidationResult {
+  valid: boolean
+  errors: Record<string, string[]>
+}
+
+/**
+ * Action validations interface
+ */
+interface ActionValidations {
+  [key: string]: {
+    rule: { validate: (value: unknown) => { valid: boolean, errors?: Array<{ message: string }> } }
+    message?: string | Record<string, string>
+  }
+}
+
+/**
+ * Validate action input against defined validations
+ */
+async function validateActionInput(req: EnhancedRequest, validations: ActionValidations): Promise<ValidationResult> {
+  const errors: Record<string, string[]> = {}
+
+  // Get input data from request (query params, body, etc.)
+  const input = await getRequestInput(req)
+
+  for (const [field, validation] of Object.entries(validations)) {
+    const value = input[field]
+    const result = validation.rule.validate(value)
+
+    if (!result.valid) {
+      const fieldErrors: string[] = []
+
+      if (result.errors && result.errors.length > 0) {
+        // Use custom message if provided, otherwise use validation error messages
+        if (validation.message) {
+          fieldErrors.push(typeof validation.message === 'string' ? validation.message : validation.message[field] || result.errors[0].message)
+        }
+        else {
+          result.errors.forEach(err => fieldErrors.push(err.message))
+        }
+      }
+      else {
+        fieldErrors.push(validation.message ? (typeof validation.message === 'string' ? validation.message : `${field} is invalid`) : `${field} is invalid`)
+      }
+
+      errors[field] = fieldErrors
+    }
+  }
+
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors,
+  }
+}
+
+/**
+ * Get all input data from request (body + query params)
+ */
+async function getRequestInput(req: EnhancedRequest): Promise<Record<string, unknown>> {
+  const input: Record<string, unknown> = {}
+
+  // Get query parameters
+  const url = new URL(req.url)
+  url.searchParams.forEach((value, key) => {
+    input[key] = value
+  })
+
+  // Get route params if available
+  if ((req as any).params) {
+    Object.assign(input, (req as any).params)
+  }
+
+  // Try to get JSON body
+  try {
+    const contentType = req.headers.get('content-type') || ''
+    if (contentType.includes('application/json')) {
+      const body = await req.clone().json()
+      if (body && typeof body === 'object') {
+        Object.assign(input, body)
+      }
+    }
+  }
+  catch {
+    // No JSON body or parsing failed - that's okay
+  }
+
+  return input
 }
 
 /**

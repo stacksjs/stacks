@@ -7,11 +7,8 @@
  * All routing functionality comes directly from bun-router.
  */
 
-// Re-export everything from bun-router
+// Re-export everything from bun-router (includes response factory)
 export * from 'bun-router'
 
 // Export Stacks-specific action resolver
 export { createStacksRouter, route, serve } from './stacks-router'
-
-// Export response helpers for Stacks actions
-export { response } from './response'
