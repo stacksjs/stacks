@@ -11,6 +11,19 @@ export default new Action({
   description: 'Get the current Buddy state',
   method: 'GET',
   async handle(_request: RequestInstance) {
-    return response.json({ foo: 'bar' })
+    const state = buddyState.getState()
+    return response.json({
+      repo: state.repo,
+      currentDriver: state.currentDriver,
+      availableDrivers: getAvailableDrivers(),
+      github: state.github
+        ? {
+            username: state.github.username,
+            name: state.github.name,
+            connected: true,
+          }
+        : { connected: false },
+      conversationLength: state.conversationHistory.length,
+    })
   },
 })

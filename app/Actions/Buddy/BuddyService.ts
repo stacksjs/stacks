@@ -61,7 +61,7 @@ export const apiKeys: { anthropic?: string, openai?: string, claudeCliHost?: str
 const state: BuddyState = {
   repo: null,
   conversationHistory: [],
-  currentDriver: 'claude',
+  currentDriver: 'claude-cli-local',
   github: null,
 }
 
@@ -112,8 +112,82 @@ Be concise but thorough. The user will review and commit your changes.`
 
 // AI Drivers
 export const drivers: Record<string, AIDriver> = {
+  'claude-cli-local': {
+    name: 'Claude CLI (Local)',
+    async process(command: string, context: string, _history: AIMessage[]): Promise<string> {
+      // Proxy to local Claude CLI
+      const host = 'http://localhost:3001'
+      const systemPrompt = buildSystemPrompt(context)
+
+      try {
+        const response = await fetch(`${host}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: `${systemPrompt}\n\nUser: ${command}`,
+            command,
+            context,
+          }),
+        })
+
+        if (!response.ok) {
+          const error = await response.text()
+          throw new Error(`Claude CLI (Local) error: ${error}`)
+        }
+
+        const data = (await response.json()) as { response?: string, message?: string, result?: string }
+        return data.response || data.message || data.result || JSON.stringify(data)
+      }
+      catch (error) {
+        if (error instanceof Error && error.message.includes('fetch')) {
+          throw new Error(`Claude CLI not reachable at ${host}. Make sure it's running locally.`)
+        }
+        throw error
+      }
+    },
+  },
+
+  'claude-cli-ec2': {
+    name: 'Claude CLI (EC2)',
+    async process(command: string, context: string, _history: AIMessage[]): Promise<string> {
+      // Proxy to EC2-hosted Claude CLI
+      const host = apiKeys.claudeCliHost
+      if (!host) {
+        throw new Error('BUDDY_EC2_HOST not configured. Set the EC2 host in environment variables or settings.')
+      }
+
+      const systemPrompt = buildSystemPrompt(context)
+
+      try {
+        const response = await fetch(`${host}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: `${systemPrompt}\n\nUser: ${command}`,
+            command,
+            context,
+          }),
+        })
+
+        if (!response.ok) {
+          const error = await response.text()
+          throw new Error(`Claude CLI (EC2) error: ${error}`)
+        }
+
+        const data = (await response.json()) as { response?: string, message?: string, result?: string }
+        return data.response || data.message || data.result || JSON.stringify(data)
+      }
+      catch (error) {
+        if (error instanceof Error && error.message.includes('fetch')) {
+          throw new Error(`Claude CLI not reachable at ${host}. Make sure the EC2 instance is running.`)
+        }
+        throw error
+      }
+    },
+  },
+
   claude: {
-    name: 'Claude',
+    name: 'Claude API',
     async process(command: string, context: string, history: AIMessage[]): Promise<string> {
       const apiKey = apiKeys.anthropic
       if (!apiKey) {
@@ -382,9 +456,9 @@ export async function processCommand(command: string, driverName?: string): Prom
     throw new Error('No repository opened')
   }
 
-  // Normalize driver name (claude-cli -> claude, etc.)
+  // Get driver (normalize 'anthropic' to 'claude' for backwards compatibility)
   let normalizedDriver = driverName || currentState.currentDriver
-  if (normalizedDriver === 'claude-cli' || normalizedDriver === 'anthropic') {
+  if (normalizedDriver === 'anthropic') {
     normalizedDriver = 'claude'
   }
 

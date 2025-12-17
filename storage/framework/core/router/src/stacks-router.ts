@@ -151,13 +151,177 @@ function formatResult(result: unknown): Response {
 /**
  * Wrap a handler that might be a string path
  */
+/**
+ * Add Laravel-style helper methods to request if not already present
+ */
+function enhanceWithLaravelMethods(req: EnhancedRequest): EnhancedRequest {
+  // If methods already exist, return as-is
+  if (typeof (req as any).get === 'function') {
+    return req
+  }
+
+  // Parse query string if not present
+  let query = (req as any).query
+  if (!query) {
+    const url = new URL(req.url)
+    query = {} as Record<string, string>
+    url.searchParams.forEach((value, key) => {
+      query[key] = value
+    })
+    ;(req as any).query = query
+  }
+
+  // Helper to get all input data
+  const getAllInput = (): Record<string, any> => {
+    const input: Record<string, any> = {}
+
+    // Query parameters
+    for (const [key, value] of Object.entries(query || {})) {
+      input[key] = value
+    }
+
+    // JSON body
+    if ((req as any).jsonBody && typeof (req as any).jsonBody === 'object') {
+      for (const [key, value] of Object.entries((req as any).jsonBody)) {
+        input[key] = value
+      }
+    }
+
+    // Form body
+    if ((req as any).formBody && typeof (req as any).formBody === 'object') {
+      for (const [key, value] of Object.entries((req as any).formBody)) {
+        input[key] = value
+      }
+    }
+
+    // Route params
+    if ((req as any).params && typeof (req as any).params === 'object') {
+      for (const [key, value] of Object.entries((req as any).params)) {
+        input[key] = value
+      }
+    }
+
+    return input
+  }
+
+  // Add Laravel-style methods
+  ;(req as any).get = <T = any>(key: string, defaultValue?: T): T => {
+    const input = getAllInput()
+    const value = input[key]
+    return (value !== undefined ? value : defaultValue) as T
+  }
+
+  ;(req as any).input = <T = any>(key: string, defaultValue?: T): T => {
+    const input = getAllInput()
+    const value = input[key]
+    return (value !== undefined ? value : defaultValue) as T
+  }
+
+  ;(req as any).all = (): Record<string, any> => getAllInput()
+
+  ;(req as any).only = <T extends Record<string, unknown>>(keys: string[]): T => {
+    const input = getAllInput()
+    const result = {} as T
+    for (const key of keys) {
+      if (key in input) {
+        (result as any)[key] = input[key]
+      }
+    }
+    return result
+  }
+
+  ;(req as any).except = <T extends Record<string, unknown>>(keys: string[]): T => {
+    const input = getAllInput()
+    const result = { ...input } as T
+    for (const key of keys) {
+      delete (result as any)[key]
+    }
+    return result
+  }
+
+  ;(req as any).has = (key: string | string[]): boolean => {
+    const input = getAllInput()
+    if (Array.isArray(key)) {
+      return key.every(k => k in input && input[k] !== undefined)
+    }
+    return key in input && input[key] !== undefined
+  }
+
+  ;(req as any).hasAny = (keys: string[]): boolean => {
+    const input = getAllInput()
+    return keys.some(k => k in input && input[k] !== undefined)
+  }
+
+  ;(req as any).filled = (key: string | string[]): boolean => {
+    const input = getAllInput()
+    const isFilled = (k: string): boolean => {
+      const value = input[k]
+      return value !== undefined && value !== null && value !== '' && !(Array.isArray(value) && value.length === 0)
+    }
+    if (Array.isArray(key)) {
+      return key.every(isFilled)
+    }
+    return isFilled(key)
+  }
+
+  ;(req as any).missing = (key: string | string[]): boolean => {
+    const input = getAllInput()
+    if (Array.isArray(key)) {
+      return key.every(k => !(k in input) || input[k] === undefined)
+    }
+    return !(key in input) || input[key] === undefined
+  }
+
+  ;(req as any).string = (key: string, defaultValue: string = ''): string => {
+    const input = getAllInput()
+    const value = input[key]
+    return value !== undefined && value !== null ? String(value) : defaultValue
+  }
+
+  ;(req as any).integer = (key: string, defaultValue: number = 0): number => {
+    const input = getAllInput()
+    const value = input[key]
+    const parsed = Number.parseInt(String(value), 10)
+    return Number.isNaN(parsed) ? defaultValue : parsed
+  }
+
+  ;(req as any).float = (key: string, defaultValue: number = 0): number => {
+    const input = getAllInput()
+    const value = input[key]
+    const parsed = Number.parseFloat(String(value))
+    return Number.isNaN(parsed) ? defaultValue : parsed
+  }
+
+  ;(req as any).boolean = (key: string, defaultValue: boolean = false): boolean => {
+    const input = getAllInput()
+    const value = input[key]
+    if (value === undefined || value === null) return defaultValue
+    if (typeof value === 'boolean') return value
+    if (value === 'true' || value === '1' || value === 1) return true
+    if (value === 'false' || value === '0' || value === 0) return false
+    return defaultValue
+  }
+
+  ;(req as any).array = <T = unknown>(key: string): T[] => {
+    const input = getAllInput()
+    const value = input[key]
+    if (Array.isArray(value)) return value as T[]
+    return value !== undefined && value !== null ? [value as T] : []
+  }
+
+  return req
+}
+
 function wrapHandler(handler: StacksHandler): ActionHandler {
   if (typeof handler === 'string') {
     const handlerPath = handler // capture for error messages
     return async (req: EnhancedRequest) => {
+      // Enhance request with Laravel-style methods
+      const enhancedReq = enhanceWithLaravelMethods(req)
+
       try {
         const resolvedHandler = await resolveStringHandler(handlerPath)
-        return resolvedHandler(req)
+        return resolvedHandler(enhancedReq)
       }
       catch (error) {
         log.error(`[Router] Error handling request for '${handlerPath}':`, error)
@@ -268,7 +432,9 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
     // Use middleware
     use(middleware: ActionHandler) {
-      bunRouter.use(middleware)
+      // bunRouter.use() is async, so we need to call it properly
+      // For synchronous chaining, we push directly to globalMiddleware
+      bunRouter.globalMiddleware.push(middleware)
       return stacksRouter
     },
 
