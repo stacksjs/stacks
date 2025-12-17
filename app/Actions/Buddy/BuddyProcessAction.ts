@@ -21,38 +21,15 @@ export default new Action({
     command: {
       rule: schema.string().min(1).required(),
       message: 'Command is required',
-    },
-    test: {
-      rule: schema.string().min(1).required(),
-      message: 'Test is required',
-    },
+    }
   },
 
   async handle(request: RequestInstance) {
     try {
-      // Get params from request (validation already passed at this point)
-      let command: string | undefined
-      let repo: string | undefined
-      let driver: string | undefined
-
-      // Try JSON body
-      try {
-        const body = await request.json() as { command?: string, repo?: string, repository?: string, driver?: string }
-        command = body.command
-        repo = body.repo || body.repository
-        driver = body.driver
-      }
-      catch {
-        // No JSON body, use query params
-      }
-
-      // Fall back to query params if not in body
-      if (!command || !repo) {
-        const url = new URL(request.url)
-        command = command || url.searchParams.get('command') || undefined
-        repo = repo || url.searchParams.get('repo') || url.searchParams.get('repository') || undefined
-        driver = driver || url.searchParams.get('driver') || undefined
-      }
+      // Get params using Laravel-style methods (body is already parsed by stacks-router)
+      const command = request.get<string>('command')
+      const repo = request.get<string>('repo') || request.get<string>('repository')
+      const driver = request.get<string>('driver')
 
       // Check if we need to open a repo
       const currentState = buddyState.getState()
@@ -81,7 +58,9 @@ export default new Action({
       })
     }
     catch (error) {
-      return response.badRequest((error as Error).message)
+      console.error('[BuddyProcessAction] Error:', error)
+      console.error('[BuddyProcessAction] Stack:', (error as Error).stack)
+      return response.serverError((error as Error).message)
     }
   },
 })

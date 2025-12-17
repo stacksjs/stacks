@@ -115,34 +115,38 @@ export const drivers: Record<string, AIDriver> = {
   'claude-cli-local': {
     name: 'Claude CLI (Local)',
     async process(command: string, context: string, _history: AIMessage[]): Promise<string> {
-      // Proxy to local Claude CLI
-      const host = 'http://localhost:3001'
-      const systemPrompt = buildSystemPrompt(context)
+      const { $ } = await import('bun')
+      const currentState = buddyState.getState()
+
+      // Check if claude CLI is available
+      const whichResult = await $`which claude`.quiet().nothrow()
+      if (whichResult.exitCode !== 0) {
+        throw new Error('Claude CLI not found. Install it with: npm install -g @anthropic-ai/claude-code')
+      }
+
+      // Build the prompt with context
+      const fullPrompt = currentState.repo
+        ? `Working in repository: ${currentState.repo.path}\n\nContext:\n${context}\n\nUser request: ${command}`
+        : command
+
+      // Execute claude CLI with the prompt
+      const cwd = currentState.repo?.path || process.cwd()
 
       try {
-        const response = await fetch(`${host}/api/chat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: `${systemPrompt}\n\nUser: ${command}`,
-            command,
-            context,
-          }),
-        })
-
-        if (!response.ok) {
-          const error = await response.text()
-          throw new Error(`Claude CLI (Local) error: ${error}`)
-        }
-
-        const data = (await response.json()) as { response?: string, message?: string, result?: string }
-        return data.response || data.message || data.result || JSON.stringify(data)
+        // Use --print to get just the response without interactive mode
+        // Use --dangerously-skip-permissions to allow file operations without interactive prompts
+        const result = await $`cd ${cwd} && claude --print --dangerously-skip-permissions ${fullPrompt}`.quiet()
+        return result.text().trim()
       }
       catch (error) {
-        if (error instanceof Error && error.message.includes('fetch')) {
-          throw new Error(`Claude CLI not reachable at ${host}. Make sure it's running locally.`)
+        // Try with allowedTools flag as alternative
+        try {
+          const result = await $`cd ${cwd} && claude --print --allowedTools "Write,Edit,Bash" ${fullPrompt}`.quiet()
+          return result.text().trim()
         }
-        throw error
+        catch (innerError) {
+          throw new Error(`Claude CLI error: ${(innerError as Error).message}`)
+        }
       }
     },
   },
@@ -150,38 +154,36 @@ export const drivers: Record<string, AIDriver> = {
   'claude-cli-ec2': {
     name: 'Claude CLI (EC2)',
     async process(command: string, context: string, _history: AIMessage[]): Promise<string> {
-      // Proxy to EC2-hosted Claude CLI
-      const host = apiKeys.claudeCliHost
-      if (!host) {
-        throw new Error('BUDDY_EC2_HOST not configured. Set the EC2 host in environment variables or settings.')
+      const { $ } = await import('bun')
+      const currentState = buddyState.getState()
+
+      const ec2Host = process.env.BUDDY_EC2_HOST
+      const ec2User = process.env.BUDDY_EC2_USER || 'ubuntu'
+      const ec2Key = process.env.BUDDY_EC2_KEY
+
+      if (!ec2Host) {
+        throw new Error('BUDDY_EC2_HOST environment variable not set. Set it to your EC2 instance IP/hostname.')
       }
 
-      const systemPrompt = buildSystemPrompt(context)
+      // Build the prompt
+      const fullPrompt = currentState.repo
+        ? `Working in repository: ${currentState.repo.name}\n\nContext:\n${context}\n\nUser request: ${command}`
+        : command
+
+      // Escape the prompt for SSH
+      const escapedPrompt = fullPrompt.replace(/'/g, `'\\''`)
+
+      // Build SSH command
+      const sshArgs = ec2Key ? `-i ${ec2Key}` : ''
+      const sshTarget = `${ec2User}@${ec2Host}`
 
       try {
-        const response = await fetch(`${host}/api/chat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: `${systemPrompt}\n\nUser: ${command}`,
-            command,
-            context,
-          }),
-        })
-
-        if (!response.ok) {
-          const error = await response.text()
-          throw new Error(`Claude CLI (EC2) error: ${error}`)
-        }
-
-        const data = (await response.json()) as { response?: string, message?: string, result?: string }
-        return data.response || data.message || data.result || JSON.stringify(data)
+        // Execute claude CLI on remote EC2 via SSH
+        const result = await $`ssh ${sshArgs} ${sshTarget} "claude --print '${escapedPrompt}'"`.quiet()
+        return result.text().trim()
       }
       catch (error) {
-        if (error instanceof Error && error.message.includes('fetch')) {
-          throw new Error(`Claude CLI not reachable at ${host}. Make sure the EC2 instance is running.`)
-        }
-        throw error
+        throw new Error(`EC2 Claude CLI error: ${(error as Error).message}. Make sure SSH is configured and claude CLI is installed on EC2.`)
       }
     },
   },

@@ -205,6 +205,7 @@ async function validateActionInput(req: EnhancedRequest, validations: ActionVali
 
 /**
  * Get all input data from request (body + query params)
+ * Uses already-parsed body from parseRequestBody() when available
  */
 async function getRequestInput(req: EnhancedRequest): Promise<Record<string, unknown>> {
   const input: Record<string, unknown> = {}
@@ -220,18 +221,12 @@ async function getRequestInput(req: EnhancedRequest): Promise<Record<string, unk
     Object.assign(input, (req as any).params)
   }
 
-  // Try to get JSON body
-  try {
-    const contentType = req.headers.get('content-type') || ''
-    if (contentType.includes('application/json')) {
-      const body = await req.clone().json()
-      if (body && typeof body === 'object') {
-        Object.assign(input, body)
-      }
-    }
+  // Use already-parsed body (from parseRequestBody) if available
+  if ((req as any).jsonBody && typeof (req as any).jsonBody === 'object') {
+    Object.assign(input, (req as any).jsonBody)
   }
-  catch {
-    // No JSON body or parsing failed - that's okay
+  else if ((req as any).formBody && typeof (req as any).formBody === 'object') {
+    Object.assign(input, (req as any).formBody)
   }
 
   return input
@@ -422,10 +417,13 @@ function wrapHandler(handler: StacksHandler): ActionHandler {
   if (typeof handler === 'string') {
     const handlerPath = handler // capture for error messages
     return async (req: EnhancedRequest) => {
-      // Enhance request with Laravel-style methods
-      const enhancedReq = enhanceWithLaravelMethods(req)
-
       try {
+        // Parse JSON body BEFORE enhancing with Laravel methods
+        await parseRequestBody(req)
+
+        // Enhance request with Laravel-style methods
+        const enhancedReq = enhanceWithLaravelMethods(req)
+
         const resolvedHandler = await resolveStringHandler(handlerPath)
         return resolvedHandler(enhancedReq)
       }
@@ -453,6 +451,41 @@ function wrapHandler(handler: StacksHandler): ActionHandler {
     }
   }
   return handler
+}
+
+/**
+ * Parse request body and attach to request object
+ */
+async function parseRequestBody(req: EnhancedRequest): Promise<void> {
+  const contentType = req.headers.get('content-type') || ''
+
+  try {
+    if (contentType.includes('application/json')) {
+      const body = await req.clone().json()
+      ;(req as any).jsonBody = body
+    }
+    else if (contentType.includes('application/x-www-form-urlencoded')) {
+      const text = await req.clone().text()
+      const params = new URLSearchParams(text)
+      const formBody: Record<string, string> = {}
+      params.forEach((value, key) => {
+        formBody[key] = value
+      })
+      ;(req as any).formBody = formBody
+    }
+    else if (contentType.includes('multipart/form-data')) {
+      const formData = await req.clone().formData()
+      const formBody: Record<string, unknown> = {}
+      formData.forEach((value, key) => {
+        formBody[key] = value
+      })
+      ;(req as any).formBody = formBody
+    }
+  }
+  catch (e) {
+    // Body parsing failed - log it for debugging
+    console.error('[stacks-router] Body parsing failed:', e)
+  }
 }
 
 /**
