@@ -36,6 +36,7 @@ route.group({ prefix: '/voide' }, async () => {
   route.get('/state', 'Actions/Buddy/BuddyStateAction')
   route.post('/repo', 'Actions/Buddy/BuddyRepoOpenAction')
   route.post('/process', 'Actions/Buddy/BuddyProcessAction')
+  route.post('/process/stream', 'Actions/Buddy/BuddyProcessStreamAction') // SSE streaming endpoint
   route.post('/commit', 'Actions/Buddy/BuddyCommitAction')
   route.post('/push', 'Actions/Buddy/BuddyPushAction')
   route.get('/settings', 'Actions/Buddy/BuddySettingsAction')

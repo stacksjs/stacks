@@ -579,3 +579,90 @@ export async function pushChanges(): Promise<void> {
   const { $ } = await import('bun')
   await $`cd ${currentState.repo.path} && git push`.quiet()
 }
+
+/**
+ * Process command with streaming output using Claude CLI
+ * Returns a ReadableStream that emits chunks of the response
+ */
+export async function processCommandStreaming(
+  command: string,
+  driverName?: string,
+): Promise<{ stream: ReadableStream<Uint8Array>, fullResponse: Promise<string> }> {
+  const { spawn } = await import('bun')
+  const currentState = buddyState.getState()
+
+  if (!currentState.repo) {
+    throw new Error('No repository opened')
+  }
+
+  // Get driver (normalize 'anthropic' to 'claude' for backwards compatibility)
+  let normalizedDriver = driverName || currentState.currentDriver
+  if (normalizedDriver === 'anthropic') {
+    normalizedDriver = 'claude'
+  }
+
+  // Only claude-cli-local supports streaming for now
+  if (normalizedDriver !== 'claude-cli-local') {
+    throw new Error(`Streaming only supported for claude-cli-local driver. Current: ${normalizedDriver}`)
+  }
+
+  if (driverName) {
+    buddyState.setCurrentDriver(driverName)
+  }
+
+  const context = await getRepoContext(currentState.repo.path)
+
+  // Build the prompt with context
+  const fullPrompt = `Working in repository: ${currentState.repo.path}\n\nContext:\n${context}\n\nUser request: ${command}`
+
+  // Spawn Claude CLI process
+  const proc = spawn(['claude', '--print', '--dangerously-skip-permissions', fullPrompt], {
+    cwd: currentState.repo.path,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+
+  let fullResponse = ''
+  const decoder = new TextDecoder()
+
+  // Create a readable stream from the process stdout
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      try {
+        const reader = proc.stdout.getReader()
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          // Accumulate full response
+          fullResponse += decoder.decode(value, { stream: true })
+
+          // Send chunk to stream
+          controller.enqueue(value)
+        }
+
+        // Wait for process to complete
+        await proc.exited
+
+        controller.close()
+      }
+      catch (error) {
+        controller.error(error)
+      }
+    },
+  })
+
+  // Promise that resolves with the full response when done
+  const fullResponsePromise = (async () => {
+    await proc.exited
+
+    // Update conversation history
+    buddyState.addToHistory({ role: 'user', content: command })
+    buddyState.addToHistory({ role: 'assistant', content: fullResponse.trim() })
+
+    return fullResponse.trim()
+  })()
+
+  return { stream, fullResponse: fullResponsePromise }
+}
