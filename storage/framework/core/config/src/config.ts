@@ -41,7 +41,7 @@ export const security: StacksOptions['security'] = config.security
 export const saas: StacksOptions['saas'] = config.saas
 export const searchEngine: StacksOptions['searchEngine'] = config.searchEngine
 export const services: StacksOptions['services'] = config.services
-export const storage: StacksOptions['storage'] = config.storage
+export const filesystems: StacksOptions['filesystems'] = config.filesystems
 export const team: StacksOptions['team'] = config.team
 export const ui: StacksOptions['ui'] = config.ui
 

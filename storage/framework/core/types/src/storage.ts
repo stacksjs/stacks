@@ -144,6 +144,11 @@ export interface StorageOptions {
 
 export type StorageConfig = Partial<StorageOptions>
 
+/**
+ * Filesystem configuration (Laravel-style alias)
+ */
+export type FilesystemsConfig = StorageConfig
+
 export interface StorageDriver {
   list: (path: string, options?: any) => DirectoryListing
   changeVisibility: (path: string, visibility: Visibility) => Promise<void>

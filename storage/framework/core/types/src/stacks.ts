@@ -11,6 +11,7 @@ import type {
   DocsConfig,
   EmailConfig,
   ErrorConfig,
+  FilesystemsConfig,
   GitConfig,
   HashingConfig,
   LibraryConfig,
@@ -24,7 +25,6 @@ import type {
   SearchEngineConfig,
   SecurityConfig,
   ServicesConfig,
-  StorageConfig,
   Team,
   UiConfig,
 } from '.'
@@ -256,13 +256,13 @@ export interface StacksOptions {
   services: ServicesConfig
 
   /**
-   * **Storage Options**
+   * **Filesystems Options**
    *
-   * This configuration defines all of your Storage options. Because Stacks is fully-typed,
+   * This configuration defines all of your Filesystem options. Because Stacks is fully-typed,
    * you may hover any of the options below and the definitions will be provided. In case
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  storage: StorageConfig
+  filesystems: FilesystemsConfig
 
   /**
    * **Team Members**

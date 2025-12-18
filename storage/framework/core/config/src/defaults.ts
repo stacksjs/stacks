@@ -651,7 +651,7 @@ export const defaults: StacksOptions = {
     },
   },
 
-  storage: {
+  filesystems: {
     driver: 's3',
   },
 

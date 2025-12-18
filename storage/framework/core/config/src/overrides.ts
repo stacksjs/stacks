@@ -12,7 +12,7 @@ import type { StacksConfig } from '@stacksjs/types'
 // When SKIP_CONFIG_LOADING is set, return empty config to avoid parsing external TS files
 const skipConfigLoading = process.env.SKIP_CONFIG_LOADING === 'true'
 
-let ai, analytics, app, cache, cli, cloud, database, dns, email, errors, git, hashing, library, logging, notification, payment, ports, queue, realtime, saas, searchEngine, security, services, storage, team, ui
+let ai, analytics, app, cache, cli, cloud, database, dns, email, errors, git, hashing, library, logging, notification, payment, ports, queue, realtime, saas, searchEngine, security, services, filesystems, team, ui
 
 if (!skipConfigLoading) {
   // Development mode: Load config files normally
@@ -39,7 +39,7 @@ if (!skipConfigLoading) {
   searchEngine = (await import('~/config/search-engine')).default
   security = (await import('~/config/security')).default
   services = (await import('~/config/services')).default
-  storage = (await import('~/config/storage')).default
+  filesystems = (await import('~/config/filesystems')).default
   team = (await import('~/config/team')).default
   ui = (await import('~/config/ui')).default
 }
@@ -69,7 +69,7 @@ export const overrides: StacksConfig = {
   searchEngine: searchEngine || {},
   security: security || {},
   services: services || {},
-  storage: storage || {},
+  filesystems: filesystems || {},
   team: team || {},
   ui: ui || {},
 }

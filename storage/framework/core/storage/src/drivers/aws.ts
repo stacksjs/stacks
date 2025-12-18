@@ -1,21 +1,25 @@
 import type { StorageDriver } from '@stacksjs/types'
+import { filesystems } from '@stacksjs/config'
 import { S3Client } from '@aws-sdk/client-s3'
 import { createS3Storage } from '../adapters/s3'
 
+const s3Config = filesystems.s3
+
 const client = new S3Client({
-  region: process.env.AWS_REGION || 'us-east-1',
-  credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+  region: s3Config?.region || 'us-east-1',
+  credentials: s3Config?.credentials
     ? {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: s3Config.credentials.accessKeyId,
+        secretAccessKey: s3Config.credentials.secretAccessKey,
       }
     : undefined,
+  endpoint: s3Config?.endpoint,
 })
 
 const adapter = createS3Storage(client, {
-  bucket: process.env.AWS_S3_BUCKET || 'stacks',
-  prefix: process.env.AWS_S3_PREFIX || 'stx',
-  region: process.env.AWS_REGION || 'us-east-1',
+  bucket: s3Config?.bucket || 'stacks',
+  prefix: s3Config?.prefix || 'stx',
+  region: s3Config?.region || 'us-east-1',
 })
 
 export const awsStorage = adapter

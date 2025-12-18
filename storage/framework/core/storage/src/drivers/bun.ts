@@ -1,9 +1,10 @@
 import type { StorageDriver } from '@stacksjs/types'
 import { resolve } from 'node:path'
 import process from 'node:process'
+import { filesystems } from '@stacksjs/config'
 import { createBunStorage } from '../adapters/bun'
 
-const rootDirectory = resolve(process.cwd())
+const rootDirectory = resolve(filesystems.root || process.cwd())
 const adapter = createBunStorage({ root: rootDirectory })
 
 export const bunStorage = adapter

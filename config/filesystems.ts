@@ -1,79 +1,60 @@
-import type { FilesystemConfig } from '@stacksjs/storage'
+import type { FilesystemsConfig } from '@stacksjs/types'
 
 /**
- * Filesystem Configuration
+ * **Filesystem Configuration**
  *
- * Here you may configure as many filesystem "disks" as you wish, and you
- * may even configure multiple disks of the same driver. Defaults have
- * been set up for each driver as an example of the required values.
+ * This configuration defines all of your filesystem/storage options. Because Stacks is fully-typed,
+ * you may hover any of the options below and the definitions will be provided. In case
+ * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  *
- * Supported Drivers: "local", "s3"
- *
- * @see https://stacksjs.org/docs/filesystems
+ * @see https://stacksjs.com/docs/filesystems
  */
 export default {
   /**
-   * Default Filesystem Disk
+   * Storage driver to use
    *
-   * Here you may specify the default filesystem disk that should be used
-   * by the framework. The "local" disk, as well as a variety of cloud
-   * based disks are available to your application for file storage.
+   * Options: 'local', 'bun', 's3', 'memory'
+   * - 'local': Node.js fs-based storage (compatible, slower)
+   * - 'bun': Bun-native storage (fastest, recommended when using Bun)
+   * - 's3': AWS S3 or S3-compatible storage
+   * - 'memory': In-memory storage (for testing)
    */
-  default: process.env.FILESYSTEM_DISK || 'local',
+  driver: process.env.STORAGE_DRIVER || 'bun',
 
   /**
-   * Filesystem Disks
+   * Root directory for local/bun drivers
    *
-   * Below you may configure as many filesystem disks as necessary, and you
-   * may even configure multiple disks for the same driver. Examples for
-   * most supported storage drivers are configured here for reference.
+   * @default process.cwd()
    */
-  disks: {
-    /**
-     * Local Disk
-     *
-     * The local disk is used for storing files on the local filesystem.
-     * Files stored here are private by default.
-     */
-    local: {
-      driver: 'local',
-      root: `${process.cwd()}/storage/app`,
-      visibility: 'private',
-    },
+  root: process.env.STORAGE_ROOT || process.cwd(),
 
-    /**
-     * Public Disk
-     *
-     * The public disk is used for storing publicly accessible files.
-     * These files are accessible via the web server.
-     */
-    public: {
-      driver: 'local',
-      root: `${process.cwd()}/public`,
-      url: process.env.APP_URL ? `${process.env.APP_URL}/storage` : '/storage',
-      visibility: 'public',
-    },
-
-    /**
-     * S3 Disk
-     *
-     * Amazon S3 compatible storage. Works with AWS S3, DigitalOcean Spaces,
-     * MinIO, and other S3-compatible services.
-     */
-    s3: {
-      driver: 's3',
-      bucket: process.env.AWS_BUCKET || '',
-      region: process.env.AWS_DEFAULT_REGION || 'us-east-1',
-      endpoint: process.env.AWS_ENDPOINT,
-      url: process.env.AWS_URL,
-      usePathStyleEndpoint: process.env.AWS_USE_PATH_STYLE_ENDPOINT === 'true',
-      visibility: 'private',
-      credentials: process.env.AWS_ACCESS_KEY_ID
-        ? {
-            key: process.env.AWS_ACCESS_KEY_ID,
-            secret: process.env.AWS_SECRET_ACCESS_KEY || '',
-          }
-        : undefined,
-    },
+  /**
+   * S3 Configuration (when driver is 's3')
+   */
+  s3: {
+    bucket: process.env.AWS_S3_BUCKET || '',
+    region: process.env.AWS_REGION || 'us-east-1',
+    prefix: process.env.AWS_S3_PREFIX || '',
+    credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+      ? {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        }
+      : undefined,
+    // endpoint: 'https://s3-compatible-service.com', // For S3-compatible services
   },
-} satisfies FilesystemConfig
+
+  /**
+   * Public URL configuration
+   */
+  publicUrl: {
+    domain: process.env.STORAGE_PUBLIC_URL || process.env.APP_URL || 'http://localhost',
+  },
+
+  /**
+   * Default file visibility
+   *
+   * @default 'private'
+   */
+  defaultVisibility: 'private',
+} satisfies FilesystemsConfig

@@ -9,6 +9,7 @@ import type {
   DnsConfig,
   EmailConfig,
   Events,
+  FilesystemsConfig,
   GitConfig,
   HashingConfig,
   LibraryConfig,
@@ -20,7 +21,6 @@ import type {
   SecurityConfig,
   ServicesConfig,
   StacksConfig,
-  StorageConfig,
   UiConfig,
 } from '@stacksjs/types'
 import { createLocalTunnel } from '@stacksjs/tunnel'
@@ -202,7 +202,7 @@ export function defineSms(config: any): any {
   return config
 }
 
-export function defineStorage(config: StorageConfig): StorageConfig {
+export function defineFilesystems(config: FilesystemsConfig): FilesystemsConfig {
   return config
 }
 
