@@ -1,4 +1,5 @@
 import type { UserModelType } from '@stacksjs/orm'
+import type { UploadedFile } from '@stacksjs/storage'
 import type { AuthToken, RouteParam } from '@stacksjs/types'
 
 export type * from '../../../types/requests'
@@ -252,13 +253,32 @@ export interface RequestInstance {
   isValue: (key: string, value: unknown) => boolean
 
   // ==========================================================================
-  // File Methods
+  // File Methods - Returns UploadedFile with store/storeAs methods
   // ==========================================================================
 
-  file: (key: string) => File | null
-  getFiles: (key: string) => File[]
+  /**
+   * Get an uploaded file by key
+   * @example const avatar = request.file('avatar')
+   * @example await avatar?.store('avatars') // stores to storage/app/avatars
+   * @example await avatar?.storePublicly('avatars') // stores to public/avatars
+   */
+  file: (key: string) => UploadedFile | null
+
+  /**
+   * Get all uploaded files for a key (for multiple file inputs)
+   * @example const photos = request.getFiles('photos')
+   */
+  getFiles: (key: string) => UploadedFile[]
+
+  /**
+   * Check if a file was uploaded
+   */
   hasFile: (key: string) => boolean
-  allFiles: () => Record<string, File | File[]>
+
+  /**
+   * Get all uploaded files
+   */
+  allFiles: () => Record<string, UploadedFile | UploadedFile[]>
 
   // ==========================================================================
   // Header Methods

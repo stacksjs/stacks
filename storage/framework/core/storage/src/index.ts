@@ -13,3 +13,8 @@ export * from './zip'
 export * from './adapters'
 export * from './types'
 export * from './drivers'
+
+// Laravel-style Storage facade and UploadedFile
+export { Storage, StorageManager } from './facade'
+export type { DiskConfig, StorageConfig } from './facade'
+export { UploadedFile, uploadedFile, uploadedFiles } from './uploaded-file'

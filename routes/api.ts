@@ -315,6 +315,9 @@ route.group({ prefix: '/dashboard' }, async () => {
 // Direct test route without action resolution
 route.get('/test/direct', () => ({ message: 'Direct route works!' }))
 
+// File upload test route
+route.post('/test/upload', 'Actions/UploadTestAction')
+
 // Error Tracking / Monitoring routes
 route.group({ prefix: '/monitoring' }, async () => {
   // Errors

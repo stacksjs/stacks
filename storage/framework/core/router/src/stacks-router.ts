@@ -10,6 +10,7 @@ import type { ActionHandler, EnhancedRequest, Route, ServerOptions } from 'bun-r
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
+import { UploadedFile } from '@stacksjs/storage'
 import { Router } from 'bun-router'
 
 type StringHandler = string
@@ -410,19 +411,21 @@ function enhanceWithLaravelMethods(req: EnhancedRequest): EnhancedRequest {
     return value !== undefined && value !== null ? [value as T] : []
   }
 
-  // File handling methods
-  ;(req as any).file = (key: string): File | null => {
+  // File handling methods - returns UploadedFile with store/storeAs methods
+  ;(req as any).file = (key: string): UploadedFile | null => {
     const files = (req as any).files || {}
     const file = files[key]
-    if (Array.isArray(file)) return file[0] || null
-    return file || null
+    if (!file) return null
+    const rawFile = Array.isArray(file) ? file[0] : file
+    return rawFile ? new UploadedFile(rawFile) : null
   }
 
-  ;(req as any).getFiles = (key: string): File[] => {
+  ;(req as any).getFiles = (key: string): UploadedFile[] => {
     const files = (req as any).files || {}
     const file = files[key]
     if (!file) return []
-    return Array.isArray(file) ? file : [file]
+    const fileArray = Array.isArray(file) ? file : [file]
+    return fileArray.map(f => new UploadedFile(f))
   }
 
   ;(req as any).hasFile = (key: string): boolean => {
@@ -430,8 +433,17 @@ function enhanceWithLaravelMethods(req: EnhancedRequest): EnhancedRequest {
     return key in files && files[key] !== undefined
   }
 
-  ;(req as any).allFiles = (): Record<string, File | File[]> => {
-    return (req as any).files || {}
+  ;(req as any).allFiles = (): Record<string, UploadedFile | UploadedFile[]> => {
+    const files = (req as any).files || {}
+    const result: Record<string, UploadedFile | UploadedFile[]> = {}
+    for (const [key, value] of Object.entries(files)) {
+      if (Array.isArray(value)) {
+        result[key] = value.map(f => new UploadedFile(f as File))
+      } else {
+        result[key] = new UploadedFile(value as File)
+      }
+    }
+    return result
   }
 
   return req
