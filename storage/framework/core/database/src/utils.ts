@@ -161,8 +161,8 @@ function updateQueryBuilderConfig(): void {
   })
 }
 
-// Initialize config on first load
-updateQueryBuilderConfig()
+// Config is initialized lazily when first accessed via getDb()
+// Do NOT call updateQueryBuilderConfig() at module level to avoid circular deps
 
 /**
  * Lazy query builder instance - only created when first accessed.
@@ -173,6 +173,21 @@ let _dbInstance: ReturnType<typeof createQueryBuilder> | null = null
 
 function getDb(): ReturnType<typeof createQueryBuilder> {
   if (!_dbInstance) {
+    // Lazy load config to avoid circular dependency issues
+    try {
+      // eslint-disable-next-line ts/no-require-imports
+      const configModule = require('@stacksjs/config')
+      if (configModule?.config) {
+        initializeDbConfig(configModule.config)
+      }
+    }
+    catch {
+      // Config not available yet, use defaults from env vars
+    }
+
+    // Ensure query builder config is updated before creating instance
+    updateQueryBuilderConfig()
+
     console.log('[database] Creating query builder instance...')
     _dbInstance = createQueryBuilder()
     console.log('[database] Query builder created:', typeof _dbInstance, Object.keys(_dbInstance || {}))

@@ -1,96 +1,142 @@
 import type { StorageDriver } from '@stacksjs/types'
+import type { StorageAdapter } from '../types'
 import { resolve } from 'node:path'
 import process from 'node:process'
-import { filesystems } from '@stacksjs/config'
 import { createBunStorage } from '../adapters/bun'
 
-const rootDirectory = resolve(filesystems.root || process.cwd())
-const adapter = createBunStorage({ root: rootDirectory })
+let _adapter: StorageAdapter | null = null
+let _configLoaded = false
 
-export const bunStorage = adapter
+async function loadConfig() {
+  if (_configLoaded) return
+  _configLoaded = true
+
+  try {
+    const { filesystems } = await import('@stacksjs/config')
+    const rootDirectory = resolve(filesystems.root || process.cwd())
+    _adapter = createBunStorage({ root: rootDirectory })
+  }
+  catch {
+    // Config not available, use defaults
+    const rootDirectory = resolve(process.cwd())
+    _adapter = createBunStorage({ root: rootDirectory })
+  }
+}
+
+async function getAdapter(): Promise<StorageAdapter> {
+  await loadConfig()
+  return _adapter!
+}
+
+export async function getBunStorage(): Promise<StorageAdapter> {
+  return getAdapter()
+}
 
 export const bun: StorageDriver = {
   async write(path: string, contents: any): Promise<void> {
+    const adapter = await getAdapter()
     await adapter.write(path, contents)
   },
 
   async deleteFile(path: string): Promise<void> {
+    const adapter = await getAdapter()
     await adapter.deleteFile(path)
   },
 
   async createDirectory(path: string): Promise<void> {
+    const adapter = await getAdapter()
     await adapter.createDirectory(path)
   },
 
   async moveFile(from: string, to: string): Promise<void> {
+    const adapter = await getAdapter()
     await adapter.moveFile(from, to)
   },
 
   async copyFile(from: string, to: string): Promise<void> {
+    const adapter = await getAdapter()
     await adapter.copyFile(from, to)
   },
 
   async stat(path: string) {
+    const adapter = await getAdapter()
     return await adapter.stat(path)
   },
 
   list(path: string, options: { deep: boolean } = { deep: false }) {
-    return adapter.list(path, options)
+    return (async function* () {
+      const adapter = await getAdapter()
+      yield* adapter.list(path, options)
+    })() as any
   },
 
   async changeVisibility(path: string, visibility: any): Promise<void> {
+    const adapter = await getAdapter()
     await adapter.changeVisibility(path, visibility)
   },
 
   async visibility(path: string) {
+    const adapter = await getAdapter()
     return await adapter.visibility(path)
   },
 
   async fileExists(path: string): Promise<boolean> {
+    const adapter = await getAdapter()
     return await adapter.fileExists(path)
   },
 
   async directoryExists(path: string): Promise<boolean> {
+    const adapter = await getAdapter()
     return await adapter.directoryExists(path)
   },
 
   async publicUrl(path: string, options: any) {
+    const adapter = await getAdapter()
     return await adapter.publicUrl(path, options)
   },
 
   async temporaryUrl(path: string, options: any) {
+    const adapter = await getAdapter()
     return await adapter.temporaryUrl(path, options)
   },
 
   async checksum(path: string, options: any) {
+    const adapter = await getAdapter()
     return await adapter.checksum(path, options)
   },
 
   async mimeType(path: string, options: any) {
+    const adapter = await getAdapter()
     return await adapter.mimeType(path, options)
   },
 
   async lastModified(path: string): Promise<number> {
+    const adapter = await getAdapter()
     return await adapter.lastModified(path)
   },
 
   async fileSize(path: string): Promise<number> {
+    const adapter = await getAdapter()
     return await adapter.fileSize(path)
   },
 
   async read(path: string) {
+    const adapter = await getAdapter()
     return await adapter.read(path)
   },
 
   async readToString(path: string): Promise<string> {
+    const adapter = await getAdapter()
     return await adapter.readToString(path)
   },
 
   async readToBuffer(path: string) {
+    const adapter = await getAdapter()
     return await adapter.readToBuffer(path)
   },
 
   async readToUint8Array(path: string): Promise<Uint8Array> {
+    const adapter = await getAdapter()
     return await adapter.readToUint8Array(path)
   },
 }

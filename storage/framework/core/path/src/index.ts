@@ -16,7 +16,18 @@ import {
   toNamespacedPath,
 } from 'node:path'
 import process from 'node:process'
-import { log } from '@stacksjs/logging'
+
+// Lazy import logging to avoid circular dependency (logging imports path)
+async function debugLog(message: string) {
+  try {
+    const { log } = await import('@stacksjs/logging')
+    log.debug(message)
+  }
+  catch {
+    // Logging not available, silently ignore
+    console.debug(message)
+  }
+}
 
 /**
  * Returns the path to the `actions` directory. The `actions` directory
@@ -937,7 +948,7 @@ export function projectPath(filePath = '', options?: { relative: boolean }): str
  */
 export async function findProjectPath(project: string): Promise<string> {
   const projectList = Bun.spawnSync(['buddy', 'projects:list', '--quiet']).stdout.toString()
-  log.debug(`ProjectList in findProjectPath ${projectList}`)
+  await debugLog(`ProjectList in findProjectPath ${projectList}`)
 
   // get the list of all Stacks project paths (on the system)
   const projects = projectList
@@ -945,7 +956,7 @@ export async function findProjectPath(project: string): Promise<string> {
     .filter((line: string) => line.startsWith('   - '))
     .map((line: string) => line.trim().substring(4))
 
-  log.debug(`Projects in findProjectPath ${projects}`)
+  await debugLog(`Projects in findProjectPath ${projects}`)
 
   // since we are targeting a specific project, find its path
   const projectPath = projects.find((proj: string) => proj.includes(project))

@@ -3,7 +3,7 @@ import { contains } from '@stacksjs/arrays'
 import { log } from '@stacksjs/logging'
 import { dirname, join, path as p } from '@stacksjs/path'
 import { detectIndent, detectNewline } from '@stacksjs/strings'
-import { createFolder, isFolder } from './'
+import { createFolder, isFolder } from './folders'
 import { existsSync, fs } from './fs'
 
 /**

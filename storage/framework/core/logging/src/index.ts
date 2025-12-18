@@ -2,16 +2,45 @@
 import process from 'node:process'
 import { Logger } from '@stacksjs/clarity'
 import { handleError } from '@stacksjs/error-handling'
-import * as p from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 
-// Initialize logger with default options
-const logger = new Logger('stacks', {
-  level: (process.env.LOG_LEVEL as any) || 'info',
-  logDirectory: p.projectPath('storage/logs'),
-  showTags: false,
-  fancy: true,
-})
+// Lazy logger initialization to avoid circular dependency with path
+let _logger: Logger | null = null
+let _loggerInitPromise: Promise<void> | null = null
+
+async function initLogger(): Promise<void> {
+  if (_logger) return
+  if (_loggerInitPromise) return _loggerInitPromise
+
+  _loggerInitPromise = (async () => {
+    try {
+      // Lazy import path to avoid circular dependency (path imports logging)
+      const p = await import('@stacksjs/path')
+      _logger = new Logger('stacks', {
+        level: (process.env.LOG_LEVEL as any) || 'info',
+        logDirectory: p.projectPath('storage/logs'),
+        showTags: false,
+        fancy: true,
+      })
+    }
+    catch {
+      // Path not available, use default directory
+      _logger = new Logger('stacks', {
+        level: (process.env.LOG_LEVEL as any) || 'info',
+        logDirectory: 'storage/logs',
+        showTags: false,
+        fancy: true,
+      })
+    }
+  })()
+
+  return _loggerInitPromise
+}
+
+async function getLogger(): Promise<Logger> {
+  await initLogger()
+  return _logger!
+}
 
 // Helper function to format message for logging
 function formatMessage(...args: any[]): string {
@@ -44,18 +73,22 @@ export type LogErrorOptions = {
 export const log: Log = {
   info: async (...args: any[]) => {
     const message = formatMessage(...args)
+    const logger = await getLogger()
     await logger.info(message)
   },
 
   success: async (message: string) => {
+    const logger = await getLogger()
     await logger.success(message)
   },
 
   warn: async (message: string, options?: Record<string, any>) => {
+    const logger = await getLogger()
     await logger.warn(message, options)
   },
 
   warning: async (message: string) => {
+    const logger = await getLogger()
     await logger.warn(message)
   },
 
@@ -66,33 +99,42 @@ export const log: Log = {
         ? err
         : JSON.stringify(err)
 
+    const logger = await getLogger()
     await logger.error(errorMessage)
     handleError(err, options)
   },
 
   debug: async (...args: any[]) => {
     const message = formatMessage(...args)
+    const logger = await getLogger()
     await logger.debug(message)
   },
 
-  dump: (...args: any[]) => {
+  dump: async (...args: any[]) => {
     const message = formatMessage(...args)
+    const logger = await getLogger()
     logger.debug(`DUMP: ${message}`)
   },
 
-  dd: (...args: any[]) => {
+  dd: async (...args: any[]) => {
     const message = formatMessage(...args)
+    const logger = await getLogger()
     logger.error(message)
     process.exit(ExitCode.FatalError)
   },
 
-  echo: (...args: any[]) => {
+  echo: async (...args: any[]) => {
     const message = formatMessage(...args)
+    const logger = await getLogger()
     logger.info(`ECHO: ${message}`)
   },
 
   time: (label: string) => {
-    return logger.time(label)
+    // For time, we need to return a promise that resolves to the time function
+    return (async () => {
+      const logger = await getLogger()
+      return logger.time(label)
+    })() as any
   },
 }
 
@@ -110,5 +152,5 @@ export function echo(...args: any[]): void {
   log.debug(...args)
 }
 
-// Export logger instance for debugging
-export { logger }
+// Export logger getter for debugging
+export { getLogger as logger }
