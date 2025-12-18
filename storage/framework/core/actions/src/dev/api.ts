@@ -1,10 +1,8 @@
-import { log, parseOptions } from '@stacksjs/cli'
+import { parseOptions } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { cors, route } from '@stacksjs/router'
 
 const options = parseOptions()
-
-log.debug('Starting API dev server...', options)
 
 // Enable CORS middleware
 route.use(cors().handle.bind(cors()))

@@ -41,7 +41,6 @@ function createChainableRoute(): ChainableRoute {
   const chain: ChainableRoute = {
     middleware(_name: string) {
       // TODO: Implement middleware support
-      log.debug(`Middleware '${_name}' registered (not yet implemented)`)
       return chain
     },
   }
@@ -651,13 +650,8 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         const userRoutesPath = p.routesPath('api.ts')
         const ormRoutesPath = p.frameworkPath('core/orm/routes.ts')
 
-        log.debug(`Importing user routes from: ${userRoutesPath}`)
-        log.debug(`Importing ORM routes from: ${ormRoutesPath}`)
-
         await import(userRoutesPath)
         await import(ormRoutesPath)
-
-        log.debug(`Routes imported successfully. Total routes: ${bunRouter.routes.length}`)
       }
       catch (error) {
         log.error('Failed to import routes:', error)
