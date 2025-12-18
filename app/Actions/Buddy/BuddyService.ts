@@ -660,8 +660,8 @@ export async function processCommandStreaming(
               let textContent = ''
 
               if (event.type === 'system' && event.subtype === 'init') {
-                // Initial system message with session info - show status
-                textContent = `[Session started: ${event.session_id?.substring(0, 8) || 'unknown'}]\n`
+                // Initial system message - show brief status
+                textContent = `⚡ Starting session...\n\n`
               }
               else if (event.type === 'assistant') {
                 // Assistant message with content blocks
@@ -671,25 +671,51 @@ export async function processCommandStreaming(
                       textContent += block.text
                     }
                     else if (block.type === 'tool_use') {
-                      textContent += `\n[Using tool: ${block.name}]\n`
-                      if (block.input) {
-                        // Show brief info about what the tool is doing
-                        const inputStr = JSON.stringify(block.input).substring(0, 100)
-                        textContent += `${inputStr}${inputStr.length >= 100 ? '...' : ''}\n`
+                      // Format tool usage nicely based on the tool name
+                      const toolName = block.name
+                      const input = block.input || {}
+
+                      if (toolName === 'Read') {
+                        const filePath = input.file_path || ''
+                        const fileName = filePath.split('/').pop() || filePath
+                        textContent += `\n📖 Reading: ${fileName}\n`
                       }
-                    }
-                    else if (block.type === 'tool_result') {
-                      textContent += `\n[Tool result received]\n`
+                      else if (toolName === 'Glob') {
+                        textContent += `\n🔍 Searching files: ${input.pattern || ''}\n`
+                      }
+                      else if (toolName === 'Grep') {
+                        textContent += `\n🔎 Searching for: "${input.pattern || ''}"\n`
+                      }
+                      else if (toolName === 'Edit') {
+                        const filePath = input.file_path || ''
+                        const fileName = filePath.split('/').pop() || filePath
+                        textContent += `\n✏️ Editing: ${fileName}\n`
+                      }
+                      else if (toolName === 'Write') {
+                        const filePath = input.file_path || ''
+                        const fileName = filePath.split('/').pop() || filePath
+                        textContent += `\n📝 Writing: ${fileName}\n`
+                      }
+                      else if (toolName === 'Bash') {
+                        const cmd = (input.command || '').substring(0, 50)
+                        textContent += `\n💻 Running: ${cmd}${cmd.length >= 50 ? '...' : ''}\n`
+                      }
+                      else if (toolName === 'Task') {
+                        textContent += `\n🚀 Launching agent: ${input.description || 'task'}\n`
+                      }
+                      else {
+                        textContent += `\n🔧 Using: ${toolName}\n`
+                      }
                     }
                   }
                 }
               }
               else if (event.type === 'user') {
-                // Tool results coming back
+                // Tool results coming back - just show a subtle indicator
                 if (event.message?.content) {
                   for (const block of event.message.content) {
                     if (block.type === 'tool_result') {
-                      textContent += `\n[Tool completed: ${block.tool_use_id?.substring(0, 8) || 'unknown'}]\n`
+                      textContent += `   ✓ done\n`
                     }
                   }
                 }

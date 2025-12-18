@@ -1,6 +1,5 @@
 import type { UserModelType } from '@stacksjs/orm'
-import type { AuthToken, RouteParam, VineType } from '@stacksjs/types'
-import type { UploadedFile } from '../../router/src/uploaded-file'
+import type { AuthToken, RouteParam } from '@stacksjs/types'
 
 export type * from '../../../types/requests'
 
@@ -10,8 +9,12 @@ interface RequestData {
 
 type RouteParams = { [key: string]: string | number } | null
 
+interface ValidationRule {
+  validate: (value: unknown) => { valid: boolean, errors?: Array<{ message: string }> }
+}
+
 interface ValidationField {
-  rule: VineType
+  rule: ValidationRule
   message: Record<string, string>
 }
 
@@ -82,7 +85,7 @@ export interface RequestInstance {
   params: RouteParams
   jsonBody?: any
   formBody?: any
-  files: Record<string, UploadedFile | UploadedFile[]>
+  files: Record<string, File | File[]>
 
   // ==========================================================================
   // Laravel-style Input Methods
@@ -93,7 +96,7 @@ export interface RequestInstance {
    * @example request.get('name')
    * @example request.get('name', 'default')
    */
-  get: <T = any>(key: string, defaultValue?: T) => T
+  get: <T = string>(key: string, defaultValue?: T) => T
 
   /**
    * Alias for get() - Laravel compatibility
@@ -252,10 +255,10 @@ export interface RequestInstance {
   // File Methods
   // ==========================================================================
 
-  file: (key: string) => UploadedFile | null
-  getFiles: (key: string) => UploadedFile[]
+  file: (key: string) => File | null
+  getFiles: (key: string) => File[]
   hasFile: (key: string) => boolean
-  allFiles: () => Record<string, UploadedFile | UploadedFile[]>
+  allFiles: () => Record<string, File | File[]>
 
   // ==========================================================================
   // Header Methods

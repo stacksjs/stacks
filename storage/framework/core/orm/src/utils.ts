@@ -625,7 +625,7 @@ export async function writeModelRequest(): Promise<void> {
 
   let importTypes = ``
   let importTypesString = ``
-  let typeString = `import { Request } from '../core/router/src/request'\nimport type { VineType, CustomAttributes } from '@stacksjs/types'\n\n`
+  let typeString = `import { Request } from '../core/router/src/request'\n\ninterface ValidationRule {\n  validate: (value: unknown) => { valid: boolean, errors?: Array<{ message: string }> }\n}\n\ninterface ValidationField {\n  rule: ValidationRule\n  message: Record<string, string>\n}\n\ninterface CustomAttributes {\n  [key: string]: ValidationField\n}\n\n`
 
   // Generate trait request files
   for (const trait of traitInterfaces) {

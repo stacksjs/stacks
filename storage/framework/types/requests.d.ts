@@ -1,5 +1,17 @@
 import { Request } from '../core/router/src/request'
-import type { VineType, CustomAttributes } from '@stacksjs/types'
+
+interface ValidationRule {
+  validate: (value: unknown) => { valid: boolean, errors?: Array<{ message: string }> }
+}
+
+interface ValidationField {
+  rule: ValidationRule
+  message: Record<string, string>
+}
+
+interface CustomAttributes {
+  [key: string]: ValidationField
+}
 
 interface RequestDataMigrations {
        name: string

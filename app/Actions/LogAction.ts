@@ -29,7 +29,7 @@ export default new Action({
     if (!request)
       return 'No request was provided.'
 
-    // TODO: need to vine validate
+    // TODO: need to validate with ts-validation
     log[request.level](request.message)
 
     return `Logged "${request.message}" at "${request.level}" level`

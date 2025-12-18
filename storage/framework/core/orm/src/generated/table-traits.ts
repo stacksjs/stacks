@@ -276,10 +276,14 @@ export const traitInterfaces: TraitInterface[] = [
 ]
 
 export async function generateTraitRequestTypes(): Promise<string> {
-  let typeString = `import { Request } from '../core/router/src/request'\nimport type { VineType } from '@stacksjs/types'\n\n`
+  let typeString = `import { Request } from '../core/router/src/request'\n\n`
+
+  typeString += `interface ValidationRule {
+  validate: (value: unknown) => { valid: boolean, errors?: Array<{ message: string }> }
+}\n\n`
 
   typeString += `interface ValidationField {
-    rule: VineType
+    rule: ValidationRule
     message: Record<string, string>
   }\n\n`
 

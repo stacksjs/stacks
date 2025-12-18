@@ -410,6 +410,30 @@ function enhanceWithLaravelMethods(req: EnhancedRequest): EnhancedRequest {
     return value !== undefined && value !== null ? [value as T] : []
   }
 
+  // File handling methods
+  ;(req as any).file = (key: string): File | null => {
+    const files = (req as any).files || {}
+    const file = files[key]
+    if (Array.isArray(file)) return file[0] || null
+    return file || null
+  }
+
+  ;(req as any).getFiles = (key: string): File[] => {
+    const files = (req as any).files || {}
+    const file = files[key]
+    if (!file) return []
+    return Array.isArray(file) ? file : [file]
+  }
+
+  ;(req as any).hasFile = (key: string): boolean => {
+    const files = (req as any).files || {}
+    return key in files && files[key] !== undefined
+  }
+
+  ;(req as any).allFiles = (): Record<string, File | File[]> => {
+    return (req as any).files || {}
+  }
+
   return req
 }
 
@@ -476,10 +500,32 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
     else if (contentType.includes('multipart/form-data')) {
       const formData = await req.clone().formData()
       const formBody: Record<string, unknown> = {}
+      const files: Record<string, File | File[]> = {}
+
       formData.forEach((value, key) => {
-        formBody[key] = value
+        if (value instanceof File) {
+          // Handle file uploads
+          if (files[key]) {
+            // Multiple files with same key
+            if (Array.isArray(files[key])) {
+              (files[key] as File[]).push(value)
+            }
+            else {
+              files[key] = [files[key] as File, value]
+            }
+          }
+          else {
+            files[key] = value
+          }
+        }
+        else {
+          // Regular form field
+          formBody[key] = value
+        }
       })
+
       ;(req as any).formBody = formBody
+      ;(req as any).files = files
     }
   }
   catch (e) {

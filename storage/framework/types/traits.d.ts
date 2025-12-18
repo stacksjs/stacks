@@ -1,8 +1,11 @@
 import { Request } from '../core/router/src/request'
-import type { VineType } from '@stacksjs/types'
+
+interface ValidationRule {
+  validate: (value: unknown) => { valid: boolean, errors?: Array<{ message: string }> }
+}
 
 interface ValidationField {
-    rule: VineType
+    rule: ValidationRule
     message: Record<string, string>
   }
 
