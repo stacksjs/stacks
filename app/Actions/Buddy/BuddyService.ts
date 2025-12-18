@@ -583,6 +583,7 @@ export async function pushChanges(): Promise<void> {
 /**
  * Process command with streaming output using Claude CLI
  * Returns a ReadableStream that emits chunks of the response
+ * Uses --output-format stream-json for real-time streaming with tool usage details
  */
 export async function processCommandStreaming(
   command: string,
@@ -610,13 +611,18 @@ export async function processCommandStreaming(
     buddyState.setCurrentDriver(driverName)
   }
 
-  const context = await getRepoContext(currentState.repo.path)
-
-  // Build the prompt with context
-  const fullPrompt = `Working in repository: ${currentState.repo.path}\n\nContext:\n${context}\n\nUser request: ${command}`
-
-  // Spawn Claude CLI process
-  const proc = spawn(['claude', '--print', '--dangerously-skip-permissions', fullPrompt], {
+  // Spawn Claude CLI process with stream-json output format
+  // This provides real-time streaming with tool calls, thinking, etc.
+  // Note: --output-format=stream-json requires --verbose
+  const proc = spawn([
+    'claude',
+    '--print',
+    '--verbose',
+    '--output-format', 'stream-json',
+    '--include-partial-messages',
+    '--dangerously-skip-permissions',
+    command,
+  ], {
     cwd: currentState.repo.path,
     stdout: 'pipe',
     stderr: 'pipe',
@@ -624,22 +630,118 @@ export async function processCommandStreaming(
 
   let fullResponse = ''
   const decoder = new TextDecoder()
+  const encoder = new TextEncoder()
 
-  // Create a readable stream from the process stdout
+  // Create a readable stream that parses JSON events and formats for SSE
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
         const reader = proc.stdout.getReader()
+        let buffer = ''
+        let lastSentText = '' // Track what we've already sent to avoid duplicates
 
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
 
-          // Accumulate full response
-          fullResponse += decoder.decode(value, { stream: true })
+          buffer += decoder.decode(value, { stream: true })
 
-          // Send chunk to stream
-          controller.enqueue(value)
+          // Parse JSON lines from buffer
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || '' // Keep incomplete line in buffer
+
+          for (const line of lines) {
+            if (!line.trim()) continue
+
+            try {
+              const event = JSON.parse(line)
+
+              // Extract text content based on event type
+              let textContent = ''
+
+              if (event.type === 'system' && event.subtype === 'init') {
+                // Initial system message with session info - show status
+                textContent = `[Session started: ${event.session_id?.substring(0, 8) || 'unknown'}]\n`
+              }
+              else if (event.type === 'assistant') {
+                // Assistant message with content blocks
+                if (event.message?.content) {
+                  for (const block of event.message.content) {
+                    if (block.type === 'text') {
+                      textContent += block.text
+                    }
+                    else if (block.type === 'tool_use') {
+                      textContent += `\n[Using tool: ${block.name}]\n`
+                      if (block.input) {
+                        // Show brief info about what the tool is doing
+                        const inputStr = JSON.stringify(block.input).substring(0, 100)
+                        textContent += `${inputStr}${inputStr.length >= 100 ? '...' : ''}\n`
+                      }
+                    }
+                    else if (block.type === 'tool_result') {
+                      textContent += `\n[Tool result received]\n`
+                    }
+                  }
+                }
+              }
+              else if (event.type === 'user') {
+                // Tool results coming back
+                if (event.message?.content) {
+                  for (const block of event.message.content) {
+                    if (block.type === 'tool_result') {
+                      textContent += `\n[Tool completed: ${block.tool_use_id?.substring(0, 8) || 'unknown'}]\n`
+                    }
+                  }
+                }
+              }
+              else if (event.type === 'content_block_delta') {
+                // Streaming text delta
+                if (event.delta?.text) {
+                  textContent = event.delta.text
+                }
+              }
+              else if (event.type === 'result') {
+                // Final result - use this as the authoritative response
+                if (event.result) {
+                  fullResponse = event.result
+                  // Send any remaining text that wasn't streamed
+                  if (!lastSentText.includes(event.result)) {
+                    textContent = event.result
+                  }
+                }
+              }
+
+              // Only send new content (avoid duplicates)
+              if (textContent && !lastSentText.endsWith(textContent)) {
+                lastSentText += textContent
+                controller.enqueue(encoder.encode(textContent))
+              }
+            }
+            catch {
+              // Not valid JSON, might be plain text output
+              if (!lastSentText.includes(line)) {
+                lastSentText += line
+                fullResponse += line
+                controller.enqueue(encoder.encode(line))
+              }
+            }
+          }
+        }
+
+        // Process any remaining buffer
+        if (buffer.trim()) {
+          try {
+            const event = JSON.parse(buffer)
+            if (event.result && !fullResponse) {
+              fullResponse = event.result
+            }
+          }
+          catch {
+            if (!lastSentText.includes(buffer)) {
+              fullResponse += buffer
+              controller.enqueue(encoder.encode(buffer))
+            }
+          }
         }
 
         // Wait for process to complete
