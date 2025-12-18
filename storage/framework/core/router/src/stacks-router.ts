@@ -61,7 +61,6 @@ async function resolveStringHandler(handlerPath: string): Promise<ActionHandler>
     const [controllerPath, methodName = 'index'] = modulePath.split('@')
     const fullPath = p.appPath(`${controllerPath}.ts`)
 
-    log.debug(`[Router] Loading controller: ${fullPath}`)
 
     try {
       const controller = await import(fullPath)
@@ -99,7 +98,6 @@ async function resolveStringHandler(handlerPath: string): Promise<ActionHandler>
     fullPath = p.appPath(`${modulePath}.ts`)
   }
 
-  log.debug(`[Router] Loading action: ${fullPath}`)
 
   try {
     const actionModule = await import(fullPath)

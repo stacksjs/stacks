@@ -28,9 +28,6 @@ import { italic, log } from './'
 export async function exec(command: string | string[], options?: CliOptions): Promise<Result<Subprocess, Error>> {
   const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]|"[^"]*")+/g)
 
-  log.debug('exec:', Array.isArray(command) ? command.join(' ') : command, options)
-  log.debug('cmd:', cmd)
-
   if (!cmd)
     return err(handleError(`Failed to parse command: ${cmd}`, options))
 
@@ -90,9 +87,6 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
  * ```
  */
 export async function execSync(command: string | string[], options?: CliOptions): Promise<string> {
-  log.debug('Running execSync:', command)
-  log.debug('execSync options:', options)
-
   const cmd = Array.isArray(command) ? command : command.match(/(?:[^\s"]|"[^"]*")+/g)
 
   if (!cmd) {

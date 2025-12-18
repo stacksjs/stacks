@@ -19,7 +19,6 @@ type Action = ActionPath | ActionName | string
  * @returns The result of the command.
  */
 export async function runAction(action: Action, options?: ActionOptions): Promise<Result<Subprocess, CommandError>> {
-  log.debug('runAction:', action, options)
 
   // Special case: handle dev/views directly for maximum performance
   if (action === 'dev/views') {
@@ -72,10 +71,8 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
     // This is a fallback for custom action names
     for (const file of matchingFiles) {
       try {
-        log.debug('trying to import', file)
         const a = await import(file)
         if (a.name === action) {
-          log.debug('a.name matches', a.name)
           return await a.handle()
         }
       }
@@ -97,9 +94,6 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
     ...options,
   }
 
-  log.debug('action cmd:', cmd)
-  log.debug('optionsWithCwd:', optionsWithCwd)
-
   return await runCommand(cmd, optionsWithCwd)
 }
 
@@ -114,13 +108,10 @@ export async function runActions(
   actions: Action[],
   options?: ActionOptions,
 ): Promise<Ok<Subprocess<Writable, Readable, Readable>, Error>[] | Err<never, string>> {
-  log.debug('runActions:', actions, options)
-
   if (!actions.length)
     return err('No actions were specified')
 
   for (const action of actions) {
-    log.debug(`running action "${action}"`)
     if (!hasAction(action))
       return err(`The specified action "${action}" does not exist`)
   }
@@ -133,8 +124,6 @@ export async function runActions(
   }
 
   const commands = actions.map(action => `bun ${p.relativeActionsPath(`src/${action}.ts`)} ${opts}`)
-
-  log.debug('commands:', commands)
 
   return await runCommands(commands, o)
 }

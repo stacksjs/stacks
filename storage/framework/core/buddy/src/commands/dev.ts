@@ -48,7 +48,6 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (server: string | undefined, options: DevOptions) => {
-      log.debug('Running `buddy dev [server]` ...', options)
 
       const perf = await intro('buddy dev')
 
@@ -148,7 +147,6 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      log.debug('Running `buddy dev:components` ...', options)
 
       const perf = await intro('buddy dev:components')
       const result = await runCommand('bun run dev', {
@@ -178,7 +176,6 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      log.debug('Running `buddy dev:docs` ...', options)
 
       const perf = await intro('buddy dev:docs')
       const result = await runAction(Action.DevDocs, options)
@@ -202,7 +199,6 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      log.debug('Running `buddy dev:desktop` ...', options)
 
       const perf = await intro('buddy dev:desktop')
       const result = await runAction(Action.DevDesktop, options)
@@ -226,7 +222,6 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      log.debug('Running `buddy dev:api` ...', options)
 
       await runApiDevServer(options)
     })
@@ -246,7 +241,6 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      log.debug('Running `buddy dev:frontend` ...', options)
       await runFrontendDevServer(options)
     })
 
@@ -256,7 +250,6 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      log.debug('Running `buddy dev:dashboard` ...', options)
       await runDashboardDevServer(options)
     })
 
@@ -266,7 +259,6 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      log.debug('Running `buddy dev:system-tray` ...', options)
       await runSystemTrayDevServer(options)
     })
 

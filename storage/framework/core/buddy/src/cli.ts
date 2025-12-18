@@ -58,10 +58,7 @@ async function main() {
 
     // before running any commands, ensure the project is already initialized
     const isAppKeySet = await ensureProjectIsInitialized()
-    if (isAppKeySet) {
-      log.debug('Project is initialized')
-    }
-    else {
+    if (!isAppKeySet) {
       log.info('Your `APP_KEY` is not yet set')
       log.info('Generating application key...')
       const result = await runAction(Action.KeyGenerate)

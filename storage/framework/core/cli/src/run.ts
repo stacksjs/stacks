@@ -32,8 +32,6 @@ import { log } from '@stacksjs/logging'
  * ```
  */
 export async function runCommand(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
-  log.debug('runCommand:', command, options)
-
   const opts: CliOptions = {
     ...options,
     // Don't override stdin if it's explicitly set
@@ -45,8 +43,6 @@ export async function runCommand(command: string, options?: CliOptions): Promise
 }
 
 export async function runProcess(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
-  log.debug('runProcess:', command, options)
-
   const opts: CliOptions = {
     ...options,
     stdio: [options?.stdin ?? 'inherit', 'pipe', 'pipe'],
@@ -82,8 +78,6 @@ export async function runProcess(command: string, options?: CliOptions): Promise
  * ```
  */
 export async function runCommandSync(command: string, options?: CliOptions): Promise<string> {
-  log.debug('runCommandSync:', command, options)
-
   const opts: CliOptions = {
     ...options,
     stdio: [options?.stdin ?? 'inherit', 'pipe', 'pipe'],
