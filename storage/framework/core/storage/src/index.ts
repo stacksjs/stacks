@@ -16,5 +16,8 @@ export * from './drivers'
 
 // Laravel-style Storage facade and UploadedFile
 export { Storage, StorageManager } from './facade'
-export type { DiskConfig, StorageConfig } from './facade'
+export type { DiskConfig, FilesystemConfig, LocalDiskConfig, S3DiskConfig } from './facade'
 export { UploadedFile, uploadedFile, uploadedFiles } from './uploaded-file'
+
+// Filesystem type helpers
+export { configFromEnv, localDisk, s3Disk } from './types/filesystem'
