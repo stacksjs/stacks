@@ -267,7 +267,7 @@ class Fetcher {
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
   }
 
-  private async request<T>(url: string, method: string, body?: BodyData): Promise<FetcherResponse<T>> {
+  private async request<T = string>(url: string, method: string, body?: BodyData): Promise<FetcherResponse<T>> {
     const urlWithParams = this.addQueryParams(url)
     const formattedBody = await this.formatBody(body)
 
@@ -293,32 +293,32 @@ class Fetcher {
     )
   }
 
-  async get<T = any>(url: string): Promise<FetcherResponse<T>> {
+  async get<T = string>(url: string): Promise<FetcherResponse<T>> {
     return this.request<T>(url, 'GET')
   }
 
-  async post<T = any, D extends BodyData = BodyData>(
+  async post<T = string, D extends BodyData = BodyData>(
     url: string,
     body?: D,
   ): Promise<FetcherResponse<T>> {
     return this.request<T>(url, 'POST', body)
   }
 
-  async put<T = any, D extends BodyData = BodyData>(
+  async put<T = string, D extends BodyData = BodyData>(
     url: string,
     body?: D,
   ): Promise<FetcherResponse<T>> {
     return this.request<T>(url, 'PUT', body)
   }
 
-  async patch<T = any, D extends BodyData = BodyData>(
+  async patch<T = string, D extends BodyData = BodyData>(
     url: string,
     body?: D,
   ): Promise<FetcherResponse<T>> {
     return this.request<T>(url, 'PATCH', body)
   }
 
-  async delete<T = any>(url: string): Promise<FetcherResponse<T>> {
+  async delete<T = string>(url: string): Promise<FetcherResponse<T>> {
     return this.request<T>(url, 'DELETE')
   }
 }
