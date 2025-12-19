@@ -1,16 +1,39 @@
-import type { VerifiedRegistrationResponse } from '@simplewebauthn/server'
+/**
+ * WebAuthn/Passkey Functions
+ *
+ * Uses ts-auth for native WebAuthn implementation (no external dependencies)
+ */
+
+import type { VerifiedRegistrationResponse } from 'ts-auth'
 import type { Insertable } from '@stacksjs/database'
 import type { UserModel } from '../../../orm/src/models/User'
 import { db } from '@stacksjs/database'
 
+// Re-export WebAuthn functions from ts-auth
 export {
-  generateAuthenticationOptions,
   generateRegistrationOptions,
-  verifyAuthenticationResponse,
+  generateAuthenticationOptions,
   verifyRegistrationResponse,
-} from '@simplewebauthn/server'
+  verifyAuthenticationResponse,
+  // Browser-side functions (for client use)
+  startRegistration,
+  startAuthentication,
+  browserSupportsWebAuthn,
+  browserSupportsWebAuthnAutofill,
+  platformAuthenticatorIsAvailable,
+} from 'ts-auth'
 
-export type * from '@simplewebauthn/types'
+// Re-export WebAuthn types from ts-auth
+export type {
+  VerifiedRegistrationResponse,
+  VerifiedAuthenticationResponse,
+  RegistrationCredential,
+  AuthenticationCredential,
+  PublicKeyCredentialCreationOptions,
+  PublicKeyCredentialRequestOptions,
+  RegistrationOptions,
+  AuthenticationOptions,
+} from 'ts-auth'
 
 type PasskeyInsertable = Insertable<PasskeyAttribute>
 
@@ -48,7 +71,7 @@ export async function setCurrentRegistrationOptions(
 ): Promise<void> {
   const passkeyData: PasskeyInsertable = {
     id: verified.registrationInfo?.credential.id || '',
-    cred_public_key: JSON.stringify(verified.registrationInfo?.credential.publicKey), // Convert to JSON string if needed
+    cred_public_key: JSON.stringify(verified.registrationInfo?.credential.publicKey),
     user_id: user.id as number,
     webauthn_user_id: user.email || '',
     counter: verified.registrationInfo?.credential.counter || 0,
@@ -68,7 +91,7 @@ function formatDateTime(): string {
   const pad = (num: number): string => String(num).padStart(2, '0')
 
   const year = date.getFullYear()
-  const month = pad(date.getMonth() + 1) // getMonth is zero-based
+  const month = pad(date.getMonth() + 1)
   const day = pad(date.getDate())
 
   const hours = pad(date.getHours())

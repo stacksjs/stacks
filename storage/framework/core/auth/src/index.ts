@@ -2,9 +2,8 @@ export * from './authentication'
 export * from './authenticator'
 export * from './client'
 
-// PRODUCTION BINARY MODE: Disabled passkey export to avoid @simplewebauthn/server dependency
-// which requires tsyringe and reflect-metadata (not compatible with compiled binaries)
-// export * from './passkey'
+// WebAuthn/Passkey support (now using ts-auth - no external dependencies)
+export * from './passkey'
 
 export * from './password/reset'
 
@@ -12,4 +11,18 @@ export * from './register'
 
 export * from './user'
 
+// Token management (Laravel Passport-style)
 export * from './tokens'
+
+// TOTP (Two-Factor Authentication) - re-export from ts-auth
+export {
+  generateTOTP,
+  verifyTOTP,
+  generateTOTPSecret,
+  totpKeyUri,
+  // QR Code generation
+  generateQRCodeSVG,
+  generateQRCodeDataURL,
+  createQRCode,
+  QRErrorCorrection,
+} from 'ts-auth'
