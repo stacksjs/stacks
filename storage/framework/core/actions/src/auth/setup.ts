@@ -3,46 +3,93 @@ import { randomBytes } from 'node:crypto'
 import { db } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 
+// Detect database driver from environment
+const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+const dbDriver = envVars.DB_CONNECTION || 'sqlite'
+const isPostgres = dbDriver === 'postgres'
+const isMysql = dbDriver === 'mysql'
+
+// SQL syntax helpers for cross-database compatibility
+const autoIncrement = isPostgres ? 'SERIAL' : 'INTEGER'
+const primaryKey = isPostgres ? 'PRIMARY KEY' : 'PRIMARY KEY AUTOINCREMENT'
+const now = isPostgres ? 'NOW()' : "datetime('now')"
+const boolTrue = isPostgres ? 'true' : '1'
+const boolFalse = isPostgres ? 'false' : '0'
+
 log.info('Setting up authentication...')
+log.info(`Database driver: ${dbDriver}`)
 
 // Step 1: Ensure OAuth tables exist
 log.info('Ensuring OAuth tables exist...')
 
 try {
   // Create oauth_clients table if it doesn't exist
-  await db.unsafe(`
-    CREATE TABLE IF NOT EXISTS oauth_clients (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name VARCHAR(255) NOT NULL,
-      secret VARCHAR(100),
-      provider VARCHAR(255),
-      redirect VARCHAR(2000) NOT NULL,
-      personal_access_client BOOLEAN NOT NULL DEFAULT 0,
-      password_client BOOLEAN NOT NULL DEFAULT 0,
-      revoked BOOLEAN NOT NULL DEFAULT 0,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP
-    )
-  `).execute()
+  if (isPostgres) {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS oauth_clients (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        secret VARCHAR(100),
+        provider VARCHAR(255),
+        redirect VARCHAR(2000) NOT NULL,
+        personal_access_client BOOLEAN NOT NULL DEFAULT false,
+        password_client BOOLEAN NOT NULL DEFAULT false,
+        revoked BOOLEAN NOT NULL DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP
+      )
+    `).execute()
+  } else {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS oauth_clients (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name VARCHAR(255) NOT NULL,
+        secret VARCHAR(100),
+        provider VARCHAR(255),
+        redirect VARCHAR(2000) NOT NULL,
+        personal_access_client BOOLEAN NOT NULL DEFAULT 0,
+        password_client BOOLEAN NOT NULL DEFAULT 0,
+        revoked BOOLEAN NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP
+      )
+    `).execute()
+  }
 
   // Create oauth_access_tokens table if it doesn't exist
   // Note: tokens are stored as SHA-256 hashes (64 chars hex)
-  await db.unsafe(`
-    CREATE TABLE IF NOT EXISTS oauth_access_tokens (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      oauth_client_id INTEGER NOT NULL,
-      token VARCHAR(64) NOT NULL,
-      name VARCHAR(255),
-      scopes VARCHAR(2000),
-      revoked BOOLEAN NOT NULL DEFAULT 0,
-      expires_at TIMESTAMP,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id),
-      FOREIGN KEY (oauth_client_id) REFERENCES oauth_clients(id)
-    )
-  `).execute()
+  // Foreign keys removed to allow standalone OAuth tables (not dependent on ORM models)
+  if (isPostgres) {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS oauth_access_tokens (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        oauth_client_id INTEGER NOT NULL,
+        token VARCHAR(64) NOT NULL,
+        name VARCHAR(255),
+        scopes VARCHAR(2000),
+        revoked BOOLEAN NOT NULL DEFAULT false,
+        expires_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP
+      )
+    `).execute()
+  } else {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS oauth_access_tokens (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        oauth_client_id INTEGER NOT NULL,
+        token VARCHAR(64) NOT NULL,
+        name VARCHAR(255),
+        scopes VARCHAR(2000),
+        revoked BOOLEAN NOT NULL DEFAULT 0,
+        expires_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP
+      )
+    `).execute()
+  }
 
   // Create index on token for fast lookups
   await db.unsafe(`
@@ -51,17 +98,30 @@ try {
 
   // Create oauth_refresh_tokens table if it doesn't exist
   // Note: tokens are stored as SHA-256 hashes (64 chars hex)
-  await db.unsafe(`
-    CREATE TABLE IF NOT EXISTS oauth_refresh_tokens (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      access_token_id INTEGER NOT NULL,
-      token VARCHAR(64) NOT NULL,
-      revoked BOOLEAN NOT NULL DEFAULT 0,
-      expires_at TIMESTAMP,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (access_token_id) REFERENCES oauth_access_tokens(id) ON DELETE CASCADE
-    )
-  `).execute()
+  // Foreign keys removed to allow standalone OAuth tables
+  if (isPostgres) {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS oauth_refresh_tokens (
+        id SERIAL PRIMARY KEY,
+        access_token_id INTEGER NOT NULL,
+        token VARCHAR(64) NOT NULL,
+        revoked BOOLEAN NOT NULL DEFAULT false,
+        expires_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `).execute()
+  } else {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS oauth_refresh_tokens (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        access_token_id INTEGER NOT NULL,
+        token VARCHAR(64) NOT NULL,
+        revoked BOOLEAN NOT NULL DEFAULT 0,
+        expires_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `).execute()
+  }
 
   // Create index on refresh token for fast lookups
   await db.unsafe(`
@@ -81,7 +141,7 @@ log.info('Creating personal access client...')
 try {
   // Check if personal access client already exists using raw SQL
   const existing = await db.unsafe(`
-    SELECT id FROM oauth_clients WHERE personal_access_client = 1 LIMIT 1
+    SELECT id FROM oauth_clients WHERE personal_access_client = ${boolTrue} LIMIT 1
   `).execute()
 
   if ((existing as any[])?.length > 0) {
@@ -90,10 +150,17 @@ try {
   else {
     const secret = randomBytes(40).toString('hex')
 
-    await db.unsafe(`
-      INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
-    `, ['Personal Access Client', secret, 'local', 'http://localhost', 1, 0, 0]).execute()
+    if (isPostgres) {
+      await db.unsafe(`
+        INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+      `, ['Personal Access Client', secret, 'local', 'http://localhost', true, false, false]).execute()
+    } else {
+      await db.unsafe(`
+        INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      `, ['Personal Access Client', secret, 'local', 'http://localhost', 1, 0, 0]).execute()
+    }
 
     console.log('\n✓ Personal access client created successfully')
   }
