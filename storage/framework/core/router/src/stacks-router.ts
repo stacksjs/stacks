@@ -34,13 +34,106 @@ interface ChainableRoute {
 }
 
 /**
- * Create a chainable route object (for .middleware() support)
- * Note: Middleware is not yet implemented, this just prevents errors
+ * Cache for loaded middleware handlers
  */
-function createChainableRoute(): ChainableRoute {
+const middlewareCache = new Map<string, any>()
+
+/**
+ * Load a middleware by name from app/Middleware or defaults
+ */
+async function loadMiddleware(name: string): Promise<any> {
+  if (middlewareCache.has(name)) {
+    return middlewareCache.get(name)
+  }
+
+  try {
+    // Try loading from app/Middleware first
+    const userPath = p.appPath(`Middleware/${name.charAt(0).toUpperCase() + name.slice(1)}.ts`)
+    const middleware = await import(userPath)
+    middlewareCache.set(name, middleware.default)
+    return middleware.default
+  }
+  catch {
+    try {
+      // Fall back to defaults
+      const defaultPath = p.storagePath(`framework/defaults/middleware/${name.charAt(0).toUpperCase() + name.slice(1)}.ts`)
+      const middleware = await import(defaultPath)
+      middlewareCache.set(name, middleware.default)
+      return middleware.default
+    }
+    catch (err) {
+      log.error(`[Router] Failed to load middleware '${name}':`, err)
+      return null
+    }
+  }
+}
+
+/**
+ * Registry for route middleware - maps route paths to middleware names
+ */
+const routeMiddlewareRegistry = new Map<string, string[]>()
+
+/**
+ * Create a wrapped handler with middleware support
+ */
+function createMiddlewareHandler(routeKey: string, handler: StacksHandler): ActionHandler {
+  // Create the base handler with skipParsing=true since we'll do it ourselves
+  const wrappedBase = wrapHandler(handler, true)
+
+  return async (req: EnhancedRequest) => {
+    const middlewareNames = routeMiddlewareRegistry.get(routeKey) || []
+
+    // Parse body and enhance request first
+    await parseRequestBody(req)
+    const enhancedReq = enhanceWithLaravelMethods(req)
+
+    // Run middleware in order
+    for (const middlewareName of middlewareNames) {
+      const middleware = await loadMiddleware(middlewareName)
+      if (middleware && typeof middleware.handle === 'function') {
+        try {
+          await middleware.handle(enhancedReq)
+        }
+        catch (error) {
+          // Middleware threw an error (e.g., 401 Unauthorized)
+          if (error instanceof Error && 'statusCode' in error) {
+            const httpError = error as Error & { statusCode: number }
+            return new Response(
+              JSON.stringify({ error: error.message }),
+              {
+                status: httpError.statusCode,
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': '*',
+                },
+              },
+            )
+          }
+          throw error
+        }
+      }
+    }
+
+    // Call the actual handler with the enhanced request
+    return wrappedBase(enhancedReq)
+  }
+}
+
+/**
+ * Create a chainable route object (for .middleware() support)
+ */
+function createChainableRoute(routeKey: string): ChainableRoute {
+  // Initialize middleware list for this route
+  if (!routeMiddlewareRegistry.has(routeKey)) {
+    routeMiddlewareRegistry.set(routeKey, [])
+  }
+
   const chain: ChainableRoute = {
-    middleware(_name: string) {
-      // TODO: Implement middleware support
+    middleware(name: string) {
+      const middlewareList = routeMiddlewareRegistry.get(routeKey)
+      if (middlewareList) {
+        middlewareList.push(name)
+      }
       return chain
     },
   }
@@ -443,22 +536,31 @@ function enhanceWithLaravelMethods(req: EnhancedRequest): EnhancedRequest {
     return result
   }
 
+  // Auth method - returns the authenticated user set by middleware
+  ;(req as any).user = async (): Promise<any> => {
+    // Return user set by auth middleware (e.g., BearerToken middleware)
+    return (req as any)._authenticatedUser
+  }
+
   return req
 }
 
-function wrapHandler(handler: StacksHandler): ActionHandler {
+function wrapHandler(handler: StacksHandler, skipParsing = false): ActionHandler {
   if (typeof handler === 'string') {
     const handlerPath = handler // capture for error messages
     return async (req: EnhancedRequest) => {
       try {
-        // Parse JSON body BEFORE enhancing with Laravel methods
-        await parseRequestBody(req)
+        // Skip parsing if already done (e.g., by createMiddlewareHandler)
+        if (!skipParsing) {
+          // Parse JSON body BEFORE enhancing with Laravel methods
+          await parseRequestBody(req)
 
-        // Enhance request with Laravel-style methods
-        const enhancedReq = enhanceWithLaravelMethods(req)
+          // Enhance request with Laravel-style methods
+          req = enhanceWithLaravelMethods(req)
+        }
 
         const resolvedHandler = await resolveStringHandler(handlerPath)
-        return resolvedHandler(enhancedReq)
+        return resolvedHandler(req)
       }
       catch (error) {
         log.error(`[Router] Error handling request for '${handlerPath}':`, error)
@@ -565,38 +667,44 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // HTTP methods with string handler support
     get(path: string, handler: StacksHandler) {
       const fullPath = currentPrefix + path
-      bunRouter.get(fullPath, wrapHandler(handler))
-      return createChainableRoute()
+      const routeKey = `GET:${fullPath}`
+      bunRouter.get(fullPath, createMiddlewareHandler(routeKey, handler))
+      return createChainableRoute(routeKey)
     },
 
     post(path: string, handler: StacksHandler) {
       const fullPath = currentPrefix + path
-      bunRouter.post(fullPath, wrapHandler(handler))
-      return createChainableRoute()
+      const routeKey = `POST:${fullPath}`
+      bunRouter.post(fullPath, createMiddlewareHandler(routeKey, handler))
+      return createChainableRoute(routeKey)
     },
 
     put(path: string, handler: StacksHandler) {
       const fullPath = currentPrefix + path
-      bunRouter.put(fullPath, wrapHandler(handler))
-      return createChainableRoute()
+      const routeKey = `PUT:${fullPath}`
+      bunRouter.put(fullPath, createMiddlewareHandler(routeKey, handler))
+      return createChainableRoute(routeKey)
     },
 
     patch(path: string, handler: StacksHandler) {
       const fullPath = currentPrefix + path
-      bunRouter.patch(fullPath, wrapHandler(handler))
-      return createChainableRoute()
+      const routeKey = `PATCH:${fullPath}`
+      bunRouter.patch(fullPath, createMiddlewareHandler(routeKey, handler))
+      return createChainableRoute(routeKey)
     },
 
     delete(path: string, handler: StacksHandler) {
       const fullPath = currentPrefix + path
-      bunRouter.delete(fullPath, wrapHandler(handler))
-      return createChainableRoute()
+      const routeKey = `DELETE:${fullPath}`
+      bunRouter.delete(fullPath, createMiddlewareHandler(routeKey, handler))
+      return createChainableRoute(routeKey)
     },
 
     options(path: string, handler: StacksHandler) {
       const fullPath = currentPrefix + path
-      bunRouter.options(fullPath, wrapHandler(handler))
-      return createChainableRoute()
+      const routeKey = `OPTIONS:${fullPath}`
+      bunRouter.options(fullPath, createMiddlewareHandler(routeKey, handler))
+      return createChainableRoute(routeKey)
     },
 
     // Route grouping - always synchronous for prefix management

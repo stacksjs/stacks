@@ -49,12 +49,12 @@ export default {
   /**
    * The token expiry time in milliseconds (default: 30 days).
    */
-  tokenExpiry: envVars.AUTH_TOKEN_EXPIRY || 30 * 24 * 60 * 60 * 1000,
+  tokenExpiry: Number(envVars.AUTH_TOKEN_EXPIRY) || 30 * 24 * 60 * 60 * 1000,
 
   /**
    * The token rotation time in hours (default: 24 hours).
    */
-  tokenRotation: env.AUTH_TOKEN_ROTATION || 24,
+  tokenRotation: Number(envVars.AUTH_TOKEN_ROTATION) || 24,
 
   /**
    * The token abilities that are granted by default.
