@@ -7,7 +7,6 @@
 
 import type { Err, Ok, Result } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/cli'
-import { database } from '@stacksjs/config'
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import {
@@ -18,8 +17,39 @@ import {
   setConfig,
 } from 'bun-query-builder'
 
+// Use environment variables directly to avoid circular dependencies with @stacksjs/config
+const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+
+// Build database config from environment variables
+const dbDriver = envVars.DB_CONNECTION || 'sqlite'
+const dbConfig = {
+  default: dbDriver,
+  connections: {
+    sqlite: {
+      database: 'database/stacks.sqlite',
+      prefix: '',
+    },
+    mysql: {
+      name: envVars.DB_DATABASE || 'stacks',
+      host: envVars.DB_HOST || '127.0.0.1',
+      username: envVars.DB_USERNAME || 'root',
+      password: envVars.DB_PASSWORD || '',
+      port: Number(envVars.DB_PORT) || 3306,
+      prefix: '',
+    },
+    postgres: {
+      name: envVars.DB_DATABASE || 'stacks',
+      host: envVars.DB_HOST || '127.0.0.1',
+      username: envVars.DB_USERNAME || '',
+      password: envVars.DB_PASSWORD || '',
+      port: Number(envVars.DB_PORT) || 5432,
+      prefix: '',
+    },
+  },
+}
+
 function getDriver(): string {
-  return database.default || ''
+  return dbConfig.default || 'sqlite'
 }
 
 function getDialect(): 'sqlite' | 'mysql' | 'postgres' {
@@ -35,16 +65,16 @@ function getDialect(): 'sqlite' | 'mysql' | 'postgres' {
  */
 function configureQueryBuilder(): void {
   const dialect = getDialect()
-  const dbConfig = database.connections[dialect]
+  const connectionConfig = dbConfig.connections[dialect] as any
 
   setConfig({
     dialect,
     database: {
-      database: dbConfig?.name || dbConfig?.database || 'stacks',
-      host: dbConfig?.host || 'localhost',
-      port: dbConfig?.port || (dialect === 'postgres' ? 5432 : dialect === 'mysql' ? 3306 : 0),
-      username: dbConfig?.username || '',
-      password: dbConfig?.password || '',
+      database: connectionConfig?.name || connectionConfig?.database || 'stacks',
+      host: connectionConfig?.host || 'localhost',
+      port: connectionConfig?.port || (dialect === 'postgres' ? 5432 : dialect === 'mysql' ? 3306 : 0),
+      username: connectionConfig?.username || '',
+      password: connectionConfig?.password || '',
     },
   })
 
