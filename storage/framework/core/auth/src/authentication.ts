@@ -16,9 +16,47 @@ interface Credentials {
   [key: string]: string | undefined
 }
 
+/**
+ * Personal Access Token instance - similar to Laravel Passport's PersonalAccessToken
+ */
+export interface PersonalAccessToken {
+  id: number
+  userId: number
+  clientId: number
+  name: string
+  abilities: string[]
+  expiresAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+  revoked: boolean
+  plainTextToken?: string
+}
+
+/**
+ * New Access Token result - returned when creating a new token
+ */
+export interface NewAccessToken {
+  accessToken: PersonalAccessToken
+  plainTextToken: AuthToken
+}
+
+/**
+ * Token creation options
+ */
+export interface TokenCreateOptions {
+  name?: string
+  abilities?: string[]
+  expiresAt?: Date
+}
+
 export class Auth {
   private static authUser: UserModel | undefined = undefined
   private static clientSecret: string | undefined = undefined
+  private static currentToken: PersonalAccessToken | undefined = undefined
+
+  // ============================================================================
+  // INTERNAL HELPERS
+  // ============================================================================
 
   private static async getClientSecret(): Promise<string> {
     if (this.clientSecret)
@@ -53,6 +91,50 @@ export class Auth {
     return client.secret === clientSecret
   }
 
+  private static parseScopes(scopes: string | string[] | null | undefined): string[] {
+    if (!scopes)
+      return []
+    if (Array.isArray(scopes))
+      return scopes
+    try {
+      const parsed = JSON.parse(scopes)
+      return Array.isArray(parsed) ? parsed : []
+    }
+    catch {
+      return []
+    }
+  }
+
+  private static async getTokenFromId(tokenId: number): Promise<PersonalAccessToken | null> {
+    const token = await db.selectFrom('oauth_access_tokens')
+      .where('id', '=', tokenId)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!token)
+      return null
+
+    return {
+      id: token.id,
+      userId: token.user_id,
+      clientId: token.oauth_client_id,
+      name: token.name || 'auth-token',
+      abilities: this.parseScopes(token.scopes),
+      expiresAt: token.expires_at ? new Date(token.expires_at) : null,
+      createdAt: token.created_at ? new Date(token.created_at) : new Date(),
+      updatedAt: token.updated_at ? new Date(token.updated_at) : new Date(),
+      revoked: !!token.revoked,
+    }
+  }
+
+  // ============================================================================
+  // AUTHENTICATION METHODS
+  // ============================================================================
+
+  /**
+   * Attempt to authenticate with credentials
+   * Similar to Laravel's Auth::attempt()
+   */
   public static async attempt(credentials: Credentials): Promise<boolean> {
     const username = config.auth.username || 'email'
     const password = config.auth.password || 'password'
@@ -80,25 +162,155 @@ export class Auth {
     return false
   }
 
-  public static async createToken(user: UserModel, name: string = config.auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
+  /**
+   * Validate credentials without logging in
+   * Similar to Laravel's Auth::validate()
+   */
+  public static async validate(credentials: Credentials): Promise<boolean> {
+    const username = config.auth.username || 'email'
+    const password = config.auth.password || 'password'
+
+    const email = credentials[username]
+    if (!email)
+      return false
+
+    const user = await User.where('email', '=', email).first()
+    if (!user?.password)
+      return false
+
+    const authPass = credentials[password] || ''
+    return verifyHash(authPass, user.password, 'bcrypt')
+  }
+
+  /**
+   * Login and return user with token
+   * Similar to Laravel's Auth::login() + token creation
+   */
+  public static async login(credentials: Credentials, options?: TokenCreateOptions): Promise<{ user: UserModel, token: AuthToken } | null> {
+    const isValid = await this.attempt(credentials)
+    if (!isValid || !this.authUser)
+      return null
+
+    const { plainTextToken } = await this.createTokenForUser(this.authUser, options)
+    return { user: this.authUser, token: plainTextToken }
+  }
+
+  /**
+   * Login a user directly without credentials
+   * Similar to Laravel's Auth::loginUsingId()
+   */
+  public static async loginUsingId(userId: number, options?: TokenCreateOptions): Promise<{ user: UserModel, token: AuthToken } | null> {
+    const user = await User.find(userId)
+    if (!user)
+      return null
+
+    this.authUser = user
+    const { plainTextToken } = await this.createTokenForUser(user, options)
+    return { user, token: plainTextToken }
+  }
+
+  /**
+   * Logout the current user
+   * Similar to Laravel's Auth::logout()
+   */
+  public static async logout(): Promise<void> {
+    const bearerToken = request.bearerToken()
+    if (bearerToken)
+      await this.revokeToken(bearerToken)
+
+    this.authUser = undefined
+    this.currentToken = undefined
+  }
+
+  // ============================================================================
+  // USER & AUTH STATE METHODS
+  // ============================================================================
+
+  /**
+   * Get the currently authenticated user
+   * Similar to Laravel's Auth::user()
+   */
+  public static async user(): Promise<UserModel | undefined> {
+    if (this.authUser)
+      return this.authUser
+
+    const bearerToken = request.bearerToken()
+    if (!bearerToken)
+      return undefined
+
+    const user = await this.getUserFromToken(bearerToken)
+    if (user)
+      this.authUser = user
+
+    return user
+  }
+
+  /**
+   * Check if a user is authenticated
+   * Similar to Laravel's Auth::check()
+   */
+  public static async check(): Promise<boolean> {
+    const user = await this.user()
+    return user !== undefined
+  }
+
+  /**
+   * Check if the current user is a guest (not authenticated)
+   * Similar to Laravel's Auth::guest()
+   */
+  public static async guest(): Promise<boolean> {
+    return !(await this.check())
+  }
+
+  /**
+   * Get the authenticated user's ID
+   * Similar to Laravel's Auth::id()
+   */
+  public static async id(): Promise<number | undefined> {
+    const user = await this.user()
+    return user?.id
+  }
+
+  /**
+   * Set the authenticated user (useful for testing)
+   * Similar to Laravel's Auth::setUser()
+   */
+  public static setUser(user: UserModel): void {
+    this.authUser = user
+  }
+
+  // ============================================================================
+  // TOKEN CREATION METHODS
+  // ============================================================================
+
+  /**
+   * Create a new personal access token for a user
+   * Similar to Laravel Passport's $user->createToken()
+   */
+  public static async createTokenForUser(
+    user: UserModel,
+    options?: TokenCreateOptions,
+  ): Promise<NewAccessToken> {
     const client = await this.getPersonalAccessClient()
     const clientSecret = await this.getClientSecret()
+
+    const name = options?.name ?? config.auth.defaultTokenName ?? 'auth-token'
+    const abilities = options?.abilities ?? config.auth.defaultAbilities ?? ['*']
 
     // Generate a long JWT token
     const jwtToken = await TokenManager.generateLongJWT(user.id)
 
     // Set token expiry
-    const expiresAt = new Date()
-    expiresAt.setDate(expiresAt.getDate() + 30) // 30 days from now
+    const expiresAt = options?.expiresAt ?? new Date(Date.now() + (config.auth.tokenExpiry ?? 30 * 24 * 60 * 60 * 1000))
 
-    // Store the token in the database first to get the ID
+    // Store the token in the database
     const result = await db.insertInto('oauth_access_tokens')
       .values({
         user_id: user.id,
         oauth_client_id: client.id,
         name,
         token: jwtToken,
-        scopes: '[]',
+        scopes: JSON.stringify(abilities),
         revoked: false,
         expires_at: formatDate(expiresAt),
       })
@@ -113,9 +325,40 @@ export class Auth {
     const encryptedId = encrypt(insertId.toString(), clientSecret)
 
     // Combine into final token format with JWT first
-    return `${jwtToken}:${encryptedId}` as AuthToken
+    const plainTextToken = `${jwtToken}:${encryptedId}` as AuthToken
+
+    const accessToken: PersonalAccessToken = {
+      id: insertId,
+      userId: user.id,
+      clientId: client.id,
+      name,
+      abilities,
+      expiresAt,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      revoked: false,
+      plainTextToken,
+    }
+
+    return { accessToken, plainTextToken }
   }
 
+  /**
+   * Create a token (legacy method for backwards compatibility)
+   */
+  public static async createToken(
+    user: UserModel,
+    name: string = config.auth.defaultTokenName || 'auth-token',
+    abilities: string[] = config.auth.defaultAbilities || ['*'],
+  ): Promise<AuthToken> {
+    const { plainTextToken } = await this.createTokenForUser(user, { name, abilities })
+    return plainTextToken
+  }
+
+  /**
+   * Request token using client credentials
+   * Similar to Laravel Passport's client credentials grant
+   */
   public static async requestToken(credentials: Credentials, clientId: number, clientSecret: string): Promise<{ token: AuthToken } | null> {
     const isValidClient = await this.validateClient(clientId, clientSecret)
     if (!isValidClient)
@@ -128,14 +371,313 @@ export class Auth {
     return { token: await this.createToken(this.authUser, 'user-auth-token') }
   }
 
-  public static async login(credentials: Credentials): Promise<{ user: UserModel, token: AuthToken } | null> {
-    const isValid = await this.attempt(credentials)
-    if (!isValid || !this.authUser)
-      return null
+  // ============================================================================
+  // TOKEN VALIDATION & RETRIEVAL
+  // ============================================================================
 
-    return { user: this.authUser, token: await this.createToken(this.authUser, 'user-auth-token') }
+  /**
+   * Validate a token
+   */
+  public static async validateToken(token: string): Promise<boolean> {
+    const [jwtToken, tokenId] = token.split(':')
+    if (!tokenId || !jwtToken)
+      return false
+
+    const clientSecret = await this.getClientSecret()
+    const decryptedId = decrypt(tokenId, clientSecret)
+    if (!decryptedId)
+      return false
+
+    const accessToken = await db.selectFrom('oauth_access_tokens')
+      .where('id', '=', Number(decryptedId))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!accessToken)
+      return false
+
+    // Check if token is expired
+    if (accessToken.expires_at && new Date(accessToken.expires_at) < new Date()) {
+      await db.deleteFrom('oauth_access_tokens')
+        .where('id', '=', accessToken.id)
+        .execute()
+      return false
+    }
+
+    // Check if token is revoked
+    if (accessToken.revoked)
+      return false
+
+    // Rotate token if it's been used for more than configured hours
+    const rotationHours = config.auth.tokenRotation ?? 24
+    const lastUsed = accessToken.updated_at ? new Date(accessToken.updated_at) : new Date()
+    const now = new Date()
+    const hoursSinceLastUse = (now.getTime() - lastUsed.getTime()) / (1000 * 60 * 60)
+
+    if (hoursSinceLastUse >= rotationHours) {
+      await this.rotateToken(token)
+    }
+    else {
+      await db.updateTable('oauth_access_tokens')
+        .set({ updated_at: formatDate(now) })
+        .where('id', '=', accessToken.id)
+        .execute()
+    }
+
+    return true
   }
 
+  /**
+   * Get user from a token
+   */
+  public static async getUserFromToken(token: string): Promise<UserModel | undefined> {
+    const [jwtToken, tokenId] = token.split(':')
+    if (!tokenId || !jwtToken)
+      return undefined
+
+    const clientSecret = await this.getClientSecret()
+    const decryptedId = decrypt(tokenId, clientSecret)
+    if (!decryptedId)
+      return undefined
+
+    const accessToken = await db.selectFrom('oauth_access_tokens')
+      .where('id', '=', Number(decryptedId))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!accessToken || accessToken.token !== jwtToken)
+      return undefined
+
+    if (accessToken.expires_at && new Date(accessToken.expires_at) < new Date()) {
+      await db.deleteFrom('oauth_access_tokens')
+        .where('id', '=', accessToken.id)
+        .execute()
+      return undefined
+    }
+
+    if (accessToken.revoked)
+      return undefined
+
+    // Cache the current token for ability checks
+    this.currentToken = await this.getTokenFromId(accessToken.id) ?? undefined
+
+    await db.updateTable('oauth_access_tokens')
+      .set({ updated_at: formatDate(new Date()) })
+      .where('id', '=', accessToken.id)
+      .execute()
+
+    if (!accessToken?.user_id)
+      return undefined
+
+    return await User.find(accessToken.user_id)
+  }
+
+  /**
+   * Get the current access token instance
+   * Similar to Laravel's $request->user()->currentAccessToken()
+   */
+  public static async currentAccessToken(): Promise<PersonalAccessToken | undefined> {
+    if (this.currentToken)
+      return this.currentToken
+
+    const bearerToken = request.bearerToken()
+    if (!bearerToken)
+      return undefined
+
+    const [_, tokenId] = bearerToken.split(':')
+    if (!tokenId)
+      return undefined
+
+    const clientSecret = await this.getClientSecret()
+    const decryptedId = decrypt(tokenId, clientSecret)
+    if (!decryptedId)
+      return undefined
+
+    const token = await this.getTokenFromId(Number(decryptedId))
+    if (token)
+      this.currentToken = token
+
+    return token ?? undefined
+  }
+
+  // ============================================================================
+  // TOKEN ABILITIES / SCOPES
+  // ============================================================================
+
+  /**
+   * Check if current token has an ability
+   * Similar to Laravel's $request->user()->tokenCan()
+   */
+  public static async tokenCan(ability: string): Promise<boolean> {
+    const token = await this.currentAccessToken()
+    if (!token)
+      return false
+
+    // Wildcard ability grants all permissions
+    if (token.abilities.includes('*'))
+      return true
+
+    return token.abilities.includes(ability)
+  }
+
+  /**
+   * Check if current token does NOT have an ability
+   * Similar to Laravel's $request->user()->tokenCant()
+   */
+  public static async tokenCant(ability: string): Promise<boolean> {
+    return !(await this.tokenCan(ability))
+  }
+
+  /**
+   * Get all abilities for the current token
+   */
+  public static async tokenAbilities(): Promise<string[]> {
+    const token = await this.currentAccessToken()
+    return token?.abilities ?? []
+  }
+
+  /**
+   * Check if current token has ALL specified abilities
+   */
+  public static async tokenCanAll(abilities: string[]): Promise<boolean> {
+    for (const ability of abilities) {
+      if (!(await this.tokenCan(ability)))
+        return false
+    }
+    return true
+  }
+
+  /**
+   * Check if current token has ANY of the specified abilities
+   */
+  public static async tokenCanAny(abilities: string[]): Promise<boolean> {
+    for (const ability of abilities) {
+      if (await this.tokenCan(ability))
+        return true
+    }
+    return false
+  }
+
+  // ============================================================================
+  // TOKEN MANAGEMENT
+  // ============================================================================
+
+  /**
+   * Get all tokens for a user
+   * Similar to Laravel's $user->tokens()
+   */
+  public static async tokens(userId?: number): Promise<PersonalAccessToken[]> {
+    const uid = userId ?? (await this.id())
+    if (!uid)
+      return []
+
+    const tokens = await db.selectFrom('oauth_access_tokens')
+      .where('user_id', '=', uid)
+      .where('revoked', '=', false)
+      .selectAll()
+      .execute()
+
+    return tokens.map(token => ({
+      id: token.id,
+      userId: token.user_id,
+      clientId: token.oauth_client_id,
+      name: token.name || 'auth-token',
+      abilities: this.parseScopes(token.scopes),
+      expiresAt: token.expires_at ? new Date(token.expires_at) : null,
+      createdAt: token.created_at ? new Date(token.created_at) : new Date(),
+      updatedAt: token.updated_at ? new Date(token.updated_at) : new Date(),
+      revoked: !!token.revoked,
+    }))
+  }
+
+  /**
+   * Revoke a specific token
+   */
+  public static async revokeToken(token: string): Promise<void> {
+    const [_, tokenId] = token.split(':')
+    if (!tokenId)
+      return
+
+    const clientSecret = await this.getClientSecret()
+    const decryptedId = decrypt(tokenId, clientSecret)
+    if (!decryptedId)
+      return
+
+    await db.updateTable('oauth_access_tokens')
+      .set({ revoked: true, updated_at: formatDate(new Date()) })
+      .where('id', '=', Number(decryptedId))
+      .execute()
+  }
+
+  /**
+   * Revoke a token by its ID
+   */
+  public static async revokeTokenById(tokenId: number): Promise<void> {
+    await db.updateTable('oauth_access_tokens')
+      .set({ revoked: true, updated_at: formatDate(new Date()) })
+      .where('id', '=', tokenId)
+      .execute()
+  }
+
+  /**
+   * Revoke all tokens for a user
+   * Similar to deleting all tokens via $user->tokens()->delete()
+   */
+  public static async revokeAllTokens(userId?: number): Promise<void> {
+    const uid = userId ?? (await this.id())
+    if (!uid)
+      return
+
+    await db.updateTable('oauth_access_tokens')
+      .set({ revoked: true, updated_at: formatDate(new Date()) })
+      .where('user_id', '=', uid)
+      .execute()
+  }
+
+  /**
+   * Revoke all tokens except the current one
+   */
+  public static async revokeOtherTokens(userId?: number): Promise<void> {
+    const uid = userId ?? (await this.id())
+    if (!uid)
+      return
+
+    const currentToken = await this.currentAccessToken()
+    if (!currentToken)
+      return
+
+    await db.updateTable('oauth_access_tokens')
+      .set({ revoked: true, updated_at: formatDate(new Date()) })
+      .where('user_id', '=', uid)
+      .where('id', '!=', currentToken.id)
+      .execute()
+  }
+
+  /**
+   * Delete all expired tokens (cleanup)
+   */
+  public static async pruneExpiredTokens(): Promise<number> {
+    const result = await db.deleteFrom('oauth_access_tokens')
+      .where('expires_at', '<', formatDate(new Date()))
+      .executeTakeFirst()
+
+    return Number(result?.numDeletedRows) || 0
+  }
+
+  /**
+   * Delete all revoked tokens (cleanup)
+   */
+  public static async pruneRevokedTokens(): Promise<number> {
+    const result = await db.deleteFrom('oauth_access_tokens')
+      .where('revoked', '=', true)
+      .executeTakeFirst()
+
+    return Number(result?.numDeletedRows) || 0
+  }
+
+  /**
+   * Rotate (refresh) a token
+   */
   public static async rotateToken(oldToken: string): Promise<AuthToken | null> {
     const [jwtToken, tokenId] = oldToken.split(':')
     if (!tokenId || !jwtToken)
@@ -177,118 +719,65 @@ export class Auth {
     return `${newToken}:${encryptedId}` as AuthToken
   }
 
-  public static async validateToken(token: string): Promise<boolean> {
-    const [jwtToken, tokenId] = token.split(':')
-    if (!tokenId || !jwtToken)
-      return false
-
-    const clientSecret = await this.getClientSecret()
-    const decryptedId = decrypt(tokenId, clientSecret)
-    if (!decryptedId)
-      return false
-
-    const accessToken = await db.selectFrom('oauth_access_tokens')
-      .where('id', '=', Number(decryptedId))
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!accessToken)
-      return false
-
-    // Check if token is expired
-    if (accessToken.expires_at && new Date(accessToken.expires_at) < new Date()) {
-      await db.deleteFrom('oauth_access_tokens')
-        .where('id', '=', accessToken.id)
-        .execute()
-      return false
-    }
-
-    // Check if token is revoked
-    if (accessToken.revoked)
-      return false
-
-    // Rotate token if it's been used for more than 24 hours
-    const lastUsed = accessToken.updated_at ? new Date(accessToken.updated_at) : new Date()
-    const now = new Date()
-    const hoursSinceLastUse = (now.getTime() - lastUsed.getTime()) / (1000 * 60 * 60)
-
-    if (hoursSinceLastUse >= 24) {
-      await this.rotateToken(token)
-    }
-    else {
-      await db.updateTable('oauth_access_tokens')
-        .set({
-          updated_at: formatDate(now),
-        })
-        .where('id', '=', accessToken.id)
-        .execute()
-    }
-
-    return true
+  /**
+   * Find a token by its ID
+   */
+  public static async findToken(tokenId: number): Promise<PersonalAccessToken | null> {
+    return this.getTokenFromId(tokenId)
   }
 
-  public static async getUserFromToken(token: string): Promise<UserModel | undefined> {
-    const [jwtToken, tokenId] = token.split(':')
-    if (!tokenId || !jwtToken)
-      return undefined
+  // ============================================================================
+  // UTILITY METHODS
+  // ============================================================================
 
-    const clientSecret = await this.getClientSecret()
-    const decryptedId = decrypt(tokenId, clientSecret)
-    if (!decryptedId)
-      return undefined
+  /**
+   * Once - Authenticate a user for a single request
+   * Similar to Laravel's Auth::once()
+   */
+  public static async once(credentials: Credentials): Promise<boolean> {
+    const username = config.auth.username || 'email'
+    const password = config.auth.password || 'password'
 
-    const accessToken = await db.selectFrom('oauth_access_tokens')
-      .where('id', '=', Number(decryptedId))
-      .selectAll()
-      .executeTakeFirst()
+    const email = credentials[username]
+    if (!email)
+      return false
 
-    if (!accessToken || accessToken.token !== jwtToken)
-      return undefined
+    const user = await User.where('email', '=', email).first()
+    if (!user?.password)
+      return false
 
-    if (accessToken.expires_at && new Date(accessToken.expires_at) < new Date()) {
-      await db.deleteFrom('oauth_access_tokens')
-        .where('id', '=', accessToken.id)
-        .execute()
-      return undefined
+    const authPass = credentials[password] || ''
+    const hashCheck = await verifyHash(authPass, user.password, 'bcrypt')
+
+    if (hashCheck) {
+      this.authUser = user
+      return true
     }
 
-    if (accessToken.revoked)
-      return undefined
-
-    await db.updateTable('oauth_access_tokens')
-      .set({
-        updated_at: formatDate(new Date()),
-      })
-      .where('id', '=', accessToken.id)
-      .execute()
-
-    if (!accessToken?.user_id)
-      return undefined
-
-    return await User.find(accessToken.user_id)
+    return false
   }
 
-  public static async revokeToken(token: string): Promise<void> {
-    const [jwtToken, tokenId] = token.split(':')
-    if (!tokenId || !jwtToken)
-      return
-
-    const clientSecret = await this.getClientSecret()
-    const decryptedId = decrypt(tokenId, clientSecret)
-    if (!decryptedId)
-      return
-
-    await db.updateTable('oauth_access_tokens')
-      .set({ revoked: true })
-      .where('id', '=', Number(decryptedId))
-      .execute()
+  /**
+   * Get the auth guard name (for compatibility)
+   */
+  public static guard(_name?: string): typeof Auth {
+    // Currently we only support the API guard
+    return this
   }
 
-  public static async logout(): Promise<void> {
-    const bearerToken = request.bearerToken()
-    if (bearerToken)
-      await this.revokeToken(bearerToken)
+  /**
+   * Check if user was authenticated via remember token (always false for API)
+   */
+  public static viaRemember(): boolean {
+    return false
+  }
 
+  /**
+   * Clear the auth state (useful for testing)
+   */
+  public static clearState(): void {
     this.authUser = undefined
+    this.currentToken = undefined
+    this.clientSecret = undefined
   }
 }

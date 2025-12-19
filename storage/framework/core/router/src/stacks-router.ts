@@ -12,6 +12,7 @@ import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage'
 import { Router } from 'bun-router'
+import { runWithRequest } from './request-context'
 
 type StringHandler = string
 type StacksHandler = ActionHandler | StringHandler
@@ -74,6 +75,21 @@ async function loadMiddleware(name: string): Promise<any> {
 const routeMiddlewareRegistry = new Map<string, string[]>()
 
 /**
+ * Parse middleware name and parameters
+ * e.g., 'abilities:read,write' -> { name: 'abilities', params: 'read,write' }
+ */
+function parseMiddlewareName(middleware: string): { name: string, params?: string } {
+  const colonIndex = middleware.indexOf(':')
+  if (colonIndex === -1) {
+    return { name: middleware }
+  }
+  return {
+    name: middleware.substring(0, colonIndex),
+    params: middleware.substring(colonIndex + 1),
+  }
+}
+
+/**
  * Create a wrapped handler with middleware support
  */
 function createMiddlewareHandler(routeKey: string, handler: StacksHandler): ActionHandler {
@@ -81,41 +97,53 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Acti
   const wrappedBase = wrapHandler(handler, true)
 
   return async (req: EnhancedRequest) => {
-    const middlewareNames = routeMiddlewareRegistry.get(routeKey) || []
-
     // Parse body and enhance request first
     await parseRequestBody(req)
     const enhancedReq = enhanceWithLaravelMethods(req)
 
-    // Run middleware in order
-    for (const middlewareName of middlewareNames) {
-      const middleware = await loadMiddleware(middlewareName)
-      if (middleware && typeof middleware.handle === 'function') {
-        try {
-          await middleware.handle(enhancedReq)
+    // Run the entire request handling within the request context
+    // This allows Auth and other services to access the current request
+    return runWithRequest(enhancedReq as any, async () => {
+      const middlewareEntries = routeMiddlewareRegistry.get(routeKey) || []
+
+      // Run middleware in order
+      for (const middlewareEntry of middlewareEntries) {
+        const { name: middlewareName, params } = parseMiddlewareName(middlewareEntry)
+
+        // Store middleware params on request for middleware to access
+        if (params) {
+          ;(enhancedReq as any)._middlewareParams = (enhancedReq as any)._middlewareParams || {}
+          ;(enhancedReq as any)._middlewareParams[middlewareName] = params
         }
-        catch (error) {
-          // Middleware threw an error (e.g., 401 Unauthorized)
-          if (error instanceof Error && 'statusCode' in error) {
-            const httpError = error as Error & { statusCode: number }
-            return new Response(
-              JSON.stringify({ error: error.message }),
-              {
-                status: httpError.statusCode,
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': '*',
-                },
-              },
-            )
+
+        const middleware = await loadMiddleware(middlewareName)
+        if (middleware && typeof middleware.handle === 'function') {
+          try {
+            await middleware.handle(enhancedReq)
           }
-          throw error
+          catch (error) {
+            // Middleware threw an error (e.g., 401 Unauthorized)
+            if (error instanceof Error && 'statusCode' in error) {
+              const httpError = error as Error & { statusCode: number }
+              return new Response(
+                JSON.stringify({ error: error.message }),
+                {
+                  status: httpError.statusCode,
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                  },
+                },
+              )
+            }
+            throw error
+          }
         }
       }
-    }
 
-    // Call the actual handler with the enhanced request
-    return wrappedBase(enhancedReq)
+      // Call the actual handler with the enhanced request
+      return wrappedBase(enhancedReq)
+    })
   }
 }
 
@@ -540,6 +568,26 @@ function enhanceWithLaravelMethods(req: EnhancedRequest): EnhancedRequest {
   ;(req as any).user = async (): Promise<any> => {
     // Return user set by auth middleware (e.g., BearerToken middleware)
     return (req as any)._authenticatedUser
+  }
+
+  // Get the current access token instance
+  ;(req as any).userToken = async (): Promise<any> => {
+    return (req as any)._currentAccessToken
+  }
+
+  // Check if the current token has an ability
+  ;(req as any).tokenCan = async (ability: string): Promise<boolean> => {
+    const token = (req as any)._currentAccessToken
+    if (!token)
+      return false
+    if (token.abilities?.includes('*'))
+      return true
+    return token.abilities?.includes(ability) ?? false
+  }
+
+  // Check if the current token does NOT have an ability
+  ;(req as any).tokenCant = async (ability: string): Promise<boolean> => {
+    return !(await (req as any).tokenCan(ability))
   }
 
   return req

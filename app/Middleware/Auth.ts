@@ -13,6 +13,7 @@ import { Middleware } from '@stacksjs/router'
  * Usage:
  * - Add 'auth' middleware to routes that require authentication
  * - The authenticated user will be available via request.user()
+ * - Token abilities can be checked via request.tokenCan('ability')
  */
 export default new Middleware({
   name: 'auth',
@@ -35,7 +36,11 @@ export default new Middleware({
     if (!user)
       throw new HttpError(401, 'Unable to authenticate user.')
 
-    // Store the authenticated user on the request for later use
+    // Get the current access token for ability checking
+    const accessToken = await Auth.currentAccessToken()
+
+    // Store the authenticated user and token on the request for later use
     ;(request as any)._authenticatedUser = user
+    ;(request as any)._currentAccessToken = accessToken
   },
 })
