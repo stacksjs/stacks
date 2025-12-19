@@ -6,14 +6,6 @@ export { type SubscriberEmailJsonResponse, type SubscriberEmailsTable, type NewS
 
 export { default as SubscriberEmail, SubscriberEmailModel } from './models/SubscriberEmail'
 
-export { type OAuthAccessTokenJsonResponse, type OauthAccessTokensTable, type NewOAuthAccessToken, type OAuthAccessTokenModelType, type OAuthAccessTokenUpdate } from './types/OAuthAccessTokenType'
-
-export { default as OAuthAccessToken, OAuthAccessTokenModel } from './models/OAuthAccessToken'
-
-export { type OAuthClientJsonResponse, type OauthClientsTable, type NewOAuthClient, type OAuthClientModelType, type OAuthClientUpdate } from './types/OAuthClientType'
-
-export { default as OAuthClient, OAuthClientModel } from './models/OAuthClient'
-
 export { type TeamJsonResponse, type TeamsTable, type NewTeam, type TeamModelType, type TeamUpdate } from './types/TeamType'
 
 export { default as Team, TeamModel } from './models/Team'

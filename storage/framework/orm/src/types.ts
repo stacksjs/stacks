@@ -1,7 +1,5 @@
 import type { ProjectsTable } from '../src/types/ProjectType'
 import type { SubscriberEmailsTable } from '../src/types/SubscriberEmailType'
-import type { OauthAccessTokensTable } from '../src/types/OAuthAccessTokenType'
-import type { OauthClientsTable } from '../src/types/OAuthClientType'
 import type { TeamsTable } from '../src/types/TeamType'
 import type { SubscribersTable } from '../src/types/SubscriberType'
 import type { DeploymentsTable } from '../src/types/DeploymentType'
@@ -170,8 +168,6 @@ export interface CommentableUpvotesTable {
 export interface Database {
   projects: ProjectsTable
   subscriber_emails: SubscriberEmailsTable
-  oauth_access_tokens: OauthAccessTokensTable
-  oauth_clients: OauthClientsTable
   teams: TeamsTable
   subscribers: SubscribersTable
   deployments: DeploymentsTable
