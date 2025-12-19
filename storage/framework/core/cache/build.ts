@@ -14,7 +14,7 @@ const result = await Bun.build({
   // sourcemap: 'linked',
   minify: true,
   plugins: [dts({ root: '.', outdir: './dist' })],
-  external: ['@stacksjs/config'],
+  external: ['@stacksjs/config', '@stacksjs/ts-cache'],
 })
 
 await outro({

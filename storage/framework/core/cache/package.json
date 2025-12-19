@@ -42,11 +42,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.876.0",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.5",
-    "bentocache": "^1.5.0",
-    "dynamodb-tooling": "^0.3.2",
-    "ioredis": "^5.7.0"
+    "@stacksjs/ts-cache": "link:@stacksjs/ts-cache"
   }
 }

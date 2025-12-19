@@ -72,17 +72,25 @@ export const defaults: StacksOptions = {
   },
 
   cache: {
-    driver: 'redis',
+    driver: 'memory',
     prefix: 'stx',
     ttl: 3600,
+    maxKeys: -1,
+    useClones: true,
 
     drivers: {
       redis: {
-        connection: 'default',
         host: 'localhost',
         port: 6379,
         username: '',
         password: '',
+        database: 0,
+        tls: false,
+      },
+      memory: {
+        maxKeys: -1,
+        checkPeriod: 600,
+        deleteOnExpire: true,
       },
     },
   },

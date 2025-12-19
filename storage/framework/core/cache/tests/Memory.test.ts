@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
-
-import { memory } from '../src/drivers/memory'
+import { createMemoryCache, memory } from '../src'
 
 beforeEach(async () => {
   await memory.clear()
@@ -20,7 +19,7 @@ describe('@stacksjs/cache - Memory', () => {
   it('should get or set a memory cache value if not set', async () => {
     expect(await memory.get('key3')).toBeUndefined()
 
-    await memory.getOrSet('key3', 'value3')
+    await memory.getOrSet('key3', async () => 'value3')
     expect(await memory.get('key3')).toBe('value3')
   })
 
@@ -64,5 +63,46 @@ describe('@stacksjs/cache - Memory', () => {
     await memory.remove('key11')
 
     expect(await memory.get('key11')).toBeUndefined()
+  })
+
+  it('should support batch operations', async () => {
+    await memory.mset([
+      { key: 'batch1', value: 'v1' },
+      { key: 'batch2', value: 'v2' },
+    ])
+
+    const values = await memory.mget(['batch1', 'batch2'])
+    expect(values.batch1).toBe('v1')
+    expect(values.batch2).toBe('v2')
+  })
+
+  it('should take (get and delete) a value', async () => {
+    await memory.set('take-key', 'take-value')
+    const value = await memory.take('take-key')
+    expect(value).toBe('take-value')
+    expect(await memory.has('take-key')).toBe(false)
+  })
+
+  it('should get cache statistics', async () => {
+    await memory.set('stats-key', 'value')
+    await memory.get('stats-key')
+    await memory.get('non-existent')
+
+    const stats = await memory.getStats()
+    expect(stats).toHaveProperty('hits')
+    expect(stats).toHaveProperty('misses')
+    expect(stats).toHaveProperty('keys')
+  })
+
+  it('should create a custom memory cache with factory', async () => {
+    const customCache = createMemoryCache({
+      maxKeys: 100,
+      prefix: 'custom',
+    })
+
+    await customCache.set('custom-key', 'custom-value')
+    expect(await customCache.get('custom-key')).toBe('custom-value')
+
+    await customCache.close()
   })
 })

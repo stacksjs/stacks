@@ -1,121 +1,239 @@
-import type { GetOptions } from 'bentocache/types'
-
+/**
+ * Cache Options - Configuration for the caching system
+ */
 export interface CacheOptions {
   /**
    * **Cache Driver**
    *
-   * This value determines the cache driver that will be used by your application to store
-   * cached data. By default, Stacks uses the "redis" driver, which stores cached data in
-   * in a self-configufed Redis instance. You may use any of the other drivers provided
-   * by Stacks or write your own custom driver.
+   * The cache driver that will be used by your application to store
+   * cached data. Supports 'memory' and 'redis' drivers.
    *
-   * @default "redis"
-   * @example "redis"
-   * @example "memcached"
-   * @example "dynamodb"
-   *
-   * @see https://stacks.js.org/docs/cache
+   * @default "memory"
    */
-  driver: string
+  driver: 'memory' | 'redis'
 
   /**
    * **Cache Prefix**
    *
-   * This value determines the prefix that will be used when storing items in the cache. This
-   * prefix may be useful when multiple applications are sharing the same cache driver so that
-   * they may avoid collisions when attempting to retrieve items from the cache.
+   * The prefix used when storing items in the cache. Useful when
+   * multiple applications share the same cache driver.
    *
-   * @default string "stacks"
-   * @example "stacks"
-   *
-   * @see https://stacks.js.org/docs/cache
+   * @default "stacks"
    */
   prefix: string
 
   /**
    * **Cache TTL**
    *
-   * This value determines the default time to live for items stored in the cache. This value
-   * may be overridden when storing items in the cache. If no value is specified, the cache
-   * driver will default to a reasonable time to live for the given item.
+   * Default time to live for items stored in the cache (in seconds).
+   * Use 0 for no expiration.
    *
-   * @default number 3600
-   * @example 3600
-   * @example 3600 * 24
-   * @example -1 (never expires)
+   * @default 3600
    */
   ttl: number
 
+  /**
+   * **Max Keys**
+   *
+   * Maximum number of keys to store in the cache.
+   * Use -1 for unlimited.
+   *
+   * @default -1
+   */
+  maxKeys?: number
+
+  /**
+   * **Use Clones**
+   *
+   * Whether to clone values when getting/setting.
+   * Disable for better performance with immutable data.
+   *
+   * @default true
+   */
+  useClones?: boolean
+
+  /**
+   * **Driver-specific configurations**
+   */
   drivers: {
     redis?: {
-      connection: string
+      /**
+       * Redis connection URL
+       * @example "redis://localhost:6379"
+       */
+      url?: string
 
       /**
-       * **Redis Host**
-       *
-       * This value determines the host that will be used to connect to the Redis server.
-       *
-       * @default string "localhost"
-       * @example "localhost"
+       * Redis Host
+       * @default "localhost"
        */
       host: string
 
       /**
-       * **Redis Port**
-       *
-       * This value determines the port that will be used to connect to the Redis server.
-       *
-       * @default number 6379
-       * @example 6379
+       * Redis Port
+       * @default 6379
        */
       port: number
 
       /**
-       * **Redis Username**
-       *
-       * This value determines the username that will be used to connect to the Redis server.
-       *
-       * @default string ""
-       * @example "admin"
+       * Redis Username
        */
-      username: string
+      username?: string
 
       /**
-       * **Redis Password**
-       *
-       * This value determines the password that will be used to connect to the Redis server.
-       *
-       * @default string ""
-       * @example "password"
+       * Redis Password
        */
-      password: string
+      password?: string
+
+      /**
+       * Redis Database number
+       * @default 0
+       */
+      database?: number
+
+      /**
+       * Enable TLS
+       * @default false
+       */
+      tls?: boolean
     }
 
-    memcached?: object
+    memory?: {
+      /**
+       * Maximum number of keys
+       * @default -1
+       */
+      maxKeys?: number
 
-    dynamodb?: {
-      key: string
-      secret: string
-      region: string
-      table: string
-      endpoint: string
+      /**
+       * Check period for expired keys (in seconds)
+       * @default 600
+       */
+      checkPeriod?: number
+
+      /**
+       * Delete keys on expire
+       * @default true
+       */
+      deleteOnExpire?: boolean
     }
   }
 }
 
 export type CacheConfig = Partial<CacheOptions>
 
+/**
+ * Cache Driver Interface - Defines the API for all cache implementations
+ */
 export interface CacheDriver {
-  set: (key: string, value: string, ttl?: number) => Promise<void>
-  setForever: (key: string, value: string, ttl?: number) => Promise<void>
-  get: <T> (key: GetOptions<T>) => Promise<T>
-  getOrSet: <T> (key: string, value: T) => Promise<T>
-  remove: (key: string) => Promise<void>
+  /**
+   * Get a cached value
+   */
+  get: <T>(key: string) => Promise<T | undefined>
+
+  /**
+   * Get multiple cached values
+   */
+  mget: <T>(keys: string[]) => Promise<Record<string, T>>
+
+  /**
+   * Set a cached value with optional TTL (in seconds)
+   */
+  set: <T>(key: string, value: T, ttl?: number) => Promise<boolean>
+
+  /**
+   * Set multiple cached values
+   */
+  mset: <T>(entries: Array<{ key: string, value: T, ttl?: number }>) => Promise<boolean>
+
+  /**
+   * Set a cached value that never expires
+   */
+  setForever: <T>(key: string, value: T) => Promise<boolean>
+
+  /**
+   * Get a value or set it if not cached
+   */
+  getOrSet: <T>(key: string, fetcher: () => T | Promise<T>, ttl?: number) => Promise<T>
+
+  /**
+   * Delete one or more keys
+   */
+  del: (keys: string | string[]) => Promise<number>
+
+  /**
+   * Check if a key exists
+   */
   has: (key: string) => Promise<boolean>
+
+  /**
+   * Check if a key is missing
+   */
   missing: (key: string) => Promise<boolean>
-  del: (key: string) => Promise<void>
-  deleteMany: (keys: string[]) => Promise<void>
+
+  /**
+   * Delete a single key (alias for del)
+   */
+  remove: (key: string) => Promise<void>
+
+  /**
+   * Delete multiple keys
+   */
+  deleteMany: (keys: string[]) => Promise<number>
+
+  /**
+   * Clear all cached values
+   */
   clear: () => Promise<void>
-  deleteAll: () => Promise<void>
+
+  /**
+   * Clear all cached values (alias for clear)
+   */
+  flush: () => Promise<void>
+
+  /**
+   * Get all keys matching a pattern
+   */
+  keys: (pattern?: string) => Promise<string[]>
+
+  /**
+   * Get the TTL of a key (in seconds)
+   */
+  getTtl: (key: string) => Promise<number | undefined>
+
+  /**
+   * Set/update the TTL of a key
+   */
+  ttl: (key: string, ttl: number) => Promise<boolean>
+
+  /**
+   * Get a value and delete it atomically
+   */
+  take: <T>(key: string) => Promise<T | undefined>
+
+  /**
+   * Get cache statistics
+   */
+  getStats: () => Promise<CacheStats>
+
+  /**
+   * Close the cache connection
+   */
+  close: () => Promise<void>
+
+  /**
+   * Disconnect from the cache (alias for close)
+   */
   disconnect: () => Promise<void>
+}
+
+/**
+ * Cache Statistics
+ */
+export interface CacheStats {
+  hits: number
+  misses: number
+  keys: number
+  size?: number
+  hitRate?: number
 }

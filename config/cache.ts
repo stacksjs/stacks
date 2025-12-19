@@ -1,50 +1,58 @@
 import type { CacheConfig } from '@stacksjs/types'
 
-// Use direct environment variable access to avoid circular dependencies
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
-
 /**
  * **Cache Configuration**
  *
- * This configuration defines all of your cache options. Because Stacks is fully-typed,
- * you may hover any of the options below and the definitions will be provided. In case
- * you have any questions, feel free to reach out via Discord or GitHub Discussions.
+ * This configuration defines all of your cache options. Stacks cache is
+ * powered by ts-cache, providing high-performance caching with support
+ * for memory and Redis drivers.
  */
 export default {
-  driver: 'dynamodb',
+  /**
+   * The cache driver to use ('memory' or 'redis')
+   */
+  driver: 'memory',
+
+  /**
+   * Key prefix for cache namespacing
+   */
   prefix: 'stacks',
+
+  /**
+   * Default TTL in seconds (0 = no expiration)
+   */
   ttl: 3600,
 
+  /**
+   * Maximum number of keys (-1 = unlimited)
+   */
+  maxKeys: -1,
+
+  /**
+   * Clone values on get/set (disable for better performance with immutable data)
+   */
+  useClones: true,
+
   drivers: {
-    dynamodb: {
-      key: envVars.AWS_ACCESS_KEY_ID || '',
-      secret: envVars.AWS_SECRET_ACCESS_KEY || '',
-      region: envVars.AWS_DEFAULT_REGION || 'us-east-1',
-      table: 'cache',
-      endpoint: '',
+    /**
+     * Memory driver configuration
+     */
+    memory: {
+      maxKeys: -1,
+      checkPeriod: 600,
+      deleteOnExpire: true,
     },
 
-    memcached: {
-      persistent_id: '',
-      sasl: ['', ''],
-      options: {
-        // Memcached::OPT_CONNECT_TIMEOUT => 2000,
-      },
-      servers: [
-        {
-          host: '127.0.0.1',
-          port: 11211,
-          weight: 100,
-        },
-      ],
-    },
-
+    /**
+     * Redis driver configuration
+     */
     redis: {
-      connection: 'cache',
       host: '127.0.0.1',
       port: 6379,
+      username: '',
       password: '',
-      username: 'stacks',
+      database: 0,
+      tls: false,
     },
   },
 } satisfies CacheConfig
