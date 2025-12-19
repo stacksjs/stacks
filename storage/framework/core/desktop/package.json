@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
-    "@stacksjs/development": "workspace:*",
+    "better-dx": "^0.2.5",
     "@stacksjs/server": "workspace:*",
     "@tauri-apps/api": "^2.8.0",
     "@tauri-apps/cli": "^2.8.4",

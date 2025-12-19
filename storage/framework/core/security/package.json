@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/development": "workspace:*",
+    "better-dx": "^0.2.5",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/validation": "workspace:*"

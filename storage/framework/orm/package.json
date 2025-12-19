@@ -41,6 +41,6 @@
     "@stacksjs/error-handling": "workspace:*"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "better-dx": "^0.2.5"
   }
 }

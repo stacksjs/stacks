@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/development": "workspace:*",
+    "better-dx": "^0.2.5",
     "@stacksjs/utils": "workspace:*",
     "@stripe/stripe-js": "^7.9.0",
     "stripe": "^17.7.0"

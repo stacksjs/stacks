@@ -25,6 +25,6 @@
     "typecheck": "bun tsc --noEmit"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "better-dx": "^0.2.5"
   }
 }

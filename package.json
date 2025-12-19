@@ -63,14 +63,6 @@
   },
   "workspaces": [
     "storage/framework/**",
-    "bun-queue",
-    "ts-auth",
-    "ts-cloud",
-    "ts-craft",
-    "ts-md",
-    "ts-open-api",
-    "ts-pantry",
-    "ts-security-crypto",
     "!storage/framework/cloud/cdk.out",
     "!storage/framework/cloud/cdk.out/**",
     "!**/node_modules/**",
@@ -80,8 +72,6 @@
     "!storage/framework/cache/**"
   ],
   "devDependencies": {
-    "buddy-bot": "^0.9.11",
-    "ts-pantry": "workspace:*",
-    "typescript": "5.9.2"
+    "better-dx": "0.2.5"
   }
 }

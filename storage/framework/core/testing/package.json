@@ -47,6 +47,6 @@
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
-    "@stacksjs/development": "workspace:*"
+    "better-dx": "^0.2.5"
   }
 }

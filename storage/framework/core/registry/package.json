@@ -31,6 +31,6 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "better-dx": "^0.2.5"
   }
 }

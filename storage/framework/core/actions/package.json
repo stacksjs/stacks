@@ -51,7 +51,7 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
-    "@stacksjs/development": "workspace:*",
+    "better-dx": "^0.2.5",
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/enums": "workspace:*",
     "@stacksjs/env": "workspace:*",

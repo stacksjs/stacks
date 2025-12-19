@@ -113,11 +113,6 @@
   "lint-staged": {
     "*": "bunx --bun eslint . --fix"
   },
-  "config": {
-    "commitizen": {
-      "path": "node_modules/cz-git"
-    }
-  },
   "workspaces": [
     "storage/framework",
     "storage/framework/libs/*",

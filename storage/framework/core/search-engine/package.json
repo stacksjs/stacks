@@ -49,7 +49,7 @@
   "devDependencies": {
     "@opensearch-project/opensearch": "^3.5.1",
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/development": "workspace:*",
+    "better-dx": "^0.2.5",
     "meilisearch": "^0.52.0"
   }
 }

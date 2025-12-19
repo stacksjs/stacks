@@ -38,6 +38,6 @@
     "ts-spreadsheets": "^0.2.0"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "better-dx": "^0.2.5"
   }
 }

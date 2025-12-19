@@ -39,6 +39,6 @@
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
-    "@stacksjs/development": "workspace:*"
+    "better-dx": "^0.2.5"
   }
 }
