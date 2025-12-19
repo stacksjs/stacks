@@ -1,4 +1,4 @@
-import type { OauthClientJsonResponse, UserModel } from '@stacksjs/orm'
+import type { UserModel } from '@stacksjs/orm'
 import type { AuthToken } from './token'
 import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
@@ -14,6 +14,23 @@ interface Credentials {
   password: string | undefined
   email: string | undefined
   [key: string]: string | undefined
+}
+
+/**
+ * OAuth Client database row response
+ * Defined locally to avoid circular dependency with ORM types
+ */
+interface OAuthClientRow {
+  id: number
+  name: string
+  secret: string
+  provider: string | null
+  redirect: string
+  personal_access_client: boolean
+  password_client: boolean
+  revoked: boolean
+  created_at?: string
+  updated_at?: string
 }
 
 /**
@@ -67,7 +84,7 @@ export class Auth {
     return client.secret
   }
 
-  private static async getPersonalAccessClient(): Promise<OauthClientJsonResponse> {
+  private static async getPersonalAccessClient(): Promise<OAuthClientRow> {
     const client = await db.selectFrom('oauth_clients')
       .where('personal_access_client', '=', true)
       .selectAll()

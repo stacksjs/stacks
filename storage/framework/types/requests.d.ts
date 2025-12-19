@@ -267,6 +267,58 @@ created_at?: string
       updated_at?: string
     }
 
+interface RequestDataOAuthAccessToken {
+       id: number
+ token: string
+      name: string
+      scopes: string
+      revoked: boolean
+      expires_at: timestamp
+     created_at?: string
+      updated_at?: string
+    }
+export interface OAuthAccessTokenRequestType extends Request {
+      validate(attributes?: CustomAttributes): Promise<void>
+       get: <T = string>(element: string, defaultValue?: T) => T
+      all(): RequestDataOAuthAccessToken
+       id: number
+ token: string
+      name: string
+      scopes: string
+      revoked: boolean
+      expires_at: timestamp
+     created_at?: string
+      updated_at?: string
+    }
+
+interface RequestDataOAuthClient {
+       id: number
+ name: string
+      secret: string
+      provider: string
+      redirect: string
+      personal_access_client: boolean
+      password_client: boolean
+      revoked: boolean
+     created_at?: string
+      updated_at?: string
+    }
+export interface OAuthClientRequestType extends Request {
+      validate(attributes?: CustomAttributes): Promise<void>
+       get: <T = string>(element: string, defaultValue?: T) => T
+      all(): RequestDataOAuthClient
+       id: number
+ name: string
+      secret: string
+      provider: string
+      redirect: string
+      personal_access_client: boolean
+      password_client: boolean
+      revoked: boolean
+     created_at?: string
+      updated_at?: string
+    }
+
 interface RequestDataTeam {
        id: number
  name: string
@@ -1695,4 +1747,4 @@ export interface CartItemRequestType extends Request {
       updated_at?: string
     }
 
-export type ModelRequest = MigrationsRequestType | PasswordResetsRequestType | PasskeysRequestType | CommentablesRequestType | CommentableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestTypeProjectRequestType | SubscriberEmailRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | SampleModelRequestType | PersonalAccessTokenRequestType | PaymentProductRequestType | FailedJobRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | JobRequestType | LogRequestType | SubscriptionRequestType | ErrorRequestType | WebsocketRequestType | PageRequestType | AuthorRequestType | PostRequestType | PrintDeviceRequestType | CategoryRequestType | PaymentRequestType | DriverRequestType | WaitlistProductRequestType | DigitalDeliveryRequestType | ManufacturerRequestType | OrderItemRequestType | ShippingZoneRequestType | CustomerRequestType | ProductRequestType | ReceiptRequestType | ProductVariantRequestType | LicenseKeyRequestType | WaitlistRestaurantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TaxRateRequestType | TransactionRequestType | LoyaltyPointRequestType | LoyaltyRewardRequestType | ShippingMethodRequestType | ShippingRateRequestType | CartRequestType | DeliveryRouteRequestType | CartItemRequestType
+export type ModelRequest = MigrationsRequestType | PasswordResetsRequestType | PasskeysRequestType | CommentablesRequestType | CommentableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestTypeProjectRequestType | SubscriberEmailRequestType | OAuthAccessTokenRequestType | OAuthClientRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | SampleModelRequestType | PersonalAccessTokenRequestType | PaymentProductRequestType | FailedJobRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | JobRequestType | LogRequestType | SubscriptionRequestType | ErrorRequestType | WebsocketRequestType | PageRequestType | AuthorRequestType | PostRequestType | PrintDeviceRequestType | CategoryRequestType | PaymentRequestType | DriverRequestType | WaitlistProductRequestType | DigitalDeliveryRequestType | ManufacturerRequestType | OrderItemRequestType | ShippingZoneRequestType | CustomerRequestType | ProductRequestType | ReceiptRequestType | ProductVariantRequestType | LicenseKeyRequestType | WaitlistRestaurantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TaxRateRequestType | TransactionRequestType | LoyaltyPointRequestType | LoyaltyRewardRequestType | ShippingMethodRequestType | ShippingRateRequestType | CartRequestType | DeliveryRouteRequestType | CartItemRequestType

@@ -4,6 +4,15 @@ export interface Attributes {
       url: string
       status: string
       email: string
+      token: string
+      scopes: string
+      revoked: boolean
+      expires_at: Date | string
+      secret: string
+      provider: string
+      redirect: string
+      personal_access_client: boolean
+      password_client: boolean
       company_name: string
       billing_email: string
       path: string
@@ -17,11 +26,9 @@ export interface Attributes {
       terminal_output: string
       version: string
       password: string
-      token: string
       plain_text_token: string
       abilities: string
       last_used_at: Date | string
-      expires_at: Date | string
       revoked_at: Date | string
       ip_address: string
       device_name: string

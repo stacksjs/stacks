@@ -1,5 +1,7 @@
 export { default as Project, ProjectModel } from './Project'
 export { default as SubscriberEmail, SubscriberEmailModel } from './SubscriberEmail'
+export { default as OAuthAccessToken, OAuthAccessTokenModel } from './OAuthAccessToken'
+export { default as OAuthClient, OAuthClientModel } from './OAuthClient'
 export { default as Team, TeamModel } from './Team'
 export { default as Subscriber, SubscriberModel } from './Subscriber'
 export { default as Deployment, DeploymentModel } from './Deployment'
