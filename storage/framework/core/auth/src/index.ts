@@ -11,3 +11,5 @@ export * from './password/reset'
 export * from './register'
 
 export * from './user'
+
+export * from './tokens'
