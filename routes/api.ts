@@ -23,6 +23,18 @@ route.post('/verify-registration', 'Actions/Auth/VerifyRegistrationAction')
 route.get('/generate-authentication-options', 'Actions/Auth/GenerateAuthenticationAction')
 route.post('/verify-authentication', 'Actions/Auth/VerifyAuthenticationAction')
 
+// Token management routes
+route.group({ prefix: '/auth' }, async () => {
+  // Public - refresh token (no auth middleware needed)
+  route.post('/refresh', 'Actions/Auth/RefreshTokenAction')
+
+  // Protected - requires authentication
+  route.get('/tokens', 'Actions/Auth/ListTokensAction').middleware('auth')
+  route.post('/token', 'Actions/Auth/CreateTokenAction').middleware('auth')
+  route.delete('/tokens/{id}', 'Actions/Auth/RevokeTokenAction').middleware('auth')
+  route.get('/abilities', 'Actions/Auth/TestAbilitiesAction').middleware('auth')
+})
+
 route.get('/coming-soon', 'Controllers/ComingSoonController@index')
 
 // route.email('/welcome')
