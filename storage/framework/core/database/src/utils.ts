@@ -171,20 +171,31 @@ function updateQueryBuilderConfig(): void {
  */
 let _dbInstance: ReturnType<typeof createQueryBuilder> | null = null
 
-function getDb(): ReturnType<typeof createQueryBuilder> {
-  if (!_dbInstance) {
-    // Lazy load config to avoid circular dependency issues
+let _configInitialized = false
+let _configInitPromise: Promise<void> | null = null
+
+async function ensureConfigLoaded(): Promise<void> {
+  if (_configInitialized) return
+  if (_configInitPromise) return _configInitPromise
+
+  _configInitPromise = (async () => {
     try {
-      // eslint-disable-next-line ts/no-require-imports
-      const configModule = require('@stacksjs/config')
-      if (configModule?.config) {
-        initializeDbConfig(configModule.config)
+      const { config } = await import('@stacksjs/config')
+      if (config) {
+        initializeDbConfig(config)
       }
     }
     catch {
-      // Config not available yet, use defaults from env vars
+      // Config not available, use defaults from env vars
     }
+    _configInitialized = true
+  })()
 
+  return _configInitPromise
+}
+
+function getDb(): ReturnType<typeof createQueryBuilder> {
+  if (!_dbInstance) {
     // Ensure query builder config is updated before creating instance
     updateQueryBuilderConfig()
 
@@ -194,6 +205,9 @@ function getDb(): ReturnType<typeof createQueryBuilder> {
   }
   return _dbInstance
 }
+
+// Initialize config asynchronously in the background
+ensureConfigLoaded()
 
 /**
  * Lazy proxy for the query builder - connection is only made when first used.

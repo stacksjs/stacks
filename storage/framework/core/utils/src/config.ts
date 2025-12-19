@@ -18,6 +18,6 @@ export {
   defineSearchEngine,
   defineServices,
   defineSms,
-  defineStorage,
+  defineFilesystems,
   defineUi,
 } from '@stacksjs/config'
