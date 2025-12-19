@@ -3,13 +3,21 @@
  *
  * Standalone functions that can be imported and used anywhere.
  * These replicate Laravel Passport's HasApiTokens trait functionality.
+ *
+ * Features:
+ * - Token hashing (SHA-256) for secure storage
+ * - Refresh tokens for token renewal without re-authentication
  */
 
 import type { UserModel } from '@stacksjs/orm'
-import { randomBytes } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { getCurrentRequest } from '@stacksjs/router'
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 /**
  * Access token with scope checking capabilities
@@ -27,11 +35,34 @@ export interface AccessToken {
 }
 
 /**
+ * Refresh token for obtaining new access tokens
+ */
+export interface RefreshToken {
+  id: number
+  accessTokenId: number
+  revoked: boolean
+  expiresAt: Date | null
+  createdAt: Date
+}
+
+/**
  * Result returned when creating a personal access token
  */
 export interface PersonalAccessTokenResult {
   accessToken: AccessToken
   plainTextToken: string
+  refreshToken?: string
+  expiresIn: number
+}
+
+/**
+ * Result returned when refreshing a token
+ */
+export interface RefreshTokenResult {
+  accessToken: AccessToken
+  plainTextToken: string
+  refreshToken: string
+  expiresIn: number
 }
 
 /**
@@ -48,6 +79,25 @@ export interface OAuthClient {
   revoked: boolean
   createdAt: Date
   updatedAt: Date | null
+}
+
+// ============================================================================
+// HASHING UTILITIES
+// ============================================================================
+
+/**
+ * Hash a token using SHA-256
+ * This is used to store tokens securely in the database
+ */
+function hashToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex')
+}
+
+/**
+ * Generate a secure random token
+ */
+function generateSecureToken(bytes: number = 40): string {
+  return randomBytes(bytes).toString('hex')
 }
 
 // ============================================================================
@@ -86,17 +136,22 @@ export async function tokens(userId: number): Promise<AccessToken[]> {
 
 /**
  * Get a specific token by its plain text value
+ * Uses hash comparison for security
  *
  * @example
  * import { findToken } from '@stacksjs/auth'
  * const token = await findToken('abc123...')
  */
 export async function findToken(plainTextToken: string): Promise<AccessToken | null> {
+  const hashedToken = hashToken(plainTextToken)
+
   const rows = await db.unsafe(`
     SELECT * FROM oauth_access_tokens
     WHERE token = ?
+    AND revoked = 0
+    AND (expires_at IS NULL OR expires_at > datetime('now'))
     LIMIT 1
-  `, [plainTextToken]).execute()
+  `, [hashedToken]).execute()
 
   const row = (rows as any[])[0]
   if (!row) return null
@@ -133,7 +188,14 @@ export async function currentAccessToken(): Promise<AccessToken | null> {
   const bearerToken = request.bearerToken?.()
   if (!bearerToken) return null
 
-  return findToken(bearerToken)
+  const token = await findToken(bearerToken)
+
+  // Cache on request for subsequent calls
+  if (token) {
+    (request as any)._currentAccessToken = token
+  }
+
+  return token
 }
 
 /**
@@ -236,18 +298,38 @@ export async function tokenAbilities(): Promise<string[]> {
 
 /**
  * Create a new personal access token for a user
+ * Tokens are hashed before storage for security
+ *
+ * @param userId - The user ID to create the token for
+ * @param name - A name/description for the token
+ * @param scopes - Array of scopes/abilities for the token
+ * @param options - Additional options
+ * @param options.expiresInMinutes - Token expiry in minutes (default: 60)
+ * @param options.withRefreshToken - Whether to create a refresh token (default: true)
+ * @param options.refreshExpiresInDays - Refresh token expiry in days (default: 30)
  *
  * @example
  * import { createToken } from '@stacksjs/auth'
  * const result = await createToken(user.id, 'My API Token', ['read', 'write'])
- * console.log(result.plainTextToken) // Save this!
+ * console.log(result.plainTextToken) // Save this - it won't be shown again!
+ * console.log(result.refreshToken)   // Use this to get new access tokens
  */
 export async function createToken(
   userId: number,
   name: string = 'access-token',
   scopes: string[] = ['*'],
-  expiresInDays: number = 365
+  options: {
+    expiresInMinutes?: number
+    withRefreshToken?: boolean
+    refreshExpiresInDays?: number
+  } = {}
 ): Promise<PersonalAccessTokenResult> {
+  const {
+    expiresInMinutes = 60,
+    withRefreshToken = true,
+    refreshExpiresInDays = 30,
+  } = options
+
   // Get the personal access client
   const clients = await db.unsafe(`
     SELECT id FROM oauth_clients WHERE personal_access_client = 1 LIMIT 1
@@ -258,21 +340,24 @@ export async function createToken(
     throw new HttpError(500, 'No personal access client found. Run ./buddy auth:setup first.')
   }
 
-  // Generate token
-  const plainTextToken = randomBytes(40).toString('hex')
-  const expiresAt = new Date()
-  expiresAt.setDate(expiresAt.getDate() + expiresInDays)
+  // Generate and hash access token
+  const plainTextToken = generateSecureToken(40)
+  const hashedToken = hashToken(plainTextToken)
 
-  // Insert token
+  // Calculate expiry
+  const expiresAt = new Date()
+  expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes)
+
+  // Insert access token
   await db.unsafe(`
     INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, 0, ?, datetime('now'), datetime('now'))
-  `, [userId, client.id, plainTextToken, name, JSON.stringify(scopes), expiresAt.toISOString()]).execute()
+  `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), expiresAt.toISOString()]).execute()
 
   // Get the inserted token
   const inserted = await db.unsafe(`
     SELECT * FROM oauth_access_tokens WHERE token = ? LIMIT 1
-  `, [plainTextToken]).execute()
+  `, [hashedToken]).execute()
 
   const row = (inserted as any[])[0]
 
@@ -288,10 +373,223 @@ export async function createToken(
     updatedAt: new Date(row.updated_at),
   }
 
+  // Create refresh token if requested
+  let refreshTokenPlain: string | undefined
+  if (withRefreshToken) {
+    refreshTokenPlain = generateSecureToken(40)
+    const hashedRefreshToken = hashToken(refreshTokenPlain)
+
+    const refreshExpiresAt = new Date()
+    refreshExpiresAt.setDate(refreshExpiresAt.getDate() + refreshExpiresInDays)
+
+    await db.unsafe(`
+      INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
+      VALUES (?, ?, 0, ?, datetime('now'))
+    `, [accessToken.id, hashedRefreshToken, refreshExpiresAt.toISOString()]).execute()
+  }
+
   return {
     accessToken,
     plainTextToken,
+    refreshToken: refreshTokenPlain,
+    expiresIn: expiresInMinutes * 60, // Return in seconds for consistency with OAuth2
   }
+}
+
+// ============================================================================
+// REFRESH TOKEN FUNCTIONS
+// ============================================================================
+
+/**
+ * Exchange a refresh token for a new access token
+ *
+ * @param refreshTokenPlain - The plain text refresh token
+ * @param options - Additional options
+ * @param options.expiresInMinutes - New access token expiry in minutes (default: 60)
+ * @param options.refreshExpiresInDays - New refresh token expiry in days (default: 30)
+ *
+ * @example
+ * import { refreshToken } from '@stacksjs/auth'
+ * const result = await refreshToken('your-refresh-token')
+ * // Use result.plainTextToken as new access token
+ * // Use result.refreshToken as new refresh token (old one is revoked)
+ */
+export async function refreshToken(
+  refreshTokenPlain: string,
+  options: {
+    expiresInMinutes?: number
+    refreshExpiresInDays?: number
+  } = {}
+): Promise<RefreshTokenResult> {
+  const {
+    expiresInMinutes = 60,
+    refreshExpiresInDays = 30,
+  } = options
+
+  const hashedRefreshToken = hashToken(refreshTokenPlain)
+
+  // Find the refresh token and its associated access token
+  const refreshRows = await db.unsafe(`
+    SELECT r.*, t.user_id, t.oauth_client_id, t.name, t.scopes
+    FROM oauth_refresh_tokens r
+    JOIN oauth_access_tokens t ON r.access_token_id = t.id
+    WHERE r.token = ?
+    AND r.revoked = 0
+    AND (r.expires_at IS NULL OR r.expires_at > datetime('now'))
+    LIMIT 1
+  `, [hashedRefreshToken]).execute()
+
+  const refreshRow = (refreshRows as any[])[0]
+  if (!refreshRow) {
+    throw new HttpError(401, 'Invalid or expired refresh token')
+  }
+
+  // Revoke the old refresh token
+  await db.unsafe(`
+    UPDATE oauth_refresh_tokens
+    SET revoked = 1
+    WHERE id = ?
+  `, [refreshRow.id]).execute()
+
+  // Create new access token
+  const plainTextToken = generateSecureToken(40)
+  const hashedToken = hashToken(plainTextToken)
+
+  const expiresAt = new Date()
+  expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes)
+
+  await db.unsafe(`
+    INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, 0, ?, datetime('now'), datetime('now'))
+  `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, expiresAt.toISOString()]).execute()
+
+  // Get the new access token
+  const inserted = await db.unsafe(`
+    SELECT * FROM oauth_access_tokens WHERE token = ? LIMIT 1
+  `, [hashedToken]).execute()
+
+  const row = (inserted as any[])[0]
+
+  const accessToken: AccessToken = {
+    id: row.id,
+    userId: row.user_id,
+    clientId: row.oauth_client_id,
+    name: row.name,
+    scopes: parseScopes(row.scopes),
+    revoked: false,
+    expiresAt: expiresAt,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+  }
+
+  // Create new refresh token
+  const newRefreshTokenPlain = generateSecureToken(40)
+  const newHashedRefreshToken = hashToken(newRefreshTokenPlain)
+
+  const refreshExpiresAt = new Date()
+  refreshExpiresAt.setDate(refreshExpiresAt.getDate() + refreshExpiresInDays)
+
+  await db.unsafe(`
+    INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
+    VALUES (?, ?, 0, ?, datetime('now'))
+  `, [accessToken.id, newHashedRefreshToken, refreshExpiresAt.toISOString()]).execute()
+
+  return {
+    accessToken,
+    plainTextToken,
+    refreshToken: newRefreshTokenPlain,
+    expiresIn: expiresInMinutes * 60,
+  }
+}
+
+/**
+ * Validate a refresh token without exchanging it
+ *
+ * @example
+ * import { validateRefreshToken } from '@stacksjs/auth'
+ * const isValid = await validateRefreshToken('your-refresh-token')
+ */
+export async function validateRefreshToken(refreshTokenPlain: string): Promise<boolean> {
+  const hashedRefreshToken = hashToken(refreshTokenPlain)
+
+  const rows = await db.unsafe(`
+    SELECT id FROM oauth_refresh_tokens
+    WHERE token = ?
+    AND revoked = 0
+    AND (expires_at IS NULL OR expires_at > datetime('now'))
+    LIMIT 1
+  `, [hashedRefreshToken]).execute()
+
+  return (rows as any[]).length > 0
+}
+
+/**
+ * Revoke a specific refresh token
+ *
+ * @example
+ * import { revokeRefreshToken } from '@stacksjs/auth'
+ * await revokeRefreshToken('your-refresh-token')
+ */
+export async function revokeRefreshToken(refreshTokenPlain: string): Promise<void> {
+  const hashedRefreshToken = hashToken(refreshTokenPlain)
+
+  await db.unsafe(`
+    UPDATE oauth_refresh_tokens
+    SET revoked = 1
+    WHERE token = ?
+  `, [hashedRefreshToken]).execute()
+}
+
+/**
+ * Revoke all refresh tokens for a user
+ *
+ * @example
+ * import { revokeAllRefreshTokens } from '@stacksjs/auth'
+ * await revokeAllRefreshTokens(user.id)
+ */
+export async function revokeAllRefreshTokens(userId: number): Promise<void> {
+  await db.unsafe(`
+    UPDATE oauth_refresh_tokens
+    SET revoked = 1
+    WHERE access_token_id IN (
+      SELECT id FROM oauth_access_tokens WHERE user_id = ?
+    )
+  `, [userId]).execute()
+}
+
+/**
+ * Delete expired refresh tokens (cleanup)
+ *
+ * @example
+ * import { deleteExpiredRefreshTokens } from '@stacksjs/auth'
+ * const count = await deleteExpiredRefreshTokens()
+ */
+export async function deleteExpiredRefreshTokens(): Promise<number> {
+  const result = await db.unsafe(`
+    DELETE FROM oauth_refresh_tokens
+    WHERE expires_at < datetime('now')
+  `).execute()
+
+  return (result as any)?.changes || 0
+}
+
+/**
+ * Delete revoked refresh tokens older than specified days
+ *
+ * @example
+ * import { deleteRevokedRefreshTokens } from '@stacksjs/auth'
+ * const count = await deleteRevokedRefreshTokens(7)
+ */
+export async function deleteRevokedRefreshTokens(daysOld: number = 7): Promise<number> {
+  const cutoffDate = new Date()
+  cutoffDate.setDate(cutoffDate.getDate() - daysOld)
+
+  const result = await db.unsafe(`
+    DELETE FROM oauth_refresh_tokens
+    WHERE revoked = 1 AND created_at < ?
+  `, [cutoffDate.toISOString()]).execute()
+
+  return (result as any)?.changes || 0
 }
 
 // ============================================================================
@@ -299,18 +597,29 @@ export async function createToken(
 // ============================================================================
 
 /**
- * Revoke a specific token
+ * Revoke a specific access token
  *
  * @example
  * import { revokeToken } from '@stacksjs/auth'
  * await revokeToken('abc123...')
  */
 export async function revokeToken(plainTextToken: string): Promise<void> {
+  const hashedToken = hashToken(plainTextToken)
+
+  // Also revoke associated refresh tokens
+  await db.unsafe(`
+    UPDATE oauth_refresh_tokens
+    SET revoked = 1
+    WHERE access_token_id IN (
+      SELECT id FROM oauth_access_tokens WHERE token = ?
+    )
+  `, [hashedToken]).execute()
+
   await db.unsafe(`
     UPDATE oauth_access_tokens
     SET revoked = 1, updated_at = datetime('now')
     WHERE token = ?
-  `, [plainTextToken]).execute()
+  `, [hashedToken]).execute()
 }
 
 /**
@@ -321,6 +630,13 @@ export async function revokeToken(plainTextToken: string): Promise<void> {
  * await revokeTokenById(123)
  */
 export async function revokeTokenById(tokenId: number): Promise<void> {
+  // Also revoke associated refresh tokens
+  await db.unsafe(`
+    UPDATE oauth_refresh_tokens
+    SET revoked = 1
+    WHERE access_token_id = ?
+  `, [tokenId]).execute()
+
   await db.unsafe(`
     UPDATE oauth_access_tokens
     SET revoked = 1, updated_at = datetime('now')
@@ -336,6 +652,9 @@ export async function revokeTokenById(tokenId: number): Promise<void> {
  * await revokeAllTokens(user.id)
  */
 export async function revokeAllTokens(userId: number): Promise<void> {
+  // Revoke all refresh tokens first
+  await revokeAllRefreshTokens(userId)
+
   await db.unsafe(`
     UPDATE oauth_access_tokens
     SET revoked = 1, updated_at = datetime('now')
@@ -356,6 +675,15 @@ export async function revokeOtherTokens(userId: number): Promise<void> {
     return revokeAllTokens(userId)
   }
 
+  // Revoke refresh tokens for other access tokens
+  await db.unsafe(`
+    UPDATE oauth_refresh_tokens
+    SET revoked = 1
+    WHERE access_token_id IN (
+      SELECT id FROM oauth_access_tokens WHERE user_id = ? AND id != ?
+    )
+  `, [userId, current.id]).execute()
+
   await db.unsafe(`
     UPDATE oauth_access_tokens
     SET revoked = 1, updated_at = datetime('now')
@@ -371,6 +699,14 @@ export async function revokeOtherTokens(userId: number): Promise<void> {
  * const count = await deleteExpiredTokens()
  */
 export async function deleteExpiredTokens(): Promise<number> {
+  // Delete associated refresh tokens first
+  await db.unsafe(`
+    DELETE FROM oauth_refresh_tokens
+    WHERE access_token_id IN (
+      SELECT id FROM oauth_access_tokens WHERE expires_at < datetime('now')
+    )
+  `).execute()
+
   const result = await db.unsafe(`
     DELETE FROM oauth_access_tokens
     WHERE expires_at < datetime('now')
@@ -389,6 +725,14 @@ export async function deleteExpiredTokens(): Promise<number> {
 export async function deleteRevokedTokens(daysOld: number = 7): Promise<number> {
   const cutoffDate = new Date()
   cutoffDate.setDate(cutoffDate.getDate() - daysOld)
+
+  // Delete associated refresh tokens first
+  await db.unsafe(`
+    DELETE FROM oauth_refresh_tokens
+    WHERE access_token_id IN (
+      SELECT id FROM oauth_access_tokens WHERE revoked = 1 AND updated_at < ?
+    )
+  `, [cutoffDate.toISOString()]).execute()
 
   const result = await db.unsafe(`
     DELETE FROM oauth_access_tokens
@@ -452,7 +796,7 @@ export async function createClient(options: {
   personalAccessClient?: boolean
   passwordClient?: boolean
 }): Promise<{ client: OAuthClient, plainTextSecret: string }> {
-  const secret = randomBytes(40).toString('hex')
+  const secret = generateSecureToken(40)
 
   await db.unsafe(`
     INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)

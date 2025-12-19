@@ -26,12 +26,13 @@ try {
   `).execute()
 
   // Create oauth_access_tokens table if it doesn't exist
+  // Note: tokens are stored as SHA-256 hashes (64 chars hex)
   await db.unsafe(`
     CREATE TABLE IF NOT EXISTS oauth_access_tokens (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
       oauth_client_id INTEGER NOT NULL,
-      token VARCHAR(512) NOT NULL,
+      token VARCHAR(64) NOT NULL,
       name VARCHAR(255),
       scopes VARCHAR(2000),
       revoked BOOLEAN NOT NULL DEFAULT 0,
@@ -41,6 +42,30 @@ try {
       FOREIGN KEY (user_id) REFERENCES users(id),
       FOREIGN KEY (oauth_client_id) REFERENCES oauth_clients(id)
     )
+  `).execute()
+
+  // Create index on token for fast lookups
+  await db.unsafe(`
+    CREATE INDEX IF NOT EXISTS idx_oauth_access_tokens_token ON oauth_access_tokens(token)
+  `).execute()
+
+  // Create oauth_refresh_tokens table if it doesn't exist
+  // Note: tokens are stored as SHA-256 hashes (64 chars hex)
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS oauth_refresh_tokens (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      access_token_id INTEGER NOT NULL,
+      token VARCHAR(64) NOT NULL,
+      revoked BOOLEAN NOT NULL DEFAULT 0,
+      expires_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (access_token_id) REFERENCES oauth_access_tokens(id) ON DELETE CASCADE
+    )
+  `).execute()
+
+  // Create index on refresh token for fast lookups
+  await db.unsafe(`
+    CREATE INDEX IF NOT EXISTS idx_oauth_refresh_tokens_token ON oauth_refresh_tokens(token)
   `).execute()
 
   log.success('OAuth tables ready')
@@ -79,9 +104,14 @@ catch (error) {
 }
 
 console.log('\n✓ Authentication setup complete!')
+console.log('\nFeatures enabled:')
+console.log('  - Token hashing (SHA-256) for secure storage')
+console.log('  - Refresh tokens for seamless token renewal')
+console.log('  - Scope-based authorization')
 console.log('\nNext steps:')
-console.log('  1. Use Auth.login() to authenticate users and generate tokens')
-console.log('  2. Use the "auth" middleware to protect routes')
-console.log('  3. Use the "abilities" middleware for scope-based authorization\n')
+console.log('  1. Use createToken(userId, name, scopes) to generate tokens')
+console.log('  2. Use refreshToken(token) to exchange refresh tokens')
+console.log('  3. Use the "auth" middleware to protect routes')
+console.log('  4. Use tokenCan(scope) for authorization checks\n')
 
 process.exit(0)
