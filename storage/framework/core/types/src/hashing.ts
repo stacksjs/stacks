@@ -59,19 +59,15 @@ export type HashingConfig = Partial<HashingOptions>
  */
 export interface BcryptOptions {
   /**
-   * Bcrypt salt rounds.
+   * Bcrypt rounds (cost factor).
+   * This is a number between 4-31.
+   * Higher values = more secure but slower.
+   * Laravel default: 10-12
    *
-   * @default number 10
+   * @default 12
    * @see https://stacksjs.com/docs/hashing
    */
   rounds: number
-
-  /**
-   * Bcrypt cost. This is a number between 4-31.
-   * @default number 4
-   * @see https://stacksjs.com/docs/hashing
-   */
-  cost: number
 }
 
 /**

@@ -11,6 +11,7 @@ import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { faker } from '@stacksjs/faker'
 import { path } from '@stacksjs/path'
+import { Hash } from '@stacksjs/security'
 import { fs } from '@stacksjs/storage'
 
 /**
@@ -146,27 +147,49 @@ async function loadModels(modelsDir: string): Promise<SeederModel[]> {
 }
 
 /**
+ * Check if a field is a password field that should be hashed
+ */
+function isPasswordField(fieldName: string, attr: Attribute): boolean {
+  const lowerName = fieldName.toLowerCase()
+
+  // Check field name patterns
+  if (lowerName === 'password' || lowerName.endsWith('_password') || lowerName.endsWith('password')) {
+    return true
+  }
+
+  // Check if the attribute is marked as hidden (common for password fields)
+  if (attr.hidden === true && lowerName.includes('pass')) {
+    return true
+  }
+
+  return false
+}
+
+/**
  * Generate a single record using factory functions
  *
  * Note: Field names are converted to snake_case to match database column names.
  * Model attributes use camelCase (e.g., companyName) but database columns
  * use snake_case (e.g., company_name).
+ *
+ * Password fields are automatically hashed using the configured hashing algorithm.
  */
-function generateRecord(
+async function generateRecord(
   attributes: Record<string, Attribute>,
   modelName: string,
   verbose: boolean = false,
-): Record<string, unknown> {
+): Promise<Record<string, unknown>> {
   const record: Record<string, unknown> = {}
 
   for (const [fieldName, attr] of Object.entries(attributes)) {
     // Convert field name to snake_case for database column
     const columnName = snakeCase(fieldName)
+    let value: unknown
 
     // Use factory function if defined
     if (attr.factory && typeof attr.factory === 'function') {
       try {
-        record[columnName] = attr.factory(faker)
+        value = attr.factory(faker)
       }
       catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err)
@@ -175,18 +198,37 @@ function generateRecord(
         }
         // Use default if available, otherwise use sensible fallbacks based on likely type
         if (attr.default !== undefined) {
-          record[columnName] = attr.default
+          value = attr.default
         }
         else {
           // Try to infer a sensible default
-          record[columnName] = inferDefaultValue(fieldName)
+          value = inferDefaultValue(fieldName)
         }
       }
     }
     else if (attr.default !== undefined) {
-      record[columnName] = attr.default
+      value = attr.default
     }
-    // Skip fields without factory or default - they may be nullable or auto-generated
+    else {
+      // Skip fields without factory or default - they may be nullable or auto-generated
+      continue
+    }
+
+    // Hash password fields
+    if (isPasswordField(fieldName, attr) && typeof value === 'string') {
+      try {
+        value = await Hash.make(value)
+      }
+      catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err)
+        if (verbose) {
+          log.warn(`  Failed to hash password for ${modelName}.${fieldName}: ${errorMsg}`)
+        }
+        // Keep the unhashed value as fallback
+      }
+    }
+
+    record[columnName] = value
   }
 
   return record
@@ -230,12 +272,13 @@ function inferDefaultValue(fieldName: string): unknown {
 /**
  * Generate multiple records for a model
  */
-function generateRecords(model: SeederModel, verbose: boolean = false): Record<string, unknown>[] {
+async function generateRecords(model: SeederModel, verbose: boolean = false): Promise<Record<string, unknown>[]> {
   const records: Record<string, unknown>[] = []
 
   for (let i = 0; i < model.count; i++) {
     // Only log factory failures for the first record to avoid spam
-    records.push(generateRecord(model.attributes, model.name, verbose && i === 0))
+    const record = await generateRecord(model.attributes, model.name, verbose && i === 0)
+    records.push(record)
   }
 
   return records
@@ -249,7 +292,7 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
 
   try {
     // Generate records
-    const records = generateRecords(model, options.verbose)
+    const records = await generateRecords(model, options.verbose)
 
     if (records.length === 0) {
       return {

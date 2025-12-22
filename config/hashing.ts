@@ -8,16 +8,23 @@ import type { HashingConfig } from '@stacksjs/types'
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  driver: 'argon2',
+  /**
+   * Default hashing driver (Laravel uses bcrypt by default)
+   * Options: 'bcrypt' | 'argon2' | 'argon2id' | 'argon2i' | 'argon2d'
+   */
+  driver: 'bcrypt',
 
   bcrypt: {
-    rounds: 10,
-    cost: 4, // number between 4-31
+    /**
+     * Bcrypt rounds (cost factor)
+     * Higher = more secure but slower
+     * Laravel default: 10-12
+     */
+    rounds: 12,
   },
 
   argon2: {
     memory: 65536, // memory usage in kibibytes
-    threads: 1,
-    time: 1, // the number of iterations
+    time: 2, // the number of iterations
   },
 } satisfies HashingConfig

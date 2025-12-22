@@ -415,17 +415,16 @@ export const defaults: StacksOptions = {
   },
 
   hashing: {
-    driver: 'argon2',
+    driver: 'bcrypt', // Laravel default
 
     bcrypt: {
-      rounds: 10,
-      cost: 4, // number between 4-31
+      rounds: 12, // Laravel default is 10-12, higher = more secure but slower
     },
 
     argon2: {
       memory: 65536, // memory usage in kibibytes
       // threads: 1,
-      time: 1, // the number of iterations
+      time: 2, // the number of iterations
     },
   },
 
