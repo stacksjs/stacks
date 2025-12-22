@@ -16,6 +16,7 @@ import {
   resetDatabase as qbResetDatabase,
   setConfig,
 } from 'bun-query-builder'
+import { db } from './utils'
 
 // Use environment variables directly to avoid circular dependencies with @stacksjs/config
 const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
@@ -143,21 +144,70 @@ export async function resetDatabase(): Promise<Ok<string, never>> {
  * Drop framework-managed tables (OAuth, passkeys, jobs, etc.)
  */
 async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'postgres'): Promise<void> {
-  const { withFreshConnection } = await import('bun-query-builder')
+  // Disable foreign key checks for MySQL to avoid constraint issues
+  if (dialect === 'mysql') {
+    try {
+      await db.unsafe('SET FOREIGN_KEY_CHECKS = 0').execute()
+    }
+    catch (error) {
+      log.warn(`Could not disable foreign key checks: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
+
+  // Disable foreign key checks for SQLite
+  if (dialect === 'sqlite') {
+    try {
+      await db.unsafe('PRAGMA foreign_keys = OFF').execute()
+    }
+    catch (error) {
+      log.warn(`Could not disable foreign key checks: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
 
   for (const tableName of FRAMEWORK_TABLES) {
     try {
-      const dropSql = dialect === 'postgres'
-        ? `DROP TABLE IF EXISTS "${tableName}" CASCADE`
-        : `DROP TABLE IF EXISTS \`${tableName}\``
+      // SQLite uses double quotes or no quotes, MySQL uses backticks, Postgres uses double quotes with CASCADE
+      let dropSql: string
+      if (dialect === 'postgres') {
+        dropSql = `DROP TABLE IF EXISTS "${tableName}" CASCADE`
+      }
+      else if (dialect === 'mysql') {
+        dropSql = `DROP TABLE IF EXISTS \`${tableName}\``
+      }
+      else {
+        // SQLite - use double quotes for identifiers
+        dropSql = `DROP TABLE IF EXISTS "${tableName}"`
+      }
 
-      await withFreshConnection(async (bunSql) => {
-        await bunSql.unsafe(dropSql).execute()
-        log.info(`Dropped framework table: ${tableName}`)
-      })
+      log.info(`Dropping framework table: ${tableName}`)
+
+      await db.unsafe(dropSql).execute()
+
+      log.info(`Dropped framework table: ${tableName}`)
     }
-    catch {
-      // Table might not exist, continue silently
+    catch (error) {
+      // Log the actual error for debugging, but continue with other tables
+      log.warn(`Could not drop table ${tableName}: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
+
+  // Re-enable foreign key checks for MySQL
+  if (dialect === 'mysql') {
+    try {
+      await db.unsafe('SET FOREIGN_KEY_CHECKS = 1').execute()
+    }
+    catch (error) {
+      log.warn(`Could not re-enable foreign key checks: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
+
+  // Re-enable foreign key checks for SQLite
+  if (dialect === 'sqlite') {
+    try {
+      await db.unsafe('PRAGMA foreign_keys = ON').execute()
+    }
+    catch (error) {
+      log.warn(`Could not re-enable foreign key checks: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 }
