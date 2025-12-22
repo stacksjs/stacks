@@ -273,7 +273,7 @@ export class Auth {
     const expiresAt = options?.expiresAt ?? new Date(Date.now() + (config.auth.tokenExpiry ?? 30 * 24 * 60 * 60 * 1000))
 
     // Store the token in the database
-    const result = await db.insertInto('oauth_access_tokens')
+    const [result] = await db.insertInto('oauth_access_tokens')
       .values({
         user_id: user.id,
         oauth_client_id: client.id,
@@ -283,9 +283,10 @@ export class Auth {
         revoked: false,
         expires_at: formatDate(expiresAt),
       })
-      .executeTakeFirst()
+      .returning('id')
+      .execute()
 
-    const insertId = Number(result?.insertId) || Number(result?.numInsertedOrUpdatedRows)
+    const insertId = Number(result?.id)
 
     if (!insertId)
       throw new HttpError(500, 'Failed to create token')
