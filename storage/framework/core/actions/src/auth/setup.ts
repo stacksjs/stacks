@@ -10,9 +10,12 @@ const isPostgres = dbDriver === 'postgres'
 const isMysql = dbDriver === 'mysql'
 
 // SQL syntax helpers for cross-database compatibility
+// - PostgreSQL: SERIAL PRIMARY KEY, NOW(), true/false
+// - MySQL: INTEGER AUTO_INCREMENT PRIMARY KEY, NOW(), 1/0
+// - SQLite: INTEGER PRIMARY KEY AUTOINCREMENT, datetime('now'), 1/0
 const autoIncrement = isPostgres ? 'SERIAL' : 'INTEGER'
-const primaryKey = isPostgres ? 'PRIMARY KEY' : 'PRIMARY KEY AUTOINCREMENT'
-const now = isPostgres ? 'NOW()' : "datetime('now')"
+const primaryKey = isPostgres ? 'PRIMARY KEY' : (isMysql ? 'PRIMARY KEY AUTO_INCREMENT' : 'PRIMARY KEY AUTOINCREMENT')
+const now = isPostgres || isMysql ? 'NOW()' : "datetime('now')"
 const boolTrue = isPostgres ? 'true' : '1'
 const boolFalse = isPostgres ? 'false' : '0'
 
@@ -35,6 +38,21 @@ try {
         personal_access_client BOOLEAN NOT NULL DEFAULT false,
         password_client BOOLEAN NOT NULL DEFAULT false,
         revoked BOOLEAN NOT NULL DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP
+      )
+    `).execute()
+  } else if (isMysql) {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS oauth_clients (
+        id INTEGER AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        secret VARCHAR(100),
+        provider VARCHAR(255),
+        redirect VARCHAR(2000) NOT NULL,
+        personal_access_client BOOLEAN NOT NULL DEFAULT 0,
+        password_client BOOLEAN NOT NULL DEFAULT 0,
+        revoked BOOLEAN NOT NULL DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP
       )
@@ -74,6 +92,21 @@ try {
         updated_at TIMESTAMP
       )
     `).execute()
+  } else if (isMysql) {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS oauth_access_tokens (
+        id INTEGER AUTO_INCREMENT PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        oauth_client_id INTEGER NOT NULL,
+        token VARCHAR(64) NOT NULL,
+        name VARCHAR(255),
+        scopes VARCHAR(2000),
+        revoked BOOLEAN NOT NULL DEFAULT 0,
+        expires_at TIMESTAMP NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NULL
+      )
+    `).execute()
   } else {
     await db.unsafe(`
       CREATE TABLE IF NOT EXISTS oauth_access_tokens (
@@ -107,6 +140,17 @@ try {
         token VARCHAR(64) NOT NULL,
         revoked BOOLEAN NOT NULL DEFAULT false,
         expires_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `).execute()
+  } else if (isMysql) {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS oauth_refresh_tokens (
+        id INTEGER AUTO_INCREMENT PRIMARY KEY,
+        access_token_id INTEGER NOT NULL,
+        token VARCHAR(64) NOT NULL,
+        revoked BOOLEAN NOT NULL DEFAULT 0,
+        expires_at TIMESTAMP NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `).execute()
@@ -156,9 +200,10 @@ try {
         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
       `, ['Personal Access Client', secret, 'local', 'http://localhost', true, false, false]).execute()
     } else {
+      // MySQL and SQLite both use ? placeholders and numeric booleans
       await db.unsafe(`
         INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        VALUES (?, ?, ?, ?, ?, ?, ?, ${now})
       `, ['Personal Access Client', secret, 'local', 'http://localhost', 1, 0, 0]).execute()
     }
 

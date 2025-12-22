@@ -20,13 +20,19 @@ import { getCurrentRequest } from '@stacksjs/router'
 const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
 const dbDriver = envVars.DB_CONNECTION || 'sqlite'
 const isPostgres = dbDriver === 'postgres'
+const isMysql = dbDriver === 'mysql'
 
 // SQL syntax helpers for cross-database compatibility
-const now = isPostgres ? 'NOW()' : "datetime('now')"
+// - PostgreSQL uses NOW() and true/false
+// - MySQL uses NOW() and 1/0
+// - SQLite uses datetime('now') and 1/0
+const now = isPostgres || isMysql ? 'NOW()' : "datetime('now')"
 const boolTrue = isPostgres ? 'true' : '1'
 const boolFalse = isPostgres ? 'false' : '0'
 
 // Parameter placeholder helper for cross-database compatibility
+// PostgreSQL uses $1, $2, $3...
+// MySQL and SQLite use ?
 function params(...values: any[]): { sql: string, values: any[] } {
   if (isPostgres) {
     const placeholders = values.map((_, i) => `$${i + 1}`).join(', ')
@@ -383,7 +389,7 @@ export async function createToken(
   } else {
     await db.unsafe(`
       INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, 0, ?, datetime('now'), datetime('now'))
+      VALUES (?, ?, ?, ?, ?, 0, ?, ${now}, ${now})
     `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), expiresAt.toISOString()]).execute()
   }
 
@@ -423,7 +429,7 @@ export async function createToken(
     } else {
       await db.unsafe(`
         INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
-        VALUES (?, ?, 0, ?, datetime('now'))
+        VALUES (?, ?, 0, ?, ${now})
       `, [accessToken.id, hashedRefreshToken, refreshExpiresAt.toISOString()]).execute()
     }
   }
@@ -506,7 +512,7 @@ export async function refreshToken(
   } else {
     await db.unsafe(`
       INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, 0, ?, datetime('now'), datetime('now'))
+      VALUES (?, ?, ?, ?, ?, 0, ?, ${now}, ${now})
     `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, expiresAt.toISOString()]).execute()
   }
 
@@ -544,7 +550,7 @@ export async function refreshToken(
   } else {
     await db.unsafe(`
       INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
-      VALUES (?, ?, 0, ?, datetime('now'))
+      VALUES (?, ?, 0, ?, ${now})
     `, [accessToken.id, newHashedRefreshToken, refreshExpiresAt.toISOString()]).execute()
   }
 
@@ -755,7 +761,7 @@ export async function revokeOtherTokens(userId: number): Promise<void> {
 
     await db.unsafe(`
       UPDATE oauth_access_tokens
-      SET revoked = 1, updated_at = datetime('now')
+      SET revoked = 1, updated_at = ${now}
       WHERE user_id = ? AND id != ?
     `, [userId, current.id]).execute()
   }
@@ -882,7 +888,7 @@ export async function createClient(options: {
   } else {
     await db.unsafe(`
       INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
-      VALUES (?, ?, 'local', ?, ?, ?, 0, datetime('now'))
+      VALUES (?, ?, 'local', ?, ?, ?, 0, ${now})
     `, [
       options.name,
       secret,
