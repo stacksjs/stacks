@@ -23,7 +23,7 @@ export default {
           required: 'name is required',
         },
       },
-      factory: faker => faker.lorem.sentence({ min: 3, max: 6 }),
+      factory: faker => faker.lorem.words(3),
     },
 
     token: {

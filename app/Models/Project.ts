@@ -27,7 +27,7 @@ export default {
         },
       },
 
-      factory: faker => faker.lorem.sentence({ min: 3, max: 6 }),
+      factory: faker => faker.lorem.words(3),
     },
 
     description: {
@@ -40,7 +40,7 @@ export default {
         },
       },
 
-      factory: faker => faker.lorem.sentence({ min: 10, max: 25 }),
+      factory: faker => faker.lorem.sentence(),
     },
 
     url: {

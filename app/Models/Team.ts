@@ -29,7 +29,7 @@ export default {
         },
       },
 
-      factory: faker => faker.lorem.sentence({ min: 3, max: 6 }),
+      factory: faker => faker.company.name(),
     },
 
     companyName: {
@@ -94,7 +94,7 @@ export default {
         },
       },
 
-      factory: faker => faker.lorem.sentence({ min: 10, max: 30 }),
+      factory: faker => faker.lorem.sentence(),
     },
 
     path: {
