@@ -40,7 +40,7 @@ export default {
         },
       },
 
-      factory: faker => faker.lorem.sentence(),
+      factory: faker => faker.lorem.sentence(15),
     },
 
     url: {
