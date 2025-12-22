@@ -9,31 +9,57 @@
  * - Refresh tokens for token renewal without re-authentication
  */
 
-import type { UserModel } from '@stacksjs/orm'
+import type {
+  AccessToken,
+  CreateClientOptions,
+  CreateClientResult,
+  DatabaseDriver,
+  OAuthClient,
+  OAuthClientRow,
+  PersonalAccessTokenResult,
+  RefreshToken,
+  RefreshTokenResult,
+  TokenCreateOptions,
+  TokenScopes,
+} from '@stacksjs/types'
 import process from 'node:process'
 import { createHash, randomBytes } from 'node:crypto'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { getCurrentRequest } from '@stacksjs/router'
 
-// Detect database driver from environment
+// ============================================================================
+// DATABASE DRIVER DETECTION & SQL HELPERS
+// ============================================================================
+
+/** Environment variables accessor */
 const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
-const dbDriver = envVars.DB_CONNECTION || 'sqlite'
-const isPostgres = dbDriver === 'postgres'
-const isMysql = dbDriver === 'mysql'
 
-// SQL syntax helpers for cross-database compatibility
-// - PostgreSQL uses NOW() and true/false
-// - MySQL uses NOW() and 1/0
-// - SQLite uses datetime('now') and 1/0
-const now = isPostgres || isMysql ? 'NOW()' : "datetime('now')"
-const boolTrue = isPostgres ? 'true' : '1'
-const boolFalse = isPostgres ? 'false' : '0'
+/** Current database driver */
+const dbDriver: DatabaseDriver = (envVars.DB_CONNECTION as DatabaseDriver) || 'sqlite'
 
-// Parameter placeholder helper for cross-database compatibility
-// PostgreSQL uses $1, $2, $3...
-// MySQL and SQLite use ?
-function params(...values: any[]): { sql: string, values: any[] } {
+/** Check if using PostgreSQL */
+const isPostgres: boolean = dbDriver === 'postgres'
+
+/** Check if using MySQL */
+const isMysql: boolean = dbDriver === 'mysql'
+
+/**
+ * SQL syntax helpers for cross-database compatibility
+ * - PostgreSQL uses NOW() and true/false
+ * - MySQL uses NOW() and 1/0
+ * - SQLite uses datetime('now') and 1/0
+ */
+const now: string = isPostgres || isMysql ? 'NOW()' : "datetime('now')"
+const boolTrue: string = isPostgres ? 'true' : '1'
+const boolFalse: string = isPostgres ? 'false' : '0'
+
+/**
+ * Parameter placeholder helper for cross-database compatibility
+ * PostgreSQL uses $1, $2, $3...
+ * MySQL and SQLite use ?
+ */
+function params(...values: unknown[]): { sql: string, values: unknown[] } {
   if (isPostgres) {
     const placeholders = values.map((_, i) => `$${i + 1}`).join(', ')
     return { sql: placeholders, values }
@@ -42,75 +68,11 @@ function params(...values: any[]): { sql: string, values: any[] } {
   return { sql: placeholders, values }
 }
 
-// Helper to create a single parameter placeholder
+/**
+ * Helper to create a single parameter placeholder
+ */
 function param(index: number): string {
   return isPostgres ? `$${index}` : '?'
-}
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-/**
- * Access token with scope checking capabilities
- */
-export interface AccessToken {
-  id: number
-  userId: number
-  clientId: number
-  name: string
-  scopes: string[]
-  revoked: boolean
-  expiresAt: Date | null
-  createdAt: Date
-  updatedAt: Date
-}
-
-/**
- * Refresh token for obtaining new access tokens
- */
-export interface RefreshToken {
-  id: number
-  accessTokenId: number
-  revoked: boolean
-  expiresAt: Date | null
-  createdAt: Date
-}
-
-/**
- * Result returned when creating a personal access token
- */
-export interface PersonalAccessTokenResult {
-  accessToken: AccessToken
-  plainTextToken: string
-  refreshToken?: string
-  expiresIn: number
-}
-
-/**
- * Result returned when refreshing a token
- */
-export interface RefreshTokenResult {
-  accessToken: AccessToken
-  plainTextToken: string
-  refreshToken: string
-  expiresIn: number
-}
-
-/**
- * OAuth Client
- */
-export interface OAuthClient {
-  id: number
-  name: string
-  secret: string
-  provider: string | null
-  redirect: string
-  personalAccessClient: boolean
-  passwordClient: boolean
-  revoked: boolean
-  createdAt: Date
-  updatedAt: Date | null
 }
 
 // ============================================================================
@@ -865,13 +827,7 @@ export async function findClient(clientId: number): Promise<OAuthClient | null> 
  *   redirect: 'https://myapp.com/callback'
  * })
  */
-export async function createClient(options: {
-  name: string
-  redirect: string
-  userId?: number
-  personalAccessClient?: boolean
-  passwordClient?: boolean
-}): Promise<{ client: OAuthClient, plainTextSecret: string }> {
+export async function createClient(options: CreateClientOptions): Promise<CreateClientResult> {
   const secret = generateSecureToken(40)
 
   if (isPostgres) {
@@ -927,9 +883,9 @@ export async function revokeClient(clientId: number): Promise<void> {
 // HELPER FUNCTIONS
 // ============================================================================
 
-function parseScopes(scopes: string | string[] | null | undefined): string[] {
+function parseScopes(scopes: string | string[] | null | undefined): TokenScopes {
   if (!scopes) return []
-  if (Array.isArray(scopes)) return scopes
+  if (Array.isArray(scopes)) return scopes as TokenScopes
   try {
     const parsed = JSON.parse(scopes)
     return Array.isArray(parsed) ? parsed : []
@@ -939,17 +895,20 @@ function parseScopes(scopes: string | string[] | null | undefined): string[] {
   }
 }
 
-function mapToOAuthClient(row: any): OAuthClient {
+/**
+ * Maps a raw database row to an OAuthClient object.
+ */
+function mapToOAuthClient(row: OAuthClientRow): OAuthClient {
   return {
     id: row.id,
     name: row.name,
     secret: row.secret,
     provider: row.provider,
     redirect: row.redirect,
-    personalAccessClient: !!row.personal_access_client,
-    passwordClient: !!row.password_client,
-    revoked: !!row.revoked,
-    createdAt: new Date(row.created_at),
+    personalAccessClient: Boolean(row.personal_access_client),
+    passwordClient: Boolean(row.password_client),
+    revoked: Boolean(row.revoked),
+    createdAt: row.created_at ? new Date(row.created_at) : new Date(),
     updatedAt: row.updated_at ? new Date(row.updated_at) : null,
   }
 }

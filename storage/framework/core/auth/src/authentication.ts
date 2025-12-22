@@ -1,5 +1,13 @@
 import type { UserModel } from '@stacksjs/orm'
-import type { AuthToken } from './token'
+import type {
+  AuthCredentials,
+  AuthToken,
+  NewAccessToken,
+  OAuthClientRow,
+  PersonalAccessToken,
+  TokenCreateOptions,
+  TokenScopes,
+} from '@stacksjs/types'
 import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
@@ -9,62 +17,6 @@ import { request } from '@stacksjs/router'
 import { decrypt, encrypt, makeHash, verifyHash } from '@stacksjs/security'
 import { RateLimiter } from './rate-limiter'
 import { TokenManager } from './token'
-
-interface Credentials {
-  password: string | undefined
-  email: string | undefined
-  [key: string]: string | undefined
-}
-
-/**
- * OAuth Client database row response
- * Defined locally to avoid circular dependency with ORM types
- */
-interface OAuthClientRow {
-  id: number
-  name: string
-  secret: string
-  provider: string | null
-  redirect: string
-  personal_access_client: boolean
-  password_client: boolean
-  revoked: boolean
-  created_at?: string
-  updated_at?: string
-}
-
-/**
- * Personal Access Token instance - similar to Laravel Passport's PersonalAccessToken
- */
-export interface PersonalAccessToken {
-  id: number
-  userId: number
-  clientId: number
-  name: string
-  abilities: string[]
-  expiresAt: Date | null
-  createdAt: Date
-  updatedAt: Date
-  revoked: boolean
-  plainTextToken?: string
-}
-
-/**
- * New Access Token result - returned when creating a new token
- */
-export interface NewAccessToken {
-  accessToken: PersonalAccessToken
-  plainTextToken: AuthToken
-}
-
-/**
- * Token creation options
- */
-export interface TokenCreateOptions {
-  name?: string
-  abilities?: string[]
-  expiresAt?: Date
-}
 
 export class Auth {
   private static authUser: UserModel | undefined = undefined
@@ -108,14 +60,14 @@ export class Auth {
     return client.secret === clientSecret
   }
 
-  private static parseScopes(scopes: string | string[] | null | undefined): string[] {
+  private static parseScopes(scopes: string | string[] | null | undefined): TokenScopes {
     if (!scopes)
       return []
     if (Array.isArray(scopes))
-      return scopes
+      return scopes as TokenScopes
     try {
       const parsed = JSON.parse(scopes)
-      return Array.isArray(parsed) ? parsed : []
+      return Array.isArray(parsed) ? parsed as TokenScopes : []
     }
     catch {
       return []
@@ -152,7 +104,7 @@ export class Auth {
    * Attempt to authenticate with credentials
    * Similar to Laravel's Auth::attempt()
    */
-  public static async attempt(credentials: Credentials): Promise<boolean> {
+  public static async attempt(credentials: AuthCredentials): Promise<boolean> {
     const username = config.auth.username || 'email'
     const password = config.auth.password || 'password'
 
@@ -183,7 +135,7 @@ export class Auth {
    * Validate credentials without logging in
    * Similar to Laravel's Auth::validate()
    */
-  public static async validate(credentials: Credentials): Promise<boolean> {
+  public static async validate(credentials: AuthCredentials): Promise<boolean> {
     const username = config.auth.username || 'email'
     const password = config.auth.password || 'password'
 
@@ -203,7 +155,7 @@ export class Auth {
    * Login and return user with token
    * Similar to Laravel's Auth::login() + token creation
    */
-  public static async login(credentials: Credentials, options?: TokenCreateOptions): Promise<{ user: UserModel, token: AuthToken } | null> {
+  public static async login(credentials: AuthCredentials, options?: TokenCreateOptions): Promise<{ user: UserModel, token: AuthToken } | null> {
     const isValid = await this.attempt(credentials)
     if (!isValid || !this.authUser)
       return null
@@ -376,7 +328,7 @@ export class Auth {
    * Request token using client credentials
    * Similar to Laravel Passport's client credentials grant
    */
-  public static async requestToken(credentials: Credentials, clientId: number, clientSecret: string): Promise<{ token: AuthToken } | null> {
+  public static async requestToken(credentials: AuthCredentials, clientId: number, clientSecret: string): Promise<{ token: AuthToken } | null> {
     const isValidClient = await this.validateClient(clientId, clientSecret)
     if (!isValidClient)
       throw new HttpError(401, 'Invalid client credentials')
@@ -751,7 +703,7 @@ export class Auth {
    * Once - Authenticate a user for a single request
    * Similar to Laravel's Auth::once()
    */
-  public static async once(credentials: Credentials): Promise<boolean> {
+  public static async once(credentials: AuthCredentials): Promise<boolean> {
     const username = config.auth.username || 'email'
     const password = config.auth.password || 'password'
 

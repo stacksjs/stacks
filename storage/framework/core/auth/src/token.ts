@@ -1,9 +1,8 @@
+import type { AuthToken } from '@stacksjs/types'
 import { Buffer } from 'node:buffer'
 import { randomBytes } from 'node:crypto'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-
-export type AuthToken = string
 
 export class TokenManager {
   static async createAccessToken(user: { id: number }): Promise<AuthToken> {
