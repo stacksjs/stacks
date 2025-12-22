@@ -106,6 +106,21 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
 }
 
 /**
+ * Framework tables that are not part of user models but need to be dropped
+ * These include OAuth tables, passkeys, and other framework-managed tables
+ */
+const FRAMEWORK_TABLES = [
+  'oauth_refresh_tokens', // Drop first due to foreign key to oauth_access_tokens
+  'oauth_access_tokens',
+  'oauth_clients',
+  'passkeys',
+  'failed_jobs',
+  'jobs',
+  'notifications',
+  'password_reset_tokens',
+]
+
+/**
  * Reset the database (drop all tables)
  */
 export async function resetDatabase(): Promise<Ok<string, never>> {
@@ -115,9 +130,36 @@ export async function resetDatabase(): Promise<Ok<string, never>> {
   const modelsDir = path.userModelsPath()
   const dialect = getDialect()
 
+  // Drop framework tables first (OAuth, passkeys, etc.)
+  await dropFrameworkTables(dialect)
+
+  // Then drop user model tables
   await qbResetDatabase(modelsDir, { dialect })
 
   return ok('All tables dropped successfully!')
+}
+
+/**
+ * Drop framework-managed tables (OAuth, passkeys, jobs, etc.)
+ */
+async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'postgres'): Promise<void> {
+  const { withFreshConnection } = await import('bun-query-builder')
+
+  for (const tableName of FRAMEWORK_TABLES) {
+    try {
+      const dropSql = dialect === 'postgres'
+        ? `DROP TABLE IF EXISTS "${tableName}" CASCADE`
+        : `DROP TABLE IF EXISTS \`${tableName}\``
+
+      await withFreshConnection(async (bunSql) => {
+        await bunSql.unsafe(dropSql).execute()
+        log.info(`Dropped framework table: ${tableName}`)
+      })
+    }
+    catch {
+      // Table might not exist, continue silently
+    }
+  }
 }
 
 /**
