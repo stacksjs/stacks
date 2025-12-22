@@ -86,7 +86,11 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   // or else, just run the action normally by assuming the action is core Action,  stored in p.actionsPath
   const opts = buddyOptions()
   const path = p.relativeActionsPath(`src/${action}.ts`)
-  const cmd = `bun ${path} ${opts}`.trimEnd()
+
+  // Use --watch for dev actions to enable hot reloading
+  const isDevAction = action.startsWith('dev/')
+  const watchFlag = isDevAction ? '--watch' : ''
+  const cmd = `bun ${watchFlag} ${path} ${opts}`.trimEnd()
 
   const optionsWithCwd: CliOptions = {
     cwd: options?.cwd || p.projectPath(),
