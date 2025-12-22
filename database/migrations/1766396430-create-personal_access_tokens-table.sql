@@ -1,4 +1,5 @@
 CREATE TABLE "personal_access_tokens" (
+  "id" BIGSERIAL PRIMARY KEY,
   "name" varchar(255),
   "token" varchar(255),
   "plain_text_token" varchar(255),

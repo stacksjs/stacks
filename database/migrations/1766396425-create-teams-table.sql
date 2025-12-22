@@ -1,4 +1,5 @@
 CREATE TABLE "teams" (
+  "id" BIGSERIAL PRIMARY KEY,
   "name" varchar(255),
   "company_name" varchar(255),
   "email" varchar(255),

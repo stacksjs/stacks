@@ -1,4 +1,5 @@
 CREATE TABLE "deployments" (
+  "id" BIGSERIAL PRIMARY KEY,
   "commit_sha" varchar(255),
   "commit_message" varchar(255),
   "branch" varchar(255),
