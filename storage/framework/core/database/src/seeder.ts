@@ -14,6 +14,25 @@ import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 
 /**
+ * Convert a camelCase or PascalCase string to snake_case
+ * Examples:
+ *   companyName -> company_name
+ *   billingEmail -> billing_email
+ *   isPersonal -> is_personal
+ *   createdAt -> created_at
+ */
+function snakeCase(str: string): string {
+  return str
+    // Handle acronyms and consecutive uppercase letters
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+    // Handle transition from lowercase to uppercase
+    .replace(/([a-z\d])([A-Z])/g, '$1_$2')
+    // Handle numbers followed by letters
+    .replace(/(\d)([A-Za-z])/g, '$1_$2')
+    .toLowerCase()
+}
+
+/**
  * Seeder configuration options
  */
 export interface SeederConfig {
@@ -129,8 +148,9 @@ async function loadModels(modelsDir: string): Promise<SeederModel[]> {
 /**
  * Generate a single record using factory functions
  *
- * Note: Field names are used as-is since the database columns
- * match the model attribute names (camelCase or lowercase).
+ * Note: Field names are converted to snake_case to match database column names.
+ * Model attributes use camelCase (e.g., companyName) but database columns
+ * use snake_case (e.g., company_name).
  */
 function generateRecord(
   attributes: Record<string, Attribute>,
@@ -140,8 +160,8 @@ function generateRecord(
   const record: Record<string, unknown> = {}
 
   for (const [fieldName, attr] of Object.entries(attributes)) {
-    // Use field name as-is - database columns match model attribute names
-    const columnName = fieldName
+    // Convert field name to snake_case for database column
+    const columnName = snakeCase(fieldName)
 
     // Use factory function if defined
     if (attr.factory && typeof attr.factory === 'function') {
