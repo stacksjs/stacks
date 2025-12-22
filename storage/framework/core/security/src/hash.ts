@@ -287,35 +287,13 @@ export function md5Encode(password: string): string {
   return md5(password)
 }
 
-/**
- * Hash facade - Laravel-like API
- *
- * @example
- * ```ts
- * import { Hash } from '@stacksjs/security'
- *
- * // Hash a password
- * const hashed = await Hash.make('secret')
- *
- * // Verify a password
- * const valid = await Hash.check('secret', hashed)
- *
- * // Check if rehash is needed
- * if (Hash.needsRehash(hashed)) {
- *   const newHash = await Hash.make('secret')
- * }
- *
- * // Get hash info
- * const info = Hash.info(hashed)
- * console.log(info.algorithm) // 'argon2id'
- * ```
- */
-export const Hash = {
-  make,
-  check,
-  needsRehash,
-  info,
-  detectAlgorithm,
+// Function-based exports (preferred API)
+export {
+  make as hashMake,
+  check as hashCheck,
+  needsRehash as hashNeedsRehash,
+  info as hashInfo,
+  detectAlgorithm as hashDetectAlgorithm,
 }
 
 // Legacy exports for backwards compatibility

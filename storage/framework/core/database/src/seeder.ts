@@ -11,7 +11,7 @@ import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { faker } from '@stacksjs/faker'
 import { path } from '@stacksjs/path'
-import { Hash } from '@stacksjs/security'
+import { hashMake } from '@stacksjs/security'
 import { fs } from '@stacksjs/storage'
 
 /**
@@ -217,7 +217,7 @@ async function generateRecord(
     // Hash password fields
     if (isPasswordField(fieldName, attr) && typeof value === 'string') {
       try {
-        value = await Hash.make(value)
+        value = await hashMake(value)
       }
       catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err)
