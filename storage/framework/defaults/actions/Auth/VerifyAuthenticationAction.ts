@@ -1,7 +1,8 @@
-import type { AuthenticationResponseJSON } from '@stacksjs/auth'
+import type { AuthenticationCredential } from '@stacksjs/auth'
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { getUserPasskey, verifyAuthenticationResponse } from '@stacksjs/auth'
+import { response } from '@stacksjs/router'
 import { User } from '@stacksjs/orm'
 
 export default new Action({
@@ -10,42 +11,43 @@ export default new Action({
   method: 'POST',
   async handle(request: RequestInstance) {
     const body = request.all()
-
-    const passkeyRes: AuthenticationResponseJSON = body.res
+    const credential = body.res as AuthenticationCredential
+    const challenge = body.challenge as string
 
     const email = request.get('email') ?? ''
 
     const user = await User.where('email', email).first()
 
-    const userPasskey = await getUserPasskey(user?.id as number, body.res.id as string)
+    if (!user)
+      return response.notFound('User not found')
 
-    if (!user || !userPasskey)
-      return
+    const userPasskey = await getUserPasskey(user.id as number, credential.id)
+
+    if (!userPasskey)
+      return response.notFound('Passkey not found')
 
     const pubkeyString = userPasskey.cred_public_key
+    const jsonParse = JSON.parse(pubkeyString) as Record<string, number>
+    const publicKey = new Uint8Array(Object.values(jsonParse)).buffer
 
-    const jsonParse = JSON.parse(pubkeyString) as JSON
-
-    const uint8Array = new Uint8Array(Object.values(jsonParse))
+    // Convert challenge string to Uint8Array
+    const challengeBytes = Uint8Array.from(atob(challenge), c => c.charCodeAt(0))
 
     try {
-      const verification = await verifyAuthenticationResponse({
-        response: passkeyRes,
-        expectedChallenge: body.challenge,
-        expectedOrigin: 'http://localhost:3333',
-        expectedRPID: 'localhost',
-        credential: {
-          id: userPasskey?.id,
-          publicKey: uint8Array,
-          counter: userPasskey.counter,
-          transports: ['internal'],
-        },
-      })
+      const verification = await verifyAuthenticationResponse(
+        credential,
+        challengeBytes,
+        'http://localhost:3333',
+        'localhost',
+        publicKey,
+        userPasskey.counter,
+      )
 
-      return verification
+      return response.json(verification)
     }
     catch (error) {
       console.error(error)
+      return response.serverError('Authentication verification failed')
     }
   },
 })

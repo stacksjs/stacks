@@ -1,4 +1,4 @@
-import { route } from '@stacksjs/router'
+import { response, route } from '@stacksjs/router'
 
 /**
  * This file is the entry point for your application's API routes.
@@ -8,10 +8,10 @@ import { route } from '@stacksjs/router'
  * @see https://docs.stacksjs.com/routing
  */
 
-route.get('/foo/bar/{id}', () => 'hello world, foo bar') // $API_URL/hello/world
-route.get('/', () => 'hello world') // $API_URL
-route.get('/hello/world', () => 'hello world, buddy') // $API_URL/hello/world
-route.get('/json', () => ({ message: 'Hello JSON!', status: 'ok', timestamp: Date.now() }))
+route.get('/foo/bar/{id}', () => response.text('hello world, foo bar')) // $API_URL/hello/world
+route.get('/', () => response.text('hello world')) // $API_URL
+route.get('/hello/world', () => response.text('hello world, buddy')) // $API_URL/hello/world
+route.get('/json', () => response.json({ message: 'Hello JSON!', status: 'ok', timestamp: Date.now() }))
 
 // Email subscription endpoint
 route.post('/api/email/subscribe', 'Actions/SubscriberEmailAction')
@@ -21,7 +21,7 @@ route.post('/logout', 'Actions/Auth/LogoutAction')
 route.get('/generate-registration-options', 'Actions/Auth/GenerateRegistrationAction')
 route.post('/verify-registration', 'Actions/Auth/VerifyRegistrationAction')
 route.get('/generate-authentication-options', 'Actions/Auth/GenerateAuthenticationAction')
-route.post('/verify-authentication', 'Actions/Auth/VerifyAuthenticationAction')
+route.get('/verify-authentication', 'Actions/Auth/VerifyAuthenticationAction')
 
 // Token management routes
 route.group({ prefix: '/auth' }, async () => {
@@ -325,7 +325,7 @@ route.group({ prefix: '/dashboard' }, async () => {
 })
 
 // Direct test route without action resolution
-route.get('/test/direct', () => ({ message: 'Direct route works!' }))
+route.get('/test/direct', () => response.json({ message: 'Direct route works!' }))
 
 // File upload test route
 route.post('/test/upload', 'Actions/UploadTestAction')

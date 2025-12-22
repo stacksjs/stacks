@@ -292,7 +292,7 @@ export class Auth {
       throw new HttpError(500, 'Failed to create token')
 
     // Encrypt the token ID using client secret
-    const encryptedId = encrypt(insertId.toString(), clientSecret)
+    const encryptedId = await encrypt(insertId.toString(), clientSecret)
 
     // Combine into final token format with JWT first
     const plainTextToken = `${jwtToken}:${encryptedId}` as AuthToken

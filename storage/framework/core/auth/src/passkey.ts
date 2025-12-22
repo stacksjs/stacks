@@ -29,6 +29,7 @@ export type {
   VerifiedAuthenticationResponse,
   RegistrationCredential,
   AuthenticationCredential,
+  AuthenticationResponseJSON,
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialRequestOptions,
   RegistrationOptions,

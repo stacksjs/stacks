@@ -25,9 +25,27 @@ catch {
 // Read from environment variables first
 const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
 
-let appEnv = envVars.APP_ENV || 'local'
-let dbDriver = envVars.DB_CONNECTION || 'sqlite'
-let dbConfig = {
+interface DbConnectionConfig {
+  database?: string
+  name?: string
+  host?: string
+  username?: string
+  password?: string
+  port?: number
+  prefix?: string
+}
+
+interface DbConfig {
+  connections: {
+    sqlite: DbConnectionConfig
+    mysql: DbConnectionConfig
+    postgres: DbConnectionConfig
+  }
+}
+
+let appEnv: string = envVars.APP_ENV || 'local'
+let dbDriver: string = envVars.DB_CONNECTION || 'sqlite'
+let dbConfig: DbConfig = {
   connections: {
     sqlite: {
       database: 'database/stacks.sqlite', // SQLite uses file path, not env DB_DATABASE
@@ -76,7 +94,7 @@ function getDriver(): string {
   return dbDriver
 }
 
-function getDatabaseConfig() {
+function getDatabaseConfig(): DbConfig {
   return dbConfig
 }
 
@@ -213,7 +231,7 @@ ensureConfigLoaded()
  * Lazy proxy for the query builder - connection is only made when first used.
  * This is the main entry point for database operations.
  */
-export const db = new Proxy({} as ReturnType<typeof createQueryBuilder>, {
+export const db: ReturnType<typeof createQueryBuilder> = new Proxy({} as ReturnType<typeof createQueryBuilder>, {
   get(_target, prop) {
     const instance = getDb()
     const value = (instance as any)[prop]
@@ -223,17 +241,6 @@ export const db = new Proxy({} as ReturnType<typeof createQueryBuilder>, {
     return value
   },
 })
-
-/**
- * Re-export types and functions from bun-query-builder for convenience
- */
-export {
-  createQueryBuilder,
-} from 'bun-query-builder'
-
-export type {
-  QueryBuilder,
-} from 'bun-query-builder'
 
 // Export setConfig if available
 export { setConfig }

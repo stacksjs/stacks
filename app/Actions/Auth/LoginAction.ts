@@ -8,26 +8,22 @@ export default new Action({
   name: 'LoginAction',
   description: 'Login to the application',
   method: 'POST',
+
+  validations: {
+    email: {
+      rule: schema.string().email(),
+      message: 'Email must be a valid email address.',
+    },
+
+    password: {
+      rule: schema.string().min(6).max(255),
+      message: 'Password must be between 6 and 255 characters.',
+    },
+  },
+
   async handle(request: RequestInstance) {
     const email = request.get('email')
     const password = request.get('password')
-
-    await request.validate({
-      email: {
-        rule: schema.string().email(),
-        message: {
-          email: 'Email must be a valid email address',
-        },
-      },
-
-      password: {
-        rule: schema.string().min(6).max(255),
-        message: {
-          min: 'Password must have a minimum of 6 characters',
-          max: 'Password must have a maximum of 255 characters',
-        },
-      },
-    })
 
     const result = await Auth.login({ email, password })
 
