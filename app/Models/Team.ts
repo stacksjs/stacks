@@ -120,7 +120,7 @@ export default {
         },
       },
 
-      factory: faker => faker.datatype.boolean(),
+      factory: () => Math.random() < 0.5,
     },
   },
 } satisfies Model
