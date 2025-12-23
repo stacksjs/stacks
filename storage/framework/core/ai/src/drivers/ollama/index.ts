@@ -49,6 +49,6 @@ export function createOllamaDriver(config: OllamaDriverConfig = {}): AIDriver {
   }
 }
 
-export const ollamaDriver = {
+export const ollamaDriver: { create: typeof createOllamaDriver } = {
   create: createOllamaDriver,
 }

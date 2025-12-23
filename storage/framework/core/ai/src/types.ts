@@ -52,3 +52,39 @@ export interface ClaudeStreamEvent {
   delta?: { text?: string }
   result?: string
 }
+
+// Buddy Types
+export interface RepoState {
+  path: string
+  name: string
+  branch: string
+  hasChanges: boolean
+  lastCommit?: string
+}
+
+export interface GitHubCredentials {
+  token: string
+  username: string
+  name: string
+  email: string
+}
+
+export interface BuddyState {
+  repo: RepoState | null
+  conversationHistory: AIMessage[]
+  currentDriver: string
+  github: GitHubCredentials | null
+}
+
+export interface BuddyConfig {
+  workDir: string
+  commitMessage: string
+  ollamaHost: string
+  ollamaModel: string
+}
+
+export interface BuddyApiKeys {
+  anthropic?: string
+  openai?: string
+  claudeCliHost?: string
+}

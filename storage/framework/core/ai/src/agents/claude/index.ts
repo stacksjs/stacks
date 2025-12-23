@@ -7,6 +7,9 @@
 
 import type { AIDriver, AIMessage, ClaudeStreamEvent, StreamingResult } from '../../types'
 
+// Track prompt count for session feedback
+let promptCount = 0
+
 export interface ClaudeAgentConfig {
   /** Working directory for command execution */
   cwd?: string
@@ -191,7 +194,11 @@ export async function processCommandStreaming(
               let textContent = ''
 
               if (event.type === 'system' && event.subtype === 'init') {
-                textContent = `⚡ Starting session...\n\n`
+                promptCount++
+                // Show *thinking* on 2nd prompt onwards
+                if (promptCount >= 2) {
+                  textContent = '*thinking*\n\n'
+                }
               }
               else if (event.type === 'assistant' && event.message?.content) {
                 for (const block of event.message.content) {
@@ -272,8 +279,18 @@ export async function processCommandStreaming(
   return { stream, fullResponse: fullResponsePromise }
 }
 
-export const claudeAgent = {
+export function resetPromptCount(): void {
+  promptCount = 0
+}
+
+export const claudeAgent: {
+  createLocal: typeof createClaudeLocalAgent
+  createEC2: typeof createClaudeEC2Agent
+  processStreaming: typeof processCommandStreaming
+  resetPromptCount: typeof resetPromptCount
+} = {
   createLocal: createClaudeLocalAgent,
   createEC2: createClaudeEC2Agent,
   processStreaming: processCommandStreaming,
+  resetPromptCount,
 }

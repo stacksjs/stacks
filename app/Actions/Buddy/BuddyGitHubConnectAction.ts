@@ -1,8 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
-import type { GitHubCredentials } from './BuddyService'
-import { buddyState } from './BuddyService'
+import type { GitHubCredentials } from '@stacksjs/ai'
+import { buddyState } from '@stacksjs/ai'
 
 /**
  * Connect a GitHub account for commits

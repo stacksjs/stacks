@@ -1,7 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
-import { apiKeys } from './BuddyService'
+import { apiKeys } from '@stacksjs/ai'
 
 /**
  * Update API keys for AI drivers

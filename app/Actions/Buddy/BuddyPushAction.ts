@@ -1,7 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
-import { pushChanges } from './BuddyService'
+import { pushChanges } from '@stacksjs/ai'
 
 /**
  * Push committed changes to the remote repository

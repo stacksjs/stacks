@@ -58,6 +58,6 @@ export function createOpenAIDriver(config: OpenAIDriverConfig): AIDriver {
   }
 }
 
-export const openaiDriver = {
+export const openaiDriver: { create: typeof createOpenAIDriver } = {
   create: createOpenAIDriver,
 }

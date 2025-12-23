@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { applyChanges, buddyState, openRepository, processCommandStreaming } from './BuddyService'
+import { applyChanges, buddyState, openRepository, processCommandStreaming } from '@stacksjs/ai'
 
 /**
  * Process a command with streaming output (Server-Sent Events)

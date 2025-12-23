@@ -7,6 +7,9 @@ export * from './drivers'
 // Agents
 export * from './agents'
 
+// Buddy - Voice AI Code Assistant
+export * from './buddy'
+
 // Text utilities
 export * from './text'
 

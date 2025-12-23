@@ -1,48 +1,32 @@
 /**
- * Buddy - Voice AI Code Assistant Shared Service
+ * Buddy - Voice AI Code Assistant
  *
- * This module contains the shared state and utilities for Buddy actions.
- * Uses @stacksjs/ai for AI drivers and agents.
+ * This module contains the shared state and utilities for Buddy,
+ * an AI-powered code assistant that helps users modify codebases
+ * through voice commands.
  */
 
+import type {
+  AIDriver,
+  AIMessage,
+  BuddyApiKeys,
+  BuddyConfig,
+  BuddyState,
+  GitHubCredentials,
+  RepoState,
+  StreamingResult,
+} from './types'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
-import type { AIDriver, AIMessage, StreamingResult } from '@stacksjs/ai'
-import {
-  claudeAgent,
-  createAnthropicDriver,
-  createOllamaDriver,
-  createOpenAIDriver,
-} from '@stacksjs/ai'
+import { claudeAgent } from './agents'
+import { createAnthropicDriver, createOllamaDriver, createOpenAIDriver } from './drivers'
 
-// Types
-export type { AIMessage } from '@stacksjs/ai'
-
-export interface RepoState {
-  path: string
-  name: string
-  branch: string
-  hasChanges: boolean
-  lastCommit?: string
-}
-
-export interface GitHubCredentials {
-  token: string
-  username: string
-  name: string
-  email: string
-}
-
-export interface BuddyState {
-  repo: RepoState | null
-  conversationHistory: AIMessage[]
-  currentDriver: string
-  github: GitHubCredentials | null
-}
-
+// =============================================================================
 // Configuration
-export const CONFIG = {
+// =============================================================================
+
+export const CONFIG: BuddyConfig = {
   workDir: join(homedir(), 'Code', '.buddy-repos'),
   commitMessage: 'chore: wip',
   ollamaHost: process.env.OLLAMA_HOST || 'http://localhost:11434',
@@ -50,11 +34,15 @@ export const CONFIG = {
 }
 
 // API Keys state (can be set at runtime via settings endpoint)
-export const apiKeys: { anthropic?: string, openai?: string, claudeCliHost?: string } = {
+export const apiKeys: BuddyApiKeys = {
   anthropic: process.env.ANTHROPIC_API_KEY,
   openai: process.env.OPENAI_API_KEY,
   claudeCliHost: process.env.BUDDY_EC2_HOST,
 }
+
+// =============================================================================
+// State Management
+// =============================================================================
 
 // State singleton
 const state: BuddyState = {
@@ -70,16 +58,31 @@ if (!existsSync(CONFIG.workDir)) {
 }
 
 // Buddy State Manager
-export const buddyState = {
-  getState: () => state,
-  setRepo: (repo: RepoState | null) => { state.repo = repo },
-  setCurrentDriver: (driver: string) => { state.currentDriver = driver },
-  setGitHub: (github: GitHubCredentials | null) => { state.github = github },
-  addToHistory: (message: AIMessage) => { state.conversationHistory.push(message) },
-  clearHistory: () => { state.conversationHistory = [] },
+export interface BuddyStateManager {
+  getState: () => BuddyState
+  setRepo: (repo: RepoState | null) => void
+  setCurrentDriver: (driver: string) => void
+  setGitHub: (github: GitHubCredentials | null) => void
+  addToHistory: (message: AIMessage) => void
+  clearHistory: () => void
 }
 
-// Build system prompt for AI
+export const buddyState: BuddyStateManager = {
+  getState: (): BuddyState => state,
+  setRepo: (repo: RepoState | null): void => { state.repo = repo },
+  setCurrentDriver: (driver: string): void => { state.currentDriver = driver },
+  setGitHub: (github: GitHubCredentials | null): void => { state.github = github },
+  addToHistory: (message: AIMessage): void => { state.conversationHistory.push(message) },
+  clearHistory: (): void => { state.conversationHistory = [] },
+}
+
+// =============================================================================
+// AI Driver Utilities
+// =============================================================================
+
+/**
+ * Build system prompt for AI with repository context
+ */
 export function buildSystemPrompt(context: string): string {
   return `You are Buddy, an AI code assistant that helps users modify codebases through voice commands.
 
@@ -109,48 +112,9 @@ FILE: path/to/file.ts
 Be concise but thorough. The user will review and commit your changes.`
 }
 
-// Get driver instance by name
-function getDriver(driverName: string): AIDriver {
-  const currentState = buddyState.getState()
-
-  switch (driverName) {
-    case 'claude-cli-local':
-      return claudeAgent.createLocal({ cwd: currentState.repo?.path })
-
-    case 'claude-cli-ec2':
-      return claudeAgent.createEC2({
-        cwd: currentState.repo?.path,
-        ec2Host: apiKeys.claudeCliHost,
-      })
-
-    case 'claude':
-    case 'anthropic':
-      if (!apiKeys.anthropic) {
-        throw new Error('Anthropic API key not set. Configure your API key in settings.')
-      }
-      return createAnthropicDriver({ apiKey: apiKeys.anthropic })
-
-    case 'openai':
-      if (!apiKeys.openai) {
-        throw new Error('OpenAI API key not set. Configure your API key in settings.')
-      }
-      return createOpenAIDriver({ apiKey: apiKeys.openai })
-
-    case 'ollama':
-      return createOllamaDriver({
-        host: CONFIG.ollamaHost,
-        model: CONFIG.ollamaModel,
-      })
-
-    case 'mock':
-      return createMockDriver()
-
-    default:
-      throw new Error(`Unknown driver: ${driverName}. Available: claude-cli-local, claude-cli-ec2, claude, openai, ollama, mock`)
-  }
-}
-
-// Mock driver for testing
+/**
+ * Create a mock driver for testing
+ */
 function createMockDriver(): AIDriver {
   return {
     name: 'Mock',
@@ -220,9 +184,59 @@ Files modified: 1`
   }
 }
 
+/**
+ * Get driver instance by name
+ */
+export function getDriver(driverName: string): AIDriver {
+  const currentState = buddyState.getState()
+
+  switch (driverName) {
+    case 'claude-cli-local':
+      return claudeAgent.createLocal({ cwd: currentState.repo?.path })
+
+    case 'claude-cli-ec2':
+      return claudeAgent.createEC2({
+        cwd: currentState.repo?.path,
+        ec2Host: apiKeys.claudeCliHost,
+      })
+
+    case 'claude':
+    case 'anthropic':
+      if (!apiKeys.anthropic) {
+        throw new Error('Anthropic API key not set. Configure your API key in settings.')
+      }
+      return createAnthropicDriver({ apiKey: apiKeys.anthropic })
+
+    case 'openai':
+      if (!apiKeys.openai) {
+        throw new Error('OpenAI API key not set. Configure your API key in settings.')
+      }
+      return createOpenAIDriver({ apiKey: apiKeys.openai })
+
+    case 'ollama':
+      return createOllamaDriver({
+        host: CONFIG.ollamaHost,
+        model: CONFIG.ollamaModel,
+      })
+
+    case 'mock':
+      return createMockDriver()
+
+    default:
+      throw new Error(`Unknown driver: ${driverName}. Available: claude-cli-local, claude-cli-ec2, claude, openai, ollama, mock`)
+  }
+}
+
+/**
+ * Get list of available AI drivers
+ */
 export function getAvailableDrivers(): string[] {
   return ['claude-cli-local', 'claude-cli-ec2', 'claude', 'openai', 'ollama', 'mock']
 }
+
+// =============================================================================
+// Repository Operations
+// =============================================================================
 
 /**
  * Get repository structure for context
@@ -308,33 +322,6 @@ export async function openRepository(input: string): Promise<RepoState> {
   buddyState.setRepo(repoState)
   buddyState.clearHistory()
   return repoState
-}
-
-/**
- * Process command with selected AI driver
- */
-export async function processCommand(command: string, driverName?: string): Promise<string> {
-  const currentState = buddyState.getState()
-
-  if (!currentState.repo) {
-    throw new Error('No repository opened')
-  }
-
-  const normalizedDriver = driverName || currentState.currentDriver
-  const driver = getDriver(normalizedDriver)
-
-  if (driverName) {
-    buddyState.setCurrentDriver(driverName)
-  }
-
-  const context = await getRepoContext(currentState.repo.path)
-  const systemPrompt = buildSystemPrompt(context)
-  const response = await driver.process(command, systemPrompt, currentState.conversationHistory)
-
-  buddyState.addToHistory({ role: 'user', content: command })
-  buddyState.addToHistory({ role: 'assistant', content: response })
-
-  return response
 }
 
 /**
@@ -429,6 +416,37 @@ export async function pushChanges(): Promise<void> {
 
   const { $ } = await import('bun')
   await $`cd ${currentState.repo.path} && git push`.quiet()
+}
+
+// =============================================================================
+// Command Processing
+// =============================================================================
+
+/**
+ * Process command with selected AI driver
+ */
+export async function processCommand(command: string, driverName?: string): Promise<string> {
+  const currentState = buddyState.getState()
+
+  if (!currentState.repo) {
+    throw new Error('No repository opened')
+  }
+
+  const normalizedDriver = driverName || currentState.currentDriver
+  const driver = getDriver(normalizedDriver)
+
+  if (driverName) {
+    buddyState.setCurrentDriver(driverName)
+  }
+
+  const context = await getRepoContext(currentState.repo.path)
+  const systemPrompt = buildSystemPrompt(context)
+  const response = await driver.process(command, systemPrompt, currentState.conversationHistory)
+
+  buddyState.addToHistory({ role: 'user', content: command })
+  buddyState.addToHistory({ role: 'assistant', content: response })
+
+  return response
 }
 
 /**

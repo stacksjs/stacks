@@ -1,7 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
-import { buddyState } from './BuddyService'
+import { buddyState } from '@stacksjs/ai'
 
 /**
  * Disconnect the GitHub account

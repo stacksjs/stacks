@@ -59,6 +59,6 @@ export function createAnthropicDriver(config: AnthropicDriverConfig): AIDriver {
   }
 }
 
-export const anthropicDriver = {
+export const anthropicDriver: { create: typeof createAnthropicDriver } = {
   create: createAnthropicDriver,
 }

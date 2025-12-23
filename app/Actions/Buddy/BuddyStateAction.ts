@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { buddyState, getAvailableDrivers } from './BuddyService'
+import { buddyState, getAvailableDrivers } from '@stacksjs/ai'
 import { response } from '@stacksjs/router'
 
 /**

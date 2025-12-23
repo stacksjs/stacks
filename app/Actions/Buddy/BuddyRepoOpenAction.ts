@@ -1,7 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
-import { openRepository } from './BuddyService'
+import { openRepository } from '@stacksjs/ai'
 
 /**
  * Open or clone a repository

@@ -2,7 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
-import { applyChanges, buddyState, openRepository, processCommand } from './BuddyService'
+import { applyChanges, buddyState, openRepository, processCommand } from '@stacksjs/ai'
 
 /**
  * Process a command with the AI driver
