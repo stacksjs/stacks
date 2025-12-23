@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { applyChanges, buddyState, openRepository, processCommandStreaming } from '@stacksjs/ai'
+import { applyChanges, buddyProcessStreaming, buddyState, openRepository } from '@stacksjs/ai'
 
 /**
  * Process a command with streaming output (Server-Sent Events)
@@ -49,7 +49,7 @@ export default new Action({
       }
 
       // Start streaming
-      const { stream, fullResponse } = await processCommandStreaming(command, driver || undefined)
+      const { stream, fullResponse } = await buddyProcessStreaming(command, driver || undefined)
 
       // Create SSE response
       const encoder = new TextEncoder()

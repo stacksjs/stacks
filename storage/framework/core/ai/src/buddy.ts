@@ -452,7 +452,7 @@ export async function processCommand(command: string, driverName?: string): Prom
 /**
  * Process command with streaming output using Claude CLI
  */
-export async function processCommandStreaming(
+export async function buddyProcessStreaming(
   command: string,
   driverName?: string,
 ): Promise<StreamingResult> {
