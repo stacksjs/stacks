@@ -143,7 +143,6 @@ export class Auth {
 
     if (user?.password) {
       hashCheck = await verifyHash(authPass, user.password)
-      console.log('[Auth.attempt] Hash check result:', hashCheck)
     }
 
     if (!email)
@@ -378,32 +377,19 @@ export class Auth {
    */
   public static async validateToken(token: string): Promise<boolean> {
     const parsed = this.parseToken(token)
-    if (!parsed) {
-      console.log('[Auth.validateToken] Failed to parse token')
+    if (!parsed)
       return false
-    }
 
     const { plainToken, encryptedId } = parsed
     const clientSecret = await this.getClientSecret()
     const decryptedId = await decrypt(encryptedId, clientSecret)
-    if (!decryptedId) {
-      console.log('[Auth.validateToken] Failed to decrypt ID')
+    if (!decryptedId)
       return false
-    }
-
-    console.log('[Auth.validateToken] Decrypted ID:', decryptedId)
 
     const accessToken = await db.selectFrom('oauth_access_tokens')
       .where('id', '=', Number(decryptedId))
       .selectAll()
       .executeTakeFirst()
-
-    console.log('[Auth.validateToken] DB token found:', !!accessToken)
-    if (accessToken) {
-      console.log('[Auth.validateToken] DB token (first 50):', accessToken.token?.substring(0, 50))
-      console.log('[Auth.validateToken] Plain token (first 50):', plainToken.substring(0, 50))
-      console.log('[Auth.validateToken] Tokens match:', accessToken.token === plainToken)
-    }
 
     if (!accessToken || accessToken.token !== plainToken)
       return false
@@ -444,45 +430,22 @@ export class Auth {
    */
   public static async getUserFromToken(token: string): Promise<UserModel | undefined> {
     const parsed = this.parseToken(token)
-    if (!parsed) {
-      console.log('[getUserFromToken] Failed to parse token')
+    if (!parsed)
       return undefined
-    }
 
     const { plainToken, encryptedId } = parsed
-    console.log('[getUserFromToken] Parsed - plainToken length:', plainToken.length, 'encryptedId:', encryptedId.substring(0, 20) + '...')
-
     const clientSecret = await this.getClientSecret()
     const decryptedId = await decrypt(encryptedId, clientSecret)
-    if (!decryptedId) {
-      console.log('[getUserFromToken] Failed to decrypt ID')
+    if (!decryptedId)
       return undefined
-    }
-
-    console.log('[getUserFromToken] Decrypted ID:', decryptedId)
 
     const accessToken = await db.selectFrom('oauth_access_tokens')
       .where('id', '=', Number(decryptedId))
       .selectAll()
       .executeTakeFirst()
 
-    console.log('[getUserFromToken] DB lookup result:', accessToken ? 'found' : 'not found')
-
-    if (!accessToken) {
-      console.log('[getUserFromToken] Token not found in DB')
+    if (!accessToken || accessToken.token !== plainToken)
       return undefined
-    }
-
-    console.log('[getUserFromToken] DB token length:', accessToken.token?.length)
-    console.log('[getUserFromToken] Plain token length:', plainToken.length)
-    console.log('[getUserFromToken] Tokens match:', accessToken.token === plainToken)
-
-    if (accessToken.token !== plainToken) {
-      console.log('[getUserFromToken] Token mismatch!')
-      console.log('[getUserFromToken] DB token (first 80):', accessToken.token?.substring(0, 80))
-      console.log('[getUserFromToken] Plain token (first 80):', plainToken.substring(0, 80))
-      return undefined
-    }
 
     if (accessToken.expires_at && new Date(accessToken.expires_at) < new Date()) {
       await db.deleteFrom('oauth_access_tokens')
