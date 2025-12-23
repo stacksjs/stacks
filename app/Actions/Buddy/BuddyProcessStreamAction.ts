@@ -20,9 +20,9 @@ export default new Action({
 
   async handle(request: RequestInstance) {
     try {
-      const command = request.get<string>('command')
-      const repo = request.get<string>('repo') || request.get<string>('repository')
-      const driver = request.get<string>('driver')
+      const command = request.get('command')
+      const repo = request.get('repo') || request.get('repository')
+      const driver = request.get('driver')
 
       if (!command) {
         return new Response(JSON.stringify({ error: 'Command is required' }), {
@@ -63,15 +63,12 @@ export default new Action({
           const reader = stream.getReader()
 
           try {
-            while (true) {
-              const { done, value } = await reader.read()
-              if (done) break
-
+            let result = await reader.read()
+            while (!result.done) {
               // Convert chunk to text and send as SSE data event
-              const text = decoder.decode(value, { stream: true })
-              // Escape newlines for SSE format
-              const escapedText = text.replace(/\n/g, '\\n')
+              const text = decoder.decode(result.value, { stream: true })
               controller.enqueue(encoder.encode(`event: chunk\ndata: ${JSON.stringify({ text })}\n\n`))
+              result = await reader.read()
             }
 
             // Wait for full response and apply changes

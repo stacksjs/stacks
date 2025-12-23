@@ -557,3 +557,28 @@ export const RealtimePresets = {
     },
   },
 } as const
+
+/**
+ * Options for the emit function
+ */
+export interface EmitOptions {
+  /**
+   * Make this a private channel (requires authentication)
+   */
+  private?: boolean
+
+  /**
+   * Make this a presence channel (tracks who's online)
+   */
+  presence?: boolean
+
+  /**
+   * Exclude specific user IDs from receiving this event
+   */
+  exclude?: string | string[]
+
+  /**
+   * Specify which driver to use (overrides default)
+   */
+  driver?: DriverType
+}
