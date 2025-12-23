@@ -40,15 +40,23 @@ interface ChainableRoute {
 const middlewareCache = new Map<string, any>()
 
 /**
- * Load a middleware by name from app/Middleware or defaults
+ * Load a middleware by name
  */
 async function loadMiddleware(name: string): Promise<any> {
   if (middlewareCache.has(name)) {
     return middlewareCache.get(name)
   }
 
+  // Built-in 'auth' middleware - directly uses @stacksjs/auth
+  if (name === 'auth') {
+    const { authMiddlewareHandler } = await import('@stacksjs/auth')
+    middlewareCache.set(name, authMiddlewareHandler)
+    return authMiddlewareHandler
+  }
+
+  // For other middleware, try loading from files
   try {
-    // Try loading from app/Middleware first
+    // Try loading from app/Middleware
     const userPath = p.appPath(`Middleware/${name.charAt(0).toUpperCase() + name.slice(1)}.ts`)
     const middleware = await import(userPath)
     middlewareCache.set(name, middleware.default)

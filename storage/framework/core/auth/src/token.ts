@@ -105,11 +105,11 @@ export class TokenManager {
       .execute()
   }
 
-  static async generateLongJWT(userId: number): Promise<string> {
-    // Generate a long random string for the token
-    const randomPart = randomBytes(64).toString('base64')
-
-    // Create JWT-like structure with header and payload
+  /**
+   * Generate a JWT-like token with embedded metadata
+   * Contains user ID, timestamps, and random signature for security
+   */
+  static generateJWT(userId: number): string {
     const header = {
       alg: 'HS256',
       typ: 'JWT',
@@ -122,11 +122,10 @@ export class TokenManager {
       jti: randomBytes(16).toString('hex'),
     }
 
-    // Convert header and payload to base64
-    const encodedHeader = Buffer.from(JSON.stringify(header)).toString('base64')
-    const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64')
+    const encodedHeader = Buffer.from(JSON.stringify(header)).toString('base64url')
+    const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64url')
+    const signature = randomBytes(32).toString('base64url')
 
-    // Combine all parts to create a JWT-like token
-    return `${encodedHeader}.${encodedPayload}.${randomPart}`
+    return `${encodedHeader}.${encodedPayload}.${signature}`
   }
 }

@@ -8,13 +8,12 @@ import type {
   TokenCreateOptions,
   TokenScopes,
 } from '@stacksjs/types'
-import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, User } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
-import { decrypt, encrypt, makeHash, verifyHash } from '@stacksjs/security'
+import { decrypt, encrypt, verifyHash } from '@stacksjs/security'
 import { RateLimiter } from './rate-limiter'
 import { TokenManager } from './token'
 
@@ -27,6 +26,24 @@ export class Auth {
   // INTERNAL HELPERS
   // ============================================================================
 
+  /**
+   * Parse a token string into its components
+   * Token format: {jwt}:{encryptedId} where encryptedId may contain colons
+   */
+  private static parseToken(token: string): { plainToken: string, encryptedId: string } | null {
+    const firstColonIndex = token.indexOf(':')
+    if (firstColonIndex === -1)
+      return null
+
+    const plainToken = token.substring(0, firstColonIndex)
+    const encryptedId = token.substring(firstColonIndex + 1)
+
+    if (!plainToken || !encryptedId)
+      return null
+
+    return { plainToken, encryptedId }
+  }
+
   private static async getClientSecret(): Promise<string> {
     if (this.clientSecret)
       return this.clientSecret
@@ -37,15 +54,24 @@ export class Auth {
   }
 
   private static async getPersonalAccessClient(): Promise<OAuthClientRow> {
-    const client = await db.selectFrom('oauth_clients')
-      .where('personal_access_client', '=', true)
-      .selectAll()
-      .executeTakeFirst()
+    try {
+      const client = await db.selectFrom('oauth_clients')
+        .where('personal_access_client', '=', true)
+        .selectAll()
+        .executeTakeFirst()
 
-    if (!client)
-      throw new HttpError(500, 'No personal access client found. Please run `./buddy auth:token` to create a personal access client.')
+      if (!client)
+        throw new HttpError(500, 'No personal access client found. Please run `./buddy auth:setup` first.')
 
-    return client
+      return client
+    }
+    catch (error) {
+      // Check if the error is due to missing table
+      if (error instanceof Error && error.message.includes('does not exist'))
+        throw new HttpError(500, 'OAuth tables not found. Please run `./buddy auth:setup` first.')
+
+      throw error
+    }
   }
 
   private static async validateClient(clientId: number, clientSecret: string): Promise<boolean> {
@@ -115,8 +141,10 @@ export class Auth {
 
     const authPass = credentials[password] || ''
 
-    if (user?.password)
-      hashCheck = await verifyHash(authPass, user.password, 'bcrypt')
+    if (user?.password) {
+      hashCheck = await verifyHash(authPass, user.password)
+      console.log('[Auth.attempt] Hash check result:', hashCheck)
+    }
 
     if (!email)
       return false
@@ -266,8 +294,8 @@ export class Auth {
     const name = options?.name ?? config.auth.defaultTokenName ?? 'auth-token'
     const abilities = options?.abilities ?? config.auth.defaultAbilities ?? ['*']
 
-    // Generate a long JWT token
-    const jwtToken = await TokenManager.generateLongJWT(user.id)
+    // Generate a JWT-like token with embedded metadata
+    const token = TokenManager.generateJWT(user.id)
 
     // Set token expiry
     const expiresAt = options?.expiresAt ?? new Date(Date.now() + (config.auth.tokenExpiry ?? 30 * 24 * 60 * 60 * 1000))
@@ -278,7 +306,7 @@ export class Auth {
         user_id: user.id,
         oauth_client_id: client.id,
         name,
-        token: jwtToken,
+        token,
         scopes: JSON.stringify(abilities),
         revoked: false,
         expires_at: formatDate(expiresAt),
@@ -294,8 +322,8 @@ export class Auth {
     // Encrypt the token ID using client secret
     const encryptedId = await encrypt(insertId.toString(), clientSecret)
 
-    // Combine into final token format with JWT first
-    const plainTextToken = `${jwtToken}:${encryptedId}` as AuthToken
+    // Combine into final token format: token:encryptedId
+    const plainTextToken = `${token}:${encryptedId}` as AuthToken
 
     const accessToken: PersonalAccessToken = {
       id: insertId,
@@ -349,21 +377,35 @@ export class Auth {
    * Validate a token
    */
   public static async validateToken(token: string): Promise<boolean> {
-    const [jwtToken, tokenId] = token.split(':')
-    if (!tokenId || !jwtToken)
+    const parsed = this.parseToken(token)
+    if (!parsed) {
+      console.log('[Auth.validateToken] Failed to parse token')
       return false
+    }
 
+    const { plainToken, encryptedId } = parsed
     const clientSecret = await this.getClientSecret()
-    const decryptedId = decrypt(tokenId, clientSecret)
-    if (!decryptedId)
+    const decryptedId = await decrypt(encryptedId, clientSecret)
+    if (!decryptedId) {
+      console.log('[Auth.validateToken] Failed to decrypt ID')
       return false
+    }
+
+    console.log('[Auth.validateToken] Decrypted ID:', decryptedId)
 
     const accessToken = await db.selectFrom('oauth_access_tokens')
       .where('id', '=', Number(decryptedId))
       .selectAll()
       .executeTakeFirst()
 
-    if (!accessToken)
+    console.log('[Auth.validateToken] DB token found:', !!accessToken)
+    if (accessToken) {
+      console.log('[Auth.validateToken] DB token (first 50):', accessToken.token?.substring(0, 50))
+      console.log('[Auth.validateToken] Plain token (first 50):', plainToken.substring(0, 50))
+      console.log('[Auth.validateToken] Tokens match:', accessToken.token === plainToken)
+    }
+
+    if (!accessToken || accessToken.token !== plainToken)
       return false
 
     // Check if token is expired
@@ -401,22 +443,46 @@ export class Auth {
    * Get user from a token
    */
   public static async getUserFromToken(token: string): Promise<UserModel | undefined> {
-    const [jwtToken, tokenId] = token.split(':')
-    if (!tokenId || !jwtToken)
+    const parsed = this.parseToken(token)
+    if (!parsed) {
+      console.log('[getUserFromToken] Failed to parse token')
       return undefined
+    }
+
+    const { plainToken, encryptedId } = parsed
+    console.log('[getUserFromToken] Parsed - plainToken length:', plainToken.length, 'encryptedId:', encryptedId.substring(0, 20) + '...')
 
     const clientSecret = await this.getClientSecret()
-    const decryptedId = decrypt(tokenId, clientSecret)
-    if (!decryptedId)
+    const decryptedId = await decrypt(encryptedId, clientSecret)
+    if (!decryptedId) {
+      console.log('[getUserFromToken] Failed to decrypt ID')
       return undefined
+    }
+
+    console.log('[getUserFromToken] Decrypted ID:', decryptedId)
 
     const accessToken = await db.selectFrom('oauth_access_tokens')
       .where('id', '=', Number(decryptedId))
       .selectAll()
       .executeTakeFirst()
 
-    if (!accessToken || accessToken.token !== jwtToken)
+    console.log('[getUserFromToken] DB lookup result:', accessToken ? 'found' : 'not found')
+
+    if (!accessToken) {
+      console.log('[getUserFromToken] Token not found in DB')
       return undefined
+    }
+
+    console.log('[getUserFromToken] DB token length:', accessToken.token?.length)
+    console.log('[getUserFromToken] Plain token length:', plainToken.length)
+    console.log('[getUserFromToken] Tokens match:', accessToken.token === plainToken)
+
+    if (accessToken.token !== plainToken) {
+      console.log('[getUserFromToken] Token mismatch!')
+      console.log('[getUserFromToken] DB token (first 80):', accessToken.token?.substring(0, 80))
+      console.log('[getUserFromToken] Plain token (first 80):', plainToken.substring(0, 80))
+      return undefined
+    }
 
     if (accessToken.expires_at && new Date(accessToken.expires_at) < new Date()) {
       await db.deleteFrom('oauth_access_tokens')
@@ -454,12 +520,12 @@ export class Auth {
     if (!bearerToken)
       return undefined
 
-    const [_, tokenId] = bearerToken.split(':')
-    if (!tokenId)
+    const parsed = this.parseToken(bearerToken)
+    if (!parsed)
       return undefined
 
     const clientSecret = await this.getClientSecret()
-    const decryptedId = decrypt(tokenId, clientSecret)
+    const decryptedId = await decrypt(parsed.encryptedId, clientSecret)
     if (!decryptedId)
       return undefined
 
@@ -564,12 +630,12 @@ export class Auth {
    * Revoke a specific token
    */
   public static async revokeToken(token: string): Promise<void> {
-    const [_, tokenId] = token.split(':')
-    if (!tokenId)
+    const parsed = this.parseToken(token)
+    if (!parsed)
       return
 
     const clientSecret = await this.getClientSecret()
-    const decryptedId = decrypt(tokenId, clientSecret)
+    const decryptedId = await decrypt(parsed.encryptedId, clientSecret)
     if (!decryptedId)
       return
 
@@ -649,12 +715,13 @@ export class Auth {
    * Rotate (refresh) a token
    */
   public static async rotateToken(oldToken: string): Promise<AuthToken | null> {
-    const [jwtToken, tokenId] = oldToken.split(':')
-    if (!tokenId || !jwtToken)
+    const parsed = this.parseToken(oldToken)
+    if (!parsed)
       return null
 
+    const { plainToken, encryptedId } = parsed
     const clientSecret = await this.getClientSecret()
-    const decryptedId = decrypt(tokenId, clientSecret)
+    const decryptedId = await decrypt(encryptedId, clientSecret)
     if (!decryptedId)
       return null
 
@@ -663,30 +730,24 @@ export class Auth {
       .selectAll()
       .executeTakeFirst()
 
-    if (!accessToken)
+    if (!accessToken || accessToken.token !== plainToken)
       return null
 
-    // Verify the old token
-    const isValid = await verifyHash(jwtToken, accessToken.token, 'bcrypt')
-    if (!isValid)
-      return null
-
-    // Generate new token
-    const newToken = randomBytes(40).toString('hex')
-    const hashedNewToken = await makeHash(newToken, { algorithm: 'bcrypt' })
+    // Generate new JWT token
+    const newToken = TokenManager.generateJWT(accessToken.user_id)
 
     // Update the token
     await db.updateTable('oauth_access_tokens')
       .set({
-        token: hashedNewToken,
+        token: newToken,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', accessToken.id)
       .execute()
 
-    // Encrypt the new token ID
-    const encryptedId = encrypt(accessToken.id.toString(), clientSecret)
-    return `${newToken}:${encryptedId}` as AuthToken
+    // Return new token with encrypted ID
+    const newEncryptedId = await encrypt(accessToken.id.toString(), clientSecret)
+    return `${newToken}:${newEncryptedId}` as AuthToken
   }
 
   /**

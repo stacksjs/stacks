@@ -47,8 +47,9 @@ export function migrate(buddy: CLI): void {
     .alias('db:fresh')
     .option('-d, --diff', 'Show the SQL that would be run', { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('-s, --seed', 'Run database seeders after migration', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MigrateOptions) => {
+    .action(async (options: MigrateOptions & { seed?: boolean }) => {
       log.debug('Running `buddy migrate:fresh` ...', options)
 
       const perf = await intro('buddy migrate:fresh')
@@ -63,7 +64,32 @@ export function migrate(buddy: CLI): void {
         process.exit()
       }
 
-      await outro(`All tables dropped successfully & migrated successfully`, {
+      // Run seeders if --seed flag is provided
+      if (options.seed) {
+        log.info('Running database seeders...')
+        try {
+          // Import seed dynamically to avoid circular deps and ensure db is initialized
+          const { seed } = await import('@stacksjs/database')
+          const seedResult = await seed({ verbose: options.verbose })
+
+          if (seedResult.failed > 0) {
+            log.warn(`Seeding completed with ${seedResult.failed} failure(s)`)
+            for (const r of seedResult.results) {
+              if (!r.success) {
+                log.error(`  - ${r.model}: ${r.error}`)
+              }
+            }
+          }
+          else {
+            log.success(`Seeded ${seedResult.successful} model(s)`)
+          }
+        }
+        catch (error) {
+          log.error('Failed to run seeders:', error)
+        }
+      }
+
+      await outro(`All tables dropped successfully & migrated successfully${options.seed ? ' & seeded' : ''}`, {
         startTime: perf,
         useSeconds: true,
       })

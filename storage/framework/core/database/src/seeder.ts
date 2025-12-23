@@ -214,10 +214,10 @@ async function generateRecord(
       continue
     }
 
-    // Hash password fields
+    // Hash password fields using bcrypt (to match the User model's set.password)
     if (isPasswordField(fieldName, attr) && typeof value === 'string') {
       try {
-        value = await hashMake(value)
+        value = await hashMake(value, { algorithm: 'bcrypt' })
       }
       catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err)

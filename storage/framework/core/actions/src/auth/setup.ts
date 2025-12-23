@@ -75,7 +75,7 @@ try {
   }
 
   // Create oauth_access_tokens table if it doesn't exist
-  // Note: tokens are stored as SHA-256 hashes (64 chars hex)
+  // Note: tokens are JWT-like strings with embedded metadata (variable length)
   // Foreign keys removed to allow standalone OAuth tables (not dependent on ORM models)
   if (isPostgres) {
     await db.unsafe(`
@@ -83,9 +83,9 @@ try {
         id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL,
         oauth_client_id INTEGER NOT NULL,
-        token VARCHAR(64) NOT NULL,
+        token TEXT NOT NULL,
         name VARCHAR(255),
-        scopes VARCHAR(2000),
+        scopes TEXT,
         revoked BOOLEAN NOT NULL DEFAULT false,
         expires_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -98,9 +98,9 @@ try {
         id INTEGER AUTO_INCREMENT PRIMARY KEY,
         user_id INTEGER NOT NULL,
         oauth_client_id INTEGER NOT NULL,
-        token VARCHAR(64) NOT NULL,
+        token TEXT NOT NULL,
         name VARCHAR(255),
-        scopes VARCHAR(2000),
+        scopes TEXT,
         revoked BOOLEAN NOT NULL DEFAULT 0,
         expires_at TIMESTAMP NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -113,9 +113,9 @@ try {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         oauth_client_id INTEGER NOT NULL,
-        token VARCHAR(64) NOT NULL,
+        token TEXT NOT NULL,
         name VARCHAR(255),
-        scopes VARCHAR(2000),
+        scopes TEXT,
         revoked BOOLEAN NOT NULL DEFAULT 0,
         expires_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -130,14 +130,14 @@ try {
   `).execute()
 
   // Create oauth_refresh_tokens table if it doesn't exist
-  // Note: tokens are stored as SHA-256 hashes (64 chars hex)
+  // Note: tokens are JWT-like strings with embedded metadata (variable length)
   // Foreign keys removed to allow standalone OAuth tables
   if (isPostgres) {
     await db.unsafe(`
       CREATE TABLE IF NOT EXISTS oauth_refresh_tokens (
         id SERIAL PRIMARY KEY,
         access_token_id INTEGER NOT NULL,
-        token VARCHAR(64) NOT NULL,
+        token TEXT NOT NULL,
         revoked BOOLEAN NOT NULL DEFAULT false,
         expires_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -148,7 +148,7 @@ try {
       CREATE TABLE IF NOT EXISTS oauth_refresh_tokens (
         id INTEGER AUTO_INCREMENT PRIMARY KEY,
         access_token_id INTEGER NOT NULL,
-        token VARCHAR(64) NOT NULL,
+        token TEXT NOT NULL,
         revoked BOOLEAN NOT NULL DEFAULT 0,
         expires_at TIMESTAMP NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -159,7 +159,7 @@ try {
       CREATE TABLE IF NOT EXISTS oauth_refresh_tokens (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         access_token_id INTEGER NOT NULL,
-        token VARCHAR(64) NOT NULL,
+        token TEXT NOT NULL,
         revoked BOOLEAN NOT NULL DEFAULT 0,
         expires_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
