@@ -2,18 +2,22 @@
  * Buddy - Voice AI Code Assistant Shared Service
  *
  * This module contains the shared state and utilities for Buddy actions.
- * Derived from buddy-service.ts for use with Stacks framework.
+ * Uses @stacksjs/ai for AI drivers and agents.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
+import type { AIDriver, AIMessage, StreamingResult } from '@stacksjs/ai'
+import {
+  claudeAgent,
+  createAnthropicDriver,
+  createOllamaDriver,
+  createOpenAIDriver,
+} from '@stacksjs/ai'
 
 // Types
-export interface AIMessage {
-  role: 'user' | 'assistant' | 'system'
-  content: string
-}
+export type { AIMessage } from '@stacksjs/ai'
 
 export interface RepoState {
   path: string
@@ -35,11 +39,6 @@ export interface BuddyState {
   conversationHistory: AIMessage[]
   currentDriver: string
   github: GitHubCredentials | null
-}
-
-export interface AIDriver {
-  name: string
-  process: (command: string, context: string, history: AIMessage[]) => Promise<string>
 }
 
 // Configuration
@@ -110,186 +109,50 @@ FILE: path/to/file.ts
 Be concise but thorough. The user will review and commit your changes.`
 }
 
-// AI Drivers
-export const drivers: Record<string, AIDriver> = {
-  'claude-cli-local': {
-    name: 'Claude CLI (Local)',
-    async process(command: string, context: string, _history: AIMessage[]): Promise<string> {
-      const { $ } = await import('bun')
-      const currentState = buddyState.getState()
+// Get driver instance by name
+function getDriver(driverName: string): AIDriver {
+  const currentState = buddyState.getState()
 
-      // Check if claude CLI is available
-      const whichResult = await $`which claude`.quiet().nothrow()
-      if (whichResult.exitCode !== 0) {
-        throw new Error('Claude CLI not found. Install it with: npm install -g @anthropic-ai/claude-code')
-      }
+  switch (driverName) {
+    case 'claude-cli-local':
+      return claudeAgent.createLocal({ cwd: currentState.repo?.path })
 
-      // Build the prompt with context
-      const fullPrompt = currentState.repo
-        ? `Working in repository: ${currentState.repo.path}\n\nContext:\n${context}\n\nUser request: ${command}`
-        : command
+    case 'claude-cli-ec2':
+      return claudeAgent.createEC2({
+        cwd: currentState.repo?.path,
+        ec2Host: apiKeys.claudeCliHost,
+      })
 
-      // Execute claude CLI with the prompt
-      const cwd = currentState.repo?.path || process.cwd()
-
-      try {
-        // Use --print to get just the response without interactive mode
-        // Use --dangerously-skip-permissions to allow file operations without interactive prompts
-        const result = await $`cd ${cwd} && claude --print --dangerously-skip-permissions ${fullPrompt}`.quiet()
-        return result.text().trim()
-      }
-      catch (error) {
-        // Try with allowedTools flag as alternative
-        try {
-          const result = await $`cd ${cwd} && claude --print --allowedTools "Write,Edit,Bash" ${fullPrompt}`.quiet()
-          return result.text().trim()
-        }
-        catch (innerError) {
-          throw new Error(`Claude CLI error: ${(innerError as Error).message}`)
-        }
-      }
-    },
-  },
-
-  'claude-cli-ec2': {
-    name: 'Claude CLI (EC2)',
-    async process(command: string, context: string, _history: AIMessage[]): Promise<string> {
-      const { $ } = await import('bun')
-      const currentState = buddyState.getState()
-
-      const ec2Host = process.env.BUDDY_EC2_HOST
-      const ec2User = process.env.BUDDY_EC2_USER || 'ubuntu'
-      const ec2Key = process.env.BUDDY_EC2_KEY
-
-      if (!ec2Host) {
-        throw new Error('BUDDY_EC2_HOST environment variable not set. Set it to your EC2 instance IP/hostname.')
-      }
-
-      // Build the prompt
-      const fullPrompt = currentState.repo
-        ? `Working in repository: ${currentState.repo.name}\n\nContext:\n${context}\n\nUser request: ${command}`
-        : command
-
-      // Escape the prompt for SSH
-      const escapedPrompt = fullPrompt.replace(/'/g, `'\\''`)
-
-      // Build SSH command
-      const sshArgs = ec2Key ? `-i ${ec2Key}` : ''
-      const sshTarget = `${ec2User}@${ec2Host}`
-
-      try {
-        // Execute claude CLI on remote EC2 via SSH
-        const result = await $`ssh ${sshArgs} ${sshTarget} "claude --print '${escapedPrompt}'"`.quiet()
-        return result.text().trim()
-      }
-      catch (error) {
-        throw new Error(`EC2 Claude CLI error: ${(error as Error).message}. Make sure SSH is configured and claude CLI is installed on EC2.`)
-      }
-    },
-  },
-
-  claude: {
-    name: 'Claude API',
-    async process(command: string, context: string, history: AIMessage[]): Promise<string> {
-      const apiKey = apiKeys.anthropic
-      if (!apiKey) {
+    case 'claude':
+    case 'anthropic':
+      if (!apiKeys.anthropic) {
         throw new Error('Anthropic API key not set. Configure your API key in settings.')
       }
+      return createAnthropicDriver({ apiKey: apiKeys.anthropic })
 
-      const systemPrompt = buildSystemPrompt(context)
-
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 4096,
-          system: systemPrompt,
-          messages: [...history, { role: 'user', content: command }],
-        }),
-      })
-
-      if (!response.ok) {
-        const error = await response.text()
-        throw new Error(`Claude API error: ${error}`)
-      }
-
-      const data = (await response.json()) as { content: Array<{ text: string }> }
-      return data.content[0].text
-    },
-  },
-
-  openai: {
-    name: 'OpenAI',
-    async process(command: string, context: string, history: AIMessage[]): Promise<string> {
-      const apiKey = apiKeys.openai
-      if (!apiKey) {
+    case 'openai':
+      if (!apiKeys.openai) {
         throw new Error('OpenAI API key not set. Configure your API key in settings.')
       }
+      return createOpenAIDriver({ apiKey: apiKeys.openai })
 
-      const systemPrompt = buildSystemPrompt(context)
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          max_tokens: 4096,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...history,
-            { role: 'user', content: command },
-          ],
-        }),
+    case 'ollama':
+      return createOllamaDriver({
+        host: CONFIG.ollamaHost,
+        model: CONFIG.ollamaModel,
       })
 
-      if (!response.ok) {
-        const error = await response.text()
-        throw new Error(`OpenAI API error: ${error}`)
-      }
+    case 'mock':
+      return createMockDriver()
 
-      const data = (await response.json()) as { choices: Array<{ message: { content: string } }> }
-      return data.choices[0].message.content
-    },
-  },
+    default:
+      throw new Error(`Unknown driver: ${driverName}. Available: claude-cli-local, claude-cli-ec2, claude, openai, ollama, mock`)
+  }
+}
 
-  ollama: {
-    name: 'Ollama',
-    async process(command: string, context: string, history: AIMessage[]): Promise<string> {
-      const systemPrompt = buildSystemPrompt(context)
-
-      const response = await fetch(`${CONFIG.ollamaHost}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: CONFIG.ollamaModel,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...history,
-            { role: 'user', content: command },
-          ],
-          stream: false,
-        }),
-      })
-
-      if (!response.ok) {
-        const error = await response.text()
-        throw new Error(`Ollama API error: ${error}`)
-      }
-
-      const data = (await response.json()) as { message: { content: string } }
-      return data.message.content
-    },
-  },
-
-  mock: {
+// Mock driver for testing
+function createMockDriver(): AIDriver {
+  return {
     name: 'Mock',
     async process(command: string): Promise<string> {
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -354,11 +217,11 @@ export function main() {
 
 Files modified: 1`
     },
-  },
+  }
 }
 
 export function getAvailableDrivers(): string[] {
-  return Object.keys(drivers)
+  return ['claude-cli-local', 'claude-cli-ec2', 'claude', 'openai', 'ollama', 'mock']
 }
 
 /**
@@ -366,8 +229,7 @@ export function getAvailableDrivers(): string[] {
  */
 export async function getRepoContext(repoPath: string): Promise<string> {
   const { $ } = await import('bun')
-  const treeResult
-    = await $`cd ${repoPath} && find . -type f -not -path "*/node_modules/*" -not -path "*/.git/*" -not -name "*.lock" | head -50`.quiet()
+  const treeResult = await $`cd ${repoPath} && find . -type f -not -path "*/node_modules/*" -not -path "*/.git/*" -not -name "*.lock" | head -50`.quiet()
   const files = treeResult.text().trim()
 
   let readme = ''
@@ -444,7 +306,7 @@ export async function openRepository(input: string): Promise<RepoState> {
   }
 
   buddyState.setRepo(repoState)
-  buddyState.clearHistory() // Reset conversation for new repo
+  buddyState.clearHistory()
   return repoState
 }
 
@@ -458,25 +320,17 @@ export async function processCommand(command: string, driverName?: string): Prom
     throw new Error('No repository opened')
   }
 
-  // Get driver (normalize 'anthropic' to 'claude' for backwards compatibility)
-  let normalizedDriver = driverName || currentState.currentDriver
-  if (normalizedDriver === 'anthropic') {
-    normalizedDriver = 'claude'
-  }
-
-  const driver = drivers[normalizedDriver]
-  if (!driver) {
-    throw new Error(`Unknown driver: ${normalizedDriver}. Available: ${Object.keys(drivers).join(', ')}`)
-  }
+  const normalizedDriver = driverName || currentState.currentDriver
+  const driver = getDriver(normalizedDriver)
 
   if (driverName) {
     buddyState.setCurrentDriver(driverName)
   }
 
   const context = await getRepoContext(currentState.repo.path)
-  const response = await driver.process(command, context, currentState.conversationHistory)
+  const systemPrompt = buildSystemPrompt(context)
+  const response = await driver.process(command, systemPrompt, currentState.conversationHistory)
 
-  // Update conversation history
   buddyState.addToHistory({ role: 'user', content: command })
   buddyState.addToHistory({ role: 'assistant', content: response })
 
@@ -524,13 +378,11 @@ export async function applyChanges(aiResponse: string): Promise<string[]> {
  */
 export async function configureGitUser(): Promise<void> {
   const currentState = buddyState.getState()
-  if (!currentState.repo || !currentState.github)
-    return
+  if (!currentState.repo || !currentState.github) return
 
   const { $ } = await import('bun')
   const { name, email } = currentState.github
 
-  // Set local git config for this repo
   await $`cd ${currentState.repo.path} && git config user.name ${name}`.quiet()
   await $`cd ${currentState.repo.path} && git config user.email ${email}`.quiet()
 
@@ -549,7 +401,6 @@ export async function commitChanges(): Promise<string> {
 
   const { $ } = await import('bun')
 
-  // Configure git user if GitHub is connected
   if (currentState.github) {
     await configureGitUser()
   }
@@ -582,27 +433,18 @@ export async function pushChanges(): Promise<void> {
 
 /**
  * Process command with streaming output using Claude CLI
- * Returns a ReadableStream that emits chunks of the response
- * Uses --output-format stream-json for real-time streaming with tool usage details
  */
 export async function processCommandStreaming(
   command: string,
   driverName?: string,
-): Promise<{ stream: ReadableStream<Uint8Array>, fullResponse: Promise<string> }> {
-  const { spawn } = await import('bun')
+): Promise<StreamingResult> {
   const currentState = buddyState.getState()
 
   if (!currentState.repo) {
     throw new Error('No repository opened')
   }
 
-  // Get driver (normalize 'anthropic' to 'claude' for backwards compatibility)
-  let normalizedDriver = driverName || currentState.currentDriver
-  if (normalizedDriver === 'anthropic') {
-    normalizedDriver = 'claude'
-  }
-
-  // Only claude-cli-local supports streaming for now
+  const normalizedDriver = driverName || currentState.currentDriver
   if (normalizedDriver !== 'claude-cli-local') {
     throw new Error(`Streaming only supported for claude-cli-local driver. Current: ${normalizedDriver}`)
   }
@@ -611,186 +453,13 @@ export async function processCommandStreaming(
     buddyState.setCurrentDriver(driverName)
   }
 
-  // Spawn Claude CLI process with stream-json output format
-  // This provides real-time streaming with tool calls, thinking, etc.
-  // Note: --output-format=stream-json requires --verbose
-  const proc = spawn([
-    'claude',
-    '--print',
-    '--verbose',
-    '--output-format', 'stream-json',
-    '--include-partial-messages',
-    '--dangerously-skip-permissions',
-    command,
-  ], {
-    cwd: currentState.repo.path,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  })
+  const result = await claudeAgent.processStreaming(command, currentState.repo.path)
 
-  let fullResponse = ''
-  const decoder = new TextDecoder()
-  const encoder = new TextEncoder()
-
-  // Create a readable stream that parses JSON events and formats for SSE
-  const stream = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      try {
-        const reader = proc.stdout.getReader()
-        let buffer = ''
-        let lastSentText = '' // Track what we've already sent to avoid duplicates
-
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-
-          buffer += decoder.decode(value, { stream: true })
-
-          // Parse JSON lines from buffer
-          const lines = buffer.split('\n')
-          buffer = lines.pop() || '' // Keep incomplete line in buffer
-
-          for (const line of lines) {
-            if (!line.trim()) continue
-
-            try {
-              const event = JSON.parse(line)
-
-              // Extract text content based on event type
-              let textContent = ''
-
-              if (event.type === 'system' && event.subtype === 'init') {
-                // Initial system message - show brief status
-                textContent = `⚡ Starting session...\n\n`
-              }
-              else if (event.type === 'assistant') {
-                // Assistant message with content blocks
-                if (event.message?.content) {
-                  for (const block of event.message.content) {
-                    if (block.type === 'text') {
-                      textContent += block.text
-                    }
-                    else if (block.type === 'tool_use') {
-                      // Format tool usage nicely based on the tool name
-                      const toolName = block.name
-                      const input = block.input || {}
-
-                      if (toolName === 'Read') {
-                        const filePath = input.file_path || ''
-                        const fileName = filePath.split('/').pop() || filePath
-                        textContent += `\n📖 Reading: ${fileName}\n`
-                      }
-                      else if (toolName === 'Glob') {
-                        textContent += `\n🔍 Searching files: ${input.pattern || ''}\n`
-                      }
-                      else if (toolName === 'Grep') {
-                        textContent += `\n🔎 Searching for: "${input.pattern || ''}"\n`
-                      }
-                      else if (toolName === 'Edit') {
-                        const filePath = input.file_path || ''
-                        const fileName = filePath.split('/').pop() || filePath
-                        textContent += `\n✏️ Editing: ${fileName}\n`
-                      }
-                      else if (toolName === 'Write') {
-                        const filePath = input.file_path || ''
-                        const fileName = filePath.split('/').pop() || filePath
-                        textContent += `\n📝 Writing: ${fileName}\n`
-                      }
-                      else if (toolName === 'Bash') {
-                        const cmd = (input.command || '').substring(0, 50)
-                        textContent += `\n💻 Running: ${cmd}${cmd.length >= 50 ? '...' : ''}\n`
-                      }
-                      else if (toolName === 'Task') {
-                        textContent += `\n🚀 Launching agent: ${input.description || 'task'}\n`
-                      }
-                      else {
-                        textContent += `\n🔧 Using: ${toolName}\n`
-                      }
-                    }
-                  }
-                }
-              }
-              else if (event.type === 'user') {
-                // Tool results coming back - just show a subtle indicator
-                if (event.message?.content) {
-                  for (const block of event.message.content) {
-                    if (block.type === 'tool_result') {
-                      textContent += `   ✓ done\n`
-                    }
-                  }
-                }
-              }
-              else if (event.type === 'content_block_delta') {
-                // Streaming text delta
-                if (event.delta?.text) {
-                  textContent = event.delta.text
-                }
-              }
-              else if (event.type === 'result') {
-                // Final result - use this as the authoritative response
-                if (event.result) {
-                  fullResponse = event.result
-                  // Send any remaining text that wasn't streamed
-                  if (!lastSentText.includes(event.result)) {
-                    textContent = event.result
-                  }
-                }
-              }
-
-              // Only send new content (avoid duplicates)
-              if (textContent && !lastSentText.endsWith(textContent)) {
-                lastSentText += textContent
-                controller.enqueue(encoder.encode(textContent))
-              }
-            }
-            catch {
-              // Not valid JSON, might be plain text output
-              if (!lastSentText.includes(line)) {
-                lastSentText += line
-                fullResponse += line
-                controller.enqueue(encoder.encode(line))
-              }
-            }
-          }
-        }
-
-        // Process any remaining buffer
-        if (buffer.trim()) {
-          try {
-            const event = JSON.parse(buffer)
-            if (event.result && !fullResponse) {
-              fullResponse = event.result
-            }
-          }
-          catch {
-            if (!lastSentText.includes(buffer)) {
-              fullResponse += buffer
-              controller.enqueue(encoder.encode(buffer))
-            }
-          }
-        }
-
-        // Wait for process to complete
-        await proc.exited
-
-        controller.close()
-      }
-      catch (error) {
-        controller.error(error)
-      }
-    },
-  })
-
-  // Promise that resolves with the full response when done
-  const fullResponsePromise = (async () => {
-    await proc.exited
-
-    // Update conversation history
+  // Update history when streaming completes
+  result.fullResponse.then((response) => {
     buddyState.addToHistory({ role: 'user', content: command })
-    buddyState.addToHistory({ role: 'assistant', content: fullResponse.trim() })
+    buddyState.addToHistory({ role: 'assistant', content: response })
+  })
 
-    return fullResponse.trim()
-  })()
-
-  return { stream, fullResponse: fullResponsePromise }
+  return result
 }
