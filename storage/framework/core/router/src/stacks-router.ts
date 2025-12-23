@@ -24,7 +24,7 @@ interface StacksRouterConfig {
 
 interface GroupOptions {
   prefix?: string
-  middleware?: ActionHandler[]
+  middleware?: string | string[]
 }
 
 /**
@@ -710,6 +710,20 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
   })
 
   let currentPrefix = ''
+  let currentGroupMiddleware: string[] = []
+
+  // Helper to register a route with group middleware applied
+  function registerRoute(method: string, path: string, handler: StacksHandler) {
+    const fullPath = currentPrefix + path
+    const routeKey = `${method}:${fullPath}`
+
+    // Pre-populate middleware registry with group middleware
+    if (currentGroupMiddleware.length > 0) {
+      routeMiddlewareRegistry.set(routeKey, [...currentGroupMiddleware])
+    }
+
+    return { fullPath, routeKey }
+  }
 
   const stacksRouter: StacksRouterInstance = {
     // Access underlying bun-router
@@ -722,63 +736,65 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
     // HTTP methods with string handler support
     get(path: string, handler: StacksHandler) {
-      const fullPath = currentPrefix + path
-      const routeKey = `GET:${fullPath}`
+      const { fullPath, routeKey } = registerRoute('GET', path, handler)
       bunRouter.get(fullPath, createMiddlewareHandler(routeKey, handler))
       return createChainableRoute(routeKey)
     },
 
     post(path: string, handler: StacksHandler) {
-      const fullPath = currentPrefix + path
-      const routeKey = `POST:${fullPath}`
+      const { fullPath, routeKey } = registerRoute('POST', path, handler)
       bunRouter.post(fullPath, createMiddlewareHandler(routeKey, handler))
       return createChainableRoute(routeKey)
     },
 
     put(path: string, handler: StacksHandler) {
-      const fullPath = currentPrefix + path
-      const routeKey = `PUT:${fullPath}`
+      const { fullPath, routeKey } = registerRoute('PUT', path, handler)
       bunRouter.put(fullPath, createMiddlewareHandler(routeKey, handler))
       return createChainableRoute(routeKey)
     },
 
     patch(path: string, handler: StacksHandler) {
-      const fullPath = currentPrefix + path
-      const routeKey = `PATCH:${fullPath}`
+      const { fullPath, routeKey } = registerRoute('PATCH', path, handler)
       bunRouter.patch(fullPath, createMiddlewareHandler(routeKey, handler))
       return createChainableRoute(routeKey)
     },
 
     delete(path: string, handler: StacksHandler) {
-      const fullPath = currentPrefix + path
-      const routeKey = `DELETE:${fullPath}`
+      const { fullPath, routeKey } = registerRoute('DELETE', path, handler)
       bunRouter.delete(fullPath, createMiddlewareHandler(routeKey, handler))
       return createChainableRoute(routeKey)
     },
 
     options(path: string, handler: StacksHandler) {
-      const fullPath = currentPrefix + path
-      const routeKey = `OPTIONS:${fullPath}`
+      const { fullPath, routeKey } = registerRoute('OPTIONS', path, handler)
       bunRouter.options(fullPath, createMiddlewareHandler(routeKey, handler))
       return createChainableRoute(routeKey)
     },
 
-    // Route grouping - always synchronous for prefix management
-    // The callback may be async, but route registration is synchronous
+    // Route grouping with prefix and middleware support
     group(options: GroupOptions, callback: () => void | Promise<void>): StacksRouterInstance {
       const previousPrefix = currentPrefix
+      const previousMiddleware = [...currentGroupMiddleware]
 
+      // Apply prefix
       if (options.prefix) {
         currentPrefix = previousPrefix + options.prefix
       }
 
+      // Apply middleware (can be string or array)
+      if (options.middleware) {
+        const middlewareList = Array.isArray(options.middleware)
+          ? options.middleware
+          : [options.middleware]
+        currentGroupMiddleware = [...currentGroupMiddleware, ...middlewareList]
+      }
+
       // Call the callback - route registrations happen synchronously
-      // even if the callback is async (routes register before any await)
       callback()
 
-      // Always restore prefix immediately after callback returns
-      // This ensures the next group() call sees the correct prefix
+      // Restore previous state
       currentPrefix = previousPrefix
+      currentGroupMiddleware = previousMiddleware
       return stacksRouter
     },
 
