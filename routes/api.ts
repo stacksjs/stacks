@@ -17,7 +17,6 @@ route.get('/json', () => response.json({ message: 'Hello JSON!', status: 'ok', t
 route.post('/api/email/subscribe', 'Actions/SubscriberEmailAction')
 route.post('/login', 'Actions/Auth/LoginAction')
 route.post('/register', 'Actions/Auth/RegisterAction')
-route.post('/logout', 'Actions/Auth/LogoutAction')
 route.get('/generate-registration-options', 'Actions/Auth/GenerateRegistrationAction')
 route.post('/verify-registration', 'Actions/Auth/VerifyRegistrationAction')
 route.get('/generate-authentication-options', 'Actions/Auth/GenerateAuthenticationAction')
@@ -315,8 +314,6 @@ route.group({ prefix: '/queries' }, async () => {
   route.post('/prune', 'Controllers/QueryController@pruneQueryLogs')
 })
 
-route.get('/me', 'Actions/Auth/AuthUserAction').middleware('auth')
-
 // Dashboard routes
 route.group({ prefix: '/dashboard' }, async () => {
   route.get('/stats', 'Actions/Dashboard/DashboardStatsAction')
@@ -342,4 +339,13 @@ route.group({ prefix: '/monitoring' }, async () => {
   route.patch('/errors/ignore', 'Actions/Monitoring/ErrorIgnoreAction')
   route.patch('/errors/unresolve', 'Actions/Monitoring/ErrorUnresolveAction')
   route.delete('/errors', 'Actions/Monitoring/ErrorDestroyAction')
+})
+
+
+
+
+// Authenticated user routes
+route.group({ middleware: 'auth' }, () => {
+  route.get('/me', 'Actions/Auth/AuthUserAction')
+  route.post('/logout', 'Actions/Auth/LogoutAction')
 })

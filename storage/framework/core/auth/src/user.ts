@@ -27,7 +27,16 @@ export async function authUser(): Promise<UserModel | undefined> {
   }
 
   // Fall back to token validation
-  const token = request.bearerToken()
+  let token = request.bearerToken?.()
+
+  // Fallback: get directly from Authorization header
+  if (!token) {
+    const authHeader = request.headers?.get?.('authorization') || request.headers?.get?.('Authorization')
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7)
+    }
+  }
+
   if (!token) {
     return undefined
   }

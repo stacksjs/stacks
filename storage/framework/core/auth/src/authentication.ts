@@ -27,6 +27,24 @@ export class Auth {
   // ============================================================================
 
   /**
+   * Get bearer token from the current request
+   */
+  private static getBearerToken(): string | null {
+    // Try to get bearer token from request method
+    let bearerToken = request.bearerToken?.()
+
+    // Fallback: get directly from Authorization header
+    if (!bearerToken) {
+      const authHeader = request.headers?.get?.('authorization') || request.headers?.get?.('Authorization')
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        bearerToken = authHeader.substring(7)
+      }
+    }
+
+    return bearerToken || null
+  }
+
+  /**
    * Parse a token string into its components
    * Token format: {jwt}:{encryptedId} where encryptedId may contain colons
    */
@@ -210,7 +228,8 @@ export class Auth {
    * Similar to Laravel's Auth::logout()
    */
   public static async logout(): Promise<void> {
-    const bearerToken = request.bearerToken()
+    const bearerToken = this.getBearerToken()
+
     if (bearerToken)
       await this.revokeToken(bearerToken)
 
@@ -230,7 +249,7 @@ export class Auth {
     if (this.authUser)
       return this.authUser
 
-    const bearerToken = request.bearerToken()
+    const bearerToken = this.getBearerToken()
     if (!bearerToken)
       return undefined
 
@@ -479,7 +498,7 @@ export class Auth {
     if (this.currentToken)
       return this.currentToken
 
-    const bearerToken = request.bearerToken()
+    const bearerToken = this.getBearerToken()
     if (!bearerToken)
       return undefined
 
