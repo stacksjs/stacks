@@ -1,7 +1,12 @@
-import type { ChannelType, EmitOptions } from '@stacksjs/types'
-import { config } from '@stacksjs/config'
-import { log } from '@stacksjs/logging'
-import { RealtimeFactory } from './factory'
+import type { ChannelType } from 'ts-broadcasting'
+import { getServer } from './server-instance'
+
+export interface EmitOptions {
+  private?: boolean
+  presence?: boolean
+  exclude?: string | string[]
+  driver?: string
+}
 
 /**
  * Emit an event to a channel
@@ -25,32 +30,36 @@ export function emit<T = unknown>(
   data?: T,
   options?: EmitOptions,
 ): void {
-  const driverType = options?.driver ?? config.realtime?.driver ?? 'bun'
-  const driver = RealtimeFactory.getInstance().getDriver(driverType)
+  const server = getServer()
 
-  // Determine channel type
-  let channelType: ChannelType = 'public'
+  if (!server) {
+    console.warn('[realtime] Server not initialized, cannot emit event')
+    return
+  }
+
+  // Determine channel type and prefix
+  let channelName = channel
+
   if (options?.presence) {
-    channelType = 'presence'
+    if (!channel.startsWith('presence-')) {
+      channelName = `presence-${channel}`
+    }
   }
   else if (options?.private) {
-    channelType = 'private'
+    if (!channel.startsWith('private-')) {
+      channelName = `private-${channel}`
+    }
   }
 
-  // Build the payload
-  const payload = {
-    data,
-    exclude: options?.exclude
-      ? Array.isArray(options.exclude)
-        ? options.exclude
-        : [options.exclude]
-      : undefined,
-  }
+  // Get exclude socket ID
+  const excludeSocketId = options?.exclude
+    ? Array.isArray(options.exclude)
+      ? options.exclude[0] // BroadcastServer only supports single socket exclusion
+      : options.exclude
+    : undefined
 
   // Broadcast the event
-  driver.broadcast(channel, event, payload, channelType)
-
-  log.debug(`[realtime] emit "${event}" to ${channelType}:${channel}`)
+  server.broadcast(channelName, event, data, excludeSocketId)
 }
 
 /**
@@ -60,12 +69,12 @@ export function emit<T = unknown>(
  * emitToUser('user-123', 'notification', { message: 'You have a new order!' })
  */
 export function emitToUser<T = unknown>(
-  userId: string,
+  userId: string | number,
   event: string,
   data?: T,
   options?: Omit<EmitOptions, 'private'>,
 ): void {
-  emit(`user.${userId}`, event, data, { ...options, private: true })
+  emit(`private-user.${userId}`, event, data, { ...options, private: true })
 }
 
 /**
@@ -75,7 +84,7 @@ export function emitToUser<T = unknown>(
  * emitToUsers(['user-1', 'user-2'], 'announcement', { message: 'Server maintenance!' })
  */
 export function emitToUsers<T = unknown>(
-  userIds: string[],
+  userIds: (string | number)[],
   event: string,
   data?: T,
   options?: Omit<EmitOptions, 'private'>,

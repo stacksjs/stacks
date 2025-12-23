@@ -2,7 +2,7 @@
   "name": "@stacksjs/realtime",
   "type": "module",
   "version": "0.70.23",
-  "description": "The Stacks realtime integration.",
+  "description": "The Stacks realtime integration. Built on top of ts-broadcasting.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.com>"],
   "license": "MIT",
@@ -16,7 +16,7 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["realtime", "broadcasting", "pusher", "stacks"],
+  "keywords": ["realtime", "broadcasting", "websocket", "stacks", "ts-broadcasting"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -35,8 +35,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "pusher": "^5.2.0",
-    "socket.io": "^4.8.1"
+    "ts-broadcasting": "*"
   },
   "devDependencies": {
     "better-dx": "^0.2.5"
