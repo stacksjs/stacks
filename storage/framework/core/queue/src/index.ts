@@ -1,6 +1,8 @@
 // Core queue exports
 export * from './action'
 export * from './job'
+
+// Legacy process (for backwards compatibility)
 export {
   executeFailedJobs,
   getActiveJobCount,
@@ -10,6 +12,26 @@ export {
   retryFailedJob,
   stopWorker,
 } from './process'
+
+// Enhanced processor with concurrent execution
+export {
+  getActiveJobCount as getProcessorActiveJobs,
+  getProcessorConfig,
+  isProcessorRunning,
+  isProcessorShuttingDown,
+  startProcessor,
+  stopProcessor,
+} from './processor'
+
+// Scheduler for cron jobs
+export {
+  getRegisteredJobs,
+  getSchedulerStatus,
+  isSchedulerRunning,
+  startScheduler,
+  stopScheduler,
+  triggerJob,
+} from './scheduler'
 
 // Job discovery
 export {

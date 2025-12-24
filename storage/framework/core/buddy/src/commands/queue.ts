@@ -14,6 +14,7 @@ export function queue(buddy: CLI): void {
     all: 'Apply to all items',
     force: 'Force the operation without confirmation',
     connection: 'Queue connection to use',
+    concurrency: 'Number of concurrent workers',
   }
 
   buddy
@@ -21,8 +22,9 @@ export function queue(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('-q, --queue [queue]', descriptions.queue, { default: false })
     .option('-c, --connection [connection]', descriptions.connection, { default: false })
+    .option('--concurrency [concurrency]', descriptions.concurrency, { default: '1' })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: CliQueueOptions) => {
+    .action(async (options: CliQueueOptions & { concurrency?: string }) => {
       log.debug('Running `buddy queue:work` ...', options)
 
       const perf = await intro('buddy queue:work')
@@ -246,6 +248,49 @@ export function queue(buddy: CLI): void {
       }
 
       await outro('Job inspection complete', {
+        startTime: perf,
+        useSeconds: true,
+      })
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('queue:schedule', 'Start the job scheduler for cron-based jobs')
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: CliQueueOptions) => {
+      log.debug('Running `buddy queue:schedule` ...', options)
+
+      const result = await runAction(Action.QueueSchedule, options)
+
+      if (result.isErr) {
+        log.error('While running the queue:schedule command, there was an issue', result.error)
+        process.exit()
+      }
+
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('queue:schedule:list', 'List all scheduled jobs')
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: CliQueueOptions) => {
+      log.debug('Running `buddy queue:schedule:list` ...', options)
+
+      const perf = await intro('buddy queue:schedule:list')
+      const result = await runAction(Action.QueueScheduleList, options)
+
+      if (result.isErr) {
+        await outro(
+          'While running the queue:schedule:list command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
+        process.exit()
+      }
+
+      await outro('Listed all scheduled jobs', {
         startTime: perf,
         useSeconds: true,
       })

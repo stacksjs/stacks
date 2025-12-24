@@ -97,6 +97,8 @@ export enum Action {
   QueueFlush = 'queue/flush',
   QueueMonitor = 'queue/monitor',
   QueueInspect = 'queue/inspect',
+  QueueSchedule = 'queue/schedule',
+  QueueScheduleList = 'queue/schedule-list',
   Release = 'release', // ✅
   RouteList = 'route/list', // ✅
   StripeSetup = 'saas/setup',

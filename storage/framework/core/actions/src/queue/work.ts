@@ -1,16 +1,31 @@
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { processJobs } from '@stacksjs/queue'
+import { startProcessor } from '@stacksjs/queue'
 
 const options = parseArgs()
 
 const queue = options.queue
+const concurrency = Number(options.concurrency) || 1
 
-const result = await processJobs(queue)
+log.info(`Starting queue worker with ${concurrency} concurrent worker(s)...`)
 
-if (result?.isErr) {
-  console.error(result.error)
-  log.error('generateMigrations failed', result.error)
+try {
+  const result = await startProcessor(queue, {
+    concurrency,
+  })
+
+  if (result.isErr) {
+    log.error('Failed to start queue worker:', result.error)
+    process.exit(1)
+  }
+
+  log.success('Queue worker started successfully!')
+
+  // Keep the process running
+  await new Promise(() => {})
+}
+catch (error) {
+  log.error('Queue worker error:', error)
   process.exit(1)
 }
 
@@ -22,6 +37,9 @@ function parseArgs(): { [key: string]: string } {
       const [key, value] = arg.slice(2).split('=')
       if (key && value) {
         args[key] = value
+      }
+      else if (key) {
+        args[key] = 'true'
       }
     }
   })
