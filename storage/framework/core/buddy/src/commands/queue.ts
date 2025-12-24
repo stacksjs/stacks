@@ -206,6 +206,52 @@ export function queue(buddy: CLI): void {
       process.exit(ExitCode.Success)
     })
 
+  buddy
+    .command('queue:monitor', 'Monitor queue status in real-time')
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('-q, --queue [queue]', descriptions.queue, { default: false })
+    .option('-i, --interval [interval]', 'Refresh interval in milliseconds', { default: '2000' })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: CliQueueOptions & { interval?: string }) => {
+      log.debug('Running `buddy queue:monitor` ...', options)
+
+      const result = await runAction(Action.QueueMonitor, options)
+
+      if (result.isErr) {
+        log.error('While running the queue:monitor command, there was an issue', result.error)
+        process.exit()
+      }
+
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('queue:inspect [id]', 'Inspect a specific job')
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--failed', 'Inspect a failed job', { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (id: string | undefined, options: CliQueueOptions & { failed?: boolean }) => {
+      log.debug('Running `buddy queue:inspect` ...', options)
+
+      const perf = await intro('buddy queue:inspect')
+      const result = await runAction(Action.QueueInspect, { ...options, id })
+
+      if (result.isErr) {
+        await outro(
+          'While running the queue:inspect command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
+        process.exit()
+      }
+
+      await outro('Job inspection complete', {
+        startTime: perf,
+        useSeconds: true,
+      })
+      process.exit(ExitCode.Success)
+    })
+
   buddy.on('queue:*', () => {
     console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)

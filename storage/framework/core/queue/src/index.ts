@@ -1,7 +1,15 @@
 // Core queue exports
 export * from './action'
 export * from './job'
-export * from './process'
+export {
+  executeFailedJobs,
+  getActiveJobCount,
+  isWorkerRunning,
+  isWorkerShuttingDown,
+  processJobs,
+  retryFailedJob,
+  stopWorker,
+} from './process'
 
 // Job discovery
 export {
