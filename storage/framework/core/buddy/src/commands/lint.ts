@@ -1,14 +1,14 @@
 import type { CLI, LintOptions } from '@stacksjs/types'
 import process from 'node:process'
-import { runAction } from '@stacksjs/actions'
 import { intro, log, outro, runCommand } from '@stacksjs/cli'
-import { Action } from '@stacksjs/enums'
 import { path } from '@stacksjs/path'
 
 export function lint(buddy: CLI): void {
   const descriptions = {
     lint: 'Automagically lints your project codebase',
     lintFix: 'Automagically fixes all lint errors',
+    format: 'Format your project codebase',
+    formatCheck: 'Check formatting without making changes',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
@@ -24,8 +24,9 @@ export function lint(buddy: CLI): void {
       const startTime = await intro('buddy lint')
 
       if (options.fix)
-        await runAction(Action.LintFix, { cwd: path.projectPath(), ...options })
-      else await runCommand('bunx --bun eslint . --config ./config/lint.ts', { cwd: path.projectPath() })
+        await runCommand('bunx --bun pickier lint --fix', { cwd: path.projectPath() })
+      else
+        await runCommand('bunx --bun pickier lint', { cwd: path.projectPath() })
 
       await outro('Linted your project', { startTime, useSeconds: true })
     })
@@ -37,15 +38,43 @@ export function lint(buddy: CLI): void {
     .action(async (options: LintOptions) => {
       log.debug('Running `buddy lint:fix` ...', options)
 
+      const startTime = await intro('buddy lint:fix')
+
       log.info('Fixing lint errors...')
-      const result = await runAction(Action.LintFix, { cwd: path.projectPath(), ...options })
+      await runCommand('bunx --bun pickier lint --fix', { cwd: path.projectPath() })
 
-      if (result.isErr) {
-        log.error('There was an error lint fixing your code.', result.error)
-        process.exit()
-      }
+      await outro('Fixed lint errors', { startTime, useSeconds: true })
+    })
 
-      log.success('Fixed lint errors')
+  buddy
+    .command('format', descriptions.format)
+    .option('-w, --write', 'Write changes to files', { default: false })
+    .option('-c, --check', descriptions.formatCheck, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: LintOptions & { write?: boolean, check?: boolean }) => {
+      log.debug('Running `buddy format` ...', options)
+
+      const startTime = await intro('buddy format')
+
+      if (options.check)
+        await runCommand('bunx --bun pickier format --check', { cwd: path.projectPath() })
+      else
+        await runCommand('bunx --bun pickier format --write', { cwd: path.projectPath() })
+
+      await outro('Formatted your project', { startTime, useSeconds: true })
+    })
+
+  buddy
+    .command('format:check', descriptions.formatCheck)
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: LintOptions) => {
+      log.debug('Running `buddy format:check` ...', options)
+
+      const startTime = await intro('buddy format:check')
+
+      await runCommand('bunx --bun pickier format --check', { cwd: path.projectPath() })
+
+      await outro('Format check complete', { startTime, useSeconds: true })
     })
 
   buddy.on('lint:*', () => {

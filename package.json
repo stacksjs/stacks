@@ -30,6 +30,9 @@
     "prod": "./buddy build",
     "deploy": "./buddy deploy",
     "lint": "./buddy lint",
+    "lint:fix": "./buddy lint:fix",
+    "format": "./buddy format",
+    "format:check": "./buddy format:check",
     "serve": "./buddy serve",
     "make": "./buddy make",
     "make:component": "./buddy make:component",
@@ -72,6 +75,7 @@
     "!storage/framework/cache/**"
   ],
   "devDependencies": {
-    "better-dx": "0.2.5"
+    "better-dx": "0.2.5",
+    "pickier": "^0.3.0"
   }
 }

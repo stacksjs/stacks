@@ -22,6 +22,12 @@ export {
   BroadcastHelpers,
   createHelpers,
   RedisAdapter,
+  // Facade and global helpers (Laravel-style API)
+  Broadcast,
+  broadcast as broadcastEvent,
+  broadcastToUser,
+  broadcastToUsers,
+  channel as defineChannel,
   // Middleware
   AuthenticationManager,
   RateLimiter,
@@ -62,6 +68,7 @@ export type {
   BroadcastEvent,
   BroadcastMessage,
   QueueConfig,
+  ChannelAuthCallback,
 } from 'ts-broadcasting'
 
 // Server instance management
@@ -70,7 +77,7 @@ export { getServer, setServer, createServer, stopServer } from './server-instanc
 // Stacks-specific exports
 export { emit, emitToUser, emitToUsers } from './emit'
 export type { EmitOptions } from './emit'
-export { channel, Channel as StacksChannel } from './channel'
-export { broadcast, runBroadcast, Broadcast } from './broadcast'
+export { channel as createChannel, Channel as StacksChannel } from './channel'
+export { broadcast as dispatchBroadcast, runBroadcast, Broadcast as LegacyBroadcast } from './broadcast'
 export type { BroadcastInstance } from './broadcast'
 export { setBunSocket, handleWebSocketRequest, storeWebSocketEvent } from './ws'
