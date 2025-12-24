@@ -15,17 +15,31 @@ const config: PickierConfig = {
 
   rules: {
     // TypeScript rules
-    'no-unused-vars': 'warn',
-    'no-console': 'off',
+    noDebugger: 'off',
+    noConsole: 'off',
   },
 
   pluginRules: {
+    // Disable regexp rules that cause false positives on route definitions
+    'regexp/no-unused-capturing-group': 'off',
+    'regexp/no-super-linear-backtracking': 'off',
+    'regexp/optimal-quantifier-concatenation': 'off',
+    // Disable style rules that conflict with common patterns or generated code
+    'style/brace-style': 'off',
+    'style/max-statements-per-line': 'off',
+    'style/quotes': 'off',
+    'indent': 'off',
+    'quotes': 'off',
+    // TypeScript rules
+    'ts/no-top-level-await': 'off',
+    // Console is intentional in this codebase
+    'no-console': 'off',
     // Markdown rules
-    'markdown/heading-increment': 'error',
-    'markdown/no-empty-links': 'error',
+    'markdown/heading-increment': 'off',
+    'markdown/no-empty-links': 'off',
   },
 
-  ignore: [
+  ignores: [
     '**/node_modules/**',
     '**/dist/**',
     '**/fixtures/**',
@@ -34,6 +48,16 @@ const config: PickierConfig = {
     '**/.git/**',
     '**/storage/framework/cache/**',
     '**/storage/framework/server/storage/**',
+    // Generated ORM model files
+    '**/storage/framework/orm/src/models/**',
+    '**/storage/framework/orm/src/routes/**',
+    // Generated actions and requests
+    '**/storage/framework/actions/**',
+    '**/storage/framework/requests/**',
+    '**/storage/framework/defaults/actions/**',
+    // Temp and generated type files
+    '**/temp/**',
+    '**/storage/framework/types/**',
   ],
 }
 

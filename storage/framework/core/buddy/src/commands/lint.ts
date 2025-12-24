@@ -24,9 +24,9 @@ export function lint(buddy: CLI): void {
       const startTime = await intro('buddy lint')
 
       if (options.fix)
-        await runCommand('bunx --bun pickier lint --fix', { cwd: path.projectPath() })
+        await runCommand('bunx --bun pickier run --mode lint --config ./pickier.config.ts --fix', { cwd: path.projectPath() })
       else
-        await runCommand('bunx --bun pickier lint', { cwd: path.projectPath() })
+        await runCommand('bunx --bun pickier run --mode lint --config ./pickier.config.ts', { cwd: path.projectPath() })
 
       await outro('Linted your project', { startTime, useSeconds: true })
     })
@@ -41,7 +41,7 @@ export function lint(buddy: CLI): void {
       const startTime = await intro('buddy lint:fix')
 
       log.info('Fixing lint errors...')
-      await runCommand('bunx --bun pickier lint --fix', { cwd: path.projectPath() })
+      await runCommand('bunx --bun pickier run --mode lint --config ./pickier.config.ts --fix', { cwd: path.projectPath() })
 
       await outro('Fixed lint errors', { startTime, useSeconds: true })
     })
@@ -57,9 +57,9 @@ export function lint(buddy: CLI): void {
       const startTime = await intro('buddy format')
 
       if (options.check)
-        await runCommand('bunx --bun pickier format --check', { cwd: path.projectPath() })
+        await runCommand('bunx --bun pickier run --mode format --config ./pickier.config.ts --check', { cwd: path.projectPath() })
       else
-        await runCommand('bunx --bun pickier format --write', { cwd: path.projectPath() })
+        await runCommand('bunx --bun pickier run --mode format --config ./pickier.config.ts --write', { cwd: path.projectPath() })
 
       await outro('Formatted your project', { startTime, useSeconds: true })
     })
@@ -72,7 +72,7 @@ export function lint(buddy: CLI): void {
 
       const startTime = await intro('buddy format:check')
 
-      await runCommand('bunx --bun pickier format --check', { cwd: path.projectPath() })
+      await runCommand('bunx --bun pickier run --mode format --config ./pickier.config.ts --check', { cwd: path.projectPath() })
 
       await outro('Format check complete', { startTime, useSeconds: true })
     })
