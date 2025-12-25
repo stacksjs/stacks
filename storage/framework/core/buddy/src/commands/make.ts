@@ -9,6 +9,7 @@ import {
   invoke,
   makeAction,
   makeCertificate,
+  makeCommand,
   makeComponent,
   makeDatabase,
   makeFunction,
@@ -26,6 +27,7 @@ import { ExitCode } from '@stacksjs/types'
 export function make(buddy: CLI): void {
   const descriptions = {
     action: 'Create a new action',
+    command: 'Create a new CLI command',
     model: 'Create a new model',
     middleware: 'Create a new middleware',
     component: 'Create a new component',
@@ -83,6 +85,9 @@ export function make(buddy: CLI): void {
             break
           case 'certificate':
             await makeCertificate()
+            break
+          case 'command':
+            await makeCommand(options)
             break
           case 'component':
             await makeComponent(options)
@@ -184,6 +189,47 @@ export function make(buddy: CLI): void {
       log.debug('Running `buddy make:certificate` ...', options)
 
       await makeCertificate()
+    })
+
+  buddy
+    .command('make:command [name]', descriptions.command)
+    .option('-n, --name [name]', descriptions.name, { default: false })
+    .option('-s, --signature [signature]', 'The command signature (CLI name)', { default: false })
+    .option('-d, --description [description]', 'The command description', { default: false })
+    .option('--no-register', 'Do not register in Commands.ts', { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy make:command SendEmails')
+    .example('buddy make:command SendEmails --signature=send-emails')
+    .action(async (name: string, options: MakeOptions & { signature?: string, description?: string, register?: boolean }) => {
+      log.debug('Running `buddy make:command` ...', options)
+
+      const perf = await intro('buddy make:command')
+
+      name = name ?? options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a command name.')
+        log.info('Example: buddy make:command SendEmails')
+        process.exit()
+      }
+
+      const result = await makeCommand(options)
+
+      if (!result) {
+        await outro('While running the make:command command, there was an issue', {
+          startTime: perf,
+          useSeconds: true,
+        })
+        process.exit()
+      }
+
+      await outro(`Created your ${italic(name)} command.`, {
+        startTime: perf,
+        useSeconds: true,
+      })
+      process.exit(ExitCode.Success)
     })
 
   buddy

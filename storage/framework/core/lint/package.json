@@ -52,7 +52,6 @@
     "better-dx": "^0.2.5",
     "@stacksjs/gitlint": "^0.1.5",
     "bun-git-hooks": "^0.3.1",
-    "pickier": "^0.1.7",
     "publint": "^0.3.12"
   }
 }

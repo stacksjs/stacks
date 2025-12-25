@@ -149,22 +149,82 @@ async function showInteractiveMenu(buddy: CLI) {
 await main()
 
 async function dynamicImports(buddy: CLI) {
-  // dynamically import and register commands from ./app/Commands/*
   const { fs } = await import('@stacksjs/storage')
   const commandsDir = p.appPath('Commands')
-  const commandFiles = fs.readdirSync(commandsDir).filter((file: string) => file.endsWith('.ts'))
 
-  for (const file of commandFiles) {
-    const commandPath = `${commandsDir}/${file}`
-    const dynamicImport = await import(commandPath)
+  // Try to load command registry from Commands.ts
+  try {
+    const registryPath = p.appPath('Commands.ts')
+    const registryImport = await import(registryPath)
+    const registry = registryImport.default || {}
 
-    // Correctly use the default export function
-    if (typeof dynamicImport.default === 'function')
-      dynamicImport.default(buddy)
-    else console.error(`Expected a default export function in ${file}, but got:`, dynamicImport.default)
+    // Load commands from registry
+    for (const [signature, config] of Object.entries(registry)) {
+      // Skip if config is a string (simple registration) - will be loaded below
+      // Or handle config object
+      const commandConfig = typeof config === 'string'
+        ? { file: config, enabled: true }
+        : config as { file: string, enabled?: boolean, aliases?: string[] }
+
+      // Skip disabled commands
+      if (commandConfig.enabled === false) {
+        continue
+      }
+
+      const commandPath = `${commandsDir}/${commandConfig.file}.ts`
+
+      // Check if file exists
+      if (!fs.existsSync(commandPath)) {
+        log.warn(`Command file not found: ${commandPath} (registered as '${signature}')`)
+        continue
+      }
+
+      try {
+        const dynamicImport = await import(commandPath)
+
+        if (typeof dynamicImport.default === 'function') {
+          dynamicImport.default(buddy)
+
+          // Register aliases if specified
+          if (commandConfig.aliases && Array.isArray(commandConfig.aliases)) {
+            for (const alias of commandConfig.aliases) {
+              buddy.alias(signature, alias)
+            }
+          }
+        }
+        else {
+          log.error(`Expected a default export function in ${commandConfig.file}.ts, but got:`, dynamicImport.default)
+        }
+      }
+      catch (error) {
+        log.error(`Failed to load command ${commandConfig.file}:`, error)
+      }
+    }
+  }
+  catch {
+    // If Commands.ts doesn't exist, fall back to auto-discovery
+    log.debug('Commands.ts not found, using auto-discovery')
+
+    const commandFiles = fs.readdirSync(commandsDir).filter((file: string) => file.endsWith('.ts'))
+
+    for (const file of commandFiles) {
+      const commandPath = `${commandsDir}/${file}`
+      const dynamicImport = await import(commandPath)
+
+      if (typeof dynamicImport.default === 'function')
+        dynamicImport.default(buddy)
+      else
+        log.error(`Expected a default export function in ${file}, but got:`, dynamicImport.default)
+    }
   }
 
-  const listenerImport = await import(p.listenersPath('Console.ts'))
-  if (typeof listenerImport.default === 'function')
-    listenerImport.default(buddy)
+  // Load console listeners
+  try {
+    const listenerImport = await import(p.listenersPath('Console.ts'))
+    if (typeof listenerImport.default === 'function')
+      listenerImport.default(buddy)
+  }
+  catch {
+    // Console.ts listener is optional
+  }
 }

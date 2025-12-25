@@ -32,3 +32,4 @@ export {
 } from './make'
 
 export { makeJob } from './make-job'
+export { makeCommand } from './make-command'

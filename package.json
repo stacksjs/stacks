@@ -75,7 +75,6 @@
     "!storage/framework/cache/**"
   ],
   "devDependencies": {
-    "better-dx": "0.2.5",
-    "pickier": "^0.3.0"
+    "better-dx": "0.2.5"
   }
 }
