@@ -15,6 +15,11 @@ export * from './user'
 // Token management (Laravel Passport-style)
 export * from './tokens'
 
+// Authorization Gates & Policies (Laravel-style)
+export * from './gate'
+export * from './policy'
+export * from './authorizable'
+
 // TOTP (Two-Factor Authentication) - re-export from ts-auth
 export {
   generateTOTP,

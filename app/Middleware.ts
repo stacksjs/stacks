@@ -13,6 +13,8 @@ export default {
   'api': 'Api',
   'team': 'Team',
   'logger': 'Logger',
+  'abilities': 'Abilities',
+  'can': 'Can',
   'env': 'Env',
   'env:local': 'EnvLocal',
   'env:development': 'EnvDevelopment',

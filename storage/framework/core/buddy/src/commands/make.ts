@@ -16,6 +16,7 @@ import {
   makeJob,
   makeLanguage,
   makePage,
+  makePolicy,
   makeQueueTable,
   makeStack,
 } from '@stacksjs/actions'
@@ -39,6 +40,7 @@ export function make(buddy: CLI): void {
     migration: 'Create a new migration',
     factory: 'Create a new factory',
     notification: 'Create a new notification',
+    policy: 'Create a new authorization policy',
     name: 'The name of the action',
     queue: 'Make queue migration',
     stack: 'Create a new stack',
@@ -118,6 +120,9 @@ export function make(buddy: CLI): void {
             break
           case 'notification':
             await createNotification(options)
+            break
+          case 'policy':
+            await makePolicy(options)
             break
           case 'queue-table':
             await makeQueueTable()
@@ -392,6 +397,46 @@ export function make(buddy: CLI): void {
       }
 
       await outro(`Created your ${italic(name)} notification.`, {
+        startTime: perf,
+        useSeconds: true,
+      })
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('make:policy [name]', descriptions.policy)
+    .option('-n, --name [name]', descriptions.name, { default: false })
+    .option('-m, --model [model]', 'The model this policy is for', { default: false })
+    .option('--no-register', 'Do not register in Gates.ts', { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy make:policy PostPolicy')
+    .example('buddy make:policy CommentPolicy --model=Comment')
+    .action(async (name: string, options: MakeOptions & { model?: string, register?: boolean }) => {
+      log.debug('Running `buddy make:policy` ...', options)
+
+      const perf = await intro('buddy make:policy')
+
+      name = name ?? options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a policy name.')
+        log.info('Example: buddy make:policy PostPolicy')
+        process.exit()
+      }
+
+      const result = await makePolicy(options)
+
+      if (!result) {
+        await outro('While running the make:policy command, there was an issue', {
+          startTime: perf,
+          useSeconds: true,
+        })
+        process.exit()
+      }
+
+      await outro(`Created your ${italic(name)} policy.`, {
         startTime: perf,
         useSeconds: true,
       })
