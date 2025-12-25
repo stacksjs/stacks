@@ -18,6 +18,7 @@ import {
   makePage,
   makePolicy,
   makeQueueTable,
+  makeResource,
   makeStack,
 } from '@stacksjs/actions'
 import { intro, italic, outro } from '@stacksjs/cli'
@@ -41,6 +42,7 @@ export function make(buddy: CLI): void {
     factory: 'Create a new factory',
     notification: 'Create a new notification',
     policy: 'Create a new authorization policy',
+    resource: 'Create a new API resource',
     name: 'The name of the action',
     queue: 'Make queue migration',
     stack: 'Create a new stack',
@@ -123,6 +125,9 @@ export function make(buddy: CLI): void {
             break
           case 'policy':
             await makePolicy(options)
+            break
+          case 'resource':
+            await makeResource(options)
             break
           case 'queue-table':
             await makeQueueTable()
@@ -437,6 +442,47 @@ export function make(buddy: CLI): void {
       }
 
       await outro(`Created your ${italic(name)} policy.`, {
+        startTime: perf,
+        useSeconds: true,
+      })
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('make:resource [name]', descriptions.resource)
+    .option('-n, --name [name]', descriptions.name, { default: false })
+    .option('-m, --model [model]', 'The model this resource is for', { default: false })
+    .option('-c, --collection', 'Create a collection resource', { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy make:resource UserResource')
+    .example('buddy make:resource PostResource --model=Post')
+    .example('buddy make:resource PostCollection --collection')
+    .action(async (name: string, options: MakeOptions & { model?: string, collection?: boolean }) => {
+      log.debug('Running `buddy make:resource` ...', options)
+
+      const perf = await intro('buddy make:resource')
+
+      name = name ?? options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a resource name.')
+        log.info('Example: buddy make:resource UserResource')
+        process.exit()
+      }
+
+      const result = await makeResource(options)
+
+      if (!result) {
+        await outro('While running the make:resource command, there was an issue', {
+          startTime: perf,
+          useSeconds: true,
+        })
+        process.exit()
+      }
+
+      await outro(`Created your ${italic(name)} resource.`, {
         startTime: perf,
         useSeconds: true,
       })

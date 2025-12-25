@@ -8,6 +8,7 @@ export interface Middleware {
  * Aliases may be used instead of class names to conveniently assign middleware to routes and groups.
  */
 export default {
+  'maintenance': 'Maintenance',
   'auth': 'Auth',
   'guest': 'Guest',
   'api': 'Api',
