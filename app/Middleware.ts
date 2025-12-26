@@ -16,6 +16,7 @@ export default {
   'logger': 'Logger',
   'abilities': 'Abilities',
   'can': 'Can',
+  'throttle': 'Throttle',
   'env': 'Env',
   'env:local': 'EnvLocal',
   'env:development': 'EnvDevelopment',
