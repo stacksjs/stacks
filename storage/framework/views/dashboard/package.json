@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
-    "@vueuse/core": "^12.2.0",
+    "@vueuse/core": "^14.1.0",
     "@vueuse/head": "^2.0.0",
     "chart.js": "^4.4.7",
     "d3": "^7.9.0",
