@@ -772,7 +772,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     },
 
     // Route grouping with prefix and middleware support
-    group(options: GroupOptions, callback: () => void | Promise<void>): StacksRouterInstance {
+    group(options: GroupOptions, callback: () => void | Promise<void>): StacksRouterInstance | Promise<StacksRouterInstance> {
       const previousPrefix = currentPrefix
       const previousMiddleware = [...currentGroupMiddleware]
 
@@ -789,10 +789,23 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         currentGroupMiddleware = [...currentGroupMiddleware, ...middlewareList]
       }
 
-      // Call the callback - route registrations happen synchronously
-      callback()
+      // Call the callback
+      const result = callback()
 
-      // Restore previous state
+      // For async callbacks that need to import files, we need to wait
+      // But for regular async callbacks (with sync route registrations inside),
+      // we restore immediately since routes are registered synchronously
+      if (result instanceof Promise) {
+        // Check if this is a dynamic import scenario (route-loader)
+        // by returning a promise that properly waits
+        return result.then(() => {
+          currentPrefix = previousPrefix
+          currentGroupMiddleware = previousMiddleware
+          return stacksRouter
+        })
+      }
+
+      // Sync callback - restore state immediately
       currentPrefix = previousPrefix
       currentGroupMiddleware = previousMiddleware
       return stacksRouter
@@ -852,7 +865,7 @@ export interface StacksRouterInstance {
   patch: (path: string, handler: StacksHandler) => ChainableRoute
   delete: (path: string, handler: StacksHandler) => ChainableRoute
   options: (path: string, handler: StacksHandler) => ChainableRoute
-  group: (options: GroupOptions, callback: () => void | Promise<void>) => StacksRouterInstance
+  group: (options: GroupOptions, callback: () => void | Promise<void>) => StacksRouterInstance | Promise<StacksRouterInstance>
   health: () => StacksRouterInstance
   use: (middleware: ActionHandler) => StacksRouterInstance
   serve: (options?: ServerOptions) => Promise<Server>

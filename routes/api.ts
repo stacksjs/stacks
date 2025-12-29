@@ -23,7 +23,7 @@ route.get('/generate-authentication-options', 'Actions/Auth/GenerateAuthenticati
 route.get('/verify-authentication', 'Actions/Auth/VerifyAuthenticationAction')
 
 // Token management routes
-route.group({ prefix: '/auth' }, async () => {
+route.group({ prefix: '/auth' }, () => {
   // Public - refresh token (no auth middleware needed)
   route.post('/refresh', 'Actions/Auth/RefreshTokenAction')
 
@@ -43,7 +43,7 @@ route.post('/ai/ask', 'Actions/AI/AskAction')
 route.post('/ai/summary', 'Actions/AI/SummaryAction')
 
 // Voide - Voice AI Code Assistant routes (Voice + Claude)
-route.group({ prefix: '/voide' }, async () => {
+route.group({ prefix: '/voide' }, () => {
   route.get('/state', 'Actions/Buddy/BuddyStateAction')
   route.post('/repo', 'Actions/Buddy/BuddyRepoOpenAction')
   route.post('/process', 'Actions/Buddy/BuddyProcessAction')
@@ -56,7 +56,7 @@ route.group({ prefix: '/voide' }, async () => {
   route.post('/github/disconnect', 'Actions/Buddy/BuddyGitHubDisconnectAction')
 })  
 
-route.group({ prefix: '/payments' }, async () => {
+route.group({ prefix: '/payments' }, () => {
   route.get('/fetch-customer/{id}', 'Actions/Payment/FetchPaymentCustomerAction')
   route.get('/fetch-transaction-history/{id}', 'Actions/Payment/FetchTransactionHistoryAction')
   route.get('/fetch-user-subscriptions/{id}', 'Actions/Payment/FetchUserSubscriptionsAction')
@@ -82,11 +82,11 @@ route.group({ prefix: '/payments' }, async () => {
   route.post('/store-transaction/{id}', 'Actions/Payment/StoreTransactionAction')
 })
 
-route.group({ prefix: '/queues' }, async () => {
+route.group({ prefix: '/queues' }, () => {
   route.get('/', 'Actions/Queue/FetchQueuesAction')
 })
 
-route.group({ prefix: '/realtime' }, async () => {
+route.group({ prefix: '/realtime' }, () => {
   route.get('/websockets', 'Actions/Realtime/FetchWebsocketsAction')
 })
 
@@ -99,7 +99,7 @@ route.post('/password/reset', 'Actions/Password/PasswordResetAction')
 // route.job('/example-two') // equivalent to `route.get('/example-two', 'ExampleTwoJob')`
 
 // Query Dashboard routes
-route.group({ prefix: '/queries' }, async () => {
+route.group({ prefix: '/queries' }, () => {
   route.get('/stats', 'Controllers/QueryController@getStats')
   route.get('/recent', 'Controllers/QueryController@getRecentQueries')
   route.get('/slow', 'Controllers/QueryController@getSlowQueries')
@@ -110,7 +110,7 @@ route.group({ prefix: '/queries' }, async () => {
 })
 
 // Dashboard routes
-route.group({ prefix: '/dashboard' }, async () => {
+route.group({ prefix: '/dashboard' }, () => {
   route.get('/stats', 'Actions/Dashboard/DashboardStatsAction')
   route.get('/activity', 'Actions/Dashboard/DashboardActivityAction')
   route.get('/health', 'Actions/Dashboard/DashboardHealthAction')
@@ -123,7 +123,7 @@ route.get('/test/direct', () => response.json({ message: 'Direct route works!' }
 route.post('/test/upload', 'Actions/UploadTestAction')
 
 // Error Tracking / Monitoring routes
-route.group({ prefix: '/monitoring' }, async () => {
+route.group({ prefix: '/monitoring' }, () => {
   // Errors
   route.get('/errors', 'Actions/Monitoring/ErrorIndexAction')
   route.get('/errors/stats', 'Actions/Monitoring/ErrorStatsAction')

@@ -19,7 +19,7 @@ export async function loadRoutes(registry: RouteRegistry): Promise<void> {
     const config = normalizeDefinition(definition)
     // Use explicit prefix if provided, otherwise derive from key (unless it's a no-prefix key)
     const prefix = config.prefix !== undefined
-      ? config.prefix || undefined  // Allow empty string to mean no prefix
+      ? (config.prefix ? (config.prefix.startsWith('/') ? config.prefix : `/${config.prefix}`) : undefined)
       : (NO_PREFIX_KEYS.includes(key) ? undefined : `/${key}`)
     const middleware = normalizeMiddleware(config.middleware)
 
