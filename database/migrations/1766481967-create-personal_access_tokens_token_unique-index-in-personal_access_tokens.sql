@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX "personal_access_tokens_personal_access_tokens_token_unique" ON "personal_access_tokens" ("token");

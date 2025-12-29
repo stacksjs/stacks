@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `releases_releases_version_unique` ON `releases` (`version`);

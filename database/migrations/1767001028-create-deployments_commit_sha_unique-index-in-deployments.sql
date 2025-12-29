@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `deployments_deployments_commit_sha_unique` ON `deployments` (`commit_sha`);
