@@ -15,3 +15,9 @@ export { createStacksRouter, route, serve } from './stacks-router'
 
 // Export request context helpers
 export { getCurrentRequest, request, runWithRequest, setCurrentRequest } from './request-context'
+
+// Export route loader
+export { loadRoutes } from './route-loader'
+
+// Export route registry types
+export type { RouteDefinition, RouteRegistry } from '../../../../../app/Routes'

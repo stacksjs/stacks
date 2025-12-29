@@ -822,13 +822,16 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       return bunRouter.handleRequest(req)
     },
 
-    // Import routes from route files
+    // Import routes from route registry
     async importRoutes(): Promise<void> {
       try {
-        const userRoutesPath = p.routesPath('api.ts')
-        const ormRoutesPath = p.frameworkPath('core/orm/routes.ts')
+        // Load routes from the route registry
+        const { loadRoutes } = await import('./route-loader')
+        const routeRegistry = (await import('../../../../../app/Routes')).default
+        await loadRoutes(routeRegistry)
 
-        await import(userRoutesPath)
+        // Also load ORM routes
+        const ormRoutesPath = p.frameworkPath('core/orm/routes.ts')
         await import(ormRoutesPath)
       }
       catch (error) {
