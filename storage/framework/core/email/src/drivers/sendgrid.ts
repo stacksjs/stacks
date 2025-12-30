@@ -38,14 +38,17 @@ export class SendGridDriver extends BaseEmailDriver {
         }
       }
 
+      // Use template HTML if available, otherwise use direct HTML from message
+      const finalHtml = htmlContent || message.html
+
       // Prepare content array based on available content
       const content = []
 
       // Add HTML content if available
-      if (htmlContent) {
+      if (finalHtml) {
         content.push({
           type: 'text/html',
-          value: htmlContent,
+          value: finalHtml,
         })
       }
 

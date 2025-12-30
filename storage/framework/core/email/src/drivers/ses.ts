@@ -38,13 +38,16 @@ export class SESDriver extends BaseEmailDriver {
         }
       }
 
+      // Use template HTML if available, otherwise use direct HTML from message
+      const finalHtml = htmlContent || message.html
+
       const messageBody: any = {}
 
       // Add HTML content if available
-      if (htmlContent) {
+      if (finalHtml) {
         messageBody.Html = {
           Charset: config.email.charset || 'UTF-8',
-          Data: htmlContent,
+          Data: finalHtml,
         }
       }
 

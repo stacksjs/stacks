@@ -53,6 +53,9 @@ export class MailgunDriver extends BaseEmailDriver {
         }
       }
 
+      // Use template HTML if available, otherwise use direct HTML from message
+      const finalHtml = htmlContent || message.html
+
       const formData = new FormData()
       const fromAddress = {
         address: message.from?.address || config.email.from?.address || '',
@@ -72,8 +75,8 @@ export class MailgunDriver extends BaseEmailDriver {
       formData.append('subject', message.subject)
 
       // Only append html content if it exists
-      if (htmlContent) {
-        formData.append('html', htmlContent)
+      if (finalHtml) {
+        formData.append('html', finalHtml)
       }
 
       if (message.text)

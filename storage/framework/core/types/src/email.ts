@@ -330,9 +330,11 @@ export interface EmailMessage {
   bcc?: string | string[] | EmailAddress[]
   /** Email subject line */
   subject: string
-  /** Path to email template or HTML content */
+  /** Path to email template (Vue component) */
   template?: string
-  /** Optional plain text fallback */
+  /** Direct HTML content for the email body */
+  html?: string
+  /** Plain text fallback (recommended for accessibility) */
   text?: string
   /** Optional attachments */
   attachments?: EmailAttachment[]

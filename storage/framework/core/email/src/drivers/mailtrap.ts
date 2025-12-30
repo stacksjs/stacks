@@ -43,6 +43,9 @@ export class MailtrapDriver extends BaseEmailDriver {
       if (message.template)
         templ = await template(message.template, options)
 
+      // Use template HTML if available, otherwise use direct HTML from message
+      const htmlContent = templ?.html || message.html
+
       const mailtrapPayload = {
         from: {
           email: message.from?.address || config.email.from?.address || '',
@@ -52,7 +55,7 @@ export class MailtrapDriver extends BaseEmailDriver {
         ...(message.cc && { cc: this.formatMailtrapAddresses(message.cc) }),
         ...(message.bcc && { bcc: this.formatMailtrapAddresses(message.bcc) }),
         subject: message.subject,
-        ...(templ?.html && { html: templ.html }),
+        ...(htmlContent && { html: htmlContent }),
         ...(message.text && { text: message.text }),
         ...(message.attachments && {
           attachments: message.attachments.map(attachment => ({

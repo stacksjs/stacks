@@ -146,6 +146,27 @@ export interface AppOptions {
    * @default false
    */
   docMode: boolean
+
+  /**
+   * **Primary Brand Color**
+   *
+   * The primary color used for branding in emails and UI components.
+   * Should be a valid CSS color value (hex, rgb, etc.)
+   *
+   * @default "#3b82f6"
+   * @example "#3b82f6"
+   */
+  primaryColor: string
+
+  /**
+   * **Support Email**
+   *
+   * The email address users should contact for support.
+   * Used in transactional emails and error messages.
+   *
+   * @example "support@example.com"
+   */
+  supportEmail: string
 }
 
 export type AppConfig = Partial<AppOptions>

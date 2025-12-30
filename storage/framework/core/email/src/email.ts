@@ -5,6 +5,7 @@ import { MailgunDriver } from './drivers/mailgun'
 import { MailtrapDriver } from './drivers/mailtrap'
 import { SendGridDriver } from './drivers/sendgrid'
 import { SESDriver } from './drivers/ses'
+import { SMTPDriver } from './drivers/smtp'
 
 /**
  * Email notification class for defining email notifications
@@ -81,6 +82,7 @@ class Mail {
     this.drivers.set('sendgrid', new SendGridDriver())
     this.drivers.set('mailgun', new MailgunDriver())
     this.drivers.set('mailtrap', new MailtrapDriver())
+    this.drivers.set('smtp', new SMTPDriver())
   }
 
   public async send(message: EmailMessage): Promise<EmailResult> {

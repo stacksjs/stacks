@@ -90,8 +90,12 @@ route.group({ prefix: '/realtime' }, () => {
   route.get('/websockets', 'Actions/Realtime/FetchWebsocketsAction')
 })
 
-route.post('/password/send-password-reset-email', 'Actions/Password/SendPasswordResetEmailAction')
-route.post('/password/reset', 'Actions/Password/PasswordResetAction')
+// Password Reset routes
+route.group({ prefix: '/password' }, () => {
+  route.post('/forgot', 'Actions/Password/SendPasswordResetEmailAction')
+  route.post('/reset', 'Actions/Password/PasswordResetAction')
+  route.post('/verify-token', 'Actions/Password/VerifyResetTokenAction')
+})
 
 // route.action('/example') // equivalent to `route.get('/example', 'ExampleAction')`
 // route.action('Dashboard/GetProjects')

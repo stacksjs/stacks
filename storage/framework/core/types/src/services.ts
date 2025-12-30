@@ -96,6 +96,20 @@ export interface ServicesOptions {
     retryTimeout?: number
   }
 
+  /**
+   * SMTP Configuration for local development
+   * Works with HELO, Mailtrap Desktop, Mailhog, etc.
+   */
+  smtp?: {
+    host: string
+    port: number
+    username?: string
+    password?: string
+    encryption?: 'tls' | 'ssl' | null
+    maxRetries?: number
+    retryTimeout?: number
+  }
+
   slack?: {
     appId: string
     clientId: string
