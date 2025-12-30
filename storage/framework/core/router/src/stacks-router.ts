@@ -248,8 +248,7 @@ async function resolveStringHandler(handlerPath: string): Promise<ActionHandler>
           const validationResult = await validateActionInput(req, action.validations)
           if (!validationResult.valid) {
             return new Response(JSON.stringify({
-              success: false,
-              message: 'Validation failed',
+              error: 'Validation failed',
               errors: validationResult.errors,
             }), {
               status: 422,

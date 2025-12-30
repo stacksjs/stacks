@@ -17,32 +17,30 @@ export default new Action({
     }
 
     // Rate limit password reset requests by email
-    // This prevents abuse while not leaking user existence
     const rateLimitKey = `password_reset:${email.toLowerCase()}`
     if (RateLimiter.isRateLimited(rateLimitKey)) {
-      // Still return success to not leak whether user exists
-      return response.success('If that email address is in our system, we have sent a password reset link.')
+      return response.error('Too many password reset attempts. Please try again later.', 429)
     }
 
-    // Record the attempt regardless of whether user exists
+    // Record the attempt
     RateLimiter.recordFailedAttempt(rateLimitKey)
 
-    // Check if user exists, but don't reveal this to the client
+    // Check if user exists
     const user = await User.where('email', email).first()
 
-    if (user) {
-      // Only send email if user exists
-      try {
-        await passwordResets(email).sendEmail()
-      }
-      catch {
-        // Log error internally but don't expose to user
-        console.error(`[PasswordReset] Failed to send email to ${email}`)
-      }
+    if (!user) {
+      return response.error('No account found with this email address.', 404)
     }
 
-    // Always return the same response regardless of whether user exists
-    // This prevents user enumeration attacks
-    return response.success('If that email address is in our system, we have sent a password reset link.')
+    // Send password reset email
+    try {
+      await passwordResets(email).sendEmail()
+    }
+    catch (error) {
+      console.error(`[PasswordReset] Failed to send email to ${email}`, error)
+      return response.error('Failed to send password reset email. Please try again later.', 500)
+    }
+
+    return response.success('Password reset link has been sent to your email.')
   },
 })
