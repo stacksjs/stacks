@@ -179,6 +179,51 @@ catch (error) {
   process.exit(1)
 }
 
+// Step 1b: Create password_resets table for password reset flow
+log.info('Ensuring password_resets table exists...')
+
+try {
+  if (isPostgres) {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS password_resets (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) NOT NULL,
+        token VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `).execute()
+  } else if (isMysql) {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS password_resets (
+        id INTEGER AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(255) NOT NULL,
+        token VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `).execute()
+  } else {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS password_resets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email VARCHAR(255) NOT NULL,
+        token VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `).execute()
+  }
+
+  // Create index on email for fast lookups
+  await db.unsafe(`
+    CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email)
+  `).execute()
+
+  log.success('Password resets table ready')
+}
+catch (error) {
+  log.error('Failed to create password_resets table', error)
+  process.exit(1)
+}
+
 // Step 2: Create personal access client
 log.info('Creating personal access client...')
 
@@ -220,10 +265,13 @@ console.log('\nFeatures enabled:')
 console.log('  - Token hashing (SHA-256) for secure storage')
 console.log('  - Refresh tokens for seamless token renewal')
 console.log('  - Scope-based authorization')
+console.log('  - Password reset flow')
 console.log('\nNext steps:')
 console.log('  1. Use createToken(userId, name, scopes) to generate tokens')
 console.log('  2. Use refreshToken(token) to exchange refresh tokens')
 console.log('  3. Use the "auth" middleware to protect routes')
-console.log('  4. Use tokenCan(scope) for authorization checks\n')
+console.log('  4. Use tokenCan(scope) for authorization checks')
+console.log('  5. POST /password/forgot to request password reset')
+console.log('  6. POST /password/reset to reset password with token\n')
 
 process.exit(0)
