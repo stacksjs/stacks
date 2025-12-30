@@ -2,6 +2,7 @@ export * from './authentication'
 export * from './authenticator'
 export * from './client'
 export * from './middleware'
+export * from './rate-limiter'
 
 // WebAuthn/Passkey support (now using ts-auth - no external dependencies)
 export * from './passkey'

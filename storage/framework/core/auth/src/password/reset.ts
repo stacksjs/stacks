@@ -4,10 +4,15 @@ import { db } from '@stacksjs/database'
 import { mail } from '@stacksjs/email'
 import { makeHash, verifyHash } from '@stacksjs/security'
 
+export interface PasswordResetResult {
+  success: boolean
+  message?: string
+}
+
 export interface PasswordResetActions {
   sendEmail: () => Promise<void>
   verifyToken: (token: string) => Promise<boolean>
-  resetPassword: (token: string, newPassword: string) => Promise<boolean>
+  resetPassword: (token: string, newPassword: string) => Promise<PasswordResetResult>
 }
 
 export function passwordResets(email: string): PasswordResetActions {
@@ -71,28 +76,24 @@ export function passwordResets(email: string): PasswordResetActions {
     return await verifyHash(token, hashedToken, 'bcrypt')
   }
 
-  async function resetPassword(token: string, newPassword: string): Promise<boolean> {
+  async function resetPassword(token: string, newPassword: string): Promise<PasswordResetResult> {
     const trx = await db.startTransaction().execute()
 
     try {
-      // First verify the token
+      // First verify the token exists
       const resetRecord = await trx
         .selectFrom('password_resets')
         .where('email', '=', email)
         .selectAll()
         .executeTakeFirst()
 
-      if (!resetRecord)
-        return false
+      // If no reset record, return generic error (don't leak if user exists)
+      if (!resetRecord) {
+        await trx.rollback().execute()
+        return { success: false, message: 'Invalid or expired reset token' }
+      }
 
-      // Verify the hashed token
-      const hashedToken = resetRecord.token
-      const isValid = await verifyHash(token, hashedToken, 'bcrypt')
-
-      if (!isValid)
-        return false
-
-      // Check token expiration
+      // Check token expiration first (before verifying hash to save compute)
       const createdAt = new Date(resetRecord.created_at as string)
       const now = new Date()
       const diffInMinutes = (now.getTime() - createdAt.getTime()) / (1000 * 60)
@@ -103,8 +104,18 @@ export function passwordResets(email: string): PasswordResetActions {
           .deleteFrom('password_resets')
           .where('email', '=', email)
           .execute()
+        await trx.commit().execute()
 
-        return false
+        return { success: false, message: 'This password reset link has expired. Please request a new one.' }
+      }
+
+      // Verify the hashed token
+      const hashedToken = resetRecord.token
+      const isValid = await verifyHash(token, hashedToken, 'bcrypt')
+
+      if (!isValid) {
+        await trx.rollback().execute()
+        return { success: false, message: 'Invalid or expired reset token' }
       }
 
       // Update the user's password
@@ -114,8 +125,11 @@ export function passwordResets(email: string): PasswordResetActions {
         .selectAll()
         .executeTakeFirst()
 
-      if (!user)
-        return false
+      // If no user, return generic error (don't leak user existence)
+      if (!user) {
+        await trx.rollback().execute()
+        return { success: false, message: 'Invalid or expired reset token' }
+      }
 
       const hashedPassword = await makeHash(newPassword, { algorithm: 'bcrypt' })
 
@@ -133,14 +147,13 @@ export function passwordResets(email: string): PasswordResetActions {
         .execute()
 
       await trx.commit().execute()
+
+      return { success: true }
     }
     catch (error) {
       await trx.rollback().execute()
-
       throw error
     }
-
-    return true
   }
 
   return {

@@ -1,7 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { passwordResets } from '@stacksjs/auth'
-import { User } from '@stacksjs/orm'
+import { passwordResets, RateLimiter } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -15,21 +14,42 @@ export default new Action({
     const passwordConfirmation = request.get('password_confirmation')
     const email = request.get('email')
 
-    if (password !== passwordConfirmation)
-      return response.error('Password confirmation does not match')
+    // Validate required fields
+    if (!token || !password || !email) {
+      return response.error('Missing required fields', 422)
+    }
 
-    if (!token || !password || !email)
-      return response.error('Missing required fields')
+    // Validate password confirmation
+    if (password !== passwordConfirmation) {
+      return response.error('Password confirmation does not match', 422)
+    }
 
-    const user = await User.where('email', email).first()
+    // Validate password strength (minimum 8 characters)
+    if (password.length < 8) {
+      return response.error('Password must be at least 8 characters', 422)
+    }
 
-    if (!user)
-      return response.error('User not found')
+    // Rate limit password reset attempts by email
+    const rateLimitKey = `password_reset_attempt:${email.toLowerCase()}`
+    if (RateLimiter.isRateLimited(rateLimitKey)) {
+      return response.error('Too many password reset attempts. Please try again later.', 429)
+    }
 
-    const success = await passwordResets(email).resetPassword(token, password)
+    // Attempt to reset the password
+    // This handles user existence check internally and returns a detailed result
+    const result = await passwordResets(email).resetPassword(token, password)
 
-    if (!success)
-      return response.error('Invalid or expired reset token')
+    if (!result.success) {
+      // Record failed attempt for rate limiting
+      RateLimiter.recordFailedAttempt(rateLimitKey)
+
+      // Return appropriate error message without leaking user existence
+      // Both "user not found" and "invalid token" return the same generic message
+      return response.error(result.message || 'Invalid or expired reset token', 400)
+    }
+
+    // Clear rate limit on successful reset
+    RateLimiter.resetAttempts(rateLimitKey)
 
     return response.success('Password has been reset successfully')
   },
