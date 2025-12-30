@@ -65,4 +65,25 @@ export default {
    * The token name used when creating new tokens.
    */
   defaultTokenName: 'auth-token',
+
+  /**
+   * Password reset configuration.
+   */
+  passwordReset: {
+    /**
+     * Token expiration time in minutes.
+     * After this time, the reset link becomes invalid.
+     *
+     * @default 60
+     */
+    expire: Number(envVars.AUTH_PASSWORD_RESET_EXPIRE) || 60,
+
+    /**
+     * Throttle time in seconds between password reset requests.
+     * Users must wait this long before requesting another reset email.
+     *
+     * @default 60
+     */
+    throttle: Number(envVars.AUTH_PASSWORD_RESET_THROTTLE) || 60,
+  },
 } satisfies AuthConfig

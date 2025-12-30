@@ -67,6 +67,23 @@ export interface AuthOptions {
    * The token name used when creating new tokens
    */
   defaultTokenName: string
+
+  /**
+   * Password reset configuration
+   */
+  passwordReset: {
+    /**
+     * Token expiration time in minutes
+     * @default 60
+     */
+    expire: number
+
+    /**
+     * Throttle time in seconds between password reset requests
+     * @default 60
+     */
+    throttle: number
+  }
 }
 
 export type AuthConfig = Partial<AuthOptions>

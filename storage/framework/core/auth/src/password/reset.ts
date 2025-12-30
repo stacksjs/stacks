@@ -15,6 +15,11 @@ export interface PasswordResetActions {
   resetPassword: (token: string, newPassword: string) => Promise<PasswordResetResult>
 }
 
+// Get token expiration from config (default: 60 minutes)
+function getTokenExpireMinutes(): number {
+  return config.auth.passwordReset?.expire ?? 60
+}
+
 export function passwordResets(email: string): PasswordResetActions {
   function generateResetToken(): string {
     return randomBytes(32).toString('hex')
@@ -56,12 +61,13 @@ export function passwordResets(email: string): PasswordResetActions {
     if (!result)
       return false
 
-    // Check if token is expired (60 minutes)
+    // Check if token is expired (configurable, default 60 minutes)
+    const expireMinutes = getTokenExpireMinutes()
     const createdAt = new Date(result.created_at as string)
     const now = new Date()
     const diffInMinutes = (now.getTime() - createdAt.getTime()) / (1000 * 60)
 
-    if (diffInMinutes > 60) {
+    if (diffInMinutes > expireMinutes) {
       // Delete expired token
       await db
         .deleteFrom('password_resets')
@@ -94,11 +100,12 @@ export function passwordResets(email: string): PasswordResetActions {
       }
 
       // Check token expiration first (before verifying hash to save compute)
+      const expireMinutes = getTokenExpireMinutes()
       const createdAt = new Date(resetRecord.created_at as string)
       const now = new Date()
       const diffInMinutes = (now.getTime() - createdAt.getTime()) / (1000 * 60)
 
-      if (diffInMinutes > 60) {
+      if (diffInMinutes > expireMinutes) {
         // Delete expired token
         await trx
           .deleteFrom('password_resets')
