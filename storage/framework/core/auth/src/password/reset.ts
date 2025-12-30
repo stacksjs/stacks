@@ -20,6 +20,47 @@ function getTokenExpireMinutes(): number {
   return config.auth.passwordReset?.expire ?? 60
 }
 
+/**
+ * Send a notification email when password has been changed
+ * This is a security feature to alert users of password changes
+ */
+async function sendPasswordChangedNotification(email: string): Promise<void> {
+  const appName = config.app.name || 'Stacks'
+  const supportEmail = config.app.supportEmail || config.email?.from?.address || ''
+  const changedAt = new Date().toLocaleString('en-US', {
+    dateStyle: 'full',
+    timeStyle: 'short',
+  })
+
+  try {
+    await mail.send({
+      to: email,
+      subject: `Your ${appName} password has been changed`,
+      text: `Hello,
+
+Your password was successfully changed on ${changedAt}.
+
+If you made this change, you can safely ignore this email.
+
+If you did not change your password, please contact us immediately${supportEmail ? ` at ${supportEmail}` : ''} as your account may have been compromised.
+
+For your security, we recommend:
+- Using a strong, unique password
+- Enabling two-factor authentication if available
+- Reviewing your recent account activity
+
+Regards,
+The ${appName} Team
+
+This is an automated security notification. Please do not reply to this email.`,
+    })
+  }
+  catch (error) {
+    // Log error but don't throw - the password was already changed successfully
+    console.error('[PasswordReset] Failed to send password changed notification:', error)
+  }
+}
+
 export function passwordResets(email: string): PasswordResetActions {
   function generateResetToken(): string {
     return randomBytes(32).toString('hex')
@@ -154,6 +195,10 @@ export function passwordResets(email: string): PasswordResetActions {
         .execute()
 
       await trx.commit().execute()
+
+      // Send password changed notification (async, non-blocking)
+      // This runs after the transaction is committed to ensure the password was actually changed
+      sendPasswordChangedNotification(email)
 
       return { success: true }
     }
