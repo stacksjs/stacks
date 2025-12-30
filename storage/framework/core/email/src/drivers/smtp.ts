@@ -1,14 +1,17 @@
 import type { EmailAddress, EmailMessage, EmailResult } from '@stacksjs/types'
 import type { RenderOptions } from '@vue-email/compiler'
 import { Buffer } from 'node:buffer'
+import * as tls from 'node:tls'
+import * as net from 'node:net'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { template } from '../template'
 import { BaseEmailDriver } from './base'
 
 /**
- * SMTP Driver for local development
- * Works with HELO, Mailtrap Desktop, Mailhog, MailCatcher, etc.
+ * SMTP Driver for email sending
+ * Works with any SMTP server: Mailtrap, Mailgun, SendGrid, SES, etc.
+ * Supports STARTTLS (port 587) and direct TLS (port 465)
  */
 export class SMTPDriver extends BaseEmailDriver {
   public name = 'smtp'
@@ -17,17 +20,19 @@ export class SMTPDriver extends BaseEmailDriver {
     port: number
     username: string
     password: string
-    encryption: 'tls' | 'ssl' | null
+    encryption: 'tls' | 'ssl' | 'starttls' | null
   } | null = null
 
   private getConfig() {
     if (!this.smtpConfig) {
+      const encryption = config.services.smtp?.encryption
       this.smtpConfig = {
         host: config.services.smtp?.host || '127.0.0.1',
-        port: config.services.smtp?.port || 2525,
+        port: config.services.smtp?.port || 587,
         username: config.services.smtp?.username || '',
         password: config.services.smtp?.password || '',
-        encryption: config.services.smtp?.encryption || null,
+        // Map 'tls' to 'starttls' for port 587 (STARTTLS), 'ssl' for port 465 (implicit TLS)
+        encryption: encryption === 'tls' ? 'starttls' : encryption || null,
       }
     }
     return this.smtpConfig
@@ -143,88 +148,161 @@ export class SMTPDriver extends BaseEmailDriver {
   }
 
   private async sendViaSMTP(
-    smtpConfig: { host: string, port: number, username: string, password: string, encryption: 'tls' | 'ssl' | null },
+    smtpConfig: { host: string, port: number, username: string, password: string, encryption: 'tls' | 'ssl' | 'starttls' | null },
     from: string,
     to: string[],
     content: string,
   ): Promise<string> {
     return new Promise((resolve, reject) => {
-      const socket = Bun.connect({
-        hostname: smtpConfig.host,
-        port: smtpConfig.port,
-        socket: {
-          data: (socket, data) => {
-            const response = data.toString()
-            log.debug(`[SMTP] Server: ${response.trim()}`)
-          },
-          open: async (socket) => {
-            log.debug(`[SMTP] Connected to ${smtpConfig.host}:${smtpConfig.port}`)
-          },
-          close: () => {
-            log.debug('[SMTP] Connection closed')
-          },
-          error: (socket, error) => {
-            reject(error)
-          },
-        },
-      })
+      let socket: net.Socket | tls.TLSSocket
+      let buffer = ''
+      let currentCommand = ''
+      let commandQueue: Array<{ cmd: string, resolve: (response: string) => void, reject: (error: Error) => void }> = []
+      let isProcessing = false
 
-      socket.then(async (sock) => {
-        const send = (command: string): Promise<string> => {
-          return new Promise((res) => {
-            log.debug(`[SMTP] Client: ${command.trim()}`)
-            sock.write(command + '\r\n')
-            // Small delay to wait for response
-            setTimeout(() => res(''), 100)
-          })
+      const processResponse = (response: string) => {
+        log.debug(`[SMTP] Server: ${response.trim()}`)
+
+        // Check for error responses
+        const code = parseInt(response.substring(0, 3), 10)
+        if (code >= 400) {
+          const error = new Error(`SMTP Error: ${response.trim()}`)
+          if (commandQueue.length > 0) {
+            const current = commandQueue.shift()
+            current?.reject(error)
+          }
+          return
         }
 
-        const waitForResponse = (): Promise<void> => {
-          return new Promise(res => setTimeout(res, 200))
+        if (commandQueue.length > 0) {
+          const current = commandQueue.shift()
+          current?.resolve(response)
         }
+      }
 
+      const sendCommand = (cmd: string): Promise<string> => {
+        return new Promise((res, rej) => {
+          commandQueue.push({ cmd, resolve: res, reject: rej })
+          log.debug(`[SMTP] Client: ${cmd}`)
+          socket.write(cmd + '\r\n')
+        })
+      }
+
+      const handleData = (data: Buffer) => {
+        buffer += data.toString()
+
+        // SMTP responses end with \r\n, multi-line responses have - after code
+        const lines = buffer.split('\r\n')
+        buffer = lines.pop() || '' // Keep incomplete line in buffer
+
+        for (const line of lines) {
+          if (line.length >= 3) {
+            // Check if this is the last line of a multi-line response
+            const isLastLine = line.length === 3 || line[3] === ' '
+            if (isLastLine) {
+              processResponse(line)
+            }
+          }
+        }
+      }
+
+      const runSmtpSession = async () => {
         try {
-          await waitForResponse() // Wait for greeting
+          // Wait for greeting
+          await new Promise<string>((res, rej) => {
+            commandQueue.push({ cmd: 'GREETING', resolve: res, reject: rej })
+          })
 
-          await send(`EHLO ${config.email.domain || 'localhost'}`)
-          await waitForResponse()
+          // Send EHLO
+          const ehloResponse = await sendCommand(`EHLO ${config.email.domain || 'localhost'}`)
 
-          // Auth if credentials provided
-          if (smtpConfig.username && smtpConfig.password) {
-            await send('AUTH LOGIN')
-            await waitForResponse()
-            await send(Buffer.from(smtpConfig.username).toString('base64'))
-            await waitForResponse()
-            await send(Buffer.from(smtpConfig.password).toString('base64'))
-            await waitForResponse()
+          // Handle STARTTLS if needed
+          if (smtpConfig.encryption === 'starttls' && !(socket instanceof tls.TLSSocket)) {
+            await sendCommand('STARTTLS')
+
+            // Upgrade to TLS
+            socket = await new Promise<tls.TLSSocket>((res, rej) => {
+              const tlsSocket = tls.connect({
+                socket: socket as net.Socket,
+                host: smtpConfig.host,
+                servername: smtpConfig.host,
+              }, () => {
+                log.debug('[SMTP] TLS connection established')
+                res(tlsSocket)
+              })
+              tlsSocket.on('error', rej)
+              tlsSocket.on('data', handleData)
+            })
+
+            // Re-send EHLO after STARTTLS
+            await sendCommand(`EHLO ${config.email.domain || 'localhost'}`)
           }
 
-          await send(`MAIL FROM:<${from}>`)
-          await waitForResponse()
+          // Authenticate if credentials provided
+          if (smtpConfig.username && smtpConfig.password) {
+            await sendCommand('AUTH LOGIN')
+            await sendCommand(Buffer.from(smtpConfig.username).toString('base64'))
+            await sendCommand(Buffer.from(smtpConfig.password).toString('base64'))
+          }
+
+          // Send email
+          await sendCommand(`MAIL FROM:<${from}>`)
 
           for (const recipient of to) {
-            await send(`RCPT TO:<${recipient}>`)
-            await waitForResponse()
+            await sendCommand(`RCPT TO:<${recipient}>`)
           }
 
-          await send('DATA')
-          await waitForResponse()
+          await sendCommand('DATA')
 
-          await send(content)
-          await send('.')
-          await waitForResponse()
+          // Send email content (no response expected until final .)
+          socket.write(content + '\r\n.\r\n')
+          await new Promise<string>((res, rej) => {
+            commandQueue.push({ cmd: 'DATA_END', resolve: res, reject: rej })
+          })
 
-          await send('QUIT')
-          sock.end()
+          await sendCommand('QUIT')
+          socket.end()
 
           const messageId = `${Date.now()}.${Math.random().toString(36).substring(2)}@${smtpConfig.host}`
           resolve(messageId)
         }
         catch (error) {
-          sock.end()
+          socket.end()
           reject(error)
         }
-      }).catch(reject)
+      }
+
+      // Create connection based on encryption type
+      if (smtpConfig.encryption === 'ssl') {
+        // Direct TLS connection (port 465)
+        socket = tls.connect({
+          host: smtpConfig.host,
+          port: smtpConfig.port,
+          servername: smtpConfig.host,
+        }, () => {
+          log.debug(`[SMTP] TLS connected to ${smtpConfig.host}:${smtpConfig.port}`)
+          runSmtpSession()
+        })
+      }
+      else {
+        // Plain connection (will upgrade to TLS with STARTTLS if needed)
+        socket = net.connect({
+          host: smtpConfig.host,
+          port: smtpConfig.port,
+        }, () => {
+          log.debug(`[SMTP] Connected to ${smtpConfig.host}:${smtpConfig.port}`)
+          runSmtpSession()
+        })
+      }
+
+      socket.on('data', handleData)
+      socket.on('error', (error) => {
+        log.error('[SMTP] Connection error:', error)
+        reject(error)
+      })
+      socket.on('close', () => {
+        log.debug('[SMTP] Connection closed')
+      })
     })
   }
 
