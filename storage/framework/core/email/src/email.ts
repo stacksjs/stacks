@@ -112,5 +112,5 @@ class Mail {
   }
 }
 
-// Export a singleton instance
-export const mail: Mail = new Mail({ defaultDriver: 'mailtrap' })
+// Export a singleton instance - reads default driver from config
+export const mail: Mail = new Mail({ defaultDriver: config.email.default || 'smtp' })

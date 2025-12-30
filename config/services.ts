@@ -98,14 +98,15 @@ export default {
 
   /**
    * SMTP Configuration for local development
-   * Works with HELO, Mailtrap Desktop, Mailhog, etc.
+   * Works with HELO, Mailtrap Desktop, Mailhog, Mailpit, etc.
    */
   smtp: {
     host: envVars.MAIL_HOST || '127.0.0.1',
     port: envVars.MAIL_PORT ? Number.parseInt(envVars.MAIL_PORT) : 2525,
-    username: envVars.MAIL_USERNAME || '',
-    password: envVars.MAIL_PASSWORD || '',
-    encryption: (envVars.MAIL_ENCRYPTION || null) as 'tls' | 'ssl' | null,
+    // Handle "null" string from .env files (Laravel-style)
+    username: (envVars.MAIL_USERNAME && envVars.MAIL_USERNAME !== 'null') ? envVars.MAIL_USERNAME : '',
+    password: (envVars.MAIL_PASSWORD && envVars.MAIL_PASSWORD !== 'null') ? envVars.MAIL_PASSWORD : '',
+    encryption: (envVars.MAIL_ENCRYPTION && envVars.MAIL_ENCRYPTION !== 'null' ? envVars.MAIL_ENCRYPTION : null) as 'tls' | 'ssl' | null,
     maxRetries: envVars.MAIL_MAX_RETRIES ? Number.parseInt(envVars.MAIL_MAX_RETRIES) : 3,
     retryTimeout: envVars.MAIL_RETRY_TIMEOUT ? Number.parseInt(envVars.MAIL_RETRY_TIMEOUT) : 1000,
   },

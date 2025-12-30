@@ -276,5 +276,5 @@ export default {
     complaints: true,
   },
 
-  default: (envVars.MAIL_DRIVER || 'ses') as 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp' | 'postmark',
+  default: (envVars.MAIL_MAILER || envVars.MAIL_DRIVER || 'smtp') as 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp' | 'postmark',
 } satisfies EmailConfig
