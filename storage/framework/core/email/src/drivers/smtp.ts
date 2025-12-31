@@ -40,6 +40,12 @@ export class SMTPDriver extends BaseEmailDriver {
 
   public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
     const smtpConfig = this.getConfig()
+
+    // Validate SMTP config
+    if (!smtpConfig.host || smtpConfig.host === '') {
+      throw new Error('[SMTP] Host is not configured. Set MAIL_HOST in your .env file.')
+    }
+
     const logContext = {
       provider: this.name,
       to: message.to,
@@ -220,18 +226,32 @@ export class SMTPDriver extends BaseEmailDriver {
           if (smtpConfig.encryption === 'starttls' && !(socket instanceof tls.TLSSocket)) {
             await sendCommand('STARTTLS')
 
+            // Remove old data handler from plain socket before TLS upgrade
+            const plainSocket = socket as net.Socket
+            plainSocket.removeAllListeners('data')
+
             // Upgrade to TLS
             socket = await new Promise<tls.TLSSocket>((res, rej) => {
               const tlsSocket = tls.connect({
-                socket: socket as net.Socket,
+                socket: plainSocket,
                 host: smtpConfig.host,
                 servername: smtpConfig.host,
               }, () => {
                 log.debug('[SMTP] TLS connection established')
                 res(tlsSocket)
               })
-              tlsSocket.on('error', rej)
+              tlsSocket.on('error', (err) => {
+                log.error('[SMTP] TLS socket error:', err)
+                rej(err)
+              })
               tlsSocket.on('data', handleData)
+              tlsSocket.on('close', (hadError) => {
+                log.debug(`[SMTP] TLS socket closed (hadError: ${hadError})`)
+                while (commandQueue.length > 0) {
+                  const pending = commandQueue.shift()
+                  pending?.reject(new Error('TLS connection closed unexpectedly'))
+                }
+              })
             })
 
             // Re-send EHLO after STARTTLS
@@ -297,16 +317,21 @@ export class SMTPDriver extends BaseEmailDriver {
 
       socket.on('data', handleData)
       socket.on('error', (error) => {
-        log.error('[SMTP] Connection error:', error)
+        log.error(`[SMTP] Connection error to ${smtpConfig.host}:${smtpConfig.port}:`, error)
         reject(error)
       })
-      socket.on('close', () => {
-        log.debug('[SMTP] Connection closed')
+      socket.on('close', (hadError) => {
+        log.debug(`[SMTP] Connection closed (hadError: ${hadError})`)
+        // Reject any pending commands
+        while (commandQueue.length > 0) {
+          const pending = commandQueue.shift()
+          pending?.reject(new Error('Connection closed unexpectedly'))
+        }
       })
     })
   }
 
-  private formatAddresses(addresses: string | string[] | EmailAddress[] | undefined): string[] {
+  protected formatAddresses(addresses: string | string[] | EmailAddress[] | undefined): string[] {
     if (!addresses)
       return []
 
