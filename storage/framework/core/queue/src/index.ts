@@ -1,39 +1,134 @@
-// Core queue exports
-export * from './action'
-export * from './job'
+/**
+ * @stacksjs/queue
+ *
+ * A thin wrapper around bun-queue that integrates with Stacks conventions.
+ * Re-exports bun-queue functionality with Stacks-specific additions.
+ */
 
-// Legacy process (for backwards compatibility)
+// =============================================================================
+// Core bun-queue exports - use these directly
+// =============================================================================
+
+// Queue and Job classes
 export {
-  executeFailedJobs,
-  getActiveJobCount,
-  isWorkerRunning,
-  isWorkerShuttingDown,
-  processJobs,
-  retryFailedJob,
-  stopWorker,
-} from './process'
+  Queue,
+  Job as BunJob,
+  JobBase,
+  Worker,
+  QueueManager,
+  getQueueManager,
+  setQueueManager,
+  closeQueueManager,
+} from 'bun-queue'
 
-// Enhanced processor with concurrent execution
+// Dispatch functions
 export {
-  getActiveJobCount as getProcessorActiveJobs,
-  getProcessorConfig,
-  isProcessorRunning,
-  isProcessorShuttingDown,
-  startProcessor,
-  stopProcessor,
-} from './processor'
+  dispatch,
+  dispatchSync,
+  dispatchIf,
+  dispatchUnless,
+  dispatchAfter,
+  dispatchChain,
+  dispatchFunction,
+  chain,
+  batch,
+  DispatchableChain,
+  JobBatch,
+} from 'bun-queue'
 
-// Scheduler for cron jobs
+// Processing
 export {
-  getRegisteredJobs,
-  getSchedulerStatus,
-  isSchedulerRunning,
-  startScheduler,
-  stopScheduler,
-  triggerJob,
-} from './scheduler'
+  JobProcessor,
+  createJobProcessor,
+  getGlobalJobProcessor,
+  setGlobalJobProcessor,
+} from 'bun-queue'
 
-// Job discovery
+// Batch processing
+export { BatchProcessor } from 'bun-queue'
+
+// Priority queue
+export { PriorityQueue } from 'bun-queue'
+
+// Dead letter queue
+export { DeadLetterQueue } from 'bun-queue'
+
+// Rate limiting
+export { RateLimiter } from 'bun-queue'
+
+// Distributed locking
+export { DistributedLock } from 'bun-queue'
+
+// Leader election (horizontal scaling)
+export { LeaderElection } from 'bun-queue'
+
+// Work coordination
+export { WorkCoordinator } from 'bun-queue'
+
+// Queue groups
+export { QueueGroup } from 'bun-queue'
+
+// Observable
+export { QueueObservable } from 'bun-queue'
+
+// Events
+export { JobEvents } from 'bun-queue'
+
+// Middleware
+export {
+  middleware,
+  JobMiddlewareStack,
+  RateLimitMiddleware,
+  UniqueJobMiddleware,
+  ThrottleMiddleware,
+  WithoutOverlappingMiddleware,
+  SkipIfMiddleware,
+  FailureMiddleware,
+} from 'bun-queue'
+
+// Failed jobs (re-exported from bun-queue main)
+export {
+  FailedJobManager,
+  DatabaseFailedJobProvider,
+  RedisFailedJobProvider,
+  type FailedJob,
+  type FailedJobProvider,
+} from 'bun-queue'
+
+// Types
+export type {
+  JobOptions,
+  JobStatus,
+  QueueConfig,
+  QueueConnectionConfig,
+  QueueManagerConfig,
+  Dispatchable,
+  InteractsWithQueue,
+  JobContract,
+  JobMiddleware,
+  ShouldQueue,
+  JobProcessorOptions,
+  MiddlewareStack,
+  BatchOptions,
+  Batch,
+  BatchResult,
+  DispatchChain,
+  QueuedClosure,
+} from 'bun-queue'
+
+// =============================================================================
+// Stacks Job class for file-based jobs (app/Jobs/*.ts)
+// =============================================================================
+export { Job } from './action'
+
+// =============================================================================
+// Stacks job helper for dispatching file-based jobs
+// =============================================================================
+export { job, runJob } from './job'
+
+// =============================================================================
+// Job discovery (for app/Jobs directory)
+// =============================================================================
 export {
   discoverJobs,
   executeJob,
@@ -46,69 +141,21 @@ export {
   type JobConfig,
 } from './discovery'
 
-// Testing utilities
+// =============================================================================
+// Stacks scheduler (integrates with job discovery)
+// =============================================================================
 export {
-  createQueueTester,
-  expectJobToFail,
-  fake,
-  getFakeQueue,
-  isFaked,
-  QueueTester,
-  restore,
-  runJob,
-  type DispatchedJob,
-} from './testing'
+  getRegisteredJobs,
+  getSchedulerStatus,
+  isSchedulerRunning,
+  startScheduler,
+  stopScheduler,
+  triggerJob,
+} from './scheduler'
 
-// Failed job notifications
-export {
-  configureFailedJobNotifications,
-  FailedJobNotifier,
-  getFailedJobNotifier,
-  notifyJobFailed,
-  type FailedJobInfo,
-  type FailedJobNotificationConfig,
-  type NotificationChannel,
-} from './notifications'
-
-// Health checks
-export {
-  checkQueueHealth,
-  createHealthCheckHandler,
-  isQueueHealthy,
-  type HealthAlert,
-  type HealthCheckConfig,
-  type HealthStatus,
-  type QueueHealthResult,
-  type QueueMetrics as HealthQueueMetrics,
-  type QueueStatus,
-  type WorkerStatus,
-} from './health'
-
-// Queue facade and helpers
-export {
-  dispatch,
-  dispatchLater,
-  dispatchNow,
-  getQueue,
-  initQueue,
-  queue,
-  QueueFacade,
-} from './facade'
-
-// Stacks Job base class
-export {
-  BaseJob,
-  Queueable,
-  rateLimited,
-  runAt,
-  skipIf,
-  withoutOverlapping,
-  type JobConfig,
-  type JobMiddleware as StacksJobMiddleware,
-  type JobResult,
-} from './base-job'
-
-// Queue events
+// =============================================================================
+// Stacks queue events (integrates with Stacks logging)
+// =============================================================================
 export {
   emitQueueEvent,
   getQueueEvents,
@@ -122,79 +169,46 @@ export {
   type QueueEventType,
 } from './events'
 
-// Redis driver (bun-queue)
-export * from './drivers/redis'
-
-// Re-export bun-queue utilities for convenience
+// =============================================================================
+// Health checks
+// =============================================================================
 export {
-  BatchProcessor,
-  DatabaseQueue,
-  DeadLetterQueue,
-  DistributedLock,
-  Job as BunQueueJob,
-  JobBase,
-  JobEvents as BunJobEvents,
-  JobProcessor,
-  LeaderElection,
-  MemoryQueue,
-  PriorityQueue,
-  Queue as BunQueue,
-  QueueGroup,
-  QueueManager as BunQueueManager,
-  QueueObservable,
-  RateLimiter,
-  Worker,
-  WorkCoordinator,
-  batch,
-  chain,
-  dispatch as bunDispatch,
-  dispatchAfter,
-  dispatchChain,
-  dispatchFunction,
-  dispatchIf,
-  dispatchSync,
-  dispatchUnless,
-  middleware,
-  FailureMiddleware,
-  RateLimitMiddleware,
-  SkipIfMiddleware,
-  ThrottleMiddleware,
-  UniqueJobMiddleware,
-  WithoutOverlappingMiddleware,
-  // Webhooks
-  broadcastWebhook,
-  createWebhookPayload,
-  getWebhookManager,
-  registerWebhook,
-  sendWebhook,
-  WebhookManager,
-} from 'bun-queue'
+  checkQueueHealth,
+  createHealthCheckHandler,
+  isQueueHealthy,
+  type HealthAlert,
+  type HealthCheckConfig,
+  type HealthStatus,
+  type QueueHealthResult,
+  type QueueMetrics as HealthQueueMetrics,
+  type QueueStatus,
+  type WorkerStatus,
+} from './health'
 
-// Re-export bun-queue types
-export type {
-  JobOptions as BunJobOptions,
-  JobStatus as BunJobStatus,
-  QueueConfig as BunQueueConfig,
-  QueueConnectionConfig as BunQueueConnectionConfig,
-  QueueManagerConfig as BunQueueManagerConfig,
-  RateLimiter as BunRateLimiter,
-  DeadLetterQueueOptions as BunDeadLetterQueueOptions,
-  BatchOptions,
-  Batch,
-  BatchResult,
-  DispatchChain,
-  QueuedClosure,
-  Dispatchable as BunDispatchable,
-  InteractsWithQueue,
-  JobContract,
-  JobMiddleware,
-  ShouldQueue,
-  JobProcessorOptions,
-  MiddlewareStack,
-  MemoryQueueConfig,
-  DatabaseQueueConfig,
-  WebhookConfig,
-  WebhookEventType,
-  WebhookPayload,
-  WebhookResult,
-} from 'bun-queue'
+// =============================================================================
+// Failed job notifications
+// =============================================================================
+export {
+  configureFailedJobNotifications,
+  FailedJobNotifier,
+  getFailedJobNotifier,
+  notifyJobFailed,
+  type FailedJobInfo,
+  type FailedJobNotificationConfig,
+  type NotificationChannel,
+} from './notifications'
+
+// =============================================================================
+// Testing utilities
+// =============================================================================
+export {
+  createQueueTester,
+  expectJobToFail,
+  fake,
+  getFakeQueue,
+  isFaked,
+  QueueTester,
+  restore,
+  runJob as runTestJob,
+  type DispatchedJob,
+} from './testing'

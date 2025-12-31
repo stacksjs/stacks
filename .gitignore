@@ -6,9 +6,10 @@ node_modules
 temp
 .temp
 # Environment files
-.env                    # Local environment (not committed)
-.env.keys              # Encryption keys (NEVER commit!)
-*.local                # Local overrides (not committed)
+.env
+.env.local
+.env.keys
+*.local
 
 # Encrypted environment files (safe to commit)
 # These can be committed because they're encrypted

@@ -23,8 +23,6 @@ export async function storeJob(name: string, options: QueueOption): Promise<void
   }
 
   await Job.create(job)
-
-  process.exit()
 }
 
 function generateUnixTimestamp(secondsToAdd: number): number {

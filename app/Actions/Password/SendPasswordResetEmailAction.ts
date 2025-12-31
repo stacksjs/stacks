@@ -1,7 +1,8 @@
 import type { PasswordResetsRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-import { passwordResets, RateLimiter } from '@stacksjs/auth'
+import { RateLimiter } from '@stacksjs/auth'
 import { User } from '@stacksjs/orm'
+import { job } from '@stacksjs/queue'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -32,12 +33,14 @@ export default new Action({
       return response.error('No account found with this email address.', 404)
     }
 
-    // Send password reset email
+    // Dispatch password reset email job to queue
     try {
-      await passwordResets(email).sendEmail()
+      await job('SendPasswordResetEmailJob', { email })
+        .onQueue('emails')
+        .dispatch()
     }
     catch (error) {
-      console.error(`[PasswordReset] Failed to send email to ${email}`, error)
+      console.error(`[PasswordReset] Failed to dispatch email job for ${email}`, error)
       return response.error('Failed to send password reset email. Please try again later.', 500)
     }
 
