@@ -72,7 +72,8 @@
       "Bash(./buddy seed:*)",
       "Bash(mysql:*)",
       "Bash(timeout 10 ./buddy dev:*)",
-      "Bash(xargs kill -9)"
+      "Bash(xargs kill -9)",
+      "Bash(timeout 10 bun:*)"
     ],
     "deny": [],
     "ask": []

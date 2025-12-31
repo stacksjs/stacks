@@ -6,11 +6,11 @@
  */
 
 // =============================================================================
-// Core bun-queue exports - use these directly
+// Core bun-queue exports
 // =============================================================================
 
-// Queue and Job classes
 export {
+  // Queue and Job classes
   Queue,
   Job as BunJob,
   JobBase,
@@ -19,10 +19,8 @@ export {
   getQueueManager,
   setQueueManager,
   closeQueueManager,
-} from 'bun-queue'
 
-// Dispatch functions
-export {
+  // Dispatch functions
   dispatch,
   dispatchSync,
   dispatchIf,
@@ -32,88 +30,51 @@ export {
   dispatchFunction,
   chain,
   batch,
-  DispatchableChain,
-  JobBatch,
-} from 'bun-queue'
 
-// Processing
-export {
+  // Processing
   JobProcessor,
   createJobProcessor,
   getGlobalJobProcessor,
   setGlobalJobProcessor,
-} from 'bun-queue'
 
-// Batch processing
-export { BatchProcessor } from 'bun-queue'
+  // Batch processing
+  BatchProcessor,
 
-// Priority queue
-export { PriorityQueue } from 'bun-queue'
+  // Priority queue
+  PriorityQueue,
 
-// Dead letter queue
-export { DeadLetterQueue } from 'bun-queue'
+  // Dead letter queue
+  DeadLetterQueue,
 
-// Rate limiting
-export { RateLimiter } from 'bun-queue'
+  // Rate limiting
+  RateLimiter,
 
-// Distributed locking
-export { DistributedLock } from 'bun-queue'
+  // Distributed locking
+  DistributedLock,
 
-// Leader election (horizontal scaling)
-export { LeaderElection } from 'bun-queue'
+  // Leader election (horizontal scaling)
+  LeaderElection,
 
-// Work coordination
-export { WorkCoordinator } from 'bun-queue'
+  // Work coordination
+  WorkCoordinator,
 
-// Queue groups
-export { QueueGroup } from 'bun-queue'
+  // Queue groups
+  QueueGroup,
 
-// Observable
-export { QueueObservable } from 'bun-queue'
+  // Observable
+  QueueObservable,
 
-// Events
-export { JobEvents } from 'bun-queue'
+  // Events
+  JobEvents,
 
-// Middleware
-export {
+  // Middleware
   middleware,
-  JobMiddlewareStack,
   RateLimitMiddleware,
   UniqueJobMiddleware,
   ThrottleMiddleware,
   WithoutOverlappingMiddleware,
   SkipIfMiddleware,
   FailureMiddleware,
-} from 'bun-queue'
-
-// Failed jobs (re-exported from bun-queue main)
-export {
-  FailedJobManager,
-  DatabaseFailedJobProvider,
-  RedisFailedJobProvider,
-  type FailedJob,
-  type FailedJobProvider,
-} from 'bun-queue'
-
-// Types
-export type {
-  JobOptions,
-  JobStatus,
-  QueueConfig,
-  QueueConnectionConfig,
-  QueueManagerConfig,
-  Dispatchable,
-  InteractsWithQueue,
-  JobContract,
-  JobMiddleware,
-  ShouldQueue,
-  JobProcessorOptions,
-  MiddlewareStack,
-  BatchOptions,
-  Batch,
-  BatchResult,
-  DispatchChain,
-  QueuedClosure,
 } from 'bun-queue'
 
 // =============================================================================
