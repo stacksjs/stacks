@@ -82,13 +82,26 @@ async function getAllQueues(): Promise<string[]> {
  * Process jobs from the database (jobs table)
  * This is the main processing loop for database-backed queues
  */
-async function processJobsFromDatabase(queues: string[], concurrency: number): Promise<void> {
-  log.info(`Listening for jobs on queues: ${queues.join(', ')}`)
+async function processJobsFromDatabase(initialQueues: string[], concurrency: number): Promise<void> {
+  log.info(`Listening for jobs...`)
 
   const driver = getDriver()
+  let queues = initialQueues
+  let lastQueueRefresh = Date.now()
+  const queueRefreshInterval = 10000 // Refresh queue list every 10 seconds
 
   while (workerRunning) {
     try {
+      // Periodically refresh the list of queues to pick up new ones
+      const now = Date.now()
+      if (now - lastQueueRefresh > queueRefreshInterval) {
+        const refreshedQueues = await getAllQueues()
+        if (refreshedQueues.length > 0) {
+          queues = refreshedQueues
+        }
+        lastQueueRefresh = now
+      }
+
       for (const queueName of queues) {
         const jobs = await fetchPendingJobs(queueName, concurrency, driver)
 
