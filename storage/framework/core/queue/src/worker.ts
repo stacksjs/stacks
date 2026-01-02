@@ -69,17 +69,11 @@ export async function startProcessor(
 async function getAllQueues(): Promise<string[]> {
   try {
     const { db } = await import('@stacksjs/database')
-
-    // Use raw query for compatibility
     const results = await db.rawQuery('SELECT DISTINCT queue FROM jobs')
-
-    log.info(`getAllQueues results: ${JSON.stringify(results)}`)
-
     const queues = (results as any[]).map((r: any) => r.queue).filter(Boolean)
     return queues.length > 0 ? queues : ['default']
   }
-  catch (error) {
-    log.error('Failed to get queues:', error)
+  catch {
     return ['default']
   }
 }
@@ -89,20 +83,17 @@ async function getAllQueues(): Promise<string[]> {
  * This is the main processing loop for database-backed queues
  */
 async function processJobsFromDatabase(queues: string[], concurrency: number): Promise<void> {
-  log.info(`Processing jobs from queues: ${queues.join(', ')} with concurrency ${concurrency}`)
+  log.info(`Listening for jobs on queues: ${queues.join(', ')}`)
 
   const driver = getDriver()
-  log.info(`Using database driver: ${driver}`)
 
   while (workerRunning) {
     try {
       for (const queueName of queues) {
-        log.debug(`Checking queue: ${queueName}`)
         const jobs = await fetchPendingJobs(queueName, concurrency, driver)
-        log.info(`Found ${jobs.length} job(s) in queue: ${queueName}`)
 
         for (const job of jobs) {
-          log.info(`Processing job ID: ${job.id}`)
+          log.info(`Processing job ${job.id} from queue "${queueName}"`)
           await processJob(job, driver)
         }
       }
@@ -159,8 +150,6 @@ async function processJob(job: any, driver: string): Promise<void> {
     // Reserve the job
     await reserveJob(jobId, job.attempts || 0)
 
-    log.debug(`Processing job ${jobId} from queue ${job.queue}`)
-
     // Parse and execute the job
     const payload = JSON.parse(job.payload || '{}')
     await executeJobPayload(payload)
@@ -168,7 +157,7 @@ async function processJob(job: any, driver: string): Promise<void> {
     // Delete job on success
     await deleteJob(jobId)
 
-    log.debug(`Job ${jobId} completed successfully`)
+    log.info(`Job ${jobId} completed`)
   }
   catch (error) {
     log.error(`Job ${jobId} failed:`, error)
