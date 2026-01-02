@@ -75,6 +75,15 @@ export {
   WithoutOverlappingMiddleware,
   SkipIfMiddleware,
   FailureMiddleware,
+
+  // Worker management
+  QueueWorker,
+  WorkerManager,
+  type WorkerOptions,
+
+  // Failed job management
+  FailedJobManager,
+  type FailedJob,
 } from 'bun-queue'
 
 // =============================================================================
@@ -173,3 +182,15 @@ export {
   runJob as runTestJob,
   type DispatchedJob,
 } from './testing'
+
+// =============================================================================
+// Worker functions (for queue:work command)
+// =============================================================================
+export {
+  executeFailedJobs,
+  getActiveJobCount,
+  isWorkerRunning,
+  retryFailedJob,
+  startProcessor,
+  stopProcessor,
+} from './worker'

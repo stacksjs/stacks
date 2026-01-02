@@ -77,6 +77,9 @@ export * from './seeder'
 // Driver utilities
 export * from './drivers'
 
+// Custom migrations (jobs, errors, etc.)
+export * from './custom'
+
 // Re-export bun-query-builder functions and types
 export {
   createQueryBuilder,

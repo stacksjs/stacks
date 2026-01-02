@@ -1,8 +1,7 @@
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { Job } from '@stacksjs/orm'
+import { Job, FailedJob } from '@stacksjs/orm'
 import { getActiveJobCount, isWorkerRunning } from '@stacksjs/queue'
-import { FailedJob } from '../../../orm/src/models/FailedJob'
 
 const options = parseArgs()
 const queueName = options.queue

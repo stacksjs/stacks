@@ -73,7 +73,11 @@
       "Bash(mysql:*)",
       "Bash(timeout 10 ./buddy dev:*)",
       "Bash(xargs kill -9)",
-      "Bash(timeout 10 bun:*)"
+      "Bash(timeout 10 bun:*)",
+      "Bash(timeout 15 ./buddy queue:table:*)",
+      "Bash(./buddy queue:table:*)",
+      "Bash(./buddy queue:status:*)",
+      "Bash(./buddy queue:failed:*)"
     ],
     "deny": [],
     "ask": []

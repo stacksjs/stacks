@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { FailedJob } from '../../../orm/src/models/FailedJob'
+import { FailedJob } from '@stacksjs/orm'
 
 const options = parseArgs()
 const queueName = options.queue
@@ -18,7 +18,7 @@ try {
   }
 
   if (failedJobs.length === 0) {
-    log.success('No failed jobs found')
+    console.log('✓ No failed jobs found')
     process.exit(0)
   }
 
