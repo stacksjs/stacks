@@ -77,7 +77,8 @@
       "Bash(timeout 15 ./buddy queue:table:*)",
       "Bash(./buddy queue:table:*)",
       "Bash(./buddy queue:status:*)",
-      "Bash(./buddy queue:failed:*)"
+      "Bash(./buddy queue:failed:*)",
+      "Bash(timeout 10 ./buddy queue:work:*)"
     ],
     "deny": [],
     "ask": []

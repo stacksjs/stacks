@@ -1,6 +1,5 @@
 import { Job } from '@stacksjs/queue'
 import { passwordResets } from '@stacksjs/auth'
-import { log } from '@stacksjs/logging'
 
 interface PasswordResetPayload {
   email: string

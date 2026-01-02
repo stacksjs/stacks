@@ -6,6 +6,14 @@
  */
 
 import { appPath } from '@stacksjs/path'
+import process from 'node:process'
+
+// Environment variables
+const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+
+function getQueueDriver(): string {
+  return envVars.QUEUE_DRIVER || 'sync'
+}
 
 /**
  * Options for job dispatch
@@ -34,15 +42,12 @@ class JobBuilder {
   constructor(
     private name: string,
     private payload?: any,
-  ) {
-    console.log(`[JobBuilder] Created for job: ${name}`, { payload })
-  }
+  ) {}
 
   /**
    * Set the queue name
    */
   onQueue(queue: string): this {
-    console.log(`[JobBuilder] Setting queue: ${queue}`)
     this.options.queue = queue
     return this
   }
@@ -91,23 +96,59 @@ class JobBuilder {
    * Dispatch the job to the queue
    */
   async dispatch(): Promise<void> {
-    console.log(`[JobBuilder] dispatch() called for: ${this.name}`)
-    console.log(`[JobBuilder] Options:`, this.options)
-    console.log(`[JobBuilder] Payload:`, this.payload)
-    console.log(`[JobBuilder] About to call runJob()...`)
+    const driver = getQueueDriver()
 
-    // For now, run synchronously (sync driver behavior)
-    // When bun-queue is properly configured with Redis, this will use the real queue
-    await runJob(this.name, { payload: this.payload, context: this.options.context })
+    if (driver === 'database') {
+      // Queue to database
+      await this.dispatchToDatabase()
+    }
+    else if (driver === 'sync') {
+      // Run immediately (sync driver)
+      await runJob(this.name, { payload: this.payload, context: this.options.context })
+    }
+    else {
+      // Default to sync for unsupported drivers
+      console.warn(`[JobBuilder] Unsupported queue driver: ${driver}, falling back to sync`)
+      await runJob(this.name, { payload: this.payload, context: this.options.context })
+    }
+  }
 
-    console.log(`[JobBuilder] runJob() completed successfully`)
+  /**
+   * Dispatch the job to the database queue
+   */
+  private async dispatchToDatabase(): Promise<void> {
+    const now = Math.floor(Date.now() / 1000)
+    const availableAt = this.options.delay ? now + this.options.delay : now
+
+    const payload = JSON.stringify({
+      jobName: this.name,
+      payload: this.payload,
+      options: this.options,
+    })
+
+    // Format datetime for MySQL compatibility (YYYY-MM-DD HH:MM:SS)
+    const createdAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
+
+    // Use the configured database driver
+    const { db } = await import('@stacksjs/database')
+
+    await db
+      .insertInto('jobs')
+      .values({
+        queue: this.options.queue || 'default',
+        payload,
+        attempts: 0,
+        reserved_at: null,
+        available_at: availableAt,
+        created_at: createdAt,
+      })
+      .execute()
   }
 
   /**
    * Dispatch the job synchronously (immediate execution)
    */
   async dispatchNow(): Promise<void> {
-    console.log(`[JobBuilder] dispatchNow() called for: ${this.name}`)
     await runJob(this.name, {
       payload: this.payload,
       context: this.options.context,
@@ -144,23 +185,11 @@ export function job(name: string, payload?: any): JobBuilder {
  * This loads the job from app/Jobs/{name}.ts and executes it
  */
 export async function runJob(name: string, options: { payload?: any; context?: any } = {}): Promise<void> {
-  console.log(`[runJob] Starting job: ${name}`)
-  console.log(`[runJob] Options:`, options)
-
   try {
     // Load the job module from app/Jobs
     const jobPath = appPath(`Jobs/${name}.ts`)
-    console.log(`[runJob] Loading job from: ${jobPath}`)
-
     const jobModule = await import(jobPath)
-    console.log(`[runJob] Job module loaded:`, Object.keys(jobModule))
-
     const jobConfig = jobModule.default
-    console.log(`[runJob] Job config:`, {
-      name: jobConfig?.name,
-      hasHandle: typeof jobConfig?.handle === 'function',
-      hasAction: !!jobConfig?.action,
-    })
 
     if (!jobConfig) {
       throw new Error(`Job ${name} does not export a default`)
@@ -168,35 +197,28 @@ export async function runJob(name: string, options: { payload?: any; context?: a
 
     // Execute based on job type
     if (typeof jobConfig.handle === 'function') {
-      console.log(`[runJob] Executing handle() with payload:`, options.payload)
       // Function-based job with handle method
       await jobConfig.handle(options.payload)
-      console.log(`[runJob] handle() completed`)
     }
     else if (typeof jobConfig.action === 'string') {
-      console.log(`[runJob] Executing action: ${jobConfig.action}`)
       // Action-based job
       const { runAction } = await import('@stacksjs/actions')
       await runAction(jobConfig.action)
     }
     else if (typeof jobConfig.action === 'function') {
-      console.log(`[runJob] Executing action function`)
       // Function action
       await jobConfig.action()
     }
     else if (typeof jobConfig === 'function') {
-      console.log(`[runJob] Executing direct function`)
       // Direct function export
       await jobConfig(options.payload, options.context)
     }
     else {
       throw new Error(`Job ${name} does not have a valid handler`)
     }
-
-    console.log(`[runJob] Job ${name} completed successfully!`)
   }
   catch (error) {
-    console.error(`[runJob] Job ${name} failed:`, error)
+    console.error(`Job ${name} failed:`, error)
     throw error
   }
 }
