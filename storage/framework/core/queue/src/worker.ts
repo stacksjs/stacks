@@ -126,15 +126,14 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
  */
 async function fetchPendingJobs(queueName: string, limit: number, driver: string): Promise<any[]> {
   const now = Math.floor(Date.now() / 1000)
-  const retryAfter = now - 90 // Jobs reserved more than 90 seconds ago can be retried
 
   const { db } = await import('@stacksjs/database')
 
   return await db
     .selectFrom('jobs')
     .where('queue', '=', queueName)
-    .where(['reserved_at', 'is', null])
-    .where(['available_at', '<=', now])
+    .whereNull('reserved_at')
+    .where('available_at', '<=', now)
     .orderBy('id', 'asc')
     .limit(limit)
     .selectAll()

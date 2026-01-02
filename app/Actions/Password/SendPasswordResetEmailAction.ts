@@ -42,13 +42,14 @@ export default new Action({
     }
     console.log('[Action] User found:', user.id)
 
-    // Dispatch password reset email job to queue
-    console.log('[Action] About to dispatch SendPasswordResetEmailJob...')
+    // Dispatch password reset email job to queue (with 10 second delay)
+    console.log('[Action] About to dispatch SendPasswordResetEmailJob with 10s delay...')
     try {
       await job('SendPasswordResetEmailJob', { email })
         .onQueue('emails')
+        .delay(10)
         .dispatch()
-      console.log('[Action] Job dispatched successfully!')
+      console.log('[Action] Job dispatched successfully with 10s delay!')
     }
     catch (error) {
       console.error('[Action] Failed to dispatch email job for', email)
