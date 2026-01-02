@@ -2,45 +2,48 @@
  * Queue Worker Functions
  *
  * Functions for managing queue workers and processing jobs.
- * These integrate bun-queue's WorkerManager with Stacks conventions.
+ * Uses the database driver to store and process jobs.
  */
 
 import type { Result } from '@stacksjs/error-handling'
-import type { WorkerOptions } from 'bun-queue'
 import { err, ok } from '@stacksjs/error-handling'
-import { db } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
-import { config } from '@stacksjs/config'
-import { QueueWorker, WorkerManager } from 'bun-queue'
+import Database from 'bun:sqlite'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
+import process from 'node:process'
 
-// Global worker manager instance
-let workerManager: WorkerManager | null = null
+// Environment variables
+const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+
+// Worker state
 let activeJobCount = 0
 let workerRunning = false
 
 /**
- * Get the worker manager singleton
+ * Get the database driver from environment
  */
-function getWorkerManager(): WorkerManager {
-  if (!workerManager) {
-    const queueConfig = {
-      default: config.queue?.default || 'database',
-      connections: {
-        database: {
-          driver: 'database' as const,
-          table: 'jobs',
-          queue: 'default',
-          retry_after: 90,
-        },
-      },
-      failed: {
-        driver: 'database' as const,
-        table: 'failed_jobs',
-      },
-    }
-    workerManager = new WorkerManager(queueConfig as any)
+function getDriver(): string {
+  return envVars.DB_CONNECTION || 'sqlite'
+}
+
+/**
+ * Get the SQLite database path
+ */
+function getDatabasePath(): string {
+  const appRoot = envVars.APP_ROOT || process.cwd()
+  return join(appRoot, 'database', 'stacks.sqlite')
+}
+
+/**
+ * Get a SQLite database connection
+ */
+function getDatabase(): Database {
+  const dbPath = getDatabasePath()
+  if (!existsSync(dbPath)) {
+    throw new Error(`Database file not found: ${dbPath}`)
   }
-  return workerManager
+  return new Database(dbPath)
 }
 
 /**
@@ -58,7 +61,7 @@ export async function startProcessor(
     const concurrency = options.concurrency || 1
     const queues = queueName ? [queueName] : ['default']
 
-    // Use database-backed job processing for Stacks
+    // Use database-backed job processing
     await processJobsFromDatabase(queues, concurrency)
 
     return ok(undefined)
@@ -76,32 +79,15 @@ export async function startProcessor(
 async function processJobsFromDatabase(queues: string[], concurrency: number): Promise<void> {
   log.info(`Processing jobs from queues: ${queues.join(', ')} with concurrency ${concurrency}`)
 
+  const driver = getDriver()
+
   while (workerRunning) {
     try {
-      // Get pending jobs from database
       for (const queueName of queues) {
-        const jobs = await db
-          .selectFrom('jobs')
-          .where('queue', '=', queueName)
-          .where((eb) =>
-            eb.or([
-              eb('reserved_at', 'is', null),
-              eb('reserved_at', '<', Math.floor(Date.now() / 1000) - 90), // Retry after 90 seconds
-            ]),
-          )
-          .where((eb) =>
-            eb.or([
-              eb('available_at', 'is', null),
-              eb('available_at', '<=', Math.floor(Date.now() / 1000)),
-            ]),
-          )
-          .orderBy('id', 'asc')
-          .limit(concurrency)
-          .selectAll()
-          .execute()
+        const jobs = await fetchPendingJobs(queueName, concurrency, driver)
 
         for (const job of jobs) {
-          await processJob(job)
+          await processJob(job, driver)
         }
       }
 
@@ -116,23 +102,66 @@ async function processJobsFromDatabase(queues: string[], concurrency: number): P
 }
 
 /**
+ * Fetch pending jobs from the database
+ */
+async function fetchPendingJobs(queueName: string, limit: number, driver: string): Promise<any[]> {
+  const now = Math.floor(Date.now() / 1000)
+  const retryAfter = now - 90 // Jobs reserved more than 90 seconds ago can be retried
+
+  // Use SQLite directly if available
+  const sqlitePath = getDatabasePath()
+  if (driver === 'sqlite' || existsSync(sqlitePath)) {
+    const db = getDatabase()
+    try {
+      const jobs = db.query(`
+        SELECT * FROM jobs
+        WHERE queue = ?
+        AND (reserved_at IS NULL OR reserved_at < ?)
+        AND (available_at IS NULL OR available_at <= ?)
+        ORDER BY id ASC
+        LIMIT ?
+      `).all(queueName, retryAfter, now, limit)
+      return jobs as any[]
+    }
+    finally {
+      db.close()
+    }
+  }
+
+  // Fallback to query builder for other drivers
+  const { db } = await import('@stacksjs/database')
+  return await db
+    .selectFrom('jobs')
+    .where('queue', '=', queueName)
+    .where((eb: any) =>
+      eb.or([
+        eb('reserved_at', 'is', null),
+        eb('reserved_at', '<', retryAfter),
+      ]),
+    )
+    .where((eb: any) =>
+      eb.or([
+        eb('available_at', 'is', null),
+        eb('available_at', '<=', now),
+      ]),
+    )
+    .orderBy('id', 'asc')
+    .limit(limit)
+    .selectAll()
+    .execute()
+}
+
+/**
  * Process a single job from the database
  */
-async function processJob(job: any): Promise<void> {
+async function processJob(job: any, driver: string): Promise<void> {
   const jobId = job.id
 
   try {
     activeJobCount++
 
     // Reserve the job
-    await db
-      .updateTable('jobs')
-      .set({
-        reserved_at: Math.floor(Date.now() / 1000),
-        attempts: (job.attempts || 0) + 1,
-      })
-      .where('id', '=', jobId)
-      .execute()
+    await reserveJob(jobId, job.attempts || 0, driver)
 
     log.debug(`Processing job ${jobId} from queue ${job.queue}`)
 
@@ -141,10 +170,7 @@ async function processJob(job: any): Promise<void> {
     await executeJobPayload(payload)
 
     // Delete job on success
-    await db
-      .deleteFrom('jobs')
-      .where('id', '=', jobId)
-      .execute()
+    await deleteJob(jobId, driver)
 
     log.debug(`Job ${jobId} completed successfully`)
   }
@@ -155,28 +181,136 @@ async function processJob(job: any): Promise<void> {
     const maxAttempts = 3
     if ((job.attempts || 0) + 1 >= maxAttempts) {
       // Move to failed jobs
-      await moveToFailedJobs(job, error as Error)
-
-      // Delete from jobs table
-      await db
-        .deleteFrom('jobs')
-        .where('id', '=', jobId)
-        .execute()
+      await moveToFailedJobs(job, error as Error, driver)
+      await deleteJob(jobId, driver)
     }
     else {
       // Release the job for retry
-      await db
-        .updateTable('jobs')
-        .set({
-          reserved_at: null,
-          available_at: Math.floor(Date.now() / 1000) + 60, // Retry in 60 seconds
-        })
-        .where('id', '=', jobId)
-        .execute()
+      await releaseJob(jobId, driver)
     }
   }
   finally {
     activeJobCount--
+  }
+}
+
+/**
+ * Reserve a job (mark it as being processed)
+ */
+async function reserveJob(jobId: number, attempts: number, driver: string): Promise<void> {
+  const now = Math.floor(Date.now() / 1000)
+
+  const sqlitePath = getDatabasePath()
+  if (driver === 'sqlite' || existsSync(sqlitePath)) {
+    const db = getDatabase()
+    try {
+      db.run('UPDATE jobs SET reserved_at = ?, attempts = ? WHERE id = ?', [now, attempts + 1, jobId])
+    }
+    finally {
+      db.close()
+    }
+    return
+  }
+
+  const { db } = await import('@stacksjs/database')
+  await db
+    .updateTable('jobs')
+    .set({ reserved_at: now, attempts: attempts + 1 })
+    .where('id', '=', jobId)
+    .execute()
+}
+
+/**
+ * Delete a job from the queue
+ */
+async function deleteJob(jobId: number, driver: string): Promise<void> {
+  const sqlitePath = getDatabasePath()
+  if (driver === 'sqlite' || existsSync(sqlitePath)) {
+    const db = getDatabase()
+    try {
+      db.run('DELETE FROM jobs WHERE id = ?', [jobId])
+    }
+    finally {
+      db.close()
+    }
+    return
+  }
+
+  const { db } = await import('@stacksjs/database')
+  await db.deleteFrom('jobs').where('id', '=', jobId).execute()
+}
+
+/**
+ * Release a job for retry
+ */
+async function releaseJob(jobId: number, driver: string): Promise<void> {
+  const retryAt = Math.floor(Date.now() / 1000) + 60 // Retry in 60 seconds
+
+  const sqlitePath = getDatabasePath()
+  if (driver === 'sqlite' || existsSync(sqlitePath)) {
+    const db = getDatabase()
+    try {
+      db.run('UPDATE jobs SET reserved_at = NULL, available_at = ? WHERE id = ?', [retryAt, jobId])
+    }
+    finally {
+      db.close()
+    }
+    return
+  }
+
+  const { db } = await import('@stacksjs/database')
+  await db
+    .updateTable('jobs')
+    .set({ reserved_at: null, available_at: retryAt })
+    .where('id', '=', jobId)
+    .execute()
+}
+
+/**
+ * Move a job to the failed_jobs table
+ */
+async function moveToFailedJobs(job: any, error: Error, driver: string): Promise<void> {
+  const sqlitePath = getDatabasePath()
+  if (driver === 'sqlite' || existsSync(sqlitePath)) {
+    const db = getDatabase()
+    try {
+      db.run(`
+        INSERT INTO failed_jobs (uuid, connection, queue, payload, exception, failed_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `, [
+        crypto.randomUUID(),
+        'database',
+        job.queue,
+        job.payload,
+        error.stack || error.message,
+        new Date().toISOString(),
+      ])
+    }
+    catch (insertError) {
+      log.error('Failed to log failed job:', insertError)
+    }
+    finally {
+      db.close()
+    }
+    return
+  }
+
+  try {
+    const { db } = await import('@stacksjs/database')
+    await db
+      .insertInto('failed_jobs')
+      .values({
+        uuid: crypto.randomUUID(),
+        connection: 'database',
+        queue: job.queue,
+        payload: job.payload,
+        exception: error.stack || error.message,
+        failed_at: new Date().toISOString(),
+      })
+      .execute()
+  }
+  catch (insertError) {
+    log.error('Failed to log failed job:', insertError)
   }
 }
 
@@ -202,28 +336,6 @@ async function executeJobPayload(payload: any): Promise<void> {
 }
 
 /**
- * Move a job to the failed_jobs table
- */
-async function moveToFailedJobs(job: any, error: Error): Promise<void> {
-  try {
-    await db
-      .insertInto('failed_jobs')
-      .values({
-        uuid: crypto.randomUUID(),
-        connection: job.connection || 'database',
-        queue: job.queue,
-        payload: job.payload,
-        exception: error.stack || error.message,
-        failed_at: new Date().toISOString(),
-      })
-      .execute()
-  }
-  catch (insertError) {
-    log.error('Failed to log failed job:', insertError)
-  }
-}
-
-/**
  * Stop the queue processor
  */
 export async function stopProcessor(): Promise<void> {
@@ -235,10 +347,24 @@ export async function stopProcessor(): Promise<void> {
  * Retry all failed jobs
  */
 export async function executeFailedJobs(): Promise<void> {
-  const failedJobs = await db
-    .selectFrom('failed_jobs')
-    .selectAll()
-    .execute()
+  const driver = getDriver()
+  const sqlitePath = getDatabasePath()
+
+  let failedJobs: any[]
+
+  if (driver === 'sqlite' || existsSync(sqlitePath)) {
+    const db = getDatabase()
+    try {
+      failedJobs = db.query('SELECT * FROM failed_jobs').all() as any[]
+    }
+    finally {
+      db.close()
+    }
+  }
+  else {
+    const { db } = await import('@stacksjs/database')
+    failedJobs = await db.selectFrom('failed_jobs').selectAll().execute()
+  }
 
   for (const failedJob of failedJobs) {
     await retryFailedJob(Number(failedJob.id))
@@ -249,6 +375,38 @@ export async function executeFailedJobs(): Promise<void> {
  * Retry a specific failed job
  */
 export async function retryFailedJob(id: number): Promise<void> {
+  const driver = getDriver()
+  const sqlitePath = getDatabasePath()
+  const now = Math.floor(Date.now() / 1000)
+
+  if (driver === 'sqlite' || existsSync(sqlitePath)) {
+    const db = getDatabase()
+    try {
+      const failedJob = db.query('SELECT * FROM failed_jobs WHERE id = ?').get(id) as any
+
+      if (!failedJob) {
+        throw new Error(`Failed job ${id} not found`)
+      }
+
+      // Re-queue the job
+      db.run(`
+        INSERT INTO jobs (queue, payload, attempts, reserved_at, available_at, created_at)
+        VALUES (?, ?, 0, NULL, ?, datetime('now'))
+      `, [failedJob.queue, failedJob.payload, now])
+
+      // Remove from failed jobs
+      db.run('DELETE FROM failed_jobs WHERE id = ?', [id])
+
+      log.info(`Failed job ${id} has been re-queued`)
+    }
+    finally {
+      db.close()
+    }
+    return
+  }
+
+  const { db } = await import('@stacksjs/database')
+
   const failedJob = await db
     .selectFrom('failed_jobs')
     .where('id', '=', id)
@@ -267,16 +425,13 @@ export async function retryFailedJob(id: number): Promise<void> {
       payload: failedJob.payload,
       attempts: 0,
       reserved_at: null,
-      available_at: Math.floor(Date.now() / 1000),
+      available_at: now,
       created_at: new Date().toISOString(),
     })
     .execute()
 
   // Remove from failed jobs
-  await db
-    .deleteFrom('failed_jobs')
-    .where('id', '=', id)
-    .execute()
+  await db.deleteFrom('failed_jobs').where('id', '=', id).execute()
 
   log.info(`Failed job ${id} has been re-queued`)
 }
