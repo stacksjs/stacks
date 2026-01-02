@@ -133,18 +133,8 @@ async function fetchPendingJobs(queueName: string, limit: number, driver: string
   return await db
     .selectFrom('jobs')
     .where('queue', '=', queueName)
-    .where((eb: any) =>
-      eb.or([
-        eb('reserved_at', 'is', null),
-        eb('reserved_at', '<', retryAfter),
-      ]),
-    )
-    .where((eb: any) =>
-      eb.or([
-        eb('available_at', 'is', null),
-        eb('available_at', '<=', now),
-      ]),
-    )
+    .where(['reserved_at', 'is', null])
+    .where(['available_at', '<=', now])
     .orderBy('id', 'asc')
     .limit(limit)
     .selectAll()
@@ -233,18 +223,19 @@ async function releaseJob(jobId: number): Promise<void> {
  */
 async function moveToFailedJobs(job: any, error: Error): Promise<void> {
   try {
-    // Format datetime for MySQL compatibility (YYYY-MM-DD HH:MM:SS)
     const failedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
+    const uuid = crypto.randomUUID()
+    const exception = error.stack || error.message
 
     const { db } = await import('@stacksjs/database')
     await db
       .insertInto('failed_jobs')
       .values({
-        uuid: crypto.randomUUID(),
+        uuid,
         connection: 'database',
         queue: job.queue,
         payload: job.payload,
-        exception: error.stack || error.message,
+        exception,
         failed_at: failedAt,
       })
       .execute()
@@ -288,9 +279,12 @@ export async function stopProcessor(): Promise<void> {
  */
 export async function executeFailedJobs(): Promise<void> {
   const { db } = await import('@stacksjs/database')
-  const failedJobs = await db.selectFrom('failed_jobs').selectAll().execute()
+  const failedJobs = await db
+    .selectFrom('failed_jobs')
+    .selectAll()
+    .execute()
 
-  for (const failedJob of failedJobs) {
+  for (const failedJob of failedJobs as any[]) {
     await retryFailedJob(Number(failedJob.id))
   }
 }
@@ -300,16 +294,17 @@ export async function executeFailedJobs(): Promise<void> {
  */
 export async function retryFailedJob(id: number): Promise<void> {
   const now = Math.floor(Date.now() / 1000)
-  // Format datetime for MySQL compatibility (YYYY-MM-DD HH:MM:SS)
   const createdAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
 
   const { db } = await import('@stacksjs/database')
 
-  const failedJob = await db
+  const failedJobs = await db
     .selectFrom('failed_jobs')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .execute()
+
+  const failedJob = (failedJobs as any[])[0]
 
   if (!failedJob) {
     throw new Error(`Failed job ${id} not found`)
@@ -329,7 +324,10 @@ export async function retryFailedJob(id: number): Promise<void> {
     .execute()
 
   // Remove from failed jobs
-  await db.deleteFrom('failed_jobs').where('id', '=', id).execute()
+  await db
+    .deleteFrom('failed_jobs')
+    .where('id', '=', id)
+    .execute()
 
   log.info(`Failed job ${id} has been re-queued`)
 }

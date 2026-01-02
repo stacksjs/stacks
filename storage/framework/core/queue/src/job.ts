@@ -120,13 +120,14 @@ class JobBuilder {
     const now = Math.floor(Date.now() / 1000)
     const availableAt = this.options.delay ? now + this.options.delay : now
 
-    const payload = JSON.stringify({
+    const payloadObj = {
       jobName: this.name,
       payload: this.payload,
       options: this.options,
-    })
+    }
 
-    // Format datetime for MySQL compatibility (YYYY-MM-DD HH:MM:SS)
+    const payload = JSON.stringify(payloadObj)
+    const queue = this.options.queue || 'default'
     const createdAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
 
     // Use the configured database driver
@@ -135,7 +136,7 @@ class JobBuilder {
     await db
       .insertInto('jobs')
       .values({
-        queue: this.options.queue || 'default',
+        queue,
         payload,
         attempts: 0,
         reserved_at: null,
