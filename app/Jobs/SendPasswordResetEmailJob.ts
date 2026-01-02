@@ -18,6 +18,8 @@ export default new Job({
     console.log('[Job.handle] SendPasswordResetEmailJob.handle() called')
     console.log('[Job.handle] Received payload:', payload)
 
+    throw new Error('Email is required to send password reset')
+
     const { email } = payload
 
     if (!email) {

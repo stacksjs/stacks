@@ -47,7 +47,6 @@ export default new Action({
     try {
       await job('SendPasswordResetEmailJob', { email })
         .onQueue('emails')
-        .delay(10)
         .dispatch()
       console.log('[Action] Job dispatched successfully with 10s delay!')
     }

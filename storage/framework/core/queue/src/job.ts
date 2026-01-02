@@ -219,7 +219,8 @@ export async function runJob(name: string, options: { payload?: any; context?: a
     }
   }
   catch (error) {
-    console.error(`Job ${name} failed:`, error)
+    // Re-throw to let the worker handle retry logic
+    // Don't log here - worker.ts will log the error
     throw error
   }
 }

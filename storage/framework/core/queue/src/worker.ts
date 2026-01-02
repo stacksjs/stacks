@@ -10,6 +10,15 @@ import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import process from 'node:process'
 
+// Prevent unhandled rejections from crashing the worker
+process.on('unhandledRejection', (reason, promise) => {
+  log.error(`Unhandled Rejection: ${reason}`)
+})
+
+process.on('uncaughtException', (error) => {
+  log.error(`Uncaught Exception: ${error.message}`)
+})
+
 // Environment variables
 const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
 
@@ -31,7 +40,7 @@ function getDriver(): string {
 export async function startProcessor(
   queueName?: string,
   options: { concurrency?: number } = {},
-): Promise<Result<void, Error>> {
+): Promise<Result<undefined, Error>> {
   try {
     log.info('Starting queue processor...')
 
@@ -162,18 +171,33 @@ async function processJob(job: any, driver: string): Promise<void> {
     log.info(`Job ${jobId} completed`)
   }
   catch (error) {
-    log.error(`Job ${jobId} failed:`, error)
+    // Log the error but don't let it crash the worker
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    log.error(`Job ${jobId} failed: ${errorMessage}`)
 
     // Check if we should retry
     const maxAttempts = 3
-    if ((job.attempts || 0) + 1 >= maxAttempts) {
-      // Move to failed jobs
-      await moveToFailedJobs(job, error as Error)
-      await deleteJob(jobId)
+    const currentAttempts = (job.attempts || 0) + 1
+
+    try {
+      if (currentAttempts >= maxAttempts) {
+        // Move to failed jobs after max attempts
+        log.info(`Job ${jobId} exceeded max attempts (${currentAttempts}/${maxAttempts}), moving to failed_jobs`)
+        await moveToFailedJobs(job, error instanceof Error ? error : new Error(String(error)))
+        await deleteJob(jobId)
+        log.info(`Job ${jobId} moved to failed_jobs`)
+      }
+      else {
+        // Release the job for retry
+        log.info(`Job ${jobId} will be retried (attempt ${currentAttempts}/${maxAttempts})`)
+        await releaseJob(jobId)
+        log.info(`Job ${jobId} released for retry`)
+      }
     }
-    else {
-      // Release the job for retry
-      await releaseJob(jobId)
+    catch (cleanupError) {
+      // If we fail to move to failed_jobs or release, log it but don't crash
+      const cleanupMessage = cleanupError instanceof Error ? cleanupError.message : String(cleanupError)
+      log.error(`Job ${jobId} cleanup failed: ${cleanupMessage}`)
     }
   }
   finally {
@@ -207,14 +231,23 @@ async function deleteJob(jobId: number): Promise<void> {
  * Release a job for retry
  */
 async function releaseJob(jobId: number): Promise<void> {
-  const retryAt = Math.floor(Date.now() / 1000) + 60 // Retry in 60 seconds
+  try {
+    const retryAt = Math.floor(Date.now() / 1000) + 60 // Retry in 60 seconds
+    log.debug(`Releasing job ${jobId} for retry at ${retryAt}`)
 
-  const { db } = await import('@stacksjs/database')
-  await db
-    .updateTable('jobs')
-    .set({ reserved_at: null, available_at: retryAt })
-    .where('id', '=', jobId)
-    .execute()
+    const { db } = await import('@stacksjs/database')
+    await db
+      .updateTable('jobs')
+      .set({ reserved_at: null, available_at: retryAt })
+      .where('id', '=', jobId)
+      .execute()
+
+    log.debug(`Job ${jobId} released successfully`)
+  }
+  catch (releaseError) {
+    log.error(`Failed to release job ${jobId}:`, releaseError)
+    throw releaseError
+  }
 }
 
 /**

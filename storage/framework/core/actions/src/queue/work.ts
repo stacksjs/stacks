@@ -2,6 +2,15 @@ import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { startProcessor } from '@stacksjs/queue'
 
+// Prevent unhandled rejections from crashing the worker
+process.on('unhandledRejection', (reason) => {
+  log.error(`Unhandled Rejection in queue worker: ${reason}`)
+})
+
+process.on('uncaughtException', (error) => {
+  log.error(`Uncaught Exception in queue worker: ${error.message}`)
+})
+
 const options = parseArgs()
 
 const queue = options.queue
@@ -25,8 +34,9 @@ try {
   await new Promise(() => {})
 }
 catch (error) {
-  log.error('Queue worker error:', error)
-  process.exit(1)
+  const errorMessage = error instanceof Error ? error.message : String(error)
+  log.error(`Queue worker error: ${errorMessage}`)
+  // Don't exit - try to keep running
 }
 
 function parseArgs(): { [key: string]: string } {
