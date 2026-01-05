@@ -80,6 +80,9 @@ export * from './drivers'
 // Custom migrations (jobs, errors, etc.)
 export * from './custom'
 
+// Auth tables migration
+export * from './auth-tables'
+
 // Re-export bun-query-builder functions and types
 export {
   createQueryBuilder,
