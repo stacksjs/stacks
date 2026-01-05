@@ -211,7 +211,9 @@ async function processJob(job: any, _driver: string): Promise<void> {
     const errorMessage = jobError.message
     console.log(`[Queue] Job ${jobId} failed: ${errorMessage}`)
 
-    const maxAttempts = 3
+    // Get max attempts from job payload options, default to 1 (no retries)
+    const payload = JSON.parse(job.payload || '{}')
+    const maxAttempts = payload.options?.tries || 1
     const currentAttempts = (job.attempts || 0) + 1
 
     if (currentAttempts >= maxAttempts) {
@@ -272,7 +274,7 @@ async function deleteJob(jobId: number): Promise<void> {
  * Release a job for retry
  */
 async function releaseJob(jobId: number): Promise<void> {
-  const retryAt = Math.floor(Date.now() / 1000) + 60 // Retry in 60 seconds
+  const retryAt = Math.floor(Date.now() / 1000) + 30 // Retry in 30 seconds
   log.debug(`Releasing job ${jobId} for retry at ${retryAt}`)
 
   try {
