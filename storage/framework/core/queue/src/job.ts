@@ -186,41 +186,34 @@ export function job(name: string, payload?: any): JobBuilder {
  * This loads the job from app/Jobs/{name}.ts and executes it
  */
 export async function runJob(name: string, options: { payload?: any; context?: any } = {}): Promise<void> {
-  try {
-    // Load the job module from app/Jobs
-    const jobPath = appPath(`Jobs/${name}.ts`)
-    const jobModule = await import(jobPath)
-    const jobConfig = jobModule.default
+  // Load the job module from app/Jobs
+  const jobPath = appPath(`Jobs/${name}.ts`)
+  const jobModule = await import(jobPath)
+  const jobConfig = jobModule.default
 
-    if (!jobConfig) {
-      throw new Error(`Job ${name} does not export a default`)
-    }
-
-    // Execute based on job type
-    if (typeof jobConfig.handle === 'function') {
-      // Function-based job with handle method
-      await jobConfig.handle(options.payload)
-    }
-    else if (typeof jobConfig.action === 'string') {
-      // Action-based job
-      const { runAction } = await import('@stacksjs/actions')
-      await runAction(jobConfig.action)
-    }
-    else if (typeof jobConfig.action === 'function') {
-      // Function action
-      await jobConfig.action()
-    }
-    else if (typeof jobConfig === 'function') {
-      // Direct function export
-      await jobConfig(options.payload, options.context)
-    }
-    else {
-      throw new Error(`Job ${name} does not have a valid handler`)
-    }
+  if (!jobConfig) {
+    throw new Error(`Job ${name} does not export a default`)
   }
-  catch (error) {
-    // Re-throw to let the worker handle retry logic
-    // Don't log here - worker.ts will log the error
-    throw error
+
+  // Execute based on job type
+  if (typeof jobConfig.handle === 'function') {
+    // Function-based job with handle method
+    await jobConfig.handle(options.payload)
+  }
+  else if (typeof jobConfig.action === 'string') {
+    // Action-based job
+    const { runAction } = await import('@stacksjs/actions')
+    await runAction(jobConfig.action)
+  }
+  else if (typeof jobConfig.action === 'function') {
+    // Function action
+    await jobConfig.action()
+  }
+  else if (typeof jobConfig === 'function') {
+    // Direct function export
+    await jobConfig(options.payload, options.context)
+  }
+  else {
+    throw new Error(`Job ${name} does not have a valid handler`)
   }
 }

@@ -104,27 +104,45 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
       // Periodically refresh the list of queues to pick up new ones
       const now = Date.now()
       if (now - lastQueueRefresh > queueRefreshInterval) {
-        const refreshedQueues = await getAllQueues()
-        if (refreshedQueues.length > 0) {
-          queues = refreshedQueues
+        try {
+          const refreshedQueues = await getAllQueues()
+          if (refreshedQueues.length > 0) {
+            queues = refreshedQueues
+          }
+        }
+        catch {
+          // Ignore queue refresh errors
         }
         lastQueueRefresh = now
       }
 
       for (const queueName of queues) {
-        const jobs = await fetchPendingJobs(queueName, concurrency, driver)
+        let jobs: any[] = []
+        try {
+          jobs = await fetchPendingJobs(queueName, concurrency, driver)
+        }
+        catch {
+          // Ignore fetch errors, will retry next cycle
+          continue
+        }
 
         for (const job of jobs) {
-          log.info(`Processing job ${job.id} from queue "${queueName}"`)
-          await processJob(job, driver)
+          try {
+            log.info(`Processing job ${job.id} from queue "${queueName}"`)
+            await processJob(job, driver)
+          }
+          catch {
+            // processJob should never throw, but just in case
+            log.error(`Unexpected error processing job ${job.id}`)
+          }
         }
       }
 
       // Sleep between polling cycles
       await sleep(1000)
     }
-    catch (error) {
-      log.error('Error processing jobs:', error)
+    catch {
+      // Should never reach here, but keep the loop running
       await sleep(3000)
     }
   }
@@ -152,57 +170,80 @@ async function fetchPendingJobs(queueName: string, limit: number, driver: string
 /**
  * Process a single job from the database
  */
-async function processJob(job: any, driver: string): Promise<void> {
+async function processJob(job: any, _driver: string): Promise<void> {
   const jobId = job.id
+  activeJobCount++
 
+  let jobError: Error | null = null
+
+  // Step 1: Reserve the job
   try {
-    activeJobCount++
-
-    // Reserve the job
     await reserveJob(jobId, job.attempts || 0)
+  }
+  catch (e) {
+    log.error(`Failed to reserve job ${jobId}`)
+    activeJobCount--
+    return
+  }
 
-    // Parse and execute the job
+  // Step 2: Execute the job
+  try {
     const payload = JSON.parse(job.payload || '{}')
     await executeJobPayload(payload)
-
-    // Delete job on success
-    await deleteJob(jobId)
-
-    log.info(`Job ${jobId} completed`)
   }
-  catch (error) {
-    // Log the error but don't let it crash the worker
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    log.error(`Job ${jobId} failed: ${errorMessage}`)
+  catch (e) {
+    jobError = e instanceof Error ? e : new Error(String(e))
+  }
 
-    // Check if we should retry
+  // Step 3: Handle success or failure
+  if (!jobError) {
+    // Success - delete the job
+    try {
+      await deleteJob(jobId)
+      console.log(`[Queue] Job ${jobId} completed`)
+    }
+    catch {
+      console.log(`[Queue] Failed to delete completed job ${jobId}`)
+    }
+  }
+  else {
+    // Failure - retry or move to failed_jobs
+    const errorMessage = jobError.message
+    console.log(`[Queue] Job ${jobId} failed: ${errorMessage}`)
+
     const maxAttempts = 3
     const currentAttempts = (job.attempts || 0) + 1
 
-    try {
-      if (currentAttempts >= maxAttempts) {
-        // Move to failed jobs after max attempts
-        log.info(`Job ${jobId} exceeded max attempts (${currentAttempts}/${maxAttempts}), moving to failed_jobs`)
-        await moveToFailedJobs(job, error instanceof Error ? error : new Error(String(error)))
+    if (currentAttempts >= maxAttempts) {
+      // Move to failed jobs
+      console.log(`[Queue] Job ${jobId} exceeded max attempts (${currentAttempts}/${maxAttempts}), moving to failed_jobs`)
+      try {
+        await moveToFailedJobs(job, jobError)
+      }
+      catch {
+        console.log(`[Queue] Failed to move job ${jobId} to failed_jobs`)
+      }
+      try {
         await deleteJob(jobId)
-        log.info(`Job ${jobId} moved to failed_jobs`)
       }
-      else {
-        // Release the job for retry
-        log.info(`Job ${jobId} will be retried (attempt ${currentAttempts}/${maxAttempts})`)
+      catch {
+        console.log(`[Queue] Failed to delete failed job ${jobId}`)
+      }
+    }
+    else {
+      // Release for retry
+      console.log(`[Queue] Job ${jobId} will be retried (attempt ${currentAttempts}/${maxAttempts})`)
+      try {
         await releaseJob(jobId)
-        log.info(`Job ${jobId} released for retry`)
+        console.log(`[Queue] Job ${jobId} released for retry`)
+      }
+      catch {
+        console.log(`[Queue] Failed to release job ${jobId} for retry`)
       }
     }
-    catch (cleanupError) {
-      // If we fail to move to failed_jobs or release, log it but don't crash
-      const cleanupMessage = cleanupError instanceof Error ? cleanupError.message : String(cleanupError)
-      log.error(`Job ${jobId} cleanup failed: ${cleanupMessage}`)
-    }
   }
-  finally {
-    activeJobCount--
-  }
+
+  activeJobCount--
 }
 
 /**
@@ -231,22 +272,17 @@ async function deleteJob(jobId: number): Promise<void> {
  * Release a job for retry
  */
 async function releaseJob(jobId: number): Promise<void> {
+  const retryAt = Math.floor(Date.now() / 1000) + 60 // Retry in 60 seconds
+  log.debug(`Releasing job ${jobId} for retry at ${retryAt}`)
+
   try {
-    const retryAt = Math.floor(Date.now() / 1000) + 60 // Retry in 60 seconds
-    log.debug(`Releasing job ${jobId} for retry at ${retryAt}`)
-
     const { db } = await import('@stacksjs/database')
-    await db
-      .updateTable('jobs')
-      .set({ reserved_at: null, available_at: retryAt })
-      .where('id', '=', jobId)
-      .execute()
-
+    await db.rawQuery(`UPDATE jobs SET reserved_at = NULL, available_at = ${retryAt} WHERE id = ${jobId}`)
     log.debug(`Job ${jobId} released successfully`)
   }
-  catch (releaseError) {
-    log.error(`Failed to release job ${jobId}:`, releaseError)
-    throw releaseError
+  catch {
+    log.error(`Failed to release job ${jobId}`)
+    // Don't throw - just log the error
   }
 }
 
@@ -292,10 +328,7 @@ async function executeJobPayload(payload: any): Promise<void> {
     const { runJob } = await import('./job')
     await runJob(payload.jobName, { payload: payload.payload })
   }
-  else {
-    // Generic job - just log it
-    log.debug('Processing generic job payload:', payload)
-  }
+  // Generic job - nothing to do
 }
 
 /**
