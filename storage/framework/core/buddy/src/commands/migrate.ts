@@ -1,9 +1,36 @@
 import type { CLI, MigrateOptions } from '@stacksjs/types'
+import { existsSync, readdirSync } from 'node:fs'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
+import { appPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+
+/**
+ * Check if app/Models directory exists and has model files
+ */
+function validateModelsExist(): { valid: boolean, error?: string } {
+  const modelsPath = appPath('Models')
+
+  if (!existsSync(modelsPath)) {
+    return {
+      valid: false,
+      error: 'The app/Models directory does not exist. Please create models before running migrations.',
+    }
+  }
+
+  const files = readdirSync(modelsPath).filter(f => f.endsWith('.ts') && !f.startsWith('.'))
+
+  if (files.length === 0) {
+    return {
+      valid: false,
+      error: 'No models found in app/Models. Please create at least one model before running migrations.',
+    }
+  }
+
+  return { valid: true }
+}
 
 export function migrate(buddy: CLI): void {
   const descriptions = {
@@ -22,6 +49,14 @@ export function migrate(buddy: CLI): void {
       log.debug('Running `buddy migrate` ...', options)
 
       const perf = await intro('buddy migrate')
+
+      // Validate models exist before running migrations
+      const validation = validateModelsExist()
+      if (!validation.valid) {
+        console.error(`\n❌ Error: ${validation.error!}\n`)
+        process.exit(ExitCode.FatalError)
+      }
+
       const result = await runAction(Action.Migrate, options)
 
       if (result.isErr) {
@@ -53,6 +88,14 @@ export function migrate(buddy: CLI): void {
       log.debug('Running `buddy migrate:fresh` ...', options)
 
       const perf = await intro('buddy migrate:fresh')
+
+      // Validate models exist before running migrations
+      const validation = validateModelsExist()
+      if (!validation.valid) {
+        console.error(`\n❌ Error: ${validation.error!}\n`)
+        process.exit(ExitCode.FatalError)
+      }
+
       const result = await runAction(Action.MigrateFresh, options)
 
       if (result.isErr) {

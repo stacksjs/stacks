@@ -1,4 +1,4 @@
-CREATE TABLE `teams` (
+CREATE TABLE IF NOT EXISTS `teams` (
   `id` bigint PRIMARY KEY auto_increment,
   `name` varchar(255),
   `company_name` varchar(255),
@@ -7,5 +7,7 @@ CREATE TABLE `teams` (
   `status` varchar(255),
   `description` varchar(255),
   `path` varchar(255),
-  `is_personal` tinyint(1)
+  `is_personal` tinyint(1),
+  `created_at` datetime not null default CURRENT_TIMESTAMP,
+  `updated_at` datetime
 );

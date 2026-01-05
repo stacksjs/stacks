@@ -1,4 +1,4 @@
-CREATE TABLE `personal_access_tokens` (
+CREATE TABLE IF NOT EXISTS `personal_access_tokens` (
   `id` bigint PRIMARY KEY auto_increment,
   `name` varchar(255),
   `token` varchar(255),
@@ -9,5 +9,7 @@ CREATE TABLE `personal_access_tokens` (
   `revoked_at` datetime,
   `ip_address` varchar(255),
   `device_name` varchar(255),
-  `is_single_use` tinyint(1)
+  `is_single_use` tinyint(1),
+  `created_at` datetime not null default CURRENT_TIMESTAMP,
+  `updated_at` datetime
 );
