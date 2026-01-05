@@ -74,8 +74,11 @@ async function main() {
     const commandsToLoad = getCommandsToLoad(args)
     await loadCommands(commandsToLoad, buddy)
 
-    // dynamic imports
-    await dynamicImports(buddy)
+    // dynamic imports - skip for list command since we already have all commands
+    const baseCommand = args[0]?.split(':')[0]
+    if (baseCommand !== 'list') {
+      await dynamicImports(buddy)
+    }
   }
   else {
     // For minimal commands, only load what's needed for better cold start

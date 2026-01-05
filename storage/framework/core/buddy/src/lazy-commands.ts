@@ -15,6 +15,7 @@ interface CommandLoader {
 // Map of command names to their lazy loaders
 const commandRegistry: Record<string, CommandLoader> = {
   'about': { path: './commands/about.ts', exportName: 'about' },
+  'add': { path: './commands/add.ts', exportName: 'add' },
   'auth': { path: './commands/auth.ts', exportName: 'auth' },
   'build': { path: './commands/build.ts', exportName: 'build' },
   'changelog': { path: './commands/changelog.ts', exportName: 'changelog' },
@@ -38,6 +39,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   'key': { path: './commands/key.ts', exportName: 'key' },
   'lint': { path: './commands/lint.ts', exportName: 'lint' },
   'list': { path: './commands/list.ts', exportName: 'list' },
+  'mail': { path: './commands/mail.ts', exportName: 'mailCommands' },
   'maintenance': { path: './commands/maintenance.ts', exportName: 'maintenance' },
   'down': { path: './commands/maintenance.ts', exportName: 'maintenance' },
   'up': { path: './commands/maintenance.ts', exportName: 'maintenance' },
@@ -80,12 +82,12 @@ const commandGroups = {
 /**
  * Load a specific command lazily
  */
-export async function loadCommand(commandName: string, buddy: CLI): Promise<void> {
+export async function loadCommand(commandName: string, buddy: CLI): Promise<boolean> {
   const loader = commandRegistry[commandName]
 
   if (!loader) {
-    console.warn(`Unknown command: ${commandName}`)
-    return
+    // Don't warn for unknown commands - they may be dynamically loaded later
+    return false
   }
 
   try {
@@ -94,21 +96,37 @@ export async function loadCommand(commandName: string, buddy: CLI): Promise<void
 
     if (typeof commandFunction === 'function') {
       commandFunction(buddy)
+      return true
     }
     else {
-      console.error(`Command function ${loader.exportName} not found in ${loader.path}`)
+      // Silent fail - don't spam the console during list
+      return false
     }
   }
-  catch (error) {
-    console.error(`Failed to load command ${commandName}:`, error)
+  catch {
+    // Silent fail - command will not be available but won't crash the CLI
+    return false
   }
 }
 
 /**
- * Load multiple commands in parallel
+ * Load multiple commands with timeout
  */
 export async function loadCommands(commandNames: string[], buddy: CLI): Promise<void> {
-  await Promise.all(commandNames.map(name => loadCommand(name, buddy)))
+  const timeout = (ms: number) => new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('timeout')), ms))
+
+  await Promise.all(commandNames.map(async (name) => {
+    try {
+      await Promise.race([
+        loadCommand(name, buddy),
+        timeout(5000), // 5 second timeout per command
+      ])
+    }
+    catch {
+      // Command timed out or failed, continue
+    }
+  }))
 }
 
 /**
@@ -150,6 +168,12 @@ export function getCommandsToLoad(args: string[]): string[] {
 
   // Extract base command (before ':')
   const baseCommand = requestedCommand.split(':')[0]
+
+  // Special case: 'list' command needs all commands to display them
+  if (baseCommand === 'list') {
+    // Load list first, then other commands
+    return ['list', ...Object.keys(commandRegistry).filter(k => k !== 'list')]
+  }
 
   // Check if it's a known command
   if (commandRegistry[baseCommand]) {
