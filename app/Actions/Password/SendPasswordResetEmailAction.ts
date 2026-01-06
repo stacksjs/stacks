@@ -4,12 +4,18 @@ import { RateLimiter } from '@stacksjs/auth'
 import { User } from '@stacksjs/orm'
 import { job } from '@stacksjs/queue'
 import { response } from '@stacksjs/router'
+import { schema } from '@stacksjs/validation'
 
 export default new Action({
   name: 'SendPasswordResetEmailAction',
   description: 'Send Password Reset Email',
   method: 'POST',
   model: 'PasswordResets',
+  validations: {
+    email: {
+      rule: schema.string().email().required(),
+    },
+  },
   async handle(request: PasswordResetsRequestType) {
     console.log('[Action] SendPasswordResetEmailAction.handle() called')
 

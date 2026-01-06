@@ -21,6 +21,7 @@ async function initLogger(): Promise<void> {
         logDirectory: p.projectPath('storage/logs'),
         showTags: false,
         fancy: true,
+        writeToFile: true,
       })
     }
     catch {
@@ -30,6 +31,7 @@ async function initLogger(): Promise<void> {
         logDirectory: 'storage/logs',
         showTags: false,
         fancy: true,
+        writeToFile: true,
       })
     }
   })()

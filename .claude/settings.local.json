@@ -80,7 +80,8 @@
       "Bash(./buddy queue:failed:*)",
       "Bash(timeout 10 ./buddy queue:work:*)",
       "Bash(./buddy list:*)",
-      "Bash(timeout 30:*)"
+      "Bash(timeout 30:*)",
+      "Bash(timeout 5 ./buddy:*)"
     ],
     "deny": [],
     "ask": []
