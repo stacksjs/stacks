@@ -46,10 +46,13 @@ route.post('/ai/summary', 'Actions/AI/SummaryAction')
 route.group({ prefix: '/voide' }, () => {
   route.get('/state', 'Actions/Buddy/BuddyStateAction')
   route.post('/repo', 'Actions/Buddy/BuddyRepoOpenAction')
+  route.post('/repo/validate', 'Actions/Buddy/BuddyRepoValidateAction')
   route.post('/process', 'Actions/Buddy/BuddyProcessAction')
   route.post('/process/stream', 'Actions/Buddy/BuddyProcessStreamAction') // SSE streaming endpoint
   route.post('/commit', 'Actions/Buddy/BuddyCommitAction')
   route.post('/push', 'Actions/Buddy/BuddyPushAction')
+  route.post('/cancel', 'Actions/Buddy/BuddyCancelAction')
+  route.post('/browse', 'Actions/Buddy/BuddyBrowseAction')
   route.get('/settings', 'Actions/Buddy/BuddySettingsAction')
   route.post('/settings', 'Actions/Buddy/BuddySettingsUpdateAction')
   route.post('/github/connect', 'Actions/Buddy/BuddyGitHubConnectAction')

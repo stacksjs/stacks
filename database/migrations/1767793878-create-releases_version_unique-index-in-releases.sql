@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS "releases_releases_version_unique" ON "releases" ("version");
