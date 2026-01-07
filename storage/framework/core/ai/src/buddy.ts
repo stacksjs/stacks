@@ -455,6 +455,7 @@ export async function processCommand(command: string, driverName?: string): Prom
 export async function buddyProcessStreaming(
   command: string,
   driverName?: string,
+  history?: Array<{role: string; content: string}>,
 ): Promise<StreamingResult> {
   const currentState = buddyState.getState()
 
@@ -472,7 +473,19 @@ export async function buddyProcessStreaming(
     buddyState.setCurrentDriver(driverName)
   }
 
-  const result = await claudeAgent.processStreaming(command, currentState.repo.path)
+  // Build command with conversation history for context
+  let contextualCommand = command
+  if (history && history.length > 0) {
+    let conversationContext = '## Previous Conversation\nHere is our conversation so far:\n\n'
+    for (const msg of history) {
+      const role = msg.role === 'user' ? 'User' : 'Assistant'
+      conversationContext += `**${role}:** ${msg.content}\n\n`
+    }
+    conversationContext += '---\n\n## Current Request\n'
+    contextualCommand = conversationContext + command
+  }
+
+  const result = await claudeAgent.processStreaming(contextualCommand, currentState.repo.path)
 
   // Update history when streaming completes
   result.fullResponse.then((response) => {

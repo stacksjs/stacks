@@ -23,6 +23,7 @@ export default new Action({
       const command = request.get('command')
       const repo = request.get('repo') || request.get('repository')
       const driver = request.get('driver')
+      const history = request.get('history') as Array<{role: string; content: string}> | undefined
 
       if (!command) {
         return new Response(JSON.stringify({ error: 'Command is required' }), {
@@ -49,7 +50,7 @@ export default new Action({
       }
 
       // Start streaming
-      const { stream, fullResponse } = await buddyProcessStreaming(command, driver || undefined)
+      const { stream, fullResponse } = await buddyProcessStreaming(command, driver || undefined, history)
 
       // Create SSE response
       const encoder = new TextEncoder()
