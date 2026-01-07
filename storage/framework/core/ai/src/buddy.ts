@@ -463,8 +463,9 @@ export async function buddyProcessStreaming(
   }
 
   const normalizedDriver = driverName || currentState.currentDriver
-  if (normalizedDriver !== 'claude-cli-local') {
-    throw new Error(`Streaming only supported for claude-cli-local driver. Current: ${normalizedDriver}`)
+  const streamingDrivers = ['claude-cli-local', 'claude-sdk']
+  if (!streamingDrivers.includes(normalizedDriver)) {
+    throw new Error(`Streaming only supported for ${streamingDrivers.join(', ')} drivers. Current: ${normalizedDriver}`)
   }
 
   if (driverName) {
