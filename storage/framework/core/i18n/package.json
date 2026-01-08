@@ -1,0 +1,40 @@
+{
+  "name": "@stacksjs/i18n",
+  "version": "0.69.1",
+  "description": "Internationalization system for Stacks.js applications",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/i18n#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/i18n"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "bun build.ts",
+    "lint": "bunx --bun eslint .",
+    "lint:fix": "bunx --bun eslint . --fix",
+    "typecheck": "bunx --bun tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@stacksjs/development": "workspace:*"
+  }
+}
