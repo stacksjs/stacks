@@ -37,16 +37,10 @@ export interface SearchEngineOptions {
    *
    * The search engine to utilize.
    *
-   * @default string 'opensearch'
+   * @default string 'meilisearch'
    * @see https://stacksjs.com/docs/search-engine
    */
-  driver: 'opensearch'
-  // driver: 'meilisearch' | 'algolia' | 'typesense' | 'opensearch' wip
-
-  // meilisearch?: {
-  //   host: string
-  //   apiKey: string
-  // }
+  driver: 'meilisearch' | 'algolia' | 'opensearch'
 
   opensearch?: {
     host: string
@@ -57,10 +51,16 @@ export interface SearchEngineOptions {
 
   meilisearch?: {
     host: string
-    protocol: number
-    port: number
-    auth: string
+    protocol?: number
+    port?: number
+    auth?: string
     apiKey: string
+  }
+
+  algolia?: {
+    appId: string
+    apiKey: string
+    searchOnlyApiKey?: string
   }
 
   filters?: {
