@@ -195,10 +195,7 @@ export async function processCommandStreaming(
 
               if (event.type === 'system' && event.subtype === 'init') {
                 promptCount++
-                // Show *thinking* on 2nd prompt onwards
-                if (promptCount >= 2) {
-                  textContent = '*thinking*\n\n'
-                }
+                // UI shows thinking indicator, no need to output text
               }
               else if (event.type === 'assistant' && event.message?.content) {
                 for (const block of event.message.content) {

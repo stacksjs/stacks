@@ -120,8 +120,35 @@ export default {
     appId: envVars.SLACK_APP_ID,
     clientId: envVars.SLACK_CLIENT_ID,
     secretKey: envVars.SLACK_SECRET_KEY,
+    webhookUrl: envVars.SLACK_WEBHOOK_URL,
+    botToken: envVars.SLACK_BOT_TOKEN,
     maxRetries: envVars.SLACK_MAX_RETRIES ? Number.parseInt(envVars.SLACK_MAX_RETRIES) : 3,
-    retryTimeout: envVars.SENDGRID_RETRY_TIMEOUT ? Number.parseInt(envVars.SENDGRID_RETRY_TIMEOUT) : 1000,
+    retryTimeout: envVars.SLACK_RETRY_TIMEOUT ? Number.parseInt(envVars.SLACK_RETRY_TIMEOUT) : 1000,
+  },
+
+  discord: {
+    webhookUrl: envVars.DISCORD_WEBHOOK_URL,
+    botToken: envVars.DISCORD_BOT_TOKEN,
+    maxRetries: envVars.DISCORD_MAX_RETRIES ? Number.parseInt(envVars.DISCORD_MAX_RETRIES) : 3,
+    retryTimeout: envVars.DISCORD_RETRY_TIMEOUT ? Number.parseInt(envVars.DISCORD_RETRY_TIMEOUT) : 1000,
+  },
+
+  teams: {
+    webhookUrl: envVars.TEAMS_WEBHOOK_URL,
+    maxRetries: envVars.TEAMS_MAX_RETRIES ? Number.parseInt(envVars.TEAMS_MAX_RETRIES) : 3,
+    retryTimeout: envVars.TEAMS_RETRY_TIMEOUT ? Number.parseInt(envVars.TEAMS_RETRY_TIMEOUT) : 1000,
+  },
+
+  // Push Notification Services
+  expo: {
+    accessToken: envVars.EXPO_ACCESS_TOKEN,
+  },
+
+  fcm: {
+    serverKey: envVars.FCM_SERVER_KEY,
+    projectId: envVars.FCM_PROJECT_ID,
+    clientEmail: envVars.FCM_CLIENT_EMAIL,
+    privateKey: envVars.FCM_PRIVATE_KEY,
   },
   stripe: {
     secretKey: envVars.STRIPE_SECRET_KEY,

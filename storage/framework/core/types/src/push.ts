@@ -95,3 +95,49 @@ export interface ExpoPushNotificationOptions {
     mutableContent: boolean
   }
 }
+
+/**
+ * Result from a push notification operation
+ */
+export interface PushResult {
+  /** Whether the operation was successful */
+  success: boolean
+  /** The provider that handled the notification */
+  provider: string
+  /** Human-readable message about the result */
+  message: string
+  /** Message ID returned from the provider */
+  messageId?: string
+  /** Additional provider-specific data */
+  data?: Record<string, any>
+}
+
+/**
+ * Push message structure
+ */
+export interface PushMessage {
+  /** Device token(s) to send to */
+  to: string | string[]
+  /** Notification title */
+  title?: string
+  /** Notification body */
+  body: string
+  /** Additional data payload */
+  data?: Record<string, any>
+  /** Badge count */
+  badge?: number
+  /** Sound to play */
+  sound?: 'default' | null
+  /** Message priority */
+  priority?: 'default' | 'normal' | 'high'
+}
+
+/**
+ * Push ticket from Expo
+ */
+export interface PushTicket {
+  id?: string
+  status: 'ok' | 'error'
+  message?: string
+  details?: Record<string, any>
+}

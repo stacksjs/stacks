@@ -53,6 +53,7 @@ route.group({ prefix: '/voide' }, () => {
   route.post('/push', 'Actions/Buddy/BuddyPushAction')
   route.post('/cancel', 'Actions/Buddy/BuddyCancelAction')
   route.post('/browse', 'Actions/Buddy/BuddyBrowseAction')
+  route.post('/title', 'Actions/Buddy/BuddyTitleAction') // Generate chat title from prompt
   route.get('/settings', 'Actions/Buddy/BuddySettingsAction')
   route.post('/settings', 'Actions/Buddy/BuddySettingsUpdateAction')
   route.post('/github/connect', 'Actions/Buddy/BuddyGitHubConnectAction')

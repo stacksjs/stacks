@@ -111,16 +111,43 @@ export interface ServicesOptions {
   }
 
   slack?: {
-    appId: string
-    clientId: string
-    secretKey: string
+    appId?: string
+    clientId?: string
+    secretKey?: string
+    webhookUrl?: string
+    botToken?: string
     maxRetries?: number
     retryTimeout?: number
   }
 
+  discord?: {
+    webhookUrl?: string
+    botToken?: string
+    maxRetries?: number
+    retryTimeout?: number
+  }
+
+  teams?: {
+    webhookUrl?: string
+    maxRetries?: number
+    retryTimeout?: number
+  }
+
+  // Push Notification Services
+  expo?: {
+    accessToken?: string
+  }
+
+  fcm?: {
+    serverKey?: string
+    projectId?: string
+    clientEmail?: string
+    privateKey?: string
+  }
+
   stripe?: {
-    secretKey: string
-    publicKey: string
+    secretKey?: string
+    publicKey?: string
   }
 
   // supabase?: {
