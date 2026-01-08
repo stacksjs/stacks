@@ -197,6 +197,15 @@ export async function processCommandStreaming(
                 promptCount++
                 // UI shows thinking indicator, no need to output text
               }
+              // Handle content_block_start - initial text from a block
+              else if (event.type === 'content_block_start' && event.content_block?.text) {
+                textContent = event.content_block.text
+              }
+              // Handle content_block_delta - streaming text deltas (most important for real-time feel)
+              else if (event.type === 'content_block_delta' && event.delta?.text) {
+                textContent = event.delta.text
+              }
+              // Handle assistant messages with full content
               else if (event.type === 'assistant' && event.message?.content) {
                 for (const block of event.message.content) {
                   if (block.type === 'text' && block.text) {
@@ -207,6 +216,7 @@ export async function processCommandStreaming(
                   }
                 }
               }
+              // Handle tool results
               else if (event.type === 'user' && event.message?.content) {
                 for (const block of event.message.content) {
                   if (block.type === 'tool_result') {
@@ -214,20 +224,27 @@ export async function processCommandStreaming(
                   }
                 }
               }
-              else if (event.type === 'content_block_delta' && event.delta?.text) {
-                textContent = event.delta.text
-              }
+              // Handle final result
               else if (event.type === 'result' && event.result) {
                 fullResponse = event.result
-                if (!lastSentText.includes(event.result)) {
+                // Only send result if we haven't already sent equivalent content
+                if (!lastSentText.includes(event.result.substring(0, 50))) {
                   textContent = event.result
                 }
               }
 
-              // Only send new content
-              if (textContent && !lastSentText.endsWith(textContent)) {
-                lastSentText += textContent
-                controller.enqueue(encoder.encode(textContent))
+              // Send new content immediately for responsive streaming
+              if (textContent) {
+                // For deltas, always send (they're incremental)
+                if (event.type === 'content_block_delta') {
+                  lastSentText += textContent
+                  controller.enqueue(encoder.encode(textContent))
+                }
+                // For other events, check we haven't sent it already
+                else if (!lastSentText.endsWith(textContent)) {
+                  lastSentText += textContent
+                  controller.enqueue(encoder.encode(textContent))
+                }
               }
             }
             catch {

@@ -51,6 +51,12 @@ export interface ClaudeStreamEvent {
   }
   delta?: { text?: string }
   result?: string
+  // Content block events for better streaming
+  index?: number
+  content_block?: {
+    type: string
+    text?: string
+  }
 }
 
 // Buddy Types
