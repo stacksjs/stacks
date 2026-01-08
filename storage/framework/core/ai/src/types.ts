@@ -6,12 +6,21 @@
 
 export interface AIMessage {
   role: 'user' | 'assistant' | 'system'
-  content: string
+  content: string | AIMessageContent[]
+}
+
+export interface AIMessageContent {
+  type: 'text' | 'image_url' | 'image'
+  text?: string
+  image_url?: { url: string, detail?: 'auto' | 'low' | 'high' }
+  source?: { type: 'base64', media_type: string, data: string }
 }
 
 export interface AIDriver {
   name: string
   process: (command: string, context: string, history: AIMessage[]) => Promise<string>
+  stream?: (command: string, context: string, history: AIMessage[]) => AsyncGenerator<string>
+  embed?: (input: string | string[]) => Promise<number[] | number[][]>
 }
 
 export interface AIDriverConfig {
@@ -24,6 +33,41 @@ export interface AIDriverConfig {
 export interface StreamingResult {
   stream: ReadableStream<Uint8Array>
   fullResponse: Promise<string>
+}
+
+export interface EmbeddingResult {
+  embedding: number[]
+  index: number
+  object: string
+}
+
+export interface EmbeddingsResponse {
+  data: EmbeddingResult[]
+  model: string
+  usage: {
+    prompt_tokens: number
+    total_tokens: number
+  }
+}
+
+export interface ChatCompletionOptions {
+  model?: string
+  maxTokens?: number
+  temperature?: number
+  topP?: number
+  stop?: string | string[]
+  stream?: boolean
+}
+
+export interface AIResult {
+  content: string
+  model: string
+  usage?: {
+    promptTokens: number
+    completionTokens: number
+    totalTokens: number
+  }
+  finishReason?: string
 }
 
 export interface ClaudeAPIResponse {

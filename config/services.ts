@@ -150,6 +150,27 @@ export default {
     clientEmail: envVars.FCM_CLIENT_EMAIL,
     privateKey: envVars.FCM_PRIVATE_KEY,
   },
+
+  // AI Services
+  openai: {
+    apiKey: envVars.OPENAI_API_KEY,
+    model: envVars.OPENAI_MODEL || 'gpt-4o',
+    embeddingModel: envVars.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small',
+    baseUrl: envVars.OPENAI_BASE_URL || 'https://api.openai.com/v1',
+  },
+
+  anthropic: {
+    apiKey: envVars.ANTHROPIC_API_KEY,
+    model: envVars.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514',
+    maxTokens: envVars.ANTHROPIC_MAX_TOKENS ? Number.parseInt(envVars.ANTHROPIC_MAX_TOKENS) : 4096,
+  },
+
+  ollama: {
+    host: envVars.OLLAMA_HOST || 'http://localhost:11434',
+    model: envVars.OLLAMA_MODEL || 'llama3.2',
+    embeddingModel: envVars.OLLAMA_EMBEDDING_MODEL || 'nomic-embed-text',
+  },
+
   stripe: {
     secretKey: envVars.STRIPE_SECRET_KEY,
     publicKey: envVars.STRIPE_PUBLISHABLE_KEY,

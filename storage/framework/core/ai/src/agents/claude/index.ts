@@ -153,10 +153,10 @@ export async function processCommandStreaming(
   const { spawn } = await import('bun')
 
   // Spawn Claude CLI process with stream-json output format
-  // Using streaming flags for real-time output
   const proc = spawn([
     'claude',
     '--print',
+    '--verbose',
     '--output-format', 'stream-json',
     '--dangerously-skip-permissions',
     command,
@@ -164,12 +164,6 @@ export async function processCommandStreaming(
     cwd,
     stdout: 'pipe',
     stderr: 'pipe',
-    env: {
-      ...process.env,
-      // Disable output buffering for more responsive streaming
-      PYTHONUNBUFFERED: '1',
-      NODE_OPTIONS: '--no-warnings',
-    },
   })
 
   let fullResponse = ''
@@ -233,7 +227,8 @@ export async function processCommandStreaming(
               else if (event.type === 'result' && event.result) {
                 fullResponse = event.result
                 // Only send result if we haven't already sent equivalent content
-                if (!lastSentText.includes(event.result.substring(0, 50))) {
+                const resultPrefix = event.result.substring(0, Math.min(50, event.result.length))
+                if (!lastSentText.includes(resultPrefix)) {
                   textContent = event.result
                 }
               }

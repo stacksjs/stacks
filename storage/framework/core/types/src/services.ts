@@ -145,6 +145,26 @@ export interface ServicesOptions {
     privateKey?: string
   }
 
+  // AI Services
+  openai?: {
+    apiKey?: string
+    model?: string
+    embeddingModel?: string
+    baseUrl?: string
+  }
+
+  anthropic?: {
+    apiKey?: string
+    model?: string
+    maxTokens?: number
+  }
+
+  ollama?: {
+    host?: string
+    model?: string
+    embeddingModel?: string
+  }
+
   stripe?: {
     secretKey?: string
     publicKey?: string
