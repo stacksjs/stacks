@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { applyChanges, buddyProcessStreaming, buddyState, openRepository } from '@stacksjs/ai'
+import { applyChanges, buddyProcessStreaming, buddyState, buddyStreamSimple, openRepository } from '@stacksjs/ai'
 
 /**
  * Process a command with streaming output (Server-Sent Events)
@@ -12,6 +12,7 @@ import { applyChanges, buddyProcessStreaming, buddyState, openRepository } from 
  * - command: The user's command/instruction (required)
  * - repo/repository: Repository path or GitHub URL (required if no repo is currently open)
  * - driver: (optional) AI driver to use (only claude-cli-local supports streaming)
+ * - mode: (optional) 'simple' for Q&A with true token-by-token streaming, 'agentic' for tool use (default)
  */
 export default new Action({
   name: 'BuddyProcessStreamAction',
@@ -24,6 +25,7 @@ export default new Action({
       const repo = request.get('repo') || request.get('repository')
       const driver = request.get('driver')
       const history = request.get('history') as Array<{role: string; content: string}> | undefined
+      const mode = request.get('mode') as string | undefined // 'simple' or 'agentic'
 
       if (!command) {
         return new Response(JSON.stringify({ error: 'Command is required' }), {
@@ -32,34 +34,40 @@ export default new Action({
         })
       }
 
-      // Check if we need to open a repo
+      // Check if we need to open a repo (only required for agentic mode)
       const currentState = buddyState.getState()
-      if (!currentState.repo) {
-        if (!repo) {
-          return new Response(JSON.stringify({
-            error: 'No repository is currently open. Please provide a repo path or URL.',
-          }), {
-            status: 422,
-            headers: { 'Content-Type': 'application/json' },
-          })
+      if (mode !== 'simple') {
+        if (!currentState.repo) {
+          if (!repo) {
+            return new Response(JSON.stringify({
+              error: 'No repository is currently open. Please provide a repo path or URL.',
+            }), {
+              status: 422,
+              headers: { 'Content-Type': 'application/json' },
+            })
+          }
+          await openRepository(repo)
         }
-        await openRepository(repo)
-      }
-      else if (repo && repo !== currentState.repo.path) {
-        await openRepository(repo)
+        else if (repo && repo !== currentState.repo.path) {
+          await openRepository(repo)
+        }
       }
 
-      // Start streaming
-      const { stream, fullResponse } = await buddyProcessStreaming(command, driver || undefined, history)
+      // Start streaming - use simple mode for Q&A (true token-by-token streaming)
+      // or agentic mode for tool use (CLI-based streaming)
+      const { stream, fullResponse } = mode === 'simple'
+        ? await buddyStreamSimple(command, history)
+        : await buddyProcessStreaming(command, driver || undefined, history)
 
       // Create SSE response
       const encoder = new TextEncoder()
       const decoder = new TextDecoder()
 
+      const isSimpleMode = mode === 'simple'
       const sseStream = new ReadableStream({
         async start(controller) {
           // Send initial event
-          controller.enqueue(encoder.encode(`event: start\ndata: ${JSON.stringify({ status: 'processing' })}\n\n`))
+          controller.enqueue(encoder.encode(`event: start\ndata: ${JSON.stringify({ status: 'processing', mode: isSimpleMode ? 'simple' : 'agentic' })}\n\n`))
 
           const reader = stream.getReader()
 
@@ -72,9 +80,14 @@ export default new Action({
               result = await reader.read()
             }
 
-            // Wait for full response and apply changes
+            // Wait for full response
             const response = await fullResponse
-            const modifiedFiles = await applyChanges(response)
+
+            // Only apply changes for agentic mode (simple mode has no file changes)
+            let modifiedFiles: string[] = []
+            if (!isSimpleMode) {
+              modifiedFiles = await applyChanges(response)
+            }
 
             // Send completion event with metadata
             controller.enqueue(encoder.encode(`event: done\ndata: ${JSON.stringify({
