@@ -495,3 +495,122 @@ export async function buddyProcessStreaming(
 
   return result
 }
+
+/**
+ * Stream a simple Q&A response using the Anthropic API directly.
+ * This provides true token-by-token streaming like ChatGPT/Claude web.
+ * Use this for questions/explanations that don't require agentic tool use.
+ */
+export async function buddyStreamSimple(
+  command: string,
+  history?: Array<{ role: string; content: string }>,
+): Promise<StreamingResult> {
+  const currentState = buddyState.getState()
+
+  if (!apiKeys.anthropic) {
+    throw new Error('Anthropic API key not set. Configure your API key in settings.')
+  }
+
+  // Build conversation messages
+  const messages: AIMessage[] = []
+  if (history && history.length > 0) {
+    for (const msg of history) {
+      messages.push({
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+      })
+    }
+  }
+  messages.push({ role: 'user', content: command })
+
+  // Build system prompt with repo context if available
+  let systemPrompt = 'You are a helpful AI assistant. Provide clear, concise answers.'
+  if (currentState.repo) {
+    const context = await getRepoContext(currentState.repo.path)
+    systemPrompt = buildSystemPrompt(context)
+  }
+
+  const encoder = new TextEncoder()
+  let fullResponse = ''
+  let resolveFullResponse: (value: string) => void
+  const fullResponsePromise = new Promise<string>((resolve) => {
+    resolveFullResponse = resolve
+  })
+
+  // Create streaming response using Anthropic API
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKeys.anthropic!,
+            'anthropic-version': '2023-06-01',
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 4096,
+            system: systemPrompt,
+            stream: true,
+            messages,
+          }),
+        })
+
+        if (!response.ok) {
+          const error = await response.text()
+          throw new Error(`Claude API error: ${error}`)
+        }
+
+        const reader = response.body?.getReader()
+        if (!reader) throw new Error('No response body')
+
+        const decoder = new TextDecoder()
+        let buffer = ''
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || ''
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6)
+              if (data === '[DONE]') continue
+
+              try {
+                const event = JSON.parse(data)
+                if (event.type === 'content_block_delta' && event.delta?.text) {
+                  const text = event.delta.text
+                  fullResponse += text
+                  controller.enqueue(encoder.encode(text))
+                }
+              }
+              catch {
+                // Skip invalid JSON
+              }
+            }
+          }
+        }
+
+        // Update history and resolve the full response
+        buddyState.addToHistory({ role: 'user', content: command })
+        buddyState.addToHistory({ role: 'assistant', content: fullResponse })
+        resolveFullResponse(fullResponse)
+        controller.close()
+      }
+      catch (error) {
+        resolveFullResponse(fullResponse) // Resolve with what we have
+        controller.error(error)
+      }
+    },
+  })
+
+  return {
+    stream,
+    fullResponse: fullResponsePromise,
+  }
+}
