@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { applyChanges, buddyProcessStreaming, buddyState, buddyStreamSimple, openRepository } from '@stacksjs/ai'
+import { apiKeys, applyChanges, buddyProcessStreaming, buddyState, buddyStreamSimple, openRepository } from '@stacksjs/ai'
 
 /**
  * Process a command with streaming output (Server-Sent Events)
@@ -55,7 +55,9 @@ export default new Action({
 
       // Start streaming - use simple mode for Q&A (true token-by-token streaming)
       // or agentic mode for tool use (CLI-based streaming)
-      const { stream, fullResponse } = mode === 'simple'
+      // Fall back to agentic mode if API key is not set for simple mode
+      const useSimpleMode = mode === 'simple' && apiKeys.anthropic
+      const { stream, fullResponse } = useSimpleMode
         ? await buddyStreamSimple(command, history)
         : await buddyProcessStreaming(command, driver || undefined, history)
 
@@ -63,7 +65,7 @@ export default new Action({
       const encoder = new TextEncoder()
       const decoder = new TextDecoder()
 
-      const isSimpleMode = mode === 'simple'
+      const isSimpleMode = useSimpleMode
       const sseStream = new ReadableStream({
         async start(controller) {
           // Send initial event

@@ -523,12 +523,11 @@ export async function buddyStreamSimple(
   }
   messages.push({ role: 'user', content: command })
 
-  // Build system prompt with repo context if available
-  let systemPrompt = 'You are a helpful AI assistant. Provide clear, concise answers.'
-  if (currentState.repo) {
-    const context = await getRepoContext(currentState.repo.path)
-    systemPrompt = buildSystemPrompt(context)
-  }
+  // For simple Q&A mode, use a generic helpful assistant prompt
+  // Don't include repo context - this keeps answers general and not code-focused
+  const systemPrompt = `You are a helpful AI assistant. Answer questions naturally and conversationally.
+You can discuss any topic - technology, science, philosophy, everyday questions, or anything else the user asks about.
+Be concise but thorough. If the user asks about coding or their project specifically, help with that too.`
 
   const encoder = new TextEncoder()
   let fullResponse = ''
