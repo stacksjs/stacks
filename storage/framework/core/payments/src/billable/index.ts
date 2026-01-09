@@ -1,3 +1,4 @@
+// Core Billable Modules
 export * from './charge'
 export * from './checkout'
 export * from './customer'
@@ -5,6 +6,8 @@ export * from './intent'
 export * from './invoice'
 export * from './payment-method'
 export * from './price'
+export * from './product'
 export * from './setup-products'
 export * from './subscription'
 export * from './transaction'
+export * from './webhook'
