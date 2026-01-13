@@ -14,26 +14,26 @@ const filters = ['All', 'Creates', 'Updates', 'Deletes', 'Schema', 'Exports']
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Activity Log</h1>
-        <p>Track all database changes</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Activity Log</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Track all database changes</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-secondary">Export Log</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Export Log</button>
       </div>
     </div>
 
-    <div class="page-content">
+    <div class="flex flex-col gap-6">
       <div class="flex gap-2 mb-4">
         @foreach (filters as filter)
           <button class="btn {{ filter === 'All' ? 'btn-primary' : 'btn-ghost' }} btn-sm">{{ filter }}</button>
         @endforeach
       </div>
 
-      <div class="card">
-        <div class="table-container">
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table>
             <thead>
               <tr>
@@ -50,7 +50,7 @@ const filters = ['All', 'Creates', 'Updates', 'Deletes', 'Schema', 'Exports']
                   <td class="font-medium">{{ activity.action }}</td>
                   <td><code class="code-inline">{{ activity.table }}</code></td>
                   <td>{{ activity.user }}</td>
-                  <td class="text-muted">{{ activity.time }}</td>
+                  <td class="text-gray-500 dark:text-gray-400">{{ activity.time }}</td>
                   <td>
                     <span class="badge badge-{{ activity.type === 'create' ? 'success' : activity.type === 'delete' ? 'error' : activity.type === 'update' ? 'info' : 'neutral' }}">
                       {{ activity.type }}

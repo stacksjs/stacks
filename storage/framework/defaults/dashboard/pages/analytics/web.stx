@@ -30,25 +30,25 @@ const devices = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Web Analytics</h1>
-        <p>Website traffic and engagement</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Web Analytics</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Website traffic and engagement</p>
       </div>
-      <div class="page-header-actions">
+      <div class="flex items-center gap-3">
         <select class="input" style="width: 150px;">
           <option>Last 7 days</option>
           <option>Last 30 days</option>
           <option>Last 90 days</option>
           <option>This year</option>
         </select>
-        <button class="btn btn-primary">Export</button>
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Export</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="grid grid-4">
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (stats as stat)
           <div class="stat-card">
             <div class="stat-card-value">{{ stat.value }}</div>
@@ -60,12 +60,12 @@ const devices = [
         @endforeach
       </div>
 
-      <div class="grid grid-2">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Top Pages</span>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Top Pages</span>
           </div>
-          <div class="table-container">
+          <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
             <table>
               <thead>
                 <tr>
@@ -92,15 +92,15 @@ const devices = [
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Traffic Sources</span>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Traffic Sources</span>
           </div>
-          <div class="list">
+          <div class="divide-y divide-gray-100 dark:divide-gray-700">
             @foreach (sources as source)
-              <div class="list-item">
-                <div class="list-item-content">
-                  <div class="list-item-title">{{ source.source }}</div>
+              <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-900 dark:text-white">{{ source.source }}</div>
                   <div class="progress-bar">
                     <div class="progress-fill" style="width: {{ source.percentage }};"></div>
                   </div>
@@ -115,16 +115,16 @@ const devices = [
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Device Breakdown</span>
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-semibold text-gray-900 dark:text-white">Device Breakdown</span>
         </div>
         <div class="p-4">
           <div class="flex gap-8 justify-center">
             @foreach (devices as device)
               <div class="text-center">
                 <div class="text-3xl font-bold">{{ device.percentage }}%</div>
-                <div class="text-muted">{{ device.device }}</div>
+                <div class="text-gray-500 dark:text-gray-400">{{ device.device }}</div>
               </div>
             @endforeach
           </div>

@@ -18,20 +18,20 @@ const denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Gift Cards</h1>
-        <p>Manage gift card inventory</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Gift Cards</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Manage gift card inventory</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-secondary">Bulk Create</button>
-        <button class="btn btn-primary">Create Gift Card</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Bulk Create</button>
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Create Gift Card</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="grid grid-4">
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (stats as stat)
           <div class="stat-card">
             <div class="stat-card-value">{{ stat.value }}</div>
@@ -40,10 +40,10 @@ const denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
         @endforeach
       </div>
 
-      <div class="grid grid-2">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Quick Create</span>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Quick Create</span>
           </div>
           <div class="p-4">
             <div class="mb-4">
@@ -62,9 +62,9 @@ const denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Check Balance</span>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Check Balance</span>
           </div>
           <div class="p-4">
             <div class="mb-4">
@@ -76,11 +76,11 @@ const denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Recent Gift Cards</span>
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-semibold text-gray-900 dark:text-white">Recent Gift Cards</span>
         </div>
-        <div class="table-container">
+        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table>
             <thead>
               <tr>
@@ -98,16 +98,16 @@ const denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
                 <tr>
                   <td><code class="code-inline">{{ card.code }}</code></td>
                   <td class="font-semibold">{{ card.balance }}</td>
-                  <td class="text-muted">{{ card.initial }}</td>
+                  <td class="text-gray-500 dark:text-gray-400">{{ card.initial }}</td>
                   <td>{{ card.recipient || '—' }}</td>
                   <td>
                     <span class="badge badge-{{ card.status === 'active' ? 'success' : card.status === 'pending' ? 'warning' : 'neutral' }}">
                       {{ card.status }}
                     </span>
                   </td>
-                  <td class="text-muted">{{ card.created }}</td>
+                  <td class="text-gray-500 dark:text-gray-400">{{ card.created }}</td>
                   <td>
-                    <button class="btn btn-ghost btn-sm">View</button>
+                    <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View</button>
                   </td>
                 </tr>
               @endforeach

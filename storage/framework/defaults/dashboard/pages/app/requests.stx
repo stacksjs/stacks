@@ -16,16 +16,16 @@ const stats = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Requests</h1>
-        <p>Monitor API requests and responses</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Requests</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Monitor API requests and responses</p>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="grid grid-4">
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (stats as stat)
           <div class="stat-card">
             <div class="stat-card-value">{{ stat.value }}</div>
@@ -34,12 +34,12 @@ const stats = [
         @endforeach
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Recent Requests</span>
-          <button class="btn btn-ghost btn-sm">Live</button>
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-semibold text-gray-900 dark:text-white">Recent Requests</span>
+          <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Live</button>
         </div>
-        <div class="table-container">
+        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table>
             <thead>
               <tr>
@@ -63,7 +63,7 @@ const stats = [
                     <span class="badge badge-{{ req.status < 400 ? 'success' : 'error' }}">{{ req.status }}</span>
                   </td>
                   <td>{{ req.time }}</td>
-                  <td class="text-muted">{{ req.timestamp }}</td>
+                  <td class="text-gray-500 dark:text-gray-400">{{ req.timestamp }}</td>
                 </tr>
               @endforeach
             </tbody>

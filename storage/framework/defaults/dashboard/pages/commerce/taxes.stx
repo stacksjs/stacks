@@ -25,20 +25,20 @@ const recentTaxes = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Taxes</h1>
-        <p>Tax rates and compliance</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Taxes</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Tax rates and compliance</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-secondary">Tax Reports</button>
-        <button class="btn btn-primary">Add Tax Rate</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Tax Reports</button>
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Add Tax Rate</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="grid grid-4">
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (taxSummary as stat)
           <div class="stat-card">
             <div class="stat-card-value">{{ stat.value }}</div>
@@ -47,13 +47,13 @@ const recentTaxes = [
         @endforeach
       </div>
 
-      <div class="grid grid-2">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Tax Rates by Region</span>
-            <button class="btn btn-ghost btn-sm">Manage</button>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Tax Rates by Region</span>
+            <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Manage</button>
           </div>
-          <div class="table-container">
+          <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
             <table>
               <thead>
                 <tr>
@@ -68,9 +68,9 @@ const recentTaxes = [
                   <tr>
                     <td class="font-medium">{{ tax.region }}</td>
                     <td>{{ tax.rate }}</td>
-                    <td><span class="badge badge-neutral">{{ tax.type }}</span></td>
+                    <td><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ tax.type }}</span></td>
                     <td>
-                      <span class="badge badge-success">{{ tax.status }}</span>
+                      <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{{ tax.status }}</span>
                     </td>
                   </tr>
                 @endforeach
@@ -79,11 +79,11 @@ const recentTaxes = [
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Recent Tax Collections</span>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Recent Tax Collections</span>
           </div>
-          <div class="table-container">
+          <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
             <table>
               <thead>
                 <tr>
@@ -101,7 +101,7 @@ const recentTaxes = [
                     <td>{{ tax.subtotal }}</td>
                     <td>{{ tax.taxRate }}</td>
                     <td class="font-semibold">{{ tax.taxAmount }}</td>
-                    <td class="text-muted">{{ tax.region }}</td>
+                    <td class="text-gray-500 dark:text-gray-400">{{ tax.region }}</td>
                   </tr>
                 @endforeach
               </tbody>
@@ -110,9 +110,9 @@ const recentTaxes = [
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Tax Automation</span>
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-semibold text-gray-900 dark:text-white">Tax Automation</span>
         </div>
         <div class="p-4">
           <div class="flex items-center justify-between mb-4">

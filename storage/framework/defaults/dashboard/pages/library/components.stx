@@ -20,19 +20,19 @@ const categories = ['All', 'Forms', 'Layout', 'Overlay', 'Data', 'Display', 'Nav
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Components</h1>
-        <p>Browse and manage your UI component library</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Components</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Browse and manage your UI component library</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-secondary">Import</button>
-        <button class="btn btn-primary">New Component</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Import</button>
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">New Component</button>
       </div>
     </div>
 
-    <div class="page-content">
+    <div class="flex flex-col gap-6">
       <!-- Filter Tabs -->
       <div class="flex gap-2">
         @foreach (categories as category)
@@ -43,18 +43,18 @@ const categories = ['All', 'Forms', 'Layout', 'Overlay', 'Data', 'Display', 'Nav
       </div>
 
       <!-- Components Grid -->
-      <div class="grid grid-3">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @foreach (components as component)
-          <div class="card">
-            <div class="card-header">
-              <span class="card-title">{{ component.name }}</span>
-              <span class="badge badge-info">{{ component.category }}</span>
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+            <div class="flex items-center justify-between mb-4">
+              <span class="font-semibold text-gray-900 dark:text-white">{{ component.name }}</span>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">{{ component.category }}</span>
             </div>
-            <div class="card-body">
-              <p class="text-muted">{{ component.description }}</p>
+            <div class="text-gray-600 dark:text-gray-400">
+              <p class="text-gray-500 dark:text-gray-400">{{ component.description }}</p>
               <div class="mt-4 flex justify-between items-center">
                 <span class="text-sm text-muted">{{ component.instances }} instances</span>
-                <button class="btn btn-ghost btn-sm">View</button>
+                <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View</button>
               </div>
             </div>
           </div>

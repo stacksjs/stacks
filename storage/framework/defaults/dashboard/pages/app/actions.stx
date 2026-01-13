@@ -8,20 +8,20 @@ const actions = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Actions</h1>
-        <p>Application actions and automations</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Actions</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Application actions and automations</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-primary">New Action</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">New Action</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="card">
-        <div class="table-container">
+    <div class="flex flex-col gap-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table>
             <thead>
               <tr>
@@ -37,7 +37,7 @@ const actions = [
               @foreach (actions as action)
                 <tr>
                   <td class="font-medium">{{ action.name }}</td>
-                  <td><span class="badge badge-neutral">{{ action.type }}</span></td>
+                  <td><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ action.type }}</span></td>
                   <td>{{ action.runs.toLocaleString() }}</td>
                   <td>{{ action.avgTime }}</td>
                   <td>
@@ -45,7 +45,7 @@ const actions = [
                       {{ action.status }}
                     </span>
                   </td>
-                  <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+                  <td><button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Edit</button></td>
                 </tr>
               @endforeach
             </tbody>

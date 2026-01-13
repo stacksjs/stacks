@@ -12,22 +12,22 @@ const tags = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Tags</h1>
-        <p>Manage content tags</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Tags</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Manage content tags</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-primary">New Tag</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">New Tag</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="card">
+    <div class="flex flex-col gap-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
         <div class="flex gap-2" style="flex-wrap: wrap;">
           @foreach (tags as tag)
-            <span class="badge badge-info" style="padding: 8px 16px; font-size: 13px;">
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400" style="padding: 8px 16px; font-size: 13px;">
               #{{ tag.name }} ({{ tag.count }})
             </span>
           @endforeach

@@ -18,20 +18,20 @@ const platforms = ['All', 'Twitter', 'LinkedIn', 'Instagram', 'Facebook']
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Social Posts</h1>
-        <p>Manage social media content</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Social Posts</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Manage social media content</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-secondary">Schedule</button>
-        <button class="btn btn-primary">New Post</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Schedule</button>
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">New Post</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="grid grid-4">
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (stats as stat)
           <div class="stat-card">
             <div class="stat-card-value">{{ stat.value }}</div>
@@ -46,8 +46,8 @@ const platforms = ['All', 'Twitter', 'LinkedIn', 'Instagram', 'Facebook']
         @endforeach
       </div>
 
-      <div class="card">
-        <div class="table-container">
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table>
             <thead>
               <tr>
@@ -62,7 +62,7 @@ const platforms = ['All', 'Twitter', 'LinkedIn', 'Instagram', 'Facebook']
             <tbody>
               @foreach (posts as post)
                 <tr>
-                  <td><span class="badge badge-neutral">{{ post.platform }}</span></td>
+                  <td><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ post.platform }}</span></td>
                   <td class="truncate" style="max-width: 300px;">{{ post.content }}</td>
                   <td>
                     <span class="badge badge-{{ post.status === 'published' ? 'success' : post.status === 'scheduled' ? 'info' : 'neutral' }}">
@@ -70,11 +70,11 @@ const platforms = ['All', 'Twitter', 'LinkedIn', 'Instagram', 'Facebook']
                     </span>
                   </td>
                   <td>{{ post.engagement }}</td>
-                  <td class="text-muted">{{ post.scheduled }}</td>
+                  <td class="text-gray-500 dark:text-gray-400">{{ post.scheduled }}</td>
                   <td>
                     <div class="flex gap-2">
-                      <button class="btn btn-ghost btn-sm">Edit</button>
-                      <button class="btn btn-ghost btn-sm">View</button>
+                      <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Edit</button>
+                      <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View</button>
                     </div>
                   </td>
                 </tr>

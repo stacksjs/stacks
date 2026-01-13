@@ -25,20 +25,20 @@ const stats = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Buddy CLI</h1>
-        <p>Command line interface for Stacks</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Buddy CLI</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Command line interface for Stacks</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-secondary">View Docs</button>
-        <button class="btn btn-primary">Open Terminal</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">View Docs</button>
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Open Terminal</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="grid grid-4">
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (stats as stat)
           <div class="stat-card">
             <div class="stat-card-value">{{ stat.value }}</div>
@@ -47,12 +47,12 @@ const stats = [
         @endforeach
       </div>
 
-      <div class="grid grid-2">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Quick Commands</span>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Quick Commands</span>
           </div>
-          <div class="table-container">
+          <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
             <table>
               <thead>
                 <tr>
@@ -67,7 +67,7 @@ const stats = [
                 @foreach (commands as cmd)
                   <tr>
                     <td><code class="code-inline">{{ cmd.command }}</code></td>
-                    <td class="text-muted">{{ cmd.description }}</td>
+                    <td class="text-gray-500 dark:text-gray-400">{{ cmd.description }}</td>
                     <td>{{ cmd.lastRun }}</td>
                     <td>
                       <span class="badge badge-{{ cmd.status === 'success' ? 'success' : cmd.status === 'running' ? 'info' : 'error' }}">
@@ -84,10 +84,10 @@ const stats = [
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Recent Output</span>
-            <button class="btn btn-ghost btn-sm">Clear</button>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Recent Output</span>
+            <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Clear</button>
           </div>
           <div class="terminal">
             <pre>{{ recentOutput }}</pre>
@@ -95,14 +95,14 @@ const stats = [
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Run Custom Command</span>
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-semibold text-gray-900 dark:text-white">Run Custom Command</span>
         </div>
         <div class="p-4">
           <div class="flex gap-2">
             <input type="text" class="input flex-1 font-mono" placeholder="buddy ..." />
-            <button class="btn btn-primary">Execute</button>
+            <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Execute</button>
           </div>
         </div>
       </div>

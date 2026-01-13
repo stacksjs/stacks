@@ -31,23 +31,23 @@ const integrations = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Settings</h1>
-        <p>Application configuration</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Application configuration</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-secondary">Reset to Defaults</button>
-        <button class="btn btn-primary">Save Changes</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Reset to Defaults</button>
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Save Changes</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="grid grid-2">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">General</span>
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">General</span>
           </div>
           <div class="p-4">
             @foreach (generalSettings as setting)
@@ -65,9 +65,9 @@ const integrations = [
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Security</span>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Security</span>
           </div>
           <div class="p-4">
             @foreach (securitySettings as setting)
@@ -88,9 +88,9 @@ const integrations = [
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Notifications</span>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Notifications</span>
           </div>
           <div class="p-4">
             @foreach (notificationSettings as setting)
@@ -105,21 +105,21 @@ const integrations = [
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Integrations</span>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Integrations</span>
           </div>
-          <div class="list">
+          <div class="divide-y divide-gray-100 dark:divide-gray-700">
             @foreach (integrations as integration)
-              <div class="list-item">
-                <div class="list-item-content">
-                  <div class="list-item-title">{{ integration.name }}</div>
+              <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-900 dark:text-white">{{ integration.name }}</div>
                 </div>
                 <div class="flex items-center gap-3">
                   <span class="badge badge-{{ integration.status === 'connected' ? 'success' : 'neutral' }}">
                     {{ integration.status === 'connected' ? 'Connected' : 'Not Connected' }}
                   </span>
-                  <button class="btn btn-ghost btn-sm">
+                  <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                     {{ integration.status === 'connected' ? 'Configure' : 'Connect' }}
                   </button>
                 </div>
@@ -129,8 +129,8 @@ const integrations = [
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="flex items-center justify-between mb-4">
           <span class="card-title text-error">Danger Zone</span>
         </div>
         <div class="p-4">

@@ -8,38 +8,38 @@ const seoData = {
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>SEO Settings</h1>
-        <p>Configure search engine optimization</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">SEO Settings</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Configure search engine optimization</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-primary">Save Changes</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Save Changes</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Default Meta Tags</span>
+    <div class="flex flex-col gap-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-semibold text-gray-900 dark:text-white">Default Meta Tags</span>
         </div>
-        <div class="card-body">
-          <div class="form-group">
-            <label class="form-label">Site Title</label>
-            <input type="text" class="form-input" value="{{ seoData.title }}" />
+        <div class="text-gray-600 dark:text-gray-400">
+          <div class="mb-4">
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Site Title</label>
+            <input type="text" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="{{ seoData.title }}" />
           </div>
-          <div class="form-group">
-            <label class="form-label">Meta Description</label>
-            <textarea class="form-input">{{ seoData.description }}</textarea>
+          <div class="mb-4">
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Meta Description</label>
+            <textarea class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ seoData.description }}</textarea>
           </div>
-          <div class="form-group">
-            <label class="form-label">Keywords</label>
-            <input type="text" class="form-input" value="{{ seoData.keywords.join(', ') }}" />
+          <div class="mb-4">
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Keywords</label>
+            <input type="text" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="{{ seoData.keywords.join(', ') }}" />
           </div>
-          <div class="form-group">
-            <label class="form-label">OG Image URL</label>
-            <input type="text" class="form-input" value="{{ seoData.ogImage }}" />
+          <div class="mb-4">
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">OG Image URL</label>
+            <input type="text" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="{{ seoData.ogImage }}" />
           </div>
         </div>
       </div>

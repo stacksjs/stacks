@@ -9,17 +9,17 @@ const commands = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Commands</h1>
-        <p>CLI commands and artisan tasks</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Commands</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">CLI commands and artisan tasks</p>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="card">
-        <div class="table-container">
+    <div class="flex flex-col gap-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table>
             <thead>
               <tr>
@@ -34,7 +34,7 @@ const commands = [
               @foreach (commands as cmd)
                 <tr>
                   <td><code class="code-inline">{{ cmd.name }}</code></td>
-                  <td class="text-muted">{{ cmd.description }}</td>
+                  <td class="text-gray-500 dark:text-gray-400">{{ cmd.description }}</td>
                   <td>{{ cmd.lastRun }}</td>
                   <td>
                     <span class="badge badge-{{ cmd.status === 'success' ? 'success' : cmd.status === 'running' ? 'info' : 'error' }}">

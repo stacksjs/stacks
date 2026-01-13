@@ -13,16 +13,16 @@ const stats = {
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Realtime</h1>
-        <p>WebSocket connections and channels</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Realtime</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">WebSocket connections and channels</p>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="grid grid-3">
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div class="stat-card">
           <div class="stat-card-value">{{ stats.activeConnections }}</div>
           <div class="stat-card-label">Active Connections</div>
@@ -37,18 +37,18 @@ const stats = {
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Active Channels</span>
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-semibold text-gray-900 dark:text-white">Active Channels</span>
         </div>
-        <div class="list">
+        <div class="divide-y divide-gray-100 dark:divide-gray-700">
           @foreach (channels as channel)
-            <div class="list-item">
-              <div class="list-item-content">
-                <div class="list-item-title">{{ channel.name }}</div>
-                <div class="list-item-subtitle">{{ channel.messages }}</div>
+            <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-gray-900 dark:text-white">{{ channel.name }}</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">{{ channel.messages }}</div>
               </div>
-              <span class="badge badge-success">{{ channel.connections }} connected</span>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{{ channel.connections }} connected</span>
             </div>
           @endforeach
         </div>

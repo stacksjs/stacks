@@ -8,24 +8,24 @@ const jobs = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Jobs</h1>
-        <p>Background job management</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Jobs</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Background job management</p>
       </div>
     </div>
 
-    <div class="page-content">
+    <div class="flex flex-col gap-6">
       <div class="flex gap-2 mb-4">
         <button class="btn btn-primary btn-sm">All</button>
-        <button class="btn btn-ghost btn-sm">Pending</button>
-        <button class="btn btn-ghost btn-sm">Completed</button>
-        <button class="btn btn-ghost btn-sm">Failed</button>
+        <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Pending</button>
+        <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Completed</button>
+        <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Failed</button>
       </div>
 
-      <div class="card">
-        <div class="table-container">
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table>
             <thead>
               <tr>
@@ -41,7 +41,7 @@ const jobs = [
               @foreach (jobs as job)
                 <tr>
                   <td class="font-medium">{{ job.name }}</td>
-                  <td><span class="badge badge-neutral">{{ job.queue }}</span></td>
+                  <td><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ job.queue }}</span></td>
                   <td>{{ job.attempts }}</td>
                   <td>{{ job.duration }}</td>
                   <td>
@@ -53,7 +53,7 @@ const jobs = [
                     @if (job.status === 'failed')
                       <button class="btn btn-secondary btn-sm">Retry</button>
                     @else
-                      <button class="btn btn-ghost btn-sm">View</button>
+                      <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View</button>
                     @endif
                   </td>
                 </tr>

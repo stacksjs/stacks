@@ -29,24 +29,24 @@ const authors = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Blog Analytics</h1>
-        <p>Content performance metrics</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Blog Analytics</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Content performance metrics</p>
       </div>
-      <div class="page-header-actions">
+      <div class="flex items-center gap-3">
         <select class="input" style="width: 150px;">
           <option>Last 7 days</option>
           <option>Last 30 days</option>
           <option>Last 90 days</option>
         </select>
-        <button class="btn btn-primary">Export</button>
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Export</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="grid grid-4">
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (stats as stat)
           <div class="stat-card">
             <div class="stat-card-value">{{ stat.value }}</div>
@@ -56,11 +56,11 @@ const authors = [
         @endforeach
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Top Posts</span>
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-semibold text-gray-900 dark:text-white">Top Posts</span>
         </div>
-        <div class="table-container">
+        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table>
             <thead>
               <tr>
@@ -78,7 +78,7 @@ const authors = [
                   <td>{{ post.views }}</td>
                   <td>{{ post.comments }}</td>
                   <td>{{ post.shares }}</td>
-                  <td class="text-muted">{{ post.published }}</td>
+                  <td class="text-gray-500 dark:text-gray-400">{{ post.published }}</td>
                 </tr>
               @endforeach
             </tbody>
@@ -86,17 +86,17 @@ const authors = [
         </div>
       </div>
 
-      <div class="grid grid-2">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Categories</span>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Categories</span>
           </div>
-          <div class="list">
+          <div class="divide-y divide-gray-100 dark:divide-gray-700">
             @foreach (categories as cat)
-              <div class="list-item">
-                <div class="list-item-content">
-                  <div class="list-item-title">{{ cat.name }}</div>
-                  <div class="list-item-subtitle">{{ cat.posts }} posts</div>
+              <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-900 dark:text-white">{{ cat.name }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ cat.posts }} posts</div>
                 </div>
                 <span class="font-semibold">{{ cat.views }} views</span>
               </div>
@@ -104,16 +104,16 @@ const authors = [
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Top Authors</span>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Top Authors</span>
           </div>
-          <div class="list">
+          <div class="divide-y divide-gray-100 dark:divide-gray-700">
             @foreach (authors as author)
-              <div class="list-item">
-                <div class="list-item-content">
-                  <div class="list-item-title">{{ author.name }}</div>
-                  <div class="list-item-subtitle">{{ author.posts }} posts &middot; {{ author.avgViews }} avg views</div>
+              <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-900 dark:text-white">{{ author.name }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ author.posts }} posts &middot; {{ author.avgViews }} avg views</div>
                 </div>
                 <span class="font-semibold">{{ author.views }}</span>
               </div>

@@ -7,21 +7,21 @@ const authors = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Authors</h1>
-        <p>Manage content authors</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Authors</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Manage content authors</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-primary">Add Author</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Add Author</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="grid grid-3">
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @foreach (authors as author)
-          <div class="card">
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
               <div class="avatar avatar-lg">{{ author.avatar }}</div>
               <div>
@@ -30,8 +30,8 @@ const authors = [
               </div>
             </div>
             <div class="mt-4 flex justify-between items-center">
-              <span class="badge badge-neutral">{{ author.role }}</span>
-              <span class="text-muted">{{ author.posts }} posts</span>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ author.role }}</span>
+              <span class="text-gray-500 dark:text-gray-400">{{ author.posts }} posts</span>
             </div>
           </div>
         @endforeach

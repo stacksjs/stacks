@@ -25,20 +25,20 @@ const domains = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Mailboxes</h1>
-        <p>Email accounts and forwarding</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Mailboxes</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Email accounts and forwarding</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-secondary">Add Alias</button>
-        <button class="btn btn-primary">Create Mailbox</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Add Alias</button>
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Create Mailbox</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="grid grid-4">
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (stats as stat)
           <div class="stat-card">
             <div class="stat-card-value">{{ stat.value }}</div>
@@ -47,11 +47,11 @@ const domains = [
         @endforeach
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Email Domains</span>
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-semibold text-gray-900 dark:text-white">Email Domains</span>
         </div>
-        <div class="table-container">
+        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table>
             <thead>
               <tr>
@@ -68,11 +68,11 @@ const domains = [
                 <tr>
                   <td class="font-medium">{{ domain.domain }}</td>
                   <td>{{ domain.mailboxes }}</td>
-                  <td><span class="badge badge-success">{{ domain.status }}</span></td>
-                  <td><span class="badge badge-success">{{ domain.dkim }}</span></td>
-                  <td><span class="badge badge-success">{{ domain.spf }}</span></td>
+                  <td><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{{ domain.status }}</span></td>
+                  <td><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{{ domain.dkim }}</span></td>
+                  <td><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{{ domain.spf }}</span></td>
                   <td>
-                    <button class="btn btn-ghost btn-sm">Configure</button>
+                    <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Configure</button>
                   </td>
                 </tr>
               @endforeach
@@ -81,12 +81,12 @@ const domains = [
         </div>
       </div>
 
-      <div class="grid grid-2">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Mailboxes</span>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Mailboxes</span>
           </div>
-          <div class="table-container">
+          <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
             <table>
               <thead>
                 <tr>
@@ -100,9 +100,9 @@ const domains = [
                 @foreach (mailboxes as mailbox)
                   <tr>
                     <td class="font-medium">{{ mailbox.email }}</td>
-                    <td><span class="badge badge-neutral">{{ mailbox.type }}</span></td>
+                    <td><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ mailbox.type }}</span></td>
                     <td>{{ mailbox.storage }} / {{ mailbox.quota }}</td>
-                    <td><span class="badge badge-success">{{ mailbox.status }}</span></td>
+                    <td><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{{ mailbox.status }}</span></td>
                   </tr>
                 @endforeach
               </tbody>
@@ -110,18 +110,18 @@ const domains = [
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Aliases</span>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Aliases</span>
           </div>
-          <div class="list">
+          <div class="divide-y divide-gray-100 dark:divide-gray-700">
             @foreach (aliases as alias)
-              <div class="list-item">
-                <div class="list-item-content">
-                  <div class="list-item-title">{{ alias.alias }}</div>
-                  <div class="list-item-subtitle">→ {{ alias.forwards }}</div>
+              <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-900 dark:text-white">{{ alias.alias }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">→ {{ alias.forwards }}</div>
                 </div>
-                <button class="btn btn-ghost btn-sm">Edit</button>
+                <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Edit</button>
               </div>
             @endforeach
           </div>

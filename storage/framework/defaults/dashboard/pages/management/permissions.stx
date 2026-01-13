@@ -23,29 +23,29 @@ const recentChanges = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Permissions</h1>
-        <p>Roles and access control</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Permissions</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Roles and access control</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-primary">Create Role</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Create Role</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="grid grid-2">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Roles</span>
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Roles</span>
           </div>
-          <div class="list">
+          <div class="divide-y divide-gray-100 dark:divide-gray-700">
             @foreach (roles as role)
-              <div class="list-item">
-                <div class="list-item-content">
-                  <div class="list-item-title">{{ role.name }}</div>
-                  <div class="list-item-subtitle">{{ role.description }}</div>
+              <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-900 dark:text-white">{{ role.name }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ role.description }}</div>
                 </div>
                 <div class="text-right">
                   <div class="text-sm">{{ role.users }} users</div>
@@ -56,9 +56,9 @@ const recentChanges = [
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Permission Groups</span>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Permission Groups</span>
           </div>
           <div class="p-4">
             @foreach (permissions as group)
@@ -66,7 +66,7 @@ const recentChanges = [
                 <div class="font-medium mb-2">{{ group.group }}</div>
                 <div class="flex flex-wrap gap-2">
                   @foreach (group.items as item)
-                    <span class="badge badge-neutral">{{ item }}</span>
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ item }}</span>
                   @endforeach
                 </div>
               </div>
@@ -75,18 +75,18 @@ const recentChanges = [
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Recent Changes</span>
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-semibold text-gray-900 dark:text-white">Recent Changes</span>
         </div>
-        <div class="list">
+        <div class="divide-y divide-gray-100 dark:divide-gray-700">
           @foreach (recentChanges as change)
-            <div class="list-item">
-              <div class="list-item-content">
-                <div class="list-item-title">{{ change.action }}: {{ change.target }}</div>
-                <div class="list-item-subtitle">by {{ change.user }}</div>
+            <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-gray-900 dark:text-white">{{ change.action }}: {{ change.target }}</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">by {{ change.user }}</div>
               </div>
-              <span class="text-muted">{{ change.time }}</span>
+              <span class="text-gray-500 dark:text-gray-400">{{ change.time }}</span>
             </div>
           @endforeach
         </div>

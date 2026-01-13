@@ -15,19 +15,19 @@ const stats = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Teams</h1>
-        <p>Manage team organization</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Teams</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Manage team organization</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-primary">Create Team</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Create Team</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="grid grid-3">
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @foreach (stats as stat)
           <div class="stat-card">
             <div class="stat-card-value">{{ stat.value }}</div>
@@ -36,12 +36,12 @@ const stats = [
         @endforeach
       </div>
 
-      <div class="grid grid-3">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @foreach (teams as team)
-          <div class="card">
-            <div class="card-header">
-              <span class="card-title">{{ team.name }}</span>
-              <span class="badge badge-success">{{ team.status }}</span>
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+            <div class="flex items-center justify-between mb-4">
+              <span class="font-semibold text-gray-900 dark:text-white">{{ team.name }}</span>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{{ team.status }}</span>
             </div>
             <div class="mt-4">
               <div class="text-muted text-sm mb-2">Team Lead: {{ team.lead }}</div>
@@ -58,7 +58,7 @@ const stats = [
             </div>
             <div class="mt-4 pt-4 border-t flex gap-2">
               <button class="btn btn-secondary btn-sm flex-1">View</button>
-              <button class="btn btn-ghost btn-sm">Edit</button>
+              <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Edit</button>
             </div>
           </div>
         @endforeach

@@ -22,20 +22,20 @@ const recentQueries = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Data Dashboard</h1>
-        <p>Database overview and statistics</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Data Dashboard</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Database overview and statistics</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-secondary">Backup</button>
-        <button class="btn btn-primary">Query Builder</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Backup</button>
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Query Builder</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="grid grid-4">
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (stats as stat)
           <div class="stat-card">
             <div class="stat-card-value">{{ stat.value }}</div>
@@ -47,13 +47,13 @@ const recentQueries = [
         @endforeach
       </div>
 
-      <div class="grid grid-2">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Tables</span>
-            <button class="btn btn-ghost btn-sm">View All</button>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Tables</span>
+            <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View All</button>
           </div>
-          <div class="table-container">
+          <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
             <table>
               <thead>
                 <tr>
@@ -69,7 +69,7 @@ const recentQueries = [
                     <td><code class="code-inline">{{ table.name }}</code></td>
                     <td>{{ table.rows }}</td>
                     <td>{{ table.size }}</td>
-                    <td class="text-muted">{{ table.lastModified }}</td>
+                    <td class="text-gray-500 dark:text-gray-400">{{ table.lastModified }}</td>
                   </tr>
                 @endforeach
               </tbody>
@@ -77,16 +77,16 @@ const recentQueries = [
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Recent Queries</span>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Recent Queries</span>
           </div>
-          <div class="list">
+          <div class="divide-y divide-gray-100 dark:divide-gray-700">
             @foreach (recentQueries as q)
-              <div class="list-item">
-                <div class="list-item-content">
-                  <div class="list-item-title"><code class="code-inline truncate">{{ q.query }}</code></div>
-                  <div class="list-item-subtitle">{{ q.source }} &middot; {{ q.time }}</div>
+              <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-900 dark:text-white"><code class="code-inline truncate">{{ q.query }}</code></div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ q.source }} &middot; {{ q.time }}</div>
                 </div>
               </div>
             @endforeach

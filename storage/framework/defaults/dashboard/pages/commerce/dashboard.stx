@@ -22,20 +22,20 @@ const topProducts = [
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <div class="page-header-content">
-        <h1>Commerce Dashboard</h1>
-        <p>Sales overview and analytics</p>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div class="">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Commerce Dashboard</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Sales overview and analytics</p>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-secondary">Export Report</button>
-        <button class="btn btn-primary">New Order</button>
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Export Report</button>
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">New Order</button>
       </div>
     </div>
 
-    <div class="page-content">
-      <div class="grid grid-4">
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (stats as stat)
           <div class="stat-card">
             <div class="stat-card-value">{{ stat.value }}</div>
@@ -45,18 +45,18 @@ const topProducts = [
         @endforeach
       </div>
 
-      <div class="grid grid-2">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Recent Orders</span>
-            <button class="btn btn-ghost btn-sm">View All</button>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Recent Orders</span>
+            <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View All</button>
           </div>
-          <div class="list">
+          <div class="divide-y divide-gray-100 dark:divide-gray-700">
             @foreach (recentOrders as order)
-              <div class="list-item">
-                <div class="list-item-content">
-                  <div class="list-item-title">{{ order.id }}</div>
-                  <div class="list-item-subtitle">{{ order.customer }} &middot; {{ order.time }}</div>
+              <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-900 dark:text-white">{{ order.id }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ order.customer }} &middot; {{ order.time }}</div>
                 </div>
                 <div class="flex items-center gap-3">
                   <span class="font-semibold">{{ order.total }}</span>
@@ -69,17 +69,17 @@ const topProducts = [
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Top Products</span>
-            <button class="btn btn-ghost btn-sm">View All</button>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Top Products</span>
+            <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View All</button>
           </div>
-          <div class="list">
+          <div class="divide-y divide-gray-100 dark:divide-gray-700">
             @foreach (topProducts as product)
-              <div class="list-item">
-                <div class="list-item-content">
-                  <div class="list-item-title">{{ product.name }}</div>
-                  <div class="list-item-subtitle">{{ product.sales }} sales</div>
+              <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-900 dark:text-white">{{ product.name }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ product.sales }} sales</div>
                 </div>
                 <span class="font-semibold text-success">{{ product.revenue }}</span>
               </div>
