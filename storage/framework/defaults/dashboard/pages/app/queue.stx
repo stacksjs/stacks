@@ -1,0 +1,74 @@
+<script server>
+const queues = [
+  { name: 'default', pending: 12, processing: 3, failed: 0, processed: '24.5K' },
+  { name: 'emails', pending: 45, processing: 5, failed: 2, processed: '12.8K' },
+  { name: 'notifications', pending: 8, processing: 2, failed: 0, processed: '8.2K' },
+]
+
+const recentJobs = [
+  { id: 'job-1234', queue: 'emails', name: 'SendWelcomeEmail', status: 'completed', time: '2s ago' },
+  { id: 'job-1233', queue: 'default', name: 'ProcessOrder', status: 'processing', time: '5s ago' },
+  { id: 'job-1232', queue: 'emails', name: 'SendNotification', status: 'failed', time: '1m ago' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Queue</h1>
+        <p>Monitor job queues</p>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-3">
+        @foreach (queues as queue)
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">{{ queue.name }}</span>
+              <span class="badge badge-success">Active</span>
+            </div>
+            <div class="grid grid-2 gap-4 mt-4">
+              <div>
+                <div class="text-2xl font-semibold">{{ queue.pending }}</div>
+                <div class="text-sm text-muted">Pending</div>
+              </div>
+              <div>
+                <div class="text-2xl font-semibold">{{ queue.processing }}</div>
+                <div class="text-sm text-muted">Processing</div>
+              </div>
+              <div>
+                <div class="text-2xl font-semibold text-error">{{ queue.failed }}</div>
+                <div class="text-sm text-muted">Failed</div>
+              </div>
+              <div>
+                <div class="text-2xl font-semibold">{{ queue.processed }}</div>
+                <div class="text-sm text-muted">Processed</div>
+              </div>
+            </div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recent Jobs</span>
+        </div>
+        <div class="list">
+          @foreach (recentJobs as job)
+            <div class="list-item">
+              <div class="list-item-content">
+                <div class="list-item-title">{{ job.name }}</div>
+                <div class="list-item-subtitle">{{ job.queue }} &middot; {{ job.id }}</div>
+              </div>
+              <span class="badge badge-{{ job.status === 'completed' ? 'success' : job.status === 'processing' ? 'info' : 'error' }}">
+                {{ job.status }}
+              </span>
+            </div>
+          @endforeach
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

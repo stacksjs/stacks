@@ -1,0 +1,124 @@
+<script server>
+const environments = [
+  { name: 'production', url: 'https://stacks.dev', status: 'healthy', lastDeploy: '2d ago', version: '1.2.3' },
+  { name: 'staging', url: 'https://staging.stacks.dev', status: 'healthy', lastDeploy: '1h ago', version: '1.2.4-beta' },
+  { name: 'development', url: 'http://localhost:3000', status: 'running', lastDeploy: 'Local', version: '1.2.4-dev' },
+]
+
+const variables = [
+  { key: 'APP_NAME', value: 'Stacks', environments: ['production', 'staging', 'development'] },
+  { key: 'APP_URL', value: 'https://stacks.dev', environments: ['production'] },
+  { key: 'DATABASE_URL', value: '••••••••', environments: ['production', 'staging'], sensitive: true },
+  { key: 'REDIS_URL', value: '••••••••', environments: ['production', 'staging'], sensitive: true },
+  { key: 'DEBUG', value: 'false', environments: ['production'] },
+  { key: 'DEBUG', value: 'true', environments: ['staging', 'development'] },
+]
+
+const stats = [
+  { label: 'Environments', value: '3' },
+  { label: 'Variables', value: '24' },
+  { label: 'Secrets', value: '8' },
+  { label: 'Last Sync', value: '5m ago' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Environment</h1>
+        <p>Environment configuration and variables</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Sync</button>
+        <button class="btn btn-primary">Add Variable</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="grid grid-3">
+        @foreach (environments as env)
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title capitalize">{{ env.name }}</span>
+              <span class="badge badge-{{ env.status === 'healthy' ? 'success' : 'info' }}">{{ env.status }}</span>
+            </div>
+            <div class="mt-4">
+              <div class="flex justify-between mb-2">
+                <span class="text-muted">URL</span>
+                <a href="{{ env.url }}" class="text-primary text-sm">{{ env.url }}</a>
+              </div>
+              <div class="flex justify-between mb-2">
+                <span class="text-muted">Version</span>
+                <code class="code-inline text-sm">{{ env.version }}</code>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-muted">Last Deploy</span>
+                <span>{{ env.lastDeploy }}</span>
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t">
+              <button class="btn btn-secondary btn-sm w-full">Configure</button>
+            </div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Environment Variables</span>
+          <input type="text" class="input w-64" placeholder="Search variables..." />
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Value</th>
+                <th>Environments</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (variables as variable)
+                <tr>
+                  <td><code class="code-inline">{{ variable.key }}</code></td>
+                  <td>
+                    @if (variable.sensitive)
+                      <span class="text-muted">••••••••</span>
+                      <button class="btn btn-ghost btn-sm ml-2">Reveal</button>
+                    @else
+                      <code class="code-inline">{{ variable.value }}</code>
+                    @endif
+                  </td>
+                  <td>
+                    <div class="flex gap-1">
+                      @foreach (variable.environments as env)
+                        <span class="badge badge-neutral text-xs">{{ env }}</span>
+                      @endforeach
+                    </div>
+                  </td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                      <button class="btn btn-ghost btn-sm text-error">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

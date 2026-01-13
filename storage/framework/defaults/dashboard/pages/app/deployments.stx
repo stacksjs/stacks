@@ -1,0 +1,59 @@
+<script server>
+const deployments = [
+  { id: 'dep-124', status: 'success', branch: 'main', commit: 'abc1234', author: 'Chris', time: '2 min ago', duration: '45s' },
+  { id: 'dep-123', status: 'success', branch: 'main', commit: 'def5678', author: 'Chris', time: '1 hour ago', duration: '52s' },
+  { id: 'dep-122', status: 'failed', branch: 'feature/auth', commit: 'ghi9012', author: 'Sarah', time: '3 hours ago', duration: '23s' },
+  { id: 'dep-121', status: 'success', branch: 'main', commit: 'jkl3456', author: 'Mike', time: '1 day ago', duration: '48s' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Deployments</h1>
+        <p>Monitor and manage deployments</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary">Deploy Now</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Deployment</th>
+                <th>Status</th>
+                <th>Branch</th>
+                <th>Commit</th>
+                <th>Author</th>
+                <th>Duration</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (deployments as deploy)
+                <tr>
+                  <td class="font-medium">{{ deploy.id }}</td>
+                  <td>
+                    <span class="badge badge-{{ deploy.status === 'success' ? 'success' : 'error' }}">
+                      {{ deploy.status }}
+                    </span>
+                  </td>
+                  <td><code class="code-inline">{{ deploy.branch }}</code></td>
+                  <td><code class="code-inline">{{ deploy.commit }}</code></td>
+                  <td>{{ deploy.author }}</td>
+                  <td>{{ deploy.duration }}</td>
+                  <td class="text-muted">{{ deploy.time }}</td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

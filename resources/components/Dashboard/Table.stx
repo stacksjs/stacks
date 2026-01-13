@@ -1,0 +1,84 @@
+<!--
+  Custom Dashboard Table Component
+
+  A reusable table component for dashboard data display.
+
+  Usage:
+  <Table
+    :columns="[{ key: 'name', label: 'Name' }, { key: 'status', label: 'Status' }]"
+    :data="[{ name: 'Item 1', status: 'active' }]"
+  />
+-->
+
+<script server>
+const props = defineProps({
+  columns: { type: Array, required: true },
+  data: { type: Array, required: true },
+  striped: { type: Boolean, default: false },
+  hoverable: { type: Boolean, default: true },
+})
+</script>
+
+<template>
+  <div class="dashboard-table-container">
+    <table class="dashboard-table {{ props.striped ? 'striped' : '' }} {{ props.hoverable ? 'hoverable' : '' }}">
+      <thead>
+        <tr>
+          @foreach (props.columns as column)
+            <th class="{{ column.align ? 'text-' + column.align : '' }}">
+              {{ column.label }}
+            </th>
+          @endforeach
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (props.data as row)
+          <tr>
+            @foreach (props.columns as column)
+              <td class="{{ column.align ? 'text-' + column.align : '' }}">
+                @if (column.render)
+                  {{ column.render(row[column.key], row) }}
+                @else
+                  {{ row[column.key] }}
+                @endif
+              </td>
+            @endforeach
+          </tr>
+        @endforeach
+      </tbody>
+    </table>
+  </div>
+</template>
+
+<style>
+.dashboard-table-container {
+  overflow-x: auto;
+}
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.dashboard-table th,
+.dashboard-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+.dashboard-table th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  background: var(--color-bg-subtle);
+}
+.dashboard-table.striped tbody tr:nth-child(even) {
+  background: var(--color-bg-subtle);
+}
+.dashboard-table.hoverable tbody tr:hover {
+  background: var(--color-bg-hover);
+}
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+</style>

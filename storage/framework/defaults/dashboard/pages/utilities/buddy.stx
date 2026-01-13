@@ -1,0 +1,129 @@
+<script server>
+const commands = [
+  { command: 'buddy build', description: 'Build the application', lastRun: '5m ago', status: 'success' },
+  { command: 'buddy dev', description: 'Start development server', lastRun: 'Running', status: 'running' },
+  { command: 'buddy test', description: 'Run test suite', lastRun: '1h ago', status: 'success' },
+  { command: 'buddy lint', description: 'Run linter', lastRun: '30m ago', status: 'success' },
+  { command: 'buddy deploy', description: 'Deploy to production', lastRun: '2d ago', status: 'success' },
+  { command: 'buddy migrate', description: 'Run database migrations', lastRun: '1d ago', status: 'success' },
+]
+
+const recentOutput = `[14:32:45] Starting development server...
+[14:32:46] Compiling TypeScript...
+[14:32:48] ✓ Compiled successfully in 2.3s
+[14:32:48] Server running at http://localhost:3000
+[14:32:48] Hot reload enabled
+[14:32:50] ✓ Connected to database
+[14:32:50] Ready for requests`
+
+const stats = [
+  { label: 'Commands Run', value: '1,234' },
+  { label: 'Avg Build Time', value: '2.3s' },
+  { label: 'Test Coverage', value: '89%' },
+  { label: 'Last Deploy', value: '2d ago' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Buddy CLI</h1>
+        <p>Command line interface for Stacks</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">View Docs</button>
+        <button class="btn btn-primary">Open Terminal</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Quick Commands</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Command</th>
+                  <th>Description</th>
+                  <th>Last Run</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach (commands as cmd)
+                  <tr>
+                    <td><code class="code-inline">{{ cmd.command }}</code></td>
+                    <td class="text-muted">{{ cmd.description }}</td>
+                    <td>{{ cmd.lastRun }}</td>
+                    <td>
+                      <span class="badge badge-{{ cmd.status === 'success' ? 'success' : cmd.status === 'running' ? 'info' : 'error' }}">
+                        {{ cmd.status }}
+                      </span>
+                    </td>
+                    <td>
+                      <button class="btn btn-secondary btn-sm">Run</button>
+                    </td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent Output</span>
+            <button class="btn btn-ghost btn-sm">Clear</button>
+          </div>
+          <div class="terminal">
+            <pre>{{ recentOutput }}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Run Custom Command</span>
+        </div>
+        <div class="p-4">
+          <div class="flex gap-2">
+            <input type="text" class="input flex-1 font-mono" placeholder="buddy ..." />
+            <button class="btn btn-primary">Execute</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+.terminal {
+  background: #1a1a2e;
+  color: #4ade80;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-family: monospace;
+  font-size: 0.85rem;
+  overflow-x: auto;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.terminal pre {
+  margin: 0;
+  white-space: pre-wrap;
+}
+</style>

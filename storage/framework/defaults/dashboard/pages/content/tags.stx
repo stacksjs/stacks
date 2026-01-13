@@ -1,0 +1,38 @@
+<script server>
+const tags = [
+  { name: 'javascript', count: 45 },
+  { name: 'typescript', count: 38 },
+  { name: 'vue', count: 24 },
+  { name: 'react', count: 18 },
+  { name: 'nodejs', count: 32 },
+  { name: 'database', count: 15 },
+  { name: 'performance', count: 12 },
+  { name: 'security', count: 8 },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Tags</h1>
+        <p>Manage content tags</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary">New Tag</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="card">
+        <div class="flex gap-2" style="flex-wrap: wrap;">
+          @foreach (tags as tag)
+            <span class="badge badge-info" style="padding: 8px 16px; font-size: 13px;">
+              #{{ tag.name }} ({{ tag.count }})
+            </span>
+          @endforeach
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

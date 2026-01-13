@@ -1,0 +1,132 @@
+<script server>
+const mailboxes = [
+  { email: 'hello@stacks.dev', type: 'Primary', storage: '2.3 GB', quota: '10 GB', status: 'active' },
+  { email: 'support@stacks.dev', type: 'Shared', storage: '1.8 GB', quota: '10 GB', status: 'active' },
+  { email: 'sales@stacks.dev', type: 'Shared', storage: '0.5 GB', quota: '10 GB', status: 'active' },
+  { email: 'noreply@stacks.dev', type: 'Send-only', storage: '0.1 GB', quota: '1 GB', status: 'active' },
+]
+
+const aliases = [
+  { alias: 'info@stacks.dev', forwards: 'hello@stacks.dev' },
+  { alias: 'contact@stacks.dev', forwards: 'hello@stacks.dev' },
+  { alias: 'help@stacks.dev', forwards: 'support@stacks.dev' },
+]
+
+const stats = [
+  { label: 'Mailboxes', value: '4' },
+  { label: 'Aliases', value: '3' },
+  { label: 'Sent Today', value: '234' },
+  { label: 'Received Today', value: '567' },
+]
+
+const domains = [
+  { domain: 'stacks.dev', mailboxes: 4, status: 'verified', dkim: 'valid', spf: 'valid' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Mailboxes</h1>
+        <p>Email accounts and forwarding</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Add Alias</button>
+        <button class="btn btn-primary">Create Mailbox</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Email Domains</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Domain</th>
+                <th>Mailboxes</th>
+                <th>Status</th>
+                <th>DKIM</th>
+                <th>SPF</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (domains as domain)
+                <tr>
+                  <td class="font-medium">{{ domain.domain }}</td>
+                  <td>{{ domain.mailboxes }}</td>
+                  <td><span class="badge badge-success">{{ domain.status }}</span></td>
+                  <td><span class="badge badge-success">{{ domain.dkim }}</span></td>
+                  <td><span class="badge badge-success">{{ domain.spf }}</span></td>
+                  <td>
+                    <button class="btn btn-ghost btn-sm">Configure</button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Mailboxes</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Type</th>
+                  <th>Storage</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach (mailboxes as mailbox)
+                  <tr>
+                    <td class="font-medium">{{ mailbox.email }}</td>
+                    <td><span class="badge badge-neutral">{{ mailbox.type }}</span></td>
+                    <td>{{ mailbox.storage }} / {{ mailbox.quota }}</td>
+                    <td><span class="badge badge-success">{{ mailbox.status }}</span></td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Aliases</span>
+          </div>
+          <div class="list">
+            @foreach (aliases as alias)
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ alias.alias }}</div>
+                  <div class="list-item-subtitle">→ {{ alias.forwards }}</div>
+                </div>
+                <button class="btn btn-ghost btn-sm">Edit</button>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

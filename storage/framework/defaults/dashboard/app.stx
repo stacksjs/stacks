@@ -1,0 +1,452 @@
+<script server>
+/**
+ * Stacks Dashboard - Native macOS Application
+ *
+ * The main entry point for the Stacks Dashboard built with STX and Craft.
+ * Uses native macOS sidebar for navigation.
+ */
+
+// Import types
+import type { SidebarConfig } from '@stacksjs/craft'
+
+// SF Symbol icon mappings
+const icons = {
+  home: 'house.fill',
+  dashboard: 'gauge.with.dots.needle.33percent',
+  components: 'puzzlepiece.fill',
+  functions: 'function',
+  releases: 'list.number',
+  packages: 'shippingbox.fill',
+  files: 'folder.fill',
+  pages: 'doc.fill',
+  posts: 'text.bubble.fill',
+  categories: 'tag.fill',
+  tags: 'tag',
+  comments: 'bubble.left.fill',
+  authors: 'person.text.rectangle.fill',
+  seo: 'magnifyingglass',
+  deployments: 'rocket.fill',
+  requests: 'arrow.left.arrow.right',
+  realtime: 'link',
+  actions: 'bolt.fill',
+  commands: 'terminal.fill',
+  queue: 'list.bullet.rectangle.fill',
+  jobs: 'briefcase.fill',
+  queries: 'magnifyingglass.circle.fill',
+  notifications: 'bell.fill',
+  activity: 'waveform.path.ecg',
+  users: 'person.fill',
+  teams: 'person.2.fill',
+  subscribers: 'envelope.open.fill',
+  pos: 'cart.fill',
+  customers: 'person.crop.circle.fill',
+  orders: 'list.clipboard.fill',
+  products: 'cube.box.fill',
+  coupons: 'ticket.fill',
+  giftCards: 'giftcard.fill',
+  payments: 'creditcard.fill',
+  delivery: 'truck.box.fill',
+  taxes: 'percent',
+  lists: 'list.bullet',
+  socialPosts: 'clock.fill',
+  campaigns: 'megaphone.fill',
+  reviews: 'star.fill',
+  web: 'globe',
+  blog: 'doc.text.fill',
+  goals: 'target',
+  sales: 'chart.line.uptrend.xyaxis',
+  cloud: 'cloud.fill',
+  servers: 'server.rack',
+  serverless: 'bolt.horizontal.circle.fill',
+  dns: 'network',
+  permissions: 'lock.fill',
+  mailboxes: 'tray.full.fill',
+  logs: 'list.bullet.rectangle.portrait.fill',
+  buddy: 'bubble.left.and.bubble.right.fill',
+  environment: 'key.fill',
+  accessTokens: 'key.horizontal.fill',
+  settings: 'gearshape.fill',
+}
+
+// Native sidebar configuration
+export const sidebarConfig: SidebarConfig = {
+  sections: [
+    {
+      id: 'home',
+      title: 'Home',
+      items: [
+        { id: 'home', label: 'Dashboard', icon: icons.home },
+      ],
+    },
+    {
+      id: 'library',
+      title: 'Library',
+      items: [
+        { id: 'components', label: 'Components', icon: icons.components },
+        { id: 'functions', label: 'Functions', icon: icons.functions },
+        { id: 'releases', label: 'Releases', icon: icons.releases },
+        { id: 'packages', label: 'Packages', icon: icons.packages },
+      ],
+    },
+    {
+      id: 'content',
+      title: 'Content',
+      items: [
+        { id: 'content-dashboard', label: 'Dashboard', icon: icons.dashboard },
+        { id: 'files', label: 'Files', icon: icons.files },
+        { id: 'pages', label: 'Pages', icon: icons.pages },
+        { id: 'posts', label: 'Posts', icon: icons.posts },
+        { id: 'categories', label: 'Categories', icon: icons.categories },
+        { id: 'tags', label: 'Tags', icon: icons.tags },
+        { id: 'comments', label: 'Comments', icon: icons.comments },
+        { id: 'authors', label: 'Authors', icon: icons.authors },
+        { id: 'seo', label: 'SEO', icon: icons.seo },
+      ],
+    },
+    {
+      id: 'app',
+      title: 'App',
+      items: [
+        { id: 'deployments', label: 'Deployments', icon: icons.deployments },
+        { id: 'requests', label: 'Requests', icon: icons.requests },
+        { id: 'realtime', label: 'Realtime', icon: icons.realtime },
+        { id: 'actions', label: 'Actions', icon: icons.actions },
+        { id: 'commands', label: 'Commands', icon: icons.commands },
+        { id: 'queue', label: 'Queue', icon: icons.queue },
+        { id: 'jobs', label: 'Jobs', icon: icons.jobs },
+        { id: 'queries', label: 'Queries', icon: icons.queries },
+        { id: 'notifications', label: 'Notifications', icon: icons.notifications },
+      ],
+    },
+    {
+      id: 'data',
+      title: 'Data',
+      items: [
+        { id: 'data-dashboard', label: 'Dashboard', icon: icons.dashboard },
+        { id: 'activity', label: 'Activity', icon: icons.activity },
+        { id: 'users', label: 'Users', icon: icons.users },
+        { id: 'teams', label: 'Teams', icon: icons.teams },
+        { id: 'subscribers', label: 'Subscribers', icon: icons.subscribers },
+      ],
+    },
+    {
+      id: 'commerce',
+      title: 'Commerce',
+      items: [
+        { id: 'commerce-dashboard', label: 'Dashboard', icon: icons.dashboard },
+        { id: 'pos', label: 'POS', icon: icons.pos },
+        { id: 'customers', label: 'Customers', icon: icons.customers },
+        { id: 'orders', label: 'Orders', icon: icons.orders },
+        { id: 'products', label: 'Products', icon: icons.products },
+        { id: 'coupons', label: 'Coupons', icon: icons.coupons },
+        { id: 'gift-cards', label: 'Gift Cards', icon: icons.giftCards },
+        { id: 'payments', label: 'Payments', icon: icons.payments },
+        { id: 'delivery', label: 'Delivery', icon: icons.delivery },
+        { id: 'taxes', label: 'Taxes', icon: icons.taxes },
+      ],
+    },
+    {
+      id: 'marketing',
+      title: 'Marketing',
+      items: [
+        { id: 'lists', label: 'Lists', icon: icons.lists },
+        { id: 'social-posts', label: 'Social Posts', icon: icons.socialPosts },
+        { id: 'campaigns', label: 'Campaigns', icon: icons.campaigns },
+        { id: 'marketing-reviews', label: 'Reviews', icon: icons.reviews },
+      ],
+    },
+    {
+      id: 'analytics',
+      title: 'Analytics',
+      items: [
+        { id: 'analytics-web', label: 'Web', icon: icons.web },
+        { id: 'analytics-blog', label: 'Blog', icon: icons.blog },
+        { id: 'analytics-goals', label: 'Goals', icon: icons.goals },
+        { id: 'analytics-commerce', label: 'Commerce', icon: icons.pos },
+        { id: 'analytics-sales', label: 'Sales', icon: icons.sales },
+        { id: 'analytics-marketing', label: 'Marketing', icon: icons.campaigns },
+      ],
+    },
+    {
+      id: 'management',
+      title: 'Management',
+      items: [
+        { id: 'cloud', label: 'Cloud', icon: icons.cloud },
+        { id: 'servers', label: 'Servers', icon: icons.servers },
+        { id: 'serverless', label: 'Serverless', icon: icons.serverless },
+        { id: 'dns', label: 'DNS', icon: icons.dns },
+        { id: 'permissions', label: 'Permissions', icon: icons.permissions },
+        { id: 'mailboxes', label: 'Mailboxes', icon: icons.mailboxes },
+        { id: 'logs', label: 'Logs', icon: icons.logs },
+      ],
+    },
+    {
+      id: 'utilities',
+      title: 'Utilities',
+      items: [
+        { id: 'buddy', label: 'AI Buddy', icon: icons.buddy },
+        { id: 'environment', label: 'Environment', icon: icons.environment },
+        { id: 'access-tokens', label: 'Access Tokens', icon: icons.accessTokens },
+        { id: 'settings', label: 'Settings', icon: icons.settings },
+      ],
+    },
+  ],
+  minWidth: 200,
+  maxWidth: 280,
+  canCollapse: true,
+}
+
+// Window configuration
+export const windowConfig = {
+  title: 'Stacks Dashboard',
+  width: 1400,
+  height: 900,
+  resizable: true,
+}
+
+// Current page state
+export let currentPage = 'home'
+</script>
+
+<script>
+// Client-side navigation handling
+window.craft = window.craft || {};
+
+// Handle sidebar selection
+window.craft._sidebarSelectHandler = function(event) {
+  console.log('Navigation:', event.itemId);
+
+  // Update current page
+  const pageId = event.itemId;
+  document.getElementById('app').dataset.page = pageId;
+
+  // Hide all pages
+  document.querySelectorAll('[data-page-content]').forEach(page => {
+    page.style.display = 'none';
+  });
+
+  // Show selected page
+  const targetPage = document.querySelector(`[data-page-content="${pageId}"]`);
+  if (targetPage) {
+    targetPage.style.display = 'block';
+  }
+
+  // Update page title
+  const pageHeader = document.querySelector('.page-header h1');
+  if (pageHeader) {
+    pageHeader.textContent = event.item.label;
+  }
+};
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Stacks Dashboard loaded');
+});
+</script>
+
+<template>
+  @craft({ debug: true })
+
+  <div id="app" data-page="home">
+    <!-- Home Dashboard -->
+    <div data-page-content="home" style="display: block;">
+      @include('pages/home')
+    </div>
+
+    <!-- Library Pages -->
+    <div data-page-content="components" style="display: none;">
+      @include('pages/library/components')
+    </div>
+    <div data-page-content="functions" style="display: none;">
+      @include('pages/library/functions')
+    </div>
+    <div data-page-content="releases" style="display: none;">
+      @include('pages/library/releases')
+    </div>
+    <div data-page-content="packages" style="display: none;">
+      @include('pages/library/packages')
+    </div>
+
+    <!-- Content Pages -->
+    <div data-page-content="content-dashboard" style="display: none;">
+      @include('pages/content/dashboard')
+    </div>
+    <div data-page-content="files" style="display: none;">
+      @include('pages/content/files')
+    </div>
+    <div data-page-content="pages" style="display: none;">
+      @include('pages/content/pages')
+    </div>
+    <div data-page-content="posts" style="display: none;">
+      @include('pages/content/posts')
+    </div>
+    <div data-page-content="categories" style="display: none;">
+      @include('pages/content/categories')
+    </div>
+    <div data-page-content="tags" style="display: none;">
+      @include('pages/content/tags')
+    </div>
+    <div data-page-content="comments" style="display: none;">
+      @include('pages/content/comments')
+    </div>
+    <div data-page-content="authors" style="display: none;">
+      @include('pages/content/authors')
+    </div>
+    <div data-page-content="seo" style="display: none;">
+      @include('pages/content/seo')
+    </div>
+
+    <!-- App Pages -->
+    <div data-page-content="deployments" style="display: none;">
+      @include('pages/app/deployments')
+    </div>
+    <div data-page-content="requests" style="display: none;">
+      @include('pages/app/requests')
+    </div>
+    <div data-page-content="realtime" style="display: none;">
+      @include('pages/app/realtime')
+    </div>
+    <div data-page-content="actions" style="display: none;">
+      @include('pages/app/actions')
+    </div>
+    <div data-page-content="commands" style="display: none;">
+      @include('pages/app/commands')
+    </div>
+    <div data-page-content="queue" style="display: none;">
+      @include('pages/app/queue')
+    </div>
+    <div data-page-content="jobs" style="display: none;">
+      @include('pages/app/jobs')
+    </div>
+    <div data-page-content="queries" style="display: none;">
+      @include('pages/app/queries')
+    </div>
+    <div data-page-content="notifications" style="display: none;">
+      @include('pages/app/notifications')
+    </div>
+
+    <!-- Data Pages -->
+    <div data-page-content="data-dashboard" style="display: none;">
+      @include('pages/data/dashboard')
+    </div>
+    <div data-page-content="activity" style="display: none;">
+      @include('pages/data/activity')
+    </div>
+    <div data-page-content="users" style="display: none;">
+      @include('pages/data/users')
+    </div>
+    <div data-page-content="teams" style="display: none;">
+      @include('pages/data/teams')
+    </div>
+    <div data-page-content="subscribers" style="display: none;">
+      @include('pages/data/subscribers')
+    </div>
+
+    <!-- Commerce Pages -->
+    <div data-page-content="commerce-dashboard" style="display: none;">
+      @include('pages/commerce/dashboard')
+    </div>
+    <div data-page-content="pos" style="display: none;">
+      @include('pages/commerce/pos')
+    </div>
+    <div data-page-content="customers" style="display: none;">
+      @include('pages/commerce/customers')
+    </div>
+    <div data-page-content="orders" style="display: none;">
+      @include('pages/commerce/orders')
+    </div>
+    <div data-page-content="products" style="display: none;">
+      @include('pages/commerce/products')
+    </div>
+    <div data-page-content="coupons" style="display: none;">
+      @include('pages/commerce/coupons')
+    </div>
+    <div data-page-content="gift-cards" style="display: none;">
+      @include('pages/commerce/gift-cards')
+    </div>
+    <div data-page-content="payments" style="display: none;">
+      @include('pages/commerce/payments')
+    </div>
+    <div data-page-content="delivery" style="display: none;">
+      @include('pages/commerce/delivery')
+    </div>
+    <div data-page-content="taxes" style="display: none;">
+      @include('pages/commerce/taxes')
+    </div>
+
+    <!-- Marketing Pages -->
+    <div data-page-content="lists" style="display: none;">
+      @include('pages/marketing/lists')
+    </div>
+    <div data-page-content="social-posts" style="display: none;">
+      @include('pages/marketing/social-posts')
+    </div>
+    <div data-page-content="campaigns" style="display: none;">
+      @include('pages/marketing/campaigns')
+    </div>
+    <div data-page-content="marketing-reviews" style="display: none;">
+      @include('pages/marketing/reviews')
+    </div>
+
+    <!-- Analytics Pages -->
+    <div data-page-content="analytics-web" style="display: none;">
+      @include('pages/analytics/web')
+    </div>
+    <div data-page-content="analytics-blog" style="display: none;">
+      @include('pages/analytics/blog')
+    </div>
+    <div data-page-content="analytics-goals" style="display: none;">
+      @include('pages/analytics/goals')
+    </div>
+    <div data-page-content="analytics-commerce" style="display: none;">
+      @include('pages/analytics/commerce')
+    </div>
+    <div data-page-content="analytics-sales" style="display: none;">
+      @include('pages/analytics/sales')
+    </div>
+    <div data-page-content="analytics-marketing" style="display: none;">
+      @include('pages/analytics/marketing')
+    </div>
+
+    <!-- Management Pages -->
+    <div data-page-content="cloud" style="display: none;">
+      @include('pages/management/cloud')
+    </div>
+    <div data-page-content="servers" style="display: none;">
+      @include('pages/management/servers')
+    </div>
+    <div data-page-content="serverless" style="display: none;">
+      @include('pages/management/serverless')
+    </div>
+    <div data-page-content="dns" style="display: none;">
+      @include('pages/management/dns')
+    </div>
+    <div data-page-content="permissions" style="display: none;">
+      @include('pages/management/permissions')
+    </div>
+    <div data-page-content="mailboxes" style="display: none;">
+      @include('pages/management/mailboxes')
+    </div>
+    <div data-page-content="logs" style="display: none;">
+      @include('pages/management/logs')
+    </div>
+
+    <!-- Utility Pages -->
+    <div data-page-content="buddy" style="display: none;">
+      @include('pages/utilities/buddy')
+    </div>
+    <div data-page-content="environment" style="display: none;">
+      @include('pages/utilities/environment')
+    </div>
+    <div data-page-content="access-tokens" style="display: none;">
+      @include('pages/utilities/access-tokens')
+    </div>
+    <div data-page-content="settings" style="display: none;">
+      @include('pages/utilities/settings')
+    </div>
+  </div>
+</template>
+
+<style>
+@import './styles/base.css';
+</style>

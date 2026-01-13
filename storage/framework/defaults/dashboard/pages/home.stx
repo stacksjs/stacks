@@ -1,0 +1,170 @@
+<script server>
+/**
+ * Home Dashboard Page
+ *
+ * Main overview with stats, quick links, system health, and recent activity.
+ */
+
+// Mock data for stats
+const stats = [
+  { label: 'Total Users', value: '12,847', trend: '+12%', up: true, icon: 'blue' },
+  { label: 'Page Views', value: '284,921', trend: '+8%', up: true, icon: 'green' },
+  { label: 'Revenue', value: '$48,294', trend: '+23%', up: true, icon: 'orange' },
+  { label: 'Active Sessions', value: '1,429', trend: '-3%', up: false, icon: 'red' },
+]
+
+// Quick links
+const quickLinks = [
+  { title: 'Blog', description: 'Manage posts and content', icon: 'text.bubble.fill', page: 'posts' },
+  { title: 'Commerce', description: 'View sales and orders', icon: 'cart.fill', page: 'commerce-dashboard' },
+  { title: 'Cloud', description: 'Infrastructure settings', icon: 'cloud.fill', page: 'cloud' },
+  { title: 'Settings', description: 'Configure your app', icon: 'gearshape.fill', page: 'settings' },
+]
+
+// System health
+const services = [
+  { name: 'Database', status: 'healthy', latency: '12ms' },
+  { name: 'Cache', status: 'healthy', latency: '2ms' },
+  { name: 'Queue', status: 'healthy', latency: '45ms' },
+  { name: 'Storage', status: 'healthy', latency: '8ms' },
+  { name: 'Email', status: 'warning', latency: '234ms' },
+]
+
+// Recent activity
+const activities = [
+  { type: 'deployment', message: 'Production deployment completed', time: '2 minutes ago', user: 'Chris' },
+  { type: 'user', message: 'New user registered', time: '15 minutes ago', user: 'System' },
+  { type: 'order', message: 'New order #1284 received', time: '32 minutes ago', user: 'Commerce' },
+  { type: 'post', message: 'Blog post published', time: '1 hour ago', user: 'Chris' },
+  { type: 'error', message: 'API rate limit warning', time: '2 hours ago', user: 'System' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Dashboard</h1>
+        <p>Welcome back! Here's what's happening with your application.</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">
+          Last 7 days
+        </button>
+        <button class="btn btn-primary">
+          View Reports
+        </button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Stats Grid -->
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-icon {{ stat.icon }}">
+              @if (stat.icon === 'blue')
+                <span>U</span>
+              @elseif (stat.icon === 'green')
+                <span>P</span>
+              @elseif (stat.icon === 'orange')
+                <span>$</span>
+              @else
+                <span>S</span>
+              @endif
+            </div>
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+            <div class="stat-card-trend {{ stat.up ? 'up' : 'down' }}">
+              {{ stat.trend }} from last month
+            </div>
+          </div>
+        @endforeach
+      </div>
+
+      <!-- Two Column Layout -->
+      <div class="grid grid-2">
+        <!-- Quick Links -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Quick Links</span>
+          </div>
+          <div class="card-body">
+            <div class="list">
+              @foreach (quickLinks as link)
+                <div class="list-item" data-navigate="{{ link.page }}">
+                  <div class="list-item-icon">
+                    <span>{{ link.icon.charAt(0).toUpperCase() }}</span>
+                  </div>
+                  <div class="list-item-content">
+                    <div class="list-item-title">{{ link.title }}</div>
+                    <div class="list-item-subtitle">{{ link.description }}</div>
+                  </div>
+                </div>
+              @endforeach
+            </div>
+          </div>
+        </div>
+
+        <!-- System Health -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">System Health</span>
+            <span class="badge badge-success">All Systems Operational</span>
+          </div>
+          <div class="card-body">
+            <div class="list">
+              @foreach (services as service)
+                <div class="list-item">
+                  <div class="list-item-content">
+                    <div class="list-item-title">{{ service.name }}</div>
+                    <div class="list-item-subtitle">Latency: {{ service.latency }}</div>
+                  </div>
+                  <span class="badge badge-{{ service.status === 'healthy' ? 'success' : 'warning' }}">
+                    {{ service.status }}
+                  </span>
+                </div>
+              @endforeach
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recent Activity</span>
+          <button class="btn btn-ghost btn-sm">View All</button>
+        </div>
+        <div class="card-body">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Activity</th>
+                  <th>User</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach (activities as activity)
+                  <tr>
+                    <td>
+                      <span class="badge badge-{{ activity.type === 'error' ? 'error' : 'neutral' }}">
+                        {{ activity.type }}
+                      </span>
+                    </td>
+                    <td>{{ activity.message }}</td>
+                    <td>{{ activity.user }}</td>
+                    <td class="text-muted">{{ activity.time }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

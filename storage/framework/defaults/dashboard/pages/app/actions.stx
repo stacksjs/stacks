@@ -1,0 +1,57 @@
+<script server>
+const actions = [
+  { name: 'SendWelcomeEmail', type: 'email', runs: 1247, avgTime: '234ms', status: 'active' },
+  { name: 'ProcessPayment', type: 'payment', runs: 892, avgTime: '1.2s', status: 'active' },
+  { name: 'GenerateReport', type: 'report', runs: 156, avgTime: '4.5s', status: 'active' },
+  { name: 'SyncInventory', type: 'sync', runs: 48, avgTime: '12s', status: 'paused' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Actions</h1>
+        <p>Application actions and automations</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary">New Action</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>Type</th>
+                <th>Runs (30d)</th>
+                <th>Avg Time</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (actions as action)
+                <tr>
+                  <td class="font-medium">{{ action.name }}</td>
+                  <td><span class="badge badge-neutral">{{ action.type }}</span></td>
+                  <td>{{ action.runs.toLocaleString() }}</td>
+                  <td>{{ action.avgTime }}</td>
+                  <td>
+                    <span class="badge badge-{{ action.status === 'active' ? 'success' : 'warning' }}">
+                      {{ action.status }}
+                    </span>
+                  </td>
+                  <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

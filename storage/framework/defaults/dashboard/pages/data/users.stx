@@ -1,0 +1,111 @@
+<script server>
+const users = [
+  { name: 'John Doe', email: 'john@example.com', role: 'Admin', status: 'active', lastLogin: '2m ago', avatar: 'JD' },
+  { name: 'Jane Smith', email: 'jane@example.com', role: 'Editor', status: 'active', lastLogin: '1h ago', avatar: 'JS' },
+  { name: 'Bob Wilson', email: 'bob@example.com', role: 'Author', status: 'active', lastLogin: '3h ago', avatar: 'BW' },
+  { name: 'Alice Brown', email: 'alice@example.com', role: 'Subscriber', status: 'inactive', lastLogin: '2d ago', avatar: 'AB' },
+  { name: 'Charlie Davis', email: 'charlie@example.com', role: 'Editor', status: 'pending', lastLogin: 'Never', avatar: 'CD' },
+]
+
+const stats = [
+  { label: 'Total Users', value: '12,456' },
+  { label: 'Active Today', value: '1,234' },
+  { label: 'New This Week', value: '89' },
+]
+
+const roles = ['All Roles', 'Admin', 'Editor', 'Author', 'Subscriber']
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Users</h1>
+        <p>Manage user accounts</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Import</button>
+        <button class="btn btn-primary">Add User</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-3">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="flex gap-2">
+            <input type="text" class="input" placeholder="Search users..." style="width: 300px;" />
+            <select class="input" style="width: 150px;">
+              @foreach (roles as role)
+                <option>{{ role }}</option>
+              @endforeach
+            </select>
+          </div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Last Login</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (users as user)
+                <tr>
+                  <td>
+                    <div class="flex items-center gap-3">
+                      <div class="avatar">{{ user.avatar }}</div>
+                      <span class="font-medium">{{ user.name }}</span>
+                    </div>
+                  </td>
+                  <td>{{ user.email }}</td>
+                  <td><span class="badge badge-neutral">{{ user.role }}</span></td>
+                  <td>
+                    <span class="badge badge-{{ user.status === 'active' ? 'success' : user.status === 'pending' ? 'warning' : 'neutral' }}">
+                      {{ user.status }}
+                    </span>
+                  </td>
+                  <td class="text-muted">{{ user.lastLogin }}</td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                      <button class="btn btn-ghost btn-sm text-error">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+</style>

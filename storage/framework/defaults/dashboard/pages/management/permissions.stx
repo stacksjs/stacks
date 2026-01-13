@@ -1,0 +1,96 @@
+<script server>
+const roles = [
+  { name: 'Admin', users: 3, permissions: 'Full access', description: 'Complete system access' },
+  { name: 'Editor', users: 8, permissions: '24 permissions', description: 'Content management' },
+  { name: 'Author', users: 12, permissions: '12 permissions', description: 'Create and edit own content' },
+  { name: 'Moderator', users: 5, permissions: '18 permissions', description: 'Content moderation' },
+  { name: 'Viewer', users: 45, permissions: '6 permissions', description: 'Read-only access' },
+]
+
+const permissions = [
+  { group: 'Content', items: ['Create', 'Edit', 'Delete', 'Publish'] },
+  { group: 'Users', items: ['View', 'Create', 'Edit', 'Delete'] },
+  { group: 'Settings', items: ['View', 'Edit'] },
+  { group: 'Analytics', items: ['View', 'Export'] },
+  { group: 'Commerce', items: ['View Orders', 'Manage Products', 'Process Refunds'] },
+]
+
+const recentChanges = [
+  { user: 'admin@example.com', action: 'Updated role', target: 'Editor', time: '2h ago' },
+  { user: 'admin@example.com', action: 'Added permission', target: 'Author - Publish', time: '1d ago' },
+  { user: 'admin@example.com', action: 'Created role', target: 'Moderator', time: '3d ago' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Permissions</h1>
+        <p>Roles and access control</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary">Create Role</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Roles</span>
+          </div>
+          <div class="list">
+            @foreach (roles as role)
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ role.name }}</div>
+                  <div class="list-item-subtitle">{{ role.description }}</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm">{{ role.users }} users</div>
+                  <div class="text-sm text-muted">{{ role.permissions }}</div>
+                </div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Permission Groups</span>
+          </div>
+          <div class="p-4">
+            @foreach (permissions as group)
+              <div class="mb-4">
+                <div class="font-medium mb-2">{{ group.group }}</div>
+                <div class="flex flex-wrap gap-2">
+                  @foreach (group.items as item)
+                    <span class="badge badge-neutral">{{ item }}</span>
+                  @endforeach
+                </div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recent Changes</span>
+        </div>
+        <div class="list">
+          @foreach (recentChanges as change)
+            <div class="list-item">
+              <div class="list-item-content">
+                <div class="list-item-title">{{ change.action }}: {{ change.target }}</div>
+                <div class="list-item-subtitle">by {{ change.user }}</div>
+              </div>
+              <span class="text-muted">{{ change.time }}</span>
+            </div>
+          @endforeach
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

@@ -1,0 +1,96 @@
+<script server>
+const posts = [
+  { platform: 'Twitter', content: 'Excited to announce our new feature launch! 🚀', status: 'published', engagement: '1.2K', scheduled: '2024-01-18 10:00' },
+  { platform: 'LinkedIn', content: 'We\'re hiring! Join our growing team...', status: 'published', engagement: '456', scheduled: '2024-01-17 14:00' },
+  { platform: 'Instagram', content: 'Behind the scenes at our office...', status: 'scheduled', engagement: '-', scheduled: '2024-01-19 12:00' },
+  { platform: 'Facebook', content: 'Check out our latest blog post about...', status: 'draft', engagement: '-', scheduled: '-' },
+  { platform: 'Twitter', content: 'Thank you for 10K followers! 🎉', status: 'scheduled', engagement: '-', scheduled: '2024-01-20 09:00' },
+]
+
+const stats = [
+  { label: 'Total Reach', value: '45.6K' },
+  { label: 'Engagement', value: '3.2K' },
+  { label: 'Scheduled', value: '8' },
+  { label: 'Drafts', value: '12' },
+]
+
+const platforms = ['All', 'Twitter', 'LinkedIn', 'Instagram', 'Facebook']
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Social Posts</h1>
+        <p>Manage social media content</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Schedule</button>
+        <button class="btn btn-primary">New Post</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="flex gap-2 mb-4">
+        @foreach (platforms as platform)
+          <button class="btn {{ platform === 'All' ? 'btn-primary' : 'btn-ghost' }} btn-sm">{{ platform }}</button>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Platform</th>
+                <th>Content</th>
+                <th>Status</th>
+                <th>Engagement</th>
+                <th>Scheduled</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (posts as post)
+                <tr>
+                  <td><span class="badge badge-neutral">{{ post.platform }}</span></td>
+                  <td class="truncate" style="max-width: 300px;">{{ post.content }}</td>
+                  <td>
+                    <span class="badge badge-{{ post.status === 'published' ? 'success' : post.status === 'scheduled' ? 'info' : 'neutral' }}">
+                      {{ post.status }}
+                    </span>
+                  </td>
+                  <td>{{ post.engagement }}</td>
+                  <td class="text-muted">{{ post.scheduled }}</td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                      <button class="btn btn-ghost btn-sm">View</button>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>

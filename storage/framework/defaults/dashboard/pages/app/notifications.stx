@@ -1,0 +1,73 @@
+<script server>
+const notifications = [
+  { type: 'email', recipient: 'user@example.com', subject: 'Welcome!', status: 'sent', time: '2m ago' },
+  { type: 'sms', recipient: '+1234567890', subject: 'Order shipped', status: 'sent', time: '15m ago' },
+  { type: 'push', recipient: 'user-123', subject: 'New message', status: 'delivered', time: '1h ago' },
+  { type: 'email', recipient: 'admin@example.com', subject: 'Daily report', status: 'failed', time: '2h ago' },
+]
+
+const stats = [
+  { label: 'Sent Today', value: '1,247' },
+  { label: 'Delivered', value: '98.2%' },
+  { label: 'Failed', value: '23' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Notifications</h1>
+        <p>Manage notification channels</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary">Send Notification</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-3">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recent Notifications</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Recipient</th>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (notifications as notif)
+                <tr>
+                  <td><span class="badge badge-neutral">{{ notif.type }}</span></td>
+                  <td>{{ notif.recipient }}</td>
+                  <td>{{ notif.subject }}</td>
+                  <td>
+                    <span class="badge badge-{{ notif.status === 'sent' || notif.status === 'delivered' ? 'success' : 'error' }}">
+                      {{ notif.status }}
+                    </span>
+                  </td>
+                  <td class="text-muted">{{ notif.time }}</td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

@@ -1,0 +1,67 @@
+<script server>
+const activities = [
+  { action: 'User created', table: 'users', user: 'admin@example.com', time: '2m ago', type: 'create' },
+  { action: 'Order updated', table: 'orders', user: 'system', time: '5m ago', type: 'update' },
+  { action: 'Post deleted', table: 'posts', user: 'editor@example.com', time: '12m ago', type: 'delete' },
+  { action: 'Bulk import', table: 'products', user: 'admin@example.com', time: '1h ago', type: 'create' },
+  { action: 'Schema migration', table: 'users', user: 'system', time: '2h ago', type: 'schema' },
+  { action: 'Data export', table: 'orders', user: 'admin@example.com', time: '3h ago', type: 'export' },
+  { action: 'Record restored', table: 'customers', user: 'support@example.com', time: '4h ago', type: 'restore' },
+  { action: 'Batch update', table: 'inventory', user: 'system', time: '5h ago', type: 'update' },
+]
+
+const filters = ['All', 'Creates', 'Updates', 'Deletes', 'Schema', 'Exports']
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Activity Log</h1>
+        <p>Track all database changes</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Export Log</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="flex gap-2 mb-4">
+        @foreach (filters as filter)
+          <button class="btn {{ filter === 'All' ? 'btn-primary' : 'btn-ghost' }} btn-sm">{{ filter }}</button>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>Table</th>
+                <th>User</th>
+                <th>Time</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (activities as activity)
+                <tr>
+                  <td class="font-medium">{{ activity.action }}</td>
+                  <td><code class="code-inline">{{ activity.table }}</code></td>
+                  <td>{{ activity.user }}</td>
+                  <td class="text-muted">{{ activity.time }}</td>
+                  <td>
+                    <span class="badge badge-{{ activity.type === 'create' ? 'success' : activity.type === 'delete' ? 'error' : activity.type === 'update' ? 'info' : 'neutral' }}">
+                      {{ activity.type }}
+                    </span>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

@@ -1,0 +1,74 @@
+<script server>
+const teams = [
+  { name: 'Engineering', members: 12, projects: 8, status: 'active', lead: 'John Doe' },
+  { name: 'Design', members: 6, projects: 5, status: 'active', lead: 'Jane Smith' },
+  { name: 'Marketing', members: 8, projects: 4, status: 'active', lead: 'Bob Wilson' },
+  { name: 'Sales', members: 15, projects: 3, status: 'active', lead: 'Alice Brown' },
+  { name: 'Support', members: 10, projects: 2, status: 'active', lead: 'Charlie Davis' },
+]
+
+const stats = [
+  { label: 'Total Teams', value: '5' },
+  { label: 'Total Members', value: '51' },
+  { label: 'Active Projects', value: '22' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Teams</h1>
+        <p>Manage team organization</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary">Create Team</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-3">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="grid grid-3">
+        @foreach (teams as team)
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">{{ team.name }}</span>
+              <span class="badge badge-success">{{ team.status }}</span>
+            </div>
+            <div class="mt-4">
+              <div class="text-muted text-sm mb-2">Team Lead: {{ team.lead }}</div>
+              <div class="grid grid-2 gap-4 mt-4">
+                <div>
+                  <div class="text-2xl font-semibold">{{ team.members }}</div>
+                  <div class="text-sm text-muted">Members</div>
+                </div>
+                <div>
+                  <div class="text-2xl font-semibold">{{ team.projects }}</div>
+                  <div class="text-sm text-muted">Projects</div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t flex gap-2">
+              <button class="btn btn-secondary btn-sm flex-1">View</button>
+              <button class="btn btn-ghost btn-sm">Edit</button>
+            </div>
+          </div>
+        @endforeach
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+.border-t {
+  border-top: 1px solid var(--color-border);
+}
+</style>

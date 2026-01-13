@@ -1,0 +1,130 @@
+<script server>
+const stats = [
+  { label: 'Total Revenue', value: '$145,678', change: '+18.5%' },
+  { label: 'Orders', value: '2,345', change: '+12.3%' },
+  { label: 'Avg Order Value', value: '$62.12', change: '+5.2%' },
+  { label: 'Conversion Rate', value: '3.4%', change: '+0.8%' },
+]
+
+const topProducts = [
+  { name: 'Premium Widget', revenue: '$23,456', units: 234, growth: '+15%' },
+  { name: 'Pro Subscription', revenue: '$18,234', units: 182, growth: '+22%' },
+  { name: 'Basic Package', revenue: '$12,345', units: 456, growth: '+8%' },
+  { name: 'Starter Kit', revenue: '$8,765', units: 876, growth: '+12%' },
+  { name: 'Enterprise Plan', revenue: '$45,678', units: 45, growth: '+35%' },
+]
+
+const salesByRegion = [
+  { region: 'North America', revenue: '$78,234', orders: 1234, percentage: 53.7 },
+  { region: 'Europe', revenue: '$34,567', orders: 567, percentage: 23.7 },
+  { region: 'Asia Pacific', revenue: '$23,456', orders: 345, percentage: 16.1 },
+  { region: 'Rest of World', revenue: '$9,421', orders: 199, percentage: 6.5 },
+]
+
+const revenueByChannel = [
+  { channel: 'Website', revenue: '$89,234', percentage: 61.2 },
+  { channel: 'Mobile App', revenue: '$34,567', percentage: 23.7 },
+  { channel: 'API/Partners', revenue: '$21,877', percentage: 15.1 },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Commerce Analytics</h1>
+        <p>Sales and revenue insights</p>
+      </div>
+      <div class="page-header-actions">
+        <select class="input w-40">
+          <option>Last 7 days</option>
+          <option>Last 30 days</option>
+          <option>Last 90 days</option>
+          <option>This year</option>
+        </select>
+        <button class="btn btn-primary">Export</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+            <div class="stat-card-change positive">{{ stat.change }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Top Products</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Revenue</th>
+                  <th>Units</th>
+                  <th>Growth</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach (topProducts as product)
+                  <tr>
+                    <td class="font-medium">{{ product.name }}</td>
+                    <td class="font-semibold">{{ product.revenue }}</td>
+                    <td>{{ product.units }}</td>
+                    <td class="text-success">{{ product.growth }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Sales by Region</span>
+          </div>
+          <div class="list">
+            @foreach (salesByRegion as region)
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ region.region }}</div>
+                  <div class="w-32 h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
+                    <div class="h-full bg-blue-500 rounded-full" style="width: {{ region.percentage }}%;"></div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="font-semibold">{{ region.revenue }}</div>
+                  <div class="text-sm text-muted">{{ region.orders }} orders</div>
+                </div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Revenue by Channel</span>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-around">
+            @foreach (revenueByChannel as channel)
+              <div class="text-center">
+                <div class="text-3xl font-bold">{{ channel.percentage }}%</div>
+                <div class="text-muted mt-1">{{ channel.channel }}</div>
+                <div class="font-semibold text-success mt-2">{{ channel.revenue }}</div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

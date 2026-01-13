@@ -1,0 +1,85 @@
+<script server>
+const customers = [
+  { name: 'John Doe', email: 'john@example.com', orders: 12, spent: '$1,234', lastOrder: '2d ago', status: 'active' },
+  { name: 'Jane Smith', email: 'jane@example.com', orders: 8, spent: '$890', lastOrder: '5d ago', status: 'active' },
+  { name: 'Bob Wilson', email: 'bob@example.com', orders: 23, spent: '$3,456', lastOrder: '1d ago', status: 'vip' },
+  { name: 'Alice Brown', email: 'alice@example.com', orders: 5, spent: '$456', lastOrder: '2w ago', status: 'active' },
+  { name: 'Charlie Davis', email: 'charlie@example.com', orders: 1, spent: '$89', lastOrder: '1m ago', status: 'inactive' },
+]
+
+const stats = [
+  { label: 'Total Customers', value: '4,567' },
+  { label: 'Active', value: '3,892' },
+  { label: 'VIP', value: '234' },
+  { label: 'Avg Lifetime Value', value: '$456' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Customers</h1>
+        <p>Manage customer relationships</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Export</button>
+        <button class="btn btn-primary">Add Customer</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <input type="text" class="input" placeholder="Search customers..." style="width: 300px;" />
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Email</th>
+                <th>Orders</th>
+                <th>Total Spent</th>
+                <th>Last Order</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (customers as customer)
+                <tr>
+                  <td class="font-medium">{{ customer.name }}</td>
+                  <td>{{ customer.email }}</td>
+                  <td>{{ customer.orders }}</td>
+                  <td class="font-semibold">{{ customer.spent }}</td>
+                  <td class="text-muted">{{ customer.lastOrder }}</td>
+                  <td>
+                    <span class="badge badge-{{ customer.status === 'vip' ? 'primary' : customer.status === 'active' ? 'success' : 'neutral' }}">
+                      {{ customer.status }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-ghost btn-sm">View</button>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

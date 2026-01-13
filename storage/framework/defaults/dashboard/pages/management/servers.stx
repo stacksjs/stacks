@@ -1,0 +1,108 @@
+<script server>
+const servers = [
+  { name: 'web-1.stacks.dev', ip: '192.168.1.100', cpu: 45, memory: 62, disk: 34, status: 'healthy', uptime: '45d 12h' },
+  { name: 'web-2.stacks.dev', ip: '192.168.1.101', cpu: 38, memory: 58, disk: 28, status: 'healthy', uptime: '45d 12h' },
+  { name: 'db-primary.stacks.dev', ip: '192.168.1.200', cpu: 72, memory: 85, disk: 67, status: 'warning', uptime: '30d 8h' },
+  { name: 'db-replica.stacks.dev', ip: '192.168.1.201', cpu: 25, memory: 45, disk: 67, status: 'healthy', uptime: '30d 8h' },
+  { name: 'cache.stacks.dev', ip: '192.168.1.150', cpu: 12, memory: 78, disk: 15, status: 'healthy', uptime: '60d 4h' },
+]
+
+const stats = [
+  { label: 'Total Servers', value: '5' },
+  { label: 'Healthy', value: '4' },
+  { label: 'Warnings', value: '1' },
+  { label: 'Avg CPU', value: '38%' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Servers</h1>
+        <p>Server monitoring and management</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">SSH Console</button>
+        <button class="btn btn-primary">Add Server</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">All Servers</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Server</th>
+                <th>IP Address</th>
+                <th>CPU</th>
+                <th>Memory</th>
+                <th>Disk</th>
+                <th>Status</th>
+                <th>Uptime</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (servers as server)
+                <tr>
+                  <td class="font-medium">{{ server.name }}</td>
+                  <td><code class="code-inline">{{ server.ip }}</code></td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full {{ server.cpu > 80 ? 'bg-red-500' : server.cpu > 60 ? 'bg-amber-500' : 'bg-green-500' }}" style="width: {{ server.cpu }}%;"></div>
+                      </div>
+                      <span class="text-sm">{{ server.cpu }}%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full {{ server.memory > 80 ? 'bg-red-500' : server.memory > 60 ? 'bg-amber-500' : 'bg-green-500' }}" style="width: {{ server.memory }}%;"></div>
+                      </div>
+                      <span class="text-sm">{{ server.memory }}%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-500 rounded-full" style="width: {{ server.disk }}%;"></div>
+                      </div>
+                      <span class="text-sm">{{ server.disk }}%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge badge-{{ server.status === 'healthy' ? 'success' : 'warning' }}">
+                      {{ server.status }}
+                    </span>
+                  </td>
+                  <td class="text-muted">{{ server.uptime }}</td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-ghost btn-sm">SSH</button>
+                      <button class="btn btn-ghost btn-sm">Manage</button>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

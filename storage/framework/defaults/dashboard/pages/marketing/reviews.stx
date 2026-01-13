@@ -1,0 +1,109 @@
+<script server>
+const reviews = [
+  { product: 'Premium Widget', author: 'John D.', rating: 5, comment: 'Excellent product! Exactly what I needed.', status: 'published', date: '2024-01-18' },
+  { product: 'Basic Package', author: 'Jane S.', rating: 4, comment: 'Good value for money, but could use more features.', status: 'published', date: '2024-01-17' },
+  { product: 'Pro Subscription', author: 'Bob W.', rating: 5, comment: 'Best investment for my business!', status: 'published', date: '2024-01-16' },
+  { product: 'Starter Kit', author: 'Alice B.', rating: 3, comment: 'Decent product, delivery was slow.', status: 'pending', date: '2024-01-15' },
+  { product: 'Premium Widget', author: 'Charlie D.', rating: 1, comment: 'Disappointed with quality.', status: 'flagged', date: '2024-01-14' },
+]
+
+const stats = [
+  { label: 'Total Reviews', value: '2,456' },
+  { label: 'Avg Rating', value: '4.3★' },
+  { label: 'Pending', value: '23' },
+  { label: 'Response Rate', value: '89%' },
+]
+
+const filters = ['All', 'Published', 'Pending', 'Flagged', '5★', '4★', '3★', '2★', '1★']
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Reviews</h1>
+        <p>Customer reviews and ratings</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Request Reviews</button>
+        <button class="btn btn-primary">Export</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="flex gap-2 mb-4 flex-wrap">
+        @foreach (filters as filter)
+          <button class="btn {{ filter === 'All' ? 'btn-primary' : 'btn-ghost' }} btn-sm">{{ filter }}</button>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Author</th>
+                <th>Rating</th>
+                <th>Comment</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (reviews as review)
+                <tr>
+                  <td class="font-medium">{{ review.product }}</td>
+                  <td>{{ review.author }}</td>
+                  <td>
+                    <span class="stars">{{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}</span>
+                  </td>
+                  <td class="truncate" style="max-width: 250px;">{{ review.comment }}</td>
+                  <td>
+                    <span class="badge badge-{{ review.status === 'published' ? 'success' : review.status === 'pending' ? 'warning' : 'error' }}">
+                      {{ review.status }}
+                    </span>
+                  </td>
+                  <td class="text-muted">{{ review.date }}</td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-ghost btn-sm">Reply</button>
+                      @if (review.status === 'pending')
+                        <button class="btn btn-secondary btn-sm">Approve</button>
+                      @endif
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+.stars {
+  color: #f59e0b;
+  letter-spacing: 2px;
+}
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.flex-wrap {
+  flex-wrap: wrap;
+}
+</style>

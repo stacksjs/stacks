@@ -1,0 +1,94 @@
+<script server>
+const terminals = [
+  { id: 'POS-001', name: 'Main Register', location: 'Store Front', status: 'online', lastTransaction: '2m ago' },
+  { id: 'POS-002', name: 'Back Register', location: 'Store Back', status: 'online', lastTransaction: '15m ago' },
+  { id: 'POS-003', name: 'Mobile POS 1', location: 'Floor', status: 'online', lastTransaction: '5m ago' },
+  { id: 'POS-004', name: 'Mobile POS 2', location: 'Floor', status: 'offline', lastTransaction: '2h ago' },
+]
+
+const todayStats = [
+  { label: 'Transactions', value: '156' },
+  { label: 'Total Sales', value: '$4,567' },
+  { label: 'Avg Transaction', value: '$29.27' },
+  { label: 'Cash/Card', value: '40/60%' },
+]
+
+const recentTransactions = [
+  { id: 'TXN-5678', terminal: 'POS-001', amount: '$45.00', method: 'Card', time: '2m ago' },
+  { id: 'TXN-5677', terminal: 'POS-003', amount: '$23.50', method: 'Cash', time: '5m ago' },
+  { id: 'TXN-5676', terminal: 'POS-001', amount: '$89.00', method: 'Card', time: '8m ago' },
+  { id: 'TXN-5675', terminal: 'POS-002', amount: '$12.00', method: 'Card', time: '15m ago' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Point of Sale</h1>
+        <p>Manage POS terminals and transactions</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Reports</button>
+        <button class="btn btn-primary">New Sale</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (todayStats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Terminals</span>
+            <button class="btn btn-ghost btn-sm">Add Terminal</button>
+          </div>
+          <div class="list">
+            @foreach (terminals as terminal)
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ terminal.name }}</div>
+                  <div class="list-item-subtitle">{{ terminal.id }} &middot; {{ terminal.location }}</div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-muted text-sm">{{ terminal.lastTransaction }}</span>
+                  <span class="badge badge-{{ terminal.status === 'online' ? 'success' : 'error' }}">
+                    {{ terminal.status }}
+                  </span>
+                </div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent Transactions</span>
+            <button class="btn btn-ghost btn-sm">View All</button>
+          </div>
+          <div class="list">
+            @foreach (recentTransactions as txn)
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ txn.id }}</div>
+                  <div class="list-item-subtitle">{{ txn.terminal }} &middot; {{ txn.time }}</div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="badge badge-neutral">{{ txn.method }}</span>
+                  <span class="font-semibold">{{ txn.amount }}</span>
+                </div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

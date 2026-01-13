@@ -1,0 +1,87 @@
+<script server>
+const coupons = [
+  { code: 'SAVE20', type: 'Percentage', value: '20%', uses: 156, limit: 500, expires: '2024-02-28', status: 'active' },
+  { code: 'FLAT10', type: 'Fixed', value: '$10', uses: 89, limit: 200, expires: '2024-01-31', status: 'active' },
+  { code: 'FREESHIP', type: 'Shipping', value: 'Free', uses: 234, limit: 1000, expires: '2024-03-15', status: 'active' },
+  { code: 'VIP50', type: 'Percentage', value: '50%', uses: 12, limit: 50, expires: '2024-01-20', status: 'expiring' },
+  { code: 'WELCOME15', type: 'Percentage', value: '15%', uses: 567, limit: null, expires: 'Never', status: 'active' },
+  { code: 'EXPIRED10', type: 'Fixed', value: '$10', uses: 100, limit: 100, expires: '2024-01-01', status: 'expired' },
+]
+
+const stats = [
+  { label: 'Active Coupons', value: '12' },
+  { label: 'Total Uses', value: '1,158' },
+  { label: 'Revenue Impact', value: '-$8,450' },
+  { label: 'Avg Discount', value: '$12.34' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Coupons</h1>
+        <p>Manage discount codes</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary">Create Coupon</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <input type="text" class="input" placeholder="Search coupons..." style="width: 300px;" />
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Type</th>
+                <th>Value</th>
+                <th>Uses</th>
+                <th>Limit</th>
+                <th>Expires</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (coupons as coupon)
+                <tr>
+                  <td><code class="code-inline">{{ coupon.code }}</code></td>
+                  <td>{{ coupon.type }}</td>
+                  <td class="font-semibold">{{ coupon.value }}</td>
+                  <td>{{ coupon.uses }}</td>
+                  <td>{{ coupon.limit || '∞' }}</td>
+                  <td class="text-muted">{{ coupon.expires }}</td>
+                  <td>
+                    <span class="badge badge-{{ coupon.status === 'active' ? 'success' : coupon.status === 'expiring' ? 'warning' : 'neutral' }}">
+                      {{ coupon.status }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                      <button class="btn btn-ghost btn-sm text-error">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

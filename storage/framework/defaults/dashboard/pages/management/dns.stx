@@ -1,0 +1,122 @@
+<script server>
+const domains = [
+  { domain: 'stacks.dev', records: 12, status: 'active', ssl: 'valid', expires: '2025-01-15' },
+  { domain: 'api.stacks.dev', records: 4, status: 'active', ssl: 'valid', expires: '2025-01-15' },
+  { domain: 'docs.stacks.dev', records: 3, status: 'active', ssl: 'valid', expires: '2025-01-15' },
+]
+
+const records = [
+  { type: 'A', name: '@', value: '192.168.1.100', ttl: '300', proxied: true },
+  { type: 'A', name: 'api', value: '192.168.1.101', ttl: '300', proxied: true },
+  { type: 'CNAME', name: 'www', value: 'stacks.dev', ttl: '300', proxied: true },
+  { type: 'CNAME', name: 'docs', value: 'stacks-docs.pages.dev', ttl: '300', proxied: false },
+  { type: 'MX', name: '@', value: 'mx.example.com', ttl: '3600', proxied: false },
+  { type: 'TXT', name: '@', value: 'v=spf1 include:_spf.google.com ~all', ttl: '3600', proxied: false },
+]
+
+const stats = [
+  { label: 'Domains', value: '3' },
+  { label: 'DNS Records', value: '19' },
+  { label: 'SSL Certificates', value: '3' },
+  { label: 'Queries (24h)', value: '45.2K' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>DNS Management</h1>
+        <p>Domain and DNS configuration</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Import Zone</button>
+        <button class="btn btn-primary">Add Domain</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="grid grid-3">
+        @foreach (domains as domain)
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">{{ domain.domain }}</span>
+              <span class="badge badge-success">{{ domain.status }}</span>
+            </div>
+            <div class="mt-4">
+              <div class="flex justify-between mb-2">
+                <span class="text-muted">Records</span>
+                <span>{{ domain.records }}</span>
+              </div>
+              <div class="flex justify-between mb-2">
+                <span class="text-muted">SSL</span>
+                <span class="badge badge-success">{{ domain.ssl }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-muted">Expires</span>
+                <span>{{ domain.expires }}</span>
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t flex gap-2">
+              <button class="btn btn-secondary btn-sm flex-1">Manage</button>
+              <button class="btn btn-ghost btn-sm">SSL</button>
+            </div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">DNS Records - stacks.dev</span>
+          <button class="btn btn-primary btn-sm">Add Record</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Value</th>
+                <th>TTL</th>
+                <th>Proxied</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (records as record)
+                <tr>
+                  <td><span class="badge badge-neutral">{{ record.type }}</span></td>
+                  <td class="font-medium">{{ record.name }}</td>
+                  <td><code class="code-inline text-sm">{{ record.value }}</code></td>
+                  <td>{{ record.ttl }}</td>
+                  <td>
+                    @if (record.proxied)
+                      <span class="badge badge-info">Proxied</span>
+                    @else
+                      <span class="badge badge-neutral">DNS Only</span>
+                    @endif
+                  </td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                      <button class="btn btn-ghost btn-sm text-error">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

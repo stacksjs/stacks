@@ -1,0 +1,87 @@
+<script server>
+const lists = [
+  { name: 'Newsletter Subscribers', members: 12456, growth: '+234', status: 'active', lastSent: '2d ago' },
+  { name: 'Product Updates', members: 8234, growth: '+89', status: 'active', lastSent: '1w ago' },
+  { name: 'VIP Customers', members: 567, growth: '+12', status: 'active', lastSent: '3d ago' },
+  { name: 'Beta Testers', members: 234, growth: '+5', status: 'active', lastSent: '5d ago' },
+  { name: 'Abandoned Cart', members: 1234, growth: '+156', status: 'active', lastSent: '1d ago' },
+]
+
+const stats = [
+  { label: 'Total Subscribers', value: '22,725' },
+  { label: 'New This Week', value: '+496' },
+  { label: 'Unsubscribed', value: '23' },
+  { label: 'Avg Open Rate', value: '24.5%' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Email Lists</h1>
+        <p>Manage subscriber lists</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Import</button>
+        <button class="btn btn-primary">Create List</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <input type="text" class="input" placeholder="Search lists..." style="width: 300px;" />
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>List Name</th>
+                <th>Members</th>
+                <th>Growth (7d)</th>
+                <th>Last Sent</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (lists as list)
+                <tr>
+                  <td class="font-medium">{{ list.name }}</td>
+                  <td>{{ list.members.toLocaleString() }}</td>
+                  <td class="text-success">{{ list.growth }}</td>
+                  <td class="text-muted">{{ list.lastSent }}</td>
+                  <td>
+                    <span class="badge badge-success">{{ list.status }}</span>
+                  </td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-secondary btn-sm">Send</button>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+.text-success {
+  color: var(--color-success);
+}
+</style>

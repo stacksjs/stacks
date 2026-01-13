@@ -1,0 +1,126 @@
+<script server>
+const stats = [
+  { label: 'Total Views', value: '234,567', change: '+18.2%' },
+  { label: 'Avg Read Time', value: '4m 32s', change: '+12.5%' },
+  { label: 'Comments', value: '1,234', change: '+8.1%' },
+  { label: 'Shares', value: '567', change: '+15.3%' },
+]
+
+const topPosts = [
+  { title: 'Getting Started with Stacks', views: '12,345', comments: 89, shares: 45, published: '2024-01-10' },
+  { title: '10 Tips for Better Performance', views: '8,765', comments: 56, shares: 34, published: '2024-01-08' },
+  { title: 'Understanding the Architecture', views: '6,543', comments: 34, shares: 23, published: '2024-01-05' },
+  { title: 'Advanced Configuration Guide', views: '5,432', comments: 28, shares: 19, published: '2024-01-03' },
+  { title: 'Best Practices for 2024', views: '4,321', comments: 45, shares: 28, published: '2024-01-01' },
+]
+
+const categories = [
+  { name: 'Tutorials', posts: 45, views: '89,234' },
+  { name: 'Updates', posts: 23, views: '45,678' },
+  { name: 'Guides', posts: 34, views: '56,789' },
+  { name: 'News', posts: 12, views: '23,456' },
+]
+
+const authors = [
+  { name: 'John Doe', posts: 34, views: '67,890', avgViews: '1,997' },
+  { name: 'Jane Smith', posts: 28, views: '54,321', avgViews: '1,940' },
+  { name: 'Bob Wilson', posts: 19, views: '34,567', avgViews: '1,819' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Blog Analytics</h1>
+        <p>Content performance metrics</p>
+      </div>
+      <div class="page-header-actions">
+        <select class="input" style="width: 150px;">
+          <option>Last 7 days</option>
+          <option>Last 30 days</option>
+          <option>Last 90 days</option>
+        </select>
+        <button class="btn btn-primary">Export</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+            <div class="stat-card-change positive">{{ stat.change }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Top Posts</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Views</th>
+                <th>Comments</th>
+                <th>Shares</th>
+                <th>Published</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (topPosts as post)
+                <tr>
+                  <td class="font-medium">{{ post.title }}</td>
+                  <td>{{ post.views }}</td>
+                  <td>{{ post.comments }}</td>
+                  <td>{{ post.shares }}</td>
+                  <td class="text-muted">{{ post.published }}</td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Categories</span>
+          </div>
+          <div class="list">
+            @foreach (categories as cat)
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ cat.name }}</div>
+                  <div class="list-item-subtitle">{{ cat.posts }} posts</div>
+                </div>
+                <span class="font-semibold">{{ cat.views }} views</span>
+              </div>
+            @endforeach
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Top Authors</span>
+          </div>
+          <div class="list">
+            @foreach (authors as author)
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ author.name }}</div>
+                  <div class="list-item-subtitle">{{ author.posts }} posts &middot; {{ author.avgViews }} avg views</div>
+                </div>
+                <span class="font-semibold">{{ author.views }}</span>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

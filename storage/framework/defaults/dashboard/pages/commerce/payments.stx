@@ -1,0 +1,149 @@
+<script server>
+const payments = [
+  { id: 'PAY-1234', order: 'ORD-5678', amount: '$125.00', method: 'Visa •••• 4242', status: 'completed', date: '2024-01-18 14:32' },
+  { id: 'PAY-1233', order: 'ORD-5677', amount: '$89.50', method: 'Mastercard •••• 8888', status: 'completed', date: '2024-01-18 13:15' },
+  { id: 'PAY-1232', order: 'ORD-5676', amount: '$234.00', method: 'PayPal', status: 'pending', date: '2024-01-18 12:45' },
+  { id: 'PAY-1231', order: 'ORD-5675', amount: '$67.00', method: 'Apple Pay', status: 'completed', date: '2024-01-18 11:20' },
+  { id: 'PAY-1230', order: 'ORD-5674', amount: '$189.00', method: 'Visa •••• 1234', status: 'failed', date: '2024-01-18 10:05' },
+  { id: 'PAY-1229', order: 'ORD-5673', amount: '$56.00', method: 'Mastercard •••• 5555', status: 'refunded', date: '2024-01-17 16:30' },
+]
+
+const stats = [
+  { label: 'Total Revenue', value: '$45,678' },
+  { label: 'Pending', value: '$1,234' },
+  { label: 'Refunded', value: '$567' },
+  { label: 'Failed', value: '12' },
+]
+
+const paymentMethods = [
+  { name: 'Credit Cards', provider: 'Stripe', status: 'active', volume: '$32,456' },
+  { name: 'PayPal', provider: 'PayPal', status: 'active', volume: '$8,234' },
+  { name: 'Apple Pay', provider: 'Stripe', status: 'active', volume: '$3,456' },
+  { name: 'Google Pay', provider: 'Stripe', status: 'active', volume: '$1,532' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Payments</h1>
+        <p>Transaction history and payment methods</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Export</button>
+        <button class="btn btn-primary">Payment Settings</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Payment Methods</span>
+            <button class="btn btn-ghost btn-sm">Configure</button>
+          </div>
+          <div class="list">
+            @foreach (paymentMethods as method)
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ method.name }}</div>
+                  <div class="list-item-subtitle">via {{ method.provider }}</div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-muted">{{ method.volume }}</span>
+                  <span class="badge badge-success">{{ method.status }}</span>
+                </div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Payout Schedule</span>
+          </div>
+          <div class="p-4">
+            <div class="flex justify-between items-center mb-4">
+              <span class="text-muted">Next Payout</span>
+              <span class="font-semibold">$12,456.78</span>
+            </div>
+            <div class="flex justify-between items-center mb-4">
+              <span class="text-muted">Payout Date</span>
+              <span>January 20, 2024</span>
+            </div>
+            <div class="flex justify-between items-center mb-4">
+              <span class="text-muted">Bank Account</span>
+              <span>•••• 4567</span>
+            </div>
+            <button class="btn btn-secondary w-full">View Payout History</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recent Transactions</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Payment ID</th>
+                <th>Order</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (payments as payment)
+                <tr>
+                  <td><code class="code-inline">{{ payment.id }}</code></td>
+                  <td><a href="#" class="text-primary">{{ payment.order }}</a></td>
+                  <td class="font-semibold">{{ payment.amount }}</td>
+                  <td>{{ payment.method }}</td>
+                  <td>
+                    <span class="badge badge-{{ payment.status === 'completed' ? 'success' : payment.status === 'pending' ? 'warning' : payment.status === 'refunded' ? 'info' : 'error' }}">
+                      {{ payment.status }}
+                    </span>
+                  </td>
+                  <td class="text-muted">{{ payment.date }}</td>
+                  <td>
+                    <button class="btn btn-ghost btn-sm">View</button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+.p-4 {
+  padding: 1rem;
+}
+.w-full {
+  width: 100%;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.text-primary {
+  color: var(--color-primary);
+}
+</style>

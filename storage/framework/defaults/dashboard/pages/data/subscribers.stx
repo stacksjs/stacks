@@ -1,0 +1,94 @@
+<script server>
+const subscribers = [
+  { email: 'user1@example.com', name: 'John Doe', plan: 'Pro', status: 'active', subscribed: '2024-01-15', source: 'Website' },
+  { email: 'user2@example.com', name: 'Jane Smith', plan: 'Basic', status: 'active', subscribed: '2024-01-10', source: 'API' },
+  { email: 'user3@example.com', name: 'Bob Wilson', plan: 'Enterprise', status: 'active', subscribed: '2024-01-05', source: 'Website' },
+  { email: 'user4@example.com', name: 'Alice Brown', plan: 'Pro', status: 'cancelled', subscribed: '2023-12-20', source: 'Referral' },
+  { email: 'user5@example.com', name: 'Charlie Davis', plan: 'Basic', status: 'pending', subscribed: '2024-01-18', source: 'Website' },
+]
+
+const stats = [
+  { label: 'Total Subscribers', value: '8,456' },
+  { label: 'Active', value: '7,892' },
+  { label: 'New This Month', value: '234' },
+  { label: 'Churn Rate', value: '2.1%' },
+]
+
+const plans = ['All Plans', 'Basic', 'Pro', 'Enterprise']
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Subscribers</h1>
+        <p>Manage newsletter and plan subscribers</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Export</button>
+        <button class="btn btn-primary">Add Subscriber</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="flex gap-2">
+            <input type="text" class="input" placeholder="Search subscribers..." style="width: 300px;" />
+            <select class="input" style="width: 150px;">
+              @foreach (plans as plan)
+                <option>{{ plan }}</option>
+              @endforeach
+            </select>
+          </div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Plan</th>
+                <th>Source</th>
+                <th>Status</th>
+                <th>Subscribed</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (subscribers as sub)
+                <tr>
+                  <td>{{ sub.email }}</td>
+                  <td class="font-medium">{{ sub.name }}</td>
+                  <td><span class="badge badge-{{ sub.plan === 'Enterprise' ? 'primary' : sub.plan === 'Pro' ? 'info' : 'neutral' }}">{{ sub.plan }}</span></td>
+                  <td class="text-muted">{{ sub.source }}</td>
+                  <td>
+                    <span class="badge badge-{{ sub.status === 'active' ? 'success' : sub.status === 'pending' ? 'warning' : 'error' }}">
+                      {{ sub.status }}
+                    </span>
+                  </td>
+                  <td class="text-muted">{{ sub.subscribed }}</td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                      <button class="btn btn-ghost btn-sm text-error">Remove</button>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

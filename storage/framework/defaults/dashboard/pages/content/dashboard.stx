@@ -1,0 +1,95 @@
+<script server>
+/**
+ * Content Dashboard Page
+ *
+ * Overview of blog and content performance.
+ */
+
+const stats = [
+  { label: 'Total Posts', value: '142', trend: '+8', up: true },
+  { label: 'Published', value: '118', trend: '+5', up: true },
+  { label: 'Draft', value: '24', trend: '+3', up: true },
+  { label: 'Total Views', value: '48.2K', trend: '+12%', up: true },
+]
+
+const topPosts = [
+  { title: 'Getting Started with Stacks', views: 4521, comments: 23, date: '2024-01-08' },
+  { title: 'Building Modern Web Apps', views: 3892, comments: 18, date: '2024-01-05' },
+  { title: 'TypeScript Best Practices', views: 3456, comments: 31, date: '2024-01-02' },
+  { title: 'Database Optimization Guide', views: 2987, comments: 12, date: '2023-12-28' },
+]
+
+const recentComments = [
+  { author: 'John Doe', content: 'Great article! Very helpful.', post: 'Getting Started', time: '2 hours ago' },
+  { author: 'Jane Smith', content: 'This solved my problem, thanks!', post: 'TypeScript Best Practices', time: '5 hours ago' },
+  { author: 'Bob Wilson', content: 'Could you elaborate on...', post: 'Database Optimization', time: '1 day ago' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Content Dashboard</h1>
+        <p>Overview of your blog and content performance</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary">New Post</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Stats -->
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+            <div class="stat-card-trend up">{{ stat.trend }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="grid grid-2">
+        <!-- Top Posts -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Top Performing Posts</span>
+            <button class="btn btn-ghost btn-sm">View All</button>
+          </div>
+          <div class="list">
+            @foreach (topPosts as post)
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ post.title }}</div>
+                  <div class="list-item-subtitle">{{ post.views.toLocaleString() }} views &middot; {{ post.comments }} comments</div>
+                </div>
+                <span class="text-sm text-muted">{{ post.date }}</span>
+              </div>
+            @endforeach
+          </div>
+        </div>
+
+        <!-- Recent Comments -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent Comments</span>
+            <button class="btn btn-ghost btn-sm">View All</button>
+          </div>
+          <div class="list">
+            @foreach (recentComments as comment)
+              <div class="list-item">
+                <div class="avatar">{{ comment.author.charAt(0) }}</div>
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ comment.author }}</div>
+                  <div class="list-item-subtitle truncate">{{ comment.content }}</div>
+                </div>
+                <span class="text-sm text-muted">{{ comment.time }}</span>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

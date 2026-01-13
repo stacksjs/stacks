@@ -1,0 +1,68 @@
+<script server>
+const queries = [
+  { query: 'SELECT * FROM users WHERE...', time: '12ms', rows: 150, timestamp: '10:45:32' },
+  { query: 'INSERT INTO orders VALUES...', time: '8ms', rows: 1, timestamp: '10:45:28' },
+  { query: 'UPDATE posts SET status...', time: '15ms', rows: 5, timestamp: '10:45:25' },
+  { query: 'SELECT * FROM products JOIN...', time: '234ms', rows: 1500, timestamp: '10:45:20' },
+]
+
+const stats = [
+  { label: 'Total Queries', value: '45.2K' },
+  { label: 'Avg Time', value: '8ms' },
+  { label: 'Slow Queries', value: '12' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Queries</h1>
+        <p>Database query monitoring</p>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-3">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recent Queries</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Query</th>
+                <th>Time</th>
+                <th>Rows</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (queries as query)
+                <tr>
+                  <td><code class="code-inline truncate" style="max-width: 400px;">{{ query.query }}</code></td>
+                  <td>
+                    <span class="{{ query.time.includes('ms') && parseInt(query.time) > 100 ? 'text-warning' : '' }}">
+                      {{ query.time }}
+                    </span>
+                  </td>
+                  <td>{{ query.rows }}</td>
+                  <td class="text-muted">{{ query.timestamp }}</td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

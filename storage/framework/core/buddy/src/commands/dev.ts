@@ -128,7 +128,9 @@ export function dev(buddy: CLI): void {
       else {
         if (options.components)
           await runComponentsDevServer(options)
-        if (options.docs)
+        else if (options.dashboard)
+          await runDashboardDevServer(options)
+        else if (options.docs)
           await runDocsDevServer(options)
         else if (options.api)
           await runApiDevServer(options)

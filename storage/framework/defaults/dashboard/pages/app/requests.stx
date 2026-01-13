@@ -1,0 +1,75 @@
+<script server>
+const requests = [
+  { method: 'GET', path: '/api/users', status: 200, time: '12ms', timestamp: '10:45:32' },
+  { method: 'POST', path: '/api/auth/login', status: 200, time: '45ms', timestamp: '10:45:28' },
+  { method: 'GET', path: '/api/posts', status: 200, time: '8ms', timestamp: '10:45:25' },
+  { method: 'PUT', path: '/api/users/123', status: 404, time: '5ms', timestamp: '10:45:20' },
+  { method: 'DELETE', path: '/api/posts/456', status: 204, time: '15ms', timestamp: '10:45:15' },
+]
+
+const stats = [
+  { label: 'Total Requests', value: '1.2M' },
+  { label: 'Avg Response', value: '23ms' },
+  { label: 'Error Rate', value: '0.12%' },
+  { label: 'Requests/min', value: '847' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Requests</h1>
+        <p>Monitor API requests and responses</p>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recent Requests</span>
+          <button class="btn btn-ghost btn-sm">Live</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Path</th>
+                <th>Status</th>
+                <th>Time</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (requests as req)
+                <tr>
+                  <td>
+                    <span class="badge badge-{{ req.method === 'GET' ? 'info' : req.method === 'POST' ? 'success' : req.method === 'PUT' ? 'warning' : 'error' }}">
+                      {{ req.method }}
+                    </span>
+                  </td>
+                  <td><code class="code-inline">{{ req.path }}</code></td>
+                  <td>
+                    <span class="badge badge-{{ req.status < 400 ? 'success' : 'error' }}">{{ req.status }}</span>
+                  </td>
+                  <td>{{ req.time }}</td>
+                  <td class="text-muted">{{ req.timestamp }}</td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

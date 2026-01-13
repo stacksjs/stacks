@@ -1,0 +1,93 @@
+<script server>
+const campaigns = [
+  { name: 'Spring Sale 2024', type: 'Email', status: 'active', sent: '12,456', opened: '28.5%', clicked: '4.2%', revenue: '$12,345' },
+  { name: 'New Feature Launch', type: 'Multi-channel', status: 'active', sent: '8,234', opened: '32.1%', clicked: '6.8%', revenue: '$8,567' },
+  { name: 'Re-engagement Series', type: 'Email', status: 'scheduled', sent: '-', opened: '-', clicked: '-', revenue: '-' },
+  { name: 'Holiday Promo', type: 'Email', status: 'completed', sent: '15,678', opened: '35.2%', clicked: '8.1%', revenue: '$45,678' },
+  { name: 'Welcome Series', type: 'Automation', status: 'active', sent: '2,345', opened: '45.6%', clicked: '12.3%', revenue: '$5,678' },
+]
+
+const stats = [
+  { label: 'Active Campaigns', value: '3' },
+  { label: 'Total Sent', value: '38,713' },
+  { label: 'Avg Open Rate', value: '35.4%' },
+  { label: 'Revenue Generated', value: '$72,268' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Campaigns</h1>
+        <p>Marketing campaign management</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Templates</button>
+        <button class="btn btn-primary">Create Campaign</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <input type="text" class="input" placeholder="Search campaigns..." style="width: 300px;" />
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Campaign</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Sent</th>
+                <th>Opened</th>
+                <th>Clicked</th>
+                <th>Revenue</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (campaigns as campaign)
+                <tr>
+                  <td class="font-medium">{{ campaign.name }}</td>
+                  <td><span class="badge badge-neutral">{{ campaign.type }}</span></td>
+                  <td>
+                    <span class="badge badge-{{ campaign.status === 'active' ? 'success' : campaign.status === 'scheduled' ? 'info' : 'neutral' }}">
+                      {{ campaign.status }}
+                    </span>
+                  </td>
+                  <td>{{ campaign.sent }}</td>
+                  <td>{{ campaign.opened }}</td>
+                  <td>{{ campaign.clicked }}</td>
+                  <td class="font-semibold text-success">{{ campaign.revenue }}</td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-ghost btn-sm">View</button>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+.text-success {
+  color: var(--color-success);
+}
+</style>

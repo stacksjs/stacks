@@ -1,0 +1,41 @@
+<script server>
+const categories = [
+  { name: 'Technology', slug: 'technology', posts: 34, description: 'Tech and development articles' },
+  { name: 'Tutorials', slug: 'tutorials', posts: 28, description: 'How-to guides and tutorials' },
+  { name: 'News', slug: 'news', posts: 15, description: 'Latest news and updates' },
+  { name: 'Case Studies', slug: 'case-studies', posts: 8, description: 'Real-world examples' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Categories</h1>
+        <p>Organize your content with categories</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary">New Category</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-3">
+        @foreach (categories as category)
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">{{ category.name }}</span>
+              <span class="badge badge-neutral">{{ category.posts }} posts</span>
+            </div>
+            <div class="card-body">
+              <p class="text-muted">{{ category.description }}</p>
+              <div class="mt-4">
+                <code class="code-inline">/{{ category.slug }}</code>
+              </div>
+            </div>
+          </div>
+        @endforeach
+      </div>
+    </div>
+  </div>
+</template>

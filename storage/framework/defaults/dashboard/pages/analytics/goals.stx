@@ -1,0 +1,121 @@
+<script server>
+const goals = [
+  { name: 'Newsletter Signups', target: 1000, current: 856, progress: 85.6, status: 'on_track' },
+  { name: 'Product Demo Requests', target: 100, current: 112, progress: 112, status: 'completed' },
+  { name: 'Free Trial Conversions', target: 50, current: 34, progress: 68, status: 'at_risk' },
+  { name: 'Contact Form Submissions', target: 200, current: 189, progress: 94.5, status: 'on_track' },
+  { name: 'Ebook Downloads', target: 500, current: 523, progress: 104.6, status: 'completed' },
+]
+
+const stats = [
+  { label: 'Active Goals', value: '5' },
+  { label: 'Completed', value: '2' },
+  { label: 'Avg Progress', value: '92.8%' },
+  { label: 'At Risk', value: '1' },
+]
+
+const conversions = [
+  { funnel: 'Homepage → Signup', rate: '3.2%', visitors: '45,234', conversions: '1,447' },
+  { funnel: 'Blog → Newsletter', rate: '8.5%', visitors: '12,345', conversions: '1,049' },
+  { funnel: 'Pricing → Trial', rate: '12.3%', visitors: '5,432', conversions: '668' },
+  { funnel: 'Trial → Paid', rate: '24.5%', visitors: '668', conversions: '164' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Goals & Conversions</h1>
+        <p>Track goal progress and conversion funnels</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary">Create Goal</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Goal Progress</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Goal</th>
+                <th>Progress</th>
+                <th>Current</th>
+                <th>Target</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (goals as goal)
+                <tr>
+                  <td class="font-medium">{{ goal.name }}</td>
+                  <td class="w-48">
+                    <div class="flex items-center gap-2">
+                      <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full {{ goal.status === 'completed' ? 'bg-green-500' : goal.status === 'at_risk' ? 'bg-amber-500' : 'bg-blue-500' }}" style="width: {{ Math.min(goal.progress, 100) }}%;"></div>
+                      </div>
+                      <span class="text-sm">{{ goal.progress.toFixed(1) }}%</span>
+                    </div>
+                  </td>
+                  <td>{{ goal.current.toLocaleString() }}</td>
+                  <td class="text-muted">{{ goal.target.toLocaleString() }}</td>
+                  <td>
+                    <span class="badge badge-{{ goal.status === 'completed' ? 'success' : goal.status === 'at_risk' ? 'warning' : 'info' }}">
+                      {{ goal.status.replace('_', ' ') }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="btn btn-ghost btn-sm">Edit</button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Conversion Funnels</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Funnel</th>
+                <th>Visitors</th>
+                <th>Conversions</th>
+                <th>Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (conversions as conv)
+                <tr>
+                  <td class="font-medium">{{ conv.funnel }}</td>
+                  <td>{{ conv.visitors }}</td>
+                  <td>{{ conv.conversions }}</td>
+                  <td class="font-semibold text-success">{{ conv.rate }}</td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

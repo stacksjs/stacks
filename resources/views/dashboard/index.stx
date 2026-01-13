@@ -1,0 +1,29 @@
+<!--
+  Dashboard View Extensions
+
+  This file allows you to customize the Stacks dashboard.
+  Add your custom dashboard views here to extend the default dashboard.
+
+  Example usage:
+  - Override default pages by matching the path
+  - Add new custom pages
+  - Include custom widgets and components
+-->
+
+<script server>
+// Add your custom server-side data here
+const customData = {
+  // Your custom dashboard data
+}
+
+export { customData }
+</script>
+
+<template>
+  <!--
+    Custom Dashboard Content
+
+    This template will be merged with the default dashboard.
+    You can add custom sections, widgets, or entirely new views.
+  -->
+</template>

@@ -1,0 +1,135 @@
+<script server>
+const giftCards = [
+  { code: 'GC-1234-5678', balance: '$50.00', initial: '$50.00', recipient: 'john@example.com', status: 'active', created: '2024-01-15' },
+  { code: 'GC-2345-6789', balance: '$25.00', initial: '$100.00', recipient: 'jane@example.com', status: 'active', created: '2024-01-10' },
+  { code: 'GC-3456-7890', balance: '$0.00', initial: '$75.00', recipient: 'bob@example.com', status: 'redeemed', created: '2024-01-05' },
+  { code: 'GC-4567-8901', balance: '$200.00', initial: '$200.00', recipient: 'alice@example.com', status: 'active', created: '2024-01-18' },
+  { code: 'GC-5678-9012', balance: '$50.00', initial: '$50.00', recipient: null, status: 'pending', created: '2024-01-17' },
+]
+
+const stats = [
+  { label: 'Outstanding Balance', value: '$12,456' },
+  { label: 'Active Cards', value: '234' },
+  { label: 'Redeemed Today', value: '$567' },
+  { label: 'Sold This Month', value: '$3,450' },
+]
+
+const denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Gift Cards</h1>
+        <p>Manage gift card inventory</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Bulk Create</button>
+        <button class="btn btn-primary">Create Gift Card</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Quick Create</span>
+          </div>
+          <div class="p-4">
+            <div class="mb-4">
+              <label class="text-sm text-muted mb-2 block">Select Amount</label>
+              <div class="flex flex-wrap gap-2">
+                @foreach (denominations as denom)
+                  <button class="btn btn-secondary btn-sm">{{ denom }}</button>
+                @endforeach
+              </div>
+            </div>
+            <div class="mb-4">
+              <label class="text-sm text-muted mb-2 block">Recipient Email (optional)</label>
+              <input type="email" class="input" placeholder="email@example.com" />
+            </div>
+            <button class="btn btn-primary w-full">Create Gift Card</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Check Balance</span>
+          </div>
+          <div class="p-4">
+            <div class="mb-4">
+              <label class="text-sm text-muted mb-2 block">Gift Card Code</label>
+              <input type="text" class="input" placeholder="GC-XXXX-XXXX" />
+            </div>
+            <button class="btn btn-secondary w-full">Check Balance</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recent Gift Cards</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Balance</th>
+                <th>Initial</th>
+                <th>Recipient</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (giftCards as card)
+                <tr>
+                  <td><code class="code-inline">{{ card.code }}</code></td>
+                  <td class="font-semibold">{{ card.balance }}</td>
+                  <td class="text-muted">{{ card.initial }}</td>
+                  <td>{{ card.recipient || '—' }}</td>
+                  <td>
+                    <span class="badge badge-{{ card.status === 'active' ? 'success' : card.status === 'pending' ? 'warning' : 'neutral' }}">
+                      {{ card.status }}
+                    </span>
+                  </td>
+                  <td class="text-muted">{{ card.created }}</td>
+                  <td>
+                    <button class="btn btn-ghost btn-sm">View</button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+.p-4 {
+  padding: 1rem;
+}
+.w-full {
+  width: 100%;
+}
+.flex-wrap {
+  flex-wrap: wrap;
+}
+.block {
+  display: block;
+}
+</style>

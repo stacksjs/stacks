@@ -1,0 +1,96 @@
+<script server>
+/**
+ * Packages Page
+ *
+ * Manage project dependencies and packages.
+ */
+
+const packages = [
+  { name: '@stacksjs/core', version: '2.4.0', latest: '2.4.0', type: 'dependency', status: 'up-to-date' },
+  { name: '@stacksjs/ui', version: '1.8.2', latest: '1.9.0', type: 'dependency', status: 'update-available' },
+  { name: '@stacksjs/database', version: '3.1.0', latest: '3.1.0', type: 'dependency', status: 'up-to-date' },
+  { name: 'typescript', version: '5.3.3', latest: '5.3.3', type: 'devDependency', status: 'up-to-date' },
+  { name: 'bun', version: '1.0.21', latest: '1.0.25', type: 'devDependency', status: 'update-available' },
+  { name: 'vitest', version: '1.1.0', latest: '1.2.0', type: 'devDependency', status: 'update-available' },
+]
+
+const stats = [
+  { label: 'Total Packages', value: '47' },
+  { label: 'Up to Date', value: '41' },
+  { label: 'Updates Available', value: '6' },
+  { label: 'Security Issues', value: '0' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Packages</h1>
+        <p>Manage project dependencies</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Check Updates</button>
+        <button class="btn btn-primary">Add Package</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Stats -->
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <!-- Packages Table -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Dependencies</span>
+          <button class="btn btn-ghost btn-sm">Update All</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Package</th>
+                <th>Current</th>
+                <th>Latest</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (packages as pkg)
+                <tr>
+                  <td class="font-medium">{{ pkg.name }}</td>
+                  <td><code class="code-inline">{{ pkg.version }}</code></td>
+                  <td><code class="code-inline">{{ pkg.latest }}</code></td>
+                  <td>
+                    <span class="badge badge-neutral">{{ pkg.type }}</span>
+                  </td>
+                  <td>
+                    <span class="badge badge-{{ pkg.status === 'up-to-date' ? 'success' : 'warning' }}">
+                      {{ pkg.status === 'up-to-date' ? 'Up to date' : 'Update available' }}
+                    </span>
+                  </td>
+                  <td>
+                    @if (pkg.status === 'update-available')
+                      <button class="btn btn-primary btn-sm">Update</button>
+                    @else
+                      <button class="btn btn-ghost btn-sm">Details</button>
+                    @endif
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

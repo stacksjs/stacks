@@ -1,0 +1,76 @@
+<script server>
+/**
+ * Posts Page
+ *
+ * Manage blog posts.
+ */
+
+const posts = [
+  { title: 'Getting Started with Stacks', status: 'published', author: 'Chris', date: '2024-01-08', views: 4521 },
+  { title: 'Building Modern Web Apps', status: 'published', author: 'Chris', date: '2024-01-05', views: 3892 },
+  { title: 'Advanced TypeScript Patterns', status: 'draft', author: 'Chris', date: '2024-01-10', views: 0 },
+  { title: 'Database Performance Tips', status: 'published', author: 'Team', date: '2024-01-02', views: 2987 },
+  { title: 'API Design Best Practices', status: 'scheduled', author: 'Chris', date: '2024-01-15', views: 0 },
+  { title: 'Testing Strategies', status: 'draft', author: 'Team', date: '2024-01-09', views: 0 },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Posts</h1>
+        <p>Manage your blog posts</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary">New Post</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Filter Tabs -->
+      <div class="flex gap-2">
+        <button class="btn btn-primary btn-sm">All ({{ posts.length }})</button>
+        <button class="btn btn-ghost btn-sm">Published ({{ posts.filter(p => p.status === 'published').length }})</button>
+        <button class="btn btn-ghost btn-sm">Draft ({{ posts.filter(p => p.status === 'draft').length }})</button>
+        <button class="btn btn-ghost btn-sm">Scheduled ({{ posts.filter(p => p.status === 'scheduled').length }})</button>
+      </div>
+
+      <!-- Posts Table -->
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Author</th>
+                <th>Date</th>
+                <th>Views</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (posts as post)
+                <tr>
+                  <td class="font-medium">{{ post.title }}</td>
+                  <td>
+                    <span class="badge badge-{{ post.status === 'published' ? 'success' : post.status === 'draft' ? 'warning' : 'info' }}">
+                      {{ post.status }}
+                    </span>
+                  </td>
+                  <td>{{ post.author }}</td>
+                  <td class="text-muted">{{ post.date }}</td>
+                  <td>{{ post.views.toLocaleString() }}</td>
+                  <td>
+                    <button class="btn btn-ghost btn-sm">Edit</button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

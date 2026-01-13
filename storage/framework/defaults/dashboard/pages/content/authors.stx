@@ -1,0 +1,41 @@
+<script server>
+const authors = [
+  { name: 'Chris Breuer', email: 'chris@stacks.js', role: 'Admin', posts: 45, avatar: 'CB' },
+  { name: 'Sarah Johnson', email: 'sarah@stacks.js', role: 'Editor', posts: 28, avatar: 'SJ' },
+  { name: 'Mike Chen', email: 'mike@stacks.js', role: 'Writer', posts: 15, avatar: 'MC' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Authors</h1>
+        <p>Manage content authors</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary">Add Author</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-3">
+        @foreach (authors as author)
+          <div class="card">
+            <div class="flex items-center gap-4">
+              <div class="avatar avatar-lg">{{ author.avatar }}</div>
+              <div>
+                <div class="font-semibold">{{ author.name }}</div>
+                <div class="text-sm text-muted">{{ author.email }}</div>
+              </div>
+            </div>
+            <div class="mt-4 flex justify-between items-center">
+              <span class="badge badge-neutral">{{ author.role }}</span>
+              <span class="text-muted">{{ author.posts }} posts</span>
+            </div>
+          </div>
+        @endforeach
+      </div>
+    </div>
+  </div>
+</template>

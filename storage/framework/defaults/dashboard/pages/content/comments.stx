@@ -1,0 +1,66 @@
+<script server>
+const comments = [
+  { author: 'John Doe', email: 'john@example.com', content: 'Great article!', post: 'Getting Started', status: 'approved', date: '2024-01-10' },
+  { author: 'Jane Smith', email: 'jane@example.com', content: 'Very helpful, thanks!', post: 'TypeScript Tips', status: 'pending', date: '2024-01-10' },
+  { author: 'Bob Wilson', email: 'bob@example.com', content: 'Could you explain more?', post: 'Database Guide', status: 'approved', date: '2024-01-09' },
+  { author: 'Anonymous', email: 'spam@spam.com', content: 'Buy cheap products...', post: 'Getting Started', status: 'spam', date: '2024-01-08' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Comments</h1>
+        <p>Moderate and manage comments</p>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="flex gap-2 mb-4">
+        <button class="btn btn-primary btn-sm">All</button>
+        <button class="btn btn-ghost btn-sm">Pending</button>
+        <button class="btn btn-ghost btn-sm">Approved</button>
+        <button class="btn btn-ghost btn-sm">Spam</button>
+      </div>
+
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Author</th>
+                <th>Comment</th>
+                <th>Post</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (comments as comment)
+                <tr>
+                  <td>
+                    <div class="font-medium">{{ comment.author }}</div>
+                    <div class="text-sm text-muted">{{ comment.email }}</div>
+                  </td>
+                  <td class="truncate" style="max-width: 300px;">{{ comment.content }}</td>
+                  <td>{{ comment.post }}</td>
+                  <td>
+                    <span class="badge badge-{{ comment.status === 'approved' ? 'success' : comment.status === 'pending' ? 'warning' : 'error' }}">
+                      {{ comment.status }}
+                    </span>
+                  </td>
+                  <td class="text-muted">{{ comment.date }}</td>
+                  <td>
+                    <button class="btn btn-ghost btn-sm">Review</button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

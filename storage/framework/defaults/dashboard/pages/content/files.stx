@@ -1,0 +1,101 @@
+<script server>
+/**
+ * Files Page
+ *
+ * File browser and media management.
+ */
+
+const files = [
+  { name: 'images', type: 'folder', items: 247, size: '1.2 GB', modified: '2024-01-10' },
+  { name: 'documents', type: 'folder', items: 89, size: '456 MB', modified: '2024-01-09' },
+  { name: 'videos', type: 'folder', items: 34, size: '4.8 GB', modified: '2024-01-08' },
+  { name: 'hero-banner.png', type: 'image', items: null, size: '2.4 MB', modified: '2024-01-10' },
+  { name: 'style-guide.pdf', type: 'document', items: null, size: '892 KB', modified: '2024-01-07' },
+  { name: 'product-demo.mp4', type: 'video', items: null, size: '124 MB', modified: '2024-01-05' },
+]
+
+const storage = {
+  used: 12.4,
+  total: 50,
+  percentage: 24.8
+}
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Files</h1>
+        <p>Manage your media and documents</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">New Folder</button>
+        <button class="btn btn-primary">Upload</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Storage Info -->
+      <div class="card">
+        <div class="flex justify-between items-center mb-4">
+          <span class="card-title">Storage</span>
+          <span class="text-muted">{{ storage.used }} GB of {{ storage.total }} GB used</span>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" style="width: {{ storage.percentage }}%"></div>
+        </div>
+      </div>
+
+      <!-- Files Table -->
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Modified</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (files as file)
+                <tr>
+                  <td class="flex items-center gap-3">
+                    <div class="list-item-icon">
+                      @if (file.type === 'folder')
+                        F
+                      @elseif (file.type === 'image')
+                        I
+                      @elseif (file.type === 'document')
+                        D
+                      @else
+                        V
+                      @endif
+                    </div>
+                    <span class="font-medium">{{ file.name }}</span>
+                  </td>
+                  <td>
+                    <span class="badge badge-neutral">{{ file.type }}</span>
+                  </td>
+                  <td class="text-muted">
+                    @if (file.items)
+                      {{ file.items }} items
+                    @else
+                      {{ file.size }}
+                    @endif
+                  </td>
+                  <td class="text-muted">{{ file.modified }}</td>
+                  <td>
+                    <button class="btn btn-ghost btn-sm">Open</button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

@@ -1,0 +1,84 @@
+<!--
+  Custom Dashboard Widget Component
+
+  Use this component to create reusable widgets for your dashboard.
+  Import this in your dashboard pages using:
+
+  <script server>
+  import Widget from '@/components/Dashboard/Widget.stx'
+  </script>
+-->
+
+<script server>
+// Widget props
+const props = defineProps({
+  title: { type: String, required: true },
+  value: { type: String, required: true },
+  description: { type: String, default: '' },
+  trend: { type: String, default: '' },
+  icon: { type: String, default: '' },
+})
+</script>
+
+<template>
+  <div class="widget">
+    <div class="widget-header">
+      @if (props.icon)
+        <div class="widget-icon">{{ props.icon }}</div>
+      @endif
+      <h3 class="widget-title">{{ props.title }}</h3>
+    </div>
+    <div class="widget-value">{{ props.value }}</div>
+    @if (props.description)
+      <div class="widget-description">{{ props.description }}</div>
+    @endif
+    @if (props.trend)
+      <div class="widget-trend {{ props.trend.startsWith('+') ? 'positive' : 'negative' }}">
+        {{ props.trend }}
+      </div>
+    @endif
+  </div>
+</template>
+
+<style>
+.widget {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+.widget-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.widget-icon {
+  font-size: 1.25rem;
+}
+.widget-title {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+.widget-value {
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+.widget-description {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+.widget-trend {
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+.widget-trend.positive {
+  color: var(--color-success);
+}
+.widget-trend.negative {
+  color: var(--color-error);
+}
+</style>

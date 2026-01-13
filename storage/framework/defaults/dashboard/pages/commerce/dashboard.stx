@@ -1,0 +1,92 @@
+<script server>
+const stats = [
+  { label: 'Revenue Today', value: '$12,456', change: '+15.2%' },
+  { label: 'Orders', value: '234', change: '+8.5%' },
+  { label: 'Avg Order Value', value: '$53.23', change: '+3.2%' },
+  { label: 'Conversion Rate', value: '3.4%', change: '+0.5%' },
+]
+
+const recentOrders = [
+  { id: 'ORD-1234', customer: 'John Doe', total: '$125.00', status: 'completed', time: '5m ago' },
+  { id: 'ORD-1233', customer: 'Jane Smith', total: '$89.50', status: 'processing', time: '12m ago' },
+  { id: 'ORD-1232', customer: 'Bob Wilson', total: '$234.00', status: 'pending', time: '25m ago' },
+  { id: 'ORD-1231', customer: 'Alice Brown', total: '$67.00', status: 'shipped', time: '1h ago' },
+]
+
+const topProducts = [
+  { name: 'Premium Widget', sales: 156, revenue: '$7,800' },
+  { name: 'Basic Package', sales: 234, revenue: '$5,850' },
+  { name: 'Pro Subscription', sales: 89, revenue: '$4,450' },
+  { name: 'Starter Kit', sales: 312, revenue: '$3,120' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Commerce Dashboard</h1>
+        <p>Sales overview and analytics</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Export Report</button>
+        <button class="btn btn-primary">New Order</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+            <div class="stat-card-change positive">{{ stat.change }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent Orders</span>
+            <button class="btn btn-ghost btn-sm">View All</button>
+          </div>
+          <div class="list">
+            @foreach (recentOrders as order)
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ order.id }}</div>
+                  <div class="list-item-subtitle">{{ order.customer }} &middot; {{ order.time }}</div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="font-semibold">{{ order.total }}</span>
+                  <span class="badge badge-{{ order.status === 'completed' ? 'success' : order.status === 'shipped' ? 'info' : order.status === 'processing' ? 'warning' : 'neutral' }}">
+                    {{ order.status }}
+                  </span>
+                </div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Top Products</span>
+            <button class="btn btn-ghost btn-sm">View All</button>
+          </div>
+          <div class="list">
+            @foreach (topProducts as product)
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ product.name }}</div>
+                  <div class="list-item-subtitle">{{ product.sales }} sales</div>
+                </div>
+                <span class="font-semibold text-success">{{ product.revenue }}</span>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

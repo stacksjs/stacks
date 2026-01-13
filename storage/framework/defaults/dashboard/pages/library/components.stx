@@ -1,0 +1,65 @@
+<script server>
+/**
+ * Components Library Page
+ *
+ * Browse and manage UI components.
+ */
+
+const components = [
+  { name: 'Button', category: 'Forms', instances: 47, description: 'Interactive button component with variants' },
+  { name: 'Input', category: 'Forms', instances: 38, description: 'Text input with validation support' },
+  { name: 'Card', category: 'Layout', instances: 23, description: 'Container card with header and footer slots' },
+  { name: 'Modal', category: 'Overlay', instances: 12, description: 'Dialog modal with backdrop' },
+  { name: 'Table', category: 'Data', instances: 18, description: 'Data table with sorting and pagination' },
+  { name: 'Badge', category: 'Display', instances: 34, description: 'Status badge with color variants' },
+  { name: 'Avatar', category: 'Display', instances: 21, description: 'User avatar with fallback' },
+  { name: 'Dropdown', category: 'Navigation', instances: 15, description: 'Dropdown menu with items' },
+]
+
+const categories = ['All', 'Forms', 'Layout', 'Overlay', 'Data', 'Display', 'Navigation']
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Components</h1>
+        <p>Browse and manage your UI component library</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Import</button>
+        <button class="btn btn-primary">New Component</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Filter Tabs -->
+      <div class="flex gap-2">
+        @foreach (categories as category)
+          <button class="btn {{ category === 'All' ? 'btn-primary' : 'btn-ghost' }} btn-sm">
+            {{ category }}
+          </button>
+        @endforeach
+      </div>
+
+      <!-- Components Grid -->
+      <div class="grid grid-3">
+        @foreach (components as component)
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">{{ component.name }}</span>
+              <span class="badge badge-info">{{ component.category }}</span>
+            </div>
+            <div class="card-body">
+              <p class="text-muted">{{ component.description }}</p>
+              <div class="mt-4 flex justify-between items-center">
+                <span class="text-sm text-muted">{{ component.instances }} instances</span>
+                <button class="btn btn-ghost btn-sm">View</button>
+              </div>
+            </div>
+          </div>
+        @endforeach
+      </div>
+    </div>
+  </div>
+</template>

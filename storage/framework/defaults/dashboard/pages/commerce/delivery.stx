@@ -1,0 +1,149 @@
+<script server>
+const shipments = [
+  { id: 'SHP-1234', order: 'ORD-5678', carrier: 'UPS', tracking: '1Z999AA10123456784', status: 'in_transit', eta: 'Jan 20' },
+  { id: 'SHP-1233', order: 'ORD-5677', carrier: 'FedEx', tracking: '794644790240', status: 'delivered', eta: 'Jan 18' },
+  { id: 'SHP-1232', order: 'ORD-5676', carrier: 'USPS', tracking: '9400111899223100001234', status: 'out_for_delivery', eta: 'Today' },
+  { id: 'SHP-1231', order: 'ORD-5675', carrier: 'DHL', tracking: '1234567890', status: 'processing', eta: 'Jan 22' },
+  { id: 'SHP-1230', order: 'ORD-5674', carrier: 'UPS', tracking: '1Z999AA10123456785', status: 'exception', eta: 'Delayed' },
+]
+
+const stats = [
+  { label: 'In Transit', value: '45' },
+  { label: 'Delivered Today', value: '23' },
+  { label: 'Exceptions', value: '3' },
+  { label: 'Avg Delivery Time', value: '3.2 days' },
+]
+
+const carriers = [
+  { name: 'UPS', shipments: 234, onTime: '98%', status: 'active' },
+  { name: 'FedEx', shipments: 189, onTime: '97%', status: 'active' },
+  { name: 'USPS', shipments: 456, onTime: '94%', status: 'active' },
+  { name: 'DHL', shipments: 67, onTime: '99%', status: 'active' },
+]
+
+const zones = [
+  { name: 'Domestic (US)', rate: '$5.99+', delivery: '2-5 days' },
+  { name: 'Canada', rate: '$12.99+', delivery: '5-10 days' },
+  { name: 'Europe', rate: '$19.99+', delivery: '7-14 days' },
+  { name: 'Rest of World', rate: '$29.99+', delivery: '10-21 days' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Delivery</h1>
+        <p>Shipping and fulfillment management</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Shipping Zones</button>
+        <button class="btn btn-primary">Create Shipment</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Carriers</span>
+            <button class="btn btn-ghost btn-sm">Manage</button>
+          </div>
+          <div class="list">
+            @foreach (carriers as carrier)
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ carrier.name }}</div>
+                  <div class="list-item-subtitle">{{ carrier.shipments }} shipments</div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-success">{{ carrier.onTime }} on-time</span>
+                  <span class="badge badge-success">{{ carrier.status }}</span>
+                </div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Shipping Zones</span>
+            <button class="btn btn-ghost btn-sm">Edit</button>
+          </div>
+          <div class="list">
+            @foreach (zones as zone)
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ zone.name }}</div>
+                  <div class="list-item-subtitle">{{ zone.delivery }}</div>
+                </div>
+                <span class="font-semibold">{{ zone.rate }}</span>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Active Shipments</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Shipment ID</th>
+                <th>Order</th>
+                <th>Carrier</th>
+                <th>Tracking</th>
+                <th>Status</th>
+                <th>ETA</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (shipments as shipment)
+                <tr>
+                  <td><code class="code-inline">{{ shipment.id }}</code></td>
+                  <td><a href="#" class="text-primary">{{ shipment.order }}</a></td>
+                  <td>{{ shipment.carrier }}</td>
+                  <td><code class="code-inline text-sm">{{ shipment.tracking }}</code></td>
+                  <td>
+                    <span class="badge badge-{{ shipment.status === 'delivered' ? 'success' : shipment.status === 'exception' ? 'error' : shipment.status === 'out_for_delivery' ? 'info' : 'warning' }}">
+                      {{ shipment.status.replace('_', ' ') }}
+                    </span>
+                  </td>
+                  <td>{{ shipment.eta }}</td>
+                  <td>
+                    <button class="btn btn-ghost btn-sm">Track</button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+.text-primary {
+  color: var(--color-primary);
+}
+.text-success {
+  color: var(--color-success);
+}
+.text-sm {
+  font-size: 0.8rem;
+}
+</style>

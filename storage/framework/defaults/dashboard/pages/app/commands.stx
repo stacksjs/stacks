@@ -1,0 +1,53 @@
+<script server>
+const commands = [
+  { name: 'migrate', description: 'Run database migrations', lastRun: '2024-01-10 10:30', status: 'success' },
+  { name: 'seed', description: 'Seed the database', lastRun: '2024-01-10 10:31', status: 'success' },
+  { name: 'cache:clear', description: 'Clear application cache', lastRun: '2024-01-10 09:15', status: 'success' },
+  { name: 'queue:work', description: 'Process queue jobs', lastRun: 'Running', status: 'running' },
+  { name: 'schedule:run', description: 'Run scheduled tasks', lastRun: '2024-01-10 10:00', status: 'success' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Commands</h1>
+        <p>CLI commands and artisan tasks</p>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Command</th>
+                <th>Description</th>
+                <th>Last Run</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (commands as cmd)
+                <tr>
+                  <td><code class="code-inline">{{ cmd.name }}</code></td>
+                  <td class="text-muted">{{ cmd.description }}</td>
+                  <td>{{ cmd.lastRun }}</td>
+                  <td>
+                    <span class="badge badge-{{ cmd.status === 'success' ? 'success' : cmd.status === 'running' ? 'info' : 'error' }}">
+                      {{ cmd.status }}
+                    </span>
+                  </td>
+                  <td><button class="btn btn-secondary btn-sm">Run</button></td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

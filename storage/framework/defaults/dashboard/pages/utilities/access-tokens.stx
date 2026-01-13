@@ -1,0 +1,115 @@
+<script server>
+const tokens = [
+  { name: 'Production API', token: 'sk_live_••••••••4a2b', lastUsed: '2m ago', created: '2024-01-01', scopes: ['read', 'write'], status: 'active' },
+  { name: 'CI/CD Pipeline', token: 'sk_live_••••••••8c3d', lastUsed: '1h ago', created: '2024-01-10', scopes: ['deploy'], status: 'active' },
+  { name: 'Mobile App', token: 'sk_live_••••••••2e4f', lastUsed: '5m ago', created: '2024-01-15', scopes: ['read'], status: 'active' },
+  { name: 'Development', token: 'sk_test_••••••••6g8h', lastUsed: '10m ago', created: '2024-01-18', scopes: ['read', 'write'], status: 'active' },
+  { name: 'Old Integration', token: 'sk_live_••••••••0i1j', lastUsed: '30d ago', created: '2023-06-01', scopes: ['read'], status: 'expired' },
+]
+
+const stats = [
+  { label: 'Active Tokens', value: '4' },
+  { label: 'API Calls (24h)', value: '45.2K' },
+  { label: 'Rate Limit', value: '1000/min' },
+  { label: 'Expired', value: '1' },
+]
+
+const scopes = [
+  { name: 'read', description: 'Read access to resources' },
+  { name: 'write', description: 'Write access to resources' },
+  { name: 'delete', description: 'Delete access to resources' },
+  { name: 'deploy', description: 'Deploy applications' },
+  { name: 'admin', description: 'Full administrative access' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Access Tokens</h1>
+        <p>API keys and authentication tokens</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary">Create Token</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">API Tokens</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Token</th>
+                <th>Scopes</th>
+                <th>Last Used</th>
+                <th>Created</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (tokens as token)
+                <tr>
+                  <td class="font-medium">{{ token.name }}</td>
+                  <td>
+                    <code class="code-inline text-sm">{{ token.token }}</code>
+                    <button class="btn btn-ghost btn-sm ml-2">Copy</button>
+                  </td>
+                  <td>
+                    <div class="flex gap-1">
+                      @foreach (token.scopes as scope)
+                        <span class="badge badge-neutral text-xs">{{ scope }}</span>
+                      @endforeach
+                    </div>
+                  </td>
+                  <td class="text-muted">{{ token.lastUsed }}</td>
+                  <td class="text-muted">{{ token.created }}</td>
+                  <td>
+                    <span class="badge badge-{{ token.status === 'active' ? 'success' : 'neutral' }}">
+                      {{ token.status }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                      <button class="btn btn-ghost btn-sm text-error">Revoke</button>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Available Scopes</span>
+        </div>
+        <div class="grid grid-3 p-4 gap-4">
+          @foreach (scopes as scope)
+            <div class="p-4 rounded-lg bg-gray-50">
+              <code class="code-inline">{{ scope.name }}</code>
+              <p class="text-sm text-muted mt-2">{{ scope.description }}</p>
+            </div>
+          @endforeach
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

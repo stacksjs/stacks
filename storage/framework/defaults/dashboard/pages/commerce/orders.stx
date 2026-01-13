@@ -1,0 +1,94 @@
+<script server>
+const orders = [
+  { id: 'ORD-1234', customer: 'John Doe', items: 3, total: '$125.00', status: 'completed', payment: 'paid', date: '2024-01-18' },
+  { id: 'ORD-1233', customer: 'Jane Smith', items: 2, total: '$89.50', status: 'processing', payment: 'paid', date: '2024-01-18' },
+  { id: 'ORD-1232', customer: 'Bob Wilson', items: 5, total: '$234.00', status: 'pending', payment: 'pending', date: '2024-01-17' },
+  { id: 'ORD-1231', customer: 'Alice Brown', items: 1, total: '$67.00', status: 'shipped', payment: 'paid', date: '2024-01-17' },
+  { id: 'ORD-1230', customer: 'Charlie Davis', items: 4, total: '$189.00', status: 'delivered', payment: 'paid', date: '2024-01-16' },
+  { id: 'ORD-1229', customer: 'Eve Wilson', items: 2, total: '$56.00', status: 'cancelled', payment: 'refunded', date: '2024-01-16' },
+]
+
+const stats = [
+  { label: 'Total Orders', value: '1,234' },
+  { label: 'Pending', value: '23' },
+  { label: 'Processing', value: '45' },
+  { label: 'Completed', value: '1,166' },
+]
+
+const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Orders</h1>
+        <p>Manage customer orders</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Export</button>
+        <button class="btn btn-primary">New Order</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="flex gap-2 mb-4">
+        @foreach (filters as filter)
+          <button class="btn {{ filter === 'All' ? 'btn-primary' : 'btn-ghost' }} btn-sm">{{ filter }}</button>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (orders as order)
+                <tr>
+                  <td><code class="code-inline">{{ order.id }}</code></td>
+                  <td>{{ order.customer }}</td>
+                  <td>{{ order.items }}</td>
+                  <td class="font-semibold">{{ order.total }}</td>
+                  <td>
+                    <span class="badge badge-{{ order.payment === 'paid' ? 'success' : order.payment === 'refunded' ? 'warning' : 'neutral' }}">
+                      {{ order.payment }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge badge-{{ order.status === 'completed' || order.status === 'delivered' ? 'success' : order.status === 'cancelled' ? 'error' : order.status === 'shipped' ? 'info' : 'warning' }}">
+                      {{ order.status }}
+                    </span>
+                  </td>
+                  <td class="text-muted">{{ order.date }}</td>
+                  <td>
+                    <button class="btn btn-ghost btn-sm">View</button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

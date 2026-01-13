@@ -1,0 +1,48 @@
+<!--
+  Example Custom Dashboard Page
+
+  Create your own dashboard pages by adding .stx files here.
+  They will automatically be available at /dashboard/[filename]
+-->
+
+<script server>
+const pageTitle = 'Custom Page'
+const pageDescription = 'This is a custom dashboard page'
+
+// Add your custom data fetching here
+const customStats = [
+  { label: 'Custom Metric 1', value: '123' },
+  { label: 'Custom Metric 2', value: '456' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>{{ pageTitle }}</h1>
+        <p>{{ pageDescription }}</p>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-2">
+        @foreach (customStats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Your Custom Content</span>
+        </div>
+        <div class="p-4">
+          <p>Add your custom dashboard content here.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

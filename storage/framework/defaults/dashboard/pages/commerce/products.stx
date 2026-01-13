@@ -1,0 +1,95 @@
+<script server>
+const products = [
+  { name: 'Premium Widget', sku: 'WDG-001', price: '$49.99', stock: 234, category: 'Widgets', status: 'active' },
+  { name: 'Basic Package', sku: 'PKG-001', price: '$24.99', stock: 567, category: 'Packages', status: 'active' },
+  { name: 'Pro Subscription', sku: 'SUB-001', price: '$99.99/mo', stock: '∞', category: 'Subscriptions', status: 'active' },
+  { name: 'Starter Kit', sku: 'KIT-001', price: '$9.99', stock: 1234, category: 'Kits', status: 'active' },
+  { name: 'Limited Edition', sku: 'LTD-001', price: '$199.99', stock: 12, category: 'Special', status: 'low-stock' },
+  { name: 'Discontinued Item', sku: 'OLD-001', price: '$29.99', stock: 0, category: 'Widgets', status: 'inactive' },
+]
+
+const stats = [
+  { label: 'Total Products', value: '456' },
+  { label: 'Active', value: '423' },
+  { label: 'Low Stock', value: '23' },
+  { label: 'Out of Stock', value: '10' },
+]
+
+const categories = ['All Categories', 'Widgets', 'Packages', 'Subscriptions', 'Kits', 'Special']
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Products</h1>
+        <p>Manage product catalog</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Import</button>
+        <button class="btn btn-primary">Add Product</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="flex gap-2">
+            <input type="text" class="input" placeholder="Search products..." style="width: 300px;" />
+            <select class="input" style="width: 180px;">
+              @foreach (categories as cat)
+                <option>{{ cat }}</option>
+              @endforeach
+            </select>
+          </div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>SKU</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (products as product)
+                <tr>
+                  <td class="font-medium">{{ product.name }}</td>
+                  <td><code class="code-inline">{{ product.sku }}</code></td>
+                  <td>{{ product.category }}</td>
+                  <td class="font-semibold">{{ product.price }}</td>
+                  <td>{{ product.stock }}</td>
+                  <td>
+                    <span class="badge badge-{{ product.status === 'active' ? 'success' : product.status === 'low-stock' ? 'warning' : 'neutral' }}">
+                      {{ product.status }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                      <button class="btn btn-ghost btn-sm">View</button>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

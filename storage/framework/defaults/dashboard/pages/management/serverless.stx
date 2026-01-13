@@ -1,0 +1,105 @@
+<script server>
+const functions = [
+  { name: 'api-handler', runtime: 'Node.js 20', invocations: '45.2K', avgDuration: '45ms', errors: 12, status: 'active' },
+  { name: 'image-processor', runtime: 'Node.js 20', invocations: '12.3K', avgDuration: '234ms', errors: 3, status: 'active' },
+  { name: 'email-sender', runtime: 'Node.js 20', invocations: '8.9K', avgDuration: '89ms', errors: 0, status: 'active' },
+  { name: 'webhook-handler', runtime: 'Node.js 20', invocations: '23.4K', avgDuration: '56ms', errors: 5, status: 'active' },
+  { name: 'cron-job', runtime: 'Node.js 20', invocations: '720', avgDuration: '1.2s', errors: 2, status: 'active' },
+]
+
+const stats = [
+  { label: 'Total Functions', value: '5' },
+  { label: 'Invocations (24h)', value: '90.5K' },
+  { label: 'Avg Duration', value: '85ms' },
+  { label: 'Error Rate', value: '0.02%' },
+]
+
+const edges = [
+  { region: 'US East', latency: '12ms', requests: '34.5K' },
+  { region: 'US West', latency: '45ms', requests: '12.3K' },
+  { region: 'Europe', latency: '89ms', requests: '23.4K' },
+  { region: 'Asia', latency: '156ms', requests: '8.9K' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Serverless</h1>
+        <p>Functions and edge computing</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">View Logs</button>
+        <button class="btn btn-primary">Deploy Function</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Functions</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Function</th>
+                <th>Runtime</th>
+                <th>Invocations</th>
+                <th>Avg Duration</th>
+                <th>Errors</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (functions as fn)
+                <tr>
+                  <td class="font-medium">{{ fn.name }}</td>
+                  <td><span class="badge badge-neutral">{{ fn.runtime }}</span></td>
+                  <td>{{ fn.invocations }}</td>
+                  <td>{{ fn.avgDuration }}</td>
+                  <td class="{{ fn.errors > 0 ? 'text-error' : '' }}">{{ fn.errors }}</td>
+                  <td>
+                    <span class="badge badge-success">{{ fn.status }}</span>
+                  </td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-ghost btn-sm">Logs</button>
+                      <button class="btn btn-ghost btn-sm">Edit</button>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Edge Locations</span>
+        </div>
+        <div class="grid grid-4 p-4">
+          @foreach (edges as edge)
+            <div class="text-center p-4 rounded-lg bg-gray-50">
+              <div class="text-lg font-semibold">{{ edge.region }}</div>
+              <div class="text-2xl font-bold text-primary mt-2">{{ edge.latency }}</div>
+              <div class="text-sm text-muted">{{ edge.requests }} requests</div>
+            </div>
+          @endforeach
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

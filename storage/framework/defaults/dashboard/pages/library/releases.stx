@@ -1,0 +1,76 @@
+<script server>
+/**
+ * Releases Page
+ *
+ * Manage application releases and versions.
+ */
+
+const releases = [
+  { version: 'v2.4.0', date: '2024-01-10', type: 'minor', status: 'current', changes: 12, breaking: false },
+  { version: 'v2.3.2', date: '2024-01-05', type: 'patch', status: 'previous', changes: 4, breaking: false },
+  { version: 'v2.3.1', date: '2024-01-02', type: 'patch', status: 'previous', changes: 2, breaking: false },
+  { version: 'v2.3.0', date: '2023-12-20', type: 'minor', status: 'previous', changes: 18, breaking: false },
+  { version: 'v2.2.0', date: '2023-12-01', type: 'minor', status: 'previous', changes: 15, breaking: false },
+  { version: 'v2.0.0', date: '2023-11-15', type: 'major', status: 'previous', changes: 45, breaking: true },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Releases</h1>
+        <p>Manage application versions and releases</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary">New Release</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Version</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Changes</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (releases as release)
+                <tr>
+                  <td>
+                    <span class="font-semibold">{{ release.version }}</span>
+                    @if (release.breaking)
+                      <span class="badge badge-error ml-2">Breaking</span>
+                    @endif
+                  </td>
+                  <td>
+                    <span class="badge badge-{{ release.type === 'major' ? 'error' : release.type === 'minor' ? 'info' : 'neutral' }}">
+                      {{ release.type }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge badge-{{ release.status === 'current' ? 'success' : 'neutral' }}">
+                      {{ release.status }}
+                    </span>
+                  </td>
+                  <td>{{ release.changes }} changes</td>
+                  <td class="text-muted">{{ release.date }}</td>
+                  <td>
+                    <button class="btn btn-ghost btn-sm">View</button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

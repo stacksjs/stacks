@@ -1,0 +1,111 @@
+<script server>
+const providers = [
+  { name: 'AWS', status: 'connected', resources: 24, spend: '$1,234/mo', region: 'us-east-1' },
+  { name: 'DigitalOcean', status: 'connected', resources: 8, spend: '$456/mo', region: 'nyc1' },
+  { name: 'Cloudflare', status: 'connected', resources: 12, spend: '$89/mo', region: 'Global' },
+  { name: 'Vercel', status: 'connected', resources: 5, spend: '$0/mo', region: 'Global' },
+]
+
+const stats = [
+  { label: 'Monthly Spend', value: '$1,779' },
+  { label: 'Resources', value: '49' },
+  { label: 'Regions', value: '4' },
+  { label: 'Uptime', value: '99.99%' },
+]
+
+const resources = [
+  { name: 'web-server-1', type: 'EC2', provider: 'AWS', status: 'running', cost: '$45/mo' },
+  { name: 'database-primary', type: 'RDS', provider: 'AWS', status: 'running', cost: '$234/mo' },
+  { name: 'cdn-assets', type: 'CloudFront', provider: 'AWS', status: 'active', cost: '$12/mo' },
+  { name: 'app-droplet', type: 'Droplet', provider: 'DigitalOcean', status: 'running', cost: '$48/mo' },
+  { name: 'stacks-site', type: 'Pages', provider: 'Cloudflare', status: 'active', cost: '$0/mo' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Cloud</h1>
+        <p>Cloud provider management</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Sync Resources</button>
+        <button class="btn btn-primary">Add Provider</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (stats as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="grid grid-4">
+        @foreach (providers as provider)
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">{{ provider.name }}</span>
+              <span class="badge badge-success">{{ provider.status }}</span>
+            </div>
+            <div class="mt-4">
+              <div class="flex justify-between mb-2">
+                <span class="text-muted">Resources</span>
+                <span class="font-medium">{{ provider.resources }}</span>
+              </div>
+              <div class="flex justify-between mb-2">
+                <span class="text-muted">Region</span>
+                <span>{{ provider.region }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-muted">Monthly</span>
+                <span class="font-semibold">{{ provider.spend }}</span>
+              </div>
+            </div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">All Resources</span>
+          <input type="text" class="input w-64" placeholder="Search resources..." />
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Provider</th>
+                <th>Status</th>
+                <th>Cost</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (resources as resource)
+                <tr>
+                  <td class="font-medium">{{ resource.name }}</td>
+                  <td><span class="badge badge-neutral">{{ resource.type }}</span></td>
+                  <td>{{ resource.provider }}</td>
+                  <td>
+                    <span class="badge badge-success">{{ resource.status }}</span>
+                  </td>
+                  <td>{{ resource.cost }}</td>
+                  <td>
+                    <button class="btn btn-ghost btn-sm">Manage</button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

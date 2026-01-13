@@ -1,0 +1,193 @@
+<script server>
+const generalSettings = [
+  { key: 'Site Name', value: 'Stacks', type: 'text' },
+  { key: 'Site URL', value: 'https://stacks.dev', type: 'text' },
+  { key: 'Admin Email', value: 'admin@stacks.dev', type: 'email' },
+  { key: 'Timezone', value: 'America/New_York', type: 'select' },
+  { key: 'Language', value: 'English', type: 'select' },
+]
+
+const securitySettings = [
+  { key: 'Two-Factor Authentication', value: true, type: 'toggle' },
+  { key: 'Session Timeout', value: '30 minutes', type: 'select' },
+  { key: 'Password Requirements', value: 'Strong', type: 'select' },
+  { key: 'IP Whitelist', value: 'Disabled', type: 'toggle' },
+]
+
+const notificationSettings = [
+  { key: 'Email Notifications', value: true, type: 'toggle' },
+  { key: 'Push Notifications', value: true, type: 'toggle' },
+  { key: 'Weekly Digest', value: false, type: 'toggle' },
+  { key: 'Error Alerts', value: true, type: 'toggle' },
+]
+
+const integrations = [
+  { name: 'Stripe', status: 'connected', icon: 'creditcard' },
+  { name: 'SendGrid', status: 'connected', icon: 'envelope' },
+  { name: 'Cloudflare', status: 'connected', icon: 'cloud' },
+  { name: 'GitHub', status: 'connected', icon: 'chevron.left.forwardslash.chevron.right' },
+  { name: 'Slack', status: 'not_connected', icon: 'bubble.left.and.bubble.right' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Settings</h1>
+        <p>Application configuration</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Reset to Defaults</button>
+        <button class="btn btn-primary">Save Changes</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">General</span>
+          </div>
+          <div class="p-4">
+            @foreach (generalSettings as setting)
+              <div class="flex justify-between items-center py-3 border-b last:border-0">
+                <label class="font-medium">{{ setting.key }}</label>
+                @if (setting.type === 'text' || setting.type === 'email')
+                  <input type="{{ setting.type }}" class="input w-64" value="{{ setting.value }}" />
+                @else
+                  <select class="input w-64">
+                    <option>{{ setting.value }}</option>
+                  </select>
+                @endif
+              </div>
+            @endforeach
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Security</span>
+          </div>
+          <div class="p-4">
+            @foreach (securitySettings as setting)
+              <div class="flex justify-between items-center py-3 border-b last:border-0">
+                <label class="font-medium">{{ setting.key }}</label>
+                @if (setting.type === 'toggle')
+                  <label class="switch">
+                    <input type="checkbox" {{ setting.value ? 'checked' : '' }} />
+                    <span class="slider"></span>
+                  </label>
+                @else
+                  <select class="input w-48">
+                    <option>{{ setting.value }}</option>
+                  </select>
+                @endif
+              </div>
+            @endforeach
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Notifications</span>
+          </div>
+          <div class="p-4">
+            @foreach (notificationSettings as setting)
+              <div class="flex justify-between items-center py-3 border-b last:border-0">
+                <label class="font-medium">{{ setting.key }}</label>
+                <label class="switch">
+                  <input type="checkbox" {{ setting.value ? 'checked' : '' }} />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            @endforeach
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Integrations</span>
+          </div>
+          <div class="list">
+            @foreach (integrations as integration)
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ integration.name }}</div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="badge badge-{{ integration.status === 'connected' ? 'success' : 'neutral' }}">
+                    {{ integration.status === 'connected' ? 'Connected' : 'Not Connected' }}
+                  </span>
+                  <button class="btn btn-ghost btn-sm">
+                    {{ integration.status === 'connected' ? 'Configure' : 'Connect' }}
+                  </button>
+                </div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title text-error">Danger Zone</span>
+        </div>
+        <div class="p-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <div class="font-medium">Delete Application</div>
+              <div class="text-sm text-muted">Permanently delete this application and all its data</div>
+            </div>
+            <button class="btn btn-secondary text-error">Delete Application</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-border);
+  border-radius: 24px;
+  transition: 0.2s;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+input:checked + .slider {
+  background-color: var(--color-primary);
+}
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+.last\:border-0:last-child {
+  border-bottom: 0;
+}
+</style>

@@ -1,0 +1,67 @@
+<script server>
+/**
+ * Functions Library Page
+ *
+ * Browse and manage utility functions.
+ */
+
+const functions = [
+  { name: 'formatDate', category: 'Date', calls: 1247, description: 'Format dates in various formats' },
+  { name: 'validateEmail', category: 'Validation', calls: 892, description: 'Validate email addresses' },
+  { name: 'slugify', category: 'String', calls: 456, description: 'Convert strings to URL slugs' },
+  { name: 'debounce', category: 'Utility', calls: 234, description: 'Debounce function calls' },
+  { name: 'formatCurrency', category: 'Number', calls: 678, description: 'Format numbers as currency' },
+  { name: 'parseJSON', category: 'Data', calls: 345, description: 'Safely parse JSON strings' },
+  { name: 'truncate', category: 'String', calls: 567, description: 'Truncate strings with ellipsis' },
+  { name: 'capitalize', category: 'String', calls: 423, description: 'Capitalize first letter' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Functions</h1>
+        <p>Utility functions and helpers</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary">New Function</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Function</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Calls (30d)</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (functions as fn)
+                <tr>
+                  <td>
+                    <code class="code-inline">{{ fn.name }}()</code>
+                  </td>
+                  <td>
+                    <span class="badge badge-neutral">{{ fn.category }}</span>
+                  </td>
+                  <td class="text-muted">{{ fn.description }}</td>
+                  <td>{{ fn.calls.toLocaleString() }}</td>
+                  <td>
+                    <button class="btn btn-ghost btn-sm">View</button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

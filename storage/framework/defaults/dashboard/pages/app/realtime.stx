@@ -1,0 +1,58 @@
+<script server>
+const channels = [
+  { name: 'presence-users', connections: 127, messages: '2.4K/min' },
+  { name: 'private-notifications', connections: 89, messages: '156/min' },
+  { name: 'chat-general', connections: 45, messages: '892/min' },
+]
+
+const stats = {
+  activeConnections: 261,
+  messagesPerMinute: '3.4K',
+  avgLatency: '12ms'
+}
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Realtime</h1>
+        <p>WebSocket connections and channels</p>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-3">
+        <div class="stat-card">
+          <div class="stat-card-value">{{ stats.activeConnections }}</div>
+          <div class="stat-card-label">Active Connections</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value">{{ stats.messagesPerMinute }}</div>
+          <div class="stat-card-label">Messages/min</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value">{{ stats.avgLatency }}</div>
+          <div class="stat-card-label">Avg Latency</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Active Channels</span>
+        </div>
+        <div class="list">
+          @foreach (channels as channel)
+            <div class="list-item">
+              <div class="list-item-content">
+                <div class="list-item-title">{{ channel.name }}</div>
+                <div class="list-item-subtitle">{{ channel.messages }}</div>
+              </div>
+              <span class="badge badge-success">{{ channel.connections }} connected</span>
+            </div>
+          @endforeach
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

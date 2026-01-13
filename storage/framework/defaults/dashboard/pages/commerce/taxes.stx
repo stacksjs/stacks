@@ -1,0 +1,200 @@
+<script server>
+const taxRates = [
+  { region: 'United States', rate: 'Varies by state', type: 'Sales Tax', status: 'active' },
+  { region: 'California', rate: '7.25%', type: 'Sales Tax', status: 'active' },
+  { region: 'New York', rate: '8%', type: 'Sales Tax', status: 'active' },
+  { region: 'Texas', rate: '6.25%', type: 'Sales Tax', status: 'active' },
+  { region: 'European Union', rate: 'Varies by country', type: 'VAT', status: 'active' },
+  { region: 'United Kingdom', rate: '20%', type: 'VAT', status: 'active' },
+  { region: 'Canada', rate: '5%', type: 'GST', status: 'active' },
+]
+
+const taxSummary = [
+  { label: 'Collected This Month', value: '$4,567.89' },
+  { label: 'Pending Remittance', value: '$2,345.67' },
+  { label: 'Tax Rate Regions', value: '23' },
+  { label: 'Exempt Transactions', value: '12' },
+]
+
+const recentTaxes = [
+  { order: 'ORD-1234', subtotal: '$100.00', taxRate: '8%', taxAmount: '$8.00', region: 'New York' },
+  { order: 'ORD-1233', subtotal: '$75.00', taxRate: '7.25%', taxAmount: '$5.44', region: 'California' },
+  { order: 'ORD-1232', subtotal: '$200.00', taxRate: '20%', taxAmount: '$40.00', region: 'UK' },
+  { order: 'ORD-1231', subtotal: '$50.00', taxRate: '0%', taxAmount: '$0.00', region: 'Exempt' },
+]
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Taxes</h1>
+        <p>Tax rates and compliance</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary">Tax Reports</button>
+        <button class="btn btn-primary">Add Tax Rate</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid grid-4">
+        @foreach (taxSummary as stat)
+          <div class="stat-card">
+            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-label">{{ stat.label }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Tax Rates by Region</span>
+            <button class="btn btn-ghost btn-sm">Manage</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Region</th>
+                  <th>Rate</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach (taxRates as tax)
+                  <tr>
+                    <td class="font-medium">{{ tax.region }}</td>
+                    <td>{{ tax.rate }}</td>
+                    <td><span class="badge badge-neutral">{{ tax.type }}</span></td>
+                    <td>
+                      <span class="badge badge-success">{{ tax.status }}</span>
+                    </td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent Tax Collections</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Subtotal</th>
+                  <th>Rate</th>
+                  <th>Tax</th>
+                  <th>Region</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach (recentTaxes as tax)
+                  <tr>
+                    <td><a href="#" class="text-primary">{{ tax.order }}</a></td>
+                    <td>{{ tax.subtotal }}</td>
+                    <td>{{ tax.taxRate }}</td>
+                    <td class="font-semibold">{{ tax.taxAmount }}</td>
+                    <td class="text-muted">{{ tax.region }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Tax Automation</span>
+        </div>
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="font-medium">Automatic Tax Calculation</div>
+              <div class="text-sm text-muted">Calculate taxes based on customer location</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="font-medium">Tax-Inclusive Pricing</div>
+              <div class="text-sm text-muted">Display prices with tax included</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-medium">Avalara Integration</div>
+              <div class="text-sm text-muted">Use Avalara for tax compliance</div>
+            </div>
+            <button class="btn btn-secondary btn-sm">Configure</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+.p-4 {
+  padding: 1rem;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.text-primary {
+  color: var(--color-primary);
+}
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-border);
+  border-radius: 24px;
+  transition: 0.2s;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+input:checked + .slider {
+  background-color: var(--color-primary);
+}
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+</style>
