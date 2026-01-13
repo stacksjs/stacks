@@ -116,7 +116,7 @@ const integrations = [
                   <div class="font-medium text-gray-900 dark:text-white">{{ integration.name }}</div>
                 </div>
                 <div class="flex items-center gap-3">
-                  <span class="badge badge-{{ integration.status === 'connected' ? 'success' : 'neutral' }}">
+                  <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ integration.status === 'connected' ? 'success' : 'neutral'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : integration.status === 'connected' ? 'success' : 'neutral'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : integration.status === 'connected' ? 'success' : 'neutral'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
                     {{ integration.status === 'connected' ? 'Connected' : 'Not Connected' }}
                   </span>
                   <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
@@ -131,7 +131,7 @@ const integrations = [
 
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
         <div class="flex items-center justify-between mb-4">
-          <span class="card-title text-error">Danger Zone</span>
+          <span class="font-semibold text-red-600 dark:text-red-400">Danger Zone</span>
         </div>
         <div class="p-4">
           <div class="flex justify-between items-center">
@@ -139,7 +139,7 @@ const integrations = [
               <div class="font-medium">Delete Application</div>
               <div class="text-sm text-muted">Permanently delete this application and all its data</div>
             </div>
-            <button class="btn btn-secondary text-error">Delete Application</button>
+            <button class="px-4 py-2 text-sm font-medium text-red-600 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">Delete Application</button>
           </div>
         </div>
       </div>

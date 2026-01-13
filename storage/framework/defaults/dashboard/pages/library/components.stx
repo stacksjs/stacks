@@ -36,7 +36,7 @@ const categories = ['All', 'Forms', 'Layout', 'Overlay', 'Data', 'Display', 'Nav
       <!-- Filter Tabs -->
       <div class="flex gap-2">
         @foreach (categories as category)
-          <button class="btn {{ category === 'All' ? 'btn-primary' : 'btn-ghost' }} btn-sm">
+          <button class="px-3 py-1.5 text-xs font-medium rounded-lg {{ category === 'All' ? 'btn-primary' : 'btn-ghost' === 'btn-primary' ? 'text-white bg-blue-600 hover:bg-blue-700' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
             {{ category }}
           </button>
         @endforeach

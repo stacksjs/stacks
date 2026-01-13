@@ -33,53 +33,53 @@ const filters = ['All', 'Published', 'Pending', 'Flagged', '5★', '4★', '3★
     <div class="flex flex-col gap-6">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (stats as stat)
-          <div class="stat-card">
-            <div class="stat-card-value">{{ stat.value }}</div>
-            <div class="stat-card-label">{{ stat.label }}</div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
           </div>
         @endforeach
       </div>
 
       <div class="flex gap-2 mb-4 flex-wrap">
         @foreach (filters as filter)
-          <button class="btn {{ filter === 'All' ? 'btn-primary' : 'btn-ghost' }} btn-sm">{{ filter }}</button>
+          <button class="px-3 py-1.5 text-xs font-medium rounded-lg {{ filter === 'All' ? 'btn-primary' : 'btn-ghost' === 'btn-primary' ? 'text-white bg-blue-600 hover:bg-blue-700' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700' }}">{{ filter }}</button>
         @endforeach
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table>
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Author</th>
-                <th>Rating</th>
-                <th>Comment</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Actions</th>
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-700/50">
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Product</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Author</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rating</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Comment</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody>
               @foreach (reviews as review)
-                <tr>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                   <td class="font-medium">{{ review.product }}</td>
-                  <td>{{ review.author }}</td>
-                  <td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ review.author }}</td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <span class="stars">{{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}</span>
                   </td>
                   <td class="truncate" style="max-width: 250px;">{{ review.comment }}</td>
-                  <td>
-                    <span class="badge badge-{{ review.status === 'published' ? 'success' : review.status === 'pending' ? 'warning' : 'error' }}">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ review.status === 'published' ? 'success' : review.status === 'pending' ? 'warning' : 'error'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : review.status === 'published' ? 'success' : review.status === 'pending' ? 'warning' : 'error'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : review.status === 'published' ? 'success' : review.status === 'pending' ? 'warning' : 'error'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
                       {{ review.status }}
                     </span>
                   </td>
                   <td class="text-gray-500 dark:text-gray-400">{{ review.date }}</td>
-                  <td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <div class="flex gap-2">
                       <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Reply</button>
                       @if (review.status === 'pending')
-                        <button class="btn btn-secondary btn-sm">Approve</button>
+                        <button class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Approve</button>
                       @endif
                     </div>
                   </td>

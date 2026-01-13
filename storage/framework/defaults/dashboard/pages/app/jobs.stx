@@ -18,7 +18,7 @@ const jobs = [
 
     <div class="flex flex-col gap-6">
       <div class="flex gap-2 mb-4">
-        <button class="btn btn-primary btn-sm">All</button>
+        <button class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">All</button>
         <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Pending</button>
         <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Completed</button>
         <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Failed</button>
@@ -26,32 +26,32 @@ const jobs = [
 
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table>
-            <thead>
-              <tr>
-                <th>Job</th>
-                <th>Queue</th>
-                <th>Attempts</th>
-                <th>Duration</th>
-                <th>Status</th>
-                <th>Actions</th>
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-700/50">
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Job</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Queue</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Attempts</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Duration</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody>
               @foreach (jobs as job)
-                <tr>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                   <td class="font-medium">{{ job.name }}</td>
-                  <td><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ job.queue }}</span></td>
-                  <td>{{ job.attempts }}</td>
-                  <td>{{ job.duration }}</td>
-                  <td>
-                    <span class="badge badge-{{ job.status === 'completed' ? 'success' : job.status === 'pending' ? 'info' : 'error' }}">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ job.queue }}</span></td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ job.attempts }}</td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ job.duration }}</td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ job.status === 'completed' ? 'success' : job.status === 'pending' ? 'info' : 'error'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : job.status === 'completed' ? 'success' : job.status === 'pending' ? 'info' : 'error'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : job.status === 'completed' ? 'success' : job.status === 'pending' ? 'info' : 'error'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
                       {{ job.status }}
                     </span>
                   </td>
-                  <td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     @if (job.status === 'failed')
-                      <button class="btn btn-secondary btn-sm">Retry</button>
+                      <button class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Retry</button>
                     @else
                       <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View</button>
                     @endif

@@ -28,31 +28,31 @@ const filters = ['All', 'Creates', 'Updates', 'Deletes', 'Schema', 'Exports']
     <div class="flex flex-col gap-6">
       <div class="flex gap-2 mb-4">
         @foreach (filters as filter)
-          <button class="btn {{ filter === 'All' ? 'btn-primary' : 'btn-ghost' }} btn-sm">{{ filter }}</button>
+          <button class="px-3 py-1.5 text-xs font-medium rounded-lg {{ filter === 'All' ? 'btn-primary' : 'btn-ghost' === 'btn-primary' ? 'text-white bg-blue-600 hover:bg-blue-700' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700' }}">{{ filter }}</button>
         @endforeach
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table>
-            <thead>
-              <tr>
-                <th>Action</th>
-                <th>Table</th>
-                <th>User</th>
-                <th>Time</th>
-                <th>Type</th>
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-700/50">
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Table</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
               </tr>
             </thead>
             <tbody>
               @foreach (activities as activity)
-                <tr>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                   <td class="font-medium">{{ activity.action }}</td>
-                  <td><code class="code-inline">{{ activity.table }}</code></td>
-                  <td>{{ activity.user }}</td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="code-inline">{{ activity.table }}</code></td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ activity.user }}</td>
                   <td class="text-gray-500 dark:text-gray-400">{{ activity.time }}</td>
-                  <td>
-                    <span class="badge badge-{{ activity.type === 'create' ? 'success' : activity.type === 'delete' ? 'error' : activity.type === 'update' ? 'info' : 'neutral' }}">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ activity.type === 'create' ? 'success' : activity.type === 'delete' ? 'error' : activity.type === 'update' ? 'info' : 'neutral'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : activity.type === 'create' ? 'success' : activity.type === 'delete' ? 'error' : activity.type === 'update' ? 'info' : 'neutral'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : activity.type === 'create' ? 'success' : activity.type === 'delete' ? 'error' : activity.type === 'update' ? 'info' : 'neutral'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
                       {{ activity.type }}
                     </span>
                   </td>

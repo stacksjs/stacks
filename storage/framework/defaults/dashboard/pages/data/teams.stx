@@ -29,9 +29,9 @@ const stats = [
     <div class="flex flex-col gap-6">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @foreach (stats as stat)
-          <div class="stat-card">
-            <div class="stat-card-value">{{ stat.value }}</div>
-            <div class="stat-card-label">{{ stat.label }}</div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
           </div>
         @endforeach
       </div>
@@ -57,7 +57,7 @@ const stats = [
               </div>
             </div>
             <div class="mt-4 pt-4 border-t flex gap-2">
-              <button class="btn btn-secondary btn-sm flex-1">View</button>
+              <button class="flex-1 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">View</button>
               <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Edit</button>
             </div>
           </div>

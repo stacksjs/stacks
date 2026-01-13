@@ -34,53 +34,53 @@ const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancel
     <div class="flex flex-col gap-6">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (stats as stat)
-          <div class="stat-card">
-            <div class="stat-card-value">{{ stat.value }}</div>
-            <div class="stat-card-label">{{ stat.label }}</div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
           </div>
         @endforeach
       </div>
 
       <div class="flex gap-2 mb-4">
         @foreach (filters as filter)
-          <button class="btn {{ filter === 'All' ? 'btn-primary' : 'btn-ghost' }} btn-sm">{{ filter }}</button>
+          <button class="px-3 py-1.5 text-xs font-medium rounded-lg {{ filter === 'All' ? 'btn-primary' : 'btn-ghost' === 'btn-primary' ? 'text-white bg-blue-600 hover:bg-blue-700' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700' }}">{{ filter }}</button>
         @endforeach
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table>
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Customer</th>
-                <th>Items</th>
-                <th>Total</th>
-                <th>Payment</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Actions</th>
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-700/50">
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order ID</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Items</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Payment</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody>
               @foreach (orders as order)
-                <tr>
-                  <td><code class="code-inline">{{ order.id }}</code></td>
-                  <td>{{ order.customer }}</td>
-                  <td>{{ order.items }}</td>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="code-inline">{{ order.id }}</code></td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ order.customer }}</td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ order.items }}</td>
                   <td class="font-semibold">{{ order.total }}</td>
-                  <td>
-                    <span class="badge badge-{{ order.payment === 'paid' ? 'success' : order.payment === 'refunded' ? 'warning' : 'neutral' }}">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ order.payment === 'paid' ? 'success' : order.payment === 'refunded' ? 'warning' : 'neutral'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : order.payment === 'paid' ? 'success' : order.payment === 'refunded' ? 'warning' : 'neutral'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : order.payment === 'paid' ? 'success' : order.payment === 'refunded' ? 'warning' : 'neutral'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
                       {{ order.payment }}
                     </span>
                   </td>
-                  <td>
-                    <span class="badge badge-{{ order.status === 'completed' || order.status === 'delivered' ? 'success' : order.status === 'cancelled' ? 'error' : order.status === 'shipped' ? 'info' : 'warning' }}">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ order.status === 'completed' || order.status === 'delivered' ? 'success' : order.status === 'cancelled' ? 'error' : order.status === 'shipped' ? 'info' : 'warning'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : order.status === 'completed' || order.status === 'delivered' ? 'success' : order.status === 'cancelled' ? 'error' : order.status === 'shipped' ? 'info' : 'warning'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : order.status === 'completed' || order.status === 'delivered' ? 'success' : order.status === 'cancelled' ? 'error' : order.status === 'shipped' ? 'info' : 'warning'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
                       {{ order.status }}
                     </span>
                   </td>
                   <td class="text-gray-500 dark:text-gray-400">{{ order.date }}</td>
-                  <td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View</button>
                   </td>
                 </tr>

@@ -30,39 +30,39 @@ const releases = [
     <div class="flex flex-col gap-6">
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table>
-            <thead>
-              <tr>
-                <th>Version</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Changes</th>
-                <th>Date</th>
-                <th>Actions</th>
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-700/50">
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Version</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Changes</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody>
               @foreach (releases as release)
-                <tr>
-                  <td>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <span class="font-semibold">{{ release.version }}</span>
                     @if (release.breaking)
-                      <span class="badge badge-error ml-2">Breaking</span>
+                      <span class="ml-2 px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">Breaking</span>
                     @endif
                   </td>
-                  <td>
-                    <span class="badge badge-{{ release.type === 'major' ? 'error' : release.type === 'minor' ? 'info' : 'neutral' }}">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ release.type === 'major' ? 'error' : release.type === 'minor' ? 'info' : 'neutral'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : release.type === 'major' ? 'error' : release.type === 'minor' ? 'info' : 'neutral'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : release.type === 'major' ? 'error' : release.type === 'minor' ? 'info' : 'neutral'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
                       {{ release.type }}
                     </span>
                   </td>
-                  <td>
-                    <span class="badge badge-{{ release.status === 'current' ? 'success' : 'neutral' }}">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ release.status === 'current' ? 'success' : 'neutral'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : release.status === 'current' ? 'success' : 'neutral'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : release.status === 'current' ? 'success' : 'neutral'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
                       {{ release.status }}
                     </span>
                   </td>
-                  <td>{{ release.changes }} changes</td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ release.changes }} changes</td>
                   <td class="text-gray-500 dark:text-gray-400">{{ release.date }}</td>
-                  <td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View</button>
                   </td>
                 </tr>

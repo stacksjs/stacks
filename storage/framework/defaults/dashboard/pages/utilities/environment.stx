@@ -38,9 +38,9 @@ const stats = [
     <div class="flex flex-col gap-6">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (stats as stat)
-          <div class="stat-card">
-            <div class="stat-card-value">{{ stat.value }}</div>
-            <div class="stat-card-label">{{ stat.label }}</div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
           </div>
         @endforeach
       </div>
@@ -49,8 +49,8 @@ const stats = [
         @foreach (environments as env)
           <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between mb-4">
-              <span class="card-title capitalize">{{ env.name }}</span>
-              <span class="badge badge-{{ env.status === 'healthy' ? 'success' : 'info' }}">{{ env.status }}</span>
+              <span class="font-semibold text-gray-900 dark:text-white capitalize">{{ env.name }}</span>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ env.status === 'healthy' ? 'success' : 'info'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : env.status === 'healthy' ? 'success' : 'info'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : env.status === 'healthy' ? 'success' : 'info'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">{{ env.status }}</span>
             </div>
             <div class="mt-4">
               <div class="flex justify-between mb-2">
@@ -67,7 +67,7 @@ const stats = [
               </div>
             </div>
             <div class="mt-4 pt-4 border-t">
-              <button class="btn btn-secondary btn-sm w-full">Configure</button>
+              <button class="w-full px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Configure</button>
             </div>
           </div>
         @endforeach
@@ -79,38 +79,38 @@ const stats = [
           <input type="text" class="input w-64" placeholder="Search variables..." />
         </div>
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table>
-            <thead>
-              <tr>
-                <th>Key</th>
-                <th>Value</th>
-                <th>Environments</th>
-                <th>Actions</th>
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-700/50">
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Key</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Value</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Environments</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody>
               @foreach (variables as variable)
-                <tr>
-                  <td><code class="code-inline">{{ variable.key }}</code></td>
-                  <td>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="code-inline">{{ variable.key }}</code></td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     @if (variable.sensitive)
                       <span class="text-gray-500 dark:text-gray-400">••••••••</span>
-                      <button class="btn btn-ghost btn-sm ml-2">Reveal</button>
+                      <button class="ml-2 px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Reveal</button>
                     @else
                       <code class="code-inline">{{ variable.value }}</code>
                     @endif
                   </td>
-                  <td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <div class="flex gap-1">
                       @foreach (variable.environments as env)
-                        <span class="badge badge-neutral text-xs">{{ env }}</span>
+                        <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ env }}</span>
                       @endforeach
                     </div>
                   </td>
-                  <td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <div class="flex gap-2">
                       <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Edit</button>
-                      <button class="btn btn-ghost btn-sm text-error">Delete</button>
+                      <button class="px-3 py-1.5 text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">Delete</button>
                     </div>
                   </td>
                 </tr>

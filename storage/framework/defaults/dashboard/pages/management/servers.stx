@@ -31,9 +31,9 @@ const stats = [
     <div class="flex flex-col gap-6">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (stats as stat)
-          <div class="stat-card">
-            <div class="stat-card-value">{{ stat.value }}</div>
-            <div class="stat-card-label">{{ stat.label }}</div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
           </div>
         @endforeach
       </div>
@@ -43,25 +43,25 @@ const stats = [
           <span class="font-semibold text-gray-900 dark:text-white">All Servers</span>
         </div>
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table>
-            <thead>
-              <tr>
-                <th>Server</th>
-                <th>IP Address</th>
-                <th>CPU</th>
-                <th>Memory</th>
-                <th>Disk</th>
-                <th>Status</th>
-                <th>Uptime</th>
-                <th>Actions</th>
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-700/50">
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Server</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">IP Address</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">CPU</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Memory</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Disk</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Uptime</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody>
               @foreach (servers as server)
-                <tr>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                   <td class="font-medium">{{ server.name }}</td>
-                  <td><code class="code-inline">{{ server.ip }}</code></td>
-                  <td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="code-inline">{{ server.ip }}</code></td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <div class="flex items-center gap-2">
                       <div class="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div class="h-full rounded-full {{ server.cpu > 80 ? 'bg-red-500' : server.cpu > 60 ? 'bg-amber-500' : 'bg-green-500' }}" style="width: {{ server.cpu }}%;"></div>
@@ -69,7 +69,7 @@ const stats = [
                       <span class="text-sm">{{ server.cpu }}%</span>
                     </div>
                   </td>
-                  <td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <div class="flex items-center gap-2">
                       <div class="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div class="h-full rounded-full {{ server.memory > 80 ? 'bg-red-500' : server.memory > 60 ? 'bg-amber-500' : 'bg-green-500' }}" style="width: {{ server.memory }}%;"></div>
@@ -77,7 +77,7 @@ const stats = [
                       <span class="text-sm">{{ server.memory }}%</span>
                     </div>
                   </td>
-                  <td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <div class="flex items-center gap-2">
                       <div class="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div class="h-full bg-blue-500 rounded-full" style="width: {{ server.disk }}%;"></div>
@@ -85,13 +85,13 @@ const stats = [
                       <span class="text-sm">{{ server.disk }}%</span>
                     </div>
                   </td>
-                  <td>
-                    <span class="badge badge-{{ server.status === 'healthy' ? 'success' : 'warning' }}">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ server.status === 'healthy' ? 'success' : 'warning'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : server.status === 'healthy' ? 'success' : 'warning'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : server.status === 'healthy' ? 'success' : 'warning'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
                       {{ server.status }}
                     </span>
                   </td>
                   <td class="text-gray-500 dark:text-gray-400">{{ server.uptime }}</td>
-                  <td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <div class="flex gap-2">
                       <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">SSH</button>
                       <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Manage</button>

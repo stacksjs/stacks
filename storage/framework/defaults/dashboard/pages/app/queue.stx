@@ -62,7 +62,7 @@ const recentJobs = [
                 <div class="font-medium text-gray-900 dark:text-white">{{ job.name }}</div>
                 <div class="text-sm text-gray-500 dark:text-gray-400">{{ job.queue }} &middot; {{ job.id }}</div>
               </div>
-              <span class="badge badge-{{ job.status === 'completed' ? 'success' : job.status === 'processing' ? 'info' : 'error' }}">
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ job.status === 'completed' ? 'success' : job.status === 'processing' ? 'info' : 'error'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : job.status === 'completed' ? 'success' : job.status === 'processing' ? 'info' : 'error'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : job.status === 'completed' ? 'success' : job.status === 'processing' ? 'info' : 'error'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
                 {{ job.status }}
               </span>
             </div>

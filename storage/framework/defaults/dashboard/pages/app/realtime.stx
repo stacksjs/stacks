@@ -23,17 +23,17 @@ const stats = {
 
     <div class="flex flex-col gap-6">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div class="stat-card">
-          <div class="stat-card-value">{{ stats.activeConnections }}</div>
-          <div class="stat-card-label">Active Connections</div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.activeConnections }}</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Active Connections</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-card-value">{{ stats.messagesPerMinute }}</div>
-          <div class="stat-card-label">Messages/min</div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.messagesPerMinute }}</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Messages/min</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-card-value">{{ stats.avgLatency }}</div>
-          <div class="stat-card-label">Avg Latency</div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.avgLatency }}</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Avg Latency</div>
         </div>
       </div>
 

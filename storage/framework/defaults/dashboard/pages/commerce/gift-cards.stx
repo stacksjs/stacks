@@ -33,9 +33,9 @@ const denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
     <div class="flex flex-col gap-6">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (stats as stat)
-          <div class="stat-card">
-            <div class="stat-card-value">{{ stat.value }}</div>
-            <div class="stat-card-label">{{ stat.label }}</div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
           </div>
         @endforeach
       </div>
@@ -50,15 +50,15 @@ const denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
               <label class="text-sm text-muted mb-2 block">Select Amount</label>
               <div class="flex flex-wrap gap-2">
                 @foreach (denominations as denom)
-                  <button class="btn btn-secondary btn-sm">{{ denom }}</button>
+                  <button class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">{{ denom }}</button>
                 @endforeach
               </div>
             </div>
             <div class="mb-4">
               <label class="text-sm text-muted mb-2 block">Recipient Email (optional)</label>
-              <input type="email" class="input" placeholder="email@example.com" />
+              <input type="email" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="email@example.com" />
             </div>
-            <button class="btn btn-primary w-full">Create Gift Card</button>
+            <button class="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Create Gift Card</button>
           </div>
         </div>
 
@@ -69,9 +69,9 @@ const denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
           <div class="p-4">
             <div class="mb-4">
               <label class="text-sm text-muted mb-2 block">Gift Card Code</label>
-              <input type="text" class="input" placeholder="GC-XXXX-XXXX" />
+              <input type="text" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="GC-XXXX-XXXX" />
             </div>
-            <button class="btn btn-secondary w-full">Check Balance</button>
+            <button class="w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Check Balance</button>
           </div>
         </div>
       </div>
@@ -81,32 +81,32 @@ const denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
           <span class="font-semibold text-gray-900 dark:text-white">Recent Gift Cards</span>
         </div>
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table>
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Balance</th>
-                <th>Initial</th>
-                <th>Recipient</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Actions</th>
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-700/50">
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Code</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Balance</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Initial</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Recipient</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody>
               @foreach (giftCards as card)
-                <tr>
-                  <td><code class="code-inline">{{ card.code }}</code></td>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="code-inline">{{ card.code }}</code></td>
                   <td class="font-semibold">{{ card.balance }}</td>
                   <td class="text-gray-500 dark:text-gray-400">{{ card.initial }}</td>
-                  <td>{{ card.recipient || '—' }}</td>
-                  <td>
-                    <span class="badge badge-{{ card.status === 'active' ? 'success' : card.status === 'pending' ? 'warning' : 'neutral' }}">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ card.recipient || '—' }}</td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ card.status === 'active' ? 'success' : card.status === 'pending' ? 'warning' : 'neutral'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : card.status === 'active' ? 'success' : card.status === 'pending' ? 'warning' : 'neutral'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : card.status === 'active' ? 'success' : card.status === 'pending' ? 'warning' : 'neutral'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
                       {{ card.status }}
                     </span>
                   </td>
                   <td class="text-gray-500 dark:text-gray-400">{{ card.created }}</td>
-                  <td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View</button>
                   </td>
                 </tr>
