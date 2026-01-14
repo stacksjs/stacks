@@ -34,7 +34,7 @@ function getMainContentStyle() {
 </script>
 
 <!-- macOS-inspired layout with subtle background -->
-<div class="min-h-screen bg-neutral-100 dark:bg-neutral-950">
+<div class="min-h-screen bg-white dark:bg-neutral-950">
   <!-- Mobile sidebar overlay -->
   @if(isMobileMenuOpen && isMobile)
     <div

@@ -22,18 +22,18 @@
 
   const borderClass = error
     ? 'border-red-400/60 dark:border-red-500/60 focus:border-red-500 focus:ring-red-500/30'
-    : 'border-black/10 dark:border-white/15 focus:border-blue-500/50 hover:border-black/20 dark:hover:border-white/25'
+    : 'border-stone-200/80 dark:border-white/15 focus:border-blue-400 hover:border-stone-300 dark:hover:border-white/25'
 
-  const disabledClass = disabled ? 'opacity-40 cursor-not-allowed bg-black/5 dark:bg-white/5' : ''
+  const disabledClass = disabled ? 'opacity-40 cursor-not-allowed bg-stone-50 dark:bg-white/5' : ''
 
   export const inputClass = [
     'block w-full',
     'bg-white dark:bg-white/10',
-    'border rounded-md',
-    'text-neutral-900 dark:text-neutral-100',
-    'placeholder:text-neutral-400 dark:placeholder:text-neutral-500',
+    'border rounded-lg',
+    'text-stone-900 dark:text-neutral-100',
+    'placeholder:text-stone-400 dark:placeholder:text-neutral-500',
     'transition-all duration-150',
-    'focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-0',
+    'focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-0',
     sizeClasses[size],
     borderClass,
     disabledClass
@@ -44,7 +44,7 @@
 
 <div class="{{ fullWidth ? 'w-full' : '' }}">
   @if(label)
-    <label for="{{ inputId }}" class="block text-[13px] font-medium mb-1.5 tracking-tight {{ error ? 'text-red-600 dark:text-red-400' : 'text-neutral-600 dark:text-neutral-400' }}">
+    <label for="{{ inputId }}" class="block text-[13px] font-medium mb-1.5 tracking-tight {{ error ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-neutral-400' }}">
       {{ label }}
       @if(required)
         <span class="text-red-500 ml-0.5">*</span>
@@ -69,6 +69,6 @@
   @if(error)
     <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
   @elseif(hint)
-    <p class="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">{{ hint }}</p>
+    <p class="mt-1.5 text-sm text-stone-500 dark:text-neutral-400">{{ hint }}</p>
   @endif
 </div>

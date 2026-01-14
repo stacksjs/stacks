@@ -592,26 +592,26 @@ export {
   <div class="flex-1 flex">
     <!-- Sidebar -->
     <div :class="[
-      'border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-all duration-300',
+      'border-r border-stone-200/60 dark:border-neutral-700 bg-[#F5F3EE]/80 dark:bg-neutral-800 transition-all duration-300',
       showSidePanel ? 'w-64' : 'w-0 overflow-hidden'
     ]">
       <div class="h-full flex flex-col">
         <!-- Storage overview -->
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Storage</h3>
+        <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
+          <h3 class="text-sm font-semibold text-stone-500 dark:text-neutral-400 uppercase tracking-wider">Storage</h3>
           <div class="mt-2" style="height: 120px;">
             <Doughnut :data="storageChartData" :options="doughnutChartOptions" />
           </div>
-          <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            <div class="flex justify-between">
+          <div class="mt-2 text-xs text-stone-500 dark:text-neutral-400">
+            <div class="flex justify-between py-0.5">
               <span>Used</span>
               <span>{{ formatFileSize(storageStats.used) }}</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between py-0.5">
               <span>Available</span>
               <span>{{ formatFileSize(storageStats.available) }}</span>
             </div>
-            <div class="flex justify-between font-medium">
+            <div class="flex justify-between py-0.5 font-medium text-stone-700 dark:text-neutral-300">
               <span>Total</span>
               <span>{{ formatFileSize(storageStats.total) }}</span>
             </div>
@@ -619,25 +619,25 @@ export {
         </div>
 
         <!-- Storage by type -->
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Storage by Type</h3>
+        <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
+          <h3 class="text-sm font-semibold text-stone-500 dark:text-neutral-400 uppercase tracking-wider">Storage by Type</h3>
           <div class="mt-2" style="height: 120px;">
             <Doughnut :data="storageByTypeChartData" :options="doughnutChartOptions" />
           </div>
-          <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            <div class="flex justify-between">
+          <div class="mt-2 text-xs text-stone-500 dark:text-neutral-400">
+            <div class="flex justify-between py-0.5">
               <span>Documents</span>
               <span>{{ formatFileSize(storageByType.documents) }}</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between py-0.5">
               <span>Images</span>
               <span>{{ formatFileSize(storageByType.images) }}</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between py-0.5">
               <span>Videos</span>
               <span>{{ formatFileSize(storageByType.videos) }}</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between py-0.5">
               <span>Other</span>
               <span>{{ formatFileSize(storageByType.other) }}</span>
             </div>
@@ -646,72 +646,72 @@ export {
 
         <!-- Navigation -->
         <nav class="flex-1 overflow-y-auto p-2">
-          <div class="space-y-1">
+          <div class="space-y-0.5">
             <button
               @click="navigateToFolder(rootFolder)"
-              class="w-full flex items-center px-2 py-2 text-sm font-medium rounded-md"
+              class="w-full flex items-center px-2.5 py-1.5 text-[13px] font-medium rounded-md transition-colors"
               :class="[
                 currentFolder.id === rootFolder.id
-                  ? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
+                  ? 'bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
+                  : 'text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white'
               ]"
             >
-              <div class="i-hugeicons-home-02 h-5 w-5 mr-3 text-gray-400 dark:text-gray-500"></div>
+              <div class="i-hugeicons-home-02 h-4 w-4 mr-2.5 text-stone-500 dark:text-neutral-500"></div>
               Home
             </button>
 
             <button
-              class="w-full flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+              class="w-full flex items-center px-2.5 py-1.5 text-[13px] font-medium rounded-md text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white transition-colors"
             >
-              <div class="i-hugeicons-star h-5 w-5 mr-3 text-gray-400 dark:text-gray-500"></div>
+              <div class="i-hugeicons-star h-4 w-4 mr-2.5 text-stone-500 dark:text-neutral-500"></div>
               Starred
-              <span class="ml-auto bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 py-0.5 px-2 rounded-full text-xs">
+              <span class="ml-auto bg-stone-200/60 text-stone-600 dark:bg-neutral-700 dark:text-neutral-300 py-0.5 px-2 rounded-full text-xs">
                 {{ starredItems.length }}
               </span>
             </button>
 
             <button
-              class="w-full flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+              class="w-full flex items-center px-2.5 py-1.5 text-[13px] font-medium rounded-md text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white transition-colors"
             >
-              <div class="i-hugeicons-share-01 h-5 w-5 mr-3 text-gray-400 dark:text-gray-500"></div>
+              <div class="i-hugeicons-share-01 h-4 w-4 mr-2.5 text-stone-500 dark:text-neutral-500"></div>
               Shared
-              <span class="ml-auto bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 py-0.5 px-2 rounded-full text-xs">
+              <span class="ml-auto bg-stone-200/60 text-stone-600 dark:bg-neutral-700 dark:text-neutral-300 py-0.5 px-2 rounded-full text-xs">
                 {{ sharedItems.length }}
               </span>
             </button>
 
             <button
-              class="w-full flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+              class="w-full flex items-center px-2.5 py-1.5 text-[13px] font-medium rounded-md text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white transition-colors"
             >
-              <div class="i-hugeicons-clock-04 h-5 w-5 mr-3 text-gray-400 dark:text-gray-500"></div>
+              <div class="i-hugeicons-clock-04 h-4 w-4 mr-2.5 text-stone-500 dark:text-neutral-500"></div>
               Recent
             </button>
 
             <button
-              class="w-full flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+              class="w-full flex items-center px-2.5 py-1.5 text-[13px] font-medium rounded-md text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white transition-colors"
             >
-              <div class="i-hugeicons-waste h-5 w-5 mr-3 text-gray-400 dark:text-gray-500"></div>
+              <div class="i-hugeicons-waste h-4 w-4 mr-2.5 text-stone-500 dark:text-neutral-500"></div>
               Trash
             </button>
           </div>
 
-          <div class="mt-8">
-            <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
+          <div class="mt-6">
+            <h3 class="px-2.5 text-xs font-semibold text-stone-500 uppercase tracking-wider dark:text-neutral-400">
               Folders
             </h3>
-            <div class="mt-1 space-y-1">
+            <div class="mt-1 space-y-0.5">
               @foreach(rootFolder.items.filter(item => item.type === 'folder') as folder)
               <button
                 :key="folder.id"
                 @click="navigateToFolder(folder)"
-                class="w-full flex items-center px-2 py-2 text-sm font-medium rounded-md"
+                class="w-full flex items-center px-2.5 py-1.5 text-[13px] font-medium rounded-md transition-colors"
                 :class="[
                   currentFolder.id === folder.id
-                    ? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
+                    ? 'bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
+                    : 'text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white'
                 ]"
               >
-                <div class="i-hugeicons-folder-02 h-5 w-5 mr-3 text-gray-400 dark:text-gray-500"></div>
+                <div class="i-hugeicons-folder-02 h-4 w-4 mr-2.5 text-stone-500 dark:text-neutral-500"></div>
                 {{ folder.name }}
               </button>
               @endforeach
@@ -720,7 +720,7 @@ export {
         </nav>
 
         <!-- Upload button -->
-        <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+        <div class="p-4 border-t border-stone-200/60 dark:border-neutral-700">
           <button
             @click="showUploadModal = true"
             class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"
@@ -733,9 +733,9 @@ export {
     </div>
 
     <!-- Main content area -->
-    <div class="flex-1 flex flex-col">
+    <div class="flex-1 flex flex-col bg-white dark:bg-neutral-900">
       <!-- Toolbar -->
-      <div class="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+      <div class="border-b border-stone-200/60 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4">
         <div class="flex items-center justify-between">
           <!-- Toggle sidebar button -->
           <button
@@ -858,7 +858,7 @@ export {
       </div>
 
       <!-- Content -->
-      <div class="flex-1 overflow-auto p-4 bg-gray-50 dark:bg-gray-900">
+      <div class="flex-1 overflow-auto p-4 bg-stone-50/50 dark:bg-neutral-900">
         <!-- Empty state -->
         @if(filteredItems.length === 0)
         <div class="flex flex-col items-center justify-center h-full text-center">
@@ -946,55 +946,55 @@ export {
         </div>
         @else
         <!-- List view -->
-        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-gray-800">
+        <div class="overflow-hidden shadow-sm ring-1 ring-stone-200/80 dark:ring-neutral-700 rounded-xl">
+          <table class="min-w-full divide-y divide-stone-100 dark:divide-neutral-700">
+            <thead class="bg-stone-50/80 dark:bg-neutral-800">
               <tr>
-                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
+                <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">
                   Name
                 </th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                <th scope="col" class="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">
                   Size
                 </th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                <th scope="col" class="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">
                   Modified
                 </th>
-                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                <th scope="col" class="relative py-3.5 pl-3 pr-6">
                   <span class="sr-only">Actions</span>
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+            <tbody class="divide-y divide-stone-100 dark:divide-neutral-700 bg-white dark:bg-neutral-800">
               @foreach(filteredItems as item)
               <tr
                 :key="item.id"
                 @click="item.type === 'folder' ? navigateToFolder(item) : toggleItemSelection(item, $event)"
                 :class="[
-                  'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700',
+                  'cursor-pointer hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors',
                   selectedItems.some(i => i.id === item.id)
-                    ? 'bg-indigo-50 dark:bg-indigo-900/30'
+                    ? 'bg-blue-50/50 dark:bg-blue-900/20'
                     : ''
                 ]"
               >
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                <td class="whitespace-nowrap py-3.5 pl-6 pr-3 text-sm">
                   <div class="flex items-center">
                     <div
                       :class="[
                         item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type),
-                        'h-6 w-6 mr-3',
-                        item.type === 'folder' ? 'text-indigo-400 dark:text-indigo-300' : 'text-gray-500 dark:text-gray-400'
+                        'h-5 w-5 mr-3',
+                        item.type === 'folder' ? 'text-blue-500 dark:text-blue-400' : 'text-stone-500 dark:text-neutral-400'
                       ]"
                     ></div>
-                    <div class="font-medium text-gray-900 dark:text-white">{{ item.name }}</div>
+                    <div class="font-medium text-stone-800 dark:text-white">{{ item.name }}</div>
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                <td class="whitespace-nowrap px-3 py-3.5 text-sm text-stone-500 dark:text-neutral-400">
                   {{ item.type === 'folder' ? '-' : formatFileSize(item.size) }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                <td class="whitespace-nowrap px-3 py-3.5 text-sm text-stone-500 dark:text-neutral-400">
                   {{ formatDate(item.lastModified) }}
                 </td>
-                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                <td class="relative whitespace-nowrap py-3.5 pl-3 pr-6 text-right text-sm font-medium">
                   <div class="flex justify-end space-x-2">
                     <button
                       @click.stop="toggleStar(item)"

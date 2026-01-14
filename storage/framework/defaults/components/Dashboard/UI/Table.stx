@@ -21,7 +21,7 @@
   }
 </script>
 
-<div class="relative overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+<div class="relative overflow-hidden rounded-xl border border-stone-200/80 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm">
   <!-- Loading overlay -->
   @if(loading)
     <div class="absolute inset-0 z-10 flex items-center justify-center bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm">
@@ -35,15 +35,15 @@
   <div class="overflow-x-auto">
     <table class="w-full">
       <!-- Header -->
-      <thead class="bg-neutral-50 dark:bg-neutral-800/50 {{ stickyHeader ? 'sticky top-0 z-10' : '' }}">
+      <thead class="bg-stone-50/80 dark:bg-neutral-800/50 {{ stickyHeader ? 'sticky top-0 z-10' : '' }}">
         <tr>
           <!-- Selection checkbox column -->
           @if(selectable)
-            <th class="w-12 px-4 py-3">
+            <th class="w-12 pl-6 pr-2 py-3">
               <div class="flex items-center justify-center">
                 <input
                   type="checkbox"
-                  class="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700"
+                  class="h-4 w-4 rounded border-stone-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700"
                   data-select-all
                 >
               </div>
@@ -51,9 +51,9 @@
           @endif
 
           <!-- Data columns -->
-          @foreach(columns as column)
+          @foreach(columns as column, index)
             <th
-              class="px-4 text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 {{ compact ? 'py-2' : 'py-3' }} {{ getAlignClass(column.align) }} {{ column.sortable ? 'cursor-pointer select-none hover:text-neutral-700 dark:hover:text-neutral-200' : '' }} {{ column.class || '' }}"
+              class="{{ index === 0 && !selectable ? 'pl-6' : 'pl-4' }} pr-4 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400 {{ compact ? 'py-2' : 'py-3.5' }} {{ getAlignClass(column.align) }} {{ column.sortable ? 'cursor-pointer select-none hover:text-stone-700 dark:hover:text-neutral-200' : '' }} {{ column.class || '' }}"
               @if(column.width) style="width: {{ column.width }}" @endif
               data-column="{{ column.key }}"
             >
@@ -74,19 +74,19 @@
       </thead>
 
       <!-- Body -->
-      <tbody class="{{ striped ? 'divide-y-0' : 'divide-y divide-neutral-200 dark:divide-neutral-700' }}">
-        @foreach(data as row, index)
+      <tbody class="{{ striped ? 'divide-y-0' : 'divide-y divide-stone-100 dark:divide-neutral-700' }}">
+        @foreach(data as row, rowIndex)
           <tr
-            class="{{ hoverable ? 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50' : '' }} {{ striped && index % 2 == 1 ? 'bg-neutral-50/50 dark:bg-neutral-800/25' : '' }} transition-colors"
+            class="{{ hoverable ? 'hover:bg-stone-50/50 dark:hover:bg-neutral-800/50' : '' }} {{ striped && rowIndex % 2 == 1 ? 'bg-stone-50/30 dark:bg-neutral-800/25' : '' }} transition-colors"
             data-row-id="{{ row[rowKey] }}"
           >
             <!-- Selection checkbox -->
             @if(selectable)
-              <td class="w-12 px-4 {{ compact ? 'py-2' : 'py-3' }}">
+              <td class="w-12 pl-6 pr-2 {{ compact ? 'py-2' : 'py-3.5' }}">
                 <div class="flex items-center justify-center">
                   <input
                     type="checkbox"
-                    class="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700"
+                    class="h-4 w-4 rounded border-stone-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700"
                     data-row-select
                   >
                 </div>
@@ -94,8 +94,8 @@
             @endif
 
             <!-- Data cells -->
-            @foreach(columns as column)
-              <td class="px-4 text-sm text-neutral-700 dark:text-neutral-200 {{ compact ? 'py-2' : 'py-3' }} {{ getAlignClass(column.align) }} {{ column.class || '' }}">
+            @foreach(columns as column, colIndex)
+              <td class="{{ colIndex === 0 && !selectable ? 'pl-6' : 'pl-4' }} pr-4 text-sm text-stone-700 dark:text-neutral-200 {{ compact ? 'py-2' : 'py-3.5' }} {{ getAlignClass(column.align) }} {{ column.class || '' }}">
                 {{ row[column.key] }}
               </td>
             @endforeach
