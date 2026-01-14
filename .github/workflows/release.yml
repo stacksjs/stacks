@@ -23,6 +23,13 @@ jobs:
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup pantry
+        uses: stacksjs/pantry@v0.7
+        with:
+          setup-only: 'true'
 
       - name: Use Cached node_modules
         uses: actions/cache@v4
@@ -36,7 +43,7 @@ jobs:
         run: bun install
 
       - name: Publish Framework
-        run: ./storage/framework/scripts/publish
+        run: pantry publish --access public
         env:
           BUN_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
