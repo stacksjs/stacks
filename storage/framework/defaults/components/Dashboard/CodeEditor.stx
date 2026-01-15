@@ -1,30 +1,32 @@
-<script>
-  export const live = false
-  export const lang = 'typescript'
-  export const theme = 'github_dark'
-  export const content = `echo 'Hello World!'
+<script server>
+  const live = props.live || false
+  const lang = props.lang || 'typescript'
+  const theme = props.theme || 'github_dark'
+  const content = props.content || `echo 'Hello World!'
 
 mv ./test/test.ts ./jello
 cp`
 </script>
 
-<header class="flex items-center justify-between border-b border-[#30363d] rounded-t-lg bg-[#1f2428] p-4">
-  <div class="flex items-center gap-2">
-    <div class="h-3 w-3 rounded-full bg-[#f85149]"></div>
-    <div class="h-3 w-3 rounded-full bg-[#db9d16]"></div>
-    <div class="h-3 w-3 rounded-full bg-[#2ea043]"></div>
+<template>
+  <header class="flex items-center justify-between border-b border-[#30363d] rounded-t-lg bg-[#1f2428] p-4">
+    <div class="flex items-center gap-2">
+      <div class="h-3 w-3 rounded-full bg-[#f85149]"></div>
+      <div class="h-3 w-3 rounded-full bg-[#db9d16]"></div>
+      <div class="h-3 w-3 rounded-full bg-[#2ea043]"></div>
+    </div>
+
+    @if(!live)
+      <span class="text-sm text-[#c9d1d9] font-mono">Deploy Script</span>
+    @else
+      <span class="text-sm text-[#c9d1d9] font-mono">Live Terminal Output</span>
+    @endif
+  </header>
+
+  <div class="vue-ace-editor rounded-b-lg bg-[#0d1117]" style="height: 300px; font-size: 14px;">
+    <pre class="p-4 text-[#c9d1d9] font-mono text-sm">{{ content }}</pre>
   </div>
-
-  @if(!live)
-    <span class="text-sm text-[#c9d1d9] font-mono">Deploy Script</span>
-  @else
-    <span class="text-sm text-[#c9d1d9] font-mono">Live Terminal Output</span>
-  @endif
-</header>
-
-<div class="vue-ace-editor rounded-b-lg bg-[#0d1117]" style="height: 300px; font-size: 14px;">
-  <pre class="p-4 text-[#c9d1d9] font-mono text-sm">{{ content }}</pre>
-</div>
+</template>
 
 <style>
 select {

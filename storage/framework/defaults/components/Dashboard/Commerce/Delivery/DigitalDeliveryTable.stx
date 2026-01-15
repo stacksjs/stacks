@@ -1,5 +1,5 @@
-<script>
-  export const methods = []
+<script server>
+  const methods = props.methods || []
 
   function statusClass(status) {
     return uppercaseFirstLetter(status) === 'Active'
@@ -20,65 +20,67 @@
   }
 </script>
 
-<div class="overflow-hidden rounded-xl border border-stone-200/80 dark:border-neutral-700 shadow-sm">
-  <table class="min-w-full divide-y divide-stone-100 dark:divide-neutral-700">
-    <thead class="bg-stone-50/80 dark:bg-neutral-800">
-      <tr>
-        <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Name</th>
-        <th scope="col" class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Description</th>
-        <th scope="col" class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Download Limit</th>
-        <th scope="col" class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Expiry Days</th>
-        <th scope="col" class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Requires Login</th>
-        <th scope="col" class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Automatic Delivery</th>
-        <th scope="col" class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Status</th>
-        <th scope="col" class="relative py-3.5 pl-3 pr-6">
-          <span class="sr-only">Actions</span>
-        </th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-stone-100 dark:divide-neutral-700 bg-white dark:bg-neutral-800">
-      @foreach(methods as method)
-        <tr class="hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors">
-          <td class="whitespace-nowrap py-3.5 pl-6 pr-3 text-sm font-medium text-stone-800 dark:text-white">
-            {{ method.name }}
-          </td>
-          <td class="whitespace-nowrap px-4 py-3.5 text-sm text-stone-500 dark:text-neutral-300">
-            {{ method.description }}
-          </td>
-          <td class="whitespace-nowrap px-4 py-3.5 text-sm text-stone-500 dark:text-neutral-300">
-            {{ formatLimit(method.download_limit) }}
-          </td>
-          <td class="whitespace-nowrap px-4 py-3.5 text-sm text-stone-500 dark:text-neutral-300">
-            {{ formatExpiry(method.expiry_days) }}
-          </td>
-          <td class="whitespace-nowrap px-4 py-3.5 text-sm text-stone-500 dark:text-neutral-300">
-            {{ method.requires_login ? 'Yes' : 'No' }}
-          </td>
-          <td class="whitespace-nowrap px-4 py-3.5 text-sm text-stone-500 dark:text-neutral-300">
-            {{ method.automatic_delivery ? 'Yes' : 'No' }}
-          </td>
-          <td class="whitespace-nowrap px-4 py-3.5 text-sm">
-            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium {{ statusClass(method.status) }}">
-              {{ uppercaseFirstLetter(method.status) }}
-            </span>
-          </td>
-          <td class="relative whitespace-nowrap py-3.5 pl-3 pr-6 text-right text-sm font-medium">
-            <button type="button" class="text-stone-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded-md border border-transparent hover:border-blue-200 dark:hover:border-blue-800 mr-2" title="Edit" data-action="edit" data-method-id="{{ method.id }}">
-              <div class="i-hugeicons-edit-01 h-5 w-5"></div>
-            </button>
-            <button type="button" class="text-stone-400 transition-colors duration-150 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-md border border-transparent hover:border-red-200 dark:hover:border-red-800" title="Delete" data-action="delete" data-method-id="{{ method.id }}">
-              <div class="i-hugeicons-waste h-5 w-5"></div>
-            </button>
-          </td>
-        </tr>
-      @endforeach
-      @if(methods.length == 0)
+<template>
+  <div class="overflow-hidden rounded-xl border border-stone-200/80 dark:border-neutral-700 shadow-sm">
+    <table class="min-w-full divide-y divide-stone-100 dark:divide-neutral-700">
+      <thead class="bg-stone-50/80 dark:bg-neutral-800">
         <tr>
-          <td colspan="8" class="px-6 py-3.5 text-center text-sm text-stone-500 dark:text-neutral-400">
-            No digital delivery methods found
-          </td>
+          <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Name</th>
+          <th scope="col" class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Description</th>
+          <th scope="col" class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Download Limit</th>
+          <th scope="col" class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Expiry Days</th>
+          <th scope="col" class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Requires Login</th>
+          <th scope="col" class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Automatic Delivery</th>
+          <th scope="col" class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Status</th>
+          <th scope="col" class="relative py-3.5 pl-3 pr-6">
+            <span class="sr-only">Actions</span>
+          </th>
         </tr>
-      @endif
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody class="divide-y divide-stone-100 dark:divide-neutral-700 bg-white dark:bg-neutral-800">
+        @foreach(methods as method)
+          <tr class="hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors">
+            <td class="whitespace-nowrap py-3.5 pl-6 pr-3 text-sm font-medium text-stone-800 dark:text-white">
+              {{ method.name }}
+            </td>
+            <td class="whitespace-nowrap px-4 py-3.5 text-sm text-stone-500 dark:text-neutral-300">
+              {{ method.description }}
+            </td>
+            <td class="whitespace-nowrap px-4 py-3.5 text-sm text-stone-500 dark:text-neutral-300">
+              {{ formatLimit(method.download_limit) }}
+            </td>
+            <td class="whitespace-nowrap px-4 py-3.5 text-sm text-stone-500 dark:text-neutral-300">
+              {{ formatExpiry(method.expiry_days) }}
+            </td>
+            <td class="whitespace-nowrap px-4 py-3.5 text-sm text-stone-500 dark:text-neutral-300">
+              {{ method.requires_login ? 'Yes' : 'No' }}
+            </td>
+            <td class="whitespace-nowrap px-4 py-3.5 text-sm text-stone-500 dark:text-neutral-300">
+              {{ method.automatic_delivery ? 'Yes' : 'No' }}
+            </td>
+            <td class="whitespace-nowrap px-4 py-3.5 text-sm">
+              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium {{ statusClass(method.status) }}">
+                {{ uppercaseFirstLetter(method.status) }}
+              </span>
+            </td>
+            <td class="relative whitespace-nowrap py-3.5 pl-3 pr-6 text-right text-sm font-medium">
+              <button type="button" class="text-stone-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded-md border border-transparent hover:border-blue-200 dark:hover:border-blue-800 mr-2" title="Edit" data-action="edit" data-method-id="{{ method.id }}">
+                <div class="i-hugeicons-edit-01 h-5 w-5"></div>
+              </button>
+              <button type="button" class="text-stone-400 transition-colors duration-150 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-md border border-transparent hover:border-red-200 dark:hover:border-red-800" title="Delete" data-action="delete" data-method-id="{{ method.id }}">
+                <div class="i-hugeicons-waste h-5 w-5"></div>
+              </button>
+            </td>
+          </tr>
+        @endforeach
+        @if(methods.length == 0)
+          <tr>
+            <td colspan="8" class="px-6 py-3.5 text-center text-sm text-stone-500 dark:text-neutral-400">
+              No digital delivery methods found
+            </td>
+          </tr>
+        @endif
+      </tbody>
+    </table>
+  </div>
+</template>

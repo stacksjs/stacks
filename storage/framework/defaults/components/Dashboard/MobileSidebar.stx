@@ -1,44 +1,46 @@
-<script>
-  export const isOpen = false
-  export const companyLogo = 'https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600'
-  export const companyName = 'Your Company'
+<script server>
+  const isOpen = props.isOpen || false
+  const companyLogo = props.companyLogo || 'https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600'
+  const companyName = props.companyName || 'Your Company'
 </script>
 
-@if(isOpen)
-<div
-  class="relative z-50 lg:hidden"
-  role="dialog"
-  aria-modal="true"
->
-  <!-- Off-canvas menu backdrop -->
-  <div class="fixed inset-0 bg-gray-900/80"></div>
+<template>
+  @if(isOpen)
+  <div
+    class="relative z-50 lg:hidden"
+    role="dialog"
+    aria-modal="true"
+  >
+    <!-- Off-canvas menu backdrop -->
+    <div class="fixed inset-0 bg-gray-900/80"></div>
 
-  <div class="fixed inset-0 flex">
-    <!-- Off-canvas menu panel -->
-    <div class="relative mr-16 max-w-xs w-full flex flex-1">
-      <!-- Close button -->
-      <div class="absolute left-full top-0 w-16 flex justify-center pt-5">
-        <button
-          type="button"
-          class="p-2.5 -m-2.5"
-          data-close-sidebar
-        >
-          <span class="sr-only">Close sidebar</span>
-          <div class="i-hugeicons-cancel-01 h-6 w-6 text-white"></div>
-        </button>
-      </div>
-
-      <!-- Sidebar component -->
-      <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4">
-        <div class="h-16 flex shrink-0 items-center">
-          <img
-            class="h-8 w-auto"
-            src="{{ companyLogo }}"
-            alt="{{ companyName }}"
+    <div class="fixed inset-0 flex">
+      <!-- Off-canvas menu panel -->
+      <div class="relative mr-16 max-w-xs w-full flex flex-1">
+        <!-- Close button -->
+        <div class="absolute left-full top-0 w-16 flex justify-center pt-5">
+          <button
+            type="button"
+            class="p-2.5 -m-2.5"
+            data-close-sidebar
           >
+            <span class="sr-only">Close sidebar</span>
+            <div class="i-hugeicons-cancel-01 h-6 w-6 text-white"></div>
+          </button>
+        </div>
+
+        <!-- Sidebar component -->
+        <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4">
+          <div class="h-16 flex shrink-0 items-center">
+            <img
+              class="h-8 w-auto"
+              src="{{ companyLogo }}"
+              alt="{{ companyName }}"
+            >
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
-@endif
+  @endif
+</template>

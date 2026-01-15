@@ -1,23 +1,25 @@
-<script>
-  export const text = ''
-  export const position = 'bottom'
-  export const dark = false
-  export const alignment = 'center'
+<script server>
+  const text = props.text || ''
+  const position = props.position || 'bottom'
+  const dark = props.dark || false
+  const alignment = props.alignment || 'center'
 </script>
 
-<div
-  class="tooltip-container"
-  data-tooltip
->
-  {{ slot }}
-
-  <span
-    class="tooltip {{ position }} {{ dark ? 'dark-tooltip' : '' }} align-{{ alignment }}"
-    data-tooltip-text
+<template>
+  <div
+    class="tooltip-container"
+    data-tooltip
   >
-    {{ text }}
-  </span>
-</div>
+    <slot />
+
+    <span
+      class="tooltip {{ position }} {{ dark ? 'dark-tooltip' : '' }} align-{{ alignment }}"
+      data-tooltip-text
+    >
+      {{ text }}
+    </span>
+  </div>
+</template>
 
 <style>
 .tooltip-container {
