@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, watch, onMounted } from 'vue'
 import { Line } from 'vue-chartjs'
 import {
@@ -241,9 +241,9 @@ onMounted(async () => {
   isLoading.value = false
 })
 
-export { recentJobs, timeRange, isLoading, timeRangeOptions, chartOptions, throughputData, waitTimeData, getStatusVariant }
 </script>
 
+<template>
 <div>
   <!-- Stats Overview -->
   <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -402,6 +402,7 @@ export { recentJobs, timeRange, isLoading, timeRangeOptions, chartOptions, throu
     </div>
   </Card>
 </div>
+</template>
 
 <route lang="yaml">
 meta:

@@ -1,17 +1,17 @@
-<script>
+<script server>
 /**
  * Navbar Component
  * Top navigation bar with search, notifications, and user menu.
  */
 
 // State
-export const showDropdown = false
-export const isDark = false
-export const theme = 'light'
-export const isSidebarCollapsed = false
+const showDropdown = props.showDropdown || false
+const isDark = props.isDark || false
+const theme = props.theme || 'light'
+const isSidebarCollapsed = props.isSidebarCollapsed || false
 
 // Current path (would be provided by router)
-export const currentPath = '/'
+const currentPath = props.currentPath || '/'
 
 function isActiveRoute(path) {
   return currentPath === path || currentPath.startsWith(path + '/')
@@ -22,6 +22,7 @@ function getNavbarClasses() {
 }
 </script>
 
+<template>
 <div
   class="sticky top-0 z-10 h-16 flex shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 dark:border-gray-600 dark:bg-blue-gray-900 lg:px-8 sm:px-6 transition-all duration-300 {{ getNavbarClasses() }}"
 >
@@ -160,6 +161,7 @@ function getNavbarClasses() {
     </div>
   </div>
 </div>
+</template>
 
 <style scoped>
 .header-icon-button {

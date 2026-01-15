@@ -1,15 +1,16 @@
-<script>
-export const className = ''
-export const feature = {
+<script server>
+const className = props.className || ''
+const feature = props.feature || {
   name: '',
   summary: '',
   description: '',
   image: '',
   icon: ''
 }
-export const isActive = false
+const isActive = props.isActive || false
 </script>
 
+<template>
 <div class="{{ className }} {{ !isActive ? 'opacity-75 hover:opacity-100' : '' }}">
   <div class="w-9 rounded-lg {{ isActive ? 'bg-blue-600' : 'bg-slate-500' }}">
     <svg aria-hidden="true" class="h-9 w-9" fill="none">
@@ -26,3 +27,4 @@ export const isActive = false
     {{ feature.description }}
   </p>
 </div>
+</template>

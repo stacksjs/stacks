@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
@@ -523,6 +523,7 @@ watch(timeRange, async () => {
 })
 </script>
 
+<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Log Volume Chart -->
@@ -1026,6 +1027,7 @@ watch(timeRange, async () => {
     </div>
   </div>
 </div>
+</template>
 
 <route lang="yaml">
 meta:

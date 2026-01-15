@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useRoute, useRouter } from 'vue-router'
@@ -148,9 +148,9 @@ onMounted(async () => {
   }
 })
 
-export { job, isLoading, showPayload, showTrace, getJobStatusColor, getLogLevelColor, handleRetry, formatBytes, openFile }
 </script>
 
+<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="px-4 sm:px-6 lg:px-8">
     <!-- Header -->
@@ -451,6 +451,7 @@ export { job, isLoading, showPayload, showTrace, getJobStatusColor, getLogLevelC
     @endif
   </div>
 </div>
+</template>
 
 <route lang="yaml">
 meta:

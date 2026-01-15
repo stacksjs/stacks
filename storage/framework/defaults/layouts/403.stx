@@ -1,20 +1,24 @@
-<script>
-import { ref, onMounted } from 'vue'
+<script server>
+const searchQuery = props.searchQuery || ''
+</script>
+
+<script client>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-export const searchQuery = ref('')
 
-export const handleSearch = (e) => {
+const handleSearch = (e) => {
   e.preventDefault()
   console.log('Searching for:', searchQuery.value)
 }
 
-export const goBack = () => {
+const goBack = () => {
   router.back()
 }
 </script>
 
+<template>
 <div class="min-h-screen flex flex-col lg:flex-row bg-gradient-to-br from-slate-50 to-slate-100">
   <!-- Left side content -->
   <div class="w-full lg:w-1/2 flex items-center justify-center p-8">
@@ -181,6 +185,7 @@ export const goBack = () => {
     </svg>
   </div>
 </div>
+</template>
 
 <style>
 @keyframes floatMoon {

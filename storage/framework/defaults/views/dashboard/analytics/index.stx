@@ -1,4 +1,4 @@
-<script>
+<script server>
 /**
  * Analytics Dashboard - macOS Style
  * Overview of analytics with macOS-inspired design.
@@ -11,7 +11,7 @@ useHead({
   title: 'Dashboard - Analytics',
 })
 
-export const analyticsCards = ref([
+const analyticsCards = ref([
   { name: 'Web Analytics', description: 'Page views, sessions, and user behavior', icon: 'i-hugeicons-chart-line-data-02', to: '/analytics/web' },
   { name: 'Blog Analytics', description: 'Post performance and engagement', icon: 'i-hugeicons-edit-02', to: '/analytics/blog' },
   { name: 'Commerce Analytics', description: 'Sales and revenue insights', icon: 'i-hugeicons-shopping-cart-01', to: '/analytics/commerce/sales' },
@@ -25,6 +25,7 @@ export const analyticsCards = ref([
 ])
 </script>
 
+<template>
 <div>
   <!-- Overview Stats -->
   <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -90,6 +91,7 @@ export const analyticsCards = ref([
     @endforeach
   </div>
 </div>
+</template>
 
 <route lang="yaml">
 meta:

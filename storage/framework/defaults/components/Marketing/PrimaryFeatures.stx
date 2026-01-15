@@ -1,5 +1,5 @@
-<script>
-export const features = [
+<script server>
+const features = props.features || [
   {
     title: 'Frontend',
     description: 'Powered by a progressive UI Engine, building application interfaces has never been easier.',
@@ -22,9 +22,10 @@ export const features = [
   },
 ]
 
-export const selectedIndex = 0
+const selectedIndex = props.selectedIndex || 0
 </script>
 
+<template>
 <section id="features" aria-label="Features for running your books" class="relative overflow-hidden bg-blue-600 pb-28 pt-20 sm:py-32">
   <Container class="relative">
     <div class="max-w-2xl md:mx-auto xl:max-w-none md:text-center">
@@ -75,3 +76,4 @@ export const selectedIndex = 0
     </div>
   </Container>
 </section>
+</template>

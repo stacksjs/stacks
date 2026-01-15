@@ -1,10 +1,10 @@
-<script>
+<script server>
   import { isCraftNative, useWindowControls } from '../../functions/craft'
 
-  export const variant = 'macos' // 'macos' | 'windows'
-  export const size = 'md' // 'sm' | 'md' | 'lg'
-  export const showLabels = false
-  export const disabled = false
+  const variant = props.variant || 'macos' // 'macos' | 'windows'
+  const size = props.size || 'md' // 'sm' | 'md' | 'lg'
+  const showLabels = props.showLabels || false
+  const disabled = props.disabled || false
 
   const sizeConfig = {
     sm: { button: 'w-3 h-3', gap: 'gap-1.5', iconSize: 'w-2 h-2' },
@@ -38,6 +38,7 @@
   const isNative = isCraftNative()
 </script>
 
+<template>
 @if(variant == 'macos')
   <div class="flex items-center {{ config.gap }}" data-window-controls>
     <!-- Close button -->
@@ -125,6 +126,7 @@
     </button>
   </div>
 @endif
+</template>
 
 <style>
 [data-window-controls]:hover button svg {

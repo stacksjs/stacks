@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
@@ -54,13 +54,13 @@ interface ChannelStats {
 }
 
 // Mock data for demonstration
-export const notificationStats = ref<NotificationStats>({
+const notificationStats = ref<NotificationStats>({
   total_sent: 45_678,
   delivery_rate: 98.5,
   avg_delivery_time: 1.2,
 })
 
-export const channelStats = ref<Record<string, ChannelStats>>({
+const channelStats = ref<Record<string, ChannelStats>>({
   email: {
     sent: 25_000,
     delivered: 24_800,
@@ -93,7 +93,7 @@ export const channelStats = ref<Record<string, ChannelStats>>({
   },
 })
 
-export const recentNotifications = ref<NotificationEntry[]>([
+const recentNotifications = ref<NotificationEntry[]>([
   {
     id: '1',
     type: 'email',
@@ -140,12 +140,12 @@ export const recentNotifications = ref<NotificationEntry[]>([
   },
 ])
 
-export const timeRange = ref<'hour' | 'day' | 'week'>('hour')
-export const selectedChannel = ref<string>('all')
-export const isLoading = ref(false)
+const timeRange = ref<'hour' | 'day' | 'week'>('hour')
+const selectedChannel = ref<string>('all')
+const isLoading = ref(false)
 
 // Chart options
-export const chartOptions = {
+const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
@@ -199,7 +199,7 @@ export const chartOptions = {
 }
 
 // Generate mock volume data
-export const getVolumeData = () => {
+const getVolumeData = () => {
   const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
   return {
     labels,
@@ -230,7 +230,7 @@ export const getVolumeData = () => {
 }
 
 // Generate mock delivery time data
-export const getDeliveryTimeData = () => {
+const getDeliveryTimeData = () => {
   const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
   return {
     labels,
@@ -244,21 +244,21 @@ export const getDeliveryTimeData = () => {
   }
 }
 
-export const volumeData = ref(getVolumeData())
-export const deliveryTimeData = ref(getDeliveryTimeData())
+const volumeData = ref(getVolumeData())
+const deliveryTimeData = ref(getDeliveryTimeData())
 
-export const notificationStatusColors: Record<string, string> = {
+const notificationStatusColors: Record<string, string> = {
   delivered: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/50 ring-green-600/20',
   sent: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/50 ring-blue-600/20',
   pending: 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 ring-yellow-600/20',
   failed: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/50 ring-red-600/20',
 }
 
-export const getStatusColor = (status: string): string => {
+const getStatusColor = (status: string): string => {
   return notificationStatusColors[status] || 'text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 ring-gray-600/20'
 }
 
-export const getChannelIcon = (type: string): string => {
+const getChannelIcon = (type: string): string => {
   switch (type) {
     case 'email':
       return 'i-hugeicons-mail-01'
@@ -293,11 +293,12 @@ onMounted(async () => {
 })
 
 // Add this helper function before the template
-export const formatNumber = (num: number): string => {
+const formatNumber = (num: number): string => {
   return num.toLocaleString()
 }
 </script>
 
+<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <!-- Stats Overview -->
   <div class="mb-8 px-4 lg:px-8 sm:px-6">

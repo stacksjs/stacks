@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 
@@ -90,9 +90,9 @@ const handleRetry = async (jobId) => {
   console.log('Retrying job:', jobId)
 }
 
-export { jobs, isLoading, currentPage, perPage, totalJobs, selectedQueue, selectedStatus, searchQuery, queues, statuses, getJobStatusColor, filteredJobs, paginatedJobs, totalPages, handleRetry }
 </script>
 
+<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
@@ -264,3 +264,4 @@ export { jobs, isLoading, currentPage, perPage, totalJobs, selectedQueue, select
     </div>
   </div>
 </div>
+</template>

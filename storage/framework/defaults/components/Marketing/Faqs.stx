@@ -1,7 +1,7 @@
-<script>
-export const backgroundImage = '/images/background-faqs.jpg'
+<script server>
+const backgroundImage = props.backgroundImage || '/images/background-faqs.jpg'
 
-export const faqs = [
+const faqs = props.faqs || [
   [
     {
       question: 'What is the goal of the Stacks framework?',
@@ -47,6 +47,7 @@ export const faqs = [
 ]
 </script>
 
+<template>
 <section
   id="faq"
   aria-labelledby="faq-title"
@@ -94,3 +95,4 @@ export const faqs = [
     </ul>
   </Container>
 </section>
+</template>

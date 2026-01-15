@@ -1,17 +1,17 @@
-<script>
-  export const value = ''
-  export const type = 'text' // 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search'
-  export const placeholder = ''
-  export const disabled = false
-  export const readonly = false
-  export const required = false
-  export const error = ''
-  export const hint = ''
-  export const label = ''
-  export const id = ''
-  export const size = 'md' // 'xs' | 'sm' | 'md' | 'lg'
-  export const fullWidth = true
-  export const name = ''
+<script server>
+  const value = props.value || ''
+  const type = props.type || 'text' // 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search'
+  const placeholder = props.placeholder || ''
+  const disabled = props.disabled || false
+  const readonly = props.readonly || false
+  const required = props.required || false
+  const error = props.error || ''
+  const hint = props.hint || ''
+  const label = props.label || ''
+  const id = props.id || ''
+  const size = props.size || 'md' // 'xs' | 'sm' | 'md' | 'lg'
+  const fullWidth = props.fullWidth !== undefined ? props.fullWidth : true
+  const name = props.name || ''
 
   const sizeClasses = {
     xs: 'px-2 py-1 text-[11px] h-6',
@@ -26,7 +26,7 @@
 
   const disabledClass = disabled ? 'opacity-40 cursor-not-allowed bg-stone-50 dark:bg-white/5' : ''
 
-  export const inputClass = [
+  const inputClass = [
     'block w-full',
     'bg-white dark:bg-white/10',
     'border rounded-lg',
@@ -42,6 +42,7 @@
   const inputId = id || 'input-' + Math.random().toString(36).slice(2, 11)
 </script>
 
+<template>
 <div class="{{ fullWidth ? 'w-full' : '' }}">
   @if(label)
     <label for="{{ inputId }}" class="block text-[13px] font-medium mb-1.5 tracking-tight {{ error ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-neutral-400' }}">
@@ -72,3 +73,4 @@
     <p class="mt-1.5 text-sm text-stone-500 dark:text-neutral-400">{{ hint }}</p>
   @endif
 </div>
+</template>

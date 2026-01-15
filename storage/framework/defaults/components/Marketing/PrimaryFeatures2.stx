@@ -1,8 +1,8 @@
-<script>
-export const backgroundImage = '/images/screenshots/background-features.jpg'
-export const screenshotPayroll = '/images/screenshots/payroll.webp'
+<script server>
+const backgroundImage = props.backgroundImage || '/images/screenshots/background-features.jpg'
+const screenshotPayroll = props.screenshotPayroll || '/images/screenshots/payroll.webp'
 
-export const features = [
+const features = props.features || [
   {
     title: 'Payroll',
     description: "Keep track of everyone's salaries and whether or not they've been paid. Direct deposit not supported.",
@@ -25,10 +25,11 @@ export const features = [
   },
 ]
 
-export const selectedIndex = 0
-export const tabOrientation = 'vertical'
+const selectedIndex = props.selectedIndex || 0
+const tabOrientation = props.tabOrientation || 'vertical'
 </script>
 
+<template>
 <section
   id="features"
   aria-label="Features for running your books"
@@ -94,3 +95,4 @@ export const tabOrientation = 'vertical'
     </div>
   </Container>
 </section>
+</template>

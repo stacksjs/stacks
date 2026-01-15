@@ -1,4 +1,4 @@
-<script>
+<script server>
 /**
  * Dashboard Layout Component
  * A unified layout wrapper that combines the modern sidebar and navbar
@@ -6,20 +6,20 @@
  */
 
 // Props
-export const pageTitle = ''
-export const pageDescription = ''
-export const showSidebar = true
-export const showNavbar = true
-export const showWindowControls = true
-export const fullWidth = false
-export const noPadding = false
-export const backgroundImage = ''
+const pageTitle = props.pageTitle || ''
+const pageDescription = props.pageDescription || ''
+const showSidebar = props.showSidebar !== undefined ? props.showSidebar : true
+const showNavbar = props.showNavbar !== undefined ? props.showNavbar : true
+const showWindowControls = props.showWindowControls !== undefined ? props.showWindowControls : true
+const fullWidth = props.fullWidth || false
+const noPadding = props.noPadding || false
+const backgroundImage = props.backgroundImage || ''
 
 // State
-export const isSidebarCollapsed = false
-export const isMobileMenuOpen = false
-export const isDark = false
-export const isMobile = false
+const isSidebarCollapsed = props.isSidebarCollapsed || false
+const isMobileMenuOpen = props.isMobileMenuOpen || false
+const isDark = props.isDark || false
+const isMobile = props.isMobile || false
 
 // Sidebar width calculation
 function getSidebarWidth() {
@@ -33,6 +33,7 @@ function getMainContentStyle() {
 }
 </script>
 
+<template>
 <!-- macOS-inspired layout with subtle background -->
 <div class="min-h-screen bg-white dark:bg-neutral-950">
   <!-- Mobile sidebar overlay -->
@@ -113,3 +114,4 @@ function getMainContentStyle() {
   <!-- Global overlays/modals slot -->
   <slot name="overlays" />
 </div>
+</template>

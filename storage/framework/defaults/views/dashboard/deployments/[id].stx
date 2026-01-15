@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 const gitStore = useGitStore()
 const github = useGitHub()
 const route = useRoute()
@@ -26,6 +26,7 @@ function getStatus(conclusion) {
 }
 </script>
 
+<template>
 @if(gitStore.workflowRun)
   <div class="px-4 py-8 lg:px-8 sm:px-6">
     <div class="rounded-lg bg-white px-6 py-8 text-sm dark:bg-blue-gray-800">
@@ -297,3 +298,4 @@ function getStatus(conclusion) {
     </div>
   </div>
 @endif
+</template>

@@ -1,5 +1,5 @@
-<script>
-export const features = [
+<script server>
+const features = props.features || [
   {
     name: 'Dashboard',
     summary: 'The UI to your application.',
@@ -23,9 +23,10 @@ export const features = [
   },
 ]
 
-export const selectedIndex = 0
+const selectedIndex = props.selectedIndex || 0
 </script>
 
+<template>
 <section id="secondary-features" aria-label="Features for simplifying everyday business tasks" class="pb-14 pt-20 lg:pb-32 sm:pb-20 sm:pt-32">
   <Container>
     <div class="mx-auto max-w-2xl md:text-center">
@@ -75,3 +76,4 @@ export const selectedIndex = 0
     </div>
   </Container>
 </section>
+</template>

@@ -1,27 +1,27 @@
-<script>
+<script server>
 /**
  * Modern Navbar Component
  * A cleaner, more refined navigation header with improved UX.
  */
 
 // Props
-export const showWindowControls = false
+const showWindowControls = props.showWindowControls || false
 
 // State
-export const searchQuery = ''
-export const isSearchFocused = false
-export const notificationCount = 3
-export const isDark = false
+const searchQuery = props.searchQuery || ''
+const isSearchFocused = props.isSearchFocused || false
+const notificationCount = props.notificationCount !== undefined ? props.notificationCount : 3
+const isDark = props.isDark || false
 
 // User data
-export const user = {
+const user = props.user || {
   name: 'Chris Breuer',
   email: 'chris@stacksjs.org',
   avatar: 'https://avatars.githubusercontent.com/u/6228425',
 }
 
 // Current path (would be provided by router)
-export const currentPath = '/'
+const currentPath = props.currentPath || '/'
 
 // Get breadcrumb from path
 function getBreadcrumb(path) {
@@ -38,6 +38,7 @@ function isActiveRoute(path) {
 }
 </script>
 
+<template>
 <header
   class="sticky top-0 z-40 h-13 flex items-center gap-3 bg-white/72 dark:bg-neutral-900/80 backdrop-blur-xl backdrop-saturate-150 border-b border-black/5 dark:border-white/5 px-4 transition-all duration-200"
 >
@@ -213,3 +214,4 @@ function isActiveRoute(path) {
     </div>
   </div>
 </header>
+</template>

@@ -1,4 +1,4 @@
-<script>
+<script server>
 /**
  * Dashboard Sidebar
  *
@@ -7,11 +7,11 @@
  */
 
 // State
-export const isCollapsed = false
-export const searchQuery = ''
+const isCollapsed = props.isCollapsed || false
+const searchQuery = props.searchQuery || ''
 
 // Section expansion state
-export const expandedSections = {
+const expandedSections = props.expandedSections || {
   library: true,
   content: false,
   app: false,
@@ -23,7 +23,7 @@ export const expandedSections = {
 }
 
 // Current team
-export const currentTeam = {
+const currentTeam = props.currentTeam || {
   id: 1,
   name: 'Stacks',
   type: 'Professional',
@@ -164,6 +164,7 @@ function handleSearch(value) {
 }
 </script>
 
+<template>
 <Sidebar
   :sections="sections"
   :collapsed="isCollapsed"
@@ -197,3 +198,4 @@ function handleSearch(value) {
     />
   </template>
 </Sidebar>
+</template>

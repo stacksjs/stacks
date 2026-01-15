@@ -1,5 +1,5 @@
-<script>
-export const plans = [
+<script server>
+const plans = props.plans || [
   {
     name: 'Hobby (Early Bird Pricing)',
     price: '$19',
@@ -47,6 +47,7 @@ export const plans = [
 ]
 </script>
 
+<template>
 <section
   id="pricing"
   aria-label="Pricing"
@@ -114,3 +115,4 @@ export const plans = [
     </div>
   </Container>
 </section>
+</template>

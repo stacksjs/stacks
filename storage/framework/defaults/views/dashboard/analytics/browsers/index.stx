@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
@@ -25,7 +25,7 @@ interface BrowserData {
 }
 
 // Date range options
-export const dateRanges: DateRange[] = [
+const dateRanges: DateRange[] = [
   { id: 'last7days', name: 'Last 7 Days' },
   { id: 'last30days', name: 'Last 30 Days' },
   { id: 'thisMonth', name: 'This Month' },
@@ -35,15 +35,15 @@ export const dateRanges: DateRange[] = [
 ]
 
 // Selected date range
-export const selectedDateRange = ref('all-time')
-export const dateRangeDisplay = ref('All Time: Sep 7, 2023 to Mar 6, 2025')
-export const comparisonType = ref('no-comparison')
-export const customStartDate = ref('')
-export const customEndDate = ref('')
-export const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
+const selectedDateRange = ref('all-time')
+const dateRangeDisplay = ref('All Time: Sep 7, 2023 to Mar 6, 2025')
+const comparisonType = ref('no-comparison')
+const customStartDate = ref('')
+const customEndDate = ref('')
+const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
 
 // Browser data
-export const browserData = ref<BrowserData[]>([
+const browserData = ref<BrowserData[]>([
   { name: 'Chrome', visitors: 1300, percentage: 58 },
   { name: 'Safari', visitors: 579, percentage: 26 },
   { name: 'Edge', visitors: 129, percentage: 6 },
@@ -57,7 +57,7 @@ export const browserData = ref<BrowserData[]>([
 ])
 
 // Detailed browser data with versions
-export const detailedBrowserData = ref<BrowserData[]>([
+const detailedBrowserData = ref<BrowserData[]>([
   { name: 'Chrome', version: '120.0.6099', os: 'Windows', visitors: 450, percentage: 20 },
   { name: 'Chrome', version: '120.0.6099', os: 'macOS', visitors: 380, percentage: 17 },
   { name: 'Chrome', version: '120.0.6099', os: 'Linux', visitors: 220, percentage: 10 },
@@ -73,7 +73,7 @@ export const detailedBrowserData = ref<BrowserData[]>([
 ])
 
 // Chart.js configuration for browser distribution
-export const chartConfig = reactive({
+const chartConfig = reactive({
   type: 'pie' as keyof ChartTypeRegistry,
   data: {
     labels: browserData.value.slice(0, 5).map(item => item.name),
@@ -121,7 +121,7 @@ export const chartConfig = reactive({
 })
 
 // Browser trend data for line chart
-export const browserTrendData = ref([
+const browserTrendData = ref([
   { date: '2023-09', Chrome: 800, Safari: 400, Edge: 80, Firefox: 60, Other: 30 },
   { date: '2023-10', Chrome: 850, Safari: 420, Edge: 85, Firefox: 65, Other: 32 },
   { date: '2023-11', Chrome: 900, Safari: 450, Edge: 90, Firefox: 70, Other: 35 },
@@ -134,7 +134,7 @@ export const browserTrendData = ref([
 ])
 
 // Chart.js configuration for browser trends
-export const trendChartConfig = reactive({
+const trendChartConfig = reactive({
   type: 'line' as keyof ChartTypeRegistry,
   data: {
     labels: browserTrendData.value.map(item => item.date),
@@ -214,17 +214,17 @@ export const trendChartConfig = reactive({
 })
 
 // Format numbers with commas
-export function formatNumber(number) {
+function formatNumber(number) {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
 // Mock function to update data when date range changes
-export function updateDataForDateRange() {
+function updateDataForDateRange() {
   console.log('Updating data for date range:', selectedDateRange.value)
 }
 
 // Watch for date range changes
-export function handleDateRangeChange() {
+function handleDateRangeChange() {
   updateDataForDateRange()
 }
 
@@ -247,6 +247,7 @@ onMounted(() => {
 })
 </script>
 
+<template>
 <main>
   <div class="px-6 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
@@ -418,6 +419,7 @@ onMounted(() => {
     </div>
   </div>
 </main>
+</template>
 
 <route lang="yaml">
 meta:

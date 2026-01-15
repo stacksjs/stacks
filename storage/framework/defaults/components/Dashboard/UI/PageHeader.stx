@@ -1,10 +1,11 @@
-<script>
-  export const title = ''
-  export const description = ''
-  export const backLink = ''
-  export const backLabel = 'Back'
+<script server>
+  const title = props.title || ''
+  const description = props.description || ''
+  const backLink = props.backLink || ''
+  const backLabel = props.backLabel || 'Back'
 </script>
 
+<template>
 <div class="mb-6">
   <!-- Back link -->
   @if(backLink)
@@ -21,7 +22,7 @@
     <div class="min-w-0 flex-1">
       <!-- Title row -->
       <div class="flex items-center gap-3">
-        {{ iconSlot }}
+        <slot name="icon" />
         <div>
           <h1 class="text-2xl font-semibold text-stone-900 dark:text-white truncate">
             {{ title }}
@@ -35,32 +36,33 @@
       </div>
 
       <!-- Tags/badges slot -->
-      @if(tagsSlot)
+      @if($slots.tags)
         <div class="mt-2 flex flex-wrap gap-2">
-          {{ tagsSlot }}
+          <slot name="tags" />
         </div>
       @endif
     </div>
 
     <!-- Actions -->
-    @if(actionsSlot)
+    @if($slots.actions)
       <div class="flex items-center gap-2 flex-shrink-0">
-        {{ actionsSlot }}
+        <slot name="actions" />
       </div>
     @endif
   </div>
 
   <!-- Tabs slot -->
-  @if(tabsSlot)
+  @if($slots.tabs)
     <div class="mt-4 border-b border-stone-200 dark:border-neutral-700">
-      {{ tabsSlot }}
+      <slot name="tabs" />
     </div>
   @endif
 
   <!-- Filters slot -->
-  @if(filtersSlot)
+  @if($slots.filters)
     <div class="mt-4">
-      {{ filtersSlot }}
+      <slot name="filters" />
     </div>
   @endif
 </div>
+</template>

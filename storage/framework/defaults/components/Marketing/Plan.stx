@@ -1,12 +1,13 @@
-<script>
-export const name = ''
-export const price = ''
-export const description = ''
-export const href = ''
-export const features = []
-export const featured = false
+<script server>
+const name = props.name || ''
+const price = props.price || ''
+const description = props.description || ''
+const href = props.href || ''
+const features = props.features || []
+const featured = props.featured || false
 </script>
 
+<template>
 <section
   class="flex flex-col rounded-3xl px-6 sm:px-8 {{ featured ? 'order-first bg-blue-600 py-8 lg:order-none' : 'lg:py-8' }}"
 >
@@ -38,3 +39,4 @@ export const featured = false
     Get started
   </a>
 </section>
+</template>

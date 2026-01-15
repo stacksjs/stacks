@@ -3,12 +3,14 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 useHead({
   title: 'Dashboard - Deployments',
 })
 </script>
 
+<template>
 <DeploymentList />
 
 <!-- <ActivityFeed /> -->
+</template>

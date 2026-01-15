@@ -1,16 +1,16 @@
-<script>
-  export const columns = [] // Array of { key, label, sortable?, align?, width?, class? }
-  export const data = [] // Array of records
-  export const loading = false
-  export const selectable = false
-  export const hoverable = true
-  export const striped = false
-  export const bordered = false
-  export const compact = false
-  export const stickyHeader = false
-  export const emptyTitle = 'No data'
-  export const emptyDescription = 'There are no items to display.'
-  export const rowKey = 'id'
+<script server>
+  const columns = props.columns || [] // Array of { key, label, sortable?, align?, width?, class? }
+  const data = props.data || [] // Array of records
+  const loading = props.loading || false
+  const selectable = props.selectable || false
+  const hoverable = props.hoverable !== undefined ? props.hoverable : true
+  const striped = props.striped || false
+  const bordered = props.bordered || false
+  const compact = props.compact || false
+  const stickyHeader = props.stickyHeader || false
+  const emptyTitle = props.emptyTitle || 'No data'
+  const emptyDescription = props.emptyDescription || 'There are no items to display.'
+  const rowKey = props.rowKey || 'id'
 
   function getAlignClass(align) {
     switch (align) {
@@ -21,6 +21,7 @@
   }
 </script>
 
+<template>
 <div class="relative overflow-hidden rounded-xl border border-stone-200/80 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm">
   <!-- Loading overlay -->
   @if(loading)
@@ -67,7 +68,7 @@
           @endforeach
 
           <!-- Actions column slot -->
-          @if(actionsSlot)
+          @if($slots.actions)
             <th class="w-12 px-4 py-3"></th>
           @endif
         </tr>
@@ -101,9 +102,9 @@
             @endforeach
 
             <!-- Actions cell -->
-            @if(actionsSlot)
+            @if($slots.actions)
               <td class="w-12 px-4 {{ compact ? 'py-2' : 'py-3' }}">
-                {{ actionsSlot }}
+                <slot name="actions" />
               </td>
             @endif
           </tr>
@@ -115,8 +116,8 @@
   <!-- Empty state -->
   @if(data.length == 0 && !loading)
     <div class="flex flex-col items-center justify-center py-12 px-4">
-      @if(emptySlot)
-        {{ emptySlot }}
+      @if($slots.empty)
+        <slot name="empty" />
       @else
         <div class="mb-3 p-3 rounded-full bg-neutral-100 dark:bg-neutral-800">
           <div class="i-hugeicons-inbox-01 w-6 h-6 text-neutral-400"></div>
@@ -132,9 +133,10 @@
   @endif
 
   <!-- Footer slot -->
-  @if(footerSlot)
+  @if($slots.footer)
     <div class="border-t border-neutral-200 dark:border-neutral-700 px-4 py-3 bg-neutral-50/50 dark:bg-neutral-800/25">
-      {{ footerSlot }}
+      <slot name="footer" />
     </div>
   @endif
 </div>
+</template>
