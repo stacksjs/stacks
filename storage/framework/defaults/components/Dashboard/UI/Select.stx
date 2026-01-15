@@ -1,81 +1,83 @@
-<script>
-  export const value = ''
-  export const options = [] // Array of { value, label, disabled? }
-  export const placeholder = 'Select an option'
-  export const label = ''
-  export const error = ''
-  export const hint = ''
-  export const disabled = false
-  export const required = false
-  export const size = 'md' // 'xs' | 'sm' | 'md' | 'lg'
-  export const name = ''
-  export const id = ''
+<script server>
+const value = props.value || ''
+const options = props.options || [] // Array of { value, label, disabled? }
+const placeholder = props.placeholder || 'Select an option'
+const label = props.label || ''
+const error = props.error || ''
+const hint = props.hint || ''
+const disabled = props.disabled || false
+const required = props.required || false
+const size = props.size || 'md' // 'xs' | 'sm' | 'md' | 'lg'
+const name = props.name || ''
+const id = props.id || ''
 
-  const sizeClasses = {
-    xs: 'h-6 text-[11px] px-2',
-    sm: 'h-7 text-[12px] px-2.5',
-    md: 'h-8 text-[13px] px-3',
-    lg: 'h-9 text-[14px] px-3.5'
-  }
+const sizeClasses = {
+  xs: 'h-6 text-[11px] px-2',
+  sm: 'h-7 text-[12px] px-2.5',
+  md: 'h-8 text-[13px] px-3',
+  lg: 'h-9 text-[14px] px-3.5'
+}
 
-  const borderClass = error
-    ? 'border-red-400/60 dark:border-red-500/60 focus:ring-red-500/30 focus:border-red-500'
-    : 'border-black/10 dark:border-white/15 focus:ring-blue-500/40 focus:border-blue-500/50 hover:border-black/20 dark:hover:border-white/25'
+const borderClass = error
+  ? 'border-red-400/60 dark:border-red-500/60 focus:ring-red-500/30 focus:border-red-500'
+  : 'border-black/10 dark:border-white/15 focus:ring-blue-500/40 focus:border-blue-500/50 hover:border-black/20 dark:hover:border-white/25'
 
-  const disabledClass = disabled
-    ? 'bg-black/5 dark:bg-white/5 text-neutral-400 cursor-not-allowed border-black/5 dark:border-white/10 opacity-40'
-    : 'bg-white dark:bg-white/10'
+const disabledClass = disabled
+  ? 'bg-black/5 dark:bg-white/5 text-neutral-400 cursor-not-allowed border-black/5 dark:border-white/10 opacity-40'
+  : 'bg-white dark:bg-white/10'
 
-  export const selectClass = [
-    'w-full flex items-center justify-between gap-2 rounded-md border transition-all duration-150',
-    'focus:outline-none focus:ring-2',
-    sizeClasses[size],
-    borderClass,
-    disabledClass
-  ].join(' ')
+const selectClass = [
+  'w-full flex items-center justify-between gap-2 rounded-md border transition-all duration-150',
+  'focus:outline-none focus:ring-2',
+  sizeClasses[size],
+  borderClass,
+  disabledClass
+].join(' ')
 
-  const selectId = id || 'select-' + Math.random().toString(36).slice(2, 11)
+const selectId = id || 'select-' + Math.random().toString(36).slice(2, 11)
 </script>
 
-<div class="relative">
-  @if(label)
-    <label for="{{ selectId }}" class="block text-[13px] font-medium text-neutral-600 dark:text-neutral-400 mb-1.5 tracking-tight">
-      {{ label }}
-      @if(required)
-        <span class="text-red-500">*</span>
-      @endif
-    </label>
-  @endif
-
+<template>
   <div class="relative">
-    <select
-      id="{{ selectId }}"
-      name="{{ name }}"
-      class="{{ selectClass }} appearance-none pr-8"
-      @if(disabled) disabled @endif
-      @if(required) required @endif
-    >
-      @if(placeholder)
-        <option value="" disabled @if(!value) selected @endif>{{ placeholder }}</option>
-      @endif
-      @foreach(options as option)
-        <option
-          value="{{ option.value }}"
-          @if(option.disabled) disabled @endif
-          @if(option.value == value) selected @endif
-        >
-          {{ option.label }}
-        </option>
-      @endforeach
-    </select>
-    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-      <div class="i-hugeicons-arrow-down-01 w-3.5 h-3.5 text-neutral-400"></div>
-    </div>
-  </div>
+    @if(label)
+      <label for="{{ selectId }}" class="block text-[13px] font-medium text-neutral-600 dark:text-neutral-400 mb-1.5 tracking-tight">
+        {{ label }}
+        @if(required)
+          <span class="text-red-500">*</span>
+        @endif
+      </label>
+    @endif
 
-  @if(error)
-    <p class="mt-1.5 text-[12px] text-red-600 dark:text-red-400">{{ error }}</p>
-  @elseif(hint)
-    <p class="mt-1.5 text-[12px] text-neutral-500 dark:text-neutral-400">{{ hint }}</p>
-  @endif
-</div>
+    <div class="relative">
+      <select
+        id="{{ selectId }}"
+        name="{{ name }}"
+        class="{{ selectClass }} appearance-none pr-8"
+        @if(disabled) disabled @endif
+        @if(required) required @endif
+      >
+        @if(placeholder)
+          <option value="" disabled @if(!value) selected @endif>{{ placeholder }}</option>
+        @endif
+        @foreach(options as option)
+          <option
+            value="{{ option.value }}"
+            @if(option.disabled) disabled @endif
+            @if(option.value == value) selected @endif
+          >
+            {{ option.label }}
+          </option>
+        @endforeach
+      </select>
+      <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+        <div class="i-hugeicons-arrow-down-01 w-3.5 h-3.5 text-neutral-400"></div>
+      </div>
+    </div>
+
+    @if(error)
+      <p class="mt-1.5 text-[12px] text-red-600 dark:text-red-400">{{ error }}</p>
+    @elseif(hint)
+      <p class="mt-1.5 text-[12px] text-neutral-500 dark:text-neutral-400">{{ hint }}</p>
+    @endif
+  </div>
+</template>

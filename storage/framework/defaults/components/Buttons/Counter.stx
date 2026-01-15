@@ -1,26 +1,28 @@
-<script>
-  export const count = 0
+<script server>
+const count = props.count || 0
 </script>
 
-<div>
-  <button
-    type="button"
-    class="bg-blue-500 text-xs text-white btn hover:bg-blue-600"
-    data-counter
-  >
-    <i
-      class="i-hugeicons-outline-plus mr-3 h-4 w-4 -ml-1"
-      aria-hidden="true"
-    ></i>
-    Counter: <span data-count>{{ count }}</span>
-  </button>
-</div>
+<template>
+  <div>
+    <button
+      type="button"
+      class="bg-blue-500 text-xs text-white btn hover:bg-blue-600"
+      data-counter
+    >
+      <i
+        class="i-hugeicons-outline-plus mr-3 h-4 w-4 -ml-1"
+        aria-hidden="true"
+      ></i>
+      Counter: <span data-count>{{ count }}</span>
+    </button>
+  </div>
+</template>
 
-@js
+<script client>
 document.querySelector('[data-counter]')?.addEventListener('click', function() {
   const countEl = document.querySelector('[data-count]')
   if (countEl) {
     countEl.textContent = parseInt(countEl.textContent || '0') + 1
   }
 })
-@endjs
+</script>

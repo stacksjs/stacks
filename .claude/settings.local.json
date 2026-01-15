@@ -82,7 +82,8 @@
       "Bash(./buddy list:*)",
       "Bash(timeout 30:*)",
       "Bash(timeout 5 ./buddy:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(gconfig:*)"
     ],
     "deny": [],
     "ask": []

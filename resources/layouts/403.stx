@@ -1,6 +1,6 @@
-<script>
-  export const appName = 'Your App'
-  export const supportEmail = 'support@example.com'
+<script server>
+const appName = props.appName || 'Your App'
+const supportEmail = props.supportEmail || 'support@example.com'
 </script>
 
 <div class="min-h-screen flex flex-col lg:flex-row bg-gradient-to-br from-slate-50 to-slate-100">

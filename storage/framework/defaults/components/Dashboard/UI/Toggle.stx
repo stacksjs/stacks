@@ -1,70 +1,72 @@
-<script>
-  export const checked = false
-  export const label = ''
-  export const description = ''
-  export const disabled = false
-  export const size = 'md' // 'sm' | 'md' | 'lg'
-  export const labelPosition = 'right' // 'left' | 'right'
-  export const name = ''
-  export const id = ''
+<script server>
+const checked = props.checked || false
+const label = props.label || ''
+const description = props.description || ''
+const disabled = props.disabled || false
+const size = props.size || 'md' // 'sm' | 'md' | 'lg'
+const labelPosition = props.labelPosition || 'right' // 'left' | 'right'
+const name = props.name || ''
+const id = props.id || ''
 
-  const trackSizes = {
-    sm: 'h-4 w-7',
-    md: 'h-5 w-9',
-    lg: 'h-6 w-11'
-  }
+const trackSizes = {
+  sm: 'h-4 w-7',
+  md: 'h-5 w-9',
+  lg: 'h-6 w-11'
+}
 
-  const thumbSizes = {
-    sm: 'h-3 w-3',
-    md: 'h-4 w-4',
-    lg: 'h-5 w-5'
-  }
+const thumbSizes = {
+  sm: 'h-3 w-3',
+  md: 'h-4 w-4',
+  lg: 'h-5 w-5'
+}
 
-  const translateSizes = {
-    sm: 'translate-x-3',
-    md: 'translate-x-4',
-    lg: 'translate-x-5'
-  }
+const translateSizes = {
+  sm: 'translate-x-3',
+  md: 'translate-x-4',
+  lg: 'translate-x-5'
+}
 
-  const toggleId = id || 'toggle-' + Math.random().toString(36).slice(2, 11)
+const toggleId = id || 'toggle-' + Math.random().toString(36).slice(2, 11)
 </script>
 
-<div class="flex items-center gap-3 {{ labelPosition === 'left' ? 'flex-row-reverse justify-end' : '' }} {{ disabled ? 'opacity-60 cursor-not-allowed' : '' }}">
-  <input
-    type="checkbox"
-    id="{{ toggleId }}"
-    name="{{ name }}"
-    class="sr-only peer"
-    @if(checked) checked @endif
-    @if(disabled) disabled @endif
-  >
-  <label
-    for="{{ toggleId }}"
-    class="relative inline-flex shrink-0 rounded-full transition-all duration-150 focus-within:ring-2 focus-within:ring-blue-500/40 {{ trackSizes[size] }} {{ disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer' }} peer-checked:bg-green-500 bg-black/15 dark:bg-white/20"
-  >
-    <span
-      class="pointer-events-none inline-block rounded-full bg-white shadow-sm ring-0 transition-transform duration-150 ease-in-out {{ thumbSizes[size] }} peer-checked:{{ translateSizes[size] }} translate-x-0.5"
-    ></span>
-  </label>
+<template>
+  <div class="flex items-center gap-3 {{ labelPosition === 'left' ? 'flex-row-reverse justify-end' : '' }} {{ disabled ? 'opacity-60 cursor-not-allowed' : '' }}">
+    <input
+      type="checkbox"
+      id="{{ toggleId }}"
+      name="{{ name }}"
+      class="sr-only peer"
+      @if(checked) checked @endif
+      @if(disabled) disabled @endif
+    >
+    <label
+      for="{{ toggleId }}"
+      class="relative inline-flex shrink-0 rounded-full transition-all duration-150 focus-within:ring-2 focus-within:ring-blue-500/40 {{ trackSizes[size] }} {{ disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer' }} peer-checked:bg-green-500 bg-black/15 dark:bg-white/20"
+    >
+      <span
+        class="pointer-events-none inline-block rounded-full bg-white shadow-sm ring-0 transition-transform duration-150 ease-in-out {{ thumbSizes[size] }} peer-checked:{{ translateSizes[size] }} translate-x-0.5"
+      ></span>
+    </label>
 
-  @if(label || description)
-    <div class="flex-1 min-w-0">
-      @if(label)
-        <label
-          for="{{ toggleId }}"
-          class="text-[13px] font-medium tracking-tight {{ disabled ? 'text-neutral-400 dark:text-neutral-600' : 'text-neutral-700 dark:text-neutral-200' }} {{ disabled ? '' : 'cursor-pointer' }}"
-        >
-          {{ label }}
-        </label>
-      @endif
-      @if(description)
-        <p class="text-[12px] mt-0.5 {{ disabled ? 'text-neutral-300 dark:text-neutral-600' : 'text-neutral-500 dark:text-neutral-400' }}">
-          {{ description }}
-        </p>
-      @endif
-    </div>
-  @endif
-</div>
+    @if(label || description)
+      <div class="flex-1 min-w-0">
+        @if(label)
+          <label
+            for="{{ toggleId }}"
+            class="text-[13px] font-medium tracking-tight {{ disabled ? 'text-neutral-400 dark:text-neutral-600' : 'text-neutral-700 dark:text-neutral-200' }} {{ disabled ? '' : 'cursor-pointer' }}"
+          >
+            {{ label }}
+          </label>
+        @endif
+        @if(description)
+          <p class="text-[12px] mt-0.5 {{ disabled ? 'text-neutral-300 dark:text-neutral-600' : 'text-neutral-500 dark:text-neutral-400' }}">
+            {{ description }}
+          </p>
+        @endif
+      </div>
+    @endif
+  </div>
+</template>
 
 <style>
 input:checked + label {

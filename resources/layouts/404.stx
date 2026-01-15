@@ -1,5 +1,5 @@
-<script>
-  export const backgroundImage = '/images/background-auth.jpg'
+<script server>
+const backgroundImage = props.backgroundImage || '/images/background-auth.jpg'
 </script>
 
 <div class="relative min-h-full flex shrink-0 justify-center lg:px-0 md:px-12">

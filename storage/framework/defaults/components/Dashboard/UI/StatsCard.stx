@@ -1,76 +1,78 @@
-<script>
-  export const title = ''
-  export const value = ''
-  export const subtitle = ''
-  export const trend = null // number or null
-  export const trendLabel = ''
-  export const icon = ''
-  export const iconBg = 'primary' // 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'
-  export const loading = false
+<script server>
+const title = props.title || ''
+const value = props.value || ''
+const subtitle = props.subtitle || ''
+const trend = props.trend !== undefined ? props.trend : null // number or null
+const trendLabel = props.trendLabel || ''
+const icon = props.icon || ''
+const iconBg = props.iconBg || 'primary' // 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'
+const loading = props.loading || false
 
-  const iconBgClasses = {
-    primary: 'bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400',
-    success: 'bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400',
-    warning: 'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400',
-    danger: 'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',
-    info: 'bg-cyan-500/15 text-cyan-600 dark:bg-cyan-400/20 dark:text-cyan-400',
-    neutral: 'bg-black/[0.06] text-neutral-600 dark:bg-white/10 dark:text-neutral-400'
-  }
+const iconBgClasses = {
+  primary: 'bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400',
+  success: 'bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400',
+  warning: 'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400',
+  danger: 'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',
+  info: 'bg-cyan-500/15 text-cyan-600 dark:bg-cyan-400/20 dark:text-cyan-400',
+  neutral: 'bg-black/[0.06] text-neutral-600 dark:bg-white/10 dark:text-neutral-400'
+}
 
-  const trendDirection = trend === null || trend === 0 ? 'neutral' : (trend > 0 ? 'up' : 'down')
+const trendDirection = trend === null || trend === 0 ? 'neutral' : (trend > 0 ? 'up' : 'down')
 
-  const trendClasses = {
-    up: 'text-green-500 dark:text-green-400',
-    down: 'text-red-500 dark:text-red-400',
-    neutral: 'text-neutral-500 dark:text-neutral-400'
-  }
+const trendClasses = {
+  up: 'text-green-500 dark:text-green-400',
+  down: 'text-red-500 dark:text-red-400',
+  neutral: 'text-neutral-500 dark:text-neutral-400'
+}
 </script>
 
-<div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5 p-5 transition-all duration-150 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-black/20">
-  <div class="flex items-start justify-between">
-    <div class="flex-1 min-w-0">
-      <p class="text-[13px] font-medium text-neutral-500 dark:text-neutral-400 truncate tracking-tight">
-        {{ title }}
-      </p>
+<template>
+  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5 p-5 transition-all duration-150 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-black/20">
+    <div class="flex items-start justify-between">
+      <div class="flex-1 min-w-0">
+        <p class="text-[13px] font-medium text-neutral-500 dark:text-neutral-400 truncate tracking-tight">
+          {{ title }}
+        </p>
 
-      <div class="mt-1.5 flex items-baseline gap-2">
-        @if(loading)
-          <div class="h-7 w-20 bg-black/5 dark:bg-white/10 rounded-md animate-pulse"></div>
-        @else
-          <p class="text-[22px] font-semibold text-neutral-900 dark:text-white tracking-tight">
-            {{ value }}
-          </p>
+        <div class="mt-1.5 flex items-baseline gap-2">
+          @if(loading)
+            <div class="h-7 w-20 bg-black/5 dark:bg-white/10 rounded-md animate-pulse"></div>
+          @else
+            <p class="text-[22px] font-semibold text-neutral-900 dark:text-white tracking-tight">
+              {{ value }}
+            </p>
 
-          @if(trend !== null)
-            <span class="inline-flex items-center text-[12px] font-medium {{ trendClasses[trendDirection] }}">
-              @if(trendDirection == 'up')
-                <svg class="h-3.5 w-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"></path>
-                </svg>
-              @elseif(trendDirection == 'down')
-                <svg class="h-3.5 w-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
-                </svg>
-              @endif
-              {{ Math.abs(trend) }}%
-            </span>
+            @if(trend !== null)
+              <span class="inline-flex items-center text-[12px] font-medium {{ trendClasses[trendDirection] }}">
+                @if(trendDirection == 'up')
+                  <svg class="h-3.5 w-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"></path>
+                  </svg>
+                @elseif(trendDirection == 'down')
+                  <svg class="h-3.5 w-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                @endif
+                {{ Math.abs(trend) }}%
+              </span>
+            @endif
           @endif
+        </div>
+
+        @if(subtitle || trendLabel)
+          <p class="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400">
+            {{ trendLabel || subtitle }}
+          </p>
         @endif
       </div>
 
-      @if(subtitle || trendLabel)
-        <p class="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400">
-          {{ trendLabel || subtitle }}
-        </p>
+      @if(icon)
+        <div class="p-2.5 rounded-lg flex-shrink-0 {{ iconBgClasses[iconBg] }}">
+          <div class="{{ icon }} h-5 w-5"></div>
+        </div>
       @endif
     </div>
 
-    @if(icon)
-      <div class="p-2.5 rounded-lg flex-shrink-0 {{ iconBgClasses[iconBg] }}">
-        <div class="{{ icon }} h-5 w-5"></div>
-      </div>
-    @endif
+    <slot />
   </div>
-
-  {{ slot }}
-</div>
+</template>

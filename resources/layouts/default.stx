@@ -1,3 +1,5 @@
-<main>
-  {{ slot }}
-</main>
+<template>
+  <main>
+    <slot />
+  </main>
+</template>

@@ -1,36 +1,38 @@
-<script>
-  export const align = 'left' // 'left' | 'right'
-  export const width = 'auto' // 'auto' | 'sm' | 'md' | 'lg' | 'full'
-  export const disabled = false
-  export const id = 'dropdown-' + Math.random().toString(36).slice(2, 11)
+<script server>
+const align = props.align || 'left' // 'left' | 'right'
+const width = props.width || 'auto' // 'auto' | 'sm' | 'md' | 'lg' | 'full'
+const disabled = props.disabled || false
+const id = props.id || 'dropdown-' + Math.random().toString(36).slice(2, 11)
 
-  const widthClasses = {
-    auto: 'min-w-[12rem]',
-    sm: 'w-48',
-    md: 'w-56',
-    lg: 'w-64',
-    full: 'w-full',
-  }
+const widthClasses = {
+  auto: 'min-w-[12rem]',
+  sm: 'w-48',
+  md: 'w-56',
+  lg: 'w-64',
+  full: 'w-full',
+}
 
-  const alignClass = align === 'right' ? 'right-0' : 'left-0'
+const alignClass = align === 'right' ? 'right-0' : 'left-0'
 </script>
 
-<div class="relative inline-block text-left" data-dropdown="{{ id }}">
-  <!-- Trigger -->
-  <div data-dropdown-trigger>
-    {{ triggerSlot }}
-  </div>
+<template>
+  <div class="relative inline-block text-left" data-dropdown="{{ id }}">
+    <!-- Trigger -->
+    <div data-dropdown-trigger>
+      {{ triggerSlot }}
+    </div>
 
-  <!-- Menu - macOS popover style -->
-  <div
-    data-dropdown-menu
-    class="absolute z-50 mt-1.5 {{ widthClasses[width] }} {{ alignClass }} origin-top-right bg-white/95 dark:bg-neutral-800/95 backdrop-blur-xl backdrop-saturate-150 rounded-lg shadow-lg shadow-black/10 dark:shadow-black/30 border border-black/10 dark:border-white/10 py-1 focus:outline-none hidden"
-  >
-    {{ slot }}
+    <!-- Menu - macOS popover style -->
+    <div
+      data-dropdown-menu
+      class="absolute z-50 mt-1.5 {{ widthClasses[width] }} {{ alignClass }} origin-top-right bg-white/95 dark:bg-neutral-800/95 backdrop-blur-xl backdrop-saturate-150 rounded-lg shadow-lg shadow-black/10 dark:shadow-black/30 border border-black/10 dark:border-white/10 py-1 focus:outline-none hidden"
+    >
+      <slot />
+    </div>
   </div>
-</div>
+</template>
 
-@js
+<script client>
 (function() {
   const dropdown = document.querySelector('[data-dropdown="{{ id }}"]')
   if (!dropdown) return
@@ -64,4 +66,4 @@
     }
   })
 })()
-@endjs
+</script>

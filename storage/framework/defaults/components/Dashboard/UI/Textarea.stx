@@ -1,90 +1,92 @@
-<script>
-  export const value = ''
-  export const label = ''
-  export const placeholder = ''
-  export const error = ''
-  export const hint = ''
-  export const disabled = false
-  export const readonly = false
-  export const required = false
-  export const rows = 3
-  export const maxLength = 0
-  export const showCount = false
-  export const resize = 'vertical' // 'none' | 'vertical' | 'horizontal' | 'both'
-  export const name = ''
-  export const id = ''
+<script server>
+const value = props.value || ''
+const label = props.label || ''
+const placeholder = props.placeholder || ''
+const error = props.error || ''
+const hint = props.hint || ''
+const disabled = props.disabled || false
+const readonly = props.readonly || false
+const required = props.required || false
+const rows = props.rows || 3
+const maxLength = props.maxLength || 0
+const showCount = props.showCount || false
+const resize = props.resize || 'vertical' // 'none' | 'vertical' | 'horizontal' | 'both'
+const name = props.name || ''
+const id = props.id || ''
 
-  const resizeClasses = {
-    none: 'resize-none',
-    vertical: 'resize-y',
-    horizontal: 'resize-x',
-    both: 'resize'
-  }
+const resizeClasses = {
+  none: 'resize-none',
+  vertical: 'resize-y',
+  horizontal: 'resize-x',
+  both: 'resize'
+}
 
-  const borderClass = error
-    ? 'border-red-300 dark:border-red-700 focus:ring-red-500/20 focus:border-red-500'
-    : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-400 dark:hover:border-neutral-500 focus:ring-blue-500/20 focus:border-blue-500'
+const borderClass = error
+  ? 'border-red-300 dark:border-red-700 focus:ring-red-500/20 focus:border-red-500'
+  : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-400 dark:hover:border-neutral-500 focus:ring-blue-500/20 focus:border-blue-500'
 
-  const disabledClass = disabled
-    ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed border-neutral-200 dark:border-neutral-700'
-    : 'bg-white dark:bg-neutral-900'
+const disabledClass = disabled
+  ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed border-neutral-200 dark:border-neutral-700'
+  : 'bg-white dark:bg-neutral-900'
 
-  export const textareaClass = [
-    'block w-full rounded-lg border transition-all duration-150',
-    'text-sm text-neutral-900 dark:text-white',
-    'placeholder:text-neutral-400 dark:placeholder:text-neutral-500',
-    'focus:outline-none focus:ring-2',
-    'px-3 py-2.5',
-    resizeClasses[resize],
-    borderClass,
-    disabledClass
-  ].join(' ')
+const textareaClass = [
+  'block w-full rounded-lg border transition-all duration-150',
+  'text-sm text-neutral-900 dark:text-white',
+  'placeholder:text-neutral-400 dark:placeholder:text-neutral-500',
+  'focus:outline-none focus:ring-2',
+  'px-3 py-2.5',
+  resizeClasses[resize],
+  borderClass,
+  disabledClass
+].join(' ')
 
-  const textareaId = id || 'textarea-' + Math.random().toString(36).slice(2, 11)
+const textareaId = id || 'textarea-' + Math.random().toString(36).slice(2, 11)
 </script>
 
-<div>
-  @if(label || (showCount && maxLength))
-    <div class="flex items-center justify-between mb-1.5">
-      @if(label)
-        <label for="{{ textareaId }}" class="block text-sm font-medium text-neutral-700 dark:text-neutral-200">
-          {{ label }}
-          @if(required)
-            <span class="text-red-500">*</span>
-          @endif
-        </label>
-      @endif
-      @if(showCount && maxLength)
-        <span class="text-xs text-neutral-400 dark:text-neutral-500">
-          <span data-char-count>{{ value.length || 0 }}</span>/{{ maxLength }}
+<template>
+  <div>
+    @if(label || (showCount && maxLength))
+      <div class="flex items-center justify-between mb-1.5">
+        @if(label)
+          <label for="{{ textareaId }}" class="block text-sm font-medium text-neutral-700 dark:text-neutral-200">
+            {{ label }}
+            @if(required)
+              <span class="text-red-500">*</span>
+            @endif
+          </label>
+        @endif
+        @if(showCount && maxLength)
+          <span class="text-xs text-neutral-400 dark:text-neutral-500">
+            <span data-char-count>{{ value.length || 0 }}</span>/{{ maxLength }}
+          </span>
+        @endif
+      </div>
+    @endif
+
+    <div class="relative">
+      <textarea
+        id="{{ textareaId }}"
+        name="{{ name }}"
+        rows="{{ rows }}"
+        placeholder="{{ placeholder }}"
+        class="{{ textareaClass }}"
+        @if(disabled) disabled @endif
+        @if(readonly) readonly @endif
+        @if(required) required @endif
+        @if(maxLength) maxlength="{{ maxLength }}" @endif
+      >{{ value }}</textarea>
+
+      @if(showCount && !maxLength)
+        <span class="absolute bottom-2 right-2 text-xs text-neutral-400 dark:text-neutral-500 bg-white dark:bg-neutral-900 px-1">
+          <span data-char-count>{{ value.length || 0 }}</span> characters
         </span>
       @endif
     </div>
-  @endif
 
-  <div class="relative">
-    <textarea
-      id="{{ textareaId }}"
-      name="{{ name }}"
-      rows="{{ rows }}"
-      placeholder="{{ placeholder }}"
-      class="{{ textareaClass }}"
-      @if(disabled) disabled @endif
-      @if(readonly) readonly @endif
-      @if(required) required @endif
-      @if(maxLength) maxlength="{{ maxLength }}" @endif
-    >{{ value }}</textarea>
-
-    @if(showCount && !maxLength)
-      <span class="absolute bottom-2 right-2 text-xs text-neutral-400 dark:text-neutral-500 bg-white dark:bg-neutral-900 px-1">
-        <span data-char-count>{{ value.length || 0 }}</span> characters
-      </span>
+    @if(error)
+      <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+    @elseif(hint)
+      <p class="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">{{ hint }}</p>
     @endif
   </div>
-
-  @if(error)
-    <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
-  @elseif(hint)
-    <p class="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">{{ hint }}</p>
-  @endif
-</div>
+</template>

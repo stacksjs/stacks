@@ -1,65 +1,67 @@
-<script>
-  export const checked = false
-  export const label = ''
-  export const description = ''
-  export const disabled = false
-  export const indeterminate = false
-  export const size = 'md' // 'sm' | 'md' | 'lg'
-  export const error = ''
-  export const name = ''
-  export const id = ''
+<script server>
+const checked = props.checked || false
+const label = props.label || ''
+const description = props.description || ''
+const disabled = props.disabled || false
+const indeterminate = props.indeterminate || false
+const size = props.size || 'md' // 'sm' | 'md' | 'lg'
+const error = props.error || ''
+const name = props.name || ''
+const id = props.id || ''
 
-  const sizeClasses = {
-    sm: { checkbox: 'h-4 w-4', text: 'text-sm', desc: 'text-xs' },
-    md: { checkbox: 'h-5 w-5', text: 'text-sm', desc: 'text-sm' },
-    lg: { checkbox: 'h-6 w-6', text: 'text-base', desc: 'text-sm' }
-  }
+const sizeClasses = {
+  sm: { checkbox: 'h-4 w-4', text: 'text-sm', desc: 'text-xs' },
+  md: { checkbox: 'h-5 w-5', text: 'text-sm', desc: 'text-sm' },
+  lg: { checkbox: 'h-6 w-6', text: 'text-base', desc: 'text-sm' }
+}
 
-  const checkboxId = id || 'checkbox-' + Math.random().toString(36).slice(2, 11)
+const checkboxId = id || 'checkbox-' + Math.random().toString(36).slice(2, 11)
 </script>
 
-<div class="relative flex {{ label || description ? 'gap-3' : '' }} {{ disabled ? 'opacity-60 cursor-not-allowed' : '' }}">
-  <div class="flex items-start pt-0.5">
-    <input
-      type="checkbox"
-      id="{{ checkboxId }}"
-      name="{{ name }}"
-      class="sr-only peer"
-      @if(checked) checked @endif
-      @if(disabled) disabled @endif
-    >
-    <label
-      for="{{ checkboxId }}"
-      class="{{ sizeClasses[size].checkbox }} relative rounded transition-all duration-150 flex items-center justify-center border-2 {{ disabled ? '' : 'cursor-pointer' }} peer-checked:bg-blue-600 peer-checked:border-blue-600 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-600 hover:border-blue-400 dark:hover:border-blue-500 {{ error ? 'border-red-500' : '' }}"
-    >
-      <svg class="{{ sizeClasses[size].checkbox }} text-white hidden peer-checked:block" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-      </svg>
-    </label>
+<template>
+  <div class="relative flex {{ label || description ? 'gap-3' : '' }} {{ disabled ? 'opacity-60 cursor-not-allowed' : '' }}">
+    <div class="flex items-start pt-0.5">
+      <input
+        type="checkbox"
+        id="{{ checkboxId }}"
+        name="{{ name }}"
+        class="sr-only peer"
+        @if(checked) checked @endif
+        @if(disabled) disabled @endif
+      >
+      <label
+        for="{{ checkboxId }}"
+        class="{{ sizeClasses[size].checkbox }} relative rounded transition-all duration-150 flex items-center justify-center border-2 {{ disabled ? '' : 'cursor-pointer' }} peer-checked:bg-blue-600 peer-checked:border-blue-600 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-600 hover:border-blue-400 dark:hover:border-blue-500 {{ error ? 'border-red-500' : '' }}"
+      >
+        <svg class="{{ sizeClasses[size].checkbox }} text-white hidden peer-checked:block" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+        </svg>
+      </label>
+    </div>
+
+    @if(label || description)
+      <div class="flex-1 min-w-0">
+        @if(label)
+          <label
+            for="{{ checkboxId }}"
+            class="{{ sizeClasses[size].text }} font-medium {{ disabled ? 'text-neutral-400 dark:text-neutral-500 cursor-not-allowed' : 'text-neutral-700 dark:text-neutral-200 cursor-pointer' }}"
+          >
+            {{ label }}
+          </label>
+        @endif
+        @if(description)
+          <p class="{{ sizeClasses[size].desc }} mt-0.5 {{ disabled ? 'text-neutral-300 dark:text-neutral-600' : 'text-neutral-500 dark:text-neutral-400' }}">
+            {{ description }}
+          </p>
+        @endif
+      </div>
+    @endif
   </div>
 
-  @if(label || description)
-    <div class="flex-1 min-w-0">
-      @if(label)
-        <label
-          for="{{ checkboxId }}"
-          class="{{ sizeClasses[size].text }} font-medium {{ disabled ? 'text-neutral-400 dark:text-neutral-500 cursor-not-allowed' : 'text-neutral-700 dark:text-neutral-200 cursor-pointer' }}"
-        >
-          {{ label }}
-        </label>
-      @endif
-      @if(description)
-        <p class="{{ sizeClasses[size].desc }} mt-0.5 {{ disabled ? 'text-neutral-300 dark:text-neutral-600' : 'text-neutral-500 dark:text-neutral-400' }}">
-          {{ description }}
-        </p>
-      @endif
-    </div>
+  @if(error)
+    <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
   @endif
-</div>
-
-@if(error)
-  <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
-@endif
+</template>
 
 <style>
 input:checked + label {

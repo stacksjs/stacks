@@ -1,59 +1,61 @@
-<script>
-  export const variant = 'default' // 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'
-  export const size = 'sm' // 'xs' | 'sm' | 'md' | 'lg'
-  export const rounded = 'full' // 'default' | 'full'
-  export const outline = false
-  export const dot = false
-  export const text = ''
+<script server>
+const variant = props.variant || 'default' // 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'
+const size = props.size || 'sm' // 'xs' | 'sm' | 'md' | 'lg'
+const rounded = props.rounded || 'full' // 'default' | 'full'
+const outline = props.outline || false
+const dot = props.dot || false
+const text = props.text || ''
 
-  const sizeClasses = {
-    xs: 'text-[10px] px-1.5 py-0.5',
-    sm: 'text-[11px] px-2 py-0.5',
-    md: 'text-[12px] px-2.5 py-0.5',
-    lg: 'text-[13px] px-3 py-1'
-  }
+const sizeClasses = {
+  xs: 'text-[10px] px-1.5 py-0.5',
+  sm: 'text-[11px] px-2 py-0.5',
+  md: 'text-[12px] px-2.5 py-0.5',
+  lg: 'text-[13px] px-3 py-1'
+}
 
-  const solidVariants = {
-    default: 'bg-black/[0.06] text-neutral-600 dark:bg-white/10 dark:text-neutral-300',
-    primary: 'bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400',
-    success: 'bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400',
-    warning: 'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400',
-    danger: 'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',
-    info: 'bg-cyan-500/15 text-cyan-600 dark:bg-cyan-400/20 dark:text-cyan-400'
-  }
+const solidVariants = {
+  default: 'bg-black/[0.06] text-neutral-600 dark:bg-white/10 dark:text-neutral-300',
+  primary: 'bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400',
+  success: 'bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400',
+  warning: 'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400',
+  danger: 'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',
+  info: 'bg-cyan-500/15 text-cyan-600 dark:bg-cyan-400/20 dark:text-cyan-400'
+}
 
-  const outlineVariants = {
-    default: 'border border-black/15 text-neutral-600 dark:border-white/20 dark:text-neutral-300',
-    primary: 'border border-blue-500/40 text-blue-600 dark:border-blue-400/50 dark:text-blue-400',
-    success: 'border border-green-500/40 text-green-600 dark:border-green-400/50 dark:text-green-400',
-    warning: 'border border-orange-500/40 text-orange-600 dark:border-orange-400/50 dark:text-orange-400',
-    danger: 'border border-red-500/40 text-red-600 dark:border-red-400/50 dark:text-red-400',
-    info: 'border border-cyan-500/40 text-cyan-600 dark:border-cyan-400/50 dark:text-cyan-400'
-  }
+const outlineVariants = {
+  default: 'border border-black/15 text-neutral-600 dark:border-white/20 dark:text-neutral-300',
+  primary: 'border border-blue-500/40 text-blue-600 dark:border-blue-400/50 dark:text-blue-400',
+  success: 'border border-green-500/40 text-green-600 dark:border-green-400/50 dark:text-green-400',
+  warning: 'border border-orange-500/40 text-orange-600 dark:border-orange-400/50 dark:text-orange-400',
+  danger: 'border border-red-500/40 text-red-600 dark:border-red-400/50 dark:text-red-400',
+  info: 'border border-cyan-500/40 text-cyan-600 dark:border-cyan-400/50 dark:text-cyan-400'
+}
 
-  const dotColors = {
-    default: 'bg-neutral-400 dark:bg-neutral-500',
-    primary: 'bg-blue-500 dark:bg-blue-400',
-    success: 'bg-green-500 dark:bg-green-400',
-    warning: 'bg-orange-500 dark:bg-orange-400',
-    danger: 'bg-red-500 dark:bg-red-400',
-    info: 'bg-cyan-500 dark:bg-cyan-400'
-  }
+const dotColors = {
+  default: 'bg-neutral-400 dark:bg-neutral-500',
+  primary: 'bg-blue-500 dark:bg-blue-400',
+  success: 'bg-green-500 dark:bg-green-400',
+  warning: 'bg-orange-500 dark:bg-orange-400',
+  danger: 'bg-red-500 dark:bg-red-400',
+  info: 'bg-cyan-500 dark:bg-cyan-400'
+}
 
-  export const badgeClass = [
-    'inline-flex items-center font-medium tracking-tight',
-    'transition-all duration-150',
-    sizeClasses[size],
-    rounded === 'full' ? 'rounded-full' : 'rounded-md',
-    outline ? outlineVariants[variant] : solidVariants[variant]
-  ].join(' ')
+const badgeClass = [
+  'inline-flex items-center font-medium tracking-tight',
+  'transition-all duration-150',
+  sizeClasses[size],
+  rounded === 'full' ? 'rounded-full' : 'rounded-md',
+  outline ? outlineVariants[variant] : solidVariants[variant]
+].join(' ')
 
-  export const dotClass = 'w-1.5 h-1.5 rounded-full mr-1.5 ' + dotColors[variant]
+const dotClass = 'w-1.5 h-1.5 rounded-full mr-1.5 ' + dotColors[variant]
 </script>
 
-<span class="{{ badgeClass }}">
-  @if(dot)
-    <span class="{{ dotClass }}"></span>
-  @endif
-  {{ text }}{{ slot }}
-</span>
+<template>
+  <span class="{{ badgeClass }}">
+    @if(dot)
+      <span class="{{ dotClass }}"></span>
+    @endif
+    {{ text }}<slot />
+  </span>
+</template>

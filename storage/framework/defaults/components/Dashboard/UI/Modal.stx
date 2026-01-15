@@ -1,68 +1,70 @@
-<script>
-  export const isOpen = false
-  export const title = ''
-  export const description = ''
-  export const size = 'md' // 'sm' | 'md' | 'lg' | 'xl' | 'full'
-  export const closable = true
+<script server>
+const isOpen = props.isOpen || false
+const title = props.title || ''
+const description = props.description || ''
+const size = props.size || 'md' // 'sm' | 'md' | 'lg' | 'xl' | 'full'
+const closable = props.closable !== false
 
-  const sizeClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    full: 'max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)]'
-  }
+const sizeClasses = {
+  sm: 'max-w-sm',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+  full: 'max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)]'
+}
 </script>
 
-@if(isOpen)
-<div class="fixed inset-0 z-50 overflow-y-auto">
-  <!-- Overlay -->
-  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" data-modal-overlay></div>
+<template>
+  @if(isOpen)
+  <div class="fixed inset-0 z-50 overflow-y-auto">
+    <!-- Overlay -->
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" data-modal-overlay></div>
 
-  <!-- Modal container -->
-  <div class="flex min-h-full p-4 items-center justify-center">
-    <div class="relative w-full rounded-xl bg-white dark:bg-neutral-900 shadow-2xl {{ sizeClasses[size] }}">
-      <!-- Header -->
-      @if(title || closable)
-        <div class="flex items-start justify-between gap-4 p-6 border-b border-neutral-200 dark:border-neutral-700">
-          <div class="min-w-0">
-            @if(title)
-              <h3 class="text-lg font-semibold text-neutral-900 dark:text-white">
-                {{ title }}
-              </h3>
-            @endif
-            @if(description)
-              <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                {{ description }}
-              </p>
+    <!-- Modal container -->
+    <div class="flex min-h-full p-4 items-center justify-center">
+      <div class="relative w-full rounded-xl bg-white dark:bg-neutral-900 shadow-2xl {{ sizeClasses[size] }}">
+        <!-- Header -->
+        @if(title || closable)
+          <div class="flex items-start justify-between gap-4 p-6 border-b border-neutral-200 dark:border-neutral-700">
+            <div class="min-w-0">
+              @if(title)
+                <h3 class="text-lg font-semibold text-neutral-900 dark:text-white">
+                  {{ title }}
+                </h3>
+              @endif
+              @if(description)
+                <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                  {{ description }}
+                </p>
+              @endif
+            </div>
+
+            @if(closable)
+              <button
+                type="button"
+                class="p-2 -m-2 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+                data-modal-close
+              >
+                <div class="i-hugeicons-cancel-01 w-5 h-5"></div>
+              </button>
             @endif
           </div>
+        @endif
 
-          @if(closable)
-            <button
-              type="button"
-              class="p-2 -m-2 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
-              data-modal-close
-            >
-              <div class="i-hugeicons-cancel-01 w-5 h-5"></div>
-            </button>
-          @endif
+        <!-- Body -->
+        <div class="p-6">
+          <slot />
         </div>
-      @endif
-
-      <!-- Body -->
-      <div class="p-6">
-        {{ slot }}
       </div>
     </div>
   </div>
-</div>
-@endif
+  @endif
+</template>
 
-@js
+<script client>
 document.querySelectorAll('[data-modal-overlay], [data-modal-close]').forEach(el => {
   el.addEventListener('click', () => {
     el.closest('.fixed.inset-0')?.remove();
   });
 });
-@endjs
+</script>

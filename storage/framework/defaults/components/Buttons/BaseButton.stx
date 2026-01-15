@@ -1,10 +1,10 @@
-<script>
-  export const loading = false
-  export const buttonText = 'Submit'
-  export const classString = ''
+<script server>
+const loading = props.loading || false
+const buttonText = props.buttonText || 'Submit'
+const classString = props.classString || ''
 
-  const baseClass = 'duration-150 ease-in-out transition focus:ring-2 focus:ring-inset focus:ring-blue-600'
-  export const fullClass = classString + ' ' + baseClass + (loading ? ' opacity-75 disabled:cursor-not-allowed' : '')
+const baseClass = 'duration-150 ease-in-out transition focus:ring-2 focus:ring-inset focus:ring-blue-600'
+const fullClass = classString + ' ' + baseClass + (loading ? ' opacity-75 disabled:cursor-not-allowed' : '')
 </script>
 
 <button type="button" class="{{ fullClass }}" @if(loading) disabled @endif>
