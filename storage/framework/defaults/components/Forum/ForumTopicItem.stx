@@ -1,74 +1,76 @@
-<script>
-export const title = ''
-export const link = ''
-export const authorName = ''
-export const authorAvatar = ''
-export const createdAt = ''
-export const viewCount = 0
-export const replyCount = 0
-export const likeCount = 0
-export const isPinned = false
-export const isSolved = false
-export const category = ''
-export const categoryLink = ''
-export const excerpt = ''
-export const lastReplyAuthorName = ''
-export const lastReplyAuthorAvatar = ''
-export const lastReplyAt = ''
+<script server>
+const title = props.title || ''
+const link = props.link || ''
+const authorName = props.authorName || ''
+const authorAvatar = props.authorAvatar || ''
+const createdAt = props.createdAt || ''
+const viewCount = props.viewCount || 0
+const replyCount = props.replyCount || 0
+const likeCount = props.likeCount || 0
+const isPinned = props.isPinned || false
+const isSolved = props.isSolved || false
+const category = props.category || ''
+const categoryLink = props.categoryLink || ''
+const excerpt = props.excerpt || ''
+const lastReplyAuthorName = props.lastReplyAuthorName || ''
+const lastReplyAuthorAvatar = props.lastReplyAuthorAvatar || ''
+const lastReplyAt = props.lastReplyAt || ''
 </script>
 
-<div class="flex items-start p-4 hover:bg-gray-50">
-  <div class="flex-shrink-0 mr-4">
-    <img src="{{ authorAvatar }}" alt="{{ authorName }}" class="w-10 h-10 rounded-full">
-  </div>
-
-  <div class="flex-grow min-w-0">
-    <div class="flex items-center gap-2">
-      <h3 class="font-medium text-primary hover:underline">
-        <a href="{{ link }}">{{ title }}</a>
-      </h3>
-      @if(isPinned)
-        <span class="bg-gray-200 text-gray-700 text-xs px-2 py-0.5 rounded">Pinned</span>
-      @endif
-      @if(isSolved)
-        <span class="bg-success text-dark text-xs px-2 py-0.5 rounded">Solved</span>
-      @endif
+<template>
+  <div class="flex items-start p-4 hover:bg-gray-50">
+    <div class="flex-shrink-0 mr-4">
+      <img src="{{ authorAvatar }}" alt="{{ authorName }}" class="w-10 h-10 rounded-full">
     </div>
 
-    <div class="flex items-center text-xs text-gray-500 mt-1">
-      <span>{{ authorName }}</span>
-      <span class="mx-1">•</span>
-      <span>{{ createdAt }}</span>
-      @if(category)
+    <div class="flex-grow min-w-0">
+      <div class="flex items-center gap-2">
+        <h3 class="font-medium text-primary hover:underline">
+          <a href="{{ link }}">{{ title }}</a>
+        </h3>
+        @if(isPinned)
+          <span class="bg-gray-200 text-gray-700 text-xs px-2 py-0.5 rounded">Pinned</span>
+        @endif
+        @if(isSolved)
+          <span class="bg-success text-dark text-xs px-2 py-0.5 rounded">Solved</span>
+        @endif
+      </div>
+
+      <div class="flex items-center text-xs text-gray-500 mt-1">
+        <span>{{ authorName }}</span>
         <span class="mx-1">•</span>
-        <a href="{{ categoryLink }}" class="text-gray-700 hover:underline">{{ category }}</a>
+        <span>{{ createdAt }}</span>
+        @if(category)
+          <span class="mx-1">•</span>
+          <a href="{{ categoryLink }}" class="text-gray-700 hover:underline">{{ category }}</a>
+        @endif
+      </div>
+
+      @if(excerpt)
+        <p class="text-gray-600 text-sm mt-2 line-clamp-2">{{ excerpt }}</p>
       @endif
+
+      <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
+        <div class="flex items-center gap-1">
+          <div class="i-hugeicons-eye"></div>
+          <span>{{ viewCount }}</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <div class="i-hugeicons-chat"></div>
+          <span>{{ replyCount }}</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <div class="i-hugeicons-heart"></div>
+          <span>{{ likeCount }}</span>
+        </div>
+      </div>
     </div>
 
-    @if(excerpt)
-      <p class="text-gray-600 text-sm mt-2 line-clamp-2">{{ excerpt }}</p>
+    @if(lastReplyAuthorAvatar)
+      <div class="flex-shrink-0 ml-4 text-right">
+        <img src="{{ lastReplyAuthorAvatar }}" alt="{{ lastReplyAuthorName }}" class="w-6 h-6 rounded-full inline-block">
+        <div class="text-xs text-gray-500 mt-1">{{ lastReplyAt }}</div>
+      </div>
     @endif
-
-    <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
-      <div class="flex items-center gap-1">
-        <div class="i-hugeicons-eye"></div>
-        <span>{{ viewCount }}</span>
-      </div>
-      <div class="flex items-center gap-1">
-        <div class="i-hugeicons-chat"></div>
-        <span>{{ replyCount }}</span>
-      </div>
-      <div class="flex items-center gap-1">
-        <div class="i-hugeicons-heart"></div>
-        <span>{{ likeCount }}</span>
-      </div>
-    </div>
   </div>
-
-  @if(lastReplyAuthorAvatar)
-    <div class="flex-shrink-0 ml-4 text-right">
-      <img src="{{ lastReplyAuthorAvatar }}" alt="{{ lastReplyAuthorName }}" class="w-6 h-6 rounded-full inline-block">
-      <div class="text-xs text-gray-500 mt-1">{{ lastReplyAt }}</div>
-    </div>
-  @endif
-</div>
+</template>

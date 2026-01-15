@@ -1,6 +1,6 @@
-<script>
-  export const brand = ''
-  export const width = 4
+<script server>
+  const brand = props.brand || ''
+  const width = props.width || 4
 
   function getLogoSrc(cardBrand) {
     if (!cardBrand) return ''
@@ -24,6 +24,8 @@
   const logoSrc = getLogoSrc(brand)
 </script>
 
-<div style="width: {{ width }}rem">
-  <img src="{{ logoSrc }}" alt="{{ brand }} Logo">
-</div>
+<template>
+  <div style="width: {{ width }}rem">
+    <img src="{{ logoSrc }}" alt="{{ brand }} Logo">
+  </div>
+</template>

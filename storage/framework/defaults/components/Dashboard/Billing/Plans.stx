@@ -1,133 +1,135 @@
-<script>
-  export const currentPlan = null // { subscription: { type }, providerSubscription: { plan: { interval } } }
-  export const hasPaymentMethods = false
-  export const showPlans = true
-  export const updatingPlanState = false
+<script server>
+  const currentPlan = props.currentPlan || null // { subscription: { type }, providerSubscription: { plan: { interval } } }
+  const hasPaymentMethods = props.hasPaymentMethods || false
+  const showPlans = props.showPlans !== undefined ? props.showPlans : true
+  const updatingPlanState = props.updatingPlanState || false
 
   // Pricing data
-  export const hobbyMonthlyPrice = 39
-  export const hobbyYearlyPrice = 379
-  export const hobbyLifetimePrice = 479
-  export const proMonthlyPrice = 59
-  export const proYearlyPrice = 579
-  export const proLifetimePrice = 749
+  const hobbyMonthlyPrice = props.hobbyMonthlyPrice || 39
+  const hobbyYearlyPrice = props.hobbyYearlyPrice || 379
+  const hobbyLifetimePrice = props.hobbyLifetimePrice || 479
+  const proMonthlyPrice = props.proMonthlyPrice || 59
+  const proYearlyPrice = props.proYearlyPrice || 579
+  const proLifetimePrice = props.proLifetimePrice || 749
 </script>
 
-<div class="w-full">
-  <div class="flex items-center justify-between">
-    <div class="flex items-center space-x-2">
-      <h2 class="text-lg text-gray-900 font-medium">
-        Dashboard Plans
-      </h2>
-    </div>
+<template>
+  <div class="w-full">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <h2 class="text-lg text-gray-900 font-medium">
+          Dashboard Plans
+        </h2>
+      </div>
 
-    <div>
-      <div class="flex justify-center">
-        <fieldset aria-label="Payment frequency">
-          <div class="grid grid-cols-3 gap-x-1 rounded-full p-1 text-center text-xs/5 font-semibold ring-1 ring-gray-200 ring-inset" data-plan-type-selector>
-            <label class="cursor-pointer rounded-full px-2.5 py-1 bg-blue-600 text-white" data-plan-type="monthly">
-              <input type="radio" name="frequency" value="monthly" class="sr-only" checked>
-              <span>Monthly</span>
-            </label>
+      <div>
+        <div class="flex justify-center">
+          <fieldset aria-label="Payment frequency">
+            <div class="grid grid-cols-3 gap-x-1 rounded-full p-1 text-center text-xs/5 font-semibold ring-1 ring-gray-200 ring-inset" data-plan-type-selector>
+              <label class="cursor-pointer rounded-full px-2.5 py-1 bg-blue-600 text-white" data-plan-type="monthly">
+                <input type="radio" name="frequency" value="monthly" class="sr-only" checked>
+                <span>Monthly</span>
+              </label>
 
-            <label class="cursor-pointer rounded-full px-2.5 py-1" data-plan-type="annually">
-              <input type="radio" name="frequency" value="annually" class="sr-only">
-              <span>Annually</span>
-            </label>
+              <label class="cursor-pointer rounded-full px-2.5 py-1" data-plan-type="annually">
+                <input type="radio" name="frequency" value="annually" class="sr-only">
+                <span>Annually</span>
+              </label>
 
-            <label class="cursor-pointer rounded-full px-2.5 py-1" data-plan-type="lifetime">
-              <input type="radio" name="frequency" value="lifetime" class="sr-only">
-              <span>Lifetime</span>
-            </label>
-          </div>
-        </fieldset>
+              <label class="cursor-pointer rounded-full px-2.5 py-1" data-plan-type="lifetime">
+                <input type="radio" name="frequency" value="lifetime" class="sr-only">
+                <span>Lifetime</span>
+              </label>
+            </div>
+          </fieldset>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="pt-8">
-    <p class="text-gray-800 font-semibold">
-      Choose one of the recurring plans.
-    </p>
-  </div>
+    <div class="pt-8">
+      <p class="text-gray-800 font-semibold">
+        Choose one of the recurring plans.
+      </p>
+    </div>
 
-  <div class="pt-8">
-    <fieldset>
-      <div class="space-y-4">
-        <!-- Hobby Plan -->
-        <label class="relative block border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none cursor-pointer" data-plan="hobby">
-          <input type="radio" name="selected-plan" value="hobby" class="sr-only">
-          <span class="flex items-center">
-            <span class="flex flex-col text-sm">
-              <div class="flex">
-                <span class="text-gray-900 font-medium">Hobby</span>
-              </div>
-              <p class="pt-2 text-xs text-gray-600">
-                All Stacks features are included.
-              </p>
+    <div class="pt-8">
+      <fieldset>
+        <div class="space-y-4">
+          <!-- Hobby Plan -->
+          <label class="relative block border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none cursor-pointer" data-plan="hobby">
+            <input type="radio" name="selected-plan" value="hobby" class="sr-only">
+            <span class="flex items-center">
+              <span class="flex flex-col text-sm">
+                <div class="flex">
+                  <span class="text-gray-900 font-medium">Hobby</span>
+                </div>
+                <p class="pt-2 text-xs text-gray-600">
+                  All Stacks features are included.
+                </p>
+              </span>
             </span>
-          </span>
-          <span class="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right">
-            <span class="text-gray-900 font-medium" data-hobby-price>$ {{ hobbyMonthlyPrice }}</span>
-            <span class="ml-1 text-gray-500 sm:ml-0" data-per-text>/month</span>
-          </span>
-          <span class="pointer-events-none absolute rounded-lg -inset-px border" aria-hidden="true"></span>
-        </label>
-
-        <!-- Pro Plan -->
-        <label class="relative block border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none cursor-pointer" data-plan="pro">
-          <input type="radio" name="selected-plan" value="pro" class="sr-only">
-          <span class="flex items-center">
-            <span class="flex flex-col text-sm">
-              <div class="flex">
-                <span class="text-gray-900 font-medium">Pro</span>
-              </div>
-              <p class="pt-2 text-xs text-gray-600">
-                All Stacks features are included & being able to invite team members.
-              </p>
+            <span class="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right">
+              <span class="text-gray-900 font-medium" data-hobby-price>$ {{ hobbyMonthlyPrice }}</span>
+              <span class="ml-1 text-gray-500 sm:ml-0" data-per-text>/month</span>
             </span>
-          </span>
-          <span class="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right">
-            <span class="text-gray-900 font-medium" data-pro-price>${{ proMonthlyPrice }}</span>
-            <span class="ml-1 text-gray-500 sm:ml-0" data-per-text>/month</span>
-          </span>
-          <span class="pointer-events-none absolute rounded-lg -inset-px border" aria-hidden="true"></span>
-        </label>
+            <span class="pointer-events-none absolute rounded-lg -inset-px border" aria-hidden="true"></span>
+          </label>
+
+          <!-- Pro Plan -->
+          <label class="relative block border rounded-lg bg-white px-6 py-4 shadow-sm sm:flex sm:justify-between focus:outline-none cursor-pointer" data-plan="pro">
+            <input type="radio" name="selected-plan" value="pro" class="sr-only">
+            <span class="flex items-center">
+              <span class="flex flex-col text-sm">
+                <div class="flex">
+                  <span class="text-gray-900 font-medium">Pro</span>
+                </div>
+                <p class="pt-2 text-xs text-gray-600">
+                  All Stacks features are included & being able to invite team members.
+                </p>
+              </span>
+            </span>
+            <span class="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right">
+              <span class="text-gray-900 font-medium" data-pro-price>${{ proMonthlyPrice }}</span>
+              <span class="ml-1 text-gray-500 sm:ml-0" data-per-text>/month</span>
+            </span>
+            <span class="pointer-events-none absolute rounded-lg -inset-px border" aria-hidden="true"></span>
+          </label>
+        </div>
+      </fieldset>
+    </div>
+
+    @if(showPlans)
+      <div class="flex justify-end pt-8">
+        <button
+          type="button"
+          class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm disabled:bg-gray-600 hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+          @if(!hasPaymentMethods) disabled @endif
+          data-action="subscribe"
+        >
+          Subscribe
+        </button>
       </div>
-    </fieldset>
+    @endif
+
+    @if(updatingPlanState)
+      <div class="flex justify-end pt-8">
+        <button
+          type="button"
+          class="rounded-md bg-white px-2.5 py-1.5 text-sm text-gray-900 font-semibold shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+          data-action="cancel-edit"
+        >
+          Cancel Plan
+        </button>
+
+        <button
+          type="button"
+          class="ml-4 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm disabled:bg-gray-600 hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+          @if(!hasPaymentMethods) disabled @endif
+          data-action="update-plan"
+        >
+          Update Plan
+        </button>
+      </div>
+    @endif
   </div>
-
-  @if(showPlans)
-    <div class="flex justify-end pt-8">
-      <button
-        type="button"
-        class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm disabled:bg-gray-600 hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
-        @if(!hasPaymentMethods) disabled @endif
-        data-action="subscribe"
-      >
-        Subscribe
-      </button>
-    </div>
-  @endif
-
-  @if(updatingPlanState)
-    <div class="flex justify-end pt-8">
-      <button
-        type="button"
-        class="rounded-md bg-white px-2.5 py-1.5 text-sm text-gray-900 font-semibold shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
-        data-action="cancel-edit"
-      >
-        Cancel Plan
-      </button>
-
-      <button
-        type="button"
-        class="ml-4 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm disabled:bg-gray-600 hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
-        @if(!hasPaymentMethods) disabled @endif
-        data-action="update-plan"
-      >
-        Update Plan
-      </button>
-    </div>
-  @endif
-</div>
+</template>

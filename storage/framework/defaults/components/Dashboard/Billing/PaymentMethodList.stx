@@ -1,49 +1,51 @@
-<script>
-  export const userId = 1
-  export const paymentMethods = [] // Array of { id, brand, last_four, exp_month, exp_year }
-  export const loading = false
+<script server>
+  const userId = props.userId || 1
+  const paymentMethods = props.paymentMethods || [] // Array of { id, brand, last_four, exp_month, exp_year }
+  const loading = props.loading || false
 </script>
 
-<div class="mt-4">
-  @if(loading)
-    {{ loadingSlot }}
-  @else
-    <ul role="list" class="grid grid-cols-1 gap-6 lg:grid-cols-1 sm:grid-cols-1">
-      @foreach(paymentMethods as method)
-        <li class="col-span-1 border rounded-lg bg-white shadow divide-y divide-gray-200">
-          <div class="w-full p-3">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-4">
-                {{ cardBrandSlot }}
-                <h2 class="text-sm text-gray-600">
-                  {{ method.brand }} •••• {{ method.last_four }} <br>
-                  <span class="text-xs text-gray-500 italic">Expires {{ method.exp_month }} / {{ method.exp_year }}</span>
-                </h2>
-              </div>
+<template>
+  <div class="mt-4">
+    @if(loading)
+      <slot name="loading" />
+    @else
+      <ul role="list" class="grid grid-cols-1 gap-6 lg:grid-cols-1 sm:grid-cols-1">
+        @foreach(paymentMethods as method)
+          <li class="col-span-1 border rounded-lg bg-white shadow divide-y divide-gray-200">
+            <div class="w-full p-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                  <slot name="cardBrand" />
+                  <h2 class="text-sm text-gray-600">
+                    {{ method.brand }} •••• {{ method.last_four }} <br>
+                    <span class="text-xs text-gray-500 italic">Expires {{ method.exp_month }} / {{ method.exp_year }}</span>
+                  </h2>
+                </div>
 
-              <div class="flex justify-end space-x-4">
-                <button
-                  type="button"
-                  class="border rounded-md bg-white px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
-                  data-action="make-default"
-                  data-method-id="{{ method.id }}"
-                >
-                  <span class="i-hugeicons-star text-gray-700"></span>
-                </button>
+                <div class="flex justify-end space-x-4">
+                  <button
+                    type="button"
+                    class="border rounded-md bg-white px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+                    data-action="make-default"
+                    data-method-id="{{ method.id }}"
+                  >
+                    <span class="i-hugeicons-star text-gray-700"></span>
+                  </button>
 
-                <button
-                  type="button"
-                  class="border rounded-md bg-white px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
-                  data-action="delete"
-                  data-method-id="{{ method.id }}"
-                >
-                  <span class="i-hugeicons-trash text-gray-700"></span>
-                </button>
+                  <button
+                    type="button"
+                    class="border rounded-md bg-white px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+                    data-action="delete"
+                    data-method-id="{{ method.id }}"
+                  >
+                    <span class="i-hugeicons-trash text-gray-700"></span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </li>
-      @endforeach
-    </ul>
-  @endif
-</div>
+          </li>
+        @endforeach
+      </ul>
+    @endif
+  </div>
+</template>
