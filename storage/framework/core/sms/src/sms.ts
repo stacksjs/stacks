@@ -22,6 +22,35 @@ import { VonageDriver } from './drivers/vonage'
 let defaultDriver: SmsDriver | null = null
 let verificationDriver: SmsVerificationDriver | null = null
 let smsConfig: Partial<SmsOptions> = {}
+let configLoaded = false
+
+/**
+ * Load SMS configuration from the config system
+ */
+async function loadConfig(): Promise<void> {
+  if (configLoaded) return
+
+  try {
+    // Dynamic import to avoid circular dependencies
+    const configModule = await import('../../../../../config/sms')
+    const config = configModule.default
+    smsConfig = config as Partial<SmsOptions>
+    configLoaded = true
+  }
+  catch {
+    // Config not available, use defaults
+    configLoaded = true
+  }
+}
+
+/**
+ * Ensure config is loaded before operations
+ */
+async function ensureConfig(): Promise<void> {
+  if (!configLoaded) {
+    await loadConfig()
+  }
+}
 
 /**
  * Configure the SMS system
@@ -107,6 +136,7 @@ function getDefaultVerificationDriver(): SmsVerificationDriver {
  * Send an SMS message
  */
 export async function send(message: SmsMessage): Promise<SmsSendResult> {
+  await ensureConfig()
   const driver = getDefaultDriver()
   return driver.send(message)
 }
@@ -120,6 +150,7 @@ export const sendSms = send
  * Send multiple SMS messages
  */
 export async function sendBulk(messages: SmsMessage[]): Promise<SmsSendResult[]> {
+  await ensureConfig()
   const driver = getDefaultDriver()
   return driver.sendBulk(messages)
 }
@@ -128,6 +159,7 @@ export async function sendBulk(messages: SmsMessage[]): Promise<SmsSendResult[]>
  * Get message status
  */
 export async function getStatus(messageId: string): Promise<SmsStatusUpdate | null> {
+  await ensureConfig()
   const driver = getDefaultDriver()
   if (driver.getStatus) {
     return driver.getStatus(messageId)
@@ -139,6 +171,7 @@ export async function getStatus(messageId: string): Promise<SmsStatusUpdate | nu
  * Verify a phone number format and carrier
  */
 export async function verifyNumber(phoneNumber: string): Promise<{ valid: boolean, carrier?: string, type?: string }> {
+  await ensureConfig()
   const driver = getDefaultDriver()
   if (driver.verify) {
     return driver.verify(phoneNumber)
@@ -150,6 +183,7 @@ export async function verifyNumber(phoneNumber: string): Promise<{ valid: boolea
  * Get account balance
  */
 export async function getBalance(): Promise<{ balance: number, currency: string } | null> {
+  await ensureConfig()
   const driver = getDefaultDriver()
   if (driver.getBalance) {
     return driver.getBalance()
@@ -165,6 +199,7 @@ export async function getBalance(): Promise<{ balance: number, currency: string 
  * Start a phone verification (send OTP)
  */
 export async function startVerification(request: VerificationRequest): Promise<VerificationResult> {
+  await ensureConfig()
   const driver = getDefaultVerificationDriver()
   return driver.startVerification(request)
 }
@@ -173,6 +208,7 @@ export async function startVerification(request: VerificationRequest): Promise<V
  * Check a verification code
  */
 export async function checkVerification(request: VerificationCheckRequest): Promise<VerificationResult> {
+  await ensureConfig()
   const driver = getDefaultVerificationDriver()
   return driver.checkVerification(request)
 }
@@ -181,6 +217,7 @@ export async function checkVerification(request: VerificationCheckRequest): Prom
  * Cancel a pending verification
  */
 export async function cancelVerification(verificationId: string): Promise<boolean> {
+  await ensureConfig()
   const driver = getDefaultVerificationDriver()
   if (driver.cancelVerification) {
     return driver.cancelVerification(verificationId)
@@ -255,12 +292,14 @@ export class SmsBuilder {
    * Send the message
    */
   async send(): Promise<SmsSendResult> {
+    await ensureConfig()
+
     if (!this.message.to) {
       return {
         success: false,
         to: '',
         error: 'Recipient is required',
-        provider: this.provider || 'twilio',
+        provider: this.provider || smsConfig.provider || 'twilio',
       }
     }
 
@@ -269,7 +308,7 @@ export class SmsBuilder {
         success: false,
         to: Array.isArray(this.message.to) ? this.message.to[0] : this.message.to,
         error: 'Message body is required',
-        provider: this.provider || 'twilio',
+        provider: this.provider || smsConfig.provider || 'twilio',
       }
     }
 
@@ -297,6 +336,8 @@ export async function sendTemplate(
   templateName: string,
   variables: Record<string, string> = {},
 ): Promise<SmsSendResult> {
+  await ensureConfig()
+
   const template = smsConfig.templates?.find(t => t.name === templateName)
 
   if (!template) {
@@ -352,23 +393,62 @@ export function isValidPhoneNumber(phoneNumber: string): boolean {
 }
 
 // =============================================================================
+// Initialization
+// =============================================================================
+
+/**
+ * Initialize the SMS system (loads config)
+ */
+export async function init(): Promise<void> {
+  await loadConfig()
+}
+
+/**
+ * Check if SMS is enabled in config
+ */
+export function isEnabled(): boolean {
+  return smsConfig.enabled === true
+}
+
+/**
+ * Get the current SMS configuration
+ */
+export function getConfig(): Partial<SmsOptions> {
+  return { ...smsConfig }
+}
+
+// =============================================================================
 // SMS Facade Object
 // =============================================================================
 
 export const SMS = {
+  // Initialization
+  init,
   configure,
+  isEnabled,
+  getConfig,
+
+  // Core sending
   send,
   sendSms,
   sendBulk,
   sendTemplate,
+
+  // Status & Info
   getStatus,
   getBalance,
   verifyNumber,
+
+  // OTP/2FA Verification
   startVerification,
   checkVerification,
   cancelVerification,
+
+  // Utilities
   formatE164,
   isValidPhoneNumber,
+
+  // Builder & Drivers
   sms,
   getDriver,
   getVerificationDriver,
