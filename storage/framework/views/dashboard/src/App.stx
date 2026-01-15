@@ -1,5 +1,7 @@
-<script>
+<script server>
   // import './globals.css'
 </script>
 
-{{ slot }}
+<template>
+  <slot />
+</template>

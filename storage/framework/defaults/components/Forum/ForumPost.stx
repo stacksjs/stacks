@@ -1,14 +1,15 @@
-<script>
-export const id = ''
-export const authorName = ''
-export const authorAvatar = ''
-export const createdAt = ''
-export const likeCount = 0
-export const isOriginalPost = false
-export const title = ''
-export const isSolved = false
+<script server>
+const id = props.id || ''
+const authorName = props.authorName || ''
+const authorAvatar = props.authorAvatar || ''
+const createdAt = props.createdAt || ''
+const likeCount = props.likeCount || 0
+const isOriginalPost = props.isOriginalPost || false
+const title = props.title || ''
+const isSolved = props.isSolved || false
 </script>
 
+<template>
 <div id="post-{{ id }}" class="border rounded-md mb-6">
   <div class="bg-gray-50 px-4 py-3 flex items-center justify-between rounded-t-md">
     <div class="flex items-center gap-2">
@@ -36,7 +37,7 @@ export const isSolved = false
       <h1 class="text-xl font-bold mb-4">{{ title }}</h1>
     @endif
     <div class="prose max-w-none">
-      {{ slot }}
+      <slot />
     </div>
   </div>
 
@@ -66,3 +67,4 @@ export const isSolved = false
     </div>
   </div>
 </div>
+</template>

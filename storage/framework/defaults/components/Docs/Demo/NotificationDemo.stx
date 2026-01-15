@@ -1,8 +1,9 @@
-<script>
-export const position = 'top-right'
-export const theme = 'light'
+<script server>
+const position = props.position || 'top-right'
+const theme = props.theme || 'light'
 </script>
 
+<template>
 <div class="max-w-4xl">
   <DocsPlayground>
     <div class="flex flex-wrap gap-3">
@@ -94,3 +95,4 @@ export const theme = 'light'
 
 <!-- Notification container would be rendered here with position and theme props -->
 <div id="notification-container" data-position="{{ position }}" data-theme="{{ theme }}"></div>
+</template>

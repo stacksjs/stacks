@@ -1,14 +1,14 @@
-<script>
-export const listItems = [
+<script server>
+const listItems = props.listItems || [
   { id: 1, name: 'Chris Breuer' },
   { id: 2, name: 'Avery Hill' },
   { id: 3, name: 'Glenn Michael' },
   { id: 4, name: 'Michael Vincent' },
   { id: 5, name: 'Blake Ayer' },
 ]
-export const selected = null
-export const query = ''
-export const isOpen = false
+const selected = props.selected || null
+const query = props.query || ''
+const isOpen = props.isOpen || false
 
 function filterItems(items, query) {
   if (query === '') return items
@@ -16,6 +16,7 @@ function filterItems(items, query) {
 }
 </script>
 
+<template>
 <div class="demo-wrapper">
   <DocsPlayground>
     <div class="flex flex-col mx-auto max-w-full py-10 w-full">
@@ -75,6 +76,7 @@ function filterItems(items, query) {
     </div>
   </DocsPlayground>
 </div>
+</template>
 
 <style>
 .demo-wrapper {

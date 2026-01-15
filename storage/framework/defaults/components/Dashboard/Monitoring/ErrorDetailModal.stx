@@ -1,10 +1,10 @@
-<script>
+<script server>
 // Props
-export const error = null
-export const isOpen = false
-export const errorInstances = []
-export const isLoading = false
-export const activeTab = 'details'
+const error = props.error || null
+const isOpen = props.isOpen || false
+const errorInstances = props.errorInstances || []
+const isLoading = props.isLoading || false
+const activeTab = props.activeTab || 'details'
 
 // Helper functions
 function getStatusClass(status) {
@@ -61,6 +61,7 @@ function formatTimeAgo(dateString) {
 }
 </script>
 
+<template>
 @if(isOpen && error)
 <div class="fixed inset-0 z-50 overflow-y-auto">
   <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
@@ -224,3 +225,4 @@ function formatTimeAgo(dateString) {
   </div>
 </div>
 @endif
+</template>

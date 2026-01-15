@@ -1,15 +1,17 @@
-<script>
-export const coreTeamMembers = []
+<script server>
+const coreTeamMembers = props.coreTeamMembers || []
 </script>
 
-<div class="vp-doc">
-  <h2 class="pb-2 pt-5 font-normal op50">
-    Meet The Team
-  </h2>
-</div>
+<template>
+  <div class="vp-doc">
+    <h2 class="pb-2 pt-5 font-normal op50">
+      Meet The Team
+    </h2>
+  </div>
 
-<div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-20 items-start p-10">
-  @foreach(coreTeamMembers as member)
-    <TeamMember data="{{ member }}" />
-  @endforeach
-</div>
+  <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-20 items-start p-10">
+    @foreach(coreTeamMembers as member)
+      <TeamMember data="{{ member }}" />
+    @endforeach
+  </div>
+</template>

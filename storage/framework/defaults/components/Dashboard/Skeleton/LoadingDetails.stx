@@ -1,8 +1,9 @@
-<script>
-  export const width = 16 // Default width in rem
-  export const height = 4 // Default height in rem
+<script server>
+  const width = props.width || 16 // Default width in rem
+  const height = props.height || 4 // Default height in rem
 </script>
 
+<template>
 <div class="mx-auto w-full rounded-md p-4" style="height: {{ height }}rem">
   <div class="animate-pulse space-y-12">
     <!-- Title -->
@@ -21,3 +22,4 @@
     </div>
   </div>
 </div>
+</template>

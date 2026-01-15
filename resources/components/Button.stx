@@ -1,4 +1,4 @@
-<script>
+<script server>
 /**
  * Marketing Button Component
  *
@@ -7,10 +7,10 @@
  */
 
 // Props
-export const variant = 'solid' // 'solid' | 'outline'
-export const color = 'slate' // 'blue' | 'slate' | 'white' | 'black'
-export const href = ''
-export const customClass = ''
+const variant = props.variant || 'solid' // 'solid' | 'outline'
+const color = props.color || 'slate' // 'blue' | 'slate' | 'white' | 'black'
+const href = props.href || ''
+const customClass = props.customClass || ''
 
 const baseStyles = {
   solid:

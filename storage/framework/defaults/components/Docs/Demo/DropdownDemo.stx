@@ -1,5 +1,5 @@
-<script>
-export const menuItems = [
+<script server>
+const menuItems = props.menuItems || [
   { icon: 'i-hugeicons-pencil-20-solid', label: 'Edit' },
   { icon: 'i-hugeicons-document-duplicate-20-solid', label: 'Duplicate' },
   { divider: true },
@@ -8,7 +8,7 @@ export const menuItems = [
   { divider: true },
   { icon: 'i-hugeicons-trash-20-solid', label: 'Delete', variant: 'danger' },
 ]
-export const isOpen = false
+const isOpen = props.isOpen || false
 
 function getMenuSections(items) {
   const sections = []
@@ -33,6 +33,7 @@ function getMenuSections(items) {
 }
 </script>
 
+<template>
 <div class="max-w-4xl">
   <DocsPlayground>
     <div class="space-y-4 mb-12 flex flex-col items-center justify-center h-[200px]">
@@ -72,6 +73,7 @@ function getMenuSections(items) {
     </div>
   </DocsPlayground>
 </div>
+</template>
 
 <style>
 .rotate-180 {

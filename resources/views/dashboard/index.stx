@@ -15,8 +15,6 @@
 const customData = {
   // Your custom dashboard data
 }
-
-export { customData }
 </script>
 
 <template>

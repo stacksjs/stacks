@@ -1,25 +1,27 @@
-<script>
-export const enabled = false
+<script server>
+const enabled = props.enabled || false
 </script>
 
-<div class="max-w-4xl">
-  <DocsPlayground>
-    <div class="flex items-center gap-2 justify-center my-3">
-      <button
-        class="relative h-[38px] w-[74px] inline-flex shrink-0 cursor-pointer border-2 border-transparent rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 {{ enabled ? 'bg-blue-500' : 'bg-gray-400' }}"
-        data-action="toggle-switch"
-      >
-        <span class="sr-only">Use setting</span>
-        <span
-          aria-hidden="true"
-          class="pointer-events-none inline-block h-[34px] w-[34px] transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out {{ enabled ? 'translate-x-9' : 'translate-x-0' }}"
-        ></span>
-      </button>
-    </div>
+<template>
+  <div class="max-w-4xl">
+    <DocsPlayground>
+      <div class="flex items-center gap-2 justify-center my-3">
+        <button
+          class="relative h-[38px] w-[74px] inline-flex shrink-0 cursor-pointer border-2 border-transparent rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 {{ enabled ? 'bg-blue-500' : 'bg-gray-400' }}"
+          data-action="toggle-switch"
+        >
+          <span class="sr-only">Use setting</span>
+          <span
+            aria-hidden="true"
+            class="pointer-events-none inline-block h-[34px] w-[34px] transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out {{ enabled ? 'translate-x-9' : 'translate-x-0' }}"
+          ></span>
+        </button>
+      </div>
 
-    <!-- Code slot placeholder -->
-    <div slot="code">
-      <!-- SwitchCode component would be rendered here -->
-    </div>
-  </DocsPlayground>
-</div>
+      <!-- Code slot placeholder -->
+      <div slot="code">
+        <!-- SwitchCode component would be rendered here -->
+      </div>
+    </DocsPlayground>
+  </div>
+</template>

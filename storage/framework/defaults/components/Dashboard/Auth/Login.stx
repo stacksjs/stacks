@@ -1,22 +1,22 @@
-<script>
+<script server>
 /**
  * Login Component
  * A clean, modern login form for the Stacks Dashboard.
  */
 
 // Props
-export const title = 'Welcome back'
-export const subtitle = 'Sign in to your account'
-export const showRememberMe = true
-export const showForgotPassword = true
-export const showSignUp = true
+const title = props.title || 'Welcome back'
+const subtitle = props.subtitle || 'Sign in to your account'
+const showRememberMe = props.showRememberMe !== undefined ? props.showRememberMe : true
+const showForgotPassword = props.showForgotPassword !== undefined ? props.showForgotPassword : true
+const showSignUp = props.showSignUp !== undefined ? props.showSignUp : true
 
 // Form state
-export const email = ''
-export const password = ''
-export const rememberMe = false
-export const isLoading = false
-export const error = ''
+const email = props.email || ''
+const password = props.password || ''
+const rememberMe = props.rememberMe || false
+const isLoading = props.isLoading || false
+const error = props.error || ''
 
 // Emit submit event with credentials
 function handleSubmit(event) {
@@ -31,6 +31,7 @@ function handleSubmit(event) {
 }
 </script>
 
+<template>
 <div class="min-h-screen flex items-center justify-center px-4 py-12">
   <div class="w-full max-w-sm">
     <!-- Logo/Brand -->
@@ -175,3 +176,4 @@ function handleSubmit(event) {
     @endif
   </div>
 </div>
+</template>

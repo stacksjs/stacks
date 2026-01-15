@@ -1,9 +1,9 @@
-<script>
-  export const timeRange = 'day' // 'day' | 'week' | 'month' | 'year'
-  export const isLoading = false
+<script server>
+  const timeRange = props.timeRange || 'day' // 'day' | 'week' | 'month' | 'year'
+  const isLoading = props.isLoading || false
 
   // Chart configuration - to be rendered client-side
-  export const chartOptions = {
+  const chartOptions = props.chartOptions || {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
@@ -53,22 +53,24 @@
   }
 </script>
 
-<div class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 p-4">
-  <div class="flex items-center justify-between mb-2">
-    <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Email Activity</h3>
+<template>
+  <div class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 p-4">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Email Activity</h3>
+    </div>
+    <div class="h-[120px] relative">
+      @if(isLoading)
+        <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      @endif
+      <!-- Chart canvas - requires client-side Chart.js initialization -->
+      <canvas id="emailActivityChart" data-chart-type="line" data-time-range="{{ timeRange }}"></canvas>
+    </div>
   </div>
-  <div class="h-[120px] relative">
-    @if(isLoading)
-      <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-      </div>
-    @endif
-    <!-- Chart canvas - requires client-side Chart.js initialization -->
-    <canvas id="emailActivityChart" data-chart-type="line" data-time-range="{{ timeRange }}"></canvas>
-  </div>
-</div>
+</template>
 
-@js
+<script client>
   // Client-side chart initialization
   document.addEventListener('DOMContentLoaded', function() {
     const canvas = document.getElementById('emailActivityChart');
@@ -103,4 +105,4 @@
       new Chart(canvas, { type: 'line', data, options: window.chartOptions || {} });
     }
   });
-@endjs
+</script>

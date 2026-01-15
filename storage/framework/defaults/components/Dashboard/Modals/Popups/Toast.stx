@@ -1,11 +1,12 @@
-<script>
-  export const show = false
-  export const type = 'warning' // 'warning' | 'success' | 'error' | 'info'
-  export const title = 'sample title'
-  export const position = 'top-right'
-  export const id = 'toast-' + Math.random().toString(36).slice(2, 11)
+<script server>
+  const show = props.show || false
+  const type = props.type || 'warning' // 'warning' | 'success' | 'error' | 'info'
+  const title = props.title || 'sample title'
+  const position = props.position || 'top-right'
+  const id = props.id || 'toast-' + Math.random().toString(36).slice(2, 11)
 </script>
 
+<template>
 @if(show)
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true" data-toast="{{ id }}">
   <div class="fixed inset-0"></div>
@@ -65,3 +66,4 @@
   </div>
 </div>
 @endif
+</template>

@@ -1,23 +1,23 @@
-<script>
+<script server>
 /**
  * Register Component
  * A clean, modern registration form for the Stacks Dashboard.
  */
 
 // Props
-export const title = 'Create an account'
-export const subtitle = 'Get started with your free account'
-export const showLogin = true
+const title = props.title || 'Create an account'
+const subtitle = props.subtitle || 'Get started with your free account'
+const showLogin = props.showLogin !== undefined ? props.showLogin : true
 
 // Form state
-export const name = ''
-export const email = ''
-export const password = ''
-export const passwordConfirmation = ''
-export const agreeToTerms = false
-export const isLoading = false
-export const error = ''
-export const errors = {}
+const name = props.name || ''
+const email = props.email || ''
+const password = props.password || ''
+const passwordConfirmation = props.passwordConfirmation || ''
+const agreeToTerms = props.agreeToTerms || false
+const isLoading = props.isLoading || false
+const error = props.error || ''
+const errors = props.errors || {}
 
 // Validation
 function validateForm() {
@@ -64,6 +64,7 @@ function handleSubmit(event) {
 }
 </script>
 
+<template>
 <div class="min-h-screen flex items-center justify-center px-4 py-12">
   <div class="w-full max-w-sm">
     <!-- Logo/Brand -->
@@ -238,3 +239,4 @@ function handleSubmit(event) {
     @endif
   </div>
 </div>
+</template>

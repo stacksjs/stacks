@@ -1,10 +1,11 @@
-<script>
-  export const label = ''
-  export const open = false
-  export const elements = [] // Array of { to, label }
-  export const id = 'dropdown-nav-' + Math.random().toString(36).slice(2, 11)
+<script server>
+  const label = props.label || ''
+  const open = props.open || false
+  const elements = props.elements || [] // Array of { to, label }
+  const id = props.id || 'dropdown-nav-' + Math.random().toString(36).slice(2, 11)
 </script>
 
+<template>
 <div class="flex flex-col gap-y-2 overflow-hidden" data-dropdown-nav="{{ id }}">
   <a class="flex items-center justify-between gap-x-2 cursor-pointer" data-toggle>
     <span class="text-sm text-dark font-medium">
@@ -25,8 +26,9 @@
     @endforeach
   </ul>
 </div>
+</template>
 
-@js
+<script client>
 (function() {
   const nav = document.querySelector('[data-dropdown-nav="{{ id }}"]')
   if (!nav) return
@@ -50,4 +52,4 @@
 
   updateState()
 })()
-@endjs
+</script>

@@ -1,10 +1,10 @@
-<script>
-  export const title = ''
-  export const description = ''
-  export const type = 'info' // 'info' | 'warning' | 'danger' | 'success' | 'error'
-  export const confirmationText = 'Confirm'
-  export const abortText = 'Cancel'
-  export const show = true
+<script server>
+  const title = props.title || ''
+  const description = props.description || ''
+  const type = props.type || 'info' // 'info' | 'warning' | 'danger' | 'success' | 'error'
+  const confirmationText = props.confirmationText || 'Confirm'
+  const abortText = props.abortText || 'Cancel'
+  const show = props.show !== undefined ? props.show : true
 
   function getButtonBackground() {
     if (type === 'info') return 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
@@ -17,6 +17,7 @@
   const buttonBackground = getButtonBackground()
 </script>
 
+<template>
 @if(show)
 <div class="fixed inset-x-0 bottom-0 px-4 pb-6 sm:inset-0 sm:flex sm:items-center sm:justify-center sm:p-0 z-20" data-alert-modal>
   <!-- Backdrop -->
@@ -107,3 +108,4 @@
   </div>
 </div>
 @endif
+</template>

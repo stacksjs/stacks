@@ -1,5 +1,5 @@
-<script>
-  export const transactionHistory = [] // Array of transactions
+<script server>
+  const transactionHistory = props.transactionHistory || [] // Array of transactions
 
   function formatTimestampDate(timestamp) {
     if (!timestamp) return ''
@@ -20,6 +20,7 @@
   }
 </script>
 
+<template>
 <div class="sm:flex sm:items-center">
   <div class="sm:flex-auto">
     <h1 class="text-base text-gray-900 font-semibold leading-6">
@@ -69,8 +70,8 @@
                   ${{ getUnitPrice(transaction.unit_price) }}
                 </td>
                 <td class="flex items-center whitespace-nowrap px-3 py-4 text-sm text-gray-500 space-x-2">
-                  {{ cardBrandSlot }}
-                  <span>•••• •••• •••• {{ getLastDigits(transaction.payment_intent) }}</span>
+                  <slot name="cardBrand" />
+                  <span>**** **** **** {{ getLastDigits(transaction.payment_intent) }}</span>
                 </td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                   <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Transaction</span></a>
@@ -83,3 +84,4 @@
     </div>
   </div>
 </div>
+</template>

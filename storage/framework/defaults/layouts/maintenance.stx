@@ -7,5 +7,5 @@
     We'll be back soon!
   </h2>
 
-  {{ slot }}
+  <slot />
 </div>

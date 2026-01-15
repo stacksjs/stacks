@@ -1,7 +1,7 @@
-<script>
+<script server>
 // Props
-export const showButtons = false
-export const greeting = 'Welcome!'
+const showButtons = props.showButtons || false
+const greeting = props.greeting || 'Welcome!'
 
 // Lifecycle hook simulation
 console.log('HelloWorld component mounted & the greeting is', greeting)

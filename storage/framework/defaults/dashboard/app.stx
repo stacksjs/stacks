@@ -69,7 +69,7 @@ const icons = {
 }
 
 // Native sidebar configuration
-export const sidebarConfig: SidebarConfig = {
+const sidebarConfig: SidebarConfig = {
   sections: [
     {
       id: 'home',
@@ -197,7 +197,7 @@ export const sidebarConfig: SidebarConfig = {
 }
 
 // Window configuration
-export const windowConfig = {
+const windowConfig = {
   title: 'Stacks Dashboard',
   width: 1400,
   height: 900,
@@ -205,10 +205,10 @@ export const windowConfig = {
 }
 
 // Current page state
-export let currentPage = 'home'
+let currentPage = 'home'
 </script>
 
-<script>
+<script client>
 // Client-side navigation handling
 window.craft = window.craft || {};
 

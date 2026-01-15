@@ -1,8 +1,9 @@
-<script>
-  export const width = 30 // in rem
-  export const position = 'top-right' // 'center' | 'top' | 'top-right' | 'top-left'
+<script server>
+  const width = props.width || 30 // in rem
+  const position = props.position || 'top-right' // 'center' | 'top' | 'top-right' | 'top-left'
 </script>
 
+<template>
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <div class="fixed inset-0"></div>
 
@@ -13,7 +14,7 @@
           <div class="pointer-events-auto max-w-sm w-full overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-700">
             <div class="p-4">
               <div class="flex items-center">
-                {{ bodySlot }}
+                <slot name="body" />
                 <div class="ml-4 flex flex-shrink-0">
                   <button type="button" class="inline-flex rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" data-action="close">
                     <span class="sr-only">Close</span>
@@ -30,3 +31,4 @@
     </div>
   </div>
 </div>
+</template>

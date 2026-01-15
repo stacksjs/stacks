@@ -1,11 +1,11 @@
-<script>
+<script server>
 // Props
-export const errors = []
-export const searchQuery = ''
-export const statusFilter = 'all'
-export const typeFilter = 'all'
-export const sortBy = 'last_seen'
-export const sortOrder = 'desc'
+const errors = props.errors || []
+const searchQuery = props.searchQuery || ''
+const statusFilter = props.statusFilter || 'all'
+const typeFilter = props.typeFilter || 'all'
+const sortBy = props.sortBy || 'last_seen'
+const sortOrder = props.sortOrder || 'desc'
 
 // Helper functions
 function getStatusClass(status) {
@@ -55,6 +55,7 @@ function truncateMessage(message, maxLength = 60) {
 }
 </script>
 
+<template>
 <div class="overflow-hidden">
   <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
     <thead class="bg-gray-50 dark:bg-blue-gray-700">
@@ -180,3 +181,4 @@ function truncateMessage(message, maxLength = 60) {
     </tbody>
   </table>
 </div>
+</template>

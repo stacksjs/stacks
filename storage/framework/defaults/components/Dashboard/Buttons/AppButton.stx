@@ -1,14 +1,15 @@
-<script>
-  export const buttonText = ''
-  export const loadingText = ''
-  export const passedClass = ''
-  export const loading = false
+<script server>
+  const buttonText = props.buttonText || ''
+  const loadingText = props.loadingText || ''
+  const passedClass = props.passedClass || ''
+  const loading = props.loading || false
 
   const buttonString = loading ? loadingText : buttonText
   const disabledClass = ' disabled:opacity-50 disabled:cursor-not-allowed'
   const finalClass = passedClass + disabledClass
 </script>
 
+<template>
 <button
   type="button"
   class="flex items-center {{ finalClass }}"
@@ -36,10 +37,11 @@
       ></path>
     </svg>
   @else
-    {{ iconSlot }}
+    <slot name="icon" />
   @endif
 
   <span>
     {{ buttonString }}
   </span>
 </button>
+</template>

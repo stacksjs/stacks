@@ -1,48 +1,50 @@
-<script>
-  export const variant = 'default' // 'default' | 'elevated' | 'outline' | 'ghost' | 'vibrancy'
-  export const padding = 'md' // 'none' | 'sm' | 'md' | 'lg' | 'xl'
-  export const rounded = 'lg' // 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
-  export const hoverable = false
-  export const clickable = false
+<script server>
+const variant = props.variant || 'default' // 'default' | 'elevated' | 'outline' | 'ghost' | 'vibrancy'
+const padding = props.padding || 'md' // 'none' | 'sm' | 'md' | 'lg' | 'xl'
+const rounded = props.rounded || 'lg' // 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
+const hoverable = props.hoverable || false
+const clickable = props.clickable || false
 
-  const variantClasses = {
-    default: 'bg-white dark:bg-neutral-800/90 border border-stone-200/80 dark:border-white/5 shadow-sm shadow-stone-200/50 dark:shadow-black/20',
-    elevated: 'bg-white dark:bg-neutral-800 shadow-lg shadow-stone-200/60 dark:shadow-black/30 border border-stone-200/60 dark:border-white/10',
-    outline: 'bg-transparent border border-stone-200/80 dark:border-white/10',
-    ghost: 'bg-stone-50/50 dark:bg-white/[0.05] border border-transparent',
-    vibrancy: 'bg-white/60 dark:bg-neutral-800/60 backdrop-blur-xl backdrop-saturate-150 border border-stone-200/60 dark:border-white/10 shadow-sm shadow-stone-200/50'
-  }
+const variantClasses = {
+  default: 'bg-white dark:bg-neutral-800/90 border border-stone-200/80 dark:border-white/5 shadow-sm shadow-stone-200/50 dark:shadow-black/20',
+  elevated: 'bg-white dark:bg-neutral-800 shadow-lg shadow-stone-200/60 dark:shadow-black/30 border border-stone-200/60 dark:border-white/10',
+  outline: 'bg-transparent border border-stone-200/80 dark:border-white/10',
+  ghost: 'bg-stone-50/50 dark:bg-white/[0.05] border border-transparent',
+  vibrancy: 'bg-white/60 dark:bg-neutral-800/60 backdrop-blur-xl backdrop-saturate-150 border border-stone-200/60 dark:border-white/10 shadow-sm shadow-stone-200/50'
+}
 
-  const paddingClasses = {
-    none: '',
-    sm: 'p-2.5',
-    md: 'p-4',
-    lg: 'p-5',
-    xl: 'p-6'
-  }
+const paddingClasses = {
+  none: '',
+  sm: 'p-2.5',
+  md: 'p-4',
+  lg: 'p-5',
+  xl: 'p-6'
+}
 
-  const roundedClasses = {
-    sm: 'rounded-md',
-    md: 'rounded-lg',
-    lg: 'rounded-xl',
-    xl: 'rounded-2xl',
-    '2xl': 'rounded-[20px]',
-    '3xl': 'rounded-[24px]'
-  }
+const roundedClasses = {
+  sm: 'rounded-md',
+  md: 'rounded-lg',
+  lg: 'rounded-xl',
+  xl: 'rounded-2xl',
+  '2xl': 'rounded-[20px]',
+  '3xl': 'rounded-[24px]'
+}
 
-  const hoverClass = (hoverable || clickable) ? 'hover:shadow-md hover:shadow-stone-300/60 dark:hover:shadow-black/25 hover:border-stone-300/80 dark:hover:border-white/15' : ''
-  const clickableClass = clickable ? 'cursor-pointer active:scale-[0.98] active:shadow-sm' : ''
+const hoverClass = (hoverable || clickable) ? 'hover:shadow-md hover:shadow-stone-300/60 dark:hover:shadow-black/25 hover:border-stone-300/80 dark:hover:border-white/15' : ''
+const clickableClass = clickable ? 'cursor-pointer active:scale-[0.98] active:shadow-sm' : ''
 
-  export const cardClass = [
-    'transition-all duration-150',
-    variantClasses[variant],
-    paddingClasses[padding],
-    roundedClasses[rounded],
-    hoverClass,
-    clickableClass
-  ].join(' ')
+const cardClass = [
+  'transition-all duration-150',
+  variantClasses[variant],
+  paddingClasses[padding],
+  roundedClasses[rounded],
+  hoverClass,
+  clickableClass
+].join(' ')
 </script>
 
+<template>
 <div class="{{ cardClass }}">
-  {{ slot }}
+  <slot />
 </div>
+</template>

@@ -1,5 +1,5 @@
-<script>
-  export const queues = [] // Array of queue jobs
+<script server>
+  const queues = props.queues || [] // Array of queue jobs
 
   function parseName(payload) {
     try {
@@ -40,6 +40,7 @@
   }
 </script>
 
+<template>
 <div class="px-4 pt-12 lg:px-8 sm:px-6">
   <div class="sm:flex sm:items-center">
     <div class="sm:flex-auto">
@@ -122,3 +123,4 @@
     </div>
   </div>
 </div>
+</template>

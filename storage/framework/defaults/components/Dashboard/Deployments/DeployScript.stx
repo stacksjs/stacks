@@ -1,23 +1,25 @@
-<div class="px-4 pt-12 lg:px-8 sm:px-6">
-  <div class="sm:flex sm:items-center">
-    <div class="sm:flex-auto">
-      <h1 class="text-base text-gray-900 font-semibold leading-6">
-        Deploy Script
-      </h1>
+<template>
+  <div class="px-4 pt-12 lg:px-8 sm:px-6">
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="text-base text-gray-900 font-semibold leading-6">
+          Deploy Script
+        </h1>
 
-      <p class="mt-2 text-sm text-gray-700">
-        If you need a custom deploy script, you may specify it here.
-      </p>
+        <p class="mt-2 text-sm text-gray-700">
+          If you need a custom deploy script, you may specify it here.
+        </p>
+      </div>
     </div>
-  </div>
 
-  <div class="mt-8 flow-root">
-    <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
-      <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
-        <div class="overflow-hidden">
-          {{ codeEditorSlot }}
+    <div class="mt-8 flow-root">
+      <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
+        <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
+          <div class="overflow-hidden">
+            <slot />
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+</template>

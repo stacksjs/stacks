@@ -1,5 +1,5 @@
-<script>
-export const solutions = [
+<script server>
+const solutions = props.solutions || [
   {
     name: 'Insights',
     description: 'Measure actions your users take',
@@ -22,9 +22,10 @@ export const solutions = [
     iconStroke: '#FB923C',
   },
 ]
-export const isOpen = false
+const isOpen = props.isOpen || false
 </script>
 
+<template>
 <div class="max-w-4xl">
   <DocsPlayground>
     <div class="space-y-4 w-3/5 my-12 mx-auto items-center h-[150px]">
@@ -90,3 +91,4 @@ export const isOpen = false
     </div>
   </DocsPlayground>
 </div>
+</template>

@@ -1,8 +1,9 @@
-<script>
-export const visible = false
-export const currentTransition = 'fade'
+<script server>
+const visible = props.visible || false
+const currentTransition = props.currentTransition || 'fade'
 </script>
 
+<template>
 <div class="max-w-4xl">
   <DocsPlayground>
     <div class="space-y-4 mb-12 flex flex-col items-center justify-center h-[300px]">
@@ -60,6 +61,7 @@ export const currentTransition = 'fade'
     </div>
   @endif
 </div>
+</template>
 
 <style>
 .fade-enter-active,

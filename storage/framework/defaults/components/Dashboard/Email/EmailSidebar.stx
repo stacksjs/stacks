@@ -1,7 +1,7 @@
-<script>
-  export const activeFolder = 'inbox'
-  export const folders = []
-  export const unreadCounts = {}
+<script server>
+  const activeFolder = props.activeFolder || 'inbox'
+  const folders = props.folders || []
+  const unreadCounts = props.unreadCounts || {}
 
   // User info
   const userInfo = {
@@ -15,116 +15,118 @@
   }
 </script>
 
-<div class="w-64 flex flex-col border-r border-gray-200 dark:border-blue-gray-600 bg-white dark:bg-blue-gray-800">
-  <!-- User dropdown -->
-  <div class="p-3 border-b border-gray-200 dark:border-blue-gray-600">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <div class="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white rounded">
-          <i class="i-hugeicons-alert-02 text-sm"></i>
+<template>
+  <div class="w-64 flex flex-col border-r border-gray-200 dark:border-blue-gray-600 bg-white dark:bg-blue-gray-800">
+    <!-- User dropdown -->
+    <div class="p-3 border-b border-gray-200 dark:border-blue-gray-600">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white rounded">
+            <i class="i-hugeicons-alert-02 text-sm"></i>
+          </div>
+          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ userInfo.name }}</span>
         </div>
-        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ userInfo.name }}</span>
+        <button class="text-gray-500 dark:text-gray-400">
+          <i class="i-hugeicons-arrow-down-02 text-sm"></i>
+        </button>
       </div>
-      <button class="text-gray-500 dark:text-gray-400">
-        <i class="i-hugeicons-arrow-down-02 text-sm"></i>
-      </button>
     </div>
-  </div>
 
-  <!-- Folders -->
-  <div class="flex-1 overflow-y-auto">
-    <nav class="mt-1">
-      <ul>
-        @foreach(folders as folder)
-          <li class="mb-1">
-            <button
-              class="w-full flex items-center justify-between px-4 py-2 text-sm {{ activeFolder == folder.id ? 'bg-gray-100 dark:bg-blue-gray-700 text-gray-900 dark:text-white font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700' }}"
-              data-action="set-folder"
-              data-folder-id="{{ folder.id }}"
-            >
-              <div class="flex items-center">
-                @if(folder.id == 'inbox')
-                  <i class="i-hugeicons-inbox text-lg mr-3"></i>
-                @elseif(folder.id == 'drafts')
-                  <i class="i-hugeicons-edit-01 text-lg mr-3"></i>
-                @elseif(folder.id == 'sent')
-                  <i class="i-hugeicons-sent text-lg mr-3"></i>
-                @elseif(folder.id == 'trash')
-                  <i class="i-hugeicons-waste text-lg mr-3"></i>
-                @elseif(folder.id == 'archive')
-                  <i class="i-hugeicons-archive text-lg mr-3"></i>
-                @elseif(folder.id == 'spam')
-                  <i class="i-hugeicons-spam text-lg mr-3"></i>
-                @elseif(folder.id == 'starred')
-                  <i class="i-hugeicons-star text-lg mr-3"></i>
-                @endif
-                <span>{{ folder.name }}</span>
-              </div>
-              @if(getUnreadCount(folder.id) > 0)
-                <span class="bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
-                  {{ getUnreadCount(folder.id) }}
-                </span>
-              @endif
-            </button>
-          </li>
-        @endforeach
-      </ul>
-    </nav>
-
-    <!-- Categories -->
-    <div class="mt-6 px-4">
-      <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-        Categories
-      </h3>
-      <nav class="mt-2">
+    <!-- Folders -->
+    <div class="flex-1 overflow-y-auto">
+      <nav class="mt-1">
         <ul>
-          <li class="mb-1">
-            <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
-              <i class="i-hugeicons-user text-lg mr-3"></i>
-              <span>Social</span>
-              <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
-                972
-              </span>
-            </button>
-          </li>
-          <li class="mb-1">
-            <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
-              <i class="i-hugeicons-notification-03 text-lg mr-3"></i>
-              <span>Updates</span>
-              <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
-                342
-              </span>
-            </button>
-          </li>
-          <li class="mb-1">
-            <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
-              <i class="i-hugeicons-chatting-01 text-lg mr-3"></i>
-              <span>Forums</span>
-              <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
-                128
-              </span>
-            </button>
-          </li>
-          <li class="mb-1">
-            <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
-              <i class="i-hugeicons-shopping-cart-02 text-lg mr-3"></i>
-              <span>Shopping</span>
-              <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
-                8
-              </span>
-            </button>
-          </li>
-          <li class="mb-1">
-            <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
-              <i class="i-hugeicons-tag-01 text-lg mr-3"></i>
-              <span>Promotions</span>
-              <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
-                21
-              </span>
-            </button>
-          </li>
+          @foreach(folders as folder)
+            <li class="mb-1">
+              <button
+                class="w-full flex items-center justify-between px-4 py-2 text-sm {{ activeFolder == folder.id ? 'bg-gray-100 dark:bg-blue-gray-700 text-gray-900 dark:text-white font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700' }}"
+                data-action="set-folder"
+                data-folder-id="{{ folder.id }}"
+              >
+                <div class="flex items-center">
+                  @if(folder.id == 'inbox')
+                    <i class="i-hugeicons-inbox text-lg mr-3"></i>
+                  @elseif(folder.id == 'drafts')
+                    <i class="i-hugeicons-edit-01 text-lg mr-3"></i>
+                  @elseif(folder.id == 'sent')
+                    <i class="i-hugeicons-sent text-lg mr-3"></i>
+                  @elseif(folder.id == 'trash')
+                    <i class="i-hugeicons-waste text-lg mr-3"></i>
+                  @elseif(folder.id == 'archive')
+                    <i class="i-hugeicons-archive text-lg mr-3"></i>
+                  @elseif(folder.id == 'spam')
+                    <i class="i-hugeicons-spam text-lg mr-3"></i>
+                  @elseif(folder.id == 'starred')
+                    <i class="i-hugeicons-star text-lg mr-3"></i>
+                  @endif
+                  <span>{{ folder.name }}</span>
+                </div>
+                @if(getUnreadCount(folder.id) > 0)
+                  <span class="bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                    {{ getUnreadCount(folder.id) }}
+                  </span>
+                @endif
+              </button>
+            </li>
+          @endforeach
         </ul>
       </nav>
+
+      <!-- Categories -->
+      <div class="mt-6 px-4">
+        <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          Categories
+        </h3>
+        <nav class="mt-2">
+          <ul>
+            <li class="mb-1">
+              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
+                <i class="i-hugeicons-user text-lg mr-3"></i>
+                <span>Social</span>
+                <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                  972
+                </span>
+              </button>
+            </li>
+            <li class="mb-1">
+              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
+                <i class="i-hugeicons-notification-03 text-lg mr-3"></i>
+                <span>Updates</span>
+                <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                  342
+                </span>
+              </button>
+            </li>
+            <li class="mb-1">
+              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
+                <i class="i-hugeicons-chatting-01 text-lg mr-3"></i>
+                <span>Forums</span>
+                <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                  128
+                </span>
+              </button>
+            </li>
+            <li class="mb-1">
+              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
+                <i class="i-hugeicons-shopping-cart-02 text-lg mr-3"></i>
+                <span>Shopping</span>
+                <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                  8
+                </span>
+              </button>
+            </li>
+            <li class="mb-1">
+              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
+                <i class="i-hugeicons-tag-01 text-lg mr-3"></i>
+                <span>Promotions</span>
+                <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                  21
+                </span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
     </div>
   </div>
-</div>
+</template>

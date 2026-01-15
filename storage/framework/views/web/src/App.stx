@@ -1,4 +1,4 @@
-<script>
+<script server>
   // const router = useRouter()
 
   // onMounted(() => {
@@ -7,4 +7,6 @@
   // })
 </script>
 
-{{ slot }}
+<template>
+  <slot />
+</template>
