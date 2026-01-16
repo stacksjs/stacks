@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
@@ -40,7 +40,7 @@ useHead({
   title: 'Dashboard - Packages',
 })
 
-export const packages = [
+const packages = [
   {
     name: 'stacks',
     version: 'v0.68.2',
@@ -199,9 +199,9 @@ export const packages = [
   }
 ]
 
-export const getPackageUrl = (pkgName) => `https://github.com/stacksjs/${pkgName}`
+const getPackageUrl = (pkgName) => `https://github.com/stacksjs/${pkgName}`
 
-export const colors = [
+const colors = [
   { border: 'rgb(59, 130, 246)', background: 'rgba(59, 130, 246, 0.8)' },
   { border: 'rgb(234, 179, 8)', background: 'rgba(234, 179, 8, 0.8)' },
   { border: 'rgb(239, 68, 68)', background: 'rgba(239, 68, 68, 0.8)' },
@@ -209,7 +209,7 @@ export const colors = [
   { border: 'rgb(168, 85, 247)', background: 'rgba(168, 85, 247, 0.8)' },
 ]
 
-export const baseChartOptions = {
+const baseChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
@@ -263,7 +263,7 @@ export const baseChartOptions = {
   },
 }
 
-export const timeChartOptions = {
+const timeChartOptions = {
   ...baseChartOptions,
   interaction: {
     mode: 'index',
@@ -291,11 +291,11 @@ export const timeChartOptions = {
   },
 }
 
-export const sortedPackages = computed(() => {
+const sortedPackages = computed(() => {
   return [...packages].sort((a, b) => b.downloads - a.downloads)
 })
 
-export const downloadsData = computed(() => ({
+const downloadsData = computed(() => ({
   labels: sortedPackages.value.map(pkg => pkg.name),
   datasets: [{
     label: 'Downloads',
@@ -306,7 +306,7 @@ export const downloadsData = computed(() => ({
   }]
 }))
 
-export const contributorsOptions = {
+const contributorsOptions = {
   ...baseChartOptions,
   plugins: {
     ...baseChartOptions.plugins,
@@ -320,7 +320,7 @@ export const contributorsOptions = {
   }
 }
 
-export const issuesOptions = {
+const issuesOptions = {
   ...baseChartOptions,
   plugins: {
     ...baseChartOptions.plugins,
@@ -334,7 +334,7 @@ export const issuesOptions = {
   }
 }
 
-export const starsOptions = {
+const starsOptions = {
   ...baseChartOptions,
   plugins: {
     ...baseChartOptions.plugins,
@@ -350,12 +350,12 @@ export const starsOptions = {
   }
 }
 
-export const timeRange = ref('30')
-export const displayMode = ref('line')
-export const selectedPackages = ref([])
-export const isLoading = ref(false)
+const timeRange = ref('30')
+const displayMode = ref('line')
+const selectedPackages = ref([])
+const isLoading = ref(false)
 
-export const formatDate = (daysAgo) => {
+const formatDate = (daysAgo) => {
   const date = new Date()
   date.setDate(date.getDate() - daysAgo)
   return date.toLocaleDateString('en-US', {
@@ -364,11 +364,11 @@ export const formatDate = (daysAgo) => {
   })
 }
 
-export const generateDateLabels = (days) => {
+const generateDateLabels = (days) => {
   return Array.from({ length: days }, (_, i) => formatDate(days - 1 - i))
 }
 
-export const generateGrowthData = (days, baseCount, dailyGrowth) => {
+const generateGrowthData = (days, baseCount, dailyGrowth) => {
   return Array.from({ length: days }, (_, i) => {
     const dayVariance = Math.random() * dailyGrowth * 0.5
     const daysFromStart = i
@@ -376,7 +376,7 @@ export const generateGrowthData = (days, baseCount, dailyGrowth) => {
   })
 }
 
-export const generateStarGrowthData = (days, baseCount) => {
+const generateStarGrowthData = (days, baseCount) => {
   return Array.from({ length: days }, (_, i) => {
     const daysFromStart = i
     const dailyGrowth = Math.floor(Math.random() * 5) + 1
@@ -384,9 +384,9 @@ export const generateStarGrowthData = (days, baseCount) => {
   })
 }
 
-export const useCompactMode = computed(() => packages.length > 10)
+const useCompactMode = computed(() => packages.length > 10)
 
-export const filteredPackages = computed(() => {
+const filteredPackages = computed(() => {
   let filtered = [...packages]
   if (useCompactMode.value && selectedPackages.value.length === 0) {
     filtered = filtered.sort((a, b) => b.downloads - a.downloads).slice(0, 5)
@@ -396,7 +396,7 @@ export const filteredPackages = computed(() => {
   return filtered.sort((a, b) => b.downloads - a.downloads)
 })
 
-export const downloadsTimeData = computed(() => {
+const downloadsTimeData = computed(() => {
   const days = parseInt(timeRange.value)
   const labels = generateDateLabels(days)
 
@@ -421,7 +421,7 @@ export const downloadsTimeData = computed(() => {
   }
 })
 
-export const starsTimeData = computed(() => {
+const starsTimeData = computed(() => {
   const days = parseInt(timeRange.value)
   const labels = generateDateLabels(days)
 
@@ -446,19 +446,19 @@ export const starsTimeData = computed(() => {
   }
 })
 
-export const totalDownloads = computed(() => {
+const totalDownloads = computed(() => {
   return filteredPackages.value.reduce((sum, pkg) => sum + pkg.downloads, 0)
 })
 
-export const totalContributors = computed(() => {
+const totalContributors = computed(() => {
   return filteredPackages.value.reduce((sum, pkg) => sum + pkg.contributors, 0)
 })
 
-export const totalIssues = computed(() => {
+const totalIssues = computed(() => {
   return filteredPackages.value.reduce((sum, pkg) => sum + pkg.issues, 0)
 })
 
-export const contributorsData = computed(() => ({
+const contributorsData = computed(() => ({
   labels: filteredPackages.value.map(pkg => pkg.name),
   datasets: [{
     label: 'Contributors',
@@ -469,7 +469,7 @@ export const contributorsData = computed(() => ({
   }]
 }))
 
-export const issuesData = computed(() => ({
+const issuesData = computed(() => ({
   labels: filteredPackages.value.map(pkg => pkg.name),
   datasets: [{
     label: 'Open Issues',
@@ -480,7 +480,7 @@ export const issuesData = computed(() => ({
   }]
 }))
 
-export const starsData = computed(() => ({
+const starsData = computed(() => ({
   labels: filteredPackages.value.map(pkg => pkg.name),
   datasets: [{
     label: 'GitHub Stars',
@@ -492,6 +492,7 @@ export const starsData = computed(() => ({
 }))
 </script>
 
+<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <!-- Stats Section -->
   <div class="mb-8 px-4 lg:px-8 sm:px-6">
@@ -855,6 +856,7 @@ export const starsData = computed(() => ({
     </div>
   </div>
 </div>
+</template>
 
 <route lang="yaml">
 meta:

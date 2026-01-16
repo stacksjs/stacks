@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useLocalStorage } from '@vueuse/core'
@@ -36,20 +36,20 @@ onMounted(async () => {
 })
 
 // View mode for grid/list toggle
-export const viewMode = useLocalStorage('products-view-mode', 'list')
+const viewMode = useLocalStorage('products-view-mode', 'list')
 
 // Filter and sort options
-export const categoryFilter = ref('all')
-export const sortBy = ref('name')
-export const sortOrder = ref('asc')
+const categoryFilter = ref('all')
+const sortBy = ref('name')
+const sortOrder = ref('asc')
 
 // Search and filtering
-export const searchQuery = ref('')
-export const currentPage = ref(1)
-export const itemsPerPage = ref(5)
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = ref(5)
 
 // Computed filtered products
-export const filteredProducts = computed(() => {
+const filteredProducts = computed(() => {
   return products.value
     .filter(product => {
       // Apply search filter
@@ -82,14 +82,14 @@ export const filteredProducts = computed(() => {
     })
 })
 
-export const paginatedProducts = computed(() => {
+const paginatedProducts = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return filteredProducts.value.slice(start, end)
 })
 
 // Get unique categories for filter
-export const categoriesForFilter = computed(() => {
+const categoriesForFilter = computed(() => {
   const categoryCounts = products.value.reduce((acc, product) => {
     const categoryName = product.category?.name || 'Unknown'
     acc[categoryName] = (acc[categoryName] || 0) + 1
@@ -100,30 +100,30 @@ export const categoriesForFilter = computed(() => {
 })
 
 // Event handlers
-export const handleSearch = (query: string) => {
+const handleSearch = (query: string) => {
   searchQuery.value = query
   currentPage.value = 1
 }
 
-export const handlePrevPage = () => {
+const handlePrevPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
-export const handleNextPage = () => {
+const handleNextPage = () => {
   const totalPages = Math.ceil(filteredProducts.value.length / itemsPerPage.value)
   if (currentPage.value < totalPages) {
     currentPage.value++
   }
 }
 
-export const handlePageChange = (page: number) => {
+const handlePageChange = (page: number) => {
   currentPage.value = page
 }
 
 // Toggle sort order
-export function toggleSort(column: string): void {
+function toggleSort(column: string): void {
   if (sortBy.value === column) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -133,12 +133,12 @@ export function toggleSort(column: string): void {
 }
 
 // Product actions
-export function viewProduct(product: Products): void {
+function viewProduct(product: Products): void {
   console.log('View product:', product)
   // Implement view product logic
 }
 
-export function editProduct(product: Products): void {
+function editProduct(product: Products): void {
   console.log('Edit product:', product)
   // Implement edit product logic
 }
@@ -162,11 +162,11 @@ interface NewProduct {
 }
 
 // Status options for the dropdown
-export const statuses = computed(() => ['Active', 'Inactive', 'Draft', 'Archived'])
+const statuses = computed(() => ['Active', 'Inactive', 'Draft', 'Archived'])
 
 // Modal state
-export const showProductModal = ref(false)
-export const newProduct = ref<NewProduct>({
+const showProductModal = ref(false)
+const newProduct = ref<NewProduct>({
   name: '',
   description: '',
   price: 0,
@@ -183,7 +183,7 @@ export const newProduct = ref<NewProduct>({
   dateAdded: new Date().toISOString().split('T')[0] || ''
 })
 
-export function openAddProductModal(): void {
+function openAddProductModal(): void {
   newProduct.value = {
     name: '',
     description: '',
@@ -203,11 +203,11 @@ export function openAddProductModal(): void {
   showProductModal.value = true
 }
 
-export function closeProductModal(): void {
+function closeProductModal(): void {
   showProductModal.value = false
 }
 
-export async function addProduct(): Promise<void> {
+async function addProduct(): Promise<void> {
   // First add to local state for immediate UI update
   const id = Math.max(...products.value.map(p => p.id || 0)) + 1
 
@@ -261,6 +261,7 @@ export async function addProduct(): Promise<void> {
 }
 </script>
 
+<template>
 <div class="py-6">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
     <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
@@ -549,3 +550,4 @@ export async function addProduct(): Promise<void> {
     </div>
   @endif
 </div>
+</template>

@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import NotificationStatusBadge from '../../../components/Dashboard/NotificationStatusBadge.stx'
@@ -26,27 +26,27 @@ interface SMSNotification {
 }
 
 // Pagination and filtering state
-export const notifications = ref<SMSNotification[]>([])
-export const currentPage = ref(1)
-export const perPage = ref(10)
-export const totalNotifications = ref(0)
-export const isLoading = ref(true)
-export const searchQuery = ref('')
-export const selectedStatus = ref<string>('all')
-export const dateRange = ref<[string, string] | null>(null)
-export const showFilters = ref(false)
-export const sortField = ref<'sent_at' | 'delivered_at' | null>(null)
-export const sortDirection = ref<'asc' | 'desc'>('desc')
+const notifications = ref<SMSNotification[]>([])
+const currentPage = ref(1)
+const perPage = ref(10)
+const totalNotifications = ref(0)
+const isLoading = ref(true)
+const searchQuery = ref('')
+const selectedStatus = ref<string>('all')
+const dateRange = ref<[string, string] | null>(null)
+const showFilters = ref(false)
+const sortField = ref<'sent_at' | 'delivered_at' | null>(null)
+const sortDirection = ref<'asc' | 'desc'>('desc')
 
 // Filter options
-export const statusTypes = ['all', 'sent', 'delivered', 'failed', 'pending']
+const statusTypes = ['all', 'sent', 'delivered', 'failed', 'pending']
 
 // Add state for error modal
-export const isErrorModalOpen = ref(false)
-export const selectedNotification = ref<SMSNotification | null>(null)
+const isErrorModalOpen = ref(false)
+const selectedNotification = ref<SMSNotification | null>(null)
 
 // Generate mock data
-export const generateMockSMSNotifications = () => {
+const generateMockSMSNotifications = () => {
   const statuses = ['sent', 'delivered', 'failed', 'pending'] as const
   const messages = [
     'Your verification code is: 123456',
@@ -96,7 +96,7 @@ export const generateMockSMSNotifications = () => {
 }
 
 // Computed properties for filtering
-export const filteredNotifications = computed(() => {
+const filteredNotifications = computed(() => {
   return notifications.value.filter(notification => {
     if (selectedStatus.value !== 'all' && notification.status !== selectedStatus.value) return false
     if (searchQuery.value) {
@@ -109,7 +109,7 @@ export const filteredNotifications = computed(() => {
 })
 
 // Add sorting functionality
-export const sortedNotifications = computed(() => {
+const sortedNotifications = computed(() => {
   if (!sortField.value) return filteredNotifications.value
 
   return [...filteredNotifications.value].sort((a, b) => {
@@ -125,31 +125,31 @@ export const sortedNotifications = computed(() => {
   })
 })
 
-export const paginatedNotifications = computed(() => {
+const paginatedNotifications = computed(() => {
   const start = (currentPage.value - 1) * perPage.value
   const end = start + perPage.value
   return sortedNotifications.value.slice(start, end)
 })
 
-export const totalPages = computed(() => Math.ceil(filteredNotifications.value.length / perPage.value))
+const totalPages = computed(() => Math.ceil(filteredNotifications.value.length / perPage.value))
 
 // Methods
-export const handleRetry = async (notificationId) => {
+const handleRetry = async (notificationId) => {
   // Implement retry logic
   console.log('Retrying SMS notification:', notificationId)
 }
 
-export const resetFilters = () => {
+const resetFilters = () => {
   selectedStatus.value = 'all'
   searchQuery.value = ''
   dateRange.value = null
 }
 
-export const formatDate = (date) => {
+const formatDate = (date) => {
   return new Date(date).toLocaleString()
 }
 
-export const toggleSort = (field) => {
+const toggleSort = (field) => {
   if (sortField.value === field) {
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -159,13 +159,13 @@ export const toggleSort = (field) => {
 }
 
 // Function to open error modal
-export const openErrorModal = (notification) => {
+const openErrorModal = (notification) => {
   selectedNotification.value = notification
   isErrorModalOpen.value = true
 }
 
 // Function to close error modal
-export const closeErrorModal = () => {
+const closeErrorModal = () => {
   isErrorModalOpen.value = false
 }
 
@@ -185,6 +185,7 @@ onMounted(async () => {
 })
 </script>
 
+<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Header -->
@@ -397,6 +398,7 @@ onMounted(async () => {
     @close="closeErrorModal"
   />
 </div>
+</template>
 
 <route lang="yaml">
 meta:

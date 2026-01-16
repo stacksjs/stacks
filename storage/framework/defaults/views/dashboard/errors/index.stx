@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import Tooltip from '../../../components/Dashboard/Tooltip.stx'
@@ -163,24 +163,9 @@ const analyzeWithAI = async (errorId) => {
     isAiAnalyzing.value = false
   }
 }
-
-export {
-  activeTab,
-  selectedEnvironment,
-  isAiAnalyzing,
-  isDark,
-  errorStats,
-  allErrors,
-  activeErrors,
-  resolvedErrors,
-  getTypeColor,
-  getEnvironmentColor,
-  openInEditor,
-  resolveError,
-  analyzeWithAI,
-}
 </script>
 
+<template>
 <div class="min-h-screen py-8 dark:bg-blue-gray-800">
   <div class="px-4 sm:px-6 lg:px-8">
     <!-- Header -->
@@ -428,6 +413,7 @@ export {
     </div>
   </div>
 </div>
+</template>
 
 <route lang="yaml">
 meta:

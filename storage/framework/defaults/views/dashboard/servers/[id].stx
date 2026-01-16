@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useRoute } from 'vue-router'
@@ -42,7 +42,7 @@ interface UfwRule {
   description: string
 }
 
-export const server = ref<ServerConfig>({
+const server = ref<ServerConfig>({
   name: 'app-cosmic-nebula',
   domain: 'stacksjs.com',
   region: 'us-east-1',
@@ -56,7 +56,7 @@ export const server = ref<ServerConfig>({
   searchEngine: 'meilisearch'
 })
 
-export const ufwRules = ref<UfwRule[]>([
+const ufwRules = ref<UfwRule[]>([
   {
     id: 1,
     port: '22',
@@ -86,7 +86,7 @@ export const ufwRules = ref<UfwRule[]>([
   }
 ])
 
-export const newRule = ref<Partial<UfwRule>>({
+const newRule = ref<Partial<UfwRule>>({
   port: '',
   from: '0.0.0.0',
   to: 'any',
@@ -95,7 +95,7 @@ export const newRule = ref<Partial<UfwRule>>({
   description: ''
 })
 
-export const isAddingRule = ref(false)
+const isAddingRule = ref(false)
 
 const addRule = () => {
   if (!newRule.value.port || !newRule.value.description) return
@@ -137,6 +137,7 @@ const commonPorts = [
 ]
 </script>
 
+<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Header -->
@@ -368,3 +369,4 @@ const commonPorts = [
     </div>
   </div>
 </div>
+</template>

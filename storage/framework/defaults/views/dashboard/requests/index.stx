@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
 import {
@@ -35,7 +35,7 @@ useHead({
   title: 'Dashboard - Requests',
 })
 
-export const chartOptions = {
+const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
@@ -81,7 +81,7 @@ export const chartOptions = {
   },
 }
 
-export const requestVolumeData = {
+const requestVolumeData = {
   labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
   datasets: [
     {
@@ -94,7 +94,7 @@ export const requestVolumeData = {
   ]
 }
 
-export const responseTimeData = {
+const responseTimeData = {
   labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
   datasets: [
     {
@@ -114,7 +114,7 @@ export const responseTimeData = {
   ]
 }
 
-export const successRateData = {
+const successRateData = {
   labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
   datasets: [
     {
@@ -134,7 +134,7 @@ export const successRateData = {
   ]
 }
 
-export const statusCodesData = {
+const statusCodesData = {
   labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
   datasets: [
     {
@@ -155,7 +155,7 @@ export const statusCodesData = {
   ]
 }
 
-export const barChartOptions = {
+const barChartOptions = {
   ...chartOptions,
   scales: {
     ...chartOptions.scales,
@@ -171,6 +171,7 @@ export const barChartOptions = {
 }
 </script>
 
+<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="mb-8 px-4 lg:px-8 sm:px-6">
     <div>
@@ -448,3 +449,4 @@ export const barChartOptions = {
     </div>
   </div>
 </div>
+</template>

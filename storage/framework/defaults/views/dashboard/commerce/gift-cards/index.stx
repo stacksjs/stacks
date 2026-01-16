@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
@@ -48,7 +48,7 @@ onMounted(async () => {
 })
 
 // Chart options
-export const chartOptions = {
+const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -73,7 +73,7 @@ export const chartOptions = {
 }
 
 // Generate monthly data for charts
-export const monthlyChartData = computed(() => {
+const monthlyChartData = computed(() => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   // Sample data - in a real app, this would be calculated from actual usage data
@@ -122,20 +122,20 @@ export const monthlyChartData = computed(() => {
 })
 
 // Time range selector
-export const timeRange = ref('Last 30 days')
-export const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
+const timeRange = ref('Last 30 days')
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Filter and sort options
-export const searchQuery = ref('')
-export const sortBy = ref('purchaseDate')
-export const sortOrder = ref('desc')
-export const statusFilter = ref('all')
+const searchQuery = ref('')
+const sortBy = ref('purchaseDate')
+const sortOrder = ref('desc')
+const statusFilter = ref('all')
 
 // Available statuses
-export const statuses = ['all', 'Active', 'Used', 'Expired']
+const statuses = ['all', 'Active', 'Used', 'Expired']
 
 // Computed gift card statistics
-export const giftCardStats = computed(() => {
+const giftCardStats = computed(() => {
   const activeGiftCards = giftCards.value.filter(c => c.status === 'Active').length
   const totalGiftCards = giftCards.value.length
 
@@ -162,7 +162,7 @@ export const giftCardStats = computed(() => {
 })
 
 // Computed filtered and sorted gift cards
-export const filteredGiftCards = computed(() => {
+const filteredGiftCards = computed(() => {
   return giftCards.value
     .filter(card => {
       // Apply search filter
@@ -194,7 +194,7 @@ export const filteredGiftCards = computed(() => {
 })
 
 // Toggle sort order
-export function toggleSort(column) {
+function toggleSort(column) {
   if (sortBy.value === column) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -204,7 +204,7 @@ export function toggleSort(column) {
 }
 
 // Get status badge class
-export function getStatusClass(status) {
+function getStatusClass(status) {
   switch (status) {
     case 'Active':
       return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
@@ -223,8 +223,8 @@ oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
 const futureDate = oneYearFromNow.toISOString().split('T')[0]
 
 // Modal state
-export const showAddModal = ref(false)
-export const newGiftCard = ref({
+const showAddModal = ref(false)
+const newGiftCard = ref({
   code: '',
   initialValue: 50,
   recipient: '',
@@ -232,7 +232,7 @@ export const newGiftCard = ref({
   expiryDate: futureDate
 })
 
-export function openAddModal() {
+function openAddModal() {
   newGiftCard.value = {
     code: generateGiftCardCode(),
     initialValue: 50,
@@ -243,11 +243,11 @@ export function openAddModal() {
   showAddModal.value = true
 }
 
-export function closeAddModal() {
+function closeAddModal() {
   showAddModal.value = false
 }
 
-export function generateGiftCardCode() {
+function generateGiftCardCode() {
   const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   let code = 'GFT-'
 
@@ -273,7 +273,7 @@ export function generateGiftCardCode() {
   return code
 }
 
-export async function addGiftCard() {
+async function addGiftCard() {
   const newGiftCardData = {
     code: newGiftCard.value.code,
     initial_balance: newGiftCard.value.initialValue,
@@ -296,6 +296,7 @@ export async function addGiftCard() {
 }
 </script>
 
+<template>
 <main>
   <div class="px-6 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
@@ -665,3 +666,4 @@ export async function addGiftCard() {
     </div>
   @endif
 </main>
+</template>

@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useHead } from '@vueuse/head'
 import Chart from 'chart.js/auto'
@@ -36,27 +36,27 @@ interface Product {
   count: number
 }
 
-export const statuses = ['all', 'Waiting', 'Notified', 'Purchased', 'Cancelled']
-export const sources = ['all', 'Website', 'Mobile App', 'In-Store', 'Social Media', 'Email Campaign', 'Referral']
-export const notificationPreferences = ['sms', 'email', 'both']
-export const tablePreferences = []
+const statuses = ['all', 'Waiting', 'Notified', 'Purchased', 'Cancelled']
+const sources = ['all', 'Website', 'Mobile App', 'In-Store', 'Social Media', 'Email Campaign', 'Referral']
+const notificationPreferences = ['sms', 'email', 'both']
+const tablePreferences = []
 
-export function calculateEstimatedWait(partySize) {
+function calculateEstimatedWait(partySize) {
   const baseWait = 15
   const queueFactor = waitlistEntries.value.filter(e => e.status === 'Waiting').length * 5
   const partySizeFactor = Math.ceil(partySize / 2) * 5
   return baseWait + queueFactor + partySizeFactor
 }
 
-export function updateQueuePositions() {
+function updateQueuePositions() {
   return
 }
 
-export async function sendSMSNotification(entry, message) {
+async function sendSMSNotification(entry, message) {
   console.log(`Sending SMS to ${entry.phone}: ${message}`)
 }
 
-export async function notifyCustomer(entry, message) {
+async function notifyCustomer(entry, message) {
   if (entry.notificationPreference === 'sms' || entry.notificationPreference === 'both') {
     await sendSMSNotification(entry, message)
   }
@@ -67,7 +67,7 @@ export async function notifyCustomer(entry, message) {
   entry.notified = true
 }
 
-export const waitTimeStats = computed(() => {
+const waitTimeStats = computed(() => {
   const waitingEntries = waitlistEntries.value.filter(e => e.status === 'Waiting')
   return {
     totalWaiting: waitingEntries.length,
@@ -75,7 +75,7 @@ export const waitTimeStats = computed(() => {
   }
 })
 
-export const waitlistEntries = ref([
+const waitlistEntries = ref([
   {
     id: 1,
     name: 'John Smith',
@@ -206,7 +206,7 @@ export const waitlistEntries = ref([
   }
 ])
 
-export const products = computed(() => {
+const products = computed(() => {
   const productMap = new Map()
 
   waitlistEntries.value.forEach(entry => {
@@ -222,12 +222,12 @@ export const products = computed(() => {
   }))
 })
 
-export const searchQuery = ref('')
-export const statusFilter = ref('all')
-export const partySizeFilter = ref('all')
-export const tablePreferenceFilter = ref('all')
+const searchQuery = ref('')
+const statusFilter = ref('all')
+const partySizeFilter = ref('all')
+const tablePreferenceFilter = ref('all')
 
-export const filteredEntries = computed(() => {
+const filteredEntries = computed(() => {
   return waitlistEntries.value.filter(entry => {
     const matchesSearch = searchQuery.value === '' ||
       entry.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
@@ -254,10 +254,10 @@ export const filteredEntries = computed(() => {
   })
 })
 
-export const sortBy = ref('dateAdded')
-export const sortOrder = ref('asc')
+const sortBy = ref('dateAdded')
+const sortOrder = ref('asc')
 
-export function toggleSort(field) {
+function toggleSort(field) {
   if (sortBy.value === field) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -266,7 +266,7 @@ export function toggleSort(field) {
   }
 }
 
-export const sortedEntries = computed(() => {
+const sortedEntries = computed(() => {
   return [...filteredEntries.value].sort((a, b) => {
     if (sortBy.value === 'name') {
       return sortOrder.value === 'asc'
@@ -287,36 +287,36 @@ export const sortedEntries = computed(() => {
   })
 })
 
-export const itemsPerPage = 10
-export const currentPage = ref(1)
+const itemsPerPage = 10
+const currentPage = ref(1)
 
-export const paginatedEntries = computed(() => {
+const paginatedEntries = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
   return sortedEntries.value.slice(start, end)
 })
 
-export const totalPages = computed(() => Math.ceil(sortedEntries.value.length / itemsPerPage))
+const totalPages = computed(() => Math.ceil(sortedEntries.value.length / itemsPerPage))
 
-export function nextPage() {
+function nextPage() {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
   }
 }
 
-export function prevPage() {
+function prevPage() {
   if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
-export function goToPage(page) {
+function goToPage(page) {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
   }
 }
 
-export function getStatusClass(status) {
+function getStatusClass(status) {
   switch (status) {
     case 'Waiting':
       return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
@@ -331,7 +331,7 @@ export function getStatusClass(status) {
   }
 }
 
-export function getPriorityClass(priority) {
+function getPriorityClass(priority) {
   switch (priority) {
     case 3:
       return 'text-red-600 dark:text-red-400 font-semibold'
@@ -344,32 +344,32 @@ export function getPriorityClass(priority) {
   }
 }
 
-export const showEntryModal = ref(false)
-export const isEditMode = ref(false)
-export const currentEntry = ref(null)
+const showEntryModal = ref(false)
+const isEditMode = ref(false)
+const currentEntry = ref(null)
 
-export const totalEntries = computed(() => waitlistEntries.value.length)
-export const waitingEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Waiting').length)
-export const notifiedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Notified').length)
-export const purchasedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Purchased').length)
-export const conversionRate = computed(() => {
+const totalEntries = computed(() => waitlistEntries.value.length)
+const waitingEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Waiting').length)
+const notifiedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Notified').length)
+const purchasedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Purchased').length)
+const conversionRate = computed(() => {
   const total = totalEntries.value
   const purchased = purchasedEntries.value
   return total > 0 ? Math.round((purchased / total) * 100) : 0
 })
 
-export const entryName = ref('')
-export const entryEmail = ref('')
-export const entryPhone = ref(null)
-export const entryQuantity = ref(2)
-export const entryNotificationPreference = ref('sms')
-export const entrySource = ref('Website')
-export const entryNotes = ref(null)
-export const entryPriority = ref(1)
+const entryName = ref('')
+const entryEmail = ref('')
+const entryPhone = ref(null)
+const entryQuantity = ref(2)
+const entryNotificationPreference = ref('sms')
+const entrySource = ref('Website')
+const entryNotes = ref(null)
+const entryPriority = ref(1)
 
-export const sourceFilter = ref('all')
+const sourceFilter = ref('all')
 
-export function openAddEntryModal() {
+function openAddEntryModal() {
   isEditMode.value = false
 
   entryName.value = ''
@@ -384,7 +384,7 @@ export function openAddEntryModal() {
   showEntryModal.value = true
 }
 
-export function openEditEntryModal(entry) {
+function openEditEntryModal(entry) {
   isEditMode.value = true
   currentEntry.value = { ...entry }
 
@@ -400,7 +400,7 @@ export function openEditEntryModal(entry) {
   showEntryModal.value = true
 }
 
-export function saveEntry() {
+function saveEntry() {
   const now = new Date()
   const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const entry = {
@@ -433,7 +433,7 @@ export function saveEntry() {
   showEntryModal.value = false
 }
 
-export function deleteEntry(entryId) {
+function deleteEntry(entryId) {
   if (confirm('Are you sure you want to delete this waitlist entry?')) {
     const index = waitlistEntries.value.findIndex(e => e.id === entryId)
     if (index !== -1) {
@@ -442,27 +442,27 @@ export function deleteEntry(entryId) {
   }
 }
 
-export function markAsNotified(entryId) {
+function markAsNotified(entryId) {
   const entry = waitlistEntries.value.find(e => e.id === entryId)
   if (entry) {
     entry.status = 'Notified'
   }
 }
 
-export function markAsPurchased(entryId) {
+function markAsPurchased(entryId) {
   const entry = waitlistEntries.value.find(e => e.id === entryId)
   if (entry) {
     entry.status = 'Purchased'
   }
 }
 
-export const showNotificationModal = ref(false)
-export const notificationSubject = ref('Product Now Available')
-export const notificationMessage = ref('Good news! The product you were waiting for is now available for purchase.')
-export const selectedEntries = ref([])
-export const selectAll = ref(false)
+const showNotificationModal = ref(false)
+const notificationSubject = ref('Product Now Available')
+const notificationMessage = ref('Good news! The product you were waiting for is now available for purchase.')
+const selectedEntries = ref([])
+const selectAll = ref(false)
 
-export function toggleSelectAll() {
+function toggleSelectAll() {
   selectAll.value = !selectAll.value
   if (selectAll.value) {
     selectedEntries.value = paginatedEntries.value.map(entry => entry.id)
@@ -471,7 +471,7 @@ export function toggleSelectAll() {
   }
 }
 
-export function toggleEntrySelection(entryId) {
+function toggleEntrySelection(entryId) {
   const index = selectedEntries.value.indexOf(entryId)
   if (index === -1) {
     selectedEntries.value.push(entryId)
@@ -483,7 +483,7 @@ export function toggleEntrySelection(entryId) {
     paginatedEntries.value.every(entry => selectedEntries.value.includes(entry.id))
 }
 
-export function openNotificationModal() {
+function openNotificationModal() {
   if (selectedEntries.value.length === 0) {
     alert('Please select at least one waitlist entry to notify')
     return
@@ -494,7 +494,7 @@ export function openNotificationModal() {
   showNotificationModal.value = true
 }
 
-export function sendNotifications() {
+function sendNotifications() {
   waitlistEntries.value.forEach(entry => {
     if (selectedEntries.value.includes(entry.id)) {
       entry.notified = true
@@ -509,11 +509,11 @@ export function sendNotifications() {
   alert(`Notifications sent to ${selectedEntries.value.length} customers`)
 }
 
-export function exportWaitlist() {
+function exportWaitlist() {
   alert('Waitlist data exported successfully')
 }
 
-export function bulkChangeStatus(status) {
+function bulkChangeStatus(status) {
   if (selectedEntries.value.length === 0) {
     alert('Please select at least one waitlist entry')
     return
@@ -532,7 +532,7 @@ export function bulkChangeStatus(status) {
   selectAll.value = false
 }
 
-export function bulkDelete() {
+function bulkDelete() {
   if (selectedEntries.value.length === 0) {
     alert('Please select at least one waitlist entry')
     return
@@ -546,10 +546,10 @@ export function bulkDelete() {
   }
 }
 
-export const productChartRef = ref(null)
-export const sourceChartRef = ref(null)
-export const statusChartRef = ref(null)
-export const trendChartRef = ref(null)
+const productChartRef = ref(null)
+const sourceChartRef = ref(null)
+const statusChartRef = ref(null)
+const trendChartRef = ref(null)
 
 let productChart = null
 let sourceChart = null
@@ -570,9 +570,9 @@ const generateTrendData = () => {
   return data
 }
 
-export const trendData = ref(generateTrendData())
+const trendData = ref(generateTrendData())
 
-export const chartColors = {
+const chartColors = {
   blue: {
     fill: 'rgba(59, 130, 246, 0.2)',
     stroke: 'rgba(59, 130, 246, 1)',
@@ -600,7 +600,7 @@ export const chartColors = {
   },
 }
 
-export const baseChartOptions = {
+const baseChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -629,7 +629,7 @@ export const baseChartOptions = {
   }
 }
 
-export const baseChartOptionsWithScales = {
+const baseChartOptionsWithScales = {
   ...baseChartOptions,
   scales: {
     y: {
@@ -657,7 +657,7 @@ onMounted(() => {
   initTrendChart()
 })
 
-export function initProductChart() {
+function initProductChart() {
   if (!productChartRef.value) return
 
   const ctx = productChartRef.value.getContext('2d')
@@ -704,7 +704,7 @@ export function initProductChart() {
   })
 }
 
-export function initSourceChart() {
+function initSourceChart() {
   if (!sourceChartRef.value) return
 
   const ctx = sourceChartRef.value.getContext('2d')
@@ -768,7 +768,7 @@ export function initSourceChart() {
   })
 }
 
-export function initTrendChart() {
+function initTrendChart() {
   if (!trendChartRef.value) return
 
   const ctx = trendChartRef.value.getContext('2d')
@@ -834,7 +834,7 @@ export function initTrendChart() {
   })
 }
 
-export function initStatusChart() {
+function initStatusChart() {
   if (!statusChartRef.value) return
 
   const ctx = statusChartRef.value.getContext('2d')
@@ -893,7 +893,7 @@ export function initStatusChart() {
   })
 }
 
-export function updateCharts() {
+function updateCharts() {
   if (productChart && productChart.data) {
     const chart = productChart
     const partySizes = [1, 2, 3, 4, 5, 6, '7+']
@@ -953,6 +953,7 @@ watch(waitlistEntries, () => {
 }, { deep: true })
 </script>
 
+<template>
 <main>
   <div class="px-6 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
@@ -1581,3 +1582,4 @@ watch(waitlistEntries, () => {
     </div>
   @endif
 </main>
+</template>

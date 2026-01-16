@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useHead } from '@vueuse/head'
 import * as d3 from 'd3'
@@ -107,8 +107,8 @@ const operatingSystems = [
 ]
 
 // Update default values
-export const defaultServerOS = 'ubuntu-24-lts-x86_64'
-export const defaultBunVersion = 'v1.2.3'
+const defaultServerOS = 'ubuntu-24-lts-x86_64'
+const defaultBunVersion = 'v1.2.3'
 
 // Update server types descriptions
 const serverTypes: ServerType[] = [
@@ -165,8 +165,8 @@ const bunVersions = [
 ]
 
 // State
-export const activeView = ref<'visual' | 'code'>('visual')
-export const cloudConfig = ref<CloudConfig>({
+const activeView = ref<'visual' | 'code'>('visual')
+const cloudConfig = ref<CloudConfig>({
   type: 'aws',
   useLoadBalancer: true,
   servers: {
@@ -244,7 +244,7 @@ type WorkerSizeSpecs = {
 }
 
 // Add worker state
-export const workerConfig = ref<WorkerConfig>({
+const workerConfig = ref<WorkerConfig>({
   name: 'Worker 1',
   size: 't3.micro',
   replicas: 1,
@@ -252,7 +252,7 @@ export const workerConfig = ref<WorkerConfig>({
 })
 
 // Add visualization state
-export const diagramContainer = ref<HTMLElement | null>(null)
+const diagramContainer = ref<HTMLElement | null>(null)
 let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>
 let simulation: d3.Simulation<d3.SimulationNodeDatum, undefined>
 
@@ -260,21 +260,21 @@ let simulation: d3.Simulation<d3.SimulationNodeDatum, undefined>
 let zoomGroup: d3.Selection<SVGGElement, unknown, null, undefined>
 
 // Add selected node state
-export const selectedNode = ref<InfraNode | null>(null)
+const selectedNode = ref<InfraNode | null>(null)
 
 // Add save state
-export const isSaving = ref(false)
-export const saveError = ref<string | null>(null)
+const isSaving = ref(false)
+const saveError = ref<string | null>(null)
 
 // Add unsaved state
-export const hasUnsavedChanges = ref(false)
+const hasUnsavedChanges = ref(false)
 
 // Add initial state tracking for change detection
 const initialWorkerConfig = ref({ ...workerConfig.value })
 const initialCloudConfig = ref({ ...cloudConfig.value })
 
 // Add edit mode state
-export const editMode = ref<Record<string, boolean>>({})
+const editMode = ref<Record<string, boolean>>({})
 
 // Add toggle edit mode function
 const toggleEditMode = (key: string) => {
@@ -768,6 +768,7 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
 }, { deep: true })
 </script>
 
+<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Header -->
@@ -1138,3 +1139,4 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
     @endif
   </div>
 </div>
+</template>

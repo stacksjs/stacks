@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
@@ -37,7 +37,7 @@ useHead({
 })
 
 // Sample data for the prints dashboard
-export const prints = [
+const prints = [
   { id: 1, printer: 'Checkout-1', document: 'Receipt #5432', timestamp: '2023-12-01 14:32:45', status: 'Success', size: '8.5KB', pages: 1, duration: '1.2s' },
   { id: 2, printer: 'Checkout-2', document: 'Receipt #5431', timestamp: '2023-12-01 14:30:12', status: 'Success', size: '9.1KB', pages: 1, duration: '1.3s' },
   { id: 3, printer: 'Kitchen-1', document: 'Order #5430', timestamp: '2023-12-01 14:28:55', status: 'Failed', size: '12.3KB', pages: 2, duration: '0.0s' },
@@ -56,7 +56,7 @@ export const prints = [
 ]
 
 // Print volume data by hour
-export const hourlyPrintData = {
+const hourlyPrintData = {
   labels: ['9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM', '5PM', '6PM', '7PM', '8PM'],
   datasets: [
     {
@@ -76,7 +76,7 @@ export const hourlyPrintData = {
 }
 
 // Print volume by printer
-export const printerVolumeData = {
+const printerVolumeData = {
   labels: ['Checkout-1', 'Checkout-2', 'Checkout-3', 'Checkout-4', 'Kitchen-1', 'Kitchen-2', 'Pickup-1'],
   datasets: [
     {
@@ -90,7 +90,7 @@ export const printerVolumeData = {
   ],
 }
 
-export const chartOptions = {
+const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -115,16 +115,16 @@ export const chartOptions = {
 }
 
 // Filter options
-export const printerFilter = ref('All Printers')
-export const statusFilter = ref('All Statuses')
-export const dateFilter = ref('Today')
+const printerFilter = ref('All Printers')
+const statusFilter = ref('All Statuses')
+const dateFilter = ref('Today')
 
-export const printers = ['All Printers', 'Checkout-1', 'Checkout-2', 'Checkout-3', 'Checkout-4', 'Kitchen-1', 'Kitchen-2', 'Pickup-1']
-export const statuses = ['All Statuses', 'Success', 'Warning', 'Failed']
-export const dateRanges = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'This month', 'Last month']
+const printers = ['All Printers', 'Checkout-1', 'Checkout-2', 'Checkout-3', 'Checkout-4', 'Kitchen-1', 'Kitchen-2', 'Pickup-1']
+const statuses = ['All Statuses', 'Success', 'Warning', 'Failed']
+const dateRanges = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'This month', 'Last month']
 
 // Computed filtered prints
-export const filteredPrints = computed(() => {
+const filteredPrints = computed(() => {
   return prints.filter(print => {
     const printerMatch = printerFilter.value === 'All Printers' || print.printer === printerFilter.value
     const statusMatch = statusFilter.value === 'All Statuses' || print.status === statusFilter.value
@@ -133,15 +133,16 @@ export const filteredPrints = computed(() => {
 })
 
 // Stats summary
-export const totalPrints = 755
-export const successfulPrints = 732
-export const failedPrints = 15
-export const warningPrints = 8
-export const successRate = ((successfulPrints / totalPrints) * 100).toFixed(1)
-export const averagePrintTime = '1.4s'
-export const totalPages = 1105
+const totalPrints = 755
+const successfulPrints = 732
+const failedPrints = 15
+const warningPrints = 8
+const successRate = ((successfulPrints / totalPrints) * 100).toFixed(1)
+const averagePrintTime = '1.4s'
+const totalPages = 1105
 </script>
 
+<template>
 <main>
   <div class="relative isolate overflow-hidden">
     <div class="px-6 py-6 sm:px-6 lg:px-8">
@@ -346,3 +347,4 @@ export const totalPages = 1105
     </div>
   </div>
 </main>
+</template>

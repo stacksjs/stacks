@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useHead } from '@vueuse/head'
 import * as d3 from 'd3'
@@ -52,7 +52,7 @@ const relationshipColors = {
 }
 
 // Model definitions based on actual Models directory
-export const models: ModelNode[] = [
+const models: ModelNode[] = [
   {
     id: 'user',
     name: 'User',
@@ -257,7 +257,7 @@ export const models: ModelNode[] = [
 ]
 
 // Define relationships between models
-export const relationships: RelationshipLink[] = [
+const relationships: RelationshipLink[] = [
   // User relationships
   { source: 'user', target: 'team', type: 'belongsToMany' },
   { source: 'user', target: 'accessToken', type: 'hasMany' },
@@ -304,17 +304,17 @@ export const relationships: RelationshipLink[] = [
 ]
 
 // Visualization state
-export const diagramContainer = ref<HTMLElement | null>(null)
+const diagramContainer = ref<HTMLElement | null>(null)
 let simulation: d3.Simulation<ModelNode, undefined> | null = null
 
 // Add format state
-export const downloadFormat = ref<'svg' | 'png'>('svg')
-export const isDownloading = ref(false)
+const downloadFormat = ref<'svg' | 'png'>('svg')
+const isDownloading = ref(false)
 
 // Add filter and search functionality
-export const searchQuery = ref('')
-export const selectedModelType = ref('All')
-export const modelTypes = computed(() => {
+const searchQuery = ref('')
+const selectedModelType = ref('All')
+const modelTypes = computed(() => {
   const types = ['All']
   const uniqueColors = new Set(models.map(model => model.color))
   uniqueColors.forEach(color => {
@@ -329,7 +329,7 @@ export const modelTypes = computed(() => {
 })
 
 // Filter models based on search and type
-export const filteredModels = computed(() => {
+const filteredModels = computed(() => {
   return models.filter(model => {
     const matchesSearch = searchQuery.value === '' ||
       model.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
@@ -359,10 +359,10 @@ function getModelTypeByColor(color: string): string {
 }
 
 // Selected model for details panel
-export const selectedModel = ref<ModelNode | null>(null)
+const selectedModel = ref<ModelNode | null>(null)
 
 // Model statistics
-export const modelStats = computed(() => {
+const modelStats = computed(() => {
   return {
     totalModels: models.length,
     totalRelationships: relationships.length,
@@ -377,7 +377,7 @@ export const modelStats = computed(() => {
 })
 
 // Update download function to support both formats
-export const downloadDiagram = async () => {
+const downloadDiagram = async () => {
   if (!diagramContainer.value) {
     console.error('No diagram container found')
     return
@@ -467,7 +467,7 @@ export const downloadDiagram = async () => {
 }
 
 // Create model diagram
-export const createDiagram = () => {
+const createDiagram = () => {
   if (!diagramContainer.value) return
 
   const width = diagramContainer.value.clientWidth
@@ -1099,6 +1099,7 @@ onUnmounted(() => {
 })
 </script>
 
+<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Stats Cards -->
@@ -1289,6 +1290,7 @@ onUnmounted(() => {
     @endif
   </div>
 </div>
+</template>
 
 <route lang="yaml">
 meta:

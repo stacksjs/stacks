@@ -1,4 +1,4 @@
-<script>
+<script server>
 import Login from '../../components/Dashboard/Auth/Login.stx'
 import { useHead } from '@vueuse/head'
 import { useAuth } from '../../functions/auth'
@@ -12,8 +12,8 @@ useHead({
 const { login } = useAuth()
 
 // Form state
-export const isLoading = false
-export const error = ''
+const isLoading = false
+const error = ''
 
 async function handleLogin(credentials) {
   isLoading = true
@@ -39,11 +39,13 @@ async function handleLogin(credentials) {
 }
 </script>
 
+<template>
 <Login
   @submit="handleLogin"
   :isLoading="isLoading"
   :error="error"
 />
+</template>
 
 <route lang="yaml">
   meta:

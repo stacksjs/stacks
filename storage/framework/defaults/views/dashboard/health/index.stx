@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref } from 'vue'
 import Card from '../../../components/Dashboard/UI/Card.stx'
 import Badge from '../../../components/Dashboard/UI/Badge.stx'
@@ -120,14 +120,9 @@ const getStatusIconBg = (status) => {
   }
   return map[status] || 'bg-neutral-500/15 text-neutral-600'
 }
-
-export {
-  healthMetrics,
-  getStatusVariant,
-  getStatusIconBg,
-}
 </script>
 
+<template>
 <div>
   <!-- Overview Stats -->
   <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -222,6 +217,7 @@ export {
     @endforeach
   </div>
 </div>
+</template>
 
 <route lang="yaml">
 meta:

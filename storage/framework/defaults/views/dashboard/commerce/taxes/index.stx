@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 
@@ -12,7 +12,7 @@ useHead({
 })
 
 // Sample taxes data
-export const taxes = ref([
+const taxes = ref([
   {
     id: 1,
     name: 'US Digital Services',
@@ -126,27 +126,27 @@ export const taxes = ref([
 ])
 
 // Filter and sort options
-export const searchQuery = ref('')
-export const sortBy = ref('name')
-export const sortOrder = ref('asc')
-export const activeFilter = ref('all')
-export const countryFilter = ref('all')
-export const typeFilter = ref('all')
+const searchQuery = ref('')
+const sortBy = ref('name')
+const sortOrder = ref('asc')
+const activeFilter = ref('all')
+const countryFilter = ref('all')
+const typeFilter = ref('all')
 
 // Get unique countries for filter
-export const countries = computed(() => {
+const countries = computed(() => {
   const uniqueCountries = new Set(taxes.value.map(t => t.country))
   return Array.from(uniqueCountries).sort()
 })
 
 // Get unique tax types for filter
-export const taxTypes = computed(() => {
+const taxTypes = computed(() => {
   const uniqueTypes = new Set(taxes.value.map(t => t.type))
   return Array.from(uniqueTypes).sort()
 })
 
 // Computed filtered and sorted taxes
-export const filteredTaxes = computed(() => {
+const filteredTaxes = computed(() => {
   return taxes.value
     .filter(tax => {
       // Apply search filter
@@ -187,7 +187,7 @@ export const filteredTaxes = computed(() => {
 })
 
 // Toggle sort order
-export function toggleSort(column) {
+function toggleSort(column) {
   if (sortBy.value === column) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -197,8 +197,8 @@ export function toggleSort(column) {
 }
 
 // Modal state
-export const showAddModal = ref(false)
-export const newTax = ref({
+const showAddModal = ref(false)
+const newTax = ref({
   name: '',
   rate: 0,
   type: 'Percentage',
@@ -208,7 +208,7 @@ export const newTax = ref({
   isDefault: false
 })
 
-export function openAddModal() {
+function openAddModal() {
   newTax.value = {
     name: '',
     rate: 0,
@@ -221,11 +221,11 @@ export function openAddModal() {
   showAddModal.value = true
 }
 
-export function closeAddModal() {
+function closeAddModal() {
   showAddModal.value = false
 }
 
-export function addTax() {
+function addTax() {
   // In a real app, this would send data to the server
   const id = Math.max(...taxes.value.map(t => t.id)) + 1
   const currentDate = new Date().toISOString().split('T')[0]
@@ -252,6 +252,7 @@ export function addTax() {
 }
 </script>
 
+<template>
 <main>
   <div class="px-6 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
@@ -591,3 +592,4 @@ export function addTax() {
     </div>
   @endif
 </main>
+</template>

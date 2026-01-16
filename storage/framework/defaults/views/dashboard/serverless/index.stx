@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import * as d3 from 'd3'
@@ -33,7 +33,7 @@ interface ServiceLink {
 }
 
 // Define AWS services based on the cloud directory
-export const services: ServiceNode[] = [
+const services: ServiceNode[] = [
   {
     id: 'lambda',
     name: 'Lambda',
@@ -157,7 +157,7 @@ export const services: ServiceNode[] = [
 ]
 
 // Define relationships between services
-export const links: ServiceLink[] = [
+const links: ServiceLink[] = [
   // API Gateway triggers Lambda
   {
     source: 'apigateway',
@@ -263,17 +263,17 @@ export const links: ServiceLink[] = [
 ]
 
 // Visualization state
-export const diagramContainer = ref<HTMLElement | null>(null)
+const diagramContainer = ref<HTMLElement | null>(null)
 let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>
 let simulation: d3.Simulation<ServiceNode, undefined>
 let zoomGroup: d3.Selection<SVGGElement, unknown, null, undefined>
-export const selectedNode = ref<ServiceNode | null>(null)
+const selectedNode = ref<ServiceNode | null>(null)
 
 // Add zoom variable to the outer scope
 let zoom: d3.ZoomBehavior<SVGSVGElement, unknown>
 
 // Function to create and update the visualization
-export const updateVisualization = () => {
+const updateVisualization = () => {
   if (!diagramContainer.value) return
 
   const width = diagramContainer.value.clientWidth
@@ -543,7 +543,7 @@ onMounted(() => {
 });
 
 // Add these functions before the onMounted hook
-export const downloadSVG = () => {
+const downloadSVG = () => {
   if (!diagramContainer.value) return
 
   const svgElement = diagramContainer.value.querySelector('svg')
@@ -566,7 +566,7 @@ export const downloadSVG = () => {
   URL.revokeObjectURL(url)
 }
 
-export const downloadPNG = () => {
+const downloadPNG = () => {
   if (!diagramContainer.value) return
 
   const svgElement = diagramContainer.value.querySelector('svg')
@@ -613,7 +613,7 @@ export const downloadPNG = () => {
   img.src = url
 }
 
-export const zoomIn = () => {
+const zoomIn = () => {
   if (!svg) return
   const transform = d3.zoomTransform(svg.node()!)
   svg.transition()
@@ -621,7 +621,7 @@ export const zoomIn = () => {
     .call(zoom.transform, transform.scale(transform.k * 1.3))
 }
 
-export const zoomOut = () => {
+const zoomOut = () => {
   if (!svg) return
   const transform = d3.zoomTransform(svg.node()!)
   svg.transition()
@@ -629,7 +629,7 @@ export const zoomOut = () => {
     .call(zoom.transform, transform.scale(transform.k / 1.3))
 }
 
-export const resetZoom = () => {
+const resetZoom = () => {
   if (!svg) return
   svg.transition()
     .duration(300)
@@ -645,7 +645,7 @@ interface ServerEvent {
   timestamp: string
 }
 
-export const serverEvents = ref<ServerEvent[]>([
+const serverEvents = ref<ServerEvent[]>([
   {
     id: '1',
     service: 'Lambda',
@@ -683,7 +683,7 @@ export const serverEvents = ref<ServerEvent[]>([
   }
 ])
 
-export const getEventTypeColor = (type: string) => {
+const getEventTypeColor = (type: string) => {
   switch (type) {
     case 'success': return 'text-green-400'
     case 'error': return 'text-red-400'
@@ -692,7 +692,7 @@ export const getEventTypeColor = (type: string) => {
   }
 }
 
-export const getEventTypeIcon = (type: string) => {
+const getEventTypeIcon = (type: string) => {
   switch (type) {
     case 'success': return 'i-hugeicons-check-circle'
     case 'error': return 'i-hugeicons-x-circle'
@@ -702,6 +702,7 @@ export const getEventTypeIcon = (type: string) => {
 }
 </script>
 
+<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Header -->
@@ -870,6 +871,7 @@ export const getEventTypeIcon = (type: string) => {
     </div>
   </div>
 </div>
+</template>
 
 <style scoped>
 .dark svg {

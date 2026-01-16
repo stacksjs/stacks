@@ -541,3 +541,4 @@ const formatNumber = (num: number): string => {
     </div>
   </div>
 </div>
+</template>

@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
@@ -271,29 +271,9 @@ onMounted(() => {
   }
 })
 
-export {
-  dateRanges,
-  selectedDateRange,
-  dateRangeDisplay,
-  comparisonType,
-  customStartDate,
-  customEndDate,
-  showCustomDateRange,
-  salesOverview,
-  salesData,
-  chartConfig,
-  productsData,
-  totalProductRevenue,
-  categoriesData,
-  totalCategoryRevenue,
-  customersData,
-  totalCustomerSpent,
-  formatNumber,
-  formatCurrency,
-  getPercentageColorClass
-}
 </script>
 
+<template>
 <main>
   <div class="px-6 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
@@ -548,6 +528,7 @@ export {
     </div>
   </div>
 </main>
+</template>
 
 <route lang="yaml">
 meta:

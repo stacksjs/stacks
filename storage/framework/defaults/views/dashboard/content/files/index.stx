@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Doughnut } from 'vue-chartjs'
@@ -548,45 +548,9 @@ function deleteSelectedItems() {
   selectedItems.value = []
   showDeleteConfirmation.value = false
 }
-
-export {
-  fileTypeIcons,
-  rootFolder,
-  currentFolder,
-  currentPath,
-  selectedItems,
-  viewMode,
-  sortBy,
-  sortOrder,
-  searchQuery,
-  showUploadModal,
-  showCreateFolderModal,
-  newFolderName,
-  showDeleteConfirmation,
-  showSidePanel,
-  storageStats,
-  storageByType,
-  storageChartData,
-  storageByTypeChartData,
-  doughnutChartOptions,
-  filteredItems,
-  starredItems,
-  sharedItems,
-  recentItems,
-  navigateToFolder,
-  navigateUp,
-  navigateToPath,
-  toggleItemSelection,
-  toggleStar,
-  toggleShare,
-  formatFileSize,
-  formatDate,
-  getFileIcon,
-  createNewFolder,
-  deleteSelectedItems
-}
 </script>
 
+<template>
 <div class="h-full flex flex-col">
   <!-- Main content -->
   <div class="flex-1 flex">
@@ -1206,3 +1170,4 @@ export {
   </div>
   @endif
 </div>
+</template>

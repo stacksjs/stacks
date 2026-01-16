@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Pie, Bar } from 'vue-chartjs'
@@ -35,7 +35,7 @@ useHead({
 })
 
 // Sample data for the printers dashboard
-export const printers = [
+const printers = [
   { id: 1, username: 'Checkout-1', macAddress: '00:1B:44:11:3A:B7', location: 'Main Floor', terminal: 'POS-1', status: 'Online', lastPing: '2 mins ago', printCount: 1245, errorCount: 3 },
   { id: 2, username: 'Checkout-2', macAddress: '00:1B:44:11:3A:C8', location: 'Main Floor', terminal: 'POS-2', status: 'Online', lastPing: '1 min ago', printCount: 987, errorCount: 0 },
   { id: 3, username: 'Kitchen-1', macAddress: '00:1B:44:11:3B:D9', location: 'Kitchen', terminal: 'KDS-1', status: 'Offline', lastPing: '3 hours ago', printCount: 876, errorCount: 12 },
@@ -46,7 +46,7 @@ export const printers = [
 ]
 
 // Status distribution data for pie chart
-export const statusData = {
+const statusData = {
   labels: ['Online', 'Offline', 'Warning'],
   datasets: [
     {
@@ -57,7 +57,7 @@ export const statusData = {
 }
 
 // Print volume data for bar chart
-export const printVolumeData = {
+const printVolumeData = {
   labels: ['Checkout-1', 'Checkout-2', 'Kitchen-1', 'Checkout-3', 'Pickup-1', 'Checkout-4', 'Kitchen-2'],
   datasets: [
     {
@@ -69,7 +69,7 @@ export const printVolumeData = {
 }
 
 // Error rate data for bar chart
-export const errorRateData = {
+const errorRateData = {
   labels: ['Checkout-1', 'Checkout-2', 'Kitchen-1', 'Checkout-3', 'Pickup-1', 'Checkout-4', 'Kitchen-2'],
   datasets: [
     {
@@ -80,7 +80,7 @@ export const errorRateData = {
   ],
 }
 
-export const chartOptions = {
+const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -91,7 +91,7 @@ export const chartOptions = {
   },
 }
 
-export const barChartOptions = {
+const barChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -116,13 +116,13 @@ export const barChartOptions = {
 }
 
 // Filter options
-export const locationFilter = ref('All Locations')
-export const statusFilter = ref('All Statuses')
-export const locations = ['All Locations', 'Main Floor', 'Second Floor', 'Kitchen', 'Pickup Area']
-export const statuses = ['All Statuses', 'Online', 'Offline', 'Warning']
+const locationFilter = ref('All Locations')
+const statusFilter = ref('All Statuses')
+const locations = ['All Locations', 'Main Floor', 'Second Floor', 'Kitchen', 'Pickup Area']
+const statuses = ['All Statuses', 'Online', 'Offline', 'Warning']
 
 // Computed filtered printers
-export const filteredPrinters = computed(() => {
+const filteredPrinters = computed(() => {
   return printers.filter(printer => {
     const locationMatch = locationFilter.value === 'All Locations' || printer.location === locationFilter.value
     const statusMatch = statusFilter.value === 'All Statuses' || printer.status === statusFilter.value
@@ -131,15 +131,16 @@ export const filteredPrinters = computed(() => {
 })
 
 // Stats summary
-export const totalPrinters = printers.length
-export const onlinePrinters = printers.filter(p => p.status === 'Online').length
-export const offlinePrinters = printers.filter(p => p.status === 'Offline').length
-export const warningPrinters = printers.filter(p => p.status === 'Warning').length
-export const totalPrints = printers.reduce((sum, printer) => sum + printer.printCount, 0)
-export const totalErrors = printers.reduce((sum, printer) => sum + printer.errorCount, 0)
-export const errorRate = ((totalErrors / totalPrints) * 100).toFixed(2)
+const totalPrinters = printers.length
+const onlinePrinters = printers.filter(p => p.status === 'Online').length
+const offlinePrinters = printers.filter(p => p.status === 'Offline').length
+const warningPrinters = printers.filter(p => p.status === 'Warning').length
+const totalPrints = printers.reduce((sum, printer) => sum + printer.printCount, 0)
+const totalErrors = printers.reduce((sum, printer) => sum + printer.errorCount, 0)
+const errorRate = ((totalErrors / totalPrints) * 100).toFixed(2)
 </script>
 
+<template>
 <main>
   <div class="relative isolate overflow-hidden">
     <div class="px-6 py-6 sm:px-6 lg:px-8">
@@ -324,3 +325,4 @@ export const errorRate = ((totalErrors / totalPrints) * 100).toFixed(2)
     </div>
   </div>
 </main>
+</template>

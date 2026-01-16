@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useLocalStorage } from '@vueuse/core'
@@ -38,7 +38,7 @@ interface Subscriber {
 }
 
 // Sample lists data
-export const lists = ref<List[]>([
+const lists = ref<List[]>([
   {
     id: 1,
     name: 'Newsletter Subscribers',
@@ -162,7 +162,7 @@ export const lists = ref<List[]>([
 ])
 
 // Sample subscribers data (not displayed directly but used for import/export functionality)
-export const subscribers = ref<Subscriber[]>([
+const subscribers = ref<Subscriber[]>([
   {
     id: 1,
     email: 'john.doe@example.com',
@@ -199,19 +199,19 @@ export const subscribers = ref<Subscriber[]>([
 ])
 
 // Filter and sort options
-export const searchQuery = ref('')
-export const sortBy = ref('dateCreated')
-export const sortOrder = ref('desc')
-export const typeFilter = ref('all')
-export const statusFilter = ref('all')
-export const viewMode = useLocalStorage('lists-view-mode', 'list') // Default to list view and save in localStorage
+const searchQuery = ref('')
+const sortBy = ref('dateCreated')
+const sortOrder = ref('desc')
+const typeFilter = ref('all')
+const statusFilter = ref('all')
+const viewMode = useLocalStorage('lists-view-mode', 'list') // Default to list view and save in localStorage
 
 // Available list types and statuses
-export const listTypes = ['all', 'email', 'sms', 'both']
-export const statuses = ['all', 'Active', 'Draft', 'Archived']
+const listTypes = ['all', 'email', 'sms', 'both']
+const statuses = ['all', 'Active', 'Draft', 'Archived']
 
 // Computed filtered and sorted lists
-export const filteredLists = computed(() => {
+const filteredLists = computed(() => {
   return lists.value
     .filter(list => {
       // Apply search filter
@@ -248,34 +248,34 @@ export const filteredLists = computed(() => {
 })
 
 // Pagination
-export const currentPage = ref(1)
-export const itemsPerPage = ref(8)
-export const totalPages = computed(() => Math.ceil(filteredLists.value.length / itemsPerPage.value))
+const currentPage = ref(1)
+const itemsPerPage = ref(8)
+const totalPages = computed(() => Math.ceil(filteredLists.value.length / itemsPerPage.value))
 
-export const paginatedLists = computed(() => {
+const paginatedLists = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return filteredLists.value.slice(start, end)
 })
 
-export function changePage(page) {
+function changePage(page) {
   currentPage.value = page
 }
 
-export function previousPage() {
+function previousPage() {
   if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
-export function nextPage() {
+function nextPage() {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
   }
 }
 
 // Toggle sort order
-export function toggleSort(column) {
+function toggleSort(column) {
   if (sortBy.value === column) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -285,7 +285,7 @@ export function toggleSort(column) {
 }
 
 // Get status badge class
-export function getStatusClass(status) {
+function getStatusClass(status) {
   switch (status) {
     case 'Active':
       return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
@@ -299,7 +299,7 @@ export function getStatusClass(status) {
 }
 
 // Get type badge class
-export function getTypeClass(type) {
+function getTypeClass(type) {
   switch (type) {
     case 'email':
       return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
@@ -313,27 +313,27 @@ export function getTypeClass(type) {
 }
 
 // Modal state for adding/editing list
-export const showListModal = ref(false)
-export const isEditMode = ref(false)
-export const currentList = ref<List | null>(null)
+const showListModal = ref(false)
+const isEditMode = ref(false)
+const currentList = ref<List | null>(null)
 
 // Computed properties for form fields to handle null currentList
-export const listName = computed({
+const listName = computed({
   get: () => currentList.value?.name || '',
   set: (value) => { if (currentList.value) currentList.value.name = value }
 })
 
-export const listDescription = computed({
+const listDescription = computed({
   get: () => currentList.value?.description || '',
   set: (value) => { if (currentList.value) currentList.value.description = value }
 })
 
-export const listType = computed({
+const listType = computed({
   get: () => currentList.value?.type || 'email',
   set: (value: 'email' | 'sms' | 'both') => { if (currentList.value) currentList.value.type = value }
 })
 
-export const listTags = computed({
+const listTags = computed({
   get: () => currentList.value?.tags.join(', ') || '',
   set: (value) => {
     if (currentList.value) {
@@ -342,18 +342,18 @@ export const listTags = computed({
   }
 })
 
-export const listStatus = computed({
+const listStatus = computed({
   get: () => currentList.value?.status || 'Draft',
   set: (value: 'Active' | 'Draft' | 'Archived') => { if (currentList.value) currentList.value.status = value }
 })
 
-export const listIsDefault = computed({
+const listIsDefault = computed({
   get: () => currentList.value?.isDefault || false,
   set: (value) => { if (currentList.value) currentList.value.isDefault = value }
 })
 
 // Functions for managing lists
-export function openAddListModal() {
+function openAddListModal() {
   isEditMode.value = false
   currentList.value = {
     id: Math.max(...lists.value.map(l => l.id)) + 1,
@@ -373,17 +373,17 @@ export function openAddListModal() {
   showListModal.value = true
 }
 
-export function openEditListModal(list) {
+function openEditListModal(list) {
   isEditMode.value = true
   currentList.value = { ...list }
   showListModal.value = true
 }
 
-export function closeListModal() {
+function closeListModal() {
   showListModal.value = false
 }
 
-export function saveList() {
+function saveList() {
   if (!currentList.value) return
 
   // If setting this list as default, unset default on all other lists
@@ -410,7 +410,7 @@ export function saveList() {
 }
 
 // Function to delete a list
-export function deleteList(listId) {
+function deleteList(listId) {
   if (confirm('Are you sure you want to delete this list? This will not delete the subscribers.')) {
     const index = lists.value.findIndex(l => l.id === listId)
     if (index !== -1) {
@@ -425,7 +425,7 @@ export function deleteList(listId) {
 }
 
 // Function to duplicate a list
-export function duplicateList(list) {
+function duplicateList(list) {
   const newList: List = {
     ...list,
     id: Math.max(...lists.value.map(l => l.id)) + 1,
@@ -439,7 +439,7 @@ export function duplicateList(list) {
 }
 
 // Function to export list subscribers
-export function exportList(listId) {
+function exportList(listId) {
   // In a real application, this would generate a CSV file with subscriber data
   const list = lists.value.find(l => l.id === listId)
   if (!list) return
@@ -453,39 +453,39 @@ export function exportList(listId) {
 }
 
 // Function to import subscribers to a list
-export function importSubscribers(listId) {
+function importSubscribers(listId) {
   // In a real application, this would open a file upload dialog
   alert('This would open a file upload dialog to import subscribers.')
 }
 
 // Calculate statistics
-export const totalLists = computed(() => lists.value.length)
-export const totalEmailLists = computed(() => lists.value.filter(l => l.type === 'email' || l.type === 'both').length)
-export const totalSmsLists = computed(() => lists.value.filter(l => l.type === 'sms' || l.type === 'both').length)
-export const totalSubscribers = computed(() => {
+const totalLists = computed(() => lists.value.length)
+const totalEmailLists = computed(() => lists.value.filter(l => l.type === 'email' || l.type === 'both').length)
+const totalSmsLists = computed(() => lists.value.filter(l => l.type === 'sms' || l.type === 'both').length)
+const totalSubscribers = computed(() => {
   // In a real application, this would count unique subscribers
   return lists.value.reduce((sum, list) => sum + list.subscriberCount, 0)
 })
 
 // Show import modal
-export const showImportModal = ref(false)
-export const importListId = ref<number | null>(null)
+const showImportModal = ref(false)
+const importListId = ref<number | null>(null)
 
-export function openImportModal(listId) {
+function openImportModal(listId) {
   importListId.value = listId
   showImportModal.value = true
 }
 
-export function closeImportModal() {
+function closeImportModal() {
   showImportModal.value = false
   importListId.value = null
 }
 
 // Bulk operations
-export const selectedLists = ref<number[]>([])
-export const selectAll = ref(false)
+const selectedLists = ref<number[]>([])
+const selectAll = ref(false)
 
-export function toggleSelectAll() {
+function toggleSelectAll() {
   if (selectAll.value) {
     selectedLists.value = paginatedLists.value.map(list => list.id)
   } else {
@@ -493,7 +493,7 @@ export function toggleSelectAll() {
   }
 }
 
-export function toggleListSelection(listId) {
+function toggleListSelection(listId) {
   const index = selectedLists.value.indexOf(listId)
   if (index === -1) {
     selectedLists.value.push(listId)
@@ -505,7 +505,7 @@ export function toggleListSelection(listId) {
   selectAll.value = paginatedLists.value.every(list => selectedLists.value.includes(list.id))
 }
 
-export function bulkDelete() {
+function bulkDelete() {
   if (selectedLists.value.length === 0) return
 
   if (confirm(`Are you sure you want to delete ${selectedLists.value.length} lists?`)) {
@@ -523,7 +523,7 @@ export function bulkDelete() {
   }
 }
 
-export function bulkChangeStatus(status) {
+function bulkChangeStatus(status) {
   if (selectedLists.value.length === 0) return
 
   lists.value.forEach(list => {
@@ -534,6 +534,7 @@ export function bulkChangeStatus(status) {
 }
 </script>
 
+<template>
 <main>
     <div class="px-6 py-6 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-7xl">
@@ -1335,6 +1336,7 @@ export function bulkChangeStatus(status) {
     </div>
     @endif
   </main>
+</template>
 
 <route lang="yaml">
 meta:

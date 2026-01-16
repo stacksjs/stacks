@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
@@ -39,7 +39,7 @@ interface LanguageData {
 }
 
 // Date range options
-export const dateRanges: DateRange[] = [
+const dateRanges: DateRange[] = [
   { id: 'last7days', name: 'Last 7 Days' },
   { id: 'last30days', name: 'Last 30 Days' },
   { id: 'thisMonth', name: 'This Month' },
@@ -49,15 +49,15 @@ export const dateRanges: DateRange[] = [
 ]
 
 // Selected date range
-export const selectedDateRange = ref('all-time')
-export const dateRangeDisplay = ref('All Time: Sep 7, 2023 to Mar 6, 2025')
-export const comparisonType = ref('no-comparison')
-export const customStartDate = ref('')
-export const customEndDate = ref('')
-export const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
+const selectedDateRange = ref('all-time')
+const dateRangeDisplay = ref('All Time: Sep 7, 2023 to Mar 6, 2025')
+const comparisonType = ref('no-comparison')
+const customStartDate = ref('')
+const customEndDate = ref('')
+const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
 
 // Countries data with flag emojis
-export const countriesData = ref<CountryData[]>([
+const countriesData = ref<CountryData[]>([
   { name: 'United States of America', visitors: 768, flag: '🇺🇸', code: 'US', percentage: 35 },
   { name: 'Germany', visitors: 140, flag: '🇩🇪', code: 'DE', percentage: 12 },
   { name: 'United Kingdom', visitors: 87, flag: '🇬🇧', code: 'GB', percentage: 8 },
@@ -73,7 +73,7 @@ export const countriesData = ref<CountryData[]>([
 ])
 
 // Cities data
-export const citiesData = ref<CityData[]>([
+const citiesData = ref<CityData[]>([
   { name: 'New York', country: 'United States of America', visitors: 120, percentage: 10 },
   { name: 'London', country: 'United Kingdom', visitors: 87, percentage: 7 },
   { name: 'Berlin', country: 'Germany', visitors: 75, percentage: 6 },
@@ -87,7 +87,7 @@ export const citiesData = ref<CityData[]>([
 ])
 
 // Languages data
-export const languagesData = ref<LanguageData[]>([
+const languagesData = ref<LanguageData[]>([
   { name: 'English', code: 'en-US', visitors: 980, percentage: 45 },
   { name: 'German', code: 'de-DE', visitors: 140, percentage: 12 },
   { name: 'English (UK)', code: 'en-GB', visitors: 87, percentage: 8 },
@@ -101,7 +101,7 @@ export const languagesData = ref<LanguageData[]>([
 ])
 
 // Chart.js configuration for country distribution
-export const chartConfig = reactive({
+const chartConfig = reactive({
   type: 'bar' as keyof ChartTypeRegistry,
   data: {
     labels: countriesData.value.slice(0, 10).map(item => item.name),
@@ -162,23 +162,23 @@ export const chartConfig = reactive({
 })
 
 // World map data for visualization
-export const mapData = ref({
+const mapData = ref({
   // This would be used with a mapping library like jVectorMap or a GeoJSON visualization
   // For now, we'll just use the countries data for demonstration
 })
 
 // Format numbers with commas
-export function formatNumber(number) {
+function formatNumber(number) {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
 // Mock function to update data when date range changes
-export function updateDataForDateRange() {
+function updateDataForDateRange() {
   console.log('Updating data for date range:', selectedDateRange.value)
 }
 
 // Watch for date range changes
-export function handleDateRangeChange() {
+function handleDateRangeChange() {
   updateDataForDateRange()
 }
 
@@ -195,6 +195,7 @@ onMounted(() => {
 })
 </script>
 
+<template>
 <main>
   <div class="px-6 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
@@ -408,6 +409,7 @@ onMounted(() => {
     </div>
   </div>
 </main>
+</template>
 
 <route lang="yaml">
 meta:

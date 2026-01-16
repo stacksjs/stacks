@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
@@ -37,7 +37,7 @@ useHead({
 })
 
 // Sample data for the dashboard
-export const revenueData = {
+const revenueData = {
   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   datasets: [
     {
@@ -56,7 +56,7 @@ export const revenueData = {
   ],
 }
 
-export const ordersData = {
+const ordersData = {
   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   datasets: [
     {
@@ -70,7 +70,7 @@ export const ordersData = {
   ],
 }
 
-export const chartOptions = {
+const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -94,7 +94,7 @@ export const chartOptions = {
   },
 }
 
-export const topProducts = [
+const topProducts = [
   { id: 1, name: 'Premium Headphones', price: '$199.99', sales: 1245, stock: 78 },
   { id: 2, name: 'Wireless Keyboard', price: '$89.99', sales: 987, stock: 124 },
   { id: 3, name: 'Smart Watch', price: '$249.99', sales: 876, stock: 45 },
@@ -102,7 +102,7 @@ export const topProducts = [
   { id: 5, name: 'USB-C Hub', price: '$59.99', sales: 654, stock: 210 },
 ]
 
-export const recentOrders = [
+const recentOrders = [
   { id: '#ORD-5432', customer: 'John Smith', date: '2023-12-01', total: '$349.97', status: 'Completed' },
   { id: '#ORD-5431', customer: 'Sarah Johnson', date: '2023-12-01', total: '$129.99', status: 'Processing' },
   { id: '#ORD-5430', customer: 'Michael Brown', date: '2023-11-30', total: '$459.98', status: 'Completed' },
@@ -110,10 +110,11 @@ export const recentOrders = [
   { id: '#ORD-5428', customer: 'David Wilson', date: '2023-11-29', total: '$199.99', status: 'Completed' },
 ]
 
-export const timeRange = ref('Last 30 days')
-export const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
+const timeRange = ref('Last 30 days')
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 </script>
 
+<template>
 <main>
   <div class="relative isolate overflow-hidden">
     <div class="px-6 py-6 sm:px-6 lg:px-8">
@@ -270,3 +271,4 @@ export const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days
     </div>
   </div>
 </main>
+</template>

@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@stacksjs/notification'
@@ -11,7 +11,7 @@ import { toast } from '@stacksjs/notification'
 import { Dialog, DialogPanel } from '@stacksjs/dialog'
 
 // Define page metadata
-export const pageTitle = 'Product Detail'
+const pageTitle = 'Product Detail'
 
 const route = useRoute()
 const router = useRouter()
@@ -36,24 +36,24 @@ interface Product {
 }
 
 // Sample product data - in a real app, this would be fetched from an API
-export const product = ref<Product | null>(null)
-export const loading = ref(true)
-export const activeImageIndex = ref(0)
-export const showVideoModal = ref(false)
-export const activeVideoUrl = ref('')
+const product = ref<Product | null>(null)
+const loading = ref(true)
+const activeImageIndex = ref(0)
+const showVideoModal = ref(false)
+const activeVideoUrl = ref('')
 
 // Edit dialog state
-export const showEditDialog = ref(false)
-export const editingProduct = ref<Product | null>(null)
+const showEditDialog = ref(false)
+const editingProduct = ref<Product | null>(null)
 
 // Similar products dialog state
-export const showSimilarProductsDialog = ref(false)
+const showSimilarProductsDialog = ref(false)
 
 // All products for similar products selection
-export const allProducts = ref<Product[]>([])
+const allProducts = ref<Product[]>([])
 
 // Similar products to display
-export const similarProducts = computed(() => {
+const similarProducts = computed(() => {
   if (!product.value || !product.value.similarProducts || !allProducts.value.length) return []
 
   return allProducts.value.filter(p => product.value?.similarProducts?.includes(p.id))
@@ -158,29 +158,29 @@ onMounted(async () => {
 })
 
 // Function to handle image selection
-export function selectImage(index: number): void {
+function selectImage(index: number): void {
   activeImageIndex.value = index
 }
 
 // Function to open video modal
-export function openVideoModal(videoUrl: string): void {
+function openVideoModal(videoUrl: string): void {
   activeVideoUrl.value = videoUrl
   showVideoModal.value = true
 }
 
 // Function to close video modal
-export function closeVideoModal(): void {
+function closeVideoModal(): void {
   showVideoModal.value = false
   activeVideoUrl.value = ''
 }
 
 // Function to go back to products list
-export function goBack(): void {
+function goBack(): void {
   router.push('/commerce/products')
 }
 
 // Function to edit product
-export function editProduct(): void {
+function editProduct(): void {
   if (!product.value) return
 
   editingProduct.value = JSON.parse(JSON.stringify(product.value)) as Product
@@ -188,7 +188,7 @@ export function editProduct(): void {
 }
 
 // Function to save edited product
-export function saveProduct(): void {
+function saveProduct(): void {
   if (!editingProduct.value || !product.value) return
 
   // Update the product
@@ -205,7 +205,7 @@ export function saveProduct(): void {
 }
 
 // Function to open similar products dialog
-export function openSimilarProductsDialog(): void {
+function openSimilarProductsDialog(): void {
   if (!product.value) return
 
   editingProduct.value = JSON.parse(JSON.stringify(product.value)) as Product
@@ -213,7 +213,7 @@ export function openSimilarProductsDialog(): void {
 }
 
 // Function to save similar products
-export function saveSimilarProducts(): void {
+function saveSimilarProducts(): void {
   if (!editingProduct.value || !product.value) return
 
   // Update only the similarProducts field
@@ -230,7 +230,7 @@ export function saveSimilarProducts(): void {
 }
 
 // Function to delete product
-export function deleteProduct(): void {
+function deleteProduct(): void {
   toast({
     message: 'Delete functionality would be implemented here',
     type: 'error',
@@ -240,6 +240,7 @@ export function deleteProduct(): void {
 }
 </script>
 
+<template>
 <main>
   <div class="container mx-auto px-4 py-8">
     <!-- Loading state -->
@@ -639,6 +640,7 @@ export function deleteProduct(): void {
     @endif
   </div>
 </main>
+</template>
 
 <style>
 .fade-enter-active,

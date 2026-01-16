@@ -1,8 +1,8 @@
-<script>
-export const { ref, computed, onMounted, onUnmounted, watch } = await import('vue')
-export const { useHead } = await import('@vueuse/head')
-export const { useRoute } = await import('vue-router')
-export const EmailSidebar = (await import('../../../components/Dashboard/Email/EmailSidebar.vue')).default
+<script server>
+const { ref, computed, onMounted, onUnmounted, watch } = await import('vue')
+const { useHead } = await import('@vueuse/head')
+const { useRoute } = await import('vue-router')
+const EmailSidebar = (await import('../../../components/Dashboard/Email/EmailSidebar.vue')).default
 
 useHead({
   title: 'Mail - Your Inbox',
@@ -24,15 +24,15 @@ interface Email {
   labels?: string[] // Add labels for categorization
 }
 
-export const sidebarOpen = ref(true)
-export const activeFolder = ref('inbox')
-export const selectedEmail = ref(null)
-export const searchQuery = ref('')
-export const isComposing = ref(false)
-export const isLoading = ref(false)
+const sidebarOpen = ref(true)
+const activeFolder = ref('inbox')
+const selectedEmail = ref(null)
+const searchQuery = ref('')
+const isComposing = ref(false)
+const isLoading = ref(false)
 
 // Email data
-export const emails = ref([
+const emails = ref([
   {
     id: 1,
     from: 'William Smith',
@@ -242,7 +242,7 @@ export const emails = ref([
 ])
 
 // Folder structure
-export const folders = [
+const folders = [
   { id: 'inbox', name: 'Inbox', icon: 'inbox' },
   { id: 'starred', name: 'Starred', icon: 'star' },
   { id: 'sent', name: 'Sent', icon: 'send' },
@@ -253,7 +253,7 @@ export const folders = [
 ]
 
 // Filtered emails based on active folder and search
-export const filteredEmails = computed(() => {
+const filteredEmails = computed(() => {
   let filtered = emails.value.filter(email => {
     // Filter by folder or starred
     if (activeFolder.value === 'starred') {
@@ -278,7 +278,7 @@ export const filteredEmails = computed(() => {
 })
 
 // Format the date to a readable format
-export const formatDate = (dateString) => {
+const formatDate = (dateString) => {
   const date = new Date(dateString)
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -295,7 +295,7 @@ export const formatDate = (dateString) => {
 }
 
 // Toggle read status
-export const toggleRead = (emailId) => {
+const toggleRead = (emailId) => {
   const index = emails.value.findIndex(e => e.id === emailId)
   if (index !== -1) {
     const email = emails.value[index]
@@ -306,7 +306,7 @@ export const toggleRead = (emailId) => {
 }
 
 // Toggle star status
-export const toggleStar = (emailId) => {
+const toggleStar = (emailId) => {
   const index = emails.value.findIndex(e => e.id === emailId)
   if (index !== -1) {
     const email = emails.value[index]
@@ -317,7 +317,7 @@ export const toggleStar = (emailId) => {
 }
 
 // Get unread count for a folder
-export const getUnreadCount = (folder) => {
+const getUnreadCount = (folder) => {
   if (folder === 'starred') {
     return emails.value.filter(e => e.starred && !e.read).length
   }
@@ -325,7 +325,7 @@ export const getUnreadCount = (folder) => {
 }
 
 // Unread counts for the sidebar
-export const unreadCounts = computed(() => {
+const unreadCounts = computed(() => {
   const counts = {}
   folders.forEach(folder => {
     counts[folder.id] = getUnreadCount(folder.id)
@@ -334,7 +334,7 @@ export const unreadCounts = computed(() => {
 })
 
 // Open email detail
-export const openEmail = (email) => {
+const openEmail = (email) => {
   selectedEmail.value = email
   if (!email.read) {
     toggleRead(email.id)
@@ -342,7 +342,7 @@ export const openEmail = (email) => {
 }
 
 // Close email detail
-export const closeEmail = () => {
+const closeEmail = () => {
   selectedEmail.value = null
 }
 
@@ -353,13 +353,13 @@ interface NewEmail {
   body: string
 }
 
-export const newEmail = ref({
+const newEmail = ref({
   to: '',
   subject: '',
   body: '',
 })
 
-export const startCompose = () => {
+const startCompose = () => {
   isComposing.value = true
   newEmail.value = {
     to: '',
@@ -368,11 +368,11 @@ export const startCompose = () => {
   }
 }
 
-export const cancelCompose = () => {
+const cancelCompose = () => {
   isComposing.value = false
 }
 
-export const sendEmail = () => {
+const sendEmail = () => {
   // Simulate sending email
   const sentEmail = {
     id: emails.value.length + 1,
@@ -414,24 +414,24 @@ onMounted(async () => {
 })
 
 // Function to get icon for folder
-export const getFolderIcon = (folderId) => {
+const getFolderIcon = (folderId) => {
   const folder = folders.find(f => f.id === folderId)
   return folder ? folder.icon : 'document'
 }
 
 // Function to handle folder change
-export const handleFolderChange = (folder) => {
+const handleFolderChange = (folder) => {
   activeFolder.value = folder
 }
 
 // Function to handle compose
-export const handleCompose = () => {
+const handleCompose = () => {
   isComposing.value = true
 }
 
 // Add refresh functionality
-export const isRefreshing = ref(false)
-export const refreshEmails = async () => {
+const isRefreshing = ref(false)
+const refreshEmails = async () => {
   isRefreshing.value = true
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1000))
@@ -439,10 +439,10 @@ export const refreshEmails = async () => {
 }
 
 // Add dropdown menu state
-export const showMoreMenu = ref(false)
-export const dropdownRef = ref(null)
+const showMoreMenu = ref(false)
+const dropdownRef = ref(null)
 
-export const toggleMoreMenu = (event) => {
+const toggleMoreMenu = (event) => {
   event.stopPropagation()
   showMoreMenu.value = !showMoreMenu.value
 
@@ -454,7 +454,7 @@ export const toggleMoreMenu = (event) => {
   }
 }
 
-export const handleClickOutside = (event) => {
+const handleClickOutside = (event) => {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
     showMoreMenu.value = false
     document.removeEventListener('click', handleClickOutside)
@@ -467,11 +467,12 @@ onUnmounted(() => {
 })
 
 // Fix the TypeScript error by accessing the value property
-export const inboxUnreadCount = computed(() => {
+const inboxUnreadCount = computed(() => {
   return unreadCounts.value['inbox'] || 0
 })
 </script>
 
+<template>
 <div class="min-h-screen bg-white dark:bg-blue-gray-800">
   <div class="flex h-screen">
     <!-- Sidebar -->
@@ -806,6 +807,7 @@ export const inboxUnreadCount = computed(() => {
     </div>
   </div>
 </div>
+</template>
 
 <route lang="yaml">
 meta:

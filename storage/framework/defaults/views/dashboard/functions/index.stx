@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
@@ -29,7 +29,7 @@ useHead({
   title: 'Dashboard - Functions',
 })
 
-export const chartOptions = {
+const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
@@ -99,11 +99,11 @@ export const chartOptions = {
   },
 }
 
-export const comparePackage = ref('')
-export const timeRange = ref('7')
-export const isLoading = ref(false)
+const comparePackage = ref('')
+const timeRange = ref('7')
+const isLoading = ref(false)
 
-export const formatDate = (daysAgo) => {
+const formatDate = (daysAgo) => {
   const date = new Date()
   date.setDate(date.getDate() - daysAgo)
   return date.toLocaleDateString('en-US', {
@@ -112,11 +112,11 @@ export const formatDate = (daysAgo) => {
   })
 }
 
-export const generateDateLabels = (days) => {
+const generateDateLabels = (days) => {
   return Array.from({ length: days }, (_, i) => formatDate(i))
 }
 
-export const generateGrowthData = (days, baseCount, dailyGrowth) => {
+const generateGrowthData = (days, baseCount, dailyGrowth) => {
   return Array.from({ length: days }, (_, i) => {
     const dayVariance = Math.random() * dailyGrowth * 0.5
     const daysFromStart = i
@@ -137,7 +137,7 @@ interface FunctionStatsMap {
   '365': FunctionStats
 }
 
-export const functionStats = ref({
+const functionStats = ref({
   '7': {
     labels: generateDateLabels(7),
     data: [8500, 11800, 10200, 12800, 15200, 14100, 13200],
@@ -160,7 +160,7 @@ export const functionStats = ref({
   }
 })
 
-export const fetchFunctionData = async (days) => {
+const fetchFunctionData = async (days) => {
   isLoading.value = true
   try {
     await new Promise(resolve => setTimeout(resolve, 500))
@@ -175,7 +175,7 @@ watch(timeRange, async (newRange) => {
   await fetchFunctionData(newRange)
 })
 
-export const downloadsData = computed(() => ({
+const downloadsData = computed(() => ({
   labels: functionStats.value[timeRange.value].labels,
   datasets: [
     {
@@ -195,7 +195,7 @@ export const downloadsData = computed(() => ({
   ]
 }))
 
-export const handleCompare = async () => {
+const handleCompare = async () => {
   if (comparePackage.value) {
     await fetchFunctionData(timeRange.value)
   }
@@ -206,6 +206,7 @@ onMounted(async () => {
 })
 </script>
 
+<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="mb-8 px-4 lg:px-8 sm:px-6">
     <div>
@@ -484,6 +485,7 @@ onMounted(async () => {
     </div>
   </div>
 </div>
+</template>
 
 <route lang="yaml">
 meta:

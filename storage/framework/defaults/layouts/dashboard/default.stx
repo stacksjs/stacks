@@ -1,4 +1,4 @@
-<script>
+<script server>
 /**
  * Dashboard Default Layout - macOS Style
  * Uses the modern DashboardLayout component for consistent styling.
@@ -12,25 +12,26 @@ function isCraftNative() {
 }
 
 // Window control handlers for Craft native app integration
-export function handleMinimize() {
+function handleMinimize() {
   if (isCraftNative()) {
     window.craft.window.minimize()
   }
 }
 
-export function handleMaximize() {
+function handleMaximize() {
   if (isCraftNative()) {
     window.craft.window.toggle()
   }
 }
 
-export function handleClose() {
+function handleClose() {
   if (isCraftNative()) {
     window.craft.window.close()
   }
 }
 </script>
 
+<template>
 <DashboardLayout
   :show-window-controls="true"
   @minimize="handleMinimize"
@@ -55,6 +56,7 @@ export function handleClose() {
     <Toast />
   </template>
 </DashboardLayout>
+</template>
 
 <style>
 body {

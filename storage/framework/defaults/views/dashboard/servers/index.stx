@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useHead } from '@vueuse/head'
 import * as d3 from 'd3'
@@ -54,9 +54,9 @@ interface ServerType {
 type InstanceType = keyof typeof workerSizes
 
 // Update default values
-export const defaultServerOS = 'ubuntu-24-lts-x86_64'
-export const defaultBunVersion = 'v1.2.3'
-export const cloudConfig = ref<CloudConfig>({
+const defaultServerOS = 'ubuntu-24-lts-x86_64'
+const defaultBunVersion = 'v1.2.3'
+const cloudConfig = ref<CloudConfig>({
   type: 'aws',
   useLoadBalancer: true,
   servers: {
@@ -135,7 +135,7 @@ type WorkerSizeSpecs = {
 }
 
 // Add worker state
-export const workerConfig = ref<WorkerConfig>({
+const workerConfig = ref<WorkerConfig>({
   name: 'Worker 1',
   size: 't3.micro',
   replicas: 1,
@@ -143,7 +143,7 @@ export const workerConfig = ref<WorkerConfig>({
 })
 
 // Add visualization state
-export const diagramContainer = ref<HTMLElement | null>(null)
+const diagramContainer = ref<HTMLElement | null>(null)
 let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>
 let simulation: d3.Simulation<InfraNode, undefined> | undefined
 
@@ -151,21 +151,21 @@ let simulation: d3.Simulation<InfraNode, undefined> | undefined
 let zoomGroup: d3.Selection<SVGGElement, unknown, null, undefined>
 
 // Add selected node state
-export const selectedNode = ref<InfraNode | null>(null)
+const selectedNode = ref<InfraNode | null>(null)
 
 // Add save state
-export const isSaving = ref(false)
-export const saveError = ref<string | null>(null)
+const isSaving = ref(false)
+const saveError = ref<string | null>(null)
 
 // Add unsaved state
-export const hasUnsavedChanges = ref(false)
+const hasUnsavedChanges = ref(false)
 
 // Add initial state tracking for change detection
 const initialWorkerConfig = ref({ ...workerConfig.value })
 const initialCloudConfig = ref({ ...cloudConfig.value })
 
 // Add edit mode state
-export const editMode = ref<Record<string, boolean>>({})
+const editMode = ref<Record<string, boolean>>({})
 
 // Update watch to compare with initial state
 watch([cloudConfig, workerConfig], ([newCloud, newWorker]) => {
@@ -583,7 +583,7 @@ interface ServerConfig {
   userData?: string
 }
 
-export const servers = ref<Record<string, ServerConfig>>({
+const servers = ref<Record<string, ServerConfig>>({
   app1: {
     name: 'app-cosmic-nebula',
     domain: 'stacksjs.com',
@@ -658,8 +658,8 @@ export const servers = ref<Record<string, ServerConfig>>({
   },
 })
 
-export const sortKey = ref<keyof ServerConfig>('name')
-export const sortOrder = ref<'asc' | 'desc'>('asc')
+const sortKey = ref<keyof ServerConfig>('name')
+const sortOrder = ref<'asc' | 'desc'>('asc')
 
 const setSorting = (key) => {
   if (sortKey.value === key) {
@@ -670,7 +670,7 @@ const setSorting = (key) => {
   }
 }
 
-export const sortedServers = computed(() => {
+const sortedServers = computed(() => {
   return Object.entries(servers.value).sort(([, a], [, b]) => {
     const aValue = a[sortKey.value]
     const bValue = b[sortKey.value]
@@ -683,8 +683,8 @@ export const sortedServers = computed(() => {
   })
 })
 
-export const searchQuery = ref('')
-export const filteredServers = computed(() => {
+const searchQuery = ref('')
+const filteredServers = computed(() => {
   const query = searchQuery.value.toLowerCase()
   if (!query) return sortedServers.value
 
@@ -707,7 +707,7 @@ interface ServerEvent {
   timestamp: string
 }
 
-export const serverEvents = ref<ServerEvent[]>([
+const serverEvents = ref<ServerEvent[]>([
   {
     id: '1',
     service: 'App Server',
@@ -764,6 +764,7 @@ const getEventTypeIcon = (type) => {
 }
 </script>
 
+<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Header -->
@@ -1033,3 +1034,4 @@ const getEventTypeIcon = (type) => {
     </div>
   </div>
 </div>
+</template>

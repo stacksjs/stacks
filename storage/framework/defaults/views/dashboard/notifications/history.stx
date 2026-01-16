@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import NotificationStatusBadge from '../../../components/Dashboard/NotificationStatusBadge.stx'
@@ -22,36 +22,36 @@ interface NotificationEntry {
 }
 
 // Pagination and filtering state
-export const notifications = ref<NotificationEntry[]>([])
-export const currentPage = ref(1)
-export const perPage = ref(10)
-export const totalNotifications = ref(0)
-export const isLoading = ref(true)
-export const searchQuery = ref('')
-export const selectedType = ref<string>('all')
-export const selectedStatus = ref<string>('all')
-export const dateRange = ref<[string, string] | null>(null)
-export const showFilters = ref(false)
-export const sortField = ref<'sent_at' | 'delivered_at' | null>(null)
-export const sortDirection = ref<'asc' | 'desc'>('desc')
+const notifications = ref<NotificationEntry[]>([])
+const currentPage = ref(1)
+const perPage = ref(10)
+const totalNotifications = ref(0)
+const isLoading = ref(true)
+const searchQuery = ref('')
+const selectedType = ref<string>('all')
+const selectedStatus = ref<string>('all')
+const dateRange = ref<[string, string] | null>(null)
+const showFilters = ref(false)
+const sortField = ref<'sent_at' | 'delivered_at' | null>(null)
+const sortDirection = ref<'asc' | 'desc'>('desc')
 
 // Filter options
-export const notificationTypes = ['all', 'email', 'sms', 'push', 'discord', 'slack']
-export const statusTypes = ['all', 'sent', 'delivered', 'failed', 'pending']
+const notificationTypes = ['all', 'email', 'sms', 'push', 'discord', 'slack']
+const statusTypes = ['all', 'sent', 'delivered', 'failed', 'pending']
 
 // Status colors
-export const notificationStatusColors: Record<string, string> = {
+const notificationStatusColors: Record<string, string> = {
   delivered: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/50 ring-green-600/20',
   sent: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/50 ring-blue-600/20',
   pending: 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 ring-yellow-600/20',
   failed: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/50 ring-red-600/20',
 }
 
-export const getStatusColor = (status: string): string => {
+const getStatusColor = (status: string): string => {
   return notificationStatusColors[status] || 'text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 ring-gray-600/20'
 }
 
-export const getChannelIcon = (type: string): string => {
+const getChannelIcon = (type: string): string => {
   switch (type) {
     case 'email':
       return 'i-hugeicons-mail-01'
@@ -69,7 +69,7 @@ export const getChannelIcon = (type: string): string => {
 }
 
 // Generate mock data
-export const generateMockNotifications = () => {
+const generateMockNotifications = () => {
   const types = ['email', 'sms', 'push', 'discord', 'slack'] as const
   const statuses = ['sent', 'delivered', 'failed', 'pending'] as const
   const subjects = [
@@ -118,7 +118,7 @@ export const generateMockNotifications = () => {
 }
 
 // Computed properties for filtering
-export const filteredNotifications = computed(() => {
+const filteredNotifications = computed(() => {
   return notifications.value.filter(notification => {
     if (selectedType.value !== 'all' && notification.type !== selectedType.value) return false
     if (selectedStatus.value !== 'all' && notification.status !== selectedStatus.value) return false
@@ -133,7 +133,7 @@ export const filteredNotifications = computed(() => {
 })
 
 // Add sorting functionality
-export const sortedNotifications = computed(() => {
+const sortedNotifications = computed(() => {
   if (!sortField.value) return filteredNotifications.value
 
   return [...filteredNotifications.value].sort((a, b) => {
@@ -149,32 +149,32 @@ export const sortedNotifications = computed(() => {
   })
 })
 
-export const paginatedNotifications = computed(() => {
+const paginatedNotifications = computed(() => {
   const start = (currentPage.value - 1) * perPage.value
   const end = start + perPage.value
   return sortedNotifications.value.slice(start, end)
 })
 
-export const totalPages = computed(() => Math.ceil(filteredNotifications.value.length / perPage.value))
+const totalPages = computed(() => Math.ceil(filteredNotifications.value.length / perPage.value))
 
 // Methods
-export const handleRetry = async (notificationId) => {
+const handleRetry = async (notificationId) => {
   // Implement retry logic
   console.log('Retrying notification:', notificationId)
 }
 
-export const resetFilters = () => {
+const resetFilters = () => {
   selectedType.value = 'all'
   selectedStatus.value = 'all'
   searchQuery.value = ''
   dateRange.value = null
 }
 
-export const formatDate = (date) => {
+const formatDate = (date) => {
   return new Date(date).toLocaleString()
 }
 
-export const toggleSort = (field) => {
+const toggleSort = (field) => {
   if (sortField.value === field) {
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -184,17 +184,17 @@ export const toggleSort = (field) => {
 }
 
 // Add state for error modal
-export const isErrorModalOpen = ref(false)
-export const selectedNotification = ref<NotificationEntry | null>(null)
+const isErrorModalOpen = ref(false)
+const selectedNotification = ref<NotificationEntry | null>(null)
 
 // Function to open error modal
-export const openErrorModal = (notification) => {
+const openErrorModal = (notification) => {
   selectedNotification.value = notification
   isErrorModalOpen.value = true
 }
 
 // Function to close error modal
-export const closeErrorModal = () => {
+const closeErrorModal = () => {
   isErrorModalOpen.value = false
 }
 

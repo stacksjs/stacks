@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { useBillable } from '../../../functions/billing/payments'
 import ActivePlan from '../../../components/Dashboard/Billing/ActivePlan.stx'
 import PaymentMethod from '../../../components/Dashboard/Billing/PaymentMethod.stx'
@@ -11,9 +11,9 @@ import Plans from '../../../components/Dashboard/Billing/Plans.stx'
 import LoadingDetails from '../../../components/Dashboard/Skeleton/LoadingCard.stx'
 import TransactionHistory from '../../../components/Dashboard/Transaction/index.stx'
 
-export const { isEmpty, showCurrentPlan } = useBillable()
+const { isEmpty, showCurrentPlan } = useBillable()
 
-export const paymentStore = usePaymentStore()
+const paymentStore = usePaymentStore()
 
 onMounted(async () => {
   await paymentStore.fetchStripeCustomer(1).then(async () => {
@@ -26,6 +26,7 @@ onMounted(async () => {
 })
 </script>
 
+<template>
 <div class="mx-auto px-4 py-8 container lg:px-8">
   <div id="subscribed">
     <TransactionHistory />
@@ -47,3 +48,4 @@ onMounted(async () => {
     </div>
   </div>
 </div>
+</template>

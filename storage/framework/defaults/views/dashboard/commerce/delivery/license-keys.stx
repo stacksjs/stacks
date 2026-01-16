@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
@@ -183,34 +183,9 @@ const tabs = [
   { name: 'Drivers', value: 'drivers', href: '/commerce/delivery/drivers' },
 ]
 
-export {
-  customers,
-  showAddModal,
-  showEditModal,
-  editingLicenseKey,
-  newLicenseKey,
-  openAddModal,
-  closeAddModal,
-  openEditModal,
-  closeEditModal,
-  addLicenseKey,
-  saveLicenseKey,
-  searchQuery,
-  currentPage,
-  itemsPerPage,
-  filteredLicenseKeys,
-  paginatedLicenseKeys,
-  handleSearch,
-  handleAddLicenseKey,
-  handleEditLicenseKey,
-  handleDeleteLicenseKey,
-  handlePrevPage,
-  handleNextPage,
-  handlePageChange,
-  tabs,
-}
 </script>
 
+<template>
 <div class="py-6">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
     <!-- Tab Navigation -->
@@ -532,3 +507,4 @@ export {
     </div>
   @endif
 </div>
+</template>

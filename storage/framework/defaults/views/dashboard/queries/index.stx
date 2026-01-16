@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
@@ -338,10 +338,9 @@ const filteredQueries = computed(() => {
 
   return filtered
 })
-
-export { stats, recentQueries, timeRange, selectedConnection, selectedType, isLoading, chartOptions, queryStatusColors, getQueryStatusColor, performanceData, durationData, refreshData, formatQuery, formatDuration, getQueryType, queryTypeBadges, filteredQueries }
 </script>
 
+<template>
 <div class="min-h-screen">
   <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-6 bg-white px-4 py-4 shadow-sm dark:bg-blue-gray-900 sm:px-6 lg:px-8">
     <div>
@@ -558,6 +557,7 @@ export { stats, recentQueries, timeRange, selectedConnection, selectedType, isLo
     </div>
   </main>
 </div>
+</template>
 
 <style>
 .sql-highlight {

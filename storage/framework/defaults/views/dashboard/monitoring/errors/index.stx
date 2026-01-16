@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useErrors } from '../../../../functions/monitoring/errors'
@@ -185,41 +185,9 @@ function formatRelativeTime(date) {
   if (diffDays < 7) return `${diffDays}d ago`
   return errorDate.toLocaleDateString()
 }
-
-export {
-  groupedErrors,
-  errorStats,
-  searchQuery,
-  statusFilter,
-  typeFilter,
-  sortBy,
-  sortOrder,
-  currentPage,
-  itemsPerPage,
-  selectedError,
-  isDetailModalOpen,
-  showDeleteModal,
-  errorToDelete,
-  typeOptions,
-  statusOptions,
-  columns,
-  filteredErrors,
-  paginatedErrors,
-  totalPages,
-  handleSort,
-  viewError,
-  closeDetailModal,
-  handleResolveError,
-  handleIgnoreError,
-  handleUnresolveError,
-  openDeleteModal,
-  confirmDelete,
-  getStatusVariant,
-  formatDate,
-  formatRelativeTime,
-}
 </script>
 
+<template>
 <DashboardLayout>
   <!-- Page Header -->
   <div class="mb-6">
@@ -531,3 +499,4 @@ export {
     </template>
   </Modal>
 </DashboardLayout>
+</template>

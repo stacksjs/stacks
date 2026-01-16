@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, computed, reactive } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useLocalStorage } from '@vueuse/core'
@@ -58,7 +58,7 @@ interface Order {
 }
 
 // Sample menu items data
-export const menuItems = ref<MenuItem[]>([
+const menuItems = ref<MenuItem[]>([
   {
     id: 1,
     name: 'Classic Cheeseburger',
@@ -254,7 +254,7 @@ export const menuItems = ref<MenuItem[]>([
 ])
 
 // Categories derived from menu items
-export const categories = computed<Category[]>(() => {
+const categories = computed<Category[]>(() => {
   const categoryMap = new Map<string, number>()
 
   menuItems.value.forEach(item => {
@@ -271,16 +271,16 @@ export const categories = computed<Category[]>(() => {
 })
 
 // Current table number
-export const tableNumber = ref(1)
-export const availableTables = Array.from({ length: 20 }, (_, i) => i + 1)
+const tableNumber = ref(1)
+const availableTables = Array.from({ length: 20 }, (_, i) => i + 1)
 
 // Filter and sort options
-export const searchQuery = ref('')
-export const categoryFilter = ref('all')
-export const viewMode = useLocalStorage('menu-view-mode', 'grid') // Default to grid view for better imagery
+const searchQuery = ref('')
+const categoryFilter = ref('all')
+const viewMode = useLocalStorage('menu-view-mode', 'grid') // Default to grid view for better imagery
 
 // Computed filtered and sorted menu items
-export const filteredMenuItems = computed(() => {
+const filteredMenuItems = computed(() => {
   return menuItems.value
     .filter(item => {
       // Apply search filter
@@ -297,7 +297,7 @@ export const filteredMenuItems = computed(() => {
 })
 
 // Current order
-export const currentOrder = reactive<Order>({
+const currentOrder = reactive<Order>({
   id: 1,
   tableNumber: 1,
   items: [],
@@ -307,7 +307,7 @@ export const currentOrder = reactive<Order>({
 })
 
 // Add item to order
-export function addToOrder(menuItem: MenuItem, quantity = 1): void {
+function addToOrder(menuItem: MenuItem, quantity = 1): void {
   const existingItem = currentOrder.items.find(item => item.menuItemId === menuItem.id)
 
   if (existingItem) {
@@ -327,13 +327,13 @@ export function addToOrder(menuItem: MenuItem, quantity = 1): void {
 }
 
 // Remove item from order
-export function removeFromOrder(index: number): void {
+function removeFromOrder(index: number): void {
   currentOrder.items.splice(index, 1)
   updateOrderTotal()
 }
 
 // Update item quantity
-export function updateItemQuantity(index: number, quantity: number): void {
+function updateItemQuantity(index: number, quantity: number): void {
   if (quantity <= 0) {
     removeFromOrder(index)
     return
@@ -347,18 +347,18 @@ export function updateItemQuantity(index: number, quantity: number): void {
 }
 
 // Update order total
-export function updateOrderTotal(): void {
+function updateOrderTotal(): void {
   currentOrder.totalAmount = currentOrder.items.reduce((total, item) => {
     return total + (item.price * item.quantity)
   }, 0)
 }
 
 // Special instructions modal
-export const showSpecialInstructionsModal = ref(false)
-export const currentEditingItemIndex = ref(-1)
-export const tempSpecialInstructions = ref('')
+const showSpecialInstructionsModal = ref(false)
+const currentEditingItemIndex = ref(-1)
+const tempSpecialInstructions = ref('')
 
-export function openSpecialInstructionsModal(index: number): void {
+function openSpecialInstructionsModal(index: number): void {
   const item = currentOrder.items[index]
   if (item) {
     currentEditingItemIndex.value = index
@@ -367,7 +367,7 @@ export function openSpecialInstructionsModal(index: number): void {
   }
 }
 
-export function saveSpecialInstructions(): void {
+function saveSpecialInstructions(): void {
   if (currentEditingItemIndex.value >= 0) {
     const item = currentOrder.items[currentEditingItemIndex.value]
     if (item) {
@@ -378,10 +378,10 @@ export function saveSpecialInstructions(): void {
 }
 
 // Place order functionality
-export const orderPlaced = ref(false)
-export const orderSummary = ref<Order | null>(null)
+const orderPlaced = ref(false)
+const orderSummary = ref<Order | null>(null)
 
-export function placeOrder(): void {
+function placeOrder(): void {
   if (currentOrder.items.length === 0) {
     alert('Please add items to your order')
     return
@@ -409,12 +409,12 @@ export function placeOrder(): void {
 }
 
 // Table selection
-export function selectTable(table: number): void {
+function selectTable(table: number): void {
   tableNumber.value = table
 }
 
 // Get allergy tag class
-export function getAllergyClass(allergy: string): string {
+function getAllergyClass(allergy: string): string {
   switch (allergy) {
     case 'dairy':
       return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
@@ -432,7 +432,7 @@ export function getAllergyClass(allergy: string): string {
 }
 
 // Add the scrollToOrder function to the script
-export function scrollToOrder(): void {
+function scrollToOrder(): void {
   const orderElement = document.getElementById('order-section')
   if (orderElement) {
     orderElement.scrollIntoView({ behavior: 'smooth' })
@@ -440,6 +440,7 @@ export function scrollToOrder(): void {
 }
 </script>
 
+<template>
 <main>
   <div class="px-6 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
@@ -1022,6 +1023,7 @@ export function scrollToOrder(): void {
     </div>
   @endif
 </main>
+</template>
 
 <style scoped>
 .receipt-container {

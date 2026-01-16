@@ -1,9 +1,10 @@
-<script>
-export const category = ''
-export const subcategory = ''
-export const filter = ''
+<script server>
+const category = ''
+const subcategory = ''
+const filter = ''
 </script>
 
+<template>
 <ForumLayout :route="routeType">
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     <div class="lg:col-span-2">
@@ -91,3 +92,4 @@ export const filter = ''
     </div>
   </div>
 </ForumLayout>
+</template>

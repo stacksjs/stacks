@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useRoute, useRouter } from 'vue-router'
@@ -164,10 +164,9 @@ onMounted(() => {
   const id = route.params.id
   fetchQuery(id)
 })
-
-export { query, isLoading, fetchQuery, formatDuration, formatBindings, statusColors, getStatusColor, getQueryType, queryTypeBadges }
 </script>
 
+<template>
 <div class="min-h-screen">
   <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-6 bg-white px-4 py-4 shadow-sm dark:bg-blue-gray-900 sm:px-6 lg:px-8">
     <div>
@@ -397,3 +396,4 @@ export { query, isLoading, fetchQuery, formatDuration, formatBindings, statusCol
     @endif
   </main>
 </div>
+</template>

@@ -1,4 +1,10 @@
-<script>
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>
+
+<script server>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useCategories } from '../../../../functions/commerce/products/categories'
@@ -19,17 +25,17 @@ onMounted(async () => {
 })
 
 // Filter and sort options
-export const searchQuery = ref('')
-export const sortBy = ref('name')
-export const sortOrder = ref('asc')
-export const featuredFilter = ref('all')
+const searchQuery = ref('')
+const sortBy = ref('name')
+const sortOrder = ref('asc')
+const featuredFilter = ref('all')
 
 // Pagination
-export const currentPage = ref(1)
-export const itemsPerPage = ref(10)
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
 
 // Computed filtered and sorted categories
-export const filteredCategories = computed(() => {
+const filteredCategories = computed(() => {
   return categories.value
     .filter(category => {
       // Apply search filter
@@ -57,38 +63,38 @@ export const filteredCategories = computed(() => {
 })
 
 // Paginated categories
-export const paginatedCategories = computed(() => {
+const paginatedCategories = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return filteredCategories.value.slice(start, end)
 })
 
 // Pagination handlers
-export function handlePrevPage(): void {
+function handlePrevPage(): void {
   if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
-export function handleNextPage(): void {
+function handleNextPage(): void {
   const totalPages = Math.ceil(filteredCategories.value.length / itemsPerPage.value)
   if (currentPage.value < totalPages) {
     currentPage.value++
   }
 }
 
-export function handlePageChange(page: number): void {
+function handlePageChange(page: number): void {
   currentPage.value = page
 }
 
 // Reset to first page when search changes
-export function handleSearch(query: string): void {
+function handleSearch(query: string): void {
   searchQuery.value = query
   currentPage.value = 1
 }
 
 // Toggle sort order
-export function toggleSort(column: string): void {
+function toggleSort(column: string): void {
   if (sortBy.value === column) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -98,10 +104,10 @@ export function toggleSort(column: string): void {
 }
 
 // Modal state
-export const showAddModal = ref(false)
-export const isEditing = ref(false)
-export const editingCategoryId = ref<number | null>(null)
-export const newCategory = ref<{
+const showAddModal = ref(false)
+const isEditing = ref(false)
+const editingCategoryId = ref<number | null>(null)
+const newCategory = ref<{
   name: string;
   description: string;
   is_active: boolean;
@@ -116,12 +122,12 @@ export const newCategory = ref<{
 })
 
 // Image preview helper
-export const imagePreview = computed(() => {
+const imagePreview = computed(() => {
   return newCategory.value.image_url || '/images/categories/placeholder.jpg'
 })
 
 // Handle file upload
-export function handleImageUpload(event: Event): void {
+function handleImageUpload(event: Event): void {
   const input = event.target as HTMLInputElement
   if (input.files && input.files[0]) {
     const file = input.files[0]
@@ -140,7 +146,7 @@ export function handleImageUpload(event: Event): void {
   }
 }
 
-export function openAddModal(): void {
+function openAddModal(): void {
   isEditing.value = false
   editingCategoryId.value = null
   newCategory.value = {
@@ -153,13 +159,13 @@ export function openAddModal(): void {
   showAddModal.value = true
 }
 
-export function closeAddModal(): void {
+function closeAddModal(): void {
   showAddModal.value = false
   isEditing.value = false
   editingCategoryId.value = null
 }
 
-export async function addCategory(): Promise<void> {
+async function addCategory(): Promise<void> {
   // First add to local state for immediate UI update
   const id = Math.max(...categories.value.map(c => c.id || 0)) + 1
 
@@ -194,12 +200,12 @@ export async function addCategory(): Promise<void> {
 }
 
 // Category actions
-export function viewCategory(category: Categories): void {
+function viewCategory(category: Categories): void {
   console.log('View category:', category)
   // Implement view category logic
 }
 
-export function editCategory(category: Categories): void {
+function editCategory(category: Categories): void {
   isEditing.value = true
   editingCategoryId.value = category.id
   // Populate the form with existing data
@@ -213,7 +219,7 @@ export function editCategory(category: Categories): void {
   showAddModal.value = true
 }
 
-export async function handleDeleteCategory(category: Categories): Promise<void> {
+async function handleDeleteCategory(category: Categories): Promise<void> {
   if (confirm(`Are you sure you want to delete the category "${category.name}"?`)) {
     // Remove from local state immediately for better UX
     const originalCategories = [...categories.value]
@@ -231,6 +237,7 @@ export async function handleDeleteCategory(category: Categories): Promise<void> 
 }
 </script>
 
+<template>
 <main>
   <div class="px-6 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
@@ -449,9 +456,4 @@ export async function handleDeleteCategory(category: Categories): Promise<void> 
     </div>
   @endif
 </main>
-
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>
+</template>

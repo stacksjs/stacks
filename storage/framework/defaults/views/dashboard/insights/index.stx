@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Doughnut } from 'vue-chartjs'
@@ -415,29 +415,9 @@ const statsCards = [
     icon: 'i-hugeicons-check-circle',
   },
 ]
-
-export {
-  systemMetrics,
-  queues,
-  exceptions,
-  cache,
-  slowQueries,
-  slowRoutes,
-  users,
-  chartOptions,
-  pieChartOptions,
-  cpuData,
-  memoryData,
-  storageData,
-  queueData,
-  getQueueData,
-  queueChartOptions,
-  queueStatusColors,
-  getQueueStatusColor,
-  statsCards,
-}
 </script>
 
+<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <!-- Stats Overview -->
   <div class="mb-8 px-4 lg:px-8 sm:px-6">
@@ -902,6 +882,7 @@ export {
     </div>
   </div>
 </div>
+</template>
 
 <route lang="yaml">
 meta:

@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Doughnut } from 'vue-chartjs'
@@ -37,7 +37,7 @@ useHead({
 })
 
 // Sample data for the dashboard
-export const viewsData = {
+const viewsData = {
   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   datasets: [
     {
@@ -56,7 +56,7 @@ export const viewsData = {
   ],
 }
 
-export const categoryData = {
+const categoryData = {
   labels: ['Technology', 'Tutorials', 'News', 'Reviews', 'Opinion'],
   datasets: [
     {
@@ -80,7 +80,7 @@ export const categoryData = {
   ],
 }
 
-export const chartOptions = {
+const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -104,7 +104,7 @@ export const chartOptions = {
   },
 }
 
-export const doughnutOptions = {
+const doughnutOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -118,7 +118,7 @@ export const doughnutOptions = {
   },
 }
 
-export const topPosts = [
+const topPosts = [
   { id: 1, title: '10 Tips for Better Code Quality', category: 'Tutorials', views: 12450, comments: 78, published: '2023-12-01', status: 'Published' },
   { id: 2, title: 'The Future of JavaScript Frameworks', category: 'Technology', views: 9870, comments: 124, published: '2023-11-28', status: 'Published' },
   { id: 3, title: 'Getting Started with Vue 3', category: 'Tutorials', views: 8760, comments: 45, published: '2023-11-25', status: 'Published' },
@@ -126,7 +126,7 @@ export const topPosts = [
   { id: 5, title: 'Understanding Web Accessibility', category: 'Tutorials', views: 6540, comments: 31, published: '2023-11-15', status: 'Published' },
 ]
 
-export const recentComments = [
+const recentComments = [
   { id: 1, author: 'John Smith', email: 'john.smith@example.com', content: 'Great article! This helped me solve a problem I\'ve been stuck on for days.', post: '10 Tips for Better Code Quality', date: '2023-12-01', status: 'Approved' },
   { id: 2, author: 'Sarah Johnson', email: 'sarah.j@example.com', content: 'I disagree with point #3. In my experience, that approach causes more problems than it solves.', post: 'The Future of JavaScript Frameworks', date: '2023-12-01', status: 'Pending' },
   { id: 3, author: 'Michael Brown', email: 'mbrown@example.com', content: 'Thanks for the tutorial! Could you elaborate more on the setup process?', post: 'Getting Started with Vue 3', date: '2023-11-30', status: 'Approved' },
@@ -134,22 +134,23 @@ export const recentComments = [
   { id: 5, author: 'David Wilson', email: 'dwilson@example.com', content: 'This review seems biased. Have you tried comparing it with the competition?', post: 'Review: Latest MacBook Pro', date: '2023-11-29', status: 'Spam' },
 ]
 
-export const draftPosts = [
+const draftPosts = [
   { id: 6, title: 'Introduction to TypeScript', category: 'Tutorials', lastEdited: '2023-12-01', author: 'Jane Doe' },
   { id: 7, title: 'Building a REST API with Node.js', category: 'Tutorials', lastEdited: '2023-11-29', author: 'John Smith' },
   { id: 8, title: 'CSS Grid vs Flexbox', category: 'Tutorials', lastEdited: '2023-11-27', author: 'Jane Doe' },
 ]
 
-export const timeRange = ref('Last 30 days')
-export const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
+const timeRange = ref('Last 30 days')
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Stats calculations
-export const totalPosts = 127
-export const totalViews = 256890
-export const totalComments = 3427
-export const averageEngagement = '4.2%'
+const totalPosts = 127
+const totalViews = 256890
+const totalComments = 3427
+const averageEngagement = '4.2%'
 </script>
 
+<template>
 <main>
   <div class="relative isolate overflow-hidden">
     <div class="px-6 py-6 sm:px-6 lg:px-8">
@@ -446,3 +447,4 @@ export const averageEngagement = '4.2%'
     </div>
   </div>
 </main>
+</template>

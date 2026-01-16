@@ -1,4 +1,4 @@
-<script>
+<script server>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
@@ -33,8 +33,8 @@ useHead({
   title: 'Dashboard - Subscribers',
 })
 
-export const timeRange = ref('30')
-export const isLoading = ref(false)
+const timeRange = ref('30')
+const isLoading = ref(false)
 
 const formatDate = (daysAgo) => {
   const date = new Date()
@@ -57,7 +57,7 @@ const generateGrowthData = (days, baseCount, dailyGrowth) => {
   }).reverse()
 }
 
-export const chartOptions = {
+const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
@@ -131,7 +131,7 @@ export const chartOptions = {
   },
 }
 
-export const chartData = computed(() => {
+const chartData = computed(() => {
   const days = parseInt(timeRange.value)
   const labels = generateDateLabels(days)
   const baseCount = 500
@@ -184,9 +184,9 @@ interface RelationshipLink {
   type: 'hasMany' | 'belongsTo' | 'hasOne' | 'belongsToMany'
 }
 
-export const selectedModel = ref(null)
+const selectedModel = ref(null)
 
-export const models = [
+const models = [
   {
     id: 'subscriber',
     name: 'Subscriber',
@@ -207,15 +207,15 @@ export const models = [
   }
 ]
 
-export const relationships = [
+const relationships = [
   { source: 'subscriber', target: 'subscriberEmail', type: 'hasMany' },
   { source: 'subscriberEmail', target: 'subscriber', type: 'belongsTo' }
 ]
 
-export const diagramContainer = ref(null)
+const diagramContainer = ref(null)
 let simulation
 
-export const getModelRoute = (modelId) => {
+const getModelRoute = (modelId) => {
   const routes = {
     subscriber: '/models/subscribers',
     subscribers: '/models/subscribers',
@@ -352,6 +352,7 @@ onMounted(async () => {
 })
 </script>
 
+<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="mb-8 px-4 lg:px-8 sm:px-6">
     <div>
@@ -650,6 +651,7 @@ onMounted(async () => {
     </div>
   </div>
 </div>
+</template>
 
 <style scoped>
 :deep(svg) {

@@ -3,7 +3,7 @@
     requiresAuth: true
 </route>
 
-<script>
+<script server>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
@@ -37,7 +37,7 @@ useHead({
 })
 
 // Chart options
-export const chartOptions = {
+const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -62,7 +62,7 @@ export const chartOptions = {
 }
 
 // Generate monthly data for charts
-export const monthlyChartData = computed(() => {
+const monthlyChartData = computed(() => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   // Sample data - in a real app, this would be calculated from actual transaction data
@@ -111,8 +111,8 @@ export const monthlyChartData = computed(() => {
 })
 
 // Time range selector
-export const timeRange = ref('Last 30 days')
-export const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
+const timeRange = ref('Last 30 days')
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Define payment transaction type
 interface PaymentTransaction {
@@ -129,7 +129,7 @@ interface PaymentTransaction {
 }
 
 // Sample payment transactions data
-export const transactions = ref<PaymentTransaction[]>([
+const transactions = ref<PaymentTransaction[]>([
   {
     id: 1,
     orderId: 'ORD-12345',
@@ -189,7 +189,7 @@ export const transactions = ref<PaymentTransaction[]>([
 ])
 
 // Computed payment statistics
-export const paymentStats = computed(() => {
+const paymentStats = computed(() => {
   // Count transactions by status
   const completedTransactions = transactions.value.filter(t => t.status === 'Completed').length
   const pendingTransactions = transactions.value.filter(t => t.status === 'Pending').length
@@ -244,18 +244,18 @@ export const paymentStats = computed(() => {
 })
 
 // Filter and sort options
-export const searchQuery = ref('')
-export const sortBy = ref('date')
-export const sortOrder = ref('desc')
-export const statusFilter = ref('all')
-export const methodFilter = ref('all')
+const searchQuery = ref('')
+const sortBy = ref('date')
+const sortOrder = ref('desc')
+const statusFilter = ref('all')
+const methodFilter = ref('all')
 
 // Available statuses and methods
-export const statuses = ['all', 'Completed', 'Pending', 'Failed', 'Refunded']
-export const methods = ['all', 'Credit Card', 'PayPal', 'Apple Pay', 'Google Pay', 'Bank Transfer']
+const statuses = ['all', 'Completed', 'Pending', 'Failed', 'Refunded']
+const methods = ['all', 'Credit Card', 'PayPal', 'Apple Pay', 'Google Pay', 'Bank Transfer']
 
 // Computed filtered and sorted transactions
-export const filteredTransactions = computed(() => {
+const filteredTransactions = computed(() => {
   return transactions.value
     .filter(transaction => {
       // Apply search filter
@@ -290,7 +290,7 @@ export const filteredTransactions = computed(() => {
 })
 
 // Toggle sort order
-export function toggleSort(column: string): void {
+function toggleSort(column: string): void {
   if (sortBy.value === column) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -300,7 +300,7 @@ export function toggleSort(column: string): void {
 }
 
 // Get status badge class
-export function getStatusClass(status: string): string {
+function getStatusClass(status: string): string {
   switch (status) {
     case 'Completed':
       return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
@@ -316,7 +316,7 @@ export function getStatusClass(status: string): string {
 }
 
 // Get payment method icon
-export function getPaymentMethodIcon(method: string): string {
+function getPaymentMethodIcon(method: string): string {
   switch (method) {
     case 'Credit Card':
       return 'i-hugeicons-credit-card'
@@ -334,21 +334,21 @@ export function getPaymentMethodIcon(method: string): string {
 }
 
 // Pagination
-export const currentPage = ref(1)
-export const itemsPerPage = 10
-export const totalPages = computed(() => Math.ceil(filteredTransactions.value.length / itemsPerPage))
-export const paginatedTransactions = computed(() => {
+const currentPage = ref(1)
+const itemsPerPage = 10
+const totalPages = computed(() => Math.ceil(filteredTransactions.value.length / itemsPerPage))
+const paginatedTransactions = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
   return filteredTransactions.value.slice(start, end)
 })
 
-export function changePage(page: number): void {
+function changePage(page: number): void {
   currentPage.value = page
 }
 
 // Calculate total amount
-export const totalAmount = computed(() => {
+const totalAmount = computed(() => {
   return filteredTransactions.value.reduce((sum, transaction) => {
     if (transaction.status === 'Completed') {
       return sum + transaction.amount
@@ -358,6 +358,7 @@ export const totalAmount = computed(() => {
 })
 </script>
 
+<template>
 <main>
   <div class="px-6 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
@@ -714,3 +715,4 @@ export const totalAmount = computed(() => {
     </div>
   </div>
 </main>
+</template>
