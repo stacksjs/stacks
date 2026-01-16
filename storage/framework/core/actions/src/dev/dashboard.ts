@@ -201,127 +201,23 @@ const sidebarConfig = {
 const sidebarConfigJson = JSON.stringify(sidebarConfig)
 
 log.info('Launching Craft with native sidebar...')
+log.info(`Using Craft binary: ${craftBinary}`)
+log.info(`Sidebar width: 240px`)
+log.info(`Window size: 1400x900`)
 
-// Generate HTML that loads the dashboard using fetch instead of iframe
-const dashboardHtml = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stacks Dashboard</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; overflow: auto; background: #f5f5f5; }
-    #dashboard-content {
-      width: 100%;
-      min-height: 100%;
-      padding: 20px;
-    }
-    #debug-status {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      background: #333;
-      color: #0f0;
-      padding: 8px 12px;
-      font-family: monospace;
-      font-size: 12px;
-      border-radius: 4px;
-      z-index: 9999;
-    }
-    .loading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      color: #666;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-  </style>
-</head>
-<body>
-  <div id="debug-status">JS: initializing...</div>
-  <div id="dashboard-content"><div class="loading">Loading...</div></div>
-  <script>
-    const debugEl = document.getElementById('debug-status');
-    const SERVER_URL = 'http://localhost:${dashboardPort}';
-    const contentEl = document.getElementById('dashboard-content');
+// Initial URL to load - STX server handles all routing
+const initialUrl = `http://localhost:${dashboardPort}/home`
 
-    function debug(msg) {
-      debugEl.textContent = msg;
-      console.log('[Dashboard]', msg);
-    }
-
-    debug('JS running');
-
-    // Load a page via fetch and inject into DOM
-    async function loadPage(pagePath) {
-      debug('Loading: ' + pagePath);
-      try {
-        const response = await fetch(SERVER_URL + pagePath);
-        debug('Response: ' + response.status);
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        const html = await response.text();
-        debug('Got ' + html.length + ' bytes');
-        contentEl.innerHTML = html;
-        debug('Injected HTML');
-        // Execute any scripts in the loaded content
-        const scripts = contentEl.querySelectorAll('script');
-        scripts.forEach(oldScript => {
-          const newScript = document.createElement('script');
-          if (oldScript.src) {
-            newScript.src = oldScript.src;
-          } else {
-            newScript.textContent = oldScript.textContent;
-          }
-          oldScript.parentNode.replaceChild(newScript, oldScript);
-        });
-        debug('Page loaded: ' + pagePath);
-      } catch (err) {
-        debug('ERROR: ' + err.message);
-        contentEl.innerHTML = '<div class="loading" style="color:red;">Failed to load: ' + pagePath + '<br>' + err.message + '</div>';
-      }
-    }
-
-    // Handle navigation from sidebar
-    window.craft = window.craft || {};
-    window.craft._sidebarSelectHandler = function(event) {
-      const section = event.sectionId || event.section;
-      const item = event.itemId || event.item;
-      debug('Nav: ' + section + '/' + item);
-
-      // Map item IDs to pretty routes (no /pages/ prefix, no .stx extension)
-      let pagePath;
-      if (section === 'home' && item === 'home') {
-        pagePath = '/home';
-      } else {
-        // Handle special cases where item ID differs from filename
-        let filename = item;
-        if (item === 'content-dashboard' || item === 'data-dashboard' || item === 'commerce-dashboard') {
-          filename = 'dashboard';
-        }
-        pagePath = '/' + section + '/' + filename;
-      }
-
-      loadPage(pagePath);
-    };
-
-    // Load initial page
-    debug('Starting initial load');
-    loadPage('/home');
-  </script>
-</body>
-</html>`
-
-// Launch Craft with the dashboard
+// Launch Craft with the dashboard URL (not inline HTML)
+// Craft will inject bridge JS that sets __craftNativeSidebar and handles sidebar events
 const craftProcess = spawn(craftBinary!, [
   '--title', 'Stacks Dashboard',
+  '--url', initialUrl,
   '--width', '1400',
   '--height', '900',
   '--native-sidebar',
   '--sidebar-config', sidebarConfigJson,
   '--sidebar-width', '240',
-  '--html', dashboardHtml,
 ], {
   stdio: 'inherit',
   cwd: dashboardPath,

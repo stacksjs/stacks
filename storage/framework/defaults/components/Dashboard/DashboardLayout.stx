@@ -3,6 +3,9 @@
  * Dashboard Layout Component
  * A unified layout wrapper that combines the modern sidebar and navbar
  * for consistent dashboard page structure.
+ *
+ * When running inside Craft with --native-sidebar, the native macOS
+ * sidebar is rendered by Craft - we skip the web sidebar in that case.
  */
 
 // Props
@@ -21,15 +24,31 @@ const isMobileMenuOpen = props.isMobileMenuOpen || false
 const isDark = props.isDark || false
 const isMobile = props.isMobile || false
 
-// Sidebar width calculation
+// Detect if Craft is rendering a native sidebar
+// When Craft uses --native-sidebar, it sets this flag
+const hasNativeSidebar = typeof window !== 'undefined' && (
+  window.__craftNativeSidebar === true ||
+  window.craft?.hasNativeSidebar?.() ||
+  // Also check if we're in a Craft webview (sidebar is handled natively)
+  (window.webkit?.messageHandlers?.craft && document.body?.dataset?.nativeSidebar === 'true')
+)
+
+// Sidebar width calculation (matches SidebarModern width)
 function getSidebarWidth() {
-  if (isMobile) return 0
-  return isSidebarCollapsed ? 64 : 256
+  if (hasNativeSidebar || isMobile) return 0
+  return isSidebarCollapsed ? 64 : 240
 }
 
 function getMainContentStyle() {
+  // No padding needed when native sidebar handles layout
+  if (hasNativeSidebar) return ''
   if (!showSidebar || isMobile) return ''
   return `padding-left: ${getSidebarWidth()}px`
+}
+
+// Determine if we should show the web sidebar
+function shouldShowWebSidebar() {
+  return showSidebar && !hasNativeSidebar
 }
 </script>
 
@@ -44,15 +63,15 @@ function getMainContentStyle() {
     ></div>
   @endif
 
-  <!-- Mobile sidebar -->
-  @if(isMobileMenuOpen && isMobile && showSidebar)
+  <!-- Mobile sidebar (web-based, only when no native sidebar) -->
+  @if(isMobileMenuOpen && isMobile && shouldShowWebSidebar())
     <div class="fixed inset-y-0 left-0 z-50 w-64 lg:hidden transition-transform duration-300">
       <SidebarModern />
     </div>
   @endif
 
-  <!-- Desktop sidebar -->
-  @if(showSidebar && !isMobile)
+  <!-- Desktop sidebar (web-based, only when no native sidebar) -->
+  @if(shouldShowWebSidebar() && !isMobile)
     <SidebarModern />
   @endif
 

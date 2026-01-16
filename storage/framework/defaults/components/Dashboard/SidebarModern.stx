@@ -6,6 +6,9 @@
  * true native macOS sidebar rendering when running in Craft.
  */
 
+// Import stx Sidebar components from @stacksjs/components
+import { Sidebar, SidebarHeader, SidebarFooter } from '@stacksjs/components'
+
 // State
 const isCollapsed = props.isCollapsed || false
 const searchQuery = props.searchQuery || ''
