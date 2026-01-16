@@ -2,13 +2,31 @@
 /**
  * Home Dashboard Page
  * Main overview with stats, quick links, system health, and recent activity.
+ * Uses Stacks ORM (bun-query-builder) with Eloquent-like API.
  */
+import { User, Product, Order, Post } from '@stacksjs/orm'
+
+// Fetch real counts from database using ORM
+const userCount = await User.count()
+const productCount = await Product.count()
+const orderCount = await Order.count()
+const postCount = await Post.count()
+
+// Calculate total revenue from orders
+const orders = await Order.all()
+const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0)
+
+// Fetch recent orders for activity
+const recentOrders = await Order.orderBy('created_at', 'desc').limit(5).get()
+
+// Fetch recent users
+const recentUsers = await User.orderBy('created_at', 'desc').limit(3).get()
 
 const stats = [
-  { label: 'Total Users', value: '12,847', trend: '+12%', up: true, color: 'blue' },
-  { label: 'Page Views', value: '284,921', trend: '+8%', up: true, color: 'green' },
-  { label: 'Revenue', value: '$48,294', trend: '+23%', up: true, color: 'orange' },
-  { label: 'Active Sessions', value: '1,429', trend: '-3%', up: false, color: 'red' },
+  { label: 'Total Users', value: String(userCount), trend: '+12%', up: true, color: 'blue' },
+  { label: 'Products', value: String(productCount), trend: '+8%', up: true, color: 'green' },
+  { label: 'Revenue', value: `$${totalRevenue.toLocaleString()}`, trend: '+23%', up: true, color: 'orange' },
+  { label: 'Orders', value: String(orderCount), trend: '+5%', up: true, color: 'red' },
 ]
 
 const quickLinks = [
@@ -26,13 +44,21 @@ const services = [
   { name: 'Email', status: 'warning', latency: '234ms' },
 ]
 
+// Build activities from real data
 const activities = [
-  { type: 'deployment', message: 'Production deployment completed', time: '2 minutes ago', user: 'Chris' },
-  { type: 'user', message: 'New user registered', time: '15 minutes ago', user: 'System' },
-  { type: 'order', message: 'New order #1284 received', time: '32 minutes ago', user: 'Commerce' },
-  { type: 'post', message: 'Blog post published', time: '1 hour ago', user: 'Chris' },
-  { type: 'error', message: 'API rate limit warning', time: '2 hours ago', user: 'System' },
-]
+  ...recentOrders.map(o => ({
+    type: 'order',
+    message: `Order #${o.id} - $${o.total_amount} (${o.status})`,
+    time: 'Recently',
+    user: 'Commerce'
+  })),
+  ...recentUsers.map(u => ({
+    type: 'user',
+    message: `User ${u.name} registered`,
+    time: 'Recently',
+    user: 'System'
+  }))
+].slice(0, 5)
 </script>
 
 <template>

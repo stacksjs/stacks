@@ -250,199 +250,199 @@ document.addEventListener('DOMContentLoaded', function() {
   <div id="app" data-page="home">
     <!-- Home Dashboard -->
     <div data-page-content="home" style="display: block;">
-      @include('pages/home')
+      @include('./pages/home')
     </div>
 
     <!-- Library Pages -->
     <div data-page-content="components" style="display: none;">
-      @include('pages/library/components')
+      @include('./pages/library/components')
     </div>
     <div data-page-content="functions" style="display: none;">
-      @include('pages/library/functions')
+      @include('./pages/library/functions')
     </div>
     <div data-page-content="releases" style="display: none;">
-      @include('pages/library/releases')
+      @include('./pages/library/releases')
     </div>
     <div data-page-content="packages" style="display: none;">
-      @include('pages/library/packages')
+      @include('./pages/library/packages')
     </div>
 
     <!-- Content Pages -->
     <div data-page-content="content-dashboard" style="display: none;">
-      @include('pages/content/dashboard')
+      @include('./pages/content/dashboard')
     </div>
     <div data-page-content="files" style="display: none;">
-      @include('pages/content/files')
+      @include('./pages/content/files')
     </div>
     <div data-page-content="pages" style="display: none;">
-      @include('pages/content/pages')
+      @include('./pages/content/pages')
     </div>
     <div data-page-content="posts" style="display: none;">
-      @include('pages/content/posts')
+      @include('./pages/content/posts')
     </div>
     <div data-page-content="categories" style="display: none;">
-      @include('pages/content/categories')
+      @include('./pages/content/categories')
     </div>
     <div data-page-content="tags" style="display: none;">
-      @include('pages/content/tags')
+      @include('./pages/content/tags')
     </div>
     <div data-page-content="comments" style="display: none;">
-      @include('pages/content/comments')
+      @include('./pages/content/comments')
     </div>
     <div data-page-content="authors" style="display: none;">
-      @include('pages/content/authors')
+      @include('./pages/content/authors')
     </div>
     <div data-page-content="seo" style="display: none;">
-      @include('pages/content/seo')
+      @include('./pages/content/seo')
     </div>
 
     <!-- App Pages -->
     <div data-page-content="deployments" style="display: none;">
-      @include('pages/app/deployments')
+      @include('./pages/app/deployments')
     </div>
     <div data-page-content="requests" style="display: none;">
-      @include('pages/app/requests')
+      @include('./pages/app/requests')
     </div>
     <div data-page-content="realtime" style="display: none;">
-      @include('pages/app/realtime')
+      @include('./pages/app/realtime')
     </div>
     <div data-page-content="actions" style="display: none;">
-      @include('pages/app/actions')
+      @include('./pages/app/actions')
     </div>
     <div data-page-content="commands" style="display: none;">
-      @include('pages/app/commands')
+      @include('./pages/app/commands')
     </div>
     <div data-page-content="queue" style="display: none;">
-      @include('pages/app/queue')
+      @include('./pages/app/queue')
     </div>
     <div data-page-content="jobs" style="display: none;">
-      @include('pages/app/jobs')
+      @include('./pages/app/jobs')
     </div>
     <div data-page-content="queries" style="display: none;">
-      @include('pages/app/queries')
+      @include('./pages/app/queries')
     </div>
     <div data-page-content="notifications" style="display: none;">
-      @include('pages/app/notifications')
+      @include('./pages/app/notifications')
     </div>
 
     <!-- Data Pages -->
     <div data-page-content="data-dashboard" style="display: none;">
-      @include('pages/data/dashboard')
+      @include('./pages/data/dashboard')
     </div>
     <div data-page-content="activity" style="display: none;">
-      @include('pages/data/activity')
+      @include('./pages/data/activity')
     </div>
     <div data-page-content="users" style="display: none;">
-      @include('pages/data/users')
+      @include('./pages/data/users')
     </div>
     <div data-page-content="teams" style="display: none;">
-      @include('pages/data/teams')
+      @include('./pages/data/teams')
     </div>
     <div data-page-content="subscribers" style="display: none;">
-      @include('pages/data/subscribers')
+      @include('./pages/data/subscribers')
     </div>
 
     <!-- Commerce Pages -->
     <div data-page-content="commerce-dashboard" style="display: none;">
-      @include('pages/commerce/dashboard')
+      @include('./pages/commerce/dashboard')
     </div>
     <div data-page-content="pos" style="display: none;">
-      @include('pages/commerce/pos')
+      @include('./pages/commerce/pos')
     </div>
     <div data-page-content="customers" style="display: none;">
-      @include('pages/commerce/customers')
+      @include('./pages/commerce/customers')
     </div>
     <div data-page-content="orders" style="display: none;">
-      @include('pages/commerce/orders')
+      @include('./pages/commerce/orders')
     </div>
     <div data-page-content="products" style="display: none;">
-      @include('pages/commerce/products')
+      @include('./pages/commerce/products')
     </div>
     <div data-page-content="coupons" style="display: none;">
-      @include('pages/commerce/coupons')
+      @include('./pages/commerce/coupons')
     </div>
     <div data-page-content="gift-cards" style="display: none;">
-      @include('pages/commerce/gift-cards')
+      @include('./pages/commerce/gift-cards')
     </div>
     <div data-page-content="payments" style="display: none;">
-      @include('pages/commerce/payments')
+      @include('./pages/commerce/payments')
     </div>
     <div data-page-content="delivery" style="display: none;">
-      @include('pages/commerce/delivery')
+      @include('./pages/commerce/delivery')
     </div>
     <div data-page-content="taxes" style="display: none;">
-      @include('pages/commerce/taxes')
+      @include('./pages/commerce/taxes')
     </div>
 
     <!-- Marketing Pages -->
     <div data-page-content="lists" style="display: none;">
-      @include('pages/marketing/lists')
+      @include('./pages/marketing/lists')
     </div>
     <div data-page-content="social-posts" style="display: none;">
-      @include('pages/marketing/social-posts')
+      @include('./pages/marketing/social-posts')
     </div>
     <div data-page-content="campaigns" style="display: none;">
-      @include('pages/marketing/campaigns')
+      @include('./pages/marketing/campaigns')
     </div>
     <div data-page-content="marketing-reviews" style="display: none;">
-      @include('pages/marketing/reviews')
+      @include('./pages/marketing/reviews')
     </div>
 
     <!-- Analytics Pages -->
     <div data-page-content="analytics-web" style="display: none;">
-      @include('pages/analytics/web')
+      @include('./pages/analytics/web')
     </div>
     <div data-page-content="analytics-blog" style="display: none;">
-      @include('pages/analytics/blog')
+      @include('./pages/analytics/blog')
     </div>
     <div data-page-content="analytics-goals" style="display: none;">
-      @include('pages/analytics/goals')
+      @include('./pages/analytics/goals')
     </div>
     <div data-page-content="analytics-commerce" style="display: none;">
-      @include('pages/analytics/commerce')
+      @include('./pages/analytics/commerce')
     </div>
     <div data-page-content="analytics-sales" style="display: none;">
-      @include('pages/analytics/sales')
+      @include('./pages/analytics/sales')
     </div>
     <div data-page-content="analytics-marketing" style="display: none;">
-      @include('pages/analytics/marketing')
+      @include('./pages/analytics/marketing')
     </div>
 
     <!-- Management Pages -->
     <div data-page-content="cloud" style="display: none;">
-      @include('pages/management/cloud')
+      @include('./pages/management/cloud')
     </div>
     <div data-page-content="servers" style="display: none;">
-      @include('pages/management/servers')
+      @include('./pages/management/servers')
     </div>
     <div data-page-content="serverless" style="display: none;">
-      @include('pages/management/serverless')
+      @include('./pages/management/serverless')
     </div>
     <div data-page-content="dns" style="display: none;">
-      @include('pages/management/dns')
+      @include('./pages/management/dns')
     </div>
     <div data-page-content="permissions" style="display: none;">
-      @include('pages/management/permissions')
+      @include('./pages/management/permissions')
     </div>
     <div data-page-content="mailboxes" style="display: none;">
-      @include('pages/management/mailboxes')
+      @include('./pages/management/mailboxes')
     </div>
     <div data-page-content="logs" style="display: none;">
-      @include('pages/management/logs')
+      @include('./pages/management/logs')
     </div>
 
     <!-- Utility Pages -->
     <div data-page-content="buddy" style="display: none;">
-      @include('pages/utilities/buddy')
+      @include('./pages/utilities/buddy')
     </div>
     <div data-page-content="environment" style="display: none;">
-      @include('pages/utilities/environment')
+      @include('./pages/utilities/environment')
     </div>
     <div data-page-content="access-tokens" style="display: none;">
-      @include('pages/utilities/access-tokens')
+      @include('./pages/utilities/access-tokens')
     </div>
     <div data-page-content="settings" style="display: none;">
-      @include('pages/utilities/settings')
+      @include('./pages/utilities/settings')
     </div>
   </div>
 </template>

@@ -1,18 +1,21 @@
 <script server>
 /**
  * Posts Page
- *
- * Manage blog posts.
+ * Uses Stacks ORM (bun-query-builder) with Eloquent-like API.
  */
+import { Post } from '@stacksjs/orm'
 
-const posts = [
-  { title: 'Getting Started with Stacks', status: 'published', author: 'Chris', date: '2024-01-08', views: 4521 },
-  { title: 'Building Modern Web Apps', status: 'published', author: 'Chris', date: '2024-01-05', views: 3892 },
-  { title: 'Advanced TypeScript Patterns', status: 'draft', author: 'Chris', date: '2024-01-10', views: 0 },
-  { title: 'Database Performance Tips', status: 'published', author: 'Team', date: '2024-01-02', views: 2987 },
-  { title: 'API Design Best Practices', status: 'scheduled', author: 'Chris', date: '2024-01-15', views: 0 },
-  { title: 'Testing Strategies', status: 'draft', author: 'Team', date: '2024-01-09', views: 0 },
-]
+// Fetch all posts from database using ORM
+const rawPosts = await Post.orderBy('created_at', 'desc').get()
+
+// Transform posts for display
+const posts = rawPosts.map(p => ({
+  title: p.title || 'Untitled',
+  status: p.status || 'draft',
+  author: 'Team',
+  date: p.created_at ? String(p.created_at).split('T')[0] : 'N/A',
+  views: p.views || 0
+}))
 </script>
 
 <template>

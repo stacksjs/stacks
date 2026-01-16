@@ -4,28 +4,46 @@ import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
-import { appPath } from '@stacksjs/path'
+import { appPath, frameworkPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 
 /**
- * Check if app/Models directory exists and has model files
+ * Count model files in a directory (recursively)
  */
-function validateModelsExist(): { valid: boolean, error?: string } {
-  const modelsPath = appPath('Models')
+function countModelFiles(dir: string): number {
+  if (!existsSync(dir)) {
+    return 0
+  }
 
-  if (!existsSync(modelsPath)) {
-    return {
-      valid: false,
-      error: 'The app/Models directory does not exist. Please create models before running migrations.',
+  let count = 0
+  const entries = readdirSync(dir, { withFileTypes: true })
+
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      count += countModelFiles(`${dir}/${entry.name}`)
+    }
+    else if (entry.name.endsWith('.ts') && !entry.name.startsWith('.') && !entry.name.startsWith('index')) {
+      count++
     }
   }
 
-  const files = readdirSync(modelsPath).filter(f => f.endsWith('.ts') && !f.startsWith('.'))
+  return count
+}
 
-  if (files.length === 0) {
+/**
+ * Check if models exist in either user directory or defaults directory
+ */
+function validateModelsExist(): { valid: boolean, error?: string } {
+  const userModelsPath = appPath('Models')
+  const defaultModelsPath = frameworkPath('defaults/models')
+
+  const userModelCount = countModelFiles(userModelsPath)
+  const defaultModelCount = countModelFiles(defaultModelsPath)
+
+  if (userModelCount === 0 && defaultModelCount === 0) {
     return {
       valid: false,
-      error: 'No models found in app/Models. Please create at least one model before running migrations.',
+      error: 'No models found. Please create models in app/Models or ensure framework defaults exist.',
     }
   }
 

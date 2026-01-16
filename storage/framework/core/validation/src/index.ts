@@ -3,8 +3,10 @@ export * from '@stacksjs/ts-validation'
 
 // Export local validation helpers
 export * from './reporter'
-export * from './schema'
 export * from './validator'
+
+// Export schema explicitly to avoid conflicts with ts-validation exports
+export { schema } from './schema'
 
 // Type guard utilities
 export function isString(value: unknown): value is string {

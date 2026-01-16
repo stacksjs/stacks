@@ -2,8 +2,9 @@
  * Database Seeder Module
  *
  * Provides model-based seeding using factory functions defined on model attributes.
- * This module reads models from app/Models/ and generates fake data using the
- * factory functions and faker instance from @stacksjs/faker.
+ * This module reads models from both the framework defaults (storage/framework/defaults/models)
+ * and user-defined models (app/Models/), with user models taking precedence.
+ * Generates fake data using the factory functions and faker instance from @stacksjs/faker.
  */
 
 import type { Attribute, Model, SeedOptions } from '@stacksjs/types'
@@ -13,6 +14,13 @@ import { faker } from '@stacksjs/faker'
 import { path } from '@stacksjs/path'
 import { hashMake } from '@stacksjs/security'
 import { fs } from '@stacksjs/storage'
+
+/**
+ * Returns the path to the framework default models directory
+ */
+function defaultModelsPath(subpath?: string): string {
+  return path.frameworkPath(`defaults/models/${subpath || ''}`)
+}
 
 /**
  * Convert a camelCase or PascalCase string to snake_case
@@ -87,26 +95,34 @@ interface SeederModel {
 }
 
 /**
- * Load all models from the models directory
+ * Load all models from a directory (including subdirectories)
  */
-async function loadModels(modelsDir: string): Promise<SeederModel[]> {
+async function loadModelsFromDir(modelsDir: string, recursive: boolean = false): Promise<SeederModel[]> {
   const models: SeederModel[] = []
 
   if (!fs.existsSync(modelsDir)) {
-    log.warn(`Models directory not found: ${modelsDir}`)
     return models
   }
 
-  const files = fs.readdirSync(modelsDir)
-  const modelFiles = files.filter(file =>
-    file.endsWith('.ts') && !file.startsWith('index') && !file.startsWith('_'),
-  )
+  const entries = fs.readdirSync(modelsDir, { withFileTypes: true })
 
-  for (const file of modelFiles) {
-    const filePath = path.join(modelsDir, file)
+  for (const entry of entries) {
+    const fullPath = path.join(modelsDir, entry.name)
+
+    // Handle subdirectories recursively if enabled
+    if (entry.isDirectory() && recursive) {
+      const subModels = await loadModelsFromDir(fullPath, true)
+      models.push(...subModels)
+      continue
+    }
+
+    // Skip non-TypeScript files and special files
+    if (!entry.name.endsWith('.ts') || entry.name.startsWith('index') || entry.name.startsWith('_')) {
+      continue
+    }
 
     try {
-      const module = await import(filePath)
+      const module = await import(fullPath)
       const modelDef: Model = module.default || module
 
       if (!modelDef) {
@@ -126,7 +142,7 @@ async function loadModels(modelsDir: string): Promise<SeederModel[]> {
       }
 
       // Get model name and table name
-      const modelName = modelDef.name || file.replace('.ts', '')
+      const modelName = modelDef.name || entry.name.replace('.ts', '')
       const tableName = modelDef.table || snakeCase(modelName) + 's'
 
       models.push({
@@ -135,15 +151,53 @@ async function loadModels(modelsDir: string): Promise<SeederModel[]> {
         count,
         attributes: modelDef.attributes || {},
         model: modelDef,
-        filePath,
+        filePath: fullPath,
       })
     }
     catch (err) {
-      log.error(`Failed to load model ${file}:`, err)
+      log.error(`Failed to load model ${entry.name}:`, err)
     }
   }
 
   return models
+}
+
+/**
+ * Load all models from both default and user directories
+ * User models take precedence over default models (override by name)
+ */
+async function loadAllModels(userModelsDir: string, verbose: boolean = false): Promise<SeederModel[]> {
+  const defaultDir = defaultModelsPath()
+
+  // Load default models first (with recursive subdirectory support)
+  const defaultModels = await loadModelsFromDir(defaultDir, true)
+
+  // Load user models (flat directory)
+  const userModels = await loadModelsFromDir(userModelsDir, false)
+
+  // Create a map with default models, then override with user models
+  const modelMap = new Map<string, SeederModel>()
+
+  for (const model of defaultModels) {
+    modelMap.set(model.name, model)
+  }
+
+  // User models override defaults
+  for (const model of userModels) {
+    if (modelMap.has(model.name) && verbose) {
+      log.info(`  User model "${model.name}" overrides default`)
+    }
+    modelMap.set(model.name, model)
+  }
+
+  return Array.from(modelMap.values())
+}
+
+/**
+ * Load all models from the models directory (legacy function for backwards compatibility)
+ */
+async function loadModels(modelsDir: string): Promise<SeederModel[]> {
+  return loadModelsFromDir(modelsDir, false)
 }
 
 /**
@@ -387,6 +441,8 @@ function sortModelsByDependencies(models: SeederModel[]): SeederModel[] {
 /**
  * Main seeding function
  * Seeds the database using model factory functions
+ * Loads models from both framework defaults and user-defined models,
+ * with user models taking precedence.
  */
 export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
   const startTime = Date.now()
@@ -395,14 +451,15 @@ export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
 
   if (verbose) {
     log.info('Seeding database using model factories...')
-    log.info(`Models directory: ${modelsDir}`)
+    log.info(`User models directory: ${modelsDir}`)
+    log.info(`Default models directory: ${defaultModelsPath()}`)
   }
 
-  // Load all seedable models
-  let models = await loadModels(modelsDir)
+  // Load all seedable models from both defaults and user directories
+  let models = await loadAllModels(modelsDir, verbose)
 
   if (models.length === 0) {
-    log.warn('No seedable models found')
+    log.warn('No seedable models found in defaults or user directories')
     return {
       total: 0,
       successful: 0,
@@ -487,13 +544,14 @@ export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
 
 /**
  * Seed a specific model by name
+ * Searches both default and user models
  */
 export async function seedModel$(
   modelName: string,
   options: { count?: number, fresh?: boolean, verbose?: boolean } = {},
 ): Promise<SeedResult> {
   const modelsDir = path.userModelsPath()
-  const models = await loadModels(modelsDir)
+  const models = await loadAllModels(modelsDir, options.verbose)
   const model = models.find(m => m.name === modelName)
 
   if (!model) {
@@ -520,16 +578,43 @@ export async function freshSeed(config: SeederConfig = {}): Promise<SeedSummary>
 
 /**
  * Get list of seedable models without seeding
+ * Returns models from both default and user directories
  */
-export async function listSeedableModels(): Promise<Array<{ name: string, table: string, count: number }>> {
+export async function listSeedableModels(): Promise<Array<{ name: string, table: string, count: number, source: 'default' | 'user' }>> {
   const modelsDir = path.userModelsPath()
-  const models = await loadModels(modelsDir)
+  const defaultDir = defaultModelsPath()
 
-  return models.map(m => ({
-    name: m.name,
-    table: m.table,
-    count: m.count,
-  }))
+  // Load both sets separately to track source
+  const defaultModels = await loadModelsFromDir(defaultDir, true)
+  const userModels = await loadModelsFromDir(modelsDir, false)
+
+  const result: Array<{ name: string, table: string, count: number, source: 'default' | 'user' }> = []
+  const seen = new Set<string>()
+
+  // Add user models first (they take precedence)
+  for (const m of userModels) {
+    result.push({
+      name: m.name,
+      table: m.table,
+      count: m.count,
+      source: 'user',
+    })
+    seen.add(m.name)
+  }
+
+  // Add default models that weren't overridden
+  for (const m of defaultModels) {
+    if (!seen.has(m.name)) {
+      result.push({
+        name: m.name,
+        table: m.table,
+        count: m.count,
+        source: 'default',
+      })
+    }
+  }
+
+  return result
 }
 
 // Legacy exports for backwards compatibility
