@@ -5,8 +5,6 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
-import { Line, Bar } from 'vue-chartjs'
 import type { Coupons, NewCoupon } from '../../../../types/defaults'
 import { useCoupons } from '../../../../functions/commerce/coupons'
 import CouponsTable from '../../../../components/Dashboard/Commerce/CouponsTable.stx'
