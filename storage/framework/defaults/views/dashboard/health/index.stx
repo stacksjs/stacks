@@ -1,7 +1,12 @@
 <script server>
+import { ref } from 'vue'
 import Card from '../../../components/Dashboard/UI/Card.stx'
 import Badge from '../../../components/Dashboard/UI/Badge.stx'
 import StatsCard from '../../../components/Dashboard/UI/StatsCard.stx'
+
+useHead({
+  title: 'Dashboard - Health',
+})
 
 interface HealthMetric {
   name: string
@@ -11,7 +16,7 @@ interface HealthMetric {
   metrics: { label: string; value: string }[]
 }
 
-const healthMetrics = [
+const healthMetrics = ref([
   {
     name: 'Uptime',
     icon: 'i-hugeicons-flash',
@@ -39,7 +44,7 @@ const healthMetrics = [
     status: 'success',
     description: 'Your certificate is healthy. We last checked 3 minutes ago.',
     metrics: [
-      { label: 'Expires In', value: 'May 4, 2024 (14 days' },
+      { label: 'Expires In', value: 'May 4, 2024 (14 days)' },
       { label: 'Last Renewal', value: 'Feb 4, 2024' }
     ],
   },
@@ -201,7 +206,7 @@ const getStatusIconBg = (status) => {
                     {{ m.label }}
                   </dt>
                   <dd class="mt-0.5 text-[14px] font-semibold tracking-tight text-neutral-900 dark:text-white">
-                    {{ m }}
+                    {{ m.value }}
                   </dd>
                 </div>
               @endforeach
@@ -214,3 +219,8 @@ const getStatusIconBg = (status) => {
 </div>
 </template>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

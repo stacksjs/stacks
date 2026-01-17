@@ -1,6 +1,18 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script server>
+import { ref, computed } from 'vue'
+import { useHead } from '@vueuse/head'
+
+useHead({
+  title: 'Dashboard - Commerce Taxes',
+})
+
 // Sample taxes data
-const taxes = [
+const taxes = ref([
   {
     id: 1,
     name: 'US Digital Services',
@@ -111,82 +123,82 @@ const taxes = [
     createdAt: '2023-09-01',
     isDefault: false
   }
-]
+])
 
 // Filter and sort options
-const searchQuery = ''
-const sortBy = 'name'
-const sortOrder = 'asc'
-const activeFilter = 'all'
-const countryFilter = 'all'
-const typeFilter = 'all'
+const searchQuery = ref('')
+const sortBy = ref('name')
+const sortOrder = ref('asc')
+const activeFilter = ref('all')
+const countryFilter = ref('all')
+const typeFilter = ref('all')
 
 // Get unique countries for filter
-function countries() {
-  const uniqueCountries = new Set(taxes.map(t => t.country))
+const countries = computed(() => {
+  const uniqueCountries = new Set(taxes.value.map(t => t.country))
   return Array.from(uniqueCountries).sort()
 })
 
 // Get unique tax types for filter
-function taxTypes() {
-  const uniqueTypes = new Set(taxes.map(t => t.type))
+const taxTypes = computed(() => {
+  const uniqueTypes = new Set(taxes.value.map(t => t.type))
   return Array.from(uniqueTypes).sort()
 })
 
 // Computed filtered and sorted taxes
-function filteredTaxes() {
-  return taxes
+const filteredTaxes = computed(() => {
+  return taxes.value
     .filter(tax => {
       // Apply search filter
-      const matchesSearch = tax.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           tax.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           tax.region.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesSearch = tax.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                           tax.country.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                           tax.region.toLowerCase().includes(searchQuery.value.toLowerCase())
 
       // Apply active filter
-      const matchesActive = activeFilter === 'all' ||
-                           (activeFilter === 'active' && tax.active) ||
-                           (activeFilter === 'inactive' && !tax.active)
+      const matchesActive = activeFilter.value === 'all' ||
+                           (activeFilter.value === 'active' && tax.active) ||
+                           (activeFilter.value === 'inactive' && !tax.active)
 
       // Apply country filter
-      const matchesCountry = countryFilter === 'all' ||
-                            tax.country === countryFilter
+      const matchesCountry = countryFilter.value === 'all' ||
+                            tax.country === countryFilter.value
 
       // Apply type filter
-      const matchesType = typeFilter === 'all' ||
-                         tax.type === typeFilter
+      const matchesType = typeFilter.value === 'all' ||
+                         tax.type === typeFilter.value
 
       return matchesSearch && matchesActive && matchesCountry && matchesType
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy === 'name') {
+      if (sortBy.value === 'name') {
         comparison = a.name.localeCompare(b.name)
-      } else if (sortBy === 'rate') {
+      } else if (sortBy.value === 'rate') {
         comparison = a.rate - b.rate
-      } else if (sortBy === 'country') {
+      } else if (sortBy.value === 'country') {
         comparison = a.country.localeCompare(b.country)
-      } else if (sortBy === 'createdAt') {
+      } else if (sortBy.value === 'createdAt') {
         comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       }
 
-      return sortOrder === 'asc' ? comparison : -comparison
+      return sortOrder.value === 'asc' ? comparison : -comparison
     })
 })
 
 // Toggle sort order
 function toggleSort(column) {
-  if (sortBy === column) {
-    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  if (sortBy.value === column) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy = column
-    sortOrder = 'asc'
+    sortBy.value = column
+    sortOrder.value = 'asc'
   }
 }
 
 // Modal state
-const showAddModal = false
-const newTax = {
+const showAddModal = ref(false)
+const newTax = ref({
   name: '',
   rate: 0,
   type: 'Percentage',
@@ -194,10 +206,10 @@ const newTax = {
   region: '',
   active: true,
   isDefault: false
-}
+})
 
 function openAddModal() {
-  newTax = {
+  newTax.value = {
     name: '',
     rate: 0,
     type: 'Percentage',
@@ -206,35 +218,35 @@ function openAddModal() {
     active: true,
     isDefault: false
   }
-  showAddModal = true
+  showAddModal.value = true
 }
 
 function closeAddModal() {
-  showAddModal = false
+  showAddModal.value = false
 }
 
 function addTax() {
   // In a real app, this would send data to the server
-  const id = Math.max(...taxes.map(t => t.id)) + 1
+  const id = Math.max(...taxes.value.map(t => t.id)) + 1
   const currentDate = new Date().toISOString().split('T')[0]
 
   // If this is set as default, update other taxes
-  if (newTax.isDefault) {
-    taxes.forEach(tax => {
+  if (newTax.value.isDefault) {
+    taxes.value.forEach(tax => {
       tax.isDefault = false
     })
   }
 
-  taxes.push({
+  taxes.value.push({
     id,
-    name: newTax.name || '',
-    rate: newTax.rate,
-    type: newTax.type || '',
-    country: newTax.country || '',
-    region: newTax.region || 'All',
-    active: newTax.active,
+    name: newTax.value.name || '',
+    rate: newTax.value.rate,
+    type: newTax.value.type || '',
+    country: newTax.value.country || '',
+    region: newTax.value.region || 'All',
+    active: newTax.value.active,
     createdAt: currentDate,
-    isDefault: newTax.isDefault || false
+    isDefault: newTax.value.isDefault || false
   })
   closeAddModal()
 }

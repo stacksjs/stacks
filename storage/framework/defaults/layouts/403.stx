@@ -3,9 +3,14 @@ const searchQuery = props.searchQuery || ''
 </script>
 
 <script client>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
 const handleSearch = (e) => {
   e.preventDefault()
-  console.log('Searching for:', searchQuery)
+  console.log('Searching for:', searchQuery.value)
 }
 
 const goBack = () => {

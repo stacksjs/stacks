@@ -6,3 +6,7 @@ const { t } = useI18n()
   {{ t('not-found') }}
 </div>
 
+<route lang="yaml">
+meta:
+  layout: 404
+</route>

@@ -25,8 +25,12 @@ ChartJS.register(
   Filler,
 )
 
-const timeRange = 'day'
-const isLoading = false
+useHead({
+  title: 'Dashboard - DNS',
+})
+
+const timeRange = ref('day')
+const isLoading = ref(false)
 
 // Chart options
 const chartOptions = {
@@ -109,8 +113,23 @@ const getDNSRecordsData = () => {
   }
 }
 
-const dnsRecordsData = getDNSRecordsData()
+const dnsRecordsData = ref(getDNSRecordsData())
 
+// Watch for time range changes
+watch(timeRange, async () => {
+  isLoading.value = true
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500))
+  dnsRecordsData.value = getDNSRecordsData()
+  isLoading.value = false
+})
+
+// Initial load
+onMounted(async () => {
+  isLoading.value = true
+  await new Promise(resolve => setTimeout(resolve, 500))
+  isLoading.value = false
+})
 </script>
 
 <template>
@@ -230,3 +249,8 @@ const dnsRecordsData = getDNSRecordsData()
 </div>
 </template>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

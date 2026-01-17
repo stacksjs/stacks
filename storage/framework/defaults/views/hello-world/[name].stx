@@ -1,4 +1,5 @@
 <script>
+const router = useRouter()
 const route = useRoute('/hello-world/[name]')
 const user = useUserStore()
 const { t } = useI18n()

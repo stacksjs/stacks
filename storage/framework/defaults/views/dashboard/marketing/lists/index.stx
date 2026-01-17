@@ -1,5 +1,11 @@
 <script server>
-// Storage utilities are provided by STX runtime
+import { ref, computed } from 'vue'
+import { useHead } from '@vueuse/head'
+import { useLocalStorage } from '@vueuse/core'
+
+useHead({
+  title: 'Dashboard - Marketing Lists',
+})
 
 // Define list type
 interface List {
@@ -32,7 +38,7 @@ interface Subscriber {
 }
 
 // Sample lists data
-const lists = [
+const lists = ref<List[]>([
   {
     id: 1,
     name: 'Newsletter Subscribers',
@@ -153,10 +159,10 @@ const lists = [
     status: 'Active',
     isDefault: false
   }
-]
+])
 
 // Sample subscribers data (not displayed directly but used for import/export functionality)
-const subscribers = [
+const subscribers = ref<Subscriber[]>([
   {
     id: 1,
     email: 'john.doe@example.com',
@@ -190,91 +196,91 @@ const subscribers = [
     source: 'Lead Magnet',
     listIds: [1, 2]
   }
-]
+])
 
 // Filter and sort options
-const searchQuery = ''
-const sortBy = 'dateCreated'
-const sortOrder = 'desc'
-const typeFilter = 'all'
-const statusFilter = 'all'
-let viewMode = 'list' // Default to list view
+const searchQuery = ref('')
+const sortBy = ref('dateCreated')
+const sortOrder = ref('desc')
+const typeFilter = ref('all')
+const statusFilter = ref('all')
+const viewMode = useLocalStorage('lists-view-mode', 'list') // Default to list view and save in localStorage
 
 // Available list types and statuses
 const listTypes = ['all', 'email', 'sms', 'both']
 const statuses = ['all', 'Active', 'Draft', 'Archived']
 
 // Computed filtered and sorted lists
-function filteredLists() {
-  return lists
+const filteredLists = computed(() => {
+  return lists.value
     .filter(list => {
       // Apply search filter
       const matchesSearch =
-        list.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        list.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        list.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+        list.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        list.description.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        list.tags.some(tag => tag.toLowerCase().includes(searchQuery.value.toLowerCase()))
 
       // Apply type filter
-      const matchesType = typeFilter === 'all' || list.type === typeFilter
+      const matchesType = typeFilter.value === 'all' || list.type === typeFilter.value
 
       // Apply status filter
-      const matchesStatus = statusFilter === 'all' || list.status === statusFilter
+      const matchesStatus = statusFilter.value === 'all' || list.status === statusFilter.value
 
       return matchesSearch && matchesType && matchesStatus
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy === 'dateCreated') {
+      if (sortBy.value === 'dateCreated') {
         comparison = new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime()
-      } else if (sortBy === 'name') {
+      } else if (sortBy.value === 'name') {
         comparison = a.name.localeCompare(b.name)
-      } else if (sortBy === 'subscriberCount') {
+      } else if (sortBy.value === 'subscriberCount') {
         comparison = a.subscriberCount - b.subscriberCount
-      } else if (sortBy === 'openRate') {
+      } else if (sortBy.value === 'openRate') {
         const aRate = a.openRate ?? 0
         const bRate = b.openRate ?? 0
         comparison = aRate - bRate
       }
 
-      return sortOrder === 'asc' ? comparison : -comparison
+      return sortOrder.value === 'asc' ? comparison : -comparison
     })
-}
+})
 
 // Pagination
-const currentPage = 1
-const itemsPerPage = 8
-function totalPages() { return Math.ceil(filteredLists().length / itemsPerPage) }
+const currentPage = ref(1)
+const itemsPerPage = ref(8)
+const totalPages = computed(() => Math.ceil(filteredLists.value.length / itemsPerPage.value))
 
-function paginatedLists() {
-  const start = (currentPage - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return filteredLists().slice(start, end)
-}
+const paginatedLists = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredLists.value.slice(start, end)
+})
 
 function changePage(page) {
-  currentPage = page
+  currentPage.value = page
 }
 
 function previousPage() {
-  if (currentPage > 1) {
+  if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
 function nextPage() {
-  if (currentPage < totalPages) {
+  if (currentPage.value < totalPages.value) {
     currentPage.value++
   }
 }
 
 // Toggle sort order
 function toggleSort(column) {
-  if (sortBy === column) {
-    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  if (sortBy.value === column) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy = column
-    sortOrder = 'desc'
+    sortBy.value = column
+    sortOrder.value = 'desc'
   }
 }
 
@@ -307,23 +313,50 @@ function getTypeClass(type) {
 }
 
 // Modal state for adding/editing list
-const showListModal = false
-const isEditMode = false
-const currentList = null
+const showListModal = ref(false)
+const isEditMode = ref(false)
+const currentList = ref<List | null>(null)
 
-// Form field getters - access currentList directly when needed
-function getListName() { return currentList?.name || '' }
-function getListDescription() { return currentList?.description || '' }
-function getListType() { return currentList?.type || 'email' }
-function getListTags() { return currentList?.tags.join(', ') || '' }
-function getListStatus() { return currentList?.status || 'Draft' }
-function getListIsDefault() { return currentList?.isDefault || false }
+// Computed properties for form fields to handle null currentList
+const listName = computed({
+  get: () => currentList.value?.name || '',
+  set: (value) => { if (currentList.value) currentList.value.name = value }
+})
+
+const listDescription = computed({
+  get: () => currentList.value?.description || '',
+  set: (value) => { if (currentList.value) currentList.value.description = value }
+})
+
+const listType = computed({
+  get: () => currentList.value?.type || 'email',
+  set: (value: 'email' | 'sms' | 'both') => { if (currentList.value) currentList.value.type = value }
+})
+
+const listTags = computed({
+  get: () => currentList.value?.tags.join(', ') || '',
+  set: (value) => {
+    if (currentList.value) {
+      currentList.value.tags = value.split(',').map(tag => tag.trim()).filter(tag => tag !== '')
+    }
+  }
+})
+
+const listStatus = computed({
+  get: () => currentList.value?.status || 'Draft',
+  set: (value: 'Active' | 'Draft' | 'Archived') => { if (currentList.value) currentList.value.status = value }
+})
+
+const listIsDefault = computed({
+  get: () => currentList.value?.isDefault || false,
+  set: (value) => { if (currentList.value) currentList.value.isDefault = value }
+})
 
 // Functions for managing lists
 function openAddListModal() {
-  isEditMode = false
-  currentList = {
-    id: Math.max(...lists.map(l => l.id)) + 1,
+  isEditMode.value = false
+  currentList.value = {
+    id: Math.max(...lists.value.map(l => l.id)) + 1,
     name: '',
     description: '',
     type: 'email',
@@ -337,40 +370,40 @@ function openAddListModal() {
     status: 'Draft',
     isDefault: false
   }
-  showListModal = true
+  showListModal.value = true
 }
 
 function openEditListModal(list) {
-  isEditMode = true
-  currentList = { ...list }
-  showListModal = true
+  isEditMode.value = true
+  currentList.value = { ...list }
+  showListModal.value = true
 }
 
 function closeListModal() {
-  showListModal = false
+  showListModal.value = false
 }
 
 function saveList() {
-  if (!currentList) return
+  if (!currentList.value) return
 
   // If setting this list as default, unset default on all other lists
-  if (currentList.isDefault) {
-    lists.forEach(list => {
+  if (currentList.value.isDefault) {
+    lists.value.forEach(list => {
       if (list.id !== currentList.value!.id) {
         list.isDefault = false
       }
     })
   }
 
-  if (isEditMode) {
+  if (isEditMode.value) {
     // Update existing list
-    const index = lists.findIndex(l => l.id === currentList.value!.id)
+    const index = lists.value.findIndex(l => l.id === currentList.value!.id)
     if (index !== -1) {
-      lists.value[index] = { ...currentList }
+      lists.value[index] = { ...currentList.value }
     }
   } else {
     // Add new list
-    lists.push({ ...currentList })
+    lists.value.push({ ...currentList.value })
   }
 
   closeListModal()
@@ -379,14 +412,14 @@ function saveList() {
 // Function to delete a list
 function deleteList(listId) {
   if (confirm('Are you sure you want to delete this list? This will not delete the subscribers.')) {
-    const index = lists.findIndex(l => l.id === listId)
+    const index = lists.value.findIndex(l => l.id === listId)
     if (index !== -1) {
       // Check if it's the default list
       if (lists.value[index].isDefault) {
         alert('Cannot delete the default list. Please set another list as default first.')
         return
       }
-      lists.splice(index, 1)
+      lists.value.splice(index, 1)
     }
   }
 }
@@ -395,23 +428,23 @@ function deleteList(listId) {
 function duplicateList(list) {
   const newList: List = {
     ...list,
-    id: Math.max(...lists.map(l => l.id)) + 1,
+    id: Math.max(...lists.value.map(l => l.id)) + 1,
     name: `${list.name} (Copy)`,
     subscriberCount: 0,
     lastSent: null,
     dateCreated: new Date().toISOString().split('T')[0] || '2023-01-01', // Fallback date
     isDefault: false
   }
-  lists.push(newList)
+  lists.value.push(newList)
 }
 
 // Function to export list subscribers
 function exportList(listId) {
   // In a real application, this would generate a CSV file with subscriber data
-  const list = lists.find(l => l.id === listId)
+  const list = lists.value.find(l => l.id === listId)
   if (!list) return
 
-  const listSubscribers = subscribers.filter(s => s.listIds.includes(listId))
+  const listSubscribers = subscribers.value.filter(s => s.listIds.includes(listId))
 
   alert(`Exporting ${listSubscribers.length} subscribers from "${list.name}" list.`)
 
@@ -426,75 +459,75 @@ function importSubscribers(listId) {
 }
 
 // Calculate statistics
-function totalLists() { return lists.length }
-function totalEmailLists() { return lists.filter(l => l.type === 'email' || l.type === 'both').length }
-function totalSmsLists() { return lists.filter(l => l.type === 'sms' || l.type === 'both').length }
-function totalSubscribers() {
+const totalLists = computed(() => lists.value.length)
+const totalEmailLists = computed(() => lists.value.filter(l => l.type === 'email' || l.type === 'both').length)
+const totalSmsLists = computed(() => lists.value.filter(l => l.type === 'sms' || l.type === 'both').length)
+const totalSubscribers = computed(() => {
   // In a real application, this would count unique subscribers
-  return lists.reduce((sum, list) => sum + list.subscriberCount, 0)
-}
+  return lists.value.reduce((sum, list) => sum + list.subscriberCount, 0)
+})
 
 // Show import modal
-const showImportModal = false
-const importListId = null
+const showImportModal = ref(false)
+const importListId = ref<number | null>(null)
 
 function openImportModal(listId) {
-  importListId = listId
-  showImportModal = true
+  importListId.value = listId
+  showImportModal.value = true
 }
 
 function closeImportModal() {
-  showImportModal = false
-  importListId = null
+  showImportModal.value = false
+  importListId.value = null
 }
 
 // Bulk operations
-const selectedLists = []
-const selectAll = false
+const selectedLists = ref<number[]>([])
+const selectAll = ref(false)
 
 function toggleSelectAll() {
-  if (selectAll) {
-    selectedLists = paginatedLists().map(list => list.id)
+  if (selectAll.value) {
+    selectedLists.value = paginatedLists.value.map(list => list.id)
   } else {
-    selectedLists = []
+    selectedLists.value = []
   }
 }
 
 function toggleListSelection(listId) {
-  const index = selectedLists.indexOf(listId)
+  const index = selectedLists.value.indexOf(listId)
   if (index === -1) {
-    selectedLists.push(listId)
+    selectedLists.value.push(listId)
   } else {
-    selectedLists.splice(index, 1)
+    selectedLists.value.splice(index, 1)
   }
 
   // Update selectAll based on whether all visible lists are selected
-  selectAll = paginatedLists().every(list => selectedLists.includes(list.id))
+  selectAll.value = paginatedLists.value.every(list => selectedLists.value.includes(list.id))
 }
 
 function bulkDelete() {
-  if (selectedLists.length === 0) return
+  if (selectedLists.value.length === 0) return
 
-  if (confirm(`Are you sure you want to delete ${selectedLists.length} lists?`)) {
+  if (confirm(`Are you sure you want to delete ${selectedLists.value.length} lists?`)) {
     // Check if any selected list is a default list
-    const hasDefault = lists.some(list => list.isDefault && selectedLists.includes(list.id))
+    const hasDefault = lists.value.some(list => list.isDefault && selectedLists.value.includes(list.id))
 
     if (hasDefault) {
       alert('Cannot delete the default list. Please set another list as default first.')
       return
     }
 
-    lists = lists.filter(list => !selectedLists.includes(list.id))
-    selectedLists = []
-    selectAll = false
+    lists.value = lists.value.filter(list => !selectedLists.value.includes(list.id))
+    selectedLists.value = []
+    selectAll.value = false
   }
 }
 
 function bulkChangeStatus(status) {
-  if (selectedLists.length === 0) return
+  if (selectedLists.value.length === 0) return
 
-  lists.forEach(list => {
-    if (selectedLists.includes(list.id)) {
+  lists.value.forEach(list => {
+    if (selectedLists.value.includes(list.id)) {
       list.status = status
     }
   })
@@ -1305,3 +1338,8 @@ function bulkChangeStatus(status) {
   </main>
 </template>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

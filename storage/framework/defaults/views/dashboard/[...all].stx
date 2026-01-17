@@ -1,4 +1,9 @@
 <script>
+import { useHead } from '@vueuse/head'
+
+useHead({
+  title: 'Dashboard - Page Not Found',
+})
 </script>
 
 <main>
@@ -86,3 +91,8 @@
   </div>
 </main>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: false
+</route>

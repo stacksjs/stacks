@@ -32,10 +32,16 @@ ChartJS.register(
 
 const EmailSidebar = (await import('../../../components/Dashboard/Email/EmailSidebar.vue')).default
 
+useHead({
+  title: 'Mail - Activity Dashboard',
+})
+
+const router = useRouter()
+
 // Time range state
-const timeRange = 'week'
-const activeFolder = 'inbox'
-const isLoading = false
+const timeRange = ref('week')
+const activeFolder = ref('inbox')
+const isLoading = ref(false)
 
 // Folder structure
 const folders = [
@@ -49,7 +55,7 @@ const folders = [
 ]
 
 // Mock unread counts
-function unreadCounts() {
+const unreadCounts = computed(() => {
   return {
     inbox: 2,
     starred: 1,
@@ -150,13 +156,13 @@ const getEmailActivityData = () => {
   let labels = []
   let dataPoints = 0
 
-  if (timeRange === 'day') {
+  if (timeRange.value === 'day') {
     labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
     dataPoints = 24
-  } else if (timeRange === 'week') {
+  } else if (timeRange.value === 'week') {
     labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     dataPoints = 7
-  } else if (timeRange === 'month') {
+  } else if (timeRange.value === 'month') {
     labels = Array.from({ length: 30 }, (_, i) => `${i + 1}`)
     dataPoints = 30
   } else {
@@ -197,13 +203,13 @@ const getResponseTimeData = () => {
   let labels = []
   let dataPoints = 0
 
-  if (timeRange === 'day') {
+  if (timeRange.value === 'day') {
     labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
     dataPoints = 24
-  } else if (timeRange === 'week') {
+  } else if (timeRange.value === 'week') {
     labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     dataPoints = 7
-  } else if (timeRange === 'month') {
+  } else if (timeRange.value === 'month') {
     labels = Array.from({ length: 30 }, (_, i) => `${i + 1}`)
     dataPoints = 30
   } else {
@@ -262,39 +268,39 @@ const getDeviceUsageData = () => {
 }
 
 // Initialize chart data
-const emailActivityData = getEmailActivityData()
-const responseTimeData = getResponseTimeData()
-const emailCategoryData = getEmailCategoryData()
-const deviceUsageData = getDeviceUsageData()
+const emailActivityData = ref(getEmailActivityData())
+const responseTimeData = ref(getResponseTimeData())
+const emailCategoryData = ref(getEmailCategoryData())
+const deviceUsageData = ref(getDeviceUsageData())
 
 // Stats data
-const stats = [
+const stats = ref([
   { name: 'Total Emails', value: '1,284', change: '+12.3%', icon: 'i-hugeicons-mail-02 text-blue-500' },
   { name: 'Average Response Time', value: '28 min', change: '-8.1%', icon: 'i-hugeicons-clock-01 text-green-500' },
   { name: 'Spam Detected', value: '124', change: '+3.2%', icon: 'i-hugeicons-spam text-red-500' },
   { name: 'Attachments', value: '256', change: '+18.7%', icon: 'i-hugeicons-attachment-01 text-purple-500' },
-]
+])
 
 // Update data when time range changes
 const updateChartData = async () => {
-  isLoading = true
+  isLoading.value = true
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500))
-  emailActivityData = getEmailActivityData()
-  responseTimeData = getResponseTimeData()
-  isLoading = false
+  emailActivityData.value = getEmailActivityData()
+  responseTimeData.value = getResponseTimeData()
+  isLoading.value = false
 }
 
 // Watch for time range changes
 const changeTimeRange = async (newRange) => {
-  timeRange = newRange
+  timeRange.value = newRange
   await updateChartData()
 }
 
 // Function to handle folder change
 const handleFolderChange = (folder) => {
   // Update the active folder
-  activeFolder = folder
+  activeFolder.value = folder
   // Navigate to the inbox page with the selected folder
   router.push({
     path: '/inbox',
@@ -307,6 +313,12 @@ const handleCompose = () => {
   router.push('/inbox?compose=true')
 }
 
+// Initial load
+onMounted(async () => {
+  isLoading.value = true
+  await new Promise(resolve => setTimeout(resolve, 500))
+  isLoading.value = false
+})
 </script>
 
 <template>
@@ -387,7 +399,7 @@ const handleCompose = () => {
             <div class="ml-4">
               <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ stat.name }}</p>
               <div class="flex items-baseline">
-                <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ stat }}</p>
+                <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ stat.value }}</p>
                 <p :class="[
                   'ml-2 text-sm font-medium',
                   stat.change.startsWith('+') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
@@ -586,3 +598,8 @@ const handleCompose = () => {
 </div>
 </template>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

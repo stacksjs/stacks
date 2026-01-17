@@ -1,4 +1,11 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script>
+import { ref, computed, watch, onMounted } from 'vue'
+import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -22,6 +29,10 @@ ChartJS.register(
   Legend,
   Filler,
 )
+
+useHead({
+  title: 'Dashboard - Releases',
+})
 
 // Chart options
 const chartOptions = {
@@ -101,8 +112,8 @@ const timeRangeOptions = {
   '365': 'Last year'
 } as const
 
-const timeRange = '30'
-const isLoading = false
+const timeRange = ref<keyof typeof timeRangeOptions>('30')
+const isLoading = ref(false)
 
 // Helper function to format dates
 const formatDate = (daysAgo) => {
@@ -132,9 +143,9 @@ interface ReleaseStatsMap {
   '365': ReleaseStats
 }
 
-const releaseStats = {
+const releaseStats = ref<ReleaseStatsMap>({
   '7': {
-    labels: generateDateLabels(7,
+    labels: generateDateLabels(7),
     downloads: [12500, 15800, 14200, 16800, 19200, 18100, 17200],
     releaseTimes: [3.2, 2.8, 3.5, 2.9, 3.1, 3.4, 3.0]
   },
@@ -157,7 +168,7 @@ const releaseStats = {
 
 // Function to fetch release data from API
 const fetchReleaseData = async (days) => {
-  isLoading = true
+  isLoading.value = true
   try {
     // Here you would make your API call
     // const response = await fetch(`/api/releases/stats?days=${days}`)
@@ -169,28 +180,33 @@ const fetchReleaseData = async (days) => {
   } catch (error) {
     console.error('Error fetching release data:', error)
   } finally {
-    isLoading = false
+    isLoading.value = false
   }
 }
 
+// Watch for time range changes
+watch(timeRange, async (newRange) => {
+  await fetchReleaseData(newRange)
+})
+
 // Chart data for downloads
-function downloadsData() { return ({
-  labels: releaseStats.value[timeRange].labels,
+const downloadsData = computed(() => ({
+  labels: releaseStats.value[timeRange.value].labels,
   datasets: [{
     label: 'Downloads',
-    data: releaseStats.value[timeRange].downloads,
-    borderColor: 'rgb(59, 130, 246 }',
+    data: releaseStats.value[timeRange.value].downloads,
+    borderColor: 'rgb(59, 130, 246)',
     backgroundColor: 'rgba(59, 130, 246, 0.1)',
     fill: true,
   }]
 }))
 
 // Chart data for release times
-function releaseTimeData() { return ({
-  labels: releaseStats.value[timeRange].labels,
+const releaseTimeData = computed(() => ({
+  labels: releaseStats.value[timeRange.value].labels,
   datasets: [{
-    label: 'Release Time (minutes }',
-    data: releaseStats.value[timeRange].releaseTimes,
+    label: 'Release Time (minutes)',
+    data: releaseStats.value[timeRange.value].releaseTimes,
     borderColor: 'rgb(234, 179, 8)',
     backgroundColor: 'rgba(234, 179, 8, 0.1)',
     fill: true,
@@ -217,6 +233,10 @@ const releaseTimeOptions = {
   }
 }
 
+// Initial data fetch
+onMounted(async () => {
+  await fetchReleaseData(timeRange.value)
+})
 </script>
 
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">

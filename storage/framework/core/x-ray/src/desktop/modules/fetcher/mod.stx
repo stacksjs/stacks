@@ -1,21 +1,23 @@
 <!-- <script setup>
+import { ref } from 'vue'
+
 import { $http, generalHandleHttp } from '../../services/http'
 
 /* fetching */
 
-const url = ''
-const loading = false
-const result = ''
+const url = ref('')
+const loading = ref(false)
+const result = ref('')
 
 async function makeRequest() {
-  result = ''
+  result.value = ''
 
-  loading = true
-  const { status, data, headers } = await $http.get({ url: url })
-  loading = false
+  loading.value = true
+  const { status, data, headers } = await $http.get({ url: url.value })
+  loading.value = false
   if (generalHandleHttp(status, data)) return
 
-  result = {
+  result.value = {
     status,
     headers,
     data,

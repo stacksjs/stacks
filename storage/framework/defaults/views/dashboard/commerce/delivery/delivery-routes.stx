@@ -1,60 +1,76 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script server>
+import { ref, computed, onMounted } from 'vue'
+import { useHead } from '@vueuse/head'
 import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 import DeliveryRoutesTable from '../../../../components/Dashboard/Commerce/Delivery/DeliveryRoutesTable.stx'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
 import { useDeliveryRoutes } from '../../../../functions/commerce/shippings/delivery-routes'
 
+useHead({
+  title: 'Dashboard - Delivery Routes',
+})
+
 // Get delivery routes data and functions from the composable
 const { deliveryRoutes, createDeliveryRoute, fetchDeliveryRoutes, updateDeliveryRoute, deleteDeliveryRoute } = useDeliveryRoutes()
 
+// Fetch data on component mount
+onMounted(async () => {
+  await fetchDeliveryRoutes()
+})
+
 // Modal state
-const showAddModal = false
-const showEditModal = false
-const editingRoute = null
-const newDeliveryRoute = {
+const showAddModal = ref(false)
+const showEditModal = ref(false)
+const editingRoute = ref(null)
+const newDeliveryRoute = ref({
   driver: '',
   vehicle: '',
   stops: 0,
   delivery_time: 0,
   total_distance: 0
-}
+})
 
 function openAddModal() {
-  newDeliveryRoute = {
+  newDeliveryRoute.value = {
     driver: '',
     vehicle: '',
     stops: 0,
     delivery_time: 0,
     total_distance: 0
   }
-  showAddModal = true
+  showAddModal.value = true
 }
 
 function closeAddModal() {
-  showAddModal = false
+  showAddModal.value = false
 }
 
 function openEditModal(route) {
-  editingRoute = route
-  newDeliveryRoute = {
+  editingRoute.value = route
+  newDeliveryRoute.value = {
     driver: route.driver,
     vehicle: route.vehicle,
     stops: route.stops,
     delivery_time: route.delivery_time,
     total_distance: route.total_distance
   }
-  showEditModal = true
+  showEditModal.value = true
 }
 
 function closeEditModal() {
-  showEditModal = false
-  editingRoute = null
+  showEditModal.value = false
+  editingRoute.value = null
 }
 
 async function addDeliveryRoute() {
   try {
-    await createDeliveryRoute(newDeliveryRoute)
+    await createDeliveryRoute(newDeliveryRoute.value)
     closeAddModal()
   } catch (error) {
     console.error('Failed to create delivery route:', error)
@@ -62,12 +78,12 @@ async function addDeliveryRoute() {
 }
 
 async function saveDeliveryRoute() {
-  if (!editingRoute) return
+  if (!editingRoute.value) return
 
   try {
     await updateDeliveryRoute({
-      ...editingRoute,
-      ...newDeliveryRoute
+      ...editingRoute.value,
+      ...newDeliveryRoute.value
     })
     closeEditModal()
   } catch (error) {
@@ -76,16 +92,16 @@ async function saveDeliveryRoute() {
 }
 
 // Search and filtering
-const searchQuery = ''
-const currentPage = 1
+const searchQuery = ref('')
+const currentPage = ref(1)
 const itemsPerPage = 5
 
-function filteredRoutes() {
-  const routes = Array.isArray(deliveryRoutes) ? deliveryRoutes : []
+const filteredRoutes = computed(() => {
+  const routes = Array.isArray(deliveryRoutes.value) ? deliveryRoutes.value : []
 
-  if (!searchQuery) return routes
+  if (!searchQuery.value) return routes
 
-  const query = searchQuery.toLowerCase()
+  const query = searchQuery.value.toLowerCase()
   return routes.filter(route =>
     route.driver.toLowerCase().includes(query) ||
     route.vehicle.toLowerCase().includes(query) ||
@@ -95,16 +111,16 @@ function filteredRoutes() {
   )
 })
 
-function paginatedRoutes() {
-  const start = (currentPage - 1) * itemsPerPage
+const paginatedRoutes = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return filteredRoutes.slice(start, end)
+  return filteredRoutes.value.slice(start, end)
 })
 
 // Event handlers
 const handleSearch = (query) => {
-  searchQuery = query
-  currentPage = 1
+  searchQuery.value = query
+  currentPage.value = 1
 }
 
 const handleAddRoute = () => {
@@ -130,20 +146,20 @@ const viewRouteOnMap = (route) => {
 }
 
 const handlePrevPage = () => {
-  if (currentPage > 1) {
+  if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
 const handleNextPage = () => {
-  const totalPages = Math.ceil(filteredRoutes.length / itemsPerPage)
-  if (currentPage < totalPages) {
+  const totalPages = Math.ceil(filteredRoutes.value.length / itemsPerPage)
+  if (currentPage.value < totalPages) {
     currentPage.value++
   }
 }
 
 const handlePageChange = (page) => {
-  currentPage = page
+  currentPage.value = page
 }
 
 // Tab configuration

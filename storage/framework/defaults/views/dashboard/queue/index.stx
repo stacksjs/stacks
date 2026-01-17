@@ -1,4 +1,11 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script lang="ts">
+import { ref } from 'vue'
+import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -22,6 +29,10 @@ ChartJS.register(
   Legend,
   Filler,
 )
+
+useHead({
+  title: 'Dashboard - Queue',
+})
 
 interface QueueStats {
   queued: number
@@ -74,7 +85,7 @@ const queues = ref<Record<string, QueueStats>>({
   },
 })
 
-const workers = [
+const workers = ref<WorkerStats[]>([
   {
     id: '1',
     name: 'worker-1',
@@ -126,11 +137,11 @@ const workers = [
     tries: 3,
     retry_after: 90,
   },
-]
+])
 
-const timeRange = 'hour'
-const selectedQueue = 'all'
-const isLoading = false
+const timeRange = ref<'hour' | 'day' | 'week'>('hour')
+const selectedQueue = ref<string>('all')
+const isLoading = ref(false)
 
 // Chart options
 const chartOptions = {
@@ -236,66 +247,66 @@ const getWaitTimeData = () => {
 }
 
 // Add worker configuration
-const workerConfig = {
+const workerConfig = ref({
   memory_limit: 128,
   timeout: 60,
   tries: 3,
   retry_after: 90,
   connection: 'redis' as const,
-}
+})
 
 // Add worker actions
 const restartWorker = async (workerId: string) => {
-  isLoading = true
+  isLoading.value = true
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1000))
-  const worker = workers.find(w => w.id === workerId)
+  const worker = workers.value.find(w => w.id === workerId)
   if (worker) {
     worker.status = 'running'
     worker.last_heartbeat = new Date().toISOString()
   }
-  isLoading = false
+  isLoading.value = false
 }
 
 const pauseWorker = async (workerId: string) => {
-  isLoading = true
+  isLoading.value = true
   await new Promise(resolve => setTimeout(resolve, 1000))
-  const worker = workers.find(w => w.id === workerId)
+  const worker = workers.value.find(w => w.id === workerId)
   if (worker) worker.status = 'paused'
-  isLoading = false
+  isLoading.value = false
 }
 
 const stopWorker = async (workerId: string) => {
-  isLoading = true
+  isLoading.value = true
   await new Promise(resolve => setTimeout(resolve, 1000))
-  const worker = workers.find(w => w.id === workerId)
+  const worker = workers.value.find(w => w.id === workerId)
   if (worker) worker.status = 'stopped'
-  isLoading = false
+  isLoading.value = false
 }
 
 const retryFailedJobs = async () => {
-  isLoading = true
+  isLoading.value = true
   await new Promise(resolve => setTimeout(resolve, 1000))
   // Simulate retrying failed jobs
-  Object.values(queues).forEach(queue => {
+  Object.values(queues.value).forEach(queue => {
     queue.failed = 0
     queue.queued += queue.failed
   })
-  isLoading = false
+  isLoading.value = false
 }
 
 const clearFailedJobs = async () => {
-  isLoading = true
+  isLoading.value = true
   await new Promise(resolve => setTimeout(resolve, 1000))
   // Simulate clearing failed jobs
-  Object.values(queues).forEach(queue => {
+  Object.values(queues.value).forEach(queue => {
     queue.failed = 0
   })
-  isLoading = false
+  isLoading.value = false
 }
 
 // Update workers data with new fields
-workers = workers.map(worker => ({
+workers.value = workers.value.map(worker => ({
   ...worker,
   memory_limit: 128,
   timeout: 60,
@@ -381,6 +392,7 @@ workers = workers.map(worker => ({
         </dl>
       </div>
     </div>
+
 
     <!-- Queue Stats -->
     <div class="mt-8">

@@ -1,6 +1,18 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script server>
+import { ref, computed } from 'vue'
+import { useHead } from '@vueuse/head'
+
+useHead({
+  title: 'Dashboard - Food Vendors',
+})
+
 // Sample manufacturers data
-const manufacturers = [
+const manufacturers = ref([
   {
     id: 1,
     name: 'Pizza Palace',
@@ -89,107 +101,107 @@ const manufacturers = [
     website: 'https://beverageboutique.foodmarket.org',
     createdAt: '2023-08-01'
   }
-]
+])
 
 // Filter and sort options
-const searchQuery = ''
-const sortBy = 'name'
-const sortOrder = 'asc'
-const featuredFilter = 'all'
-const countryFilter = 'all'
+const searchQuery = ref('')
+const sortBy = ref('name')
+const sortOrder = ref('asc')
+const featuredFilter = ref('all')
+const countryFilter = ref('all')
 
 // Get unique countries for filter
-function countries() {
-  const uniqueCountries = new Set(manufacturers.map(m => m.country))
+const countries = computed(() => {
+  const uniqueCountries = new Set(manufacturers.value.map(m => m.country))
   return Array.from(uniqueCountries).sort()
 })
 
 // Computed filtered and sorted manufacturers
-function filteredManufacturers() {
-  return manufacturers
+const filteredManufacturers = computed(() => {
+  return manufacturers.value
     .filter(manufacturer => {
       // Apply search filter
-      const matchesSearch = manufacturer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           manufacturer.description.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesSearch = manufacturer.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                           manufacturer.description.toLowerCase().includes(searchQuery.value.toLowerCase())
 
       // Apply featured filter
-      const matchesFeatured = featuredFilter === 'all' ||
-                             (featuredFilter === 'featured' && manufacturer.featured) ||
-                             (featuredFilter === 'not-featured' && !manufacturer.featured)
+      const matchesFeatured = featuredFilter.value === 'all' ||
+                             (featuredFilter.value === 'featured' && manufacturer.featured) ||
+                             (featuredFilter.value === 'not-featured' && !manufacturer.featured)
 
       // Apply country filter
-      const matchesCountry = countryFilter === 'all' ||
-                            manufacturer.country === countryFilter
+      const matchesCountry = countryFilter.value === 'all' ||
+                            manufacturer.country === countryFilter.value
 
       return matchesSearch && matchesFeatured && matchesCountry
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy === 'name') {
+      if (sortBy.value === 'name') {
         comparison = a.name.localeCompare(b.name)
-      } else if (sortBy === 'productCount') {
+      } else if (sortBy.value === 'productCount') {
         comparison = a.productCount - b.productCount
-      } else if (sortBy === 'country') {
+      } else if (sortBy.value === 'country') {
         comparison = a.country.localeCompare(b.country)
-      } else if (sortBy === 'createdAt') {
+      } else if (sortBy.value === 'createdAt') {
         comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       }
 
-      return sortOrder === 'asc' ? comparison : -comparison
+      return sortOrder.value === 'asc' ? comparison : -comparison
     })
 })
 
 // Toggle sort order
 function toggleSort(column) {
-  if (sortBy === column) {
-    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  if (sortBy.value === column) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy = column
-    sortOrder = 'asc'
+    sortBy.value = column
+    sortOrder.value = 'asc'
   }
 }
 
 // Modal state
-const showAddModal = false
-const newManufacturer = {
+const showAddModal = ref(false)
+const newManufacturer = ref({
   name: '',
   description: '',
   featured: false,
   country: '',
   website: ''
-}
+})
 
 function openAddModal() {
-  newManufacturer = {
+  newManufacturer.value = {
     name: '',
     description: '',
     featured: false,
     country: '',
     website: ''
   }
-  showAddModal = true
+  showAddModal.value = true
 }
 
 function closeAddModal() {
-  showAddModal = false
+  showAddModal.value = false
 }
 
 function addManufacturer() {
   // In a real app, this would send data to the server
-  const id = Math.max(...manufacturers.map(m => m.id)) + 1
-  const name = newManufacturer.name || '';
+  const id = Math.max(...manufacturers.value.map(m => m.id)) + 1
+  const name = newManufacturer.value.name || '';
   const currentDate = new Date().toISOString().split('T')[0]
 
-  manufacturers.push({
+  manufacturers.value.push({
     id,
     name,
     slug: name.toLowerCase().replace(/\s+/g, '-'),
-    description: newManufacturer.description || '',
+    description: newManufacturer.value.description || '',
     productCount: 0,
-    featured: newManufacturer.featured,
-    country: newManufacturer.country || '',
-    website: newManufacturer.website || '',
+    featured: newManufacturer.value.featured,
+    country: newManufacturer.value.country || '',
+    website: newManufacturer.value.website || '',
     createdAt: currentDate
   })
   closeAddModal()

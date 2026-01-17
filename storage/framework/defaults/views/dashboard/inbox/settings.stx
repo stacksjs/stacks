@@ -4,8 +4,13 @@ const { useHead } = await import('@vueuse/head')
 const { useRouter } = await import('vue-router')
 const EmailSidebar = (await import('../../../components/Dashboard/Email/EmailSidebar.vue')).default
 
-const activeFolder = 'inbox'
-const isLoading = false
+useHead({
+  title: 'Mail - Settings',
+})
+
+const router = useRouter()
+const activeFolder = ref('inbox')
+const isLoading = ref(false)
 
 // Folder structure
 const folders = [
@@ -19,7 +24,7 @@ const folders = [
 ]
 
 // Mock unread counts
-function unreadCounts() {
+const unreadCounts = computed(() => {
   return {
     inbox: 2,
     starred: 1,
@@ -32,7 +37,7 @@ function unreadCounts() {
 })
 
 // Settings sections
-const settingsSections = [
+const settingsSections = ref([
   {
     id: 'general',
     name: 'General',
@@ -69,10 +74,10 @@ const settingsSections = [
     icon: 'i-hugeicons-security-check',
     active: false,
   },
-]
+])
 
 // Settings form data
-const settings = {
+const settings = ref({
   general: {
     displayDensity: 'default',
     defaultReplyBehavior: 'replyAll',
@@ -94,14 +99,14 @@ const settings = {
       message: 'I am currently out of office with limited access to email.',
     },
   },
-}
+})
 
 // Active section
-const activeSection = 'general'
+const activeSection = ref('general')
 
 const setActiveSection = (sectionId) => {
-  activeSection = sectionId
-  settingsSections.forEach(section => {
+  activeSection.value = sectionId
+  settingsSections.value.forEach(section => {
     section.active = section.id === sectionId
   })
 }
@@ -109,7 +114,7 @@ const setActiveSection = (sectionId) => {
 // Function to handle folder change
 const handleFolderChange = (folder) => {
   // Update the active folder
-  activeFolder = folder
+  activeFolder.value = folder
   // Navigate to the inbox page with the selected folder
   router.push({
     path: '/inbox',
@@ -124,15 +129,21 @@ const handleCompose = () => {
 
 // Save settings
 const saveSettings = () => {
-  isLoading = true
+  isLoading.value = true
   // Simulate API call
   setTimeout(() => {
-    isLoading = false
+    isLoading.value = false
     // Show success message
     alert('Settings saved successfully')
   }, 1000)
 }
 
+// Initial load
+onMounted(async () => {
+  isLoading.value = true
+  await new Promise(resolve => setTimeout(resolve, 500))
+  isLoading.value = false
+})
 </script>
 
 <template>
@@ -446,3 +457,8 @@ const saveSettings = () => {
 </div>
 </template>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

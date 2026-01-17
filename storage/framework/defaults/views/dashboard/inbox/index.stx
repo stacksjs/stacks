@@ -4,6 +4,10 @@ const { useHead } = await import('@vueuse/head')
 const { useRoute } = await import('vue-router')
 const EmailSidebar = (await import('../../../components/Dashboard/Email/EmailSidebar.vue')).default
 
+useHead({
+  title: 'Mail - Your Inbox',
+})
+
 // Define the Email interface
 interface Email {
   id: number
@@ -20,15 +24,15 @@ interface Email {
   labels?: string[] // Add labels for categorization
 }
 
-const sidebarOpen = true
-const activeFolder = 'inbox'
-const selectedEmail = null
-const searchQuery = ''
-const isComposing = false
-const isLoading = false
+const sidebarOpen = ref(true)
+const activeFolder = ref('inbox')
+const selectedEmail = ref(null)
+const searchQuery = ref('')
+const isComposing = ref(false)
+const isLoading = ref(false)
 
 // Email data
-const emails = [
+const emails = ref([
   {
     id: 1,
     from: 'William Smith',
@@ -235,7 +239,7 @@ const emails = [
     folder: 'sent',
     attachment: false,
   },
-]
+])
 
 // Folder structure
 const folders = [
@@ -249,19 +253,19 @@ const folders = [
 ]
 
 // Filtered emails based on active folder and search
-function filteredEmails() {
-  let filtered = emails.filter(email => {
+const filteredEmails = computed(() => {
+  let filtered = emails.value.filter(email => {
     // Filter by folder or starred
-    if (activeFolder === 'starred') {
+    if (activeFolder.value === 'starred') {
       return email.starred
     } else {
-      return email.folder === activeFolder
+      return email.folder === activeFolder.value
     }
   })
 
   // Filter by search
-  if (searchQuery) {
-    const query = searchQuery.toLowerCase()
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(email =>
       email.subject.toLowerCase().includes(query) ||
       email.from.toLowerCase().includes(query) ||
@@ -292,7 +296,7 @@ const formatDate = (dateString) => {
 
 // Toggle read status
 const toggleRead = (emailId) => {
-  const index = emails.findIndex(e => e.id === emailId)
+  const index = emails.value.findIndex(e => e.id === emailId)
   if (index !== -1) {
     const email = emails.value[index]
     if (email) {
@@ -303,7 +307,7 @@ const toggleRead = (emailId) => {
 
 // Toggle star status
 const toggleStar = (emailId) => {
-  const index = emails.findIndex(e => e.id === emailId)
+  const index = emails.value.findIndex(e => e.id === emailId)
   if (index !== -1) {
     const email = emails.value[index]
     if (email) {
@@ -315,13 +319,13 @@ const toggleStar = (emailId) => {
 // Get unread count for a folder
 const getUnreadCount = (folder) => {
   if (folder === 'starred') {
-    return emails.filter(e => e.starred && !e.read).length
+    return emails.value.filter(e => e.starred && !e.read).length
   }
-  return emails.filter(e => e.folder === folder && !e.read).length
+  return emails.value.filter(e => e.folder === folder && !e.read).length
 }
 
 // Unread counts for the sidebar
-function unreadCounts() {
+const unreadCounts = computed(() => {
   const counts = {}
   folders.forEach(folder => {
     counts[folder.id] = getUnreadCount(folder.id)
@@ -331,7 +335,7 @@ function unreadCounts() {
 
 // Open email detail
 const openEmail = (email) => {
-  selectedEmail = email
+  selectedEmail.value = email
   if (!email.read) {
     toggleRead(email.id)
   }
@@ -339,7 +343,7 @@ const openEmail = (email) => {
 
 // Close email detail
 const closeEmail = () => {
-  selectedEmail = null
+  selectedEmail.value = null
 }
 
 // Compose new email
@@ -349,15 +353,15 @@ interface NewEmail {
   body: string
 }
 
-const newEmail = {
+const newEmail = ref({
   to: '',
   subject: '',
   body: '',
-}
+})
 
 const startCompose = () => {
-  isComposing = true
-  newEmail = {
+  isComposing.value = true
+  newEmail.value = {
     to: '',
     subject: '',
     body: '',
@@ -365,18 +369,18 @@ const startCompose = () => {
 }
 
 const cancelCompose = () => {
-  isComposing = false
+  isComposing.value = false
 }
 
 const sendEmail = () => {
   // Simulate sending email
   const sentEmail = {
-    id: emails.length + 1,
+    id: emails.value.length + 1,
     from: 'Me',
     email: 'me@stacksjs.com',
-    subject: newEmail.subject,
-    preview: newEmail.body.substring(0, 100),
-    body: newEmail.body,
+    subject: newEmail.value.subject,
+    preview: newEmail.value.body.substring(0, 100),
+    body: newEmail.value.body,
     date: new Date().toISOString(),
     read: true,
     starred: false,
@@ -384,11 +388,30 @@ const sendEmail = () => {
     attachment: false,
   }
 
-  emails.push(sentEmail)
-  isComposing = false
+  emails.value.push(sentEmail)
+  isComposing.value = false
 
   // Show a success toast message or notification here
 }
+
+// Initial load
+onMounted(async () => {
+  isLoading.value = true
+
+  // Check for folder in query params
+  const route = useRoute()
+  if (route.query.folder && typeof route.query.folder === 'string') {
+    activeFolder.value = route.query.folder
+  }
+
+  // Check for compose in query params
+  if (route.query.compose === 'true') {
+    isComposing.value = true
+  }
+
+  await new Promise(resolve => setTimeout(resolve, 500))
+  isLoading.value = false
+})
 
 // Function to get icon for folder
 const getFolderIcon = (folderId) => {
@@ -398,32 +421,32 @@ const getFolderIcon = (folderId) => {
 
 // Function to handle folder change
 const handleFolderChange = (folder) => {
-  activeFolder = folder
+  activeFolder.value = folder
 }
 
 // Function to handle compose
 const handleCompose = () => {
-  isComposing = true
+  isComposing.value = true
 }
 
 // Add refresh functionality
-const isRefreshing = false
+const isRefreshing = ref(false)
 const refreshEmails = async () => {
-  isRefreshing = true
+  isRefreshing.value = true
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1000))
-  isRefreshing = false
+  isRefreshing.value = false
 }
 
 // Add dropdown menu state
-const showMoreMenu = false
-const dropdownRef = null
+const showMoreMenu = ref(false)
+const dropdownRef = ref(null)
 
 const toggleMoreMenu = (event) => {
   event.stopPropagation()
-  showMoreMenu = !showMoreMenu
+  showMoreMenu.value = !showMoreMenu.value
 
-  if (showMoreMenu) {
+  if (showMoreMenu.value) {
     // Add event listener when dropdown is opened
     setTimeout(() => {
       document.addEventListener('click', handleClickOutside)
@@ -432,8 +455,8 @@ const toggleMoreMenu = (event) => {
 }
 
 const handleClickOutside = (event) => {
-  if (dropdownRef && !dropdownRef.contains(event.target)) {
-    showMoreMenu = false
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
+    showMoreMenu.value = false
     document.removeEventListener('click', handleClickOutside)
   }
 }
@@ -444,7 +467,7 @@ onUnmounted(() => {
 })
 
 // Fix the TypeScript error by accessing the value property
-function inboxUnreadCount() {
+const inboxUnreadCount = computed(() => {
   return unreadCounts.value['inbox'] || 0
 })
 </script>
@@ -786,3 +809,8 @@ function inboxUnreadCount() {
 </div>
 </template>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

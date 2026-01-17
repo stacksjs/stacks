@@ -18,13 +18,9 @@ let items = []
 let columns = []
 let error = null
 let totalCount = 0
-let debugInfo = ''
 
 try {
-  // Use absolute path to the database
-  const dbPath = '/Users/chrisbreuer/Code/stacks/database/stacks.sqlite'
-  debugInfo = `DB Path: ${dbPath}, Table: ${tableName}`
-
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
   const db = new Database(dbPath, { readonly: true })
 
   // Get table info to determine columns
@@ -32,8 +28,6 @@ try {
   columns = tableInfo.map(col => ({
     name: col.name,
     type: col.type,
-    notnull: col.notnull,
-    dflt_value: col.dflt_value,
     label: col.name.split('_').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
   }))
 
@@ -41,12 +35,9 @@ try {
   items = db.query(`SELECT * FROM ${tableName} ORDER BY id DESC LIMIT 50`).all()
   totalCount = db.query(`SELECT COUNT(*) as count FROM ${tableName}`).get()?.count || 0
 
-  debugInfo += `, Columns: ${columns.length}, Items: ${items.length}, Count: ${totalCount}`
-
   db.close()
 } catch (e) {
   error = e.message
-  debugInfo += `, Error: ${e.message}`
 }
 </script>
 
@@ -59,22 +50,17 @@ try {
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ modelName }}</h1>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
           @if(error)
-            Table "{{ tableName }}" not found or error occurred: {{ error }}
+            Table "{{ tableName }}" not found or error occurred
           @else
             {{ totalCount }} records in {{ tableName }}
           @endif
         </p>
-        <!-- Debug: {{ debugInfo }} -->
       </div>
       <div class="flex gap-3">
         <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
           Export
         </button>
-        <button
-          type="button"
-          class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-          onclick="document.getElementById('create-{{ modelSlug }}-modal').showModal()"
-        >
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
           Add New
         </button>
       </div>
@@ -101,11 +87,7 @@ try {
         </div>
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No {{ modelName }} Found</h3>
         <p class="text-gray-500 dark:text-gray-400 mb-6">Get started by creating your first {{ modelName }}.</p>
-        <button
-          type="button"
-          class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-          onclick="document.getElementById('create-{{ modelSlug }}-modal').showModal()"
-        >
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
           Create {{ modelName }}
         </button>
       </div>
@@ -185,24 +167,5 @@ try {
       </div>
     @endif
   </div>
-
-  <!-- Create Record Modal -->
-  <CreateRecordModal
-    modalId="create-{{ modelSlug }}-modal"
-    modelName="{{ modelName }}"
-    tableName="{{ tableName }}"
-    columns="{{ columns }}"
-  />
 </DashboardLayout>
 </template>
-
-<script client>
-// Initialize modal data attributes for the API endpoint
-document.addEventListener('DOMContentLoaded', () => {
-  const modal = document.getElementById('create-{{ modelSlug }}-modal');
-  if (modal) {
-    modal.dataset.table = '{{ tableName }}';
-    modal.dataset.model = '{{ modelName }}';
-  }
-});
-</script>

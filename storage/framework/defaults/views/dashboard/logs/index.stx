@@ -1,4 +1,6 @@
 <script server>
+import { ref, computed, onMounted, watch } from 'vue'
+import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -22,6 +24,10 @@ ChartJS.register(
   Legend,
   Filler,
 )
+
+useHead({
+  title: 'Dashboard - Logs',
+})
 
 interface Log {
   id: string
@@ -80,18 +86,18 @@ interface Project {
 }
 
 // Add pagination
-const currentPage = 1
-const itemsPerPage = 10
-const totalItems = 0
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+const totalItems = ref(0)
 
-const logs = []
-const filter = 'all'
-const searchTerm = ''
-const autoRefresh = true
-const selectedLog = null
-const selectedProjects = []
-const isLoading = false
-const logTypeFilter = 'all'
+const logs = ref<Log[]>([])
+const filter = ref('all')
+const searchTerm = ref('')
+const autoRefresh = ref(true)
+const selectedLog = ref<Log | null>(null)
+const selectedProjects = ref<string[]>([])
+const isLoading = ref(false)
+const logTypeFilter = ref<string>('all')
 
 // Sample projects
 const projects: Project[] = [
@@ -238,60 +244,60 @@ const sampleLogs: Log[] = [
   }
 ]
 
-function filteredLogs() {
-  return logs.filter(log => {
-    const matchesSearch = log.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (log.email?.subject?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (log.email?.recipient?.toLowerCase().includes(searchTerm.toLowerCase()));
+const filteredLogs = computed(() => {
+  return logs.value.filter(log => {
+    const matchesSearch = log.message.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+      (log.email?.subject?.toLowerCase().includes(searchTerm.value.toLowerCase())) ||
+      (log.email?.recipient?.toLowerCase().includes(searchTerm.value.toLowerCase()));
 
-    const matchesSource = filter === 'all' || log.source.toLowerCase() === filter.toLowerCase();
+    const matchesSource = filter.value === 'all' || log.source.toLowerCase() === filter.value.toLowerCase();
 
-    const matchesType = logTypeFilter === 'all' || log.type === logTypeFilter;
+    const matchesType = logTypeFilter.value === 'all' || log.type === logTypeFilter.value;
 
-    const matchesProject = selectedProjects.length === 0 ||
-      (log.project && selectedProjects.includes(log.project));
+    const matchesProject = selectedProjects.value.length === 0 ||
+      (log.project && selectedProjects.value.includes(log.project));
 
     return matchesSearch && matchesSource && matchesProject && matchesType;
   }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 });
 
 // Add pagination computed properties
-function paginatedLogs() {
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  totalItems = filteredLogs.length;
-  return filteredLogs.slice(startIndex, endIndex);
+const paginatedLogs = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage.value;
+  const endIndex = startIndex + itemsPerPage.value;
+  totalItems.value = filteredLogs.value.length;
+  return filteredLogs.value.slice(startIndex, endIndex);
 });
 
-function totalPages() {
-  return Math.ceil(totalItems / itemsPerPage);
+const totalPages = computed(() => {
+  return Math.ceil(totalItems.value / itemsPerPage.value);
 });
 
 // Add pagination methods
 const goToPage = (page: number) => {
-  if (page >= 1 && page <= totalPages) {
-    currentPage = page;
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
   }
 };
 
 const nextPage = () => {
-  if (currentPage < totalPages) {
+  if (currentPage.value < totalPages.value) {
     currentPage.value++;
   }
 };
 
 const prevPage = () => {
-  if (currentPage > 1) {
+  if (currentPage.value > 1) {
     currentPage.value--;
   }
 };
 
 const resetFilters = () => {
-  searchTerm = '';
-  filter = 'all';
-  logTypeFilter = 'all';
-  selectedProjects = [];
-  currentPage = 1;
+  searchTerm.value = '';
+  filter.value = 'all';
+  logTypeFilter.value = 'all';
+  selectedProjects.value = [];
+  currentPage.value = 1;
 };
 
 const getProjectClasses = (projectId: string): { bg: string, text: string, ring: string } => {
@@ -314,11 +320,11 @@ const getProjectClasses = (projectId: string): { bg: string, text: string, ring:
 }
 
 const toggleProject = (projectId: string) => {
-  const index = selectedProjects.indexOf(projectId)
+  const index = selectedProjects.value.indexOf(projectId)
   if (index === -1) {
-    selectedProjects.push(projectId)
+    selectedProjects.value.push(projectId)
   } else {
-    selectedProjects.splice(index, 1)
+    selectedProjects.value.splice(index, 1)
   }
 }
 
@@ -373,12 +379,17 @@ const getLogRowClass = (type: Log['type']) => {
 
 let refreshInterval: number | undefined
 
+onMounted(() => {
+  logs.value = sampleLogs
+  startAutoRefresh()
+})
+
 onUnmounted(() => {
   stopAutoRefresh()
 })
 
 const startAutoRefresh = () => {
-  if (autoRefresh) {
+  if (autoRefresh.value) {
     refreshInterval = window.setInterval(() => {
       // In reality, this would fetch new logs
       // fetchNewLogs()
@@ -394,8 +405,8 @@ const stopAutoRefresh = () => {
 }
 
 const toggleAutoRefresh = () => {
-  autoRefresh = !autoRefresh
-  if (autoRefresh) {
+  autoRefresh.value = !autoRefresh.value
+  if (autoRefresh.value) {
     startAutoRefresh()
   } else {
     stopAutoRefresh()
@@ -497,11 +508,19 @@ const getLogVolumeData = () => {
   }
 }
 
-const logVolumeData = getLogVolumeData()
+const logVolumeData = ref(getLogVolumeData())
 
 // Add timeRange ref
-const timeRange = 'day'
+const timeRange = ref<'day' | 'week' | 'month' | 'year'>('day')
 
+// Watch for time range changes
+watch(timeRange, async () => {
+  isLoading.value = true
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500))
+  logVolumeData.value = getLogVolumeData()
+  isLoading.value = false
+})
 </script>
 
 <template>
@@ -1010,3 +1029,8 @@ const timeRange = 'day'
 </div>
 </template>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

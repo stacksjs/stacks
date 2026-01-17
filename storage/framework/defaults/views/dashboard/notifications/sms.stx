@@ -1,6 +1,12 @@
 <script server>
+import { ref, computed, onMounted } from 'vue'
+import { useHead } from '@vueuse/head'
 import NotificationStatusBadge from '../../../components/Dashboard/NotificationStatusBadge.stx'
 import NotificationErrorModal from '../../../components/Dashboard/NotificationErrorModal.stx'
+
+useHead({
+  title: 'Dashboard - SMS Notifications',
+})
 
 interface SMSNotification {
   id: string
@@ -20,24 +26,24 @@ interface SMSNotification {
 }
 
 // Pagination and filtering state
-const notifications = []
-const currentPage = 1
-const perPage = 10
-const totalNotifications = 0
-const isLoading = true
-const searchQuery = ''
-const selectedStatus = 'all'
-const dateRange = null
-const showFilters = false
-const sortField = null
-const sortDirection = 'desc'
+const notifications = ref<SMSNotification[]>([])
+const currentPage = ref(1)
+const perPage = ref(10)
+const totalNotifications = ref(0)
+const isLoading = ref(true)
+const searchQuery = ref('')
+const selectedStatus = ref<string>('all')
+const dateRange = ref<[string, string] | null>(null)
+const showFilters = ref(false)
+const sortField = ref<'sent_at' | 'delivered_at' | null>(null)
+const sortDirection = ref<'asc' | 'desc'>('desc')
 
 // Filter options
 const statusTypes = ['all', 'sent', 'delivered', 'failed', 'pending']
 
 // Add state for error modal
-const isErrorModalOpen = false
-const selectedNotification = null
+const isErrorModalOpen = ref(false)
+const selectedNotification = ref<SMSNotification | null>(null)
 
 // Generate mock data
 const generateMockSMSNotifications = () => {
@@ -90,11 +96,11 @@ const generateMockSMSNotifications = () => {
 }
 
 // Computed properties for filtering
-function filteredNotifications() {
-  return notifications.filter(notification => {
-    if (selectedStatus !== 'all' && notification.status !== selectedStatus) return false
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
+const filteredNotifications = computed(() => {
+  return notifications.value.filter(notification => {
+    if (selectedStatus.value !== 'all' && notification.status !== selectedStatus.value) return false
+    if (searchQuery.value) {
+      const query = searchQuery.value.toLowerCase()
       return notification.message.toLowerCase().includes(query) ||
              notification.recipient.toLowerCase().includes(query)
     }
@@ -103,10 +109,10 @@ function filteredNotifications() {
 })
 
 // Add sorting functionality
-function sortedNotifications() {
-  if (!sortField) return filteredNotifications
+const sortedNotifications = computed(() => {
+  if (!sortField.value) return filteredNotifications.value
 
-  return [...filteredNotifications].sort((a, b) => {
+  return [...filteredNotifications.value].sort((a, b) => {
     const aValue = a[sortField.value!]
     const bValue = b[sortField.value!]
 
@@ -115,17 +121,17 @@ function sortedNotifications() {
     if (!bValue) return -1
 
     const comparison = new Date(aValue).getTime() - new Date(bValue).getTime()
-    return sortDirection === 'asc' ? comparison : -comparison
+    return sortDirection.value === 'asc' ? comparison : -comparison
   })
 })
 
-function paginatedNotifications() {
-  const start = (currentPage - 1) * perPage
-  const end = start + perPage
-  return sortedNotifications.slice(start, end)
+const paginatedNotifications = computed(() => {
+  const start = (currentPage.value - 1) * perPage.value
+  const end = start + perPage.value
+  return sortedNotifications.value.slice(start, end)
 })
 
-function totalPages() { return Math.ceil(filteredNotifications.length / perPage })
+const totalPages = computed(() => Math.ceil(filteredNotifications.value.length / perPage.value))
 
 // Methods
 const handleRetry = async (notificationId) => {
@@ -134,9 +140,9 @@ const handleRetry = async (notificationId) => {
 }
 
 const resetFilters = () => {
-  selectedStatus = 'all'
-  searchQuery = ''
-  dateRange = null
+  selectedStatus.value = 'all'
+  searchQuery.value = ''
+  dateRange.value = null
 }
 
 const formatDate = (date) => {
@@ -144,25 +150,39 @@ const formatDate = (date) => {
 }
 
 const toggleSort = (field) => {
-  if (sortField === field) {
-    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'
+  if (sortField.value === field) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
   } else {
-    sortField = field
-    sortDirection = 'desc'
+    sortField.value = field
+    sortDirection.value = 'desc'
   }
 }
 
 // Function to open error modal
 const openErrorModal = (notification) => {
-  selectedNotification = notification
-  isErrorModalOpen = true
+  selectedNotification.value = notification
+  isErrorModalOpen.value = true
 }
 
 // Function to close error modal
 const closeErrorModal = () => {
-  isErrorModalOpen = false
+  isErrorModalOpen.value = false
 }
 
+// Load initial data
+onMounted(async () => {
+  isLoading.value = true
+  try {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    notifications.value = generateMockSMSNotifications()
+    totalNotifications.value = notifications.value.length
+  } catch (error) {
+    console.error('Failed to load SMS notifications:', error)
+  } finally {
+    isLoading.value = false
+  }
+})
 </script>
 
 <template>
@@ -380,3 +400,8 @@ const closeErrorModal = () => {
 </div>
 </template>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

@@ -1,8 +1,14 @@
 <script server>
+import { ref, computed, onMounted, reactive } from 'vue'
+import { useHead } from '@vueuse/head'
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
 // Register Chart.js components
 Chart.register(...registerables)
+
+useHead({
+  title: 'Dashboard - Commerce Sales Analytics',
+})
 
 // Types
 interface DateRange {
@@ -43,25 +49,25 @@ const dateRanges: DateRange[] = [
 ]
 
 // Selected date range
-const selectedDateRange = 'all-time'
-const dateRangeDisplay = 'All Time: Sep 7, 2023 to Mar 6, 2025'
-const comparisonType = 'no-comparison'
-const customStartDate = ''
-const customEndDate = ''
-function showCustomDateRange() { return selectedDateRange === 'custom' }
+const selectedDateRange = ref('all-time')
+const dateRangeDisplay = ref('All Time: Sep 7, 2023 to Mar 6, 2025')
+const comparisonType = ref('no-comparison')
+const customStartDate = ref('')
+const customEndDate = ref('')
+const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
 
 // Sales overview data
-const salesOverview = {
+const salesOverview = ref({
   totalRevenue: 1245678.90,
   totalOrders: 34567,
   averageOrderValue: 36.04,
   conversionRate: '2.4%',
   returnRate: '5.2%',
   repeatCustomerRate: '28%'
-}
+})
 
 // Sales data for chart
-const salesData = [
+const salesData = ref([
   { date: '2023-11-01', revenue: 25000, orders: 980 },
   { date: '2023-12-01', revenue: 35000, orders: 1220 },
   { date: '2024-01-01', revenue: 42000, orders: 1440 },
@@ -78,17 +84,17 @@ const salesData = [
   { date: '2024-12-01', revenue: 90000, orders: 2300 },
   { date: '2025-01-01', revenue: 30000, orders: 800 },
   { date: '2025-02-01', revenue: 18000, orders: 400 }
-]
+])
 
 // Chart.js configuration
 const chartConfig = reactive({
   type: 'line' as keyof ChartTypeRegistry,
   data: {
-    labels: salesData.map(item => item.date),
+    labels: salesData.value.map(item => item.date),
     datasets: [
       {
         label: 'Revenue ($)',
-        data: salesData.map(item => item.revenue),
+        data: salesData.value.map(item => item.revenue),
         backgroundColor: 'rgba(16, 185, 129, 0.3)',
         borderColor: 'rgba(16, 185, 129, 0.8)',
         borderWidth: 2,
@@ -98,7 +104,7 @@ const chartConfig = reactive({
       },
       {
         label: 'Orders',
-        data: salesData.map(item => item.orders),
+        data: salesData.value.map(item => item.orders),
         backgroundColor: 'rgba(245, 158, 11, 0.1)',
         borderColor: 'rgba(245, 158, 11, 0.8)',
         borderWidth: 2,
@@ -120,7 +126,7 @@ const chartConfig = reactive({
           maxTicksLimit: 4,
           callback: function(value, index) {
             const labels = ['Jan 2024', 'May 2024', 'Sep 2024', 'Jan 2025']
-            return index % Math.floor(salesData.length / 4) === 0 ? labels[Math.floor(index / (salesData.length / 4))] || '' : ''
+            return index % Math.floor(salesData.value.length / 4) === 0 ? labels[Math.floor(index / (salesData.value.length / 4))] || '' : ''
           }
         }
       },
@@ -181,7 +187,7 @@ const chartConfig = reactive({
 })
 
 // Products data
-const productsData = [
+const productsData = ref<ProductData[]>([
   { name: 'Smartphone X Pro', sku: 'SP-X-PRO', sales: 1245, revenue: 623450, percentage: 0 },
   { name: 'Wireless Earbuds', sku: 'WE-200', sales: 3567, revenue: 178350, percentage: 0 },
   { name: 'Smart Watch Series 5', sku: 'SW-S5', sales: 2134, revenue: 149380, percentage: 0 },
@@ -192,17 +198,17 @@ const productsData = [
   { name: 'Gaming Mouse', sku: 'GM-RGB', sales: 1234, revenue: 43190, percentage: 0 },
   { name: 'Mechanical Keyboard', sku: 'KB-MECH', sales: 987, revenue: 39480, percentage: 0 },
   { name: 'External SSD 1TB', sku: 'SSD-1TB', sales: 765, revenue: 38250, percentage: 0 }
-]
+])
 
 // Calculate percentages for products based on revenue
-function totalProductRevenue() { return productsData.reduce((sum, product } => sum + product.revenue, 0))
+const totalProductRevenue = computed(() => productsData.value.reduce((sum, product) => sum + product.revenue, 0))
 // Update percentages
-productsData.forEach(product => {
-  product.percentage = Math.round((product.revenue / totalProductRevenue) * 100)
+productsData.value.forEach(product => {
+  product.percentage = Math.round((product.revenue / totalProductRevenue.value) * 100)
 })
 
 // Categories data
-const categoriesData = [
+const categoriesData = ref<CategoryData[]>([
   { name: 'Electronics', sales: 5678, revenue: 850200, percentage: 0 },
   { name: 'Clothing', sales: 4532, revenue: 226600, percentage: 0 },
   { name: 'Home & Kitchen', sales: 3210, revenue: 160500, percentage: 0 },
@@ -213,29 +219,29 @@ const categoriesData = [
   { name: 'Health & Household', sales: 1234, revenue: 61700, percentage: 0 },
   { name: 'Automotive', sales: 876, revenue: 43800, percentage: 0 },
   { name: 'Pet Supplies', sales: 765, revenue: 38250, percentage: 0 }
-]
+])
 
 // Calculate percentages for categories based on revenue
-function totalCategoryRevenue() { return categoriesData.reduce((sum, category } => sum + category.revenue, 0))
+const totalCategoryRevenue = computed(() => categoriesData.value.reduce((sum, category) => sum + category.revenue, 0))
 // Update percentages
-categoriesData.forEach(category => {
-  category.percentage = Math.round((category.revenue / totalCategoryRevenue) * 100)
+categoriesData.value.forEach(category => {
+  category.percentage = Math.round((category.revenue / totalCategoryRevenue.value) * 100)
 })
 
 // Top customers data
-const customersData = [
+const customersData = ref<CustomerData[]>([
   { name: 'John Smith', orders: 24, spent: 4800, percentage: 0 },
   { name: 'Sarah Johnson', orders: 18, spent: 3600, percentage: 0 },
   { name: 'Michael Brown', orders: 15, spent: 3000, percentage: 0 },
   { name: 'Emily Davis', orders: 12, spent: 2400, percentage: 0 },
   { name: 'David Wilson', orders: 10, spent: 2000, percentage: 0 }
-]
+])
 
 // Calculate percentages for customers based on spent
-function totalCustomerSpent() { return customersData.reduce((sum, customer } => sum + customer.spent, 0))
+const totalCustomerSpent = computed(() => customersData.value.reduce((sum, customer) => sum + customer.spent, 0))
 // Update percentages
-customersData.forEach(customer => {
-  customer.percentage = Math.round((customer.spent / totalCustomerSpent) * 100)
+customersData.value.forEach(customer => {
+  customer.percentage = Math.round((customer.spent / totalCustomerSpent.value) * 100)
 })
 
 // Format numbers with commas
@@ -257,6 +263,13 @@ function getPercentageColorClass(percentage) {
 
 // Initialize chart when component is mounted
 let salesChart: Chart | null = null
+
+onMounted(() => {
+  const ctx = document.getElementById('salesChart') as HTMLCanvasElement
+  if (ctx) {
+    salesChart = new Chart(ctx, chartConfig)
+  }
+})
 
 </script>
 
@@ -517,3 +530,8 @@ let salesChart: Chart | null = null
 </main>
 </template>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

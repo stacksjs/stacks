@@ -1,8 +1,14 @@
 <script server>
+import { ref, computed, onMounted, reactive } from 'vue'
+import { useHead } from '@vueuse/head'
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
 // Register Chart.js components
 Chart.register(...registerables)
+
+useHead({
+  title: 'Dashboard - Country Analytics',
+})
 
 // Types
 interface DateRange {
@@ -43,15 +49,15 @@ const dateRanges: DateRange[] = [
 ]
 
 // Selected date range
-const selectedDateRange = 'all-time'
-const dateRangeDisplay = 'All Time: Sep 7, 2023 to Mar 6, 2025'
-const comparisonType = 'no-comparison'
-const customStartDate = ''
-const customEndDate = ''
-function showCustomDateRange() { return selectedDateRange === 'custom' }
+const selectedDateRange = ref('all-time')
+const dateRangeDisplay = ref('All Time: Sep 7, 2023 to Mar 6, 2025')
+const comparisonType = ref('no-comparison')
+const customStartDate = ref('')
+const customEndDate = ref('')
+const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
 
 // Countries data with flag emojis
-const countriesData = [
+const countriesData = ref<CountryData[]>([
   { name: 'United States of America', visitors: 768, flag: '🇺🇸', code: 'US', percentage: 35 },
   { name: 'Germany', visitors: 140, flag: '🇩🇪', code: 'DE', percentage: 12 },
   { name: 'United Kingdom', visitors: 87, flag: '🇬🇧', code: 'GB', percentage: 8 },
@@ -64,10 +70,10 @@ const countriesData = [
   { name: 'Japan', visitors: 52, flag: '🇯🇵', code: 'JP', percentage: 4 },
   { name: 'Netherlands', visitors: 45, flag: '🇳🇱', code: 'NL', percentage: 4 },
   { name: 'Spain', visitors: 42, flag: '🇪🇸', code: 'ES', percentage: 3 }
-]
+])
 
 // Cities data
-const citiesData = [
+const citiesData = ref<CityData[]>([
   { name: 'New York', country: 'United States of America', visitors: 120, percentage: 10 },
   { name: 'London', country: 'United Kingdom', visitors: 87, percentage: 7 },
   { name: 'Berlin', country: 'Germany', visitors: 75, percentage: 6 },
@@ -78,13 +84,13 @@ const citiesData = [
   { name: 'Sydney', country: 'Australia', visitors: 58, percentage: 5 },
   { name: 'Paris', country: 'France', visitors: 55, percentage: 4 },
   { name: 'Los Angeles', country: 'United States of America', visitors: 52, percentage: 4 }
-]
+])
 
 // Languages data
-const languagesData = [
+const languagesData = ref<LanguageData[]>([
   { name: 'English', code: 'en-US', visitors: 980, percentage: 45 },
   { name: 'German', code: 'de-DE', visitors: 140, percentage: 12 },
-  { name: 'English (UK', code: 'en-GB', visitors: 87, percentage: 8 },
+  { name: 'English (UK)', code: 'en-GB', visitors: 87, percentage: 8 },
   { name: 'Hindi', code: 'hi-IN', visitors: 83, percentage: 7 },
   { name: 'Indonesian', code: 'id-ID', visitors: 80, percentage: 7 },
   { name: 'French', code: 'fr-FR', visitors: 62, percentage: 5 },
@@ -98,11 +104,11 @@ const languagesData = [
 const chartConfig = reactive({
   type: 'bar' as keyof ChartTypeRegistry,
   data: {
-    labels: countriesData.slice(0, 10).map(item => item.name),
+    labels: countriesData.value.slice(0, 10).map(item => item.name),
     datasets: [
       {
         label: 'Visitors',
-        data: countriesData.slice(0, 10).map(item => item.visitors),
+        data: countriesData.value.slice(0, 10).map(item => item.visitors),
         backgroundColor: [
           'rgba(59, 130, 246, 0.8)',
           'rgba(16, 185, 129, 0.8)',
@@ -132,7 +138,7 @@ const chartConfig = reactive({
         callbacks: {
           label: function(context) {
             const value = context.raw || 0;
-            const total = countriesData.reduce((a, b) => a + b.visitors, 0);
+            const total = countriesData.value.reduce((a, b) => a + b.visitors, 0);
             const percentage = Math.round((value / total) * 100);
             return `${value} visitors (${percentage}%)`;
           }
@@ -156,10 +162,10 @@ const chartConfig = reactive({
 })
 
 // World map data for visualization
-const mapData = {
+const mapData = ref({
   // This would be used with a mapping library like jVectorMap or a GeoJSON visualization
   // For now, we'll just use the countries data for demonstration
-}
+})
 
 // Format numbers with commas
 function formatNumber(number) {
@@ -168,7 +174,7 @@ function formatNumber(number) {
 
 // Mock function to update data when date range changes
 function updateDataForDateRange() {
-  console.log('Updating data for date range:', selectedDateRange)
+  console.log('Updating data for date range:', selectedDateRange.value)
 }
 
 // Watch for date range changes
@@ -179,6 +185,14 @@ function handleDateRangeChange() {
 // Initialize chart when component is mounted
 let countryChart: Chart | null = null
 
+onMounted(() => {
+  const ctx = document.getElementById('countryChart') as HTMLCanvasElement
+  if (ctx) {
+    countryChart = new Chart(ctx, chartConfig)
+  }
+
+  updateDataForDateRange()
+})
 </script>
 
 <template>
@@ -397,3 +411,8 @@ let countryChart: Chart | null = null
 </main>
 </template>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

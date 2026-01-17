@@ -1,4 +1,11 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script lang="ts">
+import { ref, computed } from 'vue'
+import { useHead } from '@vueuse/head'
 import { Line, Bar, Doughnut } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -26,6 +33,10 @@ ChartJS.register(
   Legend,
   Filler,
 )
+
+useHead({
+  title: 'Dashboard - Website Pages',
+})
 
 // Chart options
 const chartOptions = {
@@ -65,7 +76,7 @@ const doughnutChartOptions = {
 }
 
 // Sample pages data
-const pages = [
+const pages = ref([
   {
     id: 1,
     title: 'Home',
@@ -276,10 +287,10 @@ const pages = [
     },
     ogImage: 'https://picsum.photos/seed/10/280/160'
   }
-]
+])
 
 // Generate monthly data for charts
-function monthlyChartData() {
+const monthlyChartData = computed(() => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   // Sample data - in a real app, this would be calculated from actual page data
@@ -333,7 +344,7 @@ function monthlyChartData() {
   // Template distribution chart data
   const templateCounts: Record<string, number> = {}
 
-  pages.forEach(page => {
+  pages.value.forEach(page => {
     if (page.template) {
       templateCounts[page.template] = (templateCounts[page.template] || 0) + 1
     }
@@ -369,7 +380,7 @@ function monthlyChartData() {
 })
 
 // Time range selector
-const timeRange = 'Last 30 days'
+const timeRange = ref('Last 30 days')
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Templates for filtering
@@ -404,16 +415,16 @@ const locations = [
 ]
 
 // Filter and sort options
-const searchQuery = ''
-const selectedTemplate = 'All Templates'
-const selectedStatus = 'All Statuses'
-const selectedLocation = 'All Locations'
-const sortBy = 'published'
-const sortOrder = 'desc'
+const searchQuery = ref('')
+const selectedTemplate = ref('All Templates')
+const selectedStatus = ref('All Statuses')
+const selectedLocation = ref('All Locations')
+const sortBy = ref('published')
+const sortOrder = ref('desc')
 
 // New Page Modal
-const showNewPageModal = false
-const newPage = {
+const showNewPageModal = ref(false)
+const newPage = ref({
   title: '',
   slug: '',
   template: 'Default',
@@ -429,11 +440,11 @@ const newPage = {
     keywords: ''
   },
   ogImage: 'https://picsum.photos/seed/new/280/160'
-}
+})
 
 // Available sections by template
-function availableSections() {
-  switch (newPage.template) {
+const availableSections = computed(() => {
+  switch (newPage.value.template) {
     case 'Default':
       return ['Header', 'Content', 'Hero', 'Features', 'Testimonials', 'CTA', 'Team', 'Partners', 'Gallery'];
     case 'Services':
@@ -456,13 +467,13 @@ function availableSections() {
 })
 
 function openNewPageModal() {
-  showNewPageModal = true
+  showNewPageModal.value = true
 }
 
 function closeNewPageModal() {
-  showNewPageModal = false
+  showNewPageModal.value = false
   // Reset form
-  newPage = {
+  newPage.value = {
     title: '',
     slug: '',
     template: 'Default',
@@ -484,65 +495,65 @@ function closeNewPageModal() {
 function createNewPage() {
   // In a real app, this would send data to the server
   const page = {
-    id: pages.length + 1,
-    title: newPage.title,
-    slug: newPage.slug || newPage.title.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, '-'),
-    template: newPage.template,
-    sections: newPage.sections || [],
+    id: pages.value.length + 1,
+    title: newPage.value.title,
+    slug: newPage.value.slug || newPage.value.title.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, '-'),
+    template: newPage.value.template,
+    sections: newPage.value.sections || [],
     author: 'Current User', // In a real app, this would be the current user
     views: 0,
     conversions: 0,
-    published: newPage.status === 'Published' ? new Date().toISOString().split('T')[0] : '',
-    status: newPage.status,
-    isHomepage: newPage.isHomepage,
-    inMainMenu: newPage.inMainMenu,
-    inFooter: newPage.inFooter,
+    published: newPage.value.status === 'Published' ? new Date().toISOString().split('T')[0] : '',
+    status: newPage.value.status,
+    isHomepage: newPage.value.isHomepage,
+    inMainMenu: newPage.value.inMainMenu,
+    inFooter: newPage.value.inFooter,
     seo: {
-      title: newPage.seo.title || newPage.title,
-      description: newPage.seo.description || '',
-      keywords: newPage.seo.keywords || ''
+      title: newPage.value.seo.title || newPage.value.title,
+      description: newPage.value.seo.description || '',
+      keywords: newPage.value.seo.keywords || ''
     },
-    ogImage: newPage.ogImage
+    ogImage: newPage.value.ogImage
   }
 
   // If this is set as homepage, unset any existing homepage
   if (page.isHomepage) {
-    pages.forEach(p => {
+    pages.value.forEach(p => {
       if (p.isHomepage) {
         p.isHomepage = false
       }
     })
   }
 
-  pages.unshift(page as any) // Type assertion to fix the linter error
+  pages.value.unshift(page as any) // Type assertion to fix the linter error
   closeNewPageModal()
 }
 
 // Computed filtered and sorted pages
-function filteredPages() {
-  return pages
+const filteredPages = computed(() => {
+  return pages.value
     .filter(page => {
       // Apply search filter
       const matchesSearch =
-        page.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        page.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        page.author.toLowerCase().includes(searchQuery.toLowerCase())
+        page.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        page.slug.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        page.author.toLowerCase().includes(searchQuery.value.toLowerCase())
 
       // Apply template filter
-      const matchesTemplate = selectedTemplate === 'All Templates' || page.template === selectedTemplate
+      const matchesTemplate = selectedTemplate.value === 'All Templates' || page.template === selectedTemplate.value
 
       // Apply status filter
-      const matchesStatus = selectedStatus === 'All Statuses' || page.status === selectedStatus
+      const matchesStatus = selectedStatus.value === 'All Statuses' || page.status === selectedStatus.value
 
       // Apply location filter
       let matchesLocation = true
-      if (selectedLocation === 'Main Menu') {
+      if (selectedLocation.value === 'Main Menu') {
         matchesLocation = page.inMainMenu
-      } else if (selectedLocation === 'Footer') {
+      } else if (selectedLocation.value === 'Footer') {
         matchesLocation = page.inFooter
-      } else if (selectedLocation === 'Homepage') {
+      } else if (selectedLocation.value === 'Homepage') {
         matchesLocation = page.isHomepage
-      } else if (selectedLocation === 'Not in Menu') {
+      } else if (selectedLocation.value === 'Not in Menu') {
         matchesLocation = !page.inMainMenu && !page.inFooter
       }
 
@@ -551,15 +562,15 @@ function filteredPages() {
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy === 'title') {
+      if (sortBy.value === 'title') {
         comparison = a.title.localeCompare(b.title)
-      } else if (sortBy === 'author') {
+      } else if (sortBy.value === 'author') {
         comparison = a.author.localeCompare(b.author)
-      } else if (sortBy === 'views') {
+      } else if (sortBy.value === 'views') {
         comparison = a.views - b.views
-      } else if (sortBy === 'conversions') {
+      } else if (sortBy.value === 'conversions') {
         comparison = a.conversions - b.conversions
-      } else if (sortBy === 'published') {
+      } else if (sortBy.value === 'published') {
         // Handle draft pages (empty published date)
         if (!a.published && !b.published) return 0
         if (!a.published) return 1
@@ -567,44 +578,44 @@ function filteredPages() {
         return new Date(a.published).getTime() - new Date(b.published).getTime()
       }
 
-      return sortOrder === 'asc' ? comparison : -comparison
+      return sortOrder.value === 'asc' ? comparison : -comparison
     })
 })
 
 // Pagination
-const currentPage = 1
-const itemsPerPage = 5
-function totalPages() { return Math.ceil(filteredPages.length / itemsPerPage })
+const currentPage = ref(1)
+const itemsPerPage = ref(5)
+const totalPages = computed(() => Math.ceil(filteredPages.value.length / itemsPerPage.value))
 
-function paginatedPages() {
-  const start = (currentPage - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return filteredPages.slice(start, end)
+const paginatedPages = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredPages.value.slice(start, end)
 })
 
 function changePage(page: number): void {
-  currentPage = page
+  currentPage.value = page
 }
 
 function previousPage(): void {
-  if (currentPage > 1) {
+  if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
 function nextPage(): void {
-  if (currentPage < totalPages) {
+  if (currentPage.value < totalPages.value) {
     currentPage.value++
   }
 }
 
 // Toggle sort order
 function toggleSort(column: string): void {
-  if (sortBy === column) {
-    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  if (sortBy.value === column) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy = column
-    sortOrder = 'desc'
+    sortBy.value = column
+    sortOrder.value = 'desc'
   }
 }
 
@@ -637,38 +648,38 @@ function formatDate(dateString: string): string {
 }
 
 // Bulk actions
-const selectedPageIds = []
-const selectAll = false
+const selectedPageIds = ref<number[]>([])
+const selectAll = ref(false)
 
 function toggleSelectAll(): void {
-  if (selectAll) {
-    selectedPageIds = paginatedPages.map(page => page.id)
+  if (selectAll.value) {
+    selectedPageIds.value = paginatedPages.value.map(page => page.id)
   } else {
-    selectedPageIds = []
+    selectedPageIds.value = []
   }
 }
 
 function togglePageSelection(pageId: number): void {
-  const index = selectedPageIds.indexOf(pageId)
+  const index = selectedPageIds.value.indexOf(pageId)
   if (index === -1) {
-    selectedPageIds.push(pageId)
+    selectedPageIds.value.push(pageId)
   } else {
-    selectedPageIds.splice(index, 1)
+    selectedPageIds.value.splice(index, 1)
   }
 
   // Update selectAll based on whether all pages are selected
-  selectAll = paginatedPages.every(page => selectedPageIds.includes(page.id))
+  selectAll.value = paginatedPages.value.every(page => selectedPageIds.value.includes(page.id))
 }
 
-function hasSelectedPages() { return selectedPageIds.length > 0 }
+const hasSelectedPages = computed(() => selectedPageIds.value.length > 0)
 
 // Toggle page location (menu, footer, homepage)
 function toggleHomepage(pageId: number): void {
-  const page = pages.find(p => p.id === pageId)
+  const page = pages.value.find(p => p.id === pageId)
   if (page) {
     // First unset any existing homepage
     if (!page.isHomepage) {
-      pages.forEach(p => {
+      pages.value.forEach(p => {
         if (p.isHomepage) {
           p.isHomepage = false
         }
@@ -679,30 +690,30 @@ function toggleHomepage(pageId: number): void {
 }
 
 function toggleMainMenu(pageId: number): void {
-  const page = pages.find(p => p.id === pageId)
+  const page = pages.value.find(p => p.id === pageId)
   if (page) {
     page.inMainMenu = !page.inMainMenu
   }
 }
 
 function toggleFooter(pageId: number): void {
-  const page = pages.find(p => p.id === pageId)
+  const page = pages.value.find(p => p.id === pageId)
   if (page) {
     page.inFooter = !page.inFooter
   }
 }
 
 // Computed website statistics
-function websiteStats() {
+const websiteStats = computed(() => {
   // Count pages by status
-  const publishedPages = pages.filter(page => page.status === 'Published').length
-  const draftPages = pages.filter(page => page.status === 'Draft').length
-  const scheduledPages = pages.filter(page => page.status === 'Scheduled').length
-  const archivedPages = pages.filter(page => page.status === 'Archived').length
+  const publishedPages = pages.value.filter(page => page.status === 'Published').length
+  const draftPages = pages.value.filter(page => page.status === 'Draft').length
+  const scheduledPages = pages.value.filter(page => page.status === 'Scheduled').length
+  const archivedPages = pages.value.filter(page => page.status === 'Archived').length
 
   // Calculate total views and conversions
-  const totalViews = pages.reduce((sum, page) => sum + page.views, 0)
-  const totalConversions = pages.reduce((sum, page) => sum + page.conversions, 0)
+  const totalViews = pages.value.reduce((sum, page) => sum + page.views, 0)
+  const totalConversions = pages.value.reduce((sum, page) => sum + page.conversions, 0)
 
   // Calculate conversion rate
   const conversionRate = totalViews > 0 ? ((totalConversions / totalViews) * 100).toFixed(2) : '0.00'
@@ -714,7 +725,7 @@ function websiteStats() {
   // Find most viewed page
   let mostViewedPage = pages.value[0] || { title: 'None', views: 0 }
 
-  for (const page of pages) {
+  for (const page of pages.value) {
     if (page.views > mostViewedPage.views) {
       mostViewedPage = page
     }
@@ -723,7 +734,7 @@ function websiteStats() {
   // Find page with highest conversion
   let highestConversionPage = { page: pages.value[0] || { title: 'None' }, rate: 0 }
 
-  for (const page of pages) {
+  for (const page of pages.value) {
     if (page.views > 0) {
       const rate = (page.conversions / page.views) * 100
       if (rate > highestConversionPage.rate) {
@@ -733,7 +744,7 @@ function websiteStats() {
   }
 
   return {
-    totalPages: pages.length,
+    totalPages: pages.value.length,
     publishedPages,
     draftPages,
     scheduledPages,

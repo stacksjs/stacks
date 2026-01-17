@@ -1,4 +1,12 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script>
+useHead({
+  title: 'Dashboard - Commands',
+})
 </script>
 
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">

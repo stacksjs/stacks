@@ -1,4 +1,11 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script server>
+import { ref, computed } from 'vue'
+import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -22,6 +29,10 @@ ChartJS.register(
   Legend,
   Filler,
 )
+
+useHead({
+  title: 'Dashboard - Queries',
+})
 
 interface QueryStats {
   total: number
@@ -53,16 +64,16 @@ interface QueryRecord {
   tags?: string[]
 }
 
-const stats = {
+const stats = ref({
   total: 1286,
   select: 954,
   insert: 152,
   update: 98,
   delete: 82,
   slow: 24,
-}
+})
 
-const recentQueries = [
+const recentQueries = ref([
   {
     id: '1',
     query: 'SELECT * FROM users WHERE email = ? LIMIT 1',
@@ -99,7 +110,7 @@ const recentQueries = [
   },
   {
     id: '3',
-    query: 'INSERT INTO user_logs (user_id, action, ip_address, created_at VALUES (?, ?, ?, ?)',
+    query: 'INSERT INTO user_logs (user_id, action, ip_address, created_at) VALUES (?, ?, ?, ?)',
     normalized_query: 'INSERT INTO user_logs (user_id, action, ip_address, created_at) VALUES (?, ?, ?, ?)',
     duration: 2.1,
     connection: 'mysql',
@@ -150,10 +161,10 @@ const recentQueries = [
   },
 ])
 
-const timeRange = 'hour'
-const selectedConnection = 'all'
-const selectedType = 'all'
-const isLoading = false
+const timeRange = ref('hour')
+const selectedConnection = ref('all')
+const selectedType = ref('all')
+const isLoading = ref(false)
 
 const chartOptions = {
   responsive: true,
@@ -269,18 +280,22 @@ const getDurationData = () => {
   }
 }
 
-const performanceData = getPerformanceData()
-const durationData = getDurationData()
+const performanceData = ref(getPerformanceData())
+const durationData = ref(getDurationData())
 
 const refreshData = () => {
-  isLoading = true
+  isLoading.value = true
 
   setTimeout(() => {
-    performanceData = getPerformanceData()
-    durationData = getDurationData()
-    isLoading = false
+    performanceData.value = getPerformanceData()
+    durationData.value = getDurationData()
+    isLoading.value = false
   }, 500)
 }
+
+watch([timeRange, selectedConnection, selectedType], () => {
+  refreshData()
+})
 
 const formatQuery = (query) => {
   if (query.length > 100) {
@@ -310,15 +325,15 @@ const queryTypeBadges = {
   OTHER: 'bg-gray-50 dark:bg-gray-900/20 text-gray-700 dark:text-gray-300 ring-gray-700/10 dark:ring-gray-400/30'
 }
 
-function filteredQueries() {
-  let filtered = [...recentQueries]
+const filteredQueries = computed(() => {
+  let filtered = [...recentQueries.value]
 
-  if (selectedConnection !== 'all') {
-    filtered = filtered.filter(query => query.connection === selectedConnection)
+  if (selectedConnection.value !== 'all') {
+    filtered = filtered.filter(query => query.connection === selectedConnection.value)
   }
 
-  if (selectedType !== 'all') {
-    filtered = filtered.filter(query => getQueryType(query.query) === selectedType)
+  if (selectedType.value !== 'all') {
+    filtered = filtered.filter(query => getQueryType(query.query) === selectedType.value)
   }
 
   return filtered

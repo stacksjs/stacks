@@ -1,6 +1,13 @@
 <script server>
 import Login from '../../components/Dashboard/Auth/Login.stx'
+import { useHead } from '@vueuse/head'
 import { useAuth } from '../../functions/auth'
+
+const router = useRouter()
+
+useHead({
+  title: 'Login - Stacks Dashboard',
+})
 
 const { login } = useAuth()
 
@@ -40,3 +47,8 @@ async function handleLogin(credentials) {
 />
 </template>
 
+<route lang="yaml">
+  meta:
+    layout: guest
+    requiresAuth: false
+</route>

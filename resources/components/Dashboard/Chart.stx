@@ -33,7 +33,14 @@ const props = defineProps({
       <script client>
       import Chart from 'chart.js/auto'
 
-            </script>
+      onMounted(() => {
+        new Chart(chartCanvas.value, {
+          type: props.type,
+          data: props.data,
+          options: props.options
+        })
+      })
+      </script>
     -->
   </div>
 </template>

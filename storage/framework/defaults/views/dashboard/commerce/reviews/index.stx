@@ -1,6 +1,18 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script server>
+import { ref, computed } from 'vue'
+import { useHead } from '@vueuse/head'
+
+useHead({
+  title: 'Dashboard - Commerce Reviews',
+})
+
 // Sample products data (simplified from products page)
-const products = [
+const products = ref([
   {
     id: 1,
     name: 'Classic Cheeseburger',
@@ -27,7 +39,7 @@ const products = [
   },
   {
     id: 9,
-    name: 'Chicken Wings (12 pc',
+    name: 'Chicken Wings (12 pc)',
     imageUrl: 'https://images.unsplash.com/photo-1608039755401-742074f0548d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
     category: 'Appetizers'
   },
@@ -40,7 +52,7 @@ const products = [
 ])
 
 // Sample reviews data
-const reviews = [
+const reviews = ref([
   {
     id: 1,
     productId: 1,
@@ -112,7 +124,7 @@ const reviews = [
   {
     id: 5,
     productId: 9,
-    productName: 'Chicken Wings (12 pc',
+    productName: 'Chicken Wings (12 pc)',
     productImage: 'https://images.unsplash.com/photo-1608039755401-742074f0548d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
     customerName: 'Michael Thompson',
     customerEmail: 'm.thompson@example.com',
@@ -248,13 +260,13 @@ const reviews = [
 ])
 
 // Filter and sort options
-const searchQuery = ''
-const sortBy = 'dateAdded'
-const sortOrder = 'desc'
-const productFilter = 'all'
-const ratingFilter = 'all'
-const statusFilter = 'all'
-const viewMode = 'detailed'
+const searchQuery = ref('')
+const sortBy = ref('dateAdded')
+const sortOrder = ref('desc')
+const productFilter = ref('all')
+const ratingFilter = ref('all')
+const statusFilter = ref('all')
+const viewMode = ref('detailed')
 
 // Available statuses
 const statuses = ['all', 'Published', 'Under Review', 'Rejected', 'Spam']
@@ -263,78 +275,78 @@ const statuses = ['all', 'Published', 'Under Review', 'Rejected', 'Spam']
 const ratings = ['all', '5', '4', '3', '2', '1']
 
 // Computed filtered and sorted reviews
-function filteredReviews() {
-  return reviews
+const filteredReviews = computed(() => {
+  return reviews.value
     .filter(review => {
       // Apply search filter
       const matchesSearch =
-        review.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        review.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        review.comment.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        review.productName.toLowerCase().includes(searchQuery.toLowerCase())
+        review.customerName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        review.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        review.comment.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        review.productName.toLowerCase().includes(searchQuery.value.toLowerCase())
 
       // Apply product filter
-      const matchesProduct = productFilter === 'all' || review.productId.toString() === productFilter
+      const matchesProduct = productFilter.value === 'all' || review.productId.toString() === productFilter.value
 
       // Apply rating filter
-      const matchesRating = ratingFilter === 'all' || review.rating.toString() === ratingFilter
+      const matchesRating = ratingFilter.value === 'all' || review.rating.toString() === ratingFilter.value
 
       // Apply status filter
-      const matchesStatus = statusFilter === 'all' || review.status === statusFilter
+      const matchesStatus = statusFilter.value === 'all' || review.status === statusFilter.value
 
       return matchesSearch && matchesProduct && matchesRating && matchesStatus
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy === 'dateAdded') {
+      if (sortBy.value === 'dateAdded') {
         comparison = new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime()
-      } else if (sortBy === 'rating') {
+      } else if (sortBy.value === 'rating') {
         comparison = a.rating - b.rating
-      } else if (sortBy === 'helpful') {
+      } else if (sortBy.value === 'helpful') {
         comparison = a.helpful - b.helpful
-      } else if (sortBy === 'customerName') {
+      } else if (sortBy.value === 'customerName') {
         comparison = a.customerName.localeCompare(b.customerName)
       }
 
-      return sortOrder === 'asc' ? comparison : -comparison
+      return sortOrder.value === 'asc' ? comparison : -comparison
     })
 })
 
 // Pagination
-const currentPage = 1
-const itemsPerPage = 5
-function totalPages() { return Math.ceil(filteredReviews.length / itemsPerPage })
+const currentPage = ref(1)
+const itemsPerPage = ref(5)
+const totalPages = computed(() => Math.ceil(filteredReviews.value.length / itemsPerPage.value))
 
-function paginatedReviews() {
-  const start = (currentPage - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return filteredReviews.slice(start, end)
+const paginatedReviews = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredReviews.value.slice(start, end)
 })
 
 function changePage(page) {
-  currentPage = page
+  currentPage.value = page
 }
 
 function previousPage() {
-  if (currentPage > 1) {
+  if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
 function nextPage() {
-  if (currentPage < totalPages) {
+  if (currentPage.value < totalPages.value) {
     currentPage.value++
   }
 }
 
 // Toggle sort order
 function toggleSort(column) {
-  if (sortBy === column) {
-    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  if (sortBy.value === column) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy = column
-    sortOrder = 'desc'
+    sortBy.value = column
+    sortOrder.value = 'desc'
   }
 }
 
@@ -360,42 +372,42 @@ function getRatingStars(rating) {
 }
 
 // Modal state for editing review
-const showReviewModal = false
-const currentReview = null
+const showReviewModal = ref(false)
+const currentReview = ref(null)
 
 function openEditReviewModal(review) {
-  currentReview = { ...review }
-  showReviewModal = true
+  currentReview.value = { ...review }
+  showReviewModal.value = true
 }
 
 function closeReviewModal() {
-  showReviewModal = false
+  showReviewModal.value = false
 }
 
 function saveReview() {
-  if (!currentReview) return
+  if (!currentReview.value) return
 
   // Update existing review
-  const index = reviews.findIndex(r => r.id === currentReview.id)
+  const index = reviews.value.findIndex(r => r.id === currentReview.value.id)
   if (index !== -1) {
-    reviews.value[index] = { ...currentReview }
+    reviews.value[index] = { ...currentReview.value }
   }
 
   closeReviewModal()
 }
 
 // Calculate summary statistics
-function totalReviews() { return reviews.length }
-function publishedReviews() { return reviews.filter(r => r.status === 'Published' }.length)
-function averageRating() {
-  const total = reviews.reduce((sum, review) => sum + review.rating, 0)
-  return (total / reviews.length).toFixed(1)
+const totalReviews = computed(() => reviews.value.length)
+const publishedReviews = computed(() => reviews.value.filter(r => r.status === 'Published').length)
+const averageRating = computed(() => {
+  const total = reviews.value.reduce((sum, review) => sum + review.rating, 0)
+  return (total / reviews.value.length).toFixed(1)
 })
-function pendingReviews() { return reviews.filter(r => r.status === 'Under Review' }.length)
+const pendingReviews = computed(() => reviews.value.filter(r => r.status === 'Under Review').length)
 
 // Feature or unfeature a review
 function toggleFeature(review) {
-  const index = reviews.findIndex(r => r.id === review.id)
+  const index = reviews.value.findIndex(r => r.id === review.id)
   if (index !== -1) {
     const reviewToUpdate = reviews.value[index]
     if (reviewToUpdate) {
@@ -406,7 +418,7 @@ function toggleFeature(review) {
 
 // Change review status
 function updateReviewStatus(review, newStatus) {
-  const index = reviews.findIndex(r => r.id === review.id)
+  const index = reviews.value.findIndex(r => r.id === review.id)
   if (index !== -1) {
     const reviewToUpdate = reviews.value[index]
     if (reviewToUpdate) {
@@ -417,9 +429,9 @@ function updateReviewStatus(review, newStatus) {
 
 // Delete review
 function deleteReview(reviewId) {
-  const index = reviews.findIndex(r => r.id === reviewId)
+  const index = reviews.value.findIndex(r => r.id === reviewId)
   if (index !== -1) {
-    reviews.splice(index, 1)
+    reviews.value.splice(index, 1)
   }
 }
 </script>

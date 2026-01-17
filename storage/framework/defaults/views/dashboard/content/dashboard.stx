@@ -1,4 +1,11 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script server>
+import { ref } from 'vue'
+import { useHead } from '@vueuse/head'
 import { Line, Doughnut } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -24,6 +31,10 @@ ChartJS.register(
   Legend,
   Filler,
 )
+
+useHead({
+  title: 'Dashboard - Blog',
+})
 
 // Sample data for the dashboard
 const viewsData = {
@@ -129,7 +140,7 @@ const draftPosts = [
   { id: 8, title: 'CSS Grid vs Flexbox', category: 'Tutorials', lastEdited: '2023-11-27', author: 'Jane Doe' },
 ]
 
-const timeRange = 'Last 30 days'
+const timeRange = ref('Last 30 days')
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Stats calculations

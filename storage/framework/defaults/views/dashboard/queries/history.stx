@@ -1,4 +1,16 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script server>
+import { ref, computed } from 'vue'
+import { useHead } from '@vueuse/head'
+
+useHead({
+  title: 'Queries - History',
+})
+
 interface QueryRecord {
   id: string
   query: string
@@ -20,7 +32,7 @@ interface QueryRecord {
   tags?: string[]
 }
 
-const queryHistory = [
+const queryHistory = ref([
   {
     id: '1',
     query: 'SELECT * FROM users WHERE email = ? LIMIT 1',
@@ -57,7 +69,7 @@ const queryHistory = [
   },
   {
     id: '3',
-    query: 'INSERT INTO user_logs (user_id, action, ip_address, created_at VALUES (?, ?, ?, ?)',
+    query: 'INSERT INTO user_logs (user_id, action, ip_address, created_at) VALUES (?, ?, ?, ?)',
     normalized_query: 'INSERT INTO user_logs (user_id, action, ip_address, created_at) VALUES (?, ?, ?, ?)',
     duration: 2.1,
     connection: 'mysql',
@@ -227,12 +239,12 @@ const queryHistory = [
   },
 ])
 
-const timeRange = 'day'
-const selectedConnection = 'all'
-const selectedStatus = 'all'
-const selectedType = 'all'
-const isLoading = false
-const searchQuery = ''
+const timeRange = ref('day')
+const selectedConnection = ref('all')
+const selectedStatus = ref('all')
+const selectedType = ref('all')
+const isLoading = ref(false)
+const searchQuery = ref('')
 
 const getQueryType = (query) => {
   const upperQuery = query.trim().toUpperCase()
@@ -251,23 +263,23 @@ const queryTypeBadges = {
   OTHER: 'bg-gray-50 dark:bg-gray-900/20 text-gray-700 dark:text-gray-300 ring-gray-700/10 dark:ring-gray-400/30'
 }
 
-function filteredQueries() {
-  let filtered = [...queryHistory]
+const filteredQueries = computed(() => {
+  let filtered = [...queryHistory.value]
 
-  if (selectedConnection !== 'all') {
-    filtered = filtered.filter(query => query.connection === selectedConnection)
+  if (selectedConnection.value !== 'all') {
+    filtered = filtered.filter(query => query.connection === selectedConnection.value)
   }
 
-  if (selectedStatus !== 'all') {
-    filtered = filtered.filter(query => query.status === selectedStatus)
+  if (selectedStatus.value !== 'all') {
+    filtered = filtered.filter(query => query.status === selectedStatus.value)
   }
 
-  if (selectedType !== 'all') {
-    filtered = filtered.filter(query => getQueryType(query.query) === selectedType)
+  if (selectedType.value !== 'all') {
+    filtered = filtered.filter(query => getQueryType(query.query) === selectedType.value)
   }
 
-  if (searchQuery) {
-    const lowerSearch = searchQuery.toLowerCase()
+  if (searchQuery.value) {
+    const lowerSearch = searchQuery.value.toLowerCase()
     filtered = filtered.filter(query =>
       query.query.toLowerCase().includes(lowerSearch) ||
       (query.model && query.model.toLowerCase().includes(lowerSearch)) ||
@@ -300,12 +312,15 @@ const formatDuration = (duration) => {
 }
 
 const refreshData = () => {
-  isLoading = true
+  isLoading.value = true
   setTimeout(() => {
-    isLoading = false
+    isLoading.value = false
   }, 500)
 }
 
+watch([timeRange, selectedConnection, selectedStatus, selectedType], () => {
+  refreshData()
+})
 </script>
 
 <template>

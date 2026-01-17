@@ -1,4 +1,6 @@
 <script lang="ts">
+import { ref, reactive, computed } from 'vue'
+import { useHead } from '@vueuse/head'
 import { Pie, Bar } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -23,8 +25,12 @@ ChartJS.register(
   Legend,
 )
 
+useHead({
+  title: 'Permissions - Management',
+})
+
 // Role form state
-const showRoleModal = false
+const showRoleModal = ref(false)
 const roleForm = reactive({
   name: '',
   description: '',
@@ -32,7 +38,7 @@ const roleForm = reactive({
 })
 
 // Permission form state
-const showPermissionModal = false
+const showPermissionModal = ref(false)
 const permissionForm = reactive({
   name: '',
   description: '',
@@ -179,29 +185,29 @@ const recentPermissionChanges = [
   { id: '#PCH-1230', user: 'David Wilson', role: 'guest', action: 'Modified', resource: 'view articles', date: '2023-11-29' },
 ]
 
-const timeRange = 'Last 30 days'
+const timeRange = ref('Last 30 days')
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Filter states
-const permissionFilter = ''
-const roleFilter = ''
+const permissionFilter = ref('')
+const roleFilter = ref('')
 
 // Computed filtered permissions
-function filteredPermissions() {
+const filteredPermissions = computed(() => {
   return permissions.filter(permission => {
-    const nameMatch = permission.name.toLowerCase().includes(permissionFilter.toLowerCase());
+    const nameMatch = permission.name.toLowerCase().includes(permissionFilter.value.toLowerCase());
     return nameMatch;
   });
 });
 
 // Methods
 const addRole = () => {
-  showRoleModal = true;
+  showRoleModal.value = true;
 }
 
 const saveRole = () => {
   // Here would be the API call to save the role
-  showRoleModal = false;
+  showRoleModal.value = false;
   // Reset form
   roleForm.name = '';
   roleForm.description = '';
@@ -209,12 +215,12 @@ const saveRole = () => {
 }
 
 const addPermission = () => {
-  showPermissionModal = true;
+  showPermissionModal.value = true;
 }
 
 const savePermission = () => {
   // Here would be the API call to save the permission
-  showPermissionModal = false;
+  showPermissionModal.value = false;
   // Reset form
   permissionForm.name = '';
   permissionForm.description = '';
@@ -224,7 +230,7 @@ const editRole = (role: Role) => {
   roleForm.name = role.name;
   roleForm.description = role.description;
   roleForm.permissions = rolePermissions[role.id] || [];
-  showRoleModal = true;
+  showRoleModal.value = true;
 }
 
 const deleteRole = (roleId: number) => {
@@ -599,3 +605,8 @@ const deleteRole = (roleId: number) => {
     </div>
   </main>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

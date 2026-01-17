@@ -1,91 +1,107 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script server>
+import { ref, computed, onMounted } from 'vue'
+import { useHead } from '@vueuse/head'
 import { useCustomers } from '../../../../functions/commerce/customers'
 import CustomersTable from '../../../../components/Dashboard/Commerce/CustomersTable.stx'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 
+useHead({
+  title: 'Dashboard - Commerce Customers',
+})
+
 // Get customers data and functions from the composable
 const { customers, createCustomer, fetchCustomers, deleteCustomer } = useCustomers()
 
+// Fetch customers on component mount
+onMounted(async () => {
+  await fetchCustomers()
+})
+
 // Available statuses
 const statuses = ['all', 'Active', 'Inactive'] as const
-const statusFilter = 'all'
-const sortBy = 'name'
-const sortOrder = 'asc'
+const statusFilter = ref('all')
+const sortBy = ref('name')
+const sortOrder = ref('asc')
 
 // Search and filtering
-const searchQuery = ''
-const currentPage = 1
-const itemsPerPage = 5
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = ref(5)
 
 // Computed filtered customers
-function filteredCustomers() {
-  return customers
+const filteredCustomers = computed(() => {
+  return customers.value
     .filter(customer => {
       // Apply search filter
       const matchesSearch =
-        customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        customer.phone.toLowerCase().includes(searchQuery.toLowerCase())
+        customer.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        customer.email.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        customer.phone.toLowerCase().includes(searchQuery.value.toLowerCase())
 
       // Apply status filter
-      const matchesStatus = statusFilter === 'all' || customer.status === statusFilter
+      const matchesStatus = statusFilter.value === 'all' || customer.status === statusFilter.value
 
       return matchesSearch && matchesStatus
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy === 'name') {
+      if (sortBy.value === 'name') {
         comparison = a.name.localeCompare(b.name)
-      } else if (sortBy === 'total_spent') {
+      } else if (sortBy.value === 'total_spent') {
         comparison = (a.total_spent || 0) - (b.total_spent || 0)
-      } else if (sortBy === 'last_order') {
+      } else if (sortBy.value === 'last_order') {
         const dateA = a.last_order ? new Date(a.last_order).getTime() : 0
         const dateB = b.last_order ? new Date(b.last_order).getTime() : 0
         comparison = dateA - dateB
       }
 
-      return sortOrder === 'asc' ? comparison : -comparison
+      return sortOrder.value === 'asc' ? comparison : -comparison
     })
 })
 
-function paginatedCustomers() {
-  const start = (currentPage - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return filteredCustomers.slice(start, end)
+const paginatedCustomers = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredCustomers.value.slice(start, end)
 })
 
 // Event handlers
 const handleSearch = (query: string) => {
-  searchQuery = query
-  currentPage = 1
+  searchQuery.value = query
+  currentPage.value = 1
 }
 
 const handlePrevPage = () => {
-  if (currentPage > 1) {
+  if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
 const handleNextPage = () => {
-  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage)
-  if (currentPage < totalPages) {
+  const totalPages = Math.ceil(filteredCustomers.value.length / itemsPerPage.value)
+  if (currentPage.value < totalPages) {
     currentPage.value++
   }
 }
 
 const handlePageChange = (page: number) => {
-  currentPage = page
+  currentPage.value = page
 }
 
 // Toggle sort order
 function toggleSort(column: string): void {
-  if (sortBy === column) {
-    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  if (sortBy.value === column) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy = column
-    sortOrder = 'asc'
+    sortBy.value = column
+    sortOrder.value = 'asc'
   }
 }
 
@@ -99,8 +115,8 @@ function editCustomer(customer: any): void {
 }
 
 function removeCustomer(customer: any): void {
-  customerToDelete = customer
-  showDeleteModal = true
+  customerToDelete.value = customer
+  showDeleteModal.value = true
 }
 
 // Define new customer type
@@ -112,76 +128,76 @@ interface NewCustomer {
 }
 
 // Modal state
-const showAddModal = false
-const showDeleteModal = false
-const customerToDelete = null
-const newCustomer = {
+const showAddModal = ref(false)
+const showDeleteModal = ref(false)
+const customerToDelete = ref<any>(null)
+const newCustomer = ref<NewCustomer>({
   name: '',
   email: '',
   phone: '',
   status: 'Active'
-}
+})
 
 function openAddModal(): void {
-  newCustomer = {
+  newCustomer.value = {
     name: '',
     email: '',
     phone: '',
     status: 'Active'
   }
-  showAddModal = true
+  showAddModal.value = true
 }
 
 function closeAddModal(): void {
-  showAddModal = false
+  showAddModal.value = false
 }
 
 function closeDeleteModal(): void {
-  showDeleteModal = false
-  customerToDelete = null
+  showDeleteModal.value = false
+  customerToDelete.value = null
 }
 
 async function confirmDelete(): Promise<void> {
-  if (!customerToDelete) return
+  if (!customerToDelete.value) return
 
-  const customerId = customerToDelete.id
+  const customerId = customerToDelete.value.id
 
   // Remove from local state for immediate UI update
-  customers = customers.filter(c => c.id !== customerId)
+  customers.value = customers.value.filter(c => c.id !== customerId)
 
   try {
     await deleteCustomer(customerId)
     closeDeleteModal()
   } catch (error) {
     // If server request fails, restore to local state
-    customers.push(customerToDelete)
+    customers.value.push(customerToDelete.value)
     console.error('Failed to delete customer:', error)
   }
 }
 
 async function addCustomer(): Promise<void> {
   // First add to local state for immediate UI update
-  const id = Math.max(...customers.map(c => c.id || 0)) + 1
+  const id = Math.max(...customers.value.map(c => c.id || 0)) + 1
   const newCustomerData = {
     id,
-    name: newCustomer.name,
-    email: newCustomer.email,
-    phone: newCustomer.phone,
+    name: newCustomer.value.name,
+    email: newCustomer.value.email,
+    phone: newCustomer.value.phone,
     total_spent: 0,
     last_order: new Date().toISOString().split('T')[0] || '',
-    status: newCustomer.status,
+    status: newCustomer.value.status,
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
   }
-  customers.push(newCustomerData)
+  customers.value.push(newCustomerData)
 
   // Then send to server
   const customerData = {
-    name: newCustomer.name,
-    email: newCustomer.email,
-    phone: newCustomer.phone,
+    name: newCustomer.value.name,
+    email: newCustomer.value.email,
+    phone: newCustomer.value.phone,
     total_spent: 0,
     last_order: new Date().toISOString().split('T')[0] || '',
-    status: newCustomer.status,
+    status: newCustomer.value.status,
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
   }
 
@@ -190,7 +206,7 @@ async function addCustomer(): Promise<void> {
     console.log(response)
   } catch (error) {
     // If server request fails, remove from local state
-    customers = customers.filter(c => c.id !== id)
+    customers.value = customers.value.filter(c => c.id !== id)
     console.error('Failed to create customer:', error)
   }
 }

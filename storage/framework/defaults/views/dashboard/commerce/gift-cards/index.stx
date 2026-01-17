@@ -1,4 +1,11 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script server>
+import { ref, computed, onMounted } from 'vue'
+import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -27,9 +34,18 @@ ChartJS.register(
   Filler,
 )
 
+useHead({
+  title: 'Dashboard - Commerce Gift Cards',
+})
+
 // Get gift cards data and functions from the composable
 const { giftCards, createGiftCard, fetchGiftCards } = useGiftCards()
 const { user } = useAuth()
+
+// Fetch gift cards on component mount
+onMounted(async () => {
+  await fetchGiftCards()
+})
 
 // Chart options
 const chartOptions = {
@@ -57,7 +73,7 @@ const chartOptions = {
 }
 
 // Generate monthly data for charts
-function monthlyChartData() {
+const monthlyChartData = computed(() => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   // Sample data - in a real app, this would be calculated from actual usage data
@@ -106,26 +122,26 @@ function monthlyChartData() {
 })
 
 // Time range selector
-const timeRange = 'Last 30 days'
+const timeRange = ref('Last 30 days')
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Filter and sort options
-const searchQuery = ''
-const sortBy = 'purchaseDate'
-const sortOrder = 'desc'
-const statusFilter = 'all'
+const searchQuery = ref('')
+const sortBy = ref('purchaseDate')
+const sortOrder = ref('desc')
+const statusFilter = ref('all')
 
 // Available statuses
 const statuses = ['all', 'Active', 'Used', 'Expired']
 
 // Computed gift card statistics
-function giftCardStats() {
-  const activeGiftCards = giftCards.filter(c => c.status === 'Active').length
-  const totalGiftCards = giftCards.length
+const giftCardStats = computed(() => {
+  const activeGiftCards = giftCards.value.filter(c => c.status === 'Active').length
+  const totalGiftCards = giftCards.value.length
 
   // Calculate total initial value and current balance
-  const totalInitialValue = giftCards.reduce((sum, card) => sum + card.initial_balance, 0)
-  const totalCurrentBalance = giftCards.reduce((sum, card) => sum + card.current_balance, 0)
+  const totalInitialValue = giftCards.value.reduce((sum, card) => sum + card.initial_balance, 0)
+  const totalCurrentBalance = giftCards.value.reduce((sum, card) => sum + card.current_balance, 0)
 
   // Calculate amount redeemed
   const totalRedeemed = totalInitialValue - totalCurrentBalance
@@ -146,44 +162,44 @@ function giftCardStats() {
 })
 
 // Computed filtered and sorted gift cards
-function filteredGiftCards() {
-  return giftCards
+const filteredGiftCards = computed(() => {
+  return giftCards.value
     .filter(card => {
       // Apply search filter
       const matchesSearch =
-        card.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        card.recipient_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        card.recipient_email?.toLowerCase().includes(searchQuery.toLowerCase())
+        card.code.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        card.recipient_name?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        card.recipient_email?.toLowerCase().includes(searchQuery.value.toLowerCase())
 
       // Apply status filter
-      const matchesStatus = statusFilter === 'all' || card.status === statusFilter
+      const matchesStatus = statusFilter.value === 'all' || card.status === statusFilter.value
 
       return matchesSearch && matchesStatus
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy === 'pur') {
+      if (sortBy.value === 'pur') {
         comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      } else if (sortBy === 'expiry_date') {
+      } else if (sortBy.value === 'expiry_date') {
         comparison = new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime()
-      } else if (sortBy === 'initial_balance') {
+      } else if (sortBy.value === 'initial_balance') {
         comparison = a.initial_balance - b.initial_balance
-      } else if (sortBy === 'current_balance') {
+      } else if (sortBy.value === 'current_balance') {
         comparison = a.current_balance - b.current_balance
       }
 
-      return sortOrder === 'asc' ? comparison : -comparison
+      return sortOrder.value === 'asc' ? comparison : -comparison
     })
 })
 
 // Toggle sort order
 function toggleSort(column) {
-  if (sortBy === column) {
-    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  if (sortBy.value === column) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy = column
-    sortOrder = 'desc'
+    sortBy.value = column
+    sortOrder.value = 'desc'
   }
 }
 
@@ -207,28 +223,28 @@ oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
 const futureDate = oneYearFromNow.toISOString().split('T')[0]
 
 // Modal state
-const showAddModal = false
-const newGiftCard = {
+const showAddModal = ref(false)
+const newGiftCard = ref({
   code: '',
   initialValue: 50,
   recipient: '',
   email: '',
   expiryDate: futureDate
-}
+})
 
 function openAddModal() {
-  newGiftCard = {
+  newGiftCard.value = {
     code: generateGiftCardCode(),
     initialValue: 50,
     recipient: '',
     email: '',
     expiryDate: futureDate
   }
-  showAddModal = true
+  showAddModal.value = true
 }
 
 function closeAddModal() {
-  showAddModal = false
+  showAddModal.value = false
 }
 
 function generateGiftCardCode() {
@@ -259,14 +275,14 @@ function generateGiftCardCode() {
 
 async function addGiftCard() {
   const newGiftCardData = {
-    code: newGiftCard.code,
-    initial_balance: newGiftCard.initialValue,
-    current_balance: newGiftCard.initialValue,
+    code: newGiftCard.value.code,
+    initial_balance: newGiftCard.value.initialValue,
+    current_balance: newGiftCard.value.initialValue,
     customer_id: user.value?.id || 1,
     status: 'Active',
-    recipient_email: newGiftCard.email,
-    recipient_name: newGiftCard.recipient,
-    expiry_date: new Date(newGiftCard.expiryDate).getTime(),
+    recipient_email: newGiftCard.value.email,
+    recipient_name: newGiftCard.value.recipient,
+    expiry_date: new Date(newGiftCard.value.expiryDate).getTime(),
     is_active: true,
     is_digital: true
   }

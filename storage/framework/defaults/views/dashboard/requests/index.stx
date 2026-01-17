@@ -1,4 +1,10 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script server>
+import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -24,6 +30,10 @@ ChartJS.register(
   Legend,
   Filler,
 )
+
+useHead({
+  title: 'Dashboard - Requests',
+})
 
 const chartOptions = {
   responsive: true,

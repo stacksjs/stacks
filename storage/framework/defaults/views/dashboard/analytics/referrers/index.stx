@@ -1,8 +1,14 @@
 <script server>
+import { ref, computed, onMounted, reactive } from 'vue'
+import { useHead } from '@vueuse/head'
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
 // Register Chart.js components
 Chart.register(...registerables)
+
+useHead({
+  title: 'Dashboard - Referrer Analytics',
+})
 
 // Types
 interface DateRange {
@@ -41,15 +47,15 @@ const dateRanges: DateRange[] = [
 ]
 
 // Selected date range
-const selectedDateRange = 'all-time'
-const dateRangeDisplay = 'All Time: Sep 7, 2023 to Mar 6, 2025'
-const comparisonType = 'no-comparison'
-const customStartDate = ''
-const customEndDate = ''
-function showCustomDateRange() { return selectedDateRange === 'custom' }
+const selectedDateRange = ref('all-time')
+const dateRangeDisplay = ref('All Time: Sep 7, 2023 to Mar 6, 2025')
+const comparisonType = ref('no-comparison')
+const customStartDate = ref('')
+const customEndDate = ref('')
+const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
 
 // Referrers data
-const referrersData = [
+const referrersData = ref<ReferrerData[]>([
   { name: 'Direct / Unknown', visitors: 1400, views: 2100, percentage: 40, type: 'direct' },
   { name: 'X/Twitter', visitors: 545, views: 580, percentage: 15, type: 'social' },
   { name: 'Google', visitors: 346, views: 450, percentage: 10, type: 'search' },
@@ -65,18 +71,18 @@ const referrersData = [
   { name: 'Reddit', visitors: 48, views: 58, percentage: 1, type: 'social' },
   { name: 'Hacker News', visitors: 42, views: 52, percentage: 1, type: 'referral' },
   { name: 'dev.to', visitors: 38, views: 48, percentage: 1, type: 'referral' }
-]
+])
 
 // Referrer types data
-const referrerTypesData = [
+const referrerTypesData = ref<ReferrerTypeData[]>([
   { name: 'Direct', visitors: 1400, percentage: 40 },
   { name: 'Social', visitors: 799, percentage: 22 },
   { name: 'Search', visitors: 658, percentage: 19 },
   { name: 'Referral', visitors: 654, percentage: 19 }
-]
+])
 
 // Search terms data
-const searchTermsData = [
+const searchTermsData = ref<SearchTermData[]>([
   { term: 'stacks js', visitors: 120, percentage: 18 },
   { term: 'vue framework', visitors: 85, percentage: 13 },
   { term: 'typescript framework', visitors: 75, percentage: 11 },
@@ -87,16 +93,16 @@ const searchTermsData = [
   { term: 'stacks vue', visitors: 58, percentage: 9 },
   { term: 'vue typescript starter', visitors: 55, percentage: 8 },
   { term: 'vue typescript boilerplate', visitors: 20, percentage: 3 }
-]
+])
 
 // Chart.js configuration for referrer types
 const chartConfig = reactive({
   type: 'pie' as keyof ChartTypeRegistry,
   data: {
-    labels: referrerTypesData.map(item => item.name),
+    labels: referrerTypesData.value.map(item => item.name),
     datasets: [
       {
-        data: referrerTypesData.map(item => item.visitors),
+        data: referrerTypesData.value.map(item => item.visitors),
         backgroundColor: [
           'rgba(59, 130, 246, 0.8)',
           'rgba(16, 185, 129, 0.8)',
@@ -137,7 +143,7 @@ const chartConfig = reactive({
 })
 
 // Referrer trend data for line chart
-const referrerTrendData = [
+const referrerTrendData = ref([
   { date: '2023-09', Direct: 800, Social: 400, Search: 300, Referral: 200 },
   { date: '2023-10', Direct: 850, Social: 420, Search: 320, Referral: 210 },
   { date: '2023-11', Direct: 900, Social: 450, Search: 340, Referral: 220 },
@@ -149,17 +155,17 @@ const referrerTrendData = [
   { date: '2024-05', Direct: 1300, Social: 700, Search: 460, Referral: 280 },
   { date: '2024-06', Direct: 1350, Social: 750, Search: 480, Referral: 290 },
   { date: '2024-07', Direct: 1400, Social: 799, Search: 658, Referral: 654 }
-]
+])
 
 // Chart.js configuration for referrer trends
 const trendChartConfig = reactive({
   type: 'line' as keyof ChartTypeRegistry,
   data: {
-    labels: referrerTrendData.map(item => item.date),
+    labels: referrerTrendData.value.map(item => item.date),
     datasets: [
       {
         label: 'Direct',
-        data: referrerTrendData.map(item => item.Direct),
+        data: referrerTrendData.value.map(item => item.Direct),
         borderColor: 'rgba(59, 130, 246, 0.8)',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
         tension: 0.4,
@@ -167,7 +173,7 @@ const trendChartConfig = reactive({
       },
       {
         label: 'Social',
-        data: referrerTrendData.map(item => item.Social),
+        data: referrerTrendData.value.map(item => item.Social),
         borderColor: 'rgba(16, 185, 129, 0.8)',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         tension: 0.4,
@@ -175,7 +181,7 @@ const trendChartConfig = reactive({
       },
       {
         label: 'Search',
-        data: referrerTrendData.map(item => item.Search),
+        data: referrerTrendData.value.map(item => item.Search),
         borderColor: 'rgba(245, 158, 11, 0.8)',
         backgroundColor: 'rgba(245, 158, 11, 0.1)',
         tension: 0.4,
@@ -183,7 +189,7 @@ const trendChartConfig = reactive({
       },
       {
         label: 'Referral',
-        data: referrerTrendData.map(item => item.Referral),
+        data: referrerTrendData.value.map(item => item.Referral),
         borderColor: 'rgba(239, 68, 68, 0.8)',
         backgroundColor: 'rgba(239, 68, 68, 0.1)',
         tension: 0.4,
@@ -246,7 +252,7 @@ function getReferrerTypeBadgeClass(type) {
 
 // Mock function to update data when date range changes
 function updateDataForDateRange() {
-  console.log('Updating data for date range:', selectedDateRange)
+  console.log('Updating data for date range:', selectedDateRange.value)
 }
 
 // Watch for date range changes
@@ -257,6 +263,20 @@ function handleDateRangeChange() {
 // Initialize charts when component is mounted
 let referrerTypeChart: Chart | null = null
 let referrerTrendChart: Chart | null = null
+
+onMounted(() => {
+  const typeCtx = document.getElementById('referrerTypeChart') as HTMLCanvasElement
+  if (typeCtx) {
+    referrerTypeChart = new Chart(typeCtx, chartConfig)
+  }
+
+  const trendCtx = document.getElementById('referrerTrendChart') as HTMLCanvasElement
+  if (trendCtx) {
+    referrerTrendChart = new Chart(trendCtx, trendChartConfig)
+  }
+
+  updateDataForDateRange()
+})
 
 </script>
 
@@ -480,3 +500,8 @@ let referrerTrendChart: Chart | null = null
 </main>
 </template>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

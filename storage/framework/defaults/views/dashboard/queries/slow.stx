@@ -1,4 +1,16 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script lang="ts">
+import { ref } from 'vue'
+import { useHead } from '@vueuse/head'
+
+useHead({
+  title: 'Queries - Slow Queries',
+})
+
 interface SlowQueryRecord {
   id: string
   query: string
@@ -24,7 +36,7 @@ interface SlowQueryRecord {
 }
 
 // Mock data for slow queries
-const slowQueries = [
+const slowQueries = ref<SlowQueryRecord[]>([
   {
     id: '1',
     query: 'SELECT p.*, c.name as category_name FROM posts p JOIN categories c ON p.category_id = c.id WHERE p.published_at IS NOT NULL ORDER BY p.published_at DESC LIMIT 10',
@@ -53,7 +65,7 @@ const slowQueries = [
   },
   {
     id: '2',
-    query: 'SELECT COUNT(* FROM orders WHERE status = ?',
+    query: 'SELECT COUNT(*) FROM orders WHERE status = ?',
     normalized_query: 'SELECT COUNT(*) FROM orders WHERE status = ?',
     duration: 78.4,
     connection: 'mysql',
@@ -158,28 +170,28 @@ const slowQueries = [
   }
 ])
 
-const timeRange = 'day'
-const thresholdMs = 10
-const selectedConnection = 'all'
-const searchQuery = ''
-const isLoading = false
-const currentExpandedQueryId = null
+const timeRange = ref<'day' | 'week' | 'month'>('day')
+const thresholdMs = ref<number>(10)
+const selectedConnection = ref<string>('all')
+const searchQuery = ref('')
+const isLoading = ref(false)
+const currentExpandedQueryId = ref<string | null>(null)
 
 // Filter functions
-function filteredQueries() {
-  let filtered = [...slowQueries]
+const filteredQueries = computed(() => {
+  let filtered = [...slowQueries.value]
 
   // Filter by connection
-  if (selectedConnection !== 'all') {
-    filtered = filtered.filter(query => query.connection === selectedConnection)
+  if (selectedConnection.value !== 'all') {
+    filtered = filtered.filter(query => query.connection === selectedConnection.value)
   }
 
   // Filter by threshold
-  filtered = filtered.filter(query => query.duration >= thresholdMs)
+  filtered = filtered.filter(query => query.duration >= thresholdMs.value)
 
   // Filter by search query
-  if (searchQuery) {
-    const lowerSearch = searchQuery.toLowerCase()
+  if (searchQuery.value) {
+    const lowerSearch = searchQuery.value.toLowerCase()
     filtered = filtered.filter(query =>
       query.query.toLowerCase().includes(lowerSearch) ||
       (query.model && query.model.toLowerCase().includes(lowerSearch)) ||
@@ -205,20 +217,25 @@ const formatDuration = (duration: number): string => {
 
 // Toggle expanded query details
 const toggleQueryDetails = (queryId: string) => {
-  if (currentExpandedQueryId === queryId) {
-    currentExpandedQueryId = null
+  if (currentExpandedQueryId.value === queryId) {
+    currentExpandedQueryId.value = null
   } else {
-    currentExpandedQueryId = queryId
+    currentExpandedQueryId.value = queryId
   }
 }
 
 // Refresh data
 const refreshData = () => {
-  isLoading = true
+  isLoading.value = true
   setTimeout(() => {
-    isLoading = false
+    isLoading.value = false
   }, 500)
 }
+
+// Watch for changes and refresh
+watch([timeRange, selectedConnection, thresholdMs], () => {
+  refreshData()
+})
 
 // Add functions for copying to clipboard
 const copyToClipboard = (text: string) => {
@@ -227,16 +244,16 @@ const copyToClipboard = (text: string) => {
   })
 }
 
-const copiedQuery = null
+const copiedQuery = ref<string | null>(null)
 
 const copyQuery = (queryId: string, queryText: string) => {
   copyToClipboard(queryText)
-  copiedQuery = queryId
+  copiedQuery.value = queryId
 
   // Reset copied state after 2 seconds
   setTimeout(() => {
-    if (copiedQuery === queryId) {
-      copiedQuery = null
+    if (copiedQuery.value === queryId) {
+      copiedQuery.value = null
     }
   }, 2000)
 }

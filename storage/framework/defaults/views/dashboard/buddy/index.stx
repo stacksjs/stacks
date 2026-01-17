@@ -1,4 +1,7 @@
 <script>
+import { ref, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
 interface User {
   id: number
   name: string
@@ -29,9 +32,11 @@ interface Message {
 }
 
 const route = useRoute()
-const activeConversation = 1
+const router = useRouter()
 
-const conversations = [
+const activeConversation = ref(1)
+
+const conversations = ref([
   {
     id: 1,
     name: 'New Project Setup',
@@ -59,9 +64,9 @@ const conversations = [
     type: 'ai',
     status: 'online'
   }
-]
+])
 
-const messages = [
+const messages = ref([
   {
     id: 1,
     type: 'human',
@@ -90,14 +95,14 @@ const messages = [
       code: 'npm create stacks@latest my-app\ncd my-app\npnpm install'
     }
   }
-]
+])
 
-const newMessage = ''
+const newMessage = ref('')
 
 const sendMessage = () => {
-  if (newMessage.trim()) {
+  if (newMessage.value.trim()) {
     const message = {
-      id: messages.length + 1,
+      id: messages.value.length + 1,
       type: 'human',
       user: {
         id: 1,
@@ -105,17 +110,17 @@ const sendMessage = () => {
         email: 'chris@stacksjs.com',
         avatar: '/avatars/chris.jpg'
       },
-      content: newMessage,
+      content: newMessage.value,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
 
-    messages.push(message)
-    newMessage = ''
+    messages.value.push(message)
+    newMessage.value = ''
 
     // Simulate AI response
     setTimeout(() => {
       const aiResponse = {
-        id: messages.length + 1,
+        id: messages.value.length + 1,
         type: 'ai',
         user: {
           id: 0,
@@ -126,17 +131,17 @@ const sendMessage = () => {
         content: 'I\'m processing your request. How can I help you with Stacks.js?',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }
-      messages.push(aiResponse)
+      messages.value.push(aiResponse)
     }, 1000)
   }
 }
 
 const selectConversation = (id) => {
-  activeConversation = id
+  activeConversation.value = id
   router.push({ query: { conversation: id } })
 }
 
-function isActive() { return (id } => activeConversation === id)
+const isActive = computed(() => (id) => activeConversation.value === id)
 </script>
 
 <div class="h-screen flex bg-gray-100 overflow-hidden">
@@ -275,3 +280,8 @@ function isActive() { return (id } => activeConversation === id)
 }
 </style>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

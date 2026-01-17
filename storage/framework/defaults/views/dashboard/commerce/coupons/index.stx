@@ -1,4 +1,10 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script server>
+import { ref, computed, onMounted } from 'vue'
 import type { Coupons, NewCoupon } from '../../../../types/defaults'
 import { useCoupons } from '../../../../functions/commerce/coupons'
 import CouponsTable from '../../../../components/Dashboard/Commerce/CouponsTable.stx'
@@ -30,6 +36,10 @@ ChartJS.register(
   Filler,
 )
 
+useHead({
+  title: 'Dashboard - Commerce Coupons',
+})
+
 // Chart options
 const chartOptions = {
   responsive: true,
@@ -56,7 +66,7 @@ const chartOptions = {
 }
 
 // Generate monthly data for charts
-function monthlyChartData() {
+const monthlyChartData = computed(() => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   // Sample data - in a real app, this would be calculated from actual usage data
@@ -105,32 +115,37 @@ function monthlyChartData() {
 })
 
 // Time range selector
-const timeRange = 'Last 30 days'
+const timeRange = ref('Last 30 days')
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Get coupons data and functions from the composable
 const { coupons, createCoupon, fetchCoupons, deleteCoupon, updateCoupon } = useCoupons()
 
+// Fetch coupons on component mount
+onMounted(async () => {
+  await fetchCoupons()
+})
+
 // Filter and sort options
-const searchQuery = ''
-const sortBy = 'code'
-const sortOrder = 'asc'
-const statusFilter = 'all'
+const searchQuery = ref('')
+const sortBy = ref('code')
+const sortOrder = ref('asc')
+const statusFilter = ref('all')
 
 // Available statuses
 const statuses = ['all', 'Active', 'Expired', 'Scheduled'] as const
 
 // Pagination
-const currentPage = 1
-const itemsPerPage = 10
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
 
 // Computed coupon statistics
-function couponStats() {
-  const activeCoupons = coupons.filter(c => c.status === 'Active').length
-  const totalRedemptions = coupons.reduce((sum, c) => sum + c.usage_count, 0)
+const couponStats = computed(() => {
+  const activeCoupons = coupons.value.filter(c => c.status === 'Active').length
+  const totalRedemptions = coupons.value.reduce((sum, c) => sum + c.usage_count, 0)
 
   // Calculate total discount amount (simplified calculation)
-  const totalDiscountAmount = coupons.reduce((sum, c) => {
+  const totalDiscountAmount = coupons.value.reduce((sum, c) => {
     const avgOrderValue = 100 // Assuming $100 average order value
     let discountPerUse = 0
 
@@ -156,102 +171,102 @@ function couponStats() {
 })
 
 // Computed filtered and sorted coupons
-function filteredCoupons() {
-  return coupons
+const filteredCoupons = computed(() => {
+  return coupons.value
     .filter(coupon => {
       // Apply search filter
-      const matchesSearch = coupon.code?.toLowerCase().includes(searchQuery.toLowerCase()) || false
+      const matchesSearch = coupon.code?.toLowerCase().includes(searchQuery.value.toLowerCase()) || false
 
       // Apply status filter
-      const matchesStatus = statusFilter === 'all' || coupon.status === statusFilter
+      const matchesStatus = statusFilter.value === 'all' || coupon.status === statusFilter.value
 
       return matchesSearch && matchesStatus
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy === 'code') {
+      if (sortBy.value === 'code') {
         comparison = a.code.localeCompare(b.code)
-    } else if (sortBy === 'discount_value') {
+    } else if (sortBy.value === 'discount_value') {
         comparison = a.discount_value - b.discount_value
-      } else if (sortBy === 'usage_count') {
+      } else if (sortBy.value === 'usage_count') {
         comparison = a.usage_count - b.usage_count
-      } else if (sortBy === 'end_date') {
+      } else if (sortBy.value === 'end_date') {
         comparison = new Date(a.end_date).getTime() - new Date(b.end_date).getTime()
       }
 
-      return sortOrder === 'asc' ? comparison : -comparison
+      return sortOrder.value === 'asc' ? comparison : -comparison
     })
 })
 
-function paginatedCoupons() {
-  const start = (currentPage - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return filteredCoupons.slice(start, end)
+const paginatedCoupons = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredCoupons.value.slice(start, end)
 })
 
 // Event handlers
 function handleSearch(query: string): void {
-  searchQuery = query
-  currentPage = 1
+  searchQuery.value = query
+  currentPage.value = 1
 }
 
 function handlePrevPage(): void {
-  if (currentPage > 1) {
+  if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
 function handleNextPage(): void {
-  const totalPages = Math.ceil(filteredCoupons.length / itemsPerPage)
-  if (currentPage < totalPages) {
+  const totalPages = Math.ceil(filteredCoupons.value.length / itemsPerPage.value)
+  if (currentPage.value < totalPages) {
     currentPage.value++
   }
 }
 
 function handlePageChange(page: number): void {
-  currentPage = page
+  currentPage.value = page
 }
 
 // Toggle sort order
 function toggleSort(column: string): void {
-  if (sortBy === column) {
-    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  if (sortBy.value === column) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy = column
-    sortOrder = 'asc'
+    sortBy.value = column
+    sortOrder.value = 'asc'
   }
 }
 
 // Modal state
-const showFormModal = false
-const formMode = 'add'
-const couponToEdit = null
-const showDeleteModal = false
-const couponToDelete = null
+const showFormModal = ref(false)
+const formMode = ref<'add' | 'edit'>('add')
+const couponToEdit = ref<any>(null)
+const showDeleteModal = ref(false)
+const couponToDelete = ref<any>(null)
 
 function openAddModal(): void {
-  formMode = 'add'
-  couponToEdit = null
-  showFormModal = true
+  formMode.value = 'add'
+  couponToEdit.value = null
+  showFormModal.value = true
 }
 
 function closeFormModal(): void {
-  showFormModal = false
-  couponToEdit = null
+  showFormModal.value = false
+  couponToEdit.value = null
 }
 
 function editCoupon(coupon: any): void {
-  formMode = 'edit'
-  couponToEdit = { ...coupon }
-  showFormModal = true
+  formMode.value = 'edit'
+  couponToEdit.value = { ...coupon }
+  showFormModal.value = true
 }
 
 // Form submission handlers
 async function handleFormSubmit(couponData: NewCoupon): Promise<void> {
 
   console.log(couponData)
-  if (formMode === 'add') {
+  if (formMode.value === 'add') {
     await addCoupon(couponData)
   } else {
     await doUpdateCoupon(couponData)
@@ -260,13 +275,13 @@ async function handleFormSubmit(couponData: NewCoupon): Promise<void> {
 
 async function addCoupon(couponData: NewCoupon): Promise<void> {
   // First add to local state for immediate UI update
-  const id = Math.max(...coupons.map(c => c.id || 0)) + 1
+  const id = Math.max(...coupons.value.map(c => c.id || 0)) + 1
   const newCouponData = {
     id,
     ...couponData,
     usage_count: 0
   } as Coupons
-  coupons.push(newCouponData)
+  coupons.value.push(newCouponData)
 
   // Then send to server
   try {
@@ -274,18 +289,18 @@ async function addCoupon(couponData: NewCoupon): Promise<void> {
     closeFormModal()
   } catch (error) {
     // If server request fails, remove from local state
-    coupons = coupons.filter(c => c.id !== id)
+    coupons.value = coupons.value.filter(c => c.id !== id)
     console.error('Failed to create coupon:', error)
   }
 }
 
 async function doUpdateCoupon(couponData: NewCoupon): Promise<void> {
-  if (!couponToEdit) return
+  if (!couponToEdit.value) return
 
-  const couponId = couponToEdit.id
+  const couponId = couponToEdit.value.id
 
   // Update local state for immediate UI update
-  const index = coupons.findIndex(c => c.id === couponId)
+  const index = coupons.value.findIndex(c => c.id === couponId)
   if (index !== -1) {
     coupons.value[index] = { ...coupons.value[index], ...couponData }
   }
@@ -306,29 +321,29 @@ function viewCoupon(coupon: any): void {
 }
 
 function removeCoupon(coupon: any): void {
-  couponToDelete = coupon
-  showDeleteModal = true
+  couponToDelete.value = coupon
+  showDeleteModal.value = true
 }
 
 function closeDeleteModal(): void {
-  showDeleteModal = false
-  couponToDelete = null
+  showDeleteModal.value = false
+  couponToDelete.value = null
 }
 
 async function confirmDelete(): Promise<void> {
-  if (!couponToDelete) return
+  if (!couponToDelete.value) return
 
-  const couponId = couponToDelete.id
+  const couponId = couponToDelete.value.id
 
   // Remove from local state for immediate UI update
-  coupons = coupons.filter(c => c.id !== couponId)
+  coupons.value = coupons.value.filter(c => c.id !== couponId)
 
   try {
     await deleteCoupon(couponId)
     closeDeleteModal()
   } catch (error) {
     // If server request fails, restore to local state
-    coupons.push(couponToDelete)
+    coupons.value.push(couponToDelete.value)
     console.error('Failed to delete coupon:', error)
   }
 }

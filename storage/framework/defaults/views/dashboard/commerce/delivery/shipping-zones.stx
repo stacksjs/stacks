@@ -1,4 +1,11 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script server>
+import { ref, computed, onMounted } from 'vue'
+import { useHead } from '@vueuse/head'
 import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 import ShippingZonesTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingZonesTable.stx'
@@ -6,22 +13,30 @@ import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagin
 import { useShippingZones } from '../../../../functions/commerce/shippings/shipping-zones'
 import type { NewShippingZone } from '../../../../types/defaults'
 
+useHead({
+  title: 'Dashboard - Shipping Zones',
+})
+
 const { shippingZones, createShippingZone, fetchShippingZones, updateShippingZone, deleteShippingZone } = useShippingZones()
 
-const showAddModal = false
-const showEditModal = false
-const editingZone = null
-const newShippingZone = {
+onMounted(async () => {
+  await fetchShippingZones()
+})
+
+const showAddModal = ref(false)
+const showEditModal = ref(false)
+const editingZone = ref(null)
+const newShippingZone = ref({
   name: '',
   countries: '',
   regions: '',
   postal_codes: '',
   shipping_method_id: 0,
   status: 'Active'
-}
+})
 
 function openAddModal() {
-  newShippingZone = {
+  newShippingZone.value = {
     name: '',
     countries: '',
     regions: '',
@@ -29,16 +44,16 @@ function openAddModal() {
     shipping_method_id: 0,
     status: 'Active'
   }
-  showAddModal = true
+  showAddModal.value = true
 }
 
 function closeAddModal() {
-  showAddModal = false
+  showAddModal.value = false
 }
 
 function openEditModal(zone) {
-  editingZone = zone
-  newShippingZone = {
+  editingZone.value = zone
+  newShippingZone.value = {
     name: zone.name,
     countries: zone.countries || '',
     regions: zone.regions || '',
@@ -46,18 +61,18 @@ function openEditModal(zone) {
     shipping_method_id: zone.shipping_method_id,
     status: zone.status
   }
-  showEditModal = true
+  showEditModal.value = true
 }
 
 function closeEditModal() {
-  showEditModal = false
-  editingZone = null
+  showEditModal.value = false
+  editingZone.value = null
 }
 
 async function addShippingZone() {
   try {
     const zoneData = {
-      ...newShippingZone,
+      ...newShippingZone.value,
       shipping_method_id: 1
     }
     await createShippingZone(zoneData)
@@ -68,12 +83,12 @@ async function addShippingZone() {
 }
 
 async function saveShippingZone() {
-  if (!editingZone) return
+  if (!editingZone.value) return
 
   try {
     await updateShippingZone({
-      ...editingZone,
-      ...newShippingZone
+      ...editingZone.value,
+      ...newShippingZone.value
     })
     closeEditModal()
   } catch (error) {
@@ -81,16 +96,16 @@ async function saveShippingZone() {
   }
 }
 
-const searchQuery = ''
-const currentPage = 1
+const searchQuery = ref('')
+const currentPage = ref(1)
 const itemsPerPage = 5
 
-function filteredShippingZones() {
-  const zones = Array.isArray(shippingZones) ? shippingZones : []
+const filteredShippingZones = computed(() => {
+  const zones = Array.isArray(shippingZones.value) ? shippingZones.value : []
 
-  if (!searchQuery) return zones
+  if (!searchQuery.value) return zones
 
-  const query = searchQuery.toLowerCase()
+  const query = searchQuery.value.toLowerCase()
   return zones.filter(zone =>
     zone.name.toLowerCase().includes(query) ||
     zone.countries?.toLowerCase().includes(query) ||
@@ -98,10 +113,10 @@ function filteredShippingZones() {
   )
 })
 
-function paginatedShippingZones() {
-  const start = (currentPage - 1) * itemsPerPage
+const paginatedShippingZones = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
-  const sliced = filteredShippingZones.slice(start, end)
+  const sliced = filteredShippingZones.value.slice(start, end)
 
   return sliced.map(zone => ({
     id: zone.id,
@@ -115,8 +130,8 @@ function paginatedShippingZones() {
 })
 
 const handleSearch = (query) => {
-  searchQuery = query
-  currentPage = 1
+  searchQuery.value = query
+  currentPage.value = 1
 }
 
 const handleAddZone = () => {
@@ -138,20 +153,20 @@ const handleDeleteZone = async (zone) => {
 }
 
 const handlePrevPage = () => {
-  if (currentPage > 1) {
+  if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
 const handleNextPage = () => {
-  const totalPages = Math.ceil(filteredShippingZones.length / itemsPerPage)
-  if (currentPage < totalPages) {
+  const totalPages = Math.ceil(filteredShippingZones.value.length / itemsPerPage)
+  if (currentPage.value < totalPages) {
     currentPage.value++
   }
 }
 
 const handlePageChange = (page) => {
-  currentPage = page
+  currentPage.value = page
 }
 
 const tabs = [

@@ -1,4 +1,8 @@
 <script>
+useHead({
+  title: 'Dashboard - Access Tokens',
+})
+
 const tokens = [
   {
     name: 'Mobile App Token',
@@ -180,3 +184,8 @@ const tokens = [
   </div>
 </div>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

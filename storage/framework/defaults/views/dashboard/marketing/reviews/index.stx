@@ -1,5 +1,11 @@
 <script lang="ts">
+import { ref, computed, watch, onMounted } from 'vue'
+import { useHead } from '@vueuse/head'
 import * as d3 from 'd3'
+
+useHead({
+  title: 'Dashboard - Customer Reviews',
+})
 
 // Define review type
 interface Review {
@@ -40,7 +46,7 @@ interface Review {
 }
 
 // Sample reviews data
-const reviews = [
+const reviews = ref<Review[]>([
   {
     id: 1,
     uuid: '11ce123b-57c4-429b-9840-c79f8047d8aa',
@@ -261,17 +267,17 @@ const reviews = [
     isHighlighted: false,
     isHidden: false
   }
-]
+])
 
 // Filter and sort options
-const searchQuery = ''
-const sortBy = 'date'
-const sortOrder = 'desc'
-const sourceFilter = 'all'
-const ratingFilter = 'all'
-const sentimentFilter = 'all'
-const statusFilter = 'all'
-const viewMode = 'compact' // 'detailed' or 'compact'
+const searchQuery = ref('')
+const sortBy = ref('date')
+const sortOrder = ref('desc')
+const sourceFilter = ref('all')
+const ratingFilter = ref('all')
+const sentimentFilter = ref('all')
+const statusFilter = ref('all')
+const viewMode = ref('compact') // 'detailed' or 'compact'
 
 // Available sources
 const sources = ['all', 'Google', 'Yelp', 'Facebook', 'TripAdvisor', 'Other']
@@ -286,84 +292,84 @@ const sentiments = ['all', 'positive', 'neutral', 'negative']
 const statuses = ['all', 'unread', 'read', 'responded', 'flagged']
 
 // Computed filtered and sorted reviews
-function filteredReviews() {
-  return reviews
+const filteredReviews = computed(() => {
+  return reviews.value
     .filter(review => {
       // Apply search filter
       const matchesSearch =
-        review.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        review.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        review.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        review.location.toLowerCase().includes(searchQuery.toLowerCase())
+        review.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        review.content.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        review.author.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        review.location.toLowerCase().includes(searchQuery.value.toLowerCase())
 
       // Apply source filter
-      const matchesSource = sourceFilter === 'all' || review.source === sourceFilter
+      const matchesSource = sourceFilter.value === 'all' || review.source === sourceFilter.value
 
       // Apply rating filter
-      const matchesRating = ratingFilter === 'all' || review.rating.toString() === ratingFilter
+      const matchesRating = ratingFilter.value === 'all' || review.rating.toString() === ratingFilter.value
 
       // Apply sentiment filter
-      const matchesSentiment = sentimentFilter === 'all' || review.sentiment === sentimentFilter
+      const matchesSentiment = sentimentFilter.value === 'all' || review.sentiment === sentimentFilter.value
 
       // Apply status filter
-      const matchesStatus = statusFilter === 'all' || review.status === statusFilter
+      const matchesStatus = statusFilter.value === 'all' || review.status === statusFilter.value
 
       return matchesSearch && matchesSource && matchesRating && matchesSentiment && matchesStatus
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy === 'date') {
+      if (sortBy.value === 'date') {
         comparison = new Date(b.date).getTime() - new Date(a.date).getTime()
-      } else if (sortBy === 'rating') {
+      } else if (sortBy.value === 'rating') {
         comparison = b.rating - a.rating
-      } else if (sortBy === 'helpful') {
+      } else if (sortBy.value === 'helpful') {
         comparison = b.helpful - a.helpful
       }
 
-      return sortOrder === 'asc' ? -comparison : comparison
+      return sortOrder.value === 'asc' ? -comparison : comparison
     })
 })
 
 // Pagination
-const itemsPerPage = 5;
-const currentPage = 1;
+const itemsPerPage = ref(5);
+const currentPage = ref(1);
 
-function totalPages() {
-  return Math.ceil(filteredReviews.length / itemsPerPage);
+const totalPages = computed(() => {
+  return Math.ceil(filteredReviews.value.length / itemsPerPage.value);
 });
 
-function paginatedReviews() {
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  return filteredReviews.slice(startIndex, endIndex);
+const paginatedReviews = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage.value;
+  const endIndex = startIndex + itemsPerPage.value;
+  return filteredReviews.value.slice(startIndex, endIndex);
 });
 
 // Pagination functions
 const prevPage = () => {
-  if (currentPage > 1) {
+  if (currentPage.value > 1) {
     currentPage.value--;
   }
 };
 
 const nextPage = () => {
-  if (currentPage < totalPages) {
+  if (currentPage.value < totalPages.value) {
     currentPage.value++;
   }
 };
 
 const goToPage = (page: number) => {
-  currentPage = page;
+  currentPage.value = page;
 };
 
 // Calculate displayed page numbers for pagination
-function displayedPages() {
+const displayedPages = computed(() => {
   const totalPagesToShow = 5;
   const pages: number[] = [];
 
-  if (totalPages <= totalPagesToShow) {
+  if (totalPages.value <= totalPagesToShow) {
     // If we have fewer pages than we want to show, display all pages
-    for (let i = 1; i <= totalPages; i++) {
+    for (let i = 1; i <= totalPages.value; i++) {
       pages.push(i);
     }
   } else {
@@ -371,14 +377,14 @@ function displayedPages() {
     pages.push(1);
 
     // Calculate start and end of page range around current page
-    let startPage = Math.max(2, currentPage - 1);
-    let endPage = Math.min(totalPages - 1, currentPage + 1);
+    let startPage = Math.max(2, currentPage.value - 1);
+    let endPage = Math.min(totalPages.value - 1, currentPage.value + 1);
 
     // Adjust if we're at the start or end
-    if (currentPage <= 2) {
+    if (currentPage.value <= 2) {
       endPage = 4;
-    } else if (currentPage >= totalPages - 1) {
-      startPage = totalPages - 3;
+    } else if (currentPage.value >= totalPages.value - 1) {
+      startPage = totalPages.value - 3;
     }
 
     // Add ellipsis if needed before middle pages
@@ -392,12 +398,12 @@ function displayedPages() {
     }
 
     // Add ellipsis if needed after middle pages
-    if (endPage < totalPages - 1) {
+    if (endPage < totalPages.value - 1) {
       pages.push(-2); // -2 represents ellipsis
     }
 
     // Always include last page
-    pages.push(totalPages);
+    pages.push(totalPages.value);
   }
 
   return pages;
@@ -405,11 +411,11 @@ function displayedPages() {
 
 // Toggle sort order
 function toggleSort(column: string): void {
-  if (sortBy === column) {
-    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  if (sortBy.value === column) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy = column
-    sortOrder = 'desc'
+    sortBy.value = column
+    sortOrder.value = 'desc'
   }
 }
 
@@ -494,20 +500,20 @@ const getSourceColor = (source: string): string => {
 }
 
 // Calculate summary statistics
-function totalReviews() { return reviews.length }
-function averageRating() {
-  const sum = reviews.reduce((acc, review) => acc + review.rating, 0)
-  return (sum / reviews.length).toFixed(1)
+const totalReviews = computed(() => reviews.value.length)
+const averageRating = computed(() => {
+  const sum = reviews.value.reduce((acc, review) => acc + review.rating, 0)
+  return (sum / reviews.value.length).toFixed(1)
 })
-function positiveReviews() { return reviews.filter(r => r.sentiment === 'positive' }.length)
-function negativeReviews() { return reviews.filter(r => r.sentiment === 'negative' }.length)
-function unreadReviews() { return reviews.filter(r => r.status === 'unread' }.length)
-function flaggedReviews() { return reviews.filter(r => r.status === 'flagged' }.length)
+const positiveReviews = computed(() => reviews.value.filter(r => r.sentiment === 'positive').length)
+const negativeReviews = computed(() => reviews.value.filter(r => r.sentiment === 'negative').length)
+const unreadReviews = computed(() => reviews.value.filter(r => r.status === 'unread').length)
+const flaggedReviews = computed(() => reviews.value.filter(r => r.status === 'flagged').length)
 
 // Calculate review distribution by source
-function reviewsBySource() {
+const reviewsBySource = computed(() => {
   const distribution: Record<string, number> = {}
-  reviews.forEach(review => {
+  reviews.value.forEach(review => {
     const source = review.source
     distribution[source] = (distribution[source] || 0) + 1
   })
@@ -515,9 +521,9 @@ function reviewsBySource() {
 })
 
 // Calculate review distribution by rating
-function reviewsByRating() {
+const reviewsByRating = computed(() => {
   const distribution: Record<number, number> = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
-  reviews.forEach(review => {
+  reviews.value.forEach(review => {
     const rating = review.rating
     distribution[rating] = (distribution[rating] || 0) + 1
   })
@@ -525,9 +531,9 @@ function reviewsByRating() {
 })
 
 // Calculate review distribution by sentiment
-function reviewsBySentiment() {
+const reviewsBySentiment = computed(() => {
   const distribution: Record<string, number> = {positive: 0, neutral: 0, negative: 0}
-  reviews.forEach(review => {
+  reviews.value.forEach(review => {
     const sentiment = review.sentiment
     distribution[sentiment] = (distribution[sentiment] || 0) + 1
   })
@@ -535,32 +541,32 @@ function reviewsBySentiment() {
 })
 
 // Modal state for review response
-const showResponseModal = false
-const currentReview = null
-const responseText = ''
+const showResponseModal = ref(false)
+const currentReview = ref<Review | null>(null)
+const responseText = ref('')
 
 function openResponseModal(review: Review | null): void {
-  currentReview = review
-  responseText = review?.response?.content || ''
-  showResponseModal = true
+  currentReview.value = review
+  responseText.value = review?.response?.content || ''
+  showResponseModal.value = true
 }
 
 function closeResponseModal(): void {
-  showResponseModal = false
-  currentReview = null
-  responseText = ''
+  showResponseModal.value = false
+  currentReview.value = null
+  responseText.value = ''
 }
 
 function submitResponse(): void {
-  if (!currentReview) return
+  if (!currentReview.value) return
 
   const today = new Date().toISOString().split('T')[0] || ''
 
   // Find the review in the array and update it
-  const index = reviews.findIndex(r => r.id === currentReview.value?.id)
+  const index = reviews.value.findIndex(r => r.id === currentReview.value?.id)
   if (index !== -1) {
     reviews.value[index]!.response = {
-      content: responseText,
+      content: responseText.value,
       date: today,
       author: 'Customer Support Team'
     }
@@ -573,7 +579,7 @@ function submitResponse(): void {
 // Function to mark a review as read
 function markAsRead(review: Review): void {
   if (review.status === 'unread') {
-    const index = reviews.findIndex(r => r.id === review.id)
+    const index = reviews.value.findIndex(r => r.id === review.id)
     if (index !== -1) {
       reviews.value[index]!.status = 'read'
     }
@@ -582,7 +588,7 @@ function markAsRead(review: Review): void {
 
 // Function to flag a review
 function flagReview(review: Review): void {
-  const index = reviews.findIndex(r => r.id === review.id)
+  const index = reviews.value.findIndex(r => r.id === review.id)
   if (index !== -1) {
     const reviewItem = reviews.value[index]!
     reviewItem.status = reviewItem.status === 'flagged' ? 'read' : 'flagged'
@@ -591,7 +597,7 @@ function flagReview(review: Review): void {
 
 // Function to highlight a review
 function highlightReview(review: Review): void {
-  const index = reviews.findIndex(r => r.id === review.id)
+  const index = reviews.value.findIndex(r => r.id === review.id)
   if (index !== -1) {
     const reviewItem = reviews.value[index]!
     reviewItem.isHighlighted = !reviewItem.isHighlighted
@@ -600,7 +606,7 @@ function highlightReview(review: Review): void {
 
 // Function to hide a review
 function hideReview(review: Review): void {
-  const index = reviews.findIndex(r => r.id === review.id)
+  const index = reviews.value.findIndex(r => r.id === review.id)
   if (index !== -1) {
     const reviewItem = reviews.value[index]!
     reviewItem.isHidden = !reviewItem.isHidden
@@ -613,7 +619,7 @@ const renderRatingChart = () => {
   d3.select('#rating-chart').selectAll('*').remove();
 
   // Get data
-  const data = Object.entries(reviewsByRating).map(([rating, count]) => ({
+  const data = Object.entries(reviewsByRating.value).map(([rating, count]) => ({
     rating: Number(rating),
     count
   })).sort((a, b) => a.rating - b.rating);
@@ -698,7 +704,7 @@ const renderSentimentChart = () => {
   d3.select('#sentiment-chart').selectAll('*').remove();
 
   // Get data
-  const data = Object.entries(reviewsBySentiment).map(([sentiment, count]) => ({
+  const data = Object.entries(reviewsBySentiment.value).map(([sentiment, count]) => ({
     sentiment,
     count
   }));
@@ -783,7 +789,7 @@ const renderSourceChart = () => {
   d3.select('#source-chart').selectAll('*').remove();
 
   // Get data
-  const data = Object.entries(reviewsBySource).map(([source, count]) => ({
+  const data = Object.entries(reviewsBySource.value).map(([source, count]) => ({
     source,
     count
   }));
@@ -863,8 +869,9 @@ const renderSourceChart = () => {
     .text(d => d.source);
 };
 
-// Run on render
-// Render initial charts
+// Initialize D3 charts on component mount
+onMounted(() => {
+  // Render initial charts
   renderRatingChart();
   renderSentimentChart();
   renderSourceChart();
@@ -874,6 +881,7 @@ const renderSourceChart = () => {
     renderRatingChart();
     renderSentimentChart();
     renderSourceChart();
+  });
 
   // Re-render charts when theme changes
   const observer = new MutationObserver(() => {
@@ -888,7 +896,12 @@ const renderSourceChart = () => {
   });
 
   // Re-render charts when reviews data changes
-  })
+  watch([reviewsByRating, reviewsBySentiment, reviewsBySource], () => {
+    renderRatingChart();
+    renderSentimentChart();
+    renderSourceChart();
+  });
+})
 </script>
 
 <main>
@@ -1608,3 +1621,8 @@ const renderSourceChart = () => {
     </div>
   </div>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

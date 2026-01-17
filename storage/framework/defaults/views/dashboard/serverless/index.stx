@@ -1,5 +1,16 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script server>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useHead } from '@vueuse/head'
 import * as d3 from 'd3'
+
+useHead({
+  title: 'Dashboard - Serverless',
+})
 
 // Service types and their relationships based on the cloud directory structure
 interface ServiceNode extends d3.SimulationNodeDatum {
@@ -252,27 +263,27 @@ const links: ServiceLink[] = [
 ]
 
 // Visualization state
-const diagramContainer = null
+const diagramContainer = ref<HTMLElement | null>(null)
 let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>
 let simulation: d3.Simulation<ServiceNode, undefined>
 let zoomGroup: d3.Selection<SVGGElement, unknown, null, undefined>
-const selectedNode = null
+const selectedNode = ref<ServiceNode | null>(null)
 
 // Add zoom variable to the outer scope
 let zoom: d3.ZoomBehavior<SVGSVGElement, unknown>
 
 // Function to create and update the visualization
 const updateVisualization = () => {
-  if (!diagramContainer) return
+  if (!diagramContainer.value) return
 
-  const width = diagramContainer.clientWidth
+  const width = diagramContainer.value.clientWidth
   const height = 600
 
   // Clear existing visualization
-  d3.select(diagramContainer).selectAll('*').remove()
+  d3.select(diagramContainer.value).selectAll('*').remove()
 
   // Create SVG
-  svg = d3.select(diagramContainer)
+  svg = d3.select(diagramContainer.value)
     .append('svg')
     .attr('width', width)
     .attr('height', height)
@@ -304,7 +315,7 @@ const updateVisualization = () => {
       .on('end', dragended)))
     .on('click', (event: MouseEvent, d: ServiceNode) => {
       event.stopPropagation()
-      selectedNode = d
+      selectedNode.value = d
       node.classed('selected', n => n === d)
     })
 
@@ -475,7 +486,7 @@ const updateVisualization = () => {
 
   // Add click handler to clear selection
   svg.on('click', () => {
-    selectedNode = null
+    selectedNode.value = null
     node.classed('selected', false)
   })
 
@@ -517,13 +528,15 @@ onUnmounted(() => {
   }
 })
 
-// Run on render
-if (diagramContainer) {
+// Initialize visualization
+onMounted(() => {
+  if (diagramContainer.value) {
     // Add rounded corners to all service icon rectangles
     const svgRects = document.querySelectorAll('.node svg rect');
     svgRects.forEach(rect => {
       rect.setAttribute('rx', '8');
       rect.setAttribute('ry', '8');
+    });
 
     updateVisualization();
   }
@@ -531,9 +544,9 @@ if (diagramContainer) {
 
 // Add these functions before the onMounted hook
 const downloadSVG = () => {
-  if (!diagramContainer) return
+  if (!diagramContainer.value) return
 
-  const svgElement = diagramContainer.querySelector('svg')
+  const svgElement = diagramContainer.value.querySelector('svg')
   if (!svgElement) return
 
   // Create a copy of the SVG to modify for download
@@ -554,9 +567,9 @@ const downloadSVG = () => {
 }
 
 const downloadPNG = () => {
-  if (!diagramContainer) return
+  if (!diagramContainer.value) return
 
-  const svgElement = diagramContainer.querySelector('svg')
+  const svgElement = diagramContainer.value.querySelector('svg')
   if (!svgElement) return
 
   // Create a copy of the SVG to modify for download
@@ -632,7 +645,7 @@ interface ServerEvent {
   timestamp: string
 }
 
-const serverEvents = [
+const serverEvents = ref<ServerEvent[]>([
   {
     id: '1',
     service: 'Lambda',
@@ -668,7 +681,7 @@ const serverEvents = [
     message: 'Bucket policy updated successfully',
     timestamp: '2024-03-21 14:05:22'
   }
-]
+])
 
 const getEventTypeColor = (type: string) => {
   switch (type) {

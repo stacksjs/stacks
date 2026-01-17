@@ -1,8 +1,10 @@
 <script server>
-  // Run on render
-//   if (app.maintenanceMode && router.currentRoute.path !== '/maintenance')
+  // const router = useRouter()
+
+  // onMounted(() => {
+  //   if (app.maintenanceMode && router.currentRoute.value.path !== '/maintenance')
   //     router.push('/maintenance')
-  //
+  // })
 </script>
 
 <template>

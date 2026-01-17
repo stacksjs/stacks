@@ -1,87 +1,103 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script server>
+import { ref, computed, onMounted } from 'vue'
+import { useHead } from '@vueuse/head'
 import { useOrders } from '../../../../functions/commerce/orders'
 import OrdersTable from '../../../../components/Dashboard/Commerce/OrdersTable.stx'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 
+useHead({
+  title: 'Dashboard - Commerce Orders',
+})
+
 // Get orders data and functions from the composable
 const { orders, createOrder, fetchOrders, deleteOrder } = useOrders()
 
+// Fetch orders on component mount
+onMounted(async () => {
+  await fetchOrders()
+})
+
 // Available statuses
 const statuses = ['all', 'Completed', 'Processing', 'Shipped', 'Cancelled', 'Refunded'] as const
-const statusFilter = 'all'
-const sortBy = 'date'
-const sortOrder = 'desc'
+const statusFilter = ref('all')
+const sortBy = ref('date')
+const sortOrder = ref('desc')
 
 // Search and filtering
-const searchQuery = ''
-const currentPage = 1
-const itemsPerPage = 5
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = ref(5)
 
 // Computed filtered orders
-function filteredOrders() {
-  return orders
+const filteredOrders = computed(() => {
+  return orders.value
     .filter(order => {
       // Apply search filter
       const matchesSearch =
-        order.id.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customer_id.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.order_type.toLowerCase().includes(searchQuery.toLowerCase())
+        order.id.toString().toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        order.customer_id.toString().toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        order.order_type.toLowerCase().includes(searchQuery.value.toLowerCase())
 
       // Apply status filter
-      const matchesStatus = statusFilter === 'all' || order.status === statusFilter
+      const matchesStatus = statusFilter.value === 'all' || order.status === statusFilter.value
 
       return matchesSearch && matchesStatus
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy === 'total_amount') {
+      if (sortBy.value === 'total_amount') {
         comparison = a.total_amount - b.total_amount
-      } else if (sortBy === 'customer_id') {
+      } else if (sortBy.value === 'customer_id') {
         comparison = a.customer_id - b.customer_id
       }
 
-      return sortOrder === 'asc' ? comparison : -comparison
+      return sortOrder.value === 'asc' ? comparison : -comparison
     })
 })
 
-function paginatedOrders() {
-  const start = (currentPage - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return filteredOrders.slice(start, end)
+const paginatedOrders = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredOrders.value.slice(start, end)
 })
 
 // Event handlers
 const handleSearch = (query: string) => {
-  searchQuery = query
-  currentPage = 1
+  searchQuery.value = query
+  currentPage.value = 1
 }
 
 const handlePrevPage = () => {
-  if (currentPage > 1) {
+  if (currentPage.value > 1) {
     currentPage.value--
   }
 }
 
 const handleNextPage = () => {
-  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage)
-  if (currentPage < totalPages) {
+  const totalPages = Math.ceil(filteredOrders.value.length / itemsPerPage.value)
+  if (currentPage.value < totalPages) {
     currentPage.value++
   }
 }
 
 const handlePageChange = (page: number) => {
-  currentPage = page
+  currentPage.value = page
 }
 
 // Toggle sort order
 function toggleSort(column: string): void {
-  if (sortBy === column) {
-    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  if (sortBy.value === column) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy = column
-    sortOrder = 'desc'
+    sortBy.value = column
+    sortOrder.value = 'desc'
   }
 }
 
@@ -97,8 +113,8 @@ function editOrder(order: any): void {
 }
 
 function removeOrder(order: any): void {
-  orderToDelete = order
-  showDeleteModal = true
+  orderToDelete.value = order
+  showDeleteModal.value = true
 }
 
 // Define new order type
@@ -110,42 +126,42 @@ interface NewOrder {
 }
 
 // Modal state
-const showAddModal = false
-const showDeleteModal = false
-const orderToDelete = null
-const newOrder = {
+const showAddModal = ref(false)
+const showDeleteModal = ref(false)
+const orderToDelete = ref<any>(null)
+const newOrder = ref<NewOrder>({
   customer_id: 1,
   total_amount: 0,
   status: 'Processing',
   order_type: 'delivery'
-}
+})
 
 function openAddModal(): void {
-  newOrder = {
+  newOrder.value = {
     customer_id: 1,
     total_amount: 0,
     status: 'Processing',
     order_type: 'delivery'
   }
-  showAddModal = true
+  showAddModal.value = true
 }
 
 function closeAddModal(): void {
-  showAddModal = false
+  showAddModal.value = false
 }
 
 function closeDeleteModal(): void {
-  showDeleteModal = false
-  orderToDelete = null
+  showDeleteModal.value = false
+  orderToDelete.value = null
 }
 
 async function confirmDelete(): Promise<void> {
-  if (!orderToDelete) return
+  if (!orderToDelete.value) return
 
-  const orderId = orderToDelete.id
+  const orderId = orderToDelete.value.id
 
   // Remove from local state for immediate UI update
-  orders = orders.filter(o => o.id !== orderId)
+  orders.value = orders.value.filter(o => o.id !== orderId)
 
   try {
     // Use the composable's deleteOrder function
@@ -154,28 +170,28 @@ async function confirmDelete(): Promise<void> {
       closeDeleteModal()
     } else {
       // If server request fails, restore to local state
-      orders.push(orderToDelete)
+      orders.value.push(orderToDelete.value)
       console.error('Failed to delete order')
     }
   } catch (error) {
     // If server request fails, restore to local state
-    orders.push(orderToDelete)
+    orders.value.push(orderToDelete.value)
     console.error('Failed to delete order:', error)
   }
 }
 
 async function addOrder(): Promise<void> {
   // First add to local state for immediate UI update
-  const id = Math.max(...orders.map(o => o.id || 0)) + 1
+  const id = Math.max(...orders.value.map(o => o.id || 0)) + 1
   const newOrderData = {
     id,
-    customer_id: newOrder.customer_id,
+    customer_id: newOrder.value.customer_id,
     coupon_id: 0,
-    status: newOrder.status,
-    total_amount: newOrder.total_amount,
-    order_type: newOrder.order_type
+    status: newOrder.value.status,
+    total_amount: newOrder.value.total_amount,
+    order_type: newOrder.value.order_type
   }
-  orders.unshift(newOrderData)
+  orders.value.unshift(newOrderData)
 
   try {
     // Use the composable's createOrder function
@@ -184,12 +200,12 @@ async function addOrder(): Promise<void> {
       closeAddModal()
     } else {
       // If server request fails, remove from local state
-      orders = orders.filter(o => o.id !== id)
+      orders.value = orders.value.filter(o => o.id !== id)
       console.error('Failed to create order')
     }
   } catch (error) {
     // If server request fails, remove from local state
-    orders = orders.filter(o => o.id !== id)
+    orders.value = orders.value.filter(o => o.id !== id)
     console.error('Failed to create order:', error)
   }
 }

@@ -1,5 +1,11 @@
 <script server>
+import { ref, computed } from 'vue'
+import { useHead } from '@vueuse/head'
 import Tooltip from '../../../components/Dashboard/Tooltip.stx'
+
+useHead({
+  title: 'Dashboard - Errors',
+})
 
 interface ErrorStats {
   total: number
@@ -21,19 +27,19 @@ interface Error {
   resolvedBy?: string
 }
 
-const activeTab = 'active'
-const selectedEnvironment = 'all'
-const isAiAnalyzing = false
-const isDark = false
+const activeTab = ref('active')
+const selectedEnvironment = ref('all')
+const isAiAnalyzing = ref(false)
+const isDark = ref(false)
 
-const errorStats = {
+const errorStats = ref({
   total: 2847,
   resolved: 1624,
   totalChange: -24,
   resolvedChange: 12,
-}
+})
 
-const allErrors = [
+const allErrors = ref([
   {
     id: '1',
     message: "Cannot read property 'length' of undefined",
@@ -76,20 +82,20 @@ const allErrors = [
     resolvedAt: '1 day ago',
     resolvedBy: 'John Doe'
   }
-]
+])
 
-function activeErrors() {
-  const filtered = allErrors.filter(error => error.status === 'active')
-  return selectedEnvironment === 'all'
+const activeErrors = computed(() => {
+  const filtered = allErrors.value.filter(error => error.status === 'active')
+  return selectedEnvironment.value === 'all'
     ? filtered
-    : filtered.filter(error => error.environment === selectedEnvironment)
+    : filtered.filter(error => error.environment === selectedEnvironment.value)
 })
 
-function resolvedErrors() {
-  const filtered = allErrors.filter(error => error.status === 'resolved')
-  return selectedEnvironment === 'all'
+const resolvedErrors = computed(() => {
+  const filtered = allErrors.value.filter(error => error.status === 'resolved')
+  return selectedEnvironment.value === 'all'
     ? filtered
-    : filtered.filter(error => error.environment === selectedEnvironment)
+    : filtered.filter(error => error.environment === selectedEnvironment.value)
 })
 
 const getTypeColor = (type) => {
@@ -124,7 +130,7 @@ const openInEditor = (location) => {
 }
 
 const resolveError = (errorId) => {
-  const error = allErrors.find(e => e.id === errorId)
+  const error = allErrors.value.find(e => e.id === errorId)
   if (error) {
     error.status = 'resolved'
     error.resolvedAt = 'Just now'
@@ -133,10 +139,10 @@ const resolveError = (errorId) => {
 }
 
 const analyzeWithAI = async (errorId) => {
-  const error = allErrors.find(e => e.id === errorId)
+  const error = allErrors.value.find(e => e.id === errorId)
   if (!error) return
 
-  isAiAnalyzing = true
+  isAiAnalyzing.value = true
   try {
     const response = await fetch('/api/ai/analyze-error', {
       method: 'POST',
@@ -154,7 +160,7 @@ const analyzeWithAI = async (errorId) => {
     const data = await response.json()
   } catch (err) {
   } finally {
-    isAiAnalyzing = false
+    isAiAnalyzing.value = false
   }
 }
 </script>
@@ -409,3 +415,8 @@ const analyzeWithAI = async (errorId) => {
 </div>
 </template>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

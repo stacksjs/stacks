@@ -110,7 +110,7 @@ const options = [
     label: 'UI',
   },
 ]
-function pageTitle() { return options.find(option => option.key === name }?.label || name)
+const pageTitle = computed(() => options.find(option => option.key === name)?.label || name)
 </script>
 
 <template>

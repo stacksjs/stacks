@@ -13,7 +13,7 @@
         class="block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-blue-gray-800 dark:text-white"
       >
         @foreach(tabs as tab)
-          <option value="{{ tab }}" {{ tab == modelValue ? 'selected' : '' }}>{{ tab.name }}</option>
+          <option value="{{ tab.value }}" {{ tab.value == modelValue ? 'selected' : '' }}>{{ tab.name }}</option>
         @endforeach
       </select>
     </div>
@@ -23,7 +23,7 @@
           @foreach(tabs as tab)
             <a
               href="{{ tab.href }}"
-              class="{{ tab == modelValue ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300' }} whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+              class="{{ tab.value == modelValue ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300' }} whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
             >
               {{ tab.name }}
             </a>

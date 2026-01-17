@@ -1,8 +1,14 @@
 <script server>
+import { ref, computed, onMounted, reactive } from 'vue'
+import { useHead } from '@vueuse/head'
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
 // Register Chart.js components
 Chart.register(...registerables)
+
+useHead({
+  title: 'Dashboard - Commerce Marketing Analytics',
+})
 
 // Types
 interface DateRange {
@@ -51,25 +57,25 @@ const dateRanges: DateRange[] = [
 ]
 
 // Selected date range
-const selectedDateRange = 'all-time'
-const dateRangeDisplay = 'All Time: Sep 7, 2023 to Mar 6, 2025'
-const comparisonType = 'no-comparison'
-const customStartDate = ''
-const customEndDate = ''
-function showCustomDateRange() { return selectedDateRange === 'custom' }
+const selectedDateRange = ref('all-time')
+const dateRangeDisplay = ref('All Time: Sep 7, 2023 to Mar 6, 2025')
+const comparisonType = ref('no-comparison')
+const customStartDate = ref('')
+const customEndDate = ref('')
+const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
 
 // Marketing overview data
-const marketingOverview = {
+const marketingOverview = ref({
   totalSpend: 125000,
   totalRevenue: 375000,
   roi: 200,
   conversions: 7500,
   cpa: 16.67,
   conversionRate: '3.2%'
-}
+})
 
 // Marketing data for chart
-const marketingData = [
+const marketingData = ref([
   { date: '2023-11-01', spend: 5000, revenue: 15000 },
   { date: '2023-12-01', spend: 6000, revenue: 18000 },
   { date: '2024-01-01', spend: 7000, revenue: 21000 },
@@ -86,17 +92,17 @@ const marketingData = [
   { date: '2024-12-01', spend: 12000, revenue: 36000 },
   { date: '2025-01-01', spend: 7000, revenue: 21000 },
   { date: '2025-02-01', spend: 5000, revenue: 15000 }
-]
+])
 
 // Chart.js configuration
 const chartConfig = reactive({
   type: 'line' as keyof ChartTypeRegistry,
   data: {
-    labels: marketingData.map(item => item.date),
+    labels: marketingData.value.map(item => item.date),
     datasets: [
       {
         label: 'Revenue ($)',
-        data: marketingData.map(item => item.revenue),
+        data: marketingData.value.map(item => item.revenue),
         backgroundColor: 'rgba(16, 185, 129, 0.3)',
         borderColor: 'rgba(16, 185, 129, 0.8)',
         borderWidth: 2,
@@ -106,7 +112,7 @@ const chartConfig = reactive({
       },
       {
         label: 'Spend ($)',
-        data: marketingData.map(item => item.spend),
+        data: marketingData.value.map(item => item.spend),
         backgroundColor: 'rgba(244, 63, 94, 0.1)',
         borderColor: 'rgba(244, 63, 94, 0.8)',
         borderWidth: 2,
@@ -128,7 +134,7 @@ const chartConfig = reactive({
           maxTicksLimit: 4,
           callback: function(value, index) {
             const labels = ['Jan 2024', 'May 2024', 'Sep 2024', 'Jan 2025']
-            return index % Math.floor(marketingData.length / 4) === 0 ? labels[Math.floor(index / (marketingData.length / 4))] || '' : ''
+            return index % Math.floor(marketingData.value.length / 4) === 0 ? labels[Math.floor(index / (marketingData.value.length / 4))] || '' : ''
           }
         }
       },
@@ -173,7 +179,7 @@ const chartConfig = reactive({
 })
 
 // Campaigns data
-const campaignsData = [
+const campaignsData = ref<CampaignData[]>([
   { name: 'Summer Sale 2024', id: 'SUMMER24', spend: 25000, revenue: 75000, roi: 200, conversions: 1500, percentage: 0 },
   { name: 'New Product Launch', id: 'NEWPROD', spend: 20000, revenue: 60000, roi: 200, conversions: 1200, percentage: 0 },
   { name: 'Holiday Special', id: 'HOLIDAY', spend: 18000, revenue: 54000, roi: 200, conversions: 1080, percentage: 0 },
@@ -184,17 +190,17 @@ const campaignsData = [
   { name: 'Email Newsletter', id: 'EMAIL', spend: 7000, revenue: 21000, roi: 200, conversions: 420, percentage: 0 },
   { name: 'Retargeting Campaign', id: 'RETARGET', spend: 6000, revenue: 18000, roi: 200, conversions: 360, percentage: 0 },
   { name: 'Social Media Contest', id: 'CONTEST', spend: 4000, revenue: 12000, roi: 200, conversions: 240, percentage: 0 }
-]
+])
 
 // Calculate percentages for campaigns based on revenue
-function totalCampaignRevenue() { return campaignsData.reduce((sum, campaign } => sum + campaign.revenue, 0))
+const totalCampaignRevenue = computed(() => campaignsData.value.reduce((sum, campaign) => sum + campaign.revenue, 0))
 // Update percentages
-campaignsData.forEach(campaign => {
-  campaign.percentage = Math.round((campaign.revenue / totalCampaignRevenue) * 100)
+campaignsData.value.forEach(campaign => {
+  campaign.percentage = Math.round((campaign.revenue / totalCampaignRevenue.value) * 100)
 })
 
 // Channels data
-const channelsData = [
+const channelsData = ref<ChannelData[]>([
   { name: 'Paid Search', spend: 35000, revenue: 105000, roi: 200, conversions: 2100, percentage: 0 },
   { name: 'Social Media', spend: 30000, revenue: 90000, roi: 200, conversions: 1800, percentage: 0 },
   { name: 'Email Marketing', spend: 20000, revenue: 60000, roi: 200, conversions: 1200, percentage: 0 },
@@ -203,29 +209,29 @@ const channelsData = [
   { name: 'Influencer Marketing', spend: 8000, revenue: 24000, roi: 200, conversions: 480, percentage: 0 },
   { name: 'Content Marketing', spend: 5000, revenue: 15000, roi: 200, conversions: 300, percentage: 0 },
   { name: 'SMS Marketing', spend: 2000, revenue: 6000, roi: 200, conversions: 120, percentage: 0 }
-]
+])
 
 // Calculate percentages for channels based on revenue
-function totalChannelRevenue() { return channelsData.reduce((sum, channel } => sum + channel.revenue, 0))
+const totalChannelRevenue = computed(() => channelsData.value.reduce((sum, channel) => sum + channel.revenue, 0))
 // Update percentages
-channelsData.forEach(channel => {
-  channel.percentage = Math.round((channel.revenue / totalChannelRevenue) * 100)
+channelsData.value.forEach(channel => {
+  channel.percentage = Math.round((channel.revenue / totalChannelRevenue.value) * 100)
 })
 
 // Top performing ads data
-const adsData = [
+const adsData = ref<AdData[]>([
   { name: 'Summer Sale Banner', id: 'AD-001', impressions: 250000, clicks: 12500, ctr: 5, conversions: 625, cpa: 16, percentage: 0 },
   { name: 'Product Showcase Video', id: 'AD-002', impressions: 200000, clicks: 10000, ctr: 5, conversions: 500, cpa: 16, percentage: 0 },
   { name: 'Limited Time Offer', id: 'AD-003', impressions: 180000, clicks: 9000, ctr: 5, conversions: 450, cpa: 16, percentage: 0 },
   { name: 'Customer Testimonial', id: 'AD-004', impressions: 150000, clicks: 7500, ctr: 5, conversions: 375, cpa: 16, percentage: 0 },
   { name: 'Free Shipping Promo', id: 'AD-005', impressions: 120000, clicks: 6000, ctr: 5, conversions: 300, cpa: 16, percentage: 0 }
-]
+])
 
 // Calculate percentages for ads based on conversions
-function totalAdConversions() { return adsData.reduce((sum, ad } => sum + ad.conversions, 0))
+const totalAdConversions = computed(() => adsData.value.reduce((sum, ad) => sum + ad.conversions, 0))
 // Update percentages
-adsData.forEach(ad => {
-  ad.percentage = Math.round((ad.conversions / totalAdConversions) * 100)
+adsData.value.forEach(ad => {
+  ad.percentage = Math.round((ad.conversions / totalAdConversions.value) * 100)
 })
 
 // Format numbers with commas
@@ -245,6 +251,13 @@ function formatPercentage(value) {
 
 // Initialize chart when component is mounted
 let marketingChart: Chart | null = null
+
+onMounted(() => {
+  const ctx = document.getElementById('marketingChart') as HTMLCanvasElement
+  if (ctx) {
+    marketingChart = new Chart(ctx, chartConfig)
+  }
+})
 
 </script>
 
@@ -542,3 +555,8 @@ let marketingChart: Chart | null = null
 }
 </style>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

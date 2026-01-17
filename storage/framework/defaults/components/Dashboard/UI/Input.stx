@@ -1,5 +1,5 @@
 <script server>
-  const value = props || ''
+  const value = props.value || ''
   const type = props.type || 'text' // 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search'
   const placeholder = props.placeholder || ''
   const disabled = props.disabled || false

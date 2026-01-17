@@ -1,4 +1,11 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useHead } from '@vueuse/head'
 import { Line, Bar, Doughnut } from 'vue-chartjs'
 import type { Taggables } from '../../../../types/defaults'
 import { useTaggables } from '../../../../functions/cms/taggables'
@@ -29,6 +36,10 @@ ChartJS.register(
   Legend,
   Filler,
 )
+
+useHead({
+  title: 'Dashboard - Blog Tags',
+})
 
 const taggablesModule = useTaggables()
 
@@ -70,7 +81,7 @@ const doughnutChartOptions = {
 }
 
 // Generate monthly data for charts
-function monthlyChartData() {
+const monthlyChartData = computed(() => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   // Sample data - in a real app, this would be calculated from actual tag data
@@ -97,8 +108,8 @@ function monthlyChartData() {
   }
 
   // Posts per tag chart data
-  const postCountData = tags.map(tag => tag.postCount)
-  const tagNames = tags.map(tag => tag.name)
+  const postCountData = tags.value.map(tag => tag.postCount)
+  const tagNames = tags.value.map(tag => tag.name)
 
   const postsPerTagChartData = {
     labels: tagNames,
@@ -149,18 +160,18 @@ function monthlyChartData() {
 })
 
 // Time range selector
-const timeRange = 'Last 30 days'
+const timeRange = ref('Last 30 days')
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Tags data
-const tags = []
+const tags = ref<Taggables[]>([])
 
 // Filter and sort options
-const searchQuery = ''
-const sortBy = 'postCount'
-const sortOrder = 'desc'
-const itemsPerPage = 10
-const currentPage = 1
+const searchQuery = ref('')
+const sortBy = ref('postCount')
+const sortOrder = ref('desc')
+const itemsPerPage = ref(10)
+const currentPage = ref(1)
 
 // New Tag Modal
 interface NewTagForm {
@@ -169,36 +180,36 @@ interface NewTagForm {
   description: string
 }
 
-const newTag = {
+const newTag = ref<NewTagForm>({
   name: '',
   slug: undefined,
   description: ''
-}
-const showNewTagModal = false
-const newTagErrors = {
+})
+const showNewTagModal = ref(false)
+const newTagErrors = ref({
   name: '',
-}
+})
 
 // Edit Tag Modal
-const showEditModal = false
-const tagToEdit = null
-const editTagErrors = {
+const showEditModal = ref(false)
+const tagToEdit = ref<Taggables | null>(null)
+const editTagErrors = ref({
   name: '',
-}
+})
 
 // Delete Confirmation Modal
-const showDeleteModal = false
-const tagToDelete = null
-const selectedTagIds = []
-const selectAll = false
+const showDeleteModal = ref(false)
+const tagToDelete = ref<Taggables | null>(null)
+const selectedTagIds = ref<number[]>([])
+const selectAll = ref(false)
 
 // Computed properties
-function filteredTags() {
-  let result = [...tags]
+const filteredTags = computed(() => {
+  let result = [...tags.value]
 
   // Apply search filter
-  if (searchQuery) {
-    const query = searchQuery.toLowerCase()
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
     result = result.filter(tag =>
       tag.name.toLowerCase().includes(query) ||
       tag.description.toLowerCase().includes(query)
@@ -207,7 +218,7 @@ function filteredTags() {
 
   // Apply sorting
   result.sort((a, b) => {
-    const sortField = sortBy as keyof typeof a
+    const sortField = sortBy.value as keyof typeof a
     let aValue = a[sortField]
     let bValue = b[sortField]
 
@@ -217,7 +228,7 @@ function filteredTags() {
       bValue = bValue.toLowerCase()
     }
 
-    if (sortOrder === 'asc') {
+    if (sortOrder.value === 'asc') {
       return aValue > bValue ? 1 : -1
     } else {
       return aValue < bValue ? 1 : -1
@@ -228,19 +239,19 @@ function filteredTags() {
 })
 
 // Pagination
-function totalPages() { return Math.ceil(filteredTags.length / itemsPerPage })
+const totalPages = computed(() => Math.ceil(filteredTags.value.length / itemsPerPage.value))
 
-function paginatedTags() {
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  return filteredTags.slice(startIndex, endIndex)
+const paginatedTags = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage.value
+  const endIndex = startIndex + itemsPerPage.value
+  return filteredTags.value.slice(startIndex, endIndex)
 })
 
-function paginationRange() {
+const paginationRange = computed(() => {
   const range: (number | string)[] = []
   const maxVisiblePages = 5
-  const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
-  const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
+  const startPage = Math.max(1, currentPage.value - Math.floor(maxVisiblePages / 2))
+  const endPage = Math.min(totalPages.value, startPage + maxVisiblePages - 1)
 
   if (startPage > 1) {
     range.push(1)
@@ -251,21 +262,21 @@ function paginationRange() {
     range.push(i)
   }
 
-  if (endPage < totalPages) {
-    if (endPage < totalPages - 1) range.push('...')
-    range.push(totalPages)
+  if (endPage < totalPages.value) {
+    if (endPage < totalPages.value - 1) range.push('...')
+    range.push(totalPages.value)
   }
 
   return range
 })
 
 // Computed tag statistics
-function tagStats() {
+const tagStats = computed(() => {
   // Total number of tags
-  const totalTags = tags.length
+  const totalTags = tags.value.length
 
   // Total number of posts across all tags
-  const totalPosts = tags.reduce((sum, tag) => sum + (tag.postCount || 0), 0)
+  const totalPosts = tags.value.reduce((sum, tag) => sum + (tag.postCount || 0), 0)
 
   // Average posts per tag
   const avgPostsPerTag = totalTags > 0
@@ -275,7 +286,7 @@ function tagStats() {
   // Find tag with most posts
   let mostPopularTag = tags.value[0] || { name: 'None', postCount: 0 }
 
-  for (const tag of tags) {
+  for (const tag of tags.value) {
     if ((tag.postCount || 0) > (mostPopularTag.postCount || 0)) {
       mostPopularTag = tag
     }
@@ -284,7 +295,7 @@ function tagStats() {
   // Find tag with least posts
   let leastPopularTag = tags.value[0] || { name: 'None', postCount: 0 }
 
-  for (const tag of tags) {
+  for (const tag of tags.value) {
     if ((tag.postCount || 0) < (leastPopularTag.postCount || 0)) {
       leastPopularTag = tag
     }
@@ -298,7 +309,7 @@ function tagStats() {
   // Find newest tag
   let newestTag = tags.value[0] || { name: 'None', created_at: '' } as Taggables
 
-  for (const tag of tags) {
+  for (const tag of tags.value) {
     if (new Date(tag.created_at || '') > new Date(newestTag.created_at || '')) {
       newestTag = tag
     }
@@ -317,34 +328,34 @@ function tagStats() {
 
 // Methods
 function toggleSort(field: string): void {
-  if (sortBy === field) {
-    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  if (sortBy.value === field) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy = field
-    sortOrder = 'desc'
+    sortBy.value = field
+    sortOrder.value = 'desc'
   }
 }
 
 function openNewTagModal(): void {
-  newTag = {
+  newTag.value = {
     name: '',
     slug: undefined,
     description: ''
   }
-  showNewTagModal = true
+  showNewTagModal.value = true
 }
 
 function closeNewTagModal(): void {
-  showNewTagModal = false
+  showNewTagModal.value = false
 }
 
 async function createTag(): Promise<void> {
   // Validate required fields
-  if (!newTag.name) return
+  if (!newTag.value.name) return
 
   const tag = {
-    name: newTag.name,
-    description: newTag.description,
+    name: newTag.value.name,
+    description: newTag.value.description,
     is_active: true,
   }
 
@@ -353,30 +364,30 @@ async function createTag(): Promise<void> {
 }
 
 function openEditModal(tag: Taggables): void {
-  tagToEdit = { ...tag }
-  showEditModal = true
+  tagToEdit.value = { ...tag }
+  showEditModal.value = true
 }
 
 function closeEditModal(): void {
-  showEditModal = false
+  showEditModal.value = false
 }
 
 function updateTag(): void {
-  if (!tagToEdit) return
+  if (!tagToEdit.value) return
 
-  const index = tags.findIndex(t => t.id === tagToEdit.value!.id)
+  const index = tags.value.findIndex(t => t.id === tagToEdit.value!.id)
   if (index !== -1) {
     // Generate slug if not provided
-    let slug = tagToEdit.slug
+    let slug = tagToEdit.value.slug
     if (!slug) {
-      slug = tagToEdit.name
+      slug = tagToEdit.value.name
         .toLowerCase()
         .replace(/[^\w\s]/gi, '')
         .replace(/\s+/g, '-')
     }
 
     tags.value[index] = {
-      ...tagToEdit,
+      ...tagToEdit.value,
       slug: slug
     }
   }
@@ -385,60 +396,64 @@ function updateTag(): void {
 }
 
 function confirmDeleteTag(tag: Taggables): void {
-  tagToDelete = tag
-  selectedTagIds = []
-  showDeleteModal = true
+  tagToDelete.value = tag
+  selectedTagIds.value = []
+  showDeleteModal.value = true
 }
 
 function confirmDeleteSelected(): void {
-  showDeleteModal = true
+  showDeleteModal.value = true
 }
 
 function closeDeleteModal(): void {
-  showDeleteModal = false
-  tagToDelete = null
+  showDeleteModal.value = false
+  tagToDelete.value = null
 }
 
 function deleteSelectedTags(): void {
-  if (selectedTagIds.length > 1) {
+  if (selectedTagIds.value.length > 1) {
     // Delete multiple tags
-    tags = tags.filter(tag => !selectedTagIds.includes(tag.id))
-    selectedTagIds = []
-  } else if (tagToDelete) {
+    tags.value = tags.value.filter(tag => !selectedTagIds.value.includes(tag.id))
+    selectedTagIds.value = []
+  } else if (tagToDelete.value) {
     // Delete single tag
-    tags = tags.filter(tag => tag.id !== tagToDelete.value!.id)
+    tags.value = tags.value.filter(tag => tag.id !== tagToDelete.value!.id)
   }
 
   closeDeleteModal()
 }
 
 function toggleSelectAll(): void {
-  if (selectAll) {
+  if (selectAll.value) {
     // Select all tags on current page
-    selectedTagIds = paginatedTags.map(tag => tag.id)
+    selectedTagIds.value = paginatedTags.value.map(tag => tag.id)
   } else {
     // Deselect all
-    selectedTagIds = []
+    selectedTagIds.value = []
   }
 }
 
 function toggleTagSelection(tagId: number): void {
-  const index = selectedTagIds.indexOf(tagId)
+  const index = selectedTagIds.value.indexOf(tagId)
   if (index === -1) {
-    selectedTagIds.push(tagId)
+    selectedTagIds.value.push(tagId)
   } else {
-    selectedTagIds.splice(index, 1)
+    selectedTagIds.value.splice(index, 1)
   }
 
   // Update selectAll based on whether all tags are selected
-  selectAll = paginatedTags.every(tag => selectedTagIds.includes(tag.id))
+  selectAll.value = paginatedTags.value.every(tag => selectedTagIds.value.includes(tag.id))
 }
 
-function hasSelectedTags() { return selectedTagIds.length > 0 }
+const hasSelectedTags = computed(() => selectedTagIds.value.length > 0)
+
+onMounted(async () => {
+  await fetchTags()
+})
 
 async function fetchTags() {
   const allTags = await taggablesModule.fetchTaggables()
-  tags = allTags
+  tags.value = allTags
 }
 
 // Format date

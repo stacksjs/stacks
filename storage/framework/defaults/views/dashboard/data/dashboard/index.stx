@@ -1,5 +1,11 @@
 <script server>
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { useHead } from '@vueuse/head'
 import * as d3 from 'd3'
+
+useHead({
+  title: 'Dashboard - Models',
+})
 
 // Model node interface
 interface ModelNode extends d3.SimulationNodeDatum {
@@ -298,17 +304,17 @@ const relationships: RelationshipLink[] = [
 ]
 
 // Visualization state
-const diagramContainer = null
+const diagramContainer = ref<HTMLElement | null>(null)
 let simulation: d3.Simulation<ModelNode, undefined> | null = null
 
 // Add format state
-const downloadFormat = 'svg'
-const isDownloading = false
+const downloadFormat = ref<'svg' | 'png'>('svg')
+const isDownloading = ref(false)
 
 // Add filter and search functionality
-const searchQuery = ''
-const selectedModelType = 'All'
-function modelTypes() {
+const searchQuery = ref('')
+const selectedModelType = ref('All')
+const modelTypes = computed(() => {
   const types = ['All']
   const uniqueColors = new Set(models.map(model => model.color))
   uniqueColors.forEach(color => {
@@ -323,14 +329,14 @@ function modelTypes() {
 })
 
 // Filter models based on search and type
-function filteredModels() {
+const filteredModels = computed(() => {
   return models.filter(model => {
-    const matchesSearch = searchQuery === '' ||
-      model.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      model.properties.some(prop => prop.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    const matchesSearch = searchQuery.value === '' ||
+      model.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      model.properties.some(prop => prop.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
 
-    const matchesType = selectedModelType === 'All' ||
-      getModelTypeByColor(model.color) === selectedModelType
+    const matchesType = selectedModelType.value === 'All' ||
+      getModelTypeByColor(model.color) === selectedModelType.value
 
     return matchesSearch && matchesType
   })
@@ -353,10 +359,10 @@ function getModelTypeByColor(color: string): string {
 }
 
 // Selected model for details panel
-const selectedModel = null
+const selectedModel = ref<ModelNode | null>(null)
 
 // Model statistics
-function modelStats() {
+const modelStats = computed(() => {
   return {
     totalModels: models.length,
     totalRelationships: relationships.length,
@@ -372,21 +378,21 @@ function modelStats() {
 
 // Update download function to support both formats
 const downloadDiagram = async () => {
-  if (!diagramContainer) {
+  if (!diagramContainer.value) {
     console.error('No diagram container found')
     return
   }
 
-  const svg = diagramContainer.querySelector('svg')
+  const svg = diagramContainer.value.querySelector('svg')
   if (!svg) {
     console.error('No SVG element found')
     return
   }
 
-  isDownloading = true
+  isDownloading.value = true
 
   try {
-    if (downloadFormat === 'svg') {
+    if (downloadFormat.value === 'svg') {
       // SVG download
       const svgData = new XMLSerializer().serializeToString(svg)
       const blob = new Blob([svgData], { type: 'image/svg+xml' })
@@ -456,23 +462,23 @@ const downloadDiagram = async () => {
   } catch (error) {
     console.error('Error downloading diagram:', error)
   } finally {
-    isDownloading = false
+    isDownloading.value = false
   }
 }
 
 // Create model diagram
 const createDiagram = () => {
-  if (!diagramContainer) return
+  if (!diagramContainer.value) return
 
-  const width = diagramContainer.clientWidth
+  const width = diagramContainer.value.clientWidth
   const height = 1200 // Further increased height for better vertical spacing
   const cardWidth = 356
 
   // Clear existing visualization
-  d3.select(diagramContainer).selectAll('*').remove()
+  d3.select(diagramContainer.value).selectAll('*').remove()
 
   // Create SVG
-  const svg = d3.select(diagramContainer)
+  const svg = d3.select(diagramContainer.value)
     .append('svg')
     .attr('width', width)
     .attr('height', height)
@@ -596,7 +602,7 @@ const createDiagram = () => {
   // Create nodes
   const node = nodeGroup
     .selectAll('g')
-    .data(filteredModels)
+    .data(filteredModels.value)
     .join('g')
     .attr('transform', d => {
       const x = d.posX || width / 2
@@ -641,7 +647,7 @@ const createDiagram = () => {
     .on('click', (event, d) => {
       // Set the selected model when clicked
       event.stopPropagation() // Prevent bubbling
-      selectedModel = d
+      selectedModel.value = d
     })
 
   // Add shadow effect to nodes
@@ -838,8 +844,8 @@ const createDiagram = () => {
     const targetId = typeof rel.target === 'string' ? rel.target : rel.target.id
 
     // Only draw links for filtered models
-    const sourceModel = filteredModels.find(m => m.id === sourceId)
-    const targetModel = filteredModels.find(m => m.id === targetId)
+    const sourceModel = filteredModels.value.find(m => m.id === sourceId)
+    const targetModel = filteredModels.value.find(m => m.id === targetId)
 
     if (sourceModel && targetModel && sourceModel.posX && sourceModel.posY && targetModel.posX && targetModel.posY) {
       // Calculate control points for the curve
@@ -982,12 +988,12 @@ const createDiagram = () => {
   })
 
   // Create force simulation with fixed positions
-  simulation = d3.forceSimulation<ModelNode>(filteredModels)
+  simulation = d3.forceSimulation<ModelNode>(filteredModels.value)
     .alphaDecay(0.02) // Slower decay for smoother animation
 
   // Add click handler to clear selection when clicking on the background
   svg.on('click', () => {
-    selectedModel = null
+    selectedModel.value = null
   })
 }
 
@@ -1019,9 +1025,9 @@ function determineArcSweep(sourceId: string, targetId: string): number {
 
 // Function to update links after dragging
 function updateLinks() {
-  if (!diagramContainer) return
+  if (!diagramContainer.value) return
 
-  const svg = d3.select(diagramContainer).select('svg')
+  const svg = d3.select(diagramContainer.value).select('svg')
   const linkGroup = svg.select('.links')
 
   // Clear existing links
@@ -1033,8 +1039,8 @@ function updateLinks() {
     const targetId = typeof rel.target === 'string' ? rel.target : rel.target.id
 
     // Only draw links for filtered models
-    const sourceModel = filteredModels.find(m => m.id === sourceId)
-    const targetModel = filteredModels.find(m => m.id === targetId)
+    const sourceModel = filteredModels.value.find(m => m.id === sourceId)
+    const targetModel = filteredModels.value.find(m => m.id === targetId)
 
     if (sourceModel && targetModel && sourceModel.posX && sourceModel.posY && targetModel.posX && targetModel.posY) {
       // Calculate control points for the curve
@@ -1068,11 +1074,24 @@ function updateLinks() {
   })
 }
 
-// Run on render
-createDiagram()
+// Watch for changes in filters and search to update diagram
+watch([searchQuery, selectedModelType], () => {
+  // Use setTimeout to debounce the diagram update
+  const timer = setTimeout(() => {
+    createDiagram()
+  }, 300)
+
+  return () => clearTimeout(timer)
+})
+
+// Initialize visualization on mount
+onMounted(() => {
+  createDiagram()
 
   // Handle window resize
   window.addEventListener('resize', createDiagram)
+})
+
 // Clean up on unmount
 onUnmounted(() => {
   if (simulation) simulation.stop()
@@ -1273,3 +1292,8 @@ onUnmounted(() => {
 </div>
 </template>
 
+<route lang="yaml">
+meta:
+  layout: default
+  requiresAuth: true
+</route>

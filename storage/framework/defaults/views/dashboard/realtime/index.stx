@@ -1,4 +1,11 @@
+<route lang="yaml">
+  meta:
+    requiresAuth: true
+</route>
+
 <script server>
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -23,8 +30,12 @@ ChartJS.register(
   Filler,
 )
 
-const timeRange = 'minute'
-const isLoading = false
+useHead({
+  title: 'Dashboard - Realtime',
+})
+
+const timeRange = ref<'minute' | 'hour' | 'day'>('minute')
+const isLoading = ref(false)
 
 // Chart options
 const chartOptions = {
@@ -77,29 +88,29 @@ const chartOptions = {
 }
 
 // Add these new refs
-const stats = {
+const stats = ref({
   connectionsTriggered: '71,897',
   connectionsChange: '+122',
   avgLatency: '45ms',
   latencyChange: '-12ms',
   successRate: '94.57%',
   successChange: '-3.2%'
-}
+})
 
 // Add new refs for app state
-const app = 'Stacks'
-const port = '6001'
-const channelState = 'Channels current state is unavailable'
+const app = ref('Stacks')
+const port = ref('6001')
+const channelState = ref('Channels current state is unavailable')
 
 // Add event creator refs
-const eventChannel = ''
-const eventName = ''
-const eventData = ''
+const eventChannel = ref('')
+const eventName = ref('')
+const eventData = ref('')
 
 // WebSocket connection state
-const isConnected = false
-const ws = null
-function wsUrl() { return `ws://localhost:${port}` }
+const isConnected = ref(false)
+const ws = ref<WebSocket | null>(null)
+const wsUrl = computed(() => `ws://localhost:${port.value}`)
 
 // Define WebSocket message type
 interface WebSocketMessage {
@@ -120,25 +131,25 @@ interface Event {
 }
 
 // Enhanced events list with filtering
-const events = []
+const events = ref<Event[]>([])
 
-function eventTypes() {
-  const types = new Set(events.map(e => e.type))
+const eventTypes = computed(() => {
+  const types = new Set(events.value.map(e => e.type))
   return Array.from(types)
 })
 
-const selectedEventType = null
-const searchQuery = ''
+const selectedEventType = ref<string | null>(null)
+const searchQuery = ref('')
 
-function filteredEvents() {
-  let filtered = events
+const filteredEvents = computed(() => {
+  let filtered = events.value
 
-  if (selectedEventType) {
-    filtered = filtered.filter(e => e.type === selectedEventType)
+  if (selectedEventType.value) {
+    filtered = filtered.filter(e => e.type === selectedEventType.value)
   }
 
-  if (searchQuery) {
-    const query = searchQuery.toLowerCase()
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(e =>
       e.type.toLowerCase().includes(query) ||
       (e.socket?.toLowerCase().includes(query)) ||
@@ -151,27 +162,27 @@ function filteredEvents() {
 
 // Connect to WebSocket
 const connect = () => {
-  if (ws) {
-    ws.close()
+  if (ws.value) {
+    ws.value.close()
   }
 
   try {
-    ws = new WebSocket(wsUrl)
+    ws.value = new WebSocket(wsUrl.value)
 
-    ws.onopen = () => {
-      isConnected = true
-      channelState = 'Connected to WebSocket server'
+    ws.value.onopen = () => {
+      isConnected.value = true
+      channelState.value = 'Connected to WebSocket server'
       addEvent({
         type: 'connection',
         socket: null,
-        details: `Connected to ${wsUrl}`,
+        details: `Connected to ${wsUrl.value}`,
         time: new Date().toLocaleTimeString('en-US', { hour12: false })
       })
     }
 
-    ws.onclose = () => {
-      isConnected = false
-      channelState = 'Disconnected from WebSocket server'
+    ws.value.onclose = () => {
+      isConnected.value = false
+      channelState.value = 'Disconnected from WebSocket server'
       addEvent({
         type: 'disconnection',
         socket: null,
@@ -180,8 +191,8 @@ const connect = () => {
       })
     }
 
-    ws.onerror = (error) => {
-      channelState = 'Error connecting to WebSocket server'
+    ws.value.onerror = (error) => {
+      channelState.value = 'Error connecting to WebSocket server'
       addEvent({
         type: 'error',
         socket: null,
@@ -190,7 +201,7 @@ const connect = () => {
       })
     }
 
-    ws.onmessage = (message: MessageEvent) => {
+    ws.value.onmessage = (message: MessageEvent) => {
       try {
         const data = JSON.parse(message.data) as WebSocketMessage
         addEvent({
@@ -210,52 +221,52 @@ const connect = () => {
       }
     }
   } catch (error) {
-    channelState = 'Failed to connect to WebSocket server'
+    channelState.value = 'Failed to connect to WebSocket server'
   }
 }
 
 // Disconnect from WebSocket
 const disconnect = () => {
-  if (ws) {
-    ws.close()
-    ws = null
+  if (ws.value) {
+    ws.value.close()
+    ws.value = null
   }
 }
 
 // Add event to list with max size limit
 const MAX_EVENTS = 1000
 const addEvent = (event: any) => {
-  events.unshift(event)
-  if (events.length > MAX_EVENTS) {
-    events = events.slice(0, MAX_EVENTS)
+  events.value.unshift(event)
+  if (events.value.length > MAX_EVENTS) {
+    events.value = events.value.slice(0, MAX_EVENTS)
   }
 }
 
 // Enhanced send event method
 const sendEvent = () => {
-  if (!ws || !eventChannel || !eventName) return
+  if (!ws.value || !eventChannel || !eventName) return
 
   try {
     const eventMessage = {
-      channel: eventChannel,
-      event: eventName,
-      data: eventData ? JSON.parse(eventData) : {}
+      channel: eventChannel.value,
+      event: eventName.value,
+      data: eventData.value ? JSON.parse(eventData.value) : {}
     }
 
-    ws.send(JSON.stringify(eventMessage))
+    ws.value.send(JSON.stringify(eventMessage))
 
     addEvent({
       type: 'sent',
       socket: null,
-      details: `Sent event to channel: ${eventChannel}, Event: ${eventName}`,
+      details: `Sent event to channel: ${eventChannel.value}, Event: ${eventName.value}`,
       time: new Date().toLocaleTimeString('en-US', { hour12: false }),
       data: eventMessage
     })
 
     // Clear form
-    eventChannel = ''
-    eventName = ''
-    eventData = ''
+    eventChannel.value = ''
+    eventName.value = ''
+    eventData.value = ''
   } catch (error) {
     addEvent({
       type: 'error',
@@ -266,11 +277,30 @@ const sendEvent = () => {
   }
 }
 
-// Run on render
-connect()
+// Connect on mount
+onMounted(() => {
+  connect()
+})
+
 // Cleanup on unmount
 onUnmounted(() => {
   disconnect()
+})
+
+// Watch for port changes
+watch(port, () => {
+  if (isConnected.value) {
+    disconnect()
+    connect()
+  }
+})
+
+// Watch for time range changes
+watch(timeRange, async () => {
+  isLoading.value = true
+  await new Promise(resolve => setTimeout(resolve, 500))
+  realtimeData.value = getRealtimeData()
+  isLoading.value = false
 })
 
 // Update chart datasets
@@ -312,12 +342,12 @@ const getRealtimeData = () => {
   }
 }
 
-const realtimeData = getRealtimeData()
-const activeConnections = [
+const realtimeData = ref(getRealtimeData())
+const activeConnections = ref([
   { id: '1', client: 'Web Client', status: 'Connected', uptime: '2m 30s', messages: 156 },
   { id: '2', client: 'Mobile App', status: 'Connected', uptime: '15m 12s', messages: 432 },
   { id: '3', client: 'Desktop App', status: 'Connected', uptime: '1h 5m', messages: 1205 },
-]
+])
 </script>
 
 <template>
