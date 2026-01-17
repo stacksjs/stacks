@@ -83,8 +83,16 @@
       "Bash(timeout 30:*)",
       "Bash(timeout 5 ./buddy:*)",
       "Bash(wc:*)",
-      "Bash(gconfig:*)"
+      "Bash(gconfig:*)",
       "Bash(for f in Author Cart CartItem Category Coupon Customer DeliveryRoute DigitalDelivery Driver Error FailedJob GiftCard Job LicenseKey Log LoyaltyPoint LoyaltyReward Manufacturer Order OrderItem Page Payment PaymentMethod PaymentProduct PaymentTransaction Post PrintDevice Product ProductUnit ProductVariant Receipt Request Review ShippingMethod ShippingRate ShippingZone Subscription TaxRate Transaction Websocket WaitlistProduct WaitlistRestaurant)",
+      "Bash(do cp \"storage/framework/models/$f.ts\" \"app/Models/$f.ts\")",
+      "Bash(for i in 1 2 3)",
+      "Bash(do curl -s http://localhost:3456/home)",
+      "Bash(break)",
+      "Bash(kill:*)",
+      "Bash(pgrep:*)",
+      "Bash(zig build:*)",
+      "Bash(/usr/bin/grep:*)"
     ],
     "deny": [],
     "ask": []
