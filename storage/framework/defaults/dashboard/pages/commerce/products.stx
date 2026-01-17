@@ -1,12 +1,18 @@
 <script server>
 /**
  * Products Page
- * Uses Stacks ORM (bun-query-builder) with Eloquent-like API.
+ * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-import { Product } from '@stacksjs/orm'
+const Database = require('bun:sqlite').Database
+const path = require('path')
 
-// Fetch all products from database using ORM
-const rawProducts = await Product.orderBy('id', 'desc').get()
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+const db = new Database(dbPath, { readonly: true })
+
+// Fetch all products from database
+const rawProducts = db.query('SELECT id, name, description, price, is_available, inventory_count, image_url FROM products ORDER BY id DESC').all()
+
+db.close()
 
 // Transform products for display
 const products = rawProducts.map((p) => ({

@@ -1,12 +1,18 @@
 <script server>
 /**
  * Orders Page
- * Uses Stacks ORM (bun-query-builder) with Eloquent-like API.
+ * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-import { Order } from '@stacksjs/orm'
+const Database = require('bun:sqlite').Database
+const path = require('path')
 
-// Fetch all orders from database using ORM
-const rawOrders = await Order.orderBy('created_at', 'desc').get()
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+const db = new Database(dbPath, { readonly: true })
+
+// Fetch all orders from database
+const rawOrders = db.query('SELECT id, status, total_amount, order_type, special_instructions, created_at FROM orders ORDER BY created_at DESC').all()
+
+db.close()
 
 // Transform orders for display
 const orders = rawOrders.map(o => ({

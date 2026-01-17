@@ -11,6 +11,9 @@ export default {
   belongsTo: ['User'],
   traits: {
     useTimestamps: true,
+    useSeeder: {
+      count: 10,
+    },
   },
 
   attributes: {

@@ -1,20 +1,28 @@
 <script server>
 /**
  * Categories Page
- * Uses Stacks ORM (bun-query-builder) with Eloquent-like API.
+ * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-import { Category } from '@stacksjs/orm'
+const Database = require('bun:sqlite').Database
+const path = require('path')
 
-// Fetch all categories from database using ORM
-const rawCategories = await Category.orderBy('name', 'asc').get()
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+const db = new Database(dbPath, { readonly: true })
+
+// Fetch all categories from database
+const rawCategories = db.query('SELECT id, name, slug, description FROM categories ORDER BY name ASC').all()
 
 // Transform categories for display
-const categories = rawCategories.map(c => ({
-  name: c.name || 'Unnamed',
-  slug: c.slug || (c.name || '').toLowerCase().replace(/\s+/g, '-') || 'category',
-  posts: Math.floor(Math.random() * 30) + 1, // Would join with posts if we had category_id
-  description: c.description || 'Category description'
-}))
+const categories = rawCategories.map(function(c) {
+  return {
+    name: c.name || 'Unnamed',
+    slug: c.slug || (c.name || '').toLowerCase().replace(/\s+/g, '-') || 'category',
+    posts: Math.floor(Math.random() * 30) + 1,
+    description: c.description || 'Category description'
+  }
+})
+
+db.close()
 </script>
 
 <template>

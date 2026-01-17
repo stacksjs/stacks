@@ -12,4 +12,7 @@ log.success(`🚀 Starting STX development server on http://localhost:${preferre
 await serve({
   patterns: [viewsPath],
   port: preferredPort,
+  componentsDir: 'storage/framework/defaults/components/Dashboard',
+  layoutsDir: 'resources/layouts',
+  partialsDir: 'resources/views',
 })

@@ -1,29 +1,41 @@
 <script server>
 /**
  * Teams Page
- * Uses Stacks ORM (bun-query-builder) with Eloquent-like API.
+ * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-import { Team, User } from '@stacksjs/orm'
+const Database = require('bun:sqlite').Database
+const path = require('path')
 
-// Fetch teams from database using ORM
-let rawTeams = []
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+const db = new Database(dbPath, { readonly: true })
+
+// Fetch teams from database
+var rawTeams = []
 try {
-  rawTeams = await Team.all()
-} catch {
+  rawTeams = db.query('SELECT id, name FROM teams').all()
+} catch (e) {
   rawTeams = []
 }
 
 // Fetch user count for member stats
-const userCount = await User.count()
+var userCount = 0
+try {
+  const result = db.query('SELECT COUNT(*) as count FROM users').get()
+  userCount = result?.count || 0
+} catch (e) {
+  userCount = 0
+}
 
 // Transform for display (use mock data if no teams exist)
-const teams = rawTeams.length > 0 ? rawTeams.map(t => ({
-  name: t.name || 'Team',
-  members: Math.floor(Math.random() * 15) + 5,
-  projects: Math.floor(Math.random() * 8) + 1,
-  status: 'active',
-  lead: 'Team Lead'
-})) : [
+var teams = rawTeams.length > 0 ? rawTeams.map(function(t) {
+  return {
+    name: t.name || 'Team',
+    members: Math.floor(Math.random() * 15) + 5,
+    projects: Math.floor(Math.random() * 8) + 1,
+    status: 'active',
+    lead: 'Team Lead'
+  }
+}) : [
   { name: 'Engineering', members: 12, projects: 8, status: 'active', lead: 'Team Lead' },
   { name: 'Design', members: 6, projects: 5, status: 'active', lead: 'Team Lead' },
   { name: 'Marketing', members: 8, projects: 4, status: 'active', lead: 'Team Lead' },
@@ -31,14 +43,16 @@ const teams = rawTeams.length > 0 ? rawTeams.map(t => ({
 
 // Calculate real stats
 const totalTeams = teams.length
-const totalMembers = teams.reduce((sum, t) => sum + t.members, 0)
-const totalProjects = teams.reduce((sum, t) => sum + t.projects, 0)
+const totalMembers = teams.reduce(function(sum, t) { return sum + t.members }, 0)
+const totalProjects = teams.reduce(function(sum, t) { return sum + t.projects }, 0)
 
 const stats = [
   { label: 'Total Teams', value: String(totalTeams) },
   { label: 'Total Members', value: String(totalMembers) },
   { label: 'Active Projects', value: String(totalProjects) },
 ]
+
+db.close()
 </script>
 
 <template>

@@ -9,6 +9,9 @@ export default {
 
   traits: {
     useTimestamps: true,
+    useSeeder: {
+      count: 20,
+    },
     useApi: {
       uri: 'websockets',
       routes: ['index', 'store', 'show'],
@@ -27,6 +30,7 @@ export default {
           in: 'Type must be one of: disconnection, error, success',
         },
       },
+      factory: faker => faker.helpers.arrayElement(['success', 'success', 'success', 'disconnection', 'error']),
     },
 
     socket: {
@@ -40,6 +44,7 @@ export default {
           max: 'Socket identifier must not exceed 255 characters',
         },
       },
+      factory: faker => faker.string.alphanumeric(20),
     },
 
     details: {
@@ -53,6 +58,7 @@ export default {
           max: 'Details must not exceed 1000 characters',
         },
       },
+      factory: faker => faker.lorem.sentence(),
     },
 
     time: {
@@ -65,6 +71,7 @@ export default {
           date: 'Time must be a valid timestamp',
         },
       },
+      factory: faker => faker.date.recent().getTime(),
     },
   },
 } satisfies Model

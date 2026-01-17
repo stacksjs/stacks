@@ -2,25 +2,31 @@
 /**
  * Home Dashboard Page
  * Main overview with stats, quick links, system health, and recent activity.
- * Uses Stacks ORM (bun-query-builder) with Eloquent-like API.
+ * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-import { User, Product, Order, Post } from '@stacksjs/orm'
+const Database = require('bun:sqlite').Database
+const path = require('path')
 
-// Fetch real counts from database using ORM
-const userCount = await User.count()
-const productCount = await Product.count()
-const orderCount = await Order.count()
-const postCount = await Post.count()
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+const db = new Database(dbPath, { readonly: true })
+
+// Fetch real counts from database
+const userCount = db.query('SELECT COUNT(*) as count FROM users').get()?.count || 0
+const productCount = db.query('SELECT COUNT(*) as count FROM products').get()?.count || 0
+const orderCount = db.query('SELECT COUNT(*) as count FROM orders').get()?.count || 0
+const postCount = db.query('SELECT COUNT(*) as count FROM posts').get()?.count || 0
 
 // Calculate total revenue from orders
-const orders = await Order.all()
-const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0)
+const revenueResult = db.query('SELECT SUM(total_amount) as total FROM orders').get()
+const totalRevenue = revenueResult?.total || 0
 
 // Fetch recent orders for activity
-const recentOrders = await Order.orderBy('created_at', 'desc').limit(5).get()
+const recentOrders = db.query('SELECT id, status, total_amount, created_at FROM orders ORDER BY created_at DESC LIMIT 5').all()
 
 // Fetch recent users
-const recentUsers = await User.orderBy('created_at', 'desc').limit(3).get()
+const recentUsers = db.query('SELECT name, email, created_at FROM users ORDER BY created_at DESC LIMIT 3').all()
+
+db.close()
 
 const stats = [
   { label: 'Total Users', value: String(userCount), trend: '+12%', up: true, color: 'blue' },
@@ -62,21 +68,16 @@ const activities = [
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <!-- Header -->
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Welcome back! Here's what's happening with your application.</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-          Last 7 days
-        </button>
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-          View Reports
-        </button>
-      </div>
+<DashboardLayout pageTitle="Dashboard" pageDescription="Welcome back! Here's what's happening with your application.">
+  <div class="p-6">
+    <!-- Header Actions -->
+    <div class="flex items-center justify-end gap-3 mb-8">
+      <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+        Last 7 days
+      </button>
+      <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+        View Reports
+      </button>
     </div>
 
     <!-- Stats Grid -->
@@ -173,4 +174,5 @@ const activities = [
       </div>
     </div>
   </div>
+</DashboardLayout>
 </template>

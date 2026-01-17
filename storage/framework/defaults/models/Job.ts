@@ -9,6 +9,9 @@ export default {
 
   traits: {
     useTimestamps: true,
+    useSeeder: {
+      count: 15,
+    },
   },
 
   attributes: {

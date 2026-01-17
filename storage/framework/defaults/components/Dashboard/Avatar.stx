@@ -1,0 +1,116 @@
+<script server>
+/**
+ * Avatar Component
+ * Displays user avatar with optional status indicator
+ */
+
+const sizeClasses = {
+  xs: 'h-5 w-5 text-[10px]',
+  sm: 'h-7 w-7 text-[11px]',
+  md: 'h-8 w-8 text-[12px]',
+  lg: 'h-10 w-10 text-[13px]',
+  xl: 'h-12 w-12 text-[14px]',
+  '2xl': 'h-14 w-14 text-[16px]'
+}
+
+const radiusClasses = {
+  sm: 'rounded-md',
+  md: 'rounded-lg',
+  lg: 'rounded-xl',
+  full: 'rounded-full'
+}
+
+const statusColors = {
+  online: 'bg-green-500',
+  offline: 'bg-neutral-400',
+  away: 'bg-orange-500',
+  busy: 'bg-red-500'
+}
+
+const statusSizes = {
+  xs: 'h-1.5 w-1.5',
+  sm: 'h-2 w-2',
+  md: 'h-2 w-2',
+  lg: 'h-2.5 w-2.5',
+  xl: 'h-3 w-3',
+  '2xl': 'h-3.5 w-3.5'
+}
+
+// Generate initials from name
+function getInitials(fullName) {
+  if (!fullName) return ''
+  const parts = fullName.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
+// Background colors for initials (consistent based on name)
+const bgColors = [
+  'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',
+  'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400',
+  'bg-yellow-500/15 text-yellow-600 dark:bg-yellow-400/20 dark:text-yellow-400',
+  'bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400',
+  'bg-teal-500/15 text-teal-600 dark:bg-teal-400/20 dark:text-teal-400',
+  'bg-cyan-500/15 text-cyan-600 dark:bg-cyan-400/20 dark:text-cyan-400',
+  'bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400',
+  'bg-indigo-500/15 text-indigo-600 dark:bg-indigo-400/20 dark:text-indigo-400',
+  'bg-purple-500/15 text-purple-600 dark:bg-purple-400/20 dark:text-purple-400',
+  'bg-pink-500/15 text-pink-600 dark:bg-pink-400/20 dark:text-pink-400'
+]
+
+function getBgColorIndex(fullName) {
+  if (!fullName) return 0
+  let hash = 0
+  for (let i = 0; i < fullName.length; i++) {
+    hash = fullName.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return Math.abs(hash) % bgColors.length
+}
+
+function getSizeClass() {
+  return sizeClasses[props.size || 'md']
+}
+
+function getRadiusClass() {
+  return radiusClasses[props.rounded || 'full']
+}
+
+function getStatusColor() {
+  return statusColors[props.status] || ''
+}
+
+function getStatusSize() {
+  return statusSizes[props.size || 'md']
+}
+
+function getBgColor() {
+  const name = props.name || ''
+  return name ? bgColors[getBgColorIndex(name)] : 'bg-black/[0.06] text-neutral-500 dark:bg-white/10 dark:text-neutral-400'
+}
+</script>
+
+<template>
+  <div class="relative inline-flex flex-shrink-0">
+    @if(props.src)
+      <img
+        src="{{ props.src }}"
+        alt="{{ props.alt || props.name || 'Avatar' }}"
+        class="object-cover {{ getSizeClass() }} {{ getRadiusClass() }}"
+      >
+    @else
+      <div class="inline-flex items-center justify-center font-medium {{ getSizeClass() }} {{ getRadiusClass() }} {{ getBgColor() }}">
+        @if(props.name)
+          <span>{{ getInitials(props.name) }}</span>
+        @else
+          <svg class="w-1/2 h-1/2 text-neutral-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+          </svg>
+        @endif
+      </div>
+    @endif
+
+    @if(props.status)
+      <span class="absolute bottom-0 right-0 rounded-full ring-2 ring-white dark:ring-neutral-900 {{ getStatusColor() }} {{ getStatusSize() }}"></span>
+    @endif
+  </div>
+</template>

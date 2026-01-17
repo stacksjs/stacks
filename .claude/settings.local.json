@@ -84,6 +84,7 @@
       "Bash(timeout 5 ./buddy:*)",
       "Bash(wc:*)",
       "Bash(gconfig:*)"
+      "Bash(for f in Author Cart CartItem Category Coupon Customer DeliveryRoute DigitalDelivery Driver Error FailedJob GiftCard Job LicenseKey Log LoyaltyPoint LoyaltyReward Manufacturer Order OrderItem Page Payment PaymentMethod PaymentProduct PaymentTransaction Post PrintDevice Product ProductUnit ProductVariant Receipt Request Review ShippingMethod ShippingRate ShippingZone Subscription TaxRate Transaction Websocket WaitlistProduct WaitlistRestaurant)",
     ],
     "deny": [],
     "ask": []

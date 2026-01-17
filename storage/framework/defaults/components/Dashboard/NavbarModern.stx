@@ -1,31 +1,23 @@
 <script server>
 /**
  * Modern Navbar Component
- * A cleaner, more refined navigation header with improved UX.
+ * A clean, refined navigation header for the dashboard.
+ * Note: Window controls are handled natively by Craft on macOS.
  */
 
-// Props
-const showWindowControls = props.showWindowControls || false
-
-// State
-const searchQuery = props.searchQuery || ''
-const isSearchFocused = props.isSearchFocused || false
-const notificationCount = props.notificationCount !== undefined ? props.notificationCount : 3
-const isDark = props.isDark || false
-
-// User data
-const user = props.user || {
+// Default user data
+const defaultUser = {
   name: 'Chris Breuer',
   email: 'chris@stacksjs.org',
   avatar: 'https://avatars.githubusercontent.com/u/6228425',
 }
 
-// Current path (would be provided by router)
-const currentPath = props.currentPath || '/'
+function getProp(name, defaultValue) {
+  return props[name] !== undefined ? props[name] : defaultValue
+}
 
-// Get breadcrumb from path
 function getBreadcrumb(path) {
-  const parts = path.split('/').filter(Boolean)
+  const parts = (path || '/').split('/').filter(Boolean)
   return parts.map((part, index) => ({
     label: part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' '),
     path: '/' + parts.slice(0, index + 1).join('/'),
@@ -34,55 +26,36 @@ function getBreadcrumb(path) {
 }
 
 function isActiveRoute(path) {
+  const currentPath = getProp('currentPath', '/')
   return currentPath === path || currentPath.startsWith(path + '/')
+}
+
+function getUser() {
+  return getProp('user', defaultUser)
+}
+
+function getNotificationCount() {
+  return getProp('notificationCount', 3)
 }
 </script>
 
 <template>
-<header
-  class="sticky top-0 z-40 h-13 flex items-center gap-3 bg-white/72 dark:bg-neutral-900/80 backdrop-blur-xl backdrop-saturate-150 border-b border-black/5 dark:border-white/5 px-4 transition-all duration-200"
->
-  <!-- Window Controls (for desktop app) -->
-  @if(showWindowControls)
-    <div class="flex items-center mr-2">
-      <WindowControls
-        variant="macos"
-        size="sm"
-      />
-    </div>
-  @endif
-
-  <!-- Mobile menu button -->
-  <button
-    type="button"
-    class="lg:hidden p-2 -ml-2 rounded-lg text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800 transition-colors"
-    data-action="open-mobile-menu"
-  >
-    <span class="sr-only">Open sidebar</span>
-    <div class="i-hugeicons-menu-01 w-5 h-5"></div>
-  </button>
-
-  <!-- Breadcrumb -->
-  <nav class="hidden lg:flex items-center gap-1 text-sm">
-    <a
-      href="/"
-      class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-    >
-      <div class="i-hugeicons-home-02 w-4 h-4"></div>
+<header class="sticky top-0 z-40 h-14 flex items-center gap-4 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-700/50 px-4">
+  <!-- Breadcrumb navigation -->
+  <nav class="hidden lg:flex items-center gap-2 text-sm">
+    <a href="/" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+      </svg>
     </a>
-    @foreach(getBreadcrumb(currentPath) as crumb)
+    @foreach(getBreadcrumb(props.currentPath || '/') as crumb)
       <span class="text-neutral-300 dark:text-neutral-600">/</span>
       @if(!crumb.isLast)
-        <a
-          href="{{ crumb.path }}"
-          class="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors"
-        >
+        <a href="{{ crumb.path }}" class="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors">
           {{ crumb.label }}
         </a>
       @else
-        <span class="text-neutral-700 dark:text-neutral-200 font-medium">
-          {{ crumb.label }}
-        </span>
+        <span class="text-neutral-700 dark:text-neutral-200 font-medium">{{ crumb.label }}</span>
       @endif
     @endforeach
   </nav>
@@ -90,123 +63,112 @@ function isActiveRoute(path) {
   <!-- Spacer -->
   <div class="flex-1"></div>
 
-  <!-- Search - macOS Spotlight style -->
+  <!-- Search -->
   <div class="hidden sm:flex items-center">
-    <div class="relative flex items-center w-56 lg:w-72 transition-all duration-200">
-      <div class="i-hugeicons-search-01 absolute left-2.5 w-3.5 h-3.5 text-neutral-400"></div>
+    <div class="relative flex items-center w-56 lg:w-64">
+      <svg class="absolute left-3 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
       <input
         type="text"
-        placeholder="Search"
-        class="w-full pl-8 pr-16 py-1.5 text-[13px] bg-black/5 dark:bg-white/8 border border-black/8 dark:border-white/10 rounded-lg text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 transition-all"
-        value="{{ searchQuery }}"
-        data-model="searchQuery"
+        placeholder="Search..."
+        class="w-full pl-10 pr-16 py-2 text-sm bg-neutral-100 dark:bg-neutral-800 border-none rounded-lg text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+        value="{{ props.searchQuery || '' }}"
       />
-      <div class="absolute right-2.5 flex items-center gap-1">
-        <kbd class="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-neutral-400 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10 rounded">
-          <span>⌘</span>K
+      <div class="absolute right-3 flex items-center">
+        <kbd class="hidden lg:inline-flex px-1.5 py-0.5 text-[10px] font-medium text-neutral-400 bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded shadow-sm">
+          ⌘K
         </kbd>
       </div>
     </div>
   </div>
 
-  <!-- Right section - macOS toolbar buttons -->
-  <div class="flex items-center gap-1">
-    <!-- Error Tracking -->
+  <!-- Right section -->
+  <div class="flex items-center gap-2">
+    <!-- Bug/Errors -->
     <a
       href="/monitoring/errors"
-      class="p-1.5 rounded-md transition-all duration-150 active:scale-95 {{ isActiveRoute('/monitoring/errors') ? 'text-blue-600 dark:text-blue-400 bg-blue-500/15 dark:bg-blue-400/15' : 'text-neutral-500 hover:text-neutral-700 hover:bg-black/5 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-white/8' }}"
+      class="p-2 rounded-lg transition-colors {{ isActiveRoute('/monitoring/errors') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
+      title="Error Tracking"
     >
-      <div class="i-hugeicons-bug-01 w-[18px] h-[18px]"></div>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+      </svg>
     </a>
 
     <!-- Health -->
     <a
       href="/health"
-      class="p-1.5 rounded-md transition-all duration-150 active:scale-95 {{ isActiveRoute('/health') ? 'text-blue-600 dark:text-blue-400 bg-blue-500/15 dark:bg-blue-400/15' : 'text-neutral-500 hover:text-neutral-700 hover:bg-black/5 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-white/8' }}"
+      class="p-2 rounded-lg transition-colors {{ isActiveRoute('/health') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
+      title="System Health"
     >
-      <div class="i-hugeicons-pulse-02 w-[18px] h-[18px]"></div>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+      </svg>
     </a>
 
     <!-- Notifications -->
     <a
       href="/notifications"
-      class="relative p-1.5 rounded-md transition-all duration-150 active:scale-95 {{ isActiveRoute('/notifications') ? 'text-blue-600 dark:text-blue-400 bg-blue-500/15 dark:bg-blue-400/15' : 'text-neutral-500 hover:text-neutral-700 hover:bg-black/5 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-white/8' }}"
+      class="relative p-2 rounded-lg transition-colors {{ isActiveRoute('/notifications') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
+      title="Notifications"
     >
-      <div class="i-hugeicons-notification-02 w-[18px] h-[18px]"></div>
-      @if(notificationCount > 0)
-        <span class="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-4 px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
-          {{ notificationCount > 9 ? '9+' : notificationCount }}
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+      </svg>
+      @if(getNotificationCount() > 0)
+        <span class="absolute top-1 right-1 flex items-center justify-center min-w-[16px] h-4 px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
+          {{ getNotificationCount() > 9 ? '9+' : getNotificationCount() }}
         </span>
       @endif
     </a>
 
-    <!-- Dark mode toggle -->
-    <button
-      type="button"
-      class="p-1.5 rounded-md text-neutral-500 hover:text-neutral-700 hover:bg-black/5 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-white/8 transition-all duration-150 active:scale-95"
-      data-action="toggle-dark"
-    >
-      <div class="{{ isDark ? 'i-hugeicons-sun-02' : 'i-hugeicons-moon-02' }} w-[18px] h-[18px]"></div>
-    </button>
-
     <!-- Separator -->
-    <div class="w-px h-5 bg-black/10 dark:bg-white/10 mx-1"></div>
+    <div class="w-px h-6 bg-neutral-200 dark:bg-neutral-700 mx-1"></div>
 
     <!-- User dropdown -->
     <div class="relative" data-dropdown="user">
       <button
         type="button"
-        class="flex items-center gap-2 p-1.5 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+        class="flex items-center gap-2 p-1 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
         data-action="toggle-dropdown"
       >
-        <Avatar
-          src="{{ user.avatar }}"
-          name="{{ user.name }}"
-          size="sm"
-          status="online"
+        <img
+          src="{{ getUser().avatar }}"
+          alt="{{ getUser().name }}"
+          class="w-8 h-8 rounded-full object-cover"
         />
-        <div class="hidden lg:block text-left">
-          <div class="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-            {{ user.name }}
-          </div>
-        </div>
-        <div class="i-hugeicons-arrow-down-01 w-4 h-4 text-neutral-400 hidden lg:block"></div>
+        <span class="hidden lg:block text-sm font-medium text-neutral-700 dark:text-neutral-200">
+          {{ getUser().name }}
+        </span>
+        <svg class="hidden lg:block w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
       </button>
 
       <!-- Dropdown menu -->
-      <div class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 py-1" data-dropdown-content>
+      <div class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 z-50" data-dropdown-content>
         <div class="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
-          <p class="text-sm font-medium text-neutral-900 dark:text-white">{{ user.name }}</p>
-          <p class="text-xs text-neutral-500 dark:text-neutral-400 truncate">{{ user.email }}</p>
+          <p class="text-sm font-medium text-neutral-900 dark:text-white">{{ getUser().name }}</p>
+          <p class="text-xs text-neutral-500 dark:text-neutral-400 truncate">{{ getUser().email }}</p>
         </div>
-
         <div class="py-1">
           <a href="/profile" class="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700">
-            <div class="i-hugeicons-user-02 w-4 h-4"></div>
             Your Profile
           </a>
           <a href="/settings" class="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700">
-            <div class="i-hugeicons-settings-02 w-4 h-4"></div>
             Settings
           </a>
           <a href="/billing" class="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700">
-            <div class="i-hugeicons-credit-card w-4 h-4"></div>
             Billing
           </a>
-          <a href="https://docs.stacksjs.org" target="_blank" class="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700">
-            <div class="i-hugeicons-book-02 w-4 h-4"></div>
-            Documentation
-            <div class="i-hugeicons-arrow-up-right-01 w-3 h-3 text-neutral-400 ml-auto"></div>
-          </a>
         </div>
-
         <div class="border-t border-neutral-200 dark:border-neutral-700 py-1">
           <button
             type="button"
             class="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
             data-action="logout"
           >
-            <div class="i-hugeicons-logout-02 w-4 h-4"></div>
             Sign out
           </button>
         </div>

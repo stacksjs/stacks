@@ -8,21 +8,10 @@
  * sidebar is rendered by Craft - we skip the web sidebar in that case.
  */
 
-// Props
-const pageTitle = props.pageTitle || ''
-const pageDescription = props.pageDescription || ''
-const showSidebar = props.showSidebar !== undefined ? props.showSidebar : true
-const showNavbar = props.showNavbar !== undefined ? props.showNavbar : true
-const showWindowControls = props.showWindowControls !== undefined ? props.showWindowControls : true
-const fullWidth = props.fullWidth || false
-const noPadding = props.noPadding || false
-const backgroundImage = props.backgroundImage || ''
-
-// State
-const isSidebarCollapsed = props.isSidebarCollapsed || false
-const isMobileMenuOpen = props.isMobileMenuOpen || false
-const isDark = props.isDark || false
-const isMobile = props.isMobile || false
+// Helper function to get prop values with defaults
+function getProp(name, defaultValue) {
+  return props[name] !== undefined ? props[name] : defaultValue
+}
 
 // Detect if Craft is rendering a native sidebar
 // When Craft uses --native-sidebar, it sets this flag
@@ -33,22 +22,22 @@ const hasNativeSidebar = typeof window !== 'undefined' && (
   (window.webkit?.messageHandlers?.craft && document.body?.dataset?.nativeSidebar === 'true')
 )
 
-// Sidebar width calculation (matches SidebarModern width)
+// Sidebar width calculation (matches Sidebar width)
 function getSidebarWidth() {
-  if (hasNativeSidebar || isMobile) return 0
-  return isSidebarCollapsed ? 64 : 240
+  if (hasNativeSidebar || getProp('isMobile', false)) return 0
+  return getProp('isSidebarCollapsed', false) ? 64 : 240
 }
 
 function getMainContentStyle() {
   // No padding needed when native sidebar handles layout
   if (hasNativeSidebar) return ''
-  if (!showSidebar || isMobile) return ''
+  if (!getProp('showSidebar', true) || getProp('isMobile', false)) return ''
   return `padding-left: ${getSidebarWidth()}px`
 }
 
 // Determine if we should show the web sidebar
 function shouldShowWebSidebar() {
-  return showSidebar && !hasNativeSidebar
+  return getProp('showSidebar', true) && !hasNativeSidebar
 }
 </script>
 
@@ -56,7 +45,7 @@ function shouldShowWebSidebar() {
 <!-- macOS-inspired layout with subtle background -->
 <div class="min-h-screen bg-white dark:bg-neutral-950">
   <!-- Mobile sidebar overlay -->
-  @if(isMobileMenuOpen && isMobile)
+  @if(props.isMobileMenuOpen && props.isMobile)
     <div
       class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden transition-opacity duration-300"
       data-action="close-mobile-menu"
@@ -64,15 +53,15 @@ function shouldShowWebSidebar() {
   @endif
 
   <!-- Mobile sidebar (web-based, only when no native sidebar) -->
-  @if(isMobileMenuOpen && isMobile && shouldShowWebSidebar())
+  @if(props.isMobileMenuOpen && props.isMobile && shouldShowWebSidebar())
     <div class="fixed inset-y-0 left-0 z-50 w-64 lg:hidden transition-transform duration-300">
-      <SidebarModern />
+      <Sidebar />
     </div>
   @endif
 
   <!-- Desktop sidebar (web-based, only when no native sidebar) -->
-  @if(shouldShowWebSidebar() && !isMobile)
-    <SidebarModern />
+  @if(shouldShowWebSidebar() && !props.isMobile)
+    <Sidebar />
   @endif
 
   <!-- Main content area -->
@@ -81,27 +70,29 @@ function shouldShowWebSidebar() {
     style="{{ getMainContentStyle() }}"
   >
     <!-- Navbar -->
-    @if(showNavbar)
+    @if(getProp('showNavbar', true))
       <NavbarModern
-        showWindowControls="{{ showWindowControls }}"
+        showWindowControls="{{ getProp('showWindowControls', false) }}"
+        currentPath="{{ props.currentPath || '/' }}"
+        isDark="{{ props.isDark || false }}"
       />
     @endif
 
     <!-- Page header slot -->
     @if($slots.header)
       <div class="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-        <div class="px-4 lg:px-6 py-4 {{ fullWidth ? '' : 'max-w-7xl mx-auto' }}">
+        <div class="px-4 lg:px-6 py-4 {{ props.fullWidth ? '' : 'max-w-7xl mx-auto' }}">
           <slot name="header">
             <!-- Default page header -->
-            @if(pageTitle)
+            @if(props.pageTitle)
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">
-                    {{ pageTitle }}
+                    {{ props.pageTitle }}
                   </h1>
-                  @if(pageDescription)
+                  @if(props.pageDescription)
                     <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                      {{ pageDescription }}
+                      {{ props.pageDescription }}
                     </p>
                   @endif
                 </div>
@@ -114,8 +105,8 @@ function shouldShowWebSidebar() {
     @endif
 
     <!-- Main content -->
-    <main class="{{ noPadding ? '' : 'px-4 lg:px-6 py-6' }} flex-1">
-      <div class="{{ fullWidth ? '' : 'max-w-7xl mx-auto' }}">
+    <main class="{{ props.noPadding ? '' : 'px-4 lg:px-6 py-6' }} flex-1">
+      <div class="{{ props.fullWidth ? '' : 'max-w-7xl mx-auto' }}">
         <slot />
       </div>
     </main>
@@ -123,7 +114,7 @@ function shouldShowWebSidebar() {
     <!-- Footer slot -->
     @if($slots.footer)
       <footer class="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-        <div class="px-4 lg:px-6 py-4 {{ fullWidth ? '' : 'max-w-7xl mx-auto' }}">
+        <div class="px-4 lg:px-6 py-4 {{ props.fullWidth ? '' : 'max-w-7xl mx-auto' }}">
           <slot name="footer" />
         </div>
       </footer>

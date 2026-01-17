@@ -1,21 +1,29 @@
 <script server>
 /**
  * Posts Page
- * Uses Stacks ORM (bun-query-builder) with Eloquent-like API.
+ * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-import { Post } from '@stacksjs/orm'
+const Database = require('bun:sqlite').Database
+const path = require('path')
 
-// Fetch all posts from database using ORM
-const rawPosts = await Post.orderBy('created_at', 'desc').get()
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+const db = new Database(dbPath, { readonly: true })
+
+// Fetch all posts from database
+const rawPosts = db.query('SELECT id, title, body, status, views, created_at FROM posts ORDER BY created_at DESC').all()
 
 // Transform posts for display
-const posts = rawPosts.map(p => ({
-  title: p.title || 'Untitled',
-  status: p.status || 'draft',
-  author: 'Team',
-  date: p.created_at ? String(p.created_at).split('T')[0] : 'N/A',
-  views: p.views || 0
-}))
+const posts = rawPosts.map(function(p) {
+  return {
+    title: p.title || 'Untitled',
+    status: p.status || 'draft',
+    author: 'Team',
+    date: p.created_at ? String(p.created_at).split('T')[0] : 'N/A',
+    views: p.views || 0
+  }
+})
+
+db.close()
 </script>
 
 <template>

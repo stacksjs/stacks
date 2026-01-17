@@ -36,11 +36,36 @@ export default {
       validation: {
         rule: schema.string().max(255),
         message: {
-          email: 'Version must be a valid version',
+          max: 'Version must have a maximum of 255 characters',
         },
       },
 
-      factory: faker => faker.internet.email(),
+      factory: faker => faker.system.semver(),
+    },
+
+    releaseNotes: {
+      fillable: true,
+      validation: {
+        rule: schema.string(),
+      },
+      factory: faker => faker.lorem.paragraph(),
+    },
+
+    status: {
+      fillable: true,
+      validation: {
+        rule: schema.enum(['draft', 'published', 'deprecated']),
+      },
+      factory: faker => faker.helpers.arrayElement(['draft', 'published', 'published', 'deprecated']),
+    },
+
+    downloadCount: {
+      fillable: true,
+      default: 0,
+      validation: {
+        rule: schema.number().min(0),
+      },
+      factory: faker => faker.number.int({ min: 0, max: 10000 }),
     },
   },
 } satisfies Model

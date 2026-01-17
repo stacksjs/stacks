@@ -1,0 +1,170 @@
+<script server>
+/**
+ * Models Overview Page
+ * Shows all available models with their record counts.
+ */
+const { Database } = require('bun:sqlite')
+const fs = require('node:fs')
+const path = require('node:path')
+
+// Get list of models from app/Models directory
+function getModels() {
+  const modelsDir = path.join(process.cwd(), 'app', 'Models')
+  const models = []
+
+  try {
+    const files = fs.readdirSync(modelsDir)
+    const db = new Database('database/stacks.sqlite')
+
+    for (const file of files) {
+      if (file.endsWith('.ts') && !file.startsWith('index') && !file.startsWith('_') && !file.startsWith('README')) {
+        const modelName = file.replace('.ts', '')
+        // Convert PascalCase to snake_case for table name
+        const tableName = modelName
+          .replace(/([a-z])([A-Z])/g, '$1_$2')
+          .toLowerCase()
+
+        // Pluralize
+        let tableNamePlural = tableName
+        if (tableName.endsWith('y')) {
+          tableNamePlural = tableName.slice(0, -1) + 'ies'
+        } else if (tableName.endsWith('s') || tableName.endsWith('x') || tableName.endsWith('ch') || tableName.endsWith('sh')) {
+          tableNamePlural = tableName + 'es'
+        } else {
+          tableNamePlural = tableName + 's'
+        }
+
+        // Get record count
+        let count = 0
+        try {
+          const result = db.query(`SELECT COUNT(*) as count FROM ${tableNamePlural}`).get()
+          count = result ? result.count : 0
+        } catch {
+          // Table might not exist
+        }
+
+        // Convert PascalCase to kebab-case for URL
+        const urlSlug = modelName
+          .replace(/([a-z])([A-Z])/g, '$1-$2')
+          .toLowerCase()
+
+        models.push({
+          name: modelName,
+          table: tableNamePlural,
+          count: count,
+          href: `/models/${urlSlug}`,
+        })
+      }
+    }
+
+    db.close()
+  } catch (e) {
+    // If directory doesn't exist, return empty array
+  }
+
+  // Sort alphabetically by name
+  models.sort((a, b) => a.name.localeCompare(b.name))
+  return models
+}
+
+const models = getModels()
+const totalModels = models.length
+const totalRecords = models.reduce((sum, m) => sum + m.count, 0)
+</script>
+
+<template>
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Models</h1>
+      <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+        {{ totalModels }} models with {{ totalRecords }} total records
+      </p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+        <span class="i-hugeicons-add-01 w-4 h-4 mr-2 inline-block"></span>
+        New Model
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-5">
+      <div class="flex items-center gap-4">
+        <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+          <span class="i-hugeicons-database w-6 h-6 text-blue-600 dark:text-blue-400"></span>
+        </div>
+        <div>
+          <p class="text-sm text-neutral-500 dark:text-neutral-400">Total Models</p>
+          <p class="text-2xl font-semibold text-neutral-900 dark:text-white">{{ totalModels }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-5">
+      <div class="flex items-center gap-4">
+        <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+          <span class="i-hugeicons-rows-01 w-6 h-6 text-green-600 dark:text-green-400"></span>
+        </div>
+        <div>
+          <p class="text-sm text-neutral-500 dark:text-neutral-400">Total Records</p>
+          <p class="text-2xl font-semibold text-neutral-900 dark:text-white">{{ totalRecords.toLocaleString() }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-5">
+      <div class="flex items-center gap-4">
+        <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+          <span class="i-hugeicons-chart-average w-6 h-6 text-purple-600 dark:text-purple-400"></span>
+        </div>
+        <div>
+          <p class="text-sm text-neutral-500 dark:text-neutral-400">Avg Records/Model</p>
+          <p class="text-2xl font-semibold text-neutral-900 dark:text-white">{{ totalModels > 0 ? Math.round(totalRecords / totalModels) : 0 }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Models Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    @for(model of models)
+      <a
+        href="{{ model.href }}"
+        class="group bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-5 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm transition-all"
+      >
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
+              <span class="i-hugeicons-database-01 w-5 h-5 text-neutral-500 dark:text-neutral-400 group-hover:text-blue-600 dark:group-hover:text-blue-400"></span>
+            </div>
+            <div>
+              <h3 class="font-medium text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                {{ model.name }}
+              </h3>
+              <p class="text-xs text-neutral-500 dark:text-neutral-400 font-mono">{{ model.table }}</p>
+            </div>
+          </div>
+          <span class="i-hugeicons-arrow-right-01 w-5 h-5 text-neutral-300 dark:text-neutral-600 group-hover:text-blue-500 transition-colors"></span>
+        </div>
+        <div class="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-neutral-500 dark:text-neutral-400">Records</span>
+            <span class="font-medium text-neutral-900 dark:text-white">{{ model.count.toLocaleString() }}</span>
+          </div>
+        </div>
+      </a>
+    @endfor
+  </div>
+
+  @if(models.length === 0)
+    <!-- Empty State -->
+    <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-12 text-center">
+      <span class="i-hugeicons-database-01 w-12 h-12 text-neutral-300 dark:text-neutral-600 mx-auto"></span>
+      <h3 class="mt-4 text-lg font-medium text-neutral-900 dark:text-white">No models found</h3>
+      <p class="mt-2 text-sm text-neutral-500 dark:text-neutral-400">Create your first model to get started.</p>
+    </div>
+  @endif
+</div>
+</template>

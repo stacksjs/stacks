@@ -1,19 +1,22 @@
 <script server>
 /**
  * Subscribers Page
- * Uses Stacks ORM (bun-query-builder) with Eloquent-like API.
+ * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-import { Subscriber, SubscriberEmail } from '@stacksjs/orm'
+const Database = require('bun:sqlite').Database
+const path = require('path')
 
-// Fetch subscribers from database using ORM
-// Try Subscriber model first, fallback to SubscriberEmail
-let rawSubscribers = []
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+const db = new Database(dbPath, { readonly: true })
+
+// Try to fetch from subscribers table, fallback to users
+var rawSubscribers = []
 try {
-  rawSubscribers = await Subscriber.orderBy('created_at', 'desc').get()
-} catch {
+  rawSubscribers = db.query('SELECT id, email, name, created_at FROM subscribers ORDER BY created_at DESC').all()
+} catch (e) {
   try {
-    rawSubscribers = await SubscriberEmail.orderBy('created_at', 'desc').get()
-  } catch {
+    rawSubscribers = db.query('SELECT id, email, name, created_at FROM users ORDER BY created_at DESC').all()
+  } catch (e2) {
     rawSubscribers = []
   }
 }
@@ -23,18 +26,20 @@ const planTypes = ['Basic', 'Pro', 'Enterprise']
 const sources = ['Website', 'API', 'Referral']
 
 // Transform for display
-const subscribers = rawSubscribers.map((s, idx) => ({
-  email: s.email || 'N/A',
-  name: s.name || 'Subscriber',
-  plan: planTypes[idx % planTypes.length],
-  status: 'active',
-  subscribed: s.created_at ? String(s.created_at).split('T')[0] : 'N/A',
-  source: sources[idx % sources.length]
-}))
+const subscribers = rawSubscribers.map(function(s, idx) {
+  return {
+    email: s.email || 'N/A',
+    name: s.name || 'Subscriber',
+    plan: planTypes[idx % planTypes.length],
+    status: 'active',
+    subscribed: s.created_at ? String(s.created_at).split('T')[0] : 'N/A',
+    source: sources[idx % sources.length]
+  }
+})
 
 // Calculate real stats
 const totalSubscribers = subscribers.length
-const activeSubscribers = subscribers.filter(s => s.status === 'active').length
+const activeSubscribers = subscribers.filter(function(s) { return s.status === 'active' }).length
 
 const stats = [
   { label: 'Total Subscribers', value: String(totalSubscribers) },
@@ -44,6 +49,8 @@ const stats = [
 ]
 
 const plans = ['All Plans', 'Basic', 'Pro', 'Enterprise']
+
+db.close()
 </script>
 
 <template>

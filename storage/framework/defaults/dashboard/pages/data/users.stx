@@ -1,12 +1,18 @@
 <script server>
 /**
  * Users Page
- * Uses Stacks ORM (bun-query-builder) with Eloquent-like API.
+ * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-import { User } from '@stacksjs/orm'
+const Database = require('bun:sqlite').Database
+const path = require('path')
 
-// Fetch all users from database using ORM
-const rawUsers = await User.orderBy('created_at', 'desc').get()
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+const db = new Database(dbPath, { readonly: true })
+
+// Fetch all users from database
+const rawUsers = db.query('SELECT id, name, email, created_at FROM users ORDER BY created_at DESC').all()
+
+db.close()
 
 // Transform users for display
 const users = rawUsers.map(u => {

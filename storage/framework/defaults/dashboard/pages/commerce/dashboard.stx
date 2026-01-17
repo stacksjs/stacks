@@ -1,42 +1,54 @@
 <script server>
 /**
  * Commerce Dashboard
- * Uses Stacks ORM (bun-query-builder) with Eloquent-like API.
+ * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-import { Order, Product } from '@stacksjs/orm'
+const Database = require('bun:sqlite').Database
+const path = require('path')
 
-// Fetch all orders and calculate stats using ORM
-const allOrders = await Order.all()
-const orderCount = allOrders.length
-const totalRevenue = allOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0)
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+const db = new Database(dbPath, { readonly: true })
+
+// Calculate revenue and order stats
+const revenueResult = db.query('SELECT SUM(total_amount) as total FROM orders').get()
+const totalRevenue = revenueResult?.total || 0
+
+const orderCountResult = db.query('SELECT COUNT(*) as count FROM orders').get()
+const orderCount = orderCountResult?.count || 0
 const avgOrderValue = orderCount > 0 ? totalRevenue / orderCount : 0
 
 const stats = [
-  { label: 'Revenue Today', value: `$${totalRevenue.toLocaleString()}`, change: '+15.2%' },
+  { label: 'Revenue Today', value: '$' + totalRevenue.toLocaleString(), change: '+15.2%' },
   { label: 'Orders', value: String(orderCount), change: '+8.5%' },
-  { label: 'Avg Order Value', value: `$${avgOrderValue.toFixed(2)}`, change: '+3.2%' },
+  { label: 'Avg Order Value', value: '$' + avgOrderValue.toFixed(2), change: '+3.2%' },
   { label: 'Conversion Rate', value: '3.4%', change: '+0.5%' },
 ]
 
-// Fetch recent orders using ORM
-const rawOrders = await Order.orderBy('created_at', 'desc').limit(4).get()
+// Fetch recent orders
+const rawOrders = db.query('SELECT id, status, total_amount, created_at FROM orders ORDER BY created_at DESC LIMIT 4').all()
 
-const recentOrders = rawOrders.map(o => ({
-  id: `ORD-${String(o.id).padStart(4, '0')}`,
-  customer: 'Customer',
-  total: `$${(o.total_amount || 0).toFixed(2)}`,
-  status: o.status || 'pending',
-  time: 'Recently'
-}))
+const recentOrders = rawOrders.map(function(o) {
+  return {
+    id: 'ORD-' + String(o.id).padStart(4, '0'),
+    customer: 'Customer',
+    total: '$' + (o.total_amount || 0).toFixed(2),
+    status: o.status || 'pending',
+    time: 'Recently'
+  }
+})
 
-// Fetch top products using ORM
-const rawProducts = await Product.orderBy('price', 'desc').limit(4).get()
+// Fetch top products
+const rawProducts = db.query('SELECT name, price, inventory_count FROM products ORDER BY price DESC LIMIT 4').all()
 
-const topProducts = rawProducts.map((p) => ({
-  name: p.name || 'Product',
-  sales: Math.floor(Math.random() * 200) + 50,
-  revenue: `$${((p.price || 0) * (Math.floor(Math.random() * 50) + 10)).toFixed(0)}`
-}))
+const topProducts = rawProducts.map(function(p) {
+  return {
+    name: p.name || 'Product',
+    sales: Math.floor(Math.random() * 200) + 50,
+    revenue: '$' + ((p.price || 0) * (Math.floor(Math.random() * 50) + 10)).toFixed(0)
+  }
+})
+
+db.close()
 </script>
 
 <template>

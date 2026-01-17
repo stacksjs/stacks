@@ -9,6 +9,9 @@ export default {
 
   traits: {
     useTimestamps: true,
+    useSeeder: {
+      count: 50,
+    },
     useSearch: {
       displayable: ['id', 'type', 'source', 'message', 'project', 'timestamp'],
       searchable: ['message', 'project', 'file'],

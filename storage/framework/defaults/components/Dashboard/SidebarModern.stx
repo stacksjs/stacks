@@ -4,10 +4,48 @@
  *
  * Uses stx native Sidebar components with Craft integration for
  * true native macOS sidebar rendering when running in Craft.
+ * Dynamically loads models from app/Models directory.
  */
 
 // Import stx Sidebar components from @stacksjs/components
 import { Sidebar, SidebarHeader, SidebarFooter } from '@stacksjs/components'
+
+// Load models dynamically using synchronous fs
+const fs = require('node:fs')
+const path = require('node:path')
+
+// Get list of models from app/Models directory
+function getModelItems() {
+  const modelsDir = path.join(process.cwd(), 'app', 'Models')
+  const items = []
+
+  try {
+    const files = fs.readdirSync(modelsDir)
+    for (const file of files) {
+      if (file.endsWith('.ts') && !file.startsWith('index') && !file.startsWith('_') && !file.startsWith('README')) {
+        const modelName = file.replace('.ts', '')
+        // Convert PascalCase to kebab-case for URL
+        const urlSlug = modelName
+          .replace(/([a-z])([A-Z])/g, '$1-$2')
+          .toLowerCase()
+        items.push({
+          id: `model-${urlSlug}`,
+          label: modelName,
+          icon: 'i-hugeicons-database-01',
+          href: `/models/${urlSlug}`,
+        })
+      }
+    }
+  } catch (e) {
+    // If directory doesn't exist, return empty array
+  }
+
+  // Sort alphabetically by label
+  items.sort((a, b) => a.label.localeCompare(b.label))
+  return items
+}
+
+const modelItems = getModelItems()
 
 // State
 const isCollapsed = props.isCollapsed || false
@@ -18,6 +56,7 @@ const expandedSections = props.expandedSections || {
   library: true,
   content: false,
   app: false,
+  models: false,
   data: false,
   commerce: false,
   marketing: false,
@@ -62,6 +101,13 @@ const sections = [
       { id: 'authors', label: 'Authors', icon: 'i-hugeicons-user-edit-01', href: '/content/authors' },
       { id: 'seo', label: 'SEO', icon: 'i-hugeicons-seo', href: '/content/seo' },
     ],
+  },
+  {
+    id: 'models',
+    label: 'Models',
+    icon: 'i-hugeicons-database',
+    expanded: expandedSections.models,
+    items: modelItems,
   },
   {
     id: 'app',

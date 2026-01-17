@@ -4,10 +4,10 @@
  *
  * The main entry point for the Stacks Dashboard built with STX and Craft.
  * Uses native macOS sidebar for navigation.
+ *
+ * Note: STX <script server> blocks don't support ES imports or async/await.
+ * All code must be synchronous and use CommonJS require() if needed.
  */
-
-// Import types
-import type { SidebarConfig } from '@stacksjs/craft'
 
 // SF Symbol icon mappings
 const icons = {
@@ -69,7 +69,7 @@ const icons = {
 }
 
 // Native sidebar configuration
-const sidebarConfig: SidebarConfig = {
+const sidebarConfig = {
   sections: [
     {
       id: 'home',
@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <div id="app" data-page="home">
     <!-- Home Dashboard -->
     <div data-page-content="home" style="display: block;">
-      @include('./pages/home')
+      @include('./pages/index')
     </div>
 
     <!-- Library Pages -->

@@ -1,63 +1,71 @@
 <script server>
 /**
  * Sales Analytics Page
- * Uses Stacks ORM (bun-query-builder) with Eloquent-like API.
+ * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-import { Order, Transaction } from '@stacksjs/orm'
+const Database = require('bun:sqlite').Database
+const path = require('path')
+
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+const db = new Database(dbPath, { readonly: true })
 
 // Fetch all orders to calculate sales stats
-const allOrders = await Order.all()
-const totalSales = allOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0)
+const allOrders = db.query('SELECT id, status, total_amount, created_at FROM orders').all()
+const totalSales = allOrders.reduce(function(sum, o) { return sum + (o.total_amount || 0) }, 0)
 const orderCount = allOrders.length
 const avgOrderValue = orderCount > 0 ? totalSales / orderCount : 0
 
 // Calculate refunds (cancelled orders)
-const cancelledOrders = allOrders.filter(o => o.status === 'cancelled')
-const refunds = cancelledOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0)
+const cancelledOrders = allOrders.filter(function(o) { return o.status === 'cancelled' })
+const refunds = cancelledOrders.reduce(function(sum, o) { return sum + (o.total_amount || 0) }, 0)
 const netRevenue = totalSales - refunds
 
 const stats = [
-  { label: 'Total Sales', value: `$${totalSales.toLocaleString()}`, change: '+15.3%' },
+  { label: 'Total Sales', value: '$' + totalSales.toLocaleString(), change: '+15.3%' },
   { label: 'Transactions', value: String(orderCount), change: '+8.7%' },
-  { label: 'Refunds', value: `$${refunds.toLocaleString()}`, change: '-12.1%' },
-  { label: 'Net Revenue', value: `$${netRevenue.toLocaleString()}`, change: '+15.8%' },
+  { label: 'Refunds', value: '$' + refunds.toLocaleString(), change: '-12.1%' },
+  { label: 'Net Revenue', value: '$' + netRevenue.toLocaleString(), change: '+15.8%' },
 ]
 
 // Group orders by date for daily sales
-const ordersByDate = new Map()
-allOrders.forEach(o => {
+var ordersByDate = {}
+allOrders.forEach(function(o) {
   const date = o.created_at ? String(o.created_at).split('T')[0] : 'Unknown'
-  if (!ordersByDate.has(date)) {
-    ordersByDate.set(date, { total: 0, count: 0 })
+  if (!ordersByDate[date]) {
+    ordersByDate[date] = { total: 0, count: 0 }
   }
-  const stats = ordersByDate.get(date)
-  stats.total += o.total_amount || 0
-  stats.count++
+  ordersByDate[date].total += o.total_amount || 0
+  ordersByDate[date].count++
 })
 
-const dailySales = Array.from(ordersByDate.entries())
-  .sort((a, b) => b[0].localeCompare(a[0]))
+const dailySales = Object.keys(ordersByDate)
+  .sort(function(a, b) { return b.localeCompare(a) })
   .slice(0, 7)
-  .map(([date, data]) => ({
-    date,
-    sales: `$${data.total.toLocaleString()}`,
-    orders: data.count,
-    avgOrder: `$${data.count > 0 ? (data.total / data.count).toFixed(2) : '0.00'}`
-  }))
+  .map(function(date) {
+    const data = ordersByDate[date]
+    return {
+      date: date,
+      sales: '$' + data.total.toLocaleString(),
+      orders: data.count,
+      avgOrder: '$' + (data.count > 0 ? (data.total / data.count).toFixed(2) : '0.00')
+    }
+  })
 
 const paymentMethods = [
-  { method: 'Credit Card', amount: `$${(totalSales * 0.67).toFixed(0)}`, transactions: Math.floor(orderCount * 0.67), percentage: 66.6 },
-  { method: 'PayPal', amount: `$${(totalSales * 0.20).toFixed(0)}`, transactions: Math.floor(orderCount * 0.20), percentage: 19.5 },
-  { method: 'Apple Pay', amount: `$${(totalSales * 0.10).toFixed(0)}`, transactions: Math.floor(orderCount * 0.10), percentage: 10.0 },
-  { method: 'Other', amount: `$${(totalSales * 0.03).toFixed(0)}`, transactions: Math.floor(orderCount * 0.03), percentage: 3.9 },
+  { method: 'Credit Card', amount: '$' + (totalSales * 0.67).toFixed(0), transactions: Math.floor(orderCount * 0.67), percentage: 66.6 },
+  { method: 'PayPal', amount: '$' + (totalSales * 0.20).toFixed(0), transactions: Math.floor(orderCount * 0.20), percentage: 19.5 },
+  { method: 'Apple Pay', amount: '$' + (totalSales * 0.10).toFixed(0), transactions: Math.floor(orderCount * 0.10), percentage: 10.0 },
+  { method: 'Other', amount: '$' + (totalSales * 0.03).toFixed(0), transactions: Math.floor(orderCount * 0.03), percentage: 3.9 },
 ]
 
 const salesTeam = [
-  { name: 'John Doe', closed: `$${(totalSales * 0.30).toFixed(0)}`, deals: Math.floor(orderCount * 0.30), avgDeal: `$${avgOrderValue.toFixed(0)}` },
-  { name: 'Jane Smith', closed: `$${(totalSales * 0.25).toFixed(0)}`, deals: Math.floor(orderCount * 0.25), avgDeal: `$${avgOrderValue.toFixed(0)}` },
-  { name: 'Bob Wilson', closed: `$${(totalSales * 0.25).toFixed(0)}`, deals: Math.floor(orderCount * 0.25), avgDeal: `$${avgOrderValue.toFixed(0)}` },
-  { name: 'Alice Brown', closed: `$${(totalSales * 0.20).toFixed(0)}`, deals: Math.floor(orderCount * 0.20), avgDeal: `$${avgOrderValue.toFixed(0)}` },
+  { name: 'John Doe', closed: '$' + (totalSales * 0.30).toFixed(0), deals: Math.floor(orderCount * 0.30), avgDeal: '$' + avgOrderValue.toFixed(0) },
+  { name: 'Jane Smith', closed: '$' + (totalSales * 0.25).toFixed(0), deals: Math.floor(orderCount * 0.25), avgDeal: '$' + avgOrderValue.toFixed(0) },
+  { name: 'Bob Wilson', closed: '$' + (totalSales * 0.25).toFixed(0), deals: Math.floor(orderCount * 0.25), avgDeal: '$' + avgOrderValue.toFixed(0) },
+  { name: 'Alice Brown', closed: '$' + (totalSales * 0.20).toFixed(0), deals: Math.floor(orderCount * 0.20), avgDeal: '$' + avgOrderValue.toFixed(0) },
 ]
+
+db.close()
 </script>
 
 <template>

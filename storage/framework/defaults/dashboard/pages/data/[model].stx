@@ -1,0 +1,171 @@
+<script server>
+/**
+ * Generic Model Viewer Page
+ * Displays data for any model dynamically based on the URL path.
+ * The 'model' variable is automatically provided from the [model].stx dynamic route.
+ */
+const Database = require('bun:sqlite').Database
+const path = require('path')
+
+// Get model name from dynamic route parameter (provided by STX serve)
+const modelSlug = typeof model !== 'undefined' ? model : 'unknown'
+
+// Convert slug to table name (kebab-case to snake_case, pluralized)
+const tableName = modelSlug.replace(/-/g, '_') + 's'
+const modelName = modelSlug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
+
+let items = []
+let columns = []
+let error = null
+let totalCount = 0
+
+try {
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+  const db = new Database(dbPath, { readonly: true })
+
+  // Get table info to determine columns
+  const tableInfo = db.query(`PRAGMA table_info(${tableName})`).all()
+  columns = tableInfo.map(col => ({
+    name: col.name,
+    type: col.type,
+    label: col.name.split('_').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
+  }))
+
+  // Fetch data with pagination
+  items = db.query(`SELECT * FROM ${tableName} ORDER BY id DESC LIMIT 50`).all()
+  totalCount = db.query(`SELECT COUNT(*) as count FROM ${tableName}`).get()?.count || 0
+
+  db.close()
+} catch (e) {
+  error = e.message
+}
+</script>
+
+<template>
+<DashboardLayout pageTitle="{{ modelName }}" pageDescription="View and manage {{ modelName }} data">
+  <div class="p-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ modelName }}</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          @if(error)
+            Table "{{ tableName }}" not found or error occurred
+          @else
+            {{ totalCount }} records in {{ tableName }}
+          @endif
+        </p>
+      </div>
+      <div class="flex gap-3">
+        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+          Export
+        </button>
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+          Add New
+        </button>
+      </div>
+    </div>
+
+    @if(error)
+      <!-- Error State -->
+      <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+            <span class="text-red-600 dark:text-red-400 text-xl">!</span>
+          </div>
+          <div>
+            <h3 class="font-semibold text-red-900 dark:text-red-200">Error Loading Data</h3>
+            <p class="text-sm text-red-700 dark:text-red-300">{{ error }}</p>
+          </div>
+        </div>
+      </div>
+    @elseif(items.length === 0)
+      <!-- Empty State -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-4">
+          <span class="text-gray-400 text-2xl">0</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No {{ modelName }} Found</h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-6">Get started by creating your first {{ modelName }}.</p>
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+          Create {{ modelName }}
+        </button>
+      </div>
+    @else
+      <!-- Data Table -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50 dark:bg-gray-700/50">
+              <tr>
+                @foreach(columns as col)
+                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    {{ col.label }}
+                  </th>
+                @endforeach
+                <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+              @foreach(items as item)
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                  @foreach(columns as col)
+                    <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                      @if(col.name === 'id')
+                        <span class="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{{ item[col.name] }}</span>
+                      @elseif(col.name.includes('_at') || col.name.includes('date'))
+                        <span class="text-gray-500 dark:text-gray-400">{{ item[col.name] ? new Date(item[col.name]).toLocaleDateString() : '-' }}</span>
+                      @elseif(col.name === 'status')
+                        <span class="px-2 py-1 text-xs font-medium rounded-full {{ item[col.name] === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
+                          {{ item[col.name] }}
+                        </span>
+                      @else
+                        {{ item[col.name] !== null ? item[col.name] : '-' }}
+                      @endif
+                    </td>
+                  @endforeach
+                  <td class="px-4 py-3 text-right">
+                    <button class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-1" title="View">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                      </svg>
+                    </button>
+                    <button class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-1" title="Edit">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                    </button>
+                    <button class="text-gray-400 hover:text-red-600 dark:hover:text-red-400 p-1" title="Delete">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            Showing {{ items.length }} of {{ totalCount }} records
+          </div>
+          <div class="flex gap-2">
+            <button class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50" disabled>
+              Previous
+            </button>
+            <button class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    @endif
+  </div>
+</DashboardLayout>
+</template>

@@ -1,52 +1,51 @@
 <script server>
 /**
  * Customers Page
- * Uses Stacks ORM (bun-query-builder) with Eloquent-like API.
+ * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-import { Customer, Order } from '@stacksjs/orm'
+const Database = require('bun:sqlite').Database
+const path = require('path')
 
-// Fetch all customers from database using ORM
-const rawCustomers = await Customer.all()
-const allOrders = await Order.all()
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+const db = new Database(dbPath, { readonly: true })
 
-// Calculate order stats per customer
-const ordersByCustomer = new Map()
-allOrders.forEach(o => {
-  const customerId = o.customer_id || 0
-  if (!ordersByCustomer.has(customerId)) {
-    ordersByCustomer.set(customerId, { count: 0, total: 0 })
-  }
-  const stats = ordersByCustomer.get(customerId)
-  stats.count++
-  stats.total += o.total_amount || 0
-})
+// Fetch customers with their order stats
+const rawCustomers = db.query(`
+  SELECT
+    c.id, c.name, c.email,
+    COUNT(o.id) as order_count,
+    COALESCE(SUM(o.total_amount), 0) as total_spent
+  FROM customers c
+  LEFT JOIN orders o ON o.customer_id = c.id
+  GROUP BY c.id
+  ORDER BY total_spent DESC
+`).all()
 
 // Transform customers for display
-const customers = rawCustomers.map(c => {
-  const orderStats = ordersByCustomer.get(c.id) || { count: 0, total: 0 }
-  return {
-    name: c.name || 'Unknown',
-    email: c.email || 'N/A',
-    orders: orderStats.count,
-    spent: `$${orderStats.total.toFixed(2)}`,
-    lastOrder: 'Recently',
-    status: orderStats.total > 500 ? 'vip' : orderStats.count > 0 ? 'active' : 'inactive'
-  }
-})
+const customers = rawCustomers.map(c => ({
+  name: c.name || 'Unknown',
+  email: c.email || 'N/A',
+  orders: c.order_count || 0,
+  spent: '$' + (c.total_spent || 0).toFixed(2),
+  lastOrder: 'Recently',
+  status: (c.total_spent || 0) > 500 ? 'vip' : (c.order_count || 0) > 0 ? 'active' : 'inactive'
+}))
 
 // Calculate real stats
 const totalCustomers = customers.length
-const activeCustomers = customers.filter(c => c.status === 'active' || c.status === 'vip').length
-const vipCustomers = customers.filter(c => c.status === 'vip').length
-const totalSpent = Array.from(ordersByCustomer.values()).reduce((sum, s) => sum + s.total, 0)
+const activeCustomers = customers.filter(function(c) { return c.status === 'active' || c.status === 'vip' }).length
+const vipCustomers = customers.filter(function(c) { return c.status === 'vip' }).length
+const totalSpent = rawCustomers.reduce(function(sum, c) { return sum + (c.total_spent || 0) }, 0)
 const avgLifetimeValue = totalCustomers > 0 ? totalSpent / totalCustomers : 0
 
 const stats = [
   { label: 'Total Customers', value: String(totalCustomers) },
   { label: 'Active', value: String(activeCustomers) },
   { label: 'VIP', value: String(vipCustomers) },
-  { label: 'Avg Lifetime Value', value: `$${avgLifetimeValue.toFixed(2)}` },
+  { label: 'Avg Lifetime Value', value: '$' + avgLifetimeValue.toFixed(2) },
 ]
+
+db.close()
 </script>
 
 <template>
