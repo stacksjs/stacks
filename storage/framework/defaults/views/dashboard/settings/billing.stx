@@ -1,8 +1,3 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
 import { useBillable } from '../../../functions/billing/payments'
 import ActivePlan from '../../../components/Dashboard/Billing/ActivePlan.stx'
@@ -15,15 +10,6 @@ const { isEmpty, showCurrentPlan } = useBillable()
 
 const paymentStore = usePaymentStore()
 
-onMounted(async () => {
-  await paymentStore.fetchStripeCustomer(1).then(async () => {
-    if (!isEmpty(paymentStore.getStripeCustomer)) {
-      await paymentStore.fetchDefaultPaymentMethod(1)
-      await paymentStore.fetchUserActivePlan(1)
-      await paymentStore.fetchTransactionHistory(1)
-    }
-  })
-})
 </script>
 
 <template>

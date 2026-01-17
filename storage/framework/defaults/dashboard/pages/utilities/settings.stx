@@ -54,10 +54,10 @@ const integrations = [
               <div class="flex justify-between items-center py-3 border-b last:border-0">
                 <label class="font-medium">{{ setting.key }}</label>
                 @if (setting.type === 'text' || setting.type === 'email')
-                  <input type="{{ setting.type }}" class="input w-64" value="{{ setting.value }}" />
+                  <input type="{{ setting.type }}" class="input w-64" value="{{ setting }}" />
                 @else
                   <select class="input w-64">
-                    <option>{{ setting.value }}</option>
+                    <option>{{ setting }}</option>
                   </select>
                 @endif
               </div>
@@ -75,12 +75,12 @@ const integrations = [
                 <label class="font-medium">{{ setting.key }}</label>
                 @if (setting.type === 'toggle')
                   <label class="switch">
-                    <input type="checkbox" {{ setting.value ? 'checked' : '' }} />
+                    <input type="checkbox" {{ setting ? 'checked' : '' }} />
                     <span class="slider"></span>
                   </label>
                 @else
                   <select class="input w-48">
-                    <option>{{ setting.value }}</option>
+                    <option>{{ setting }}</option>
                   </select>
                 @endif
               </div>
@@ -97,7 +97,7 @@ const integrations = [
               <div class="flex justify-between items-center py-3 border-b last:border-0">
                 <label class="font-medium">{{ setting.key }}</label>
                 <label class="switch">
-                  <input type="checkbox" {{ setting.value ? 'checked' : '' }} />
+                  <input type="checkbox" {{ setting ? 'checked' : '' }} />
                   <span class="slider"></span>
                 </label>
               </div>

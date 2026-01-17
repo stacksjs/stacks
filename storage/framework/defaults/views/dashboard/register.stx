@@ -1,13 +1,6 @@
 <script server>
 import Register from '../../components/Dashboard/Auth/Register.stx'
-import { useHead } from '@vueuse/head'
 import { useAuth } from '../../functions/auth'
-
-const router = useRouter()
-
-useHead({
-  title: 'Register - Stacks Dashboard',
-})
 
 const { register } = useAuth()
 
@@ -48,8 +41,3 @@ async function handleRegister(credentials) {
 />
 </template>
 
-<route lang="yaml">
-meta:
-  layout: guest
-  requiresAuth: false
-</route>

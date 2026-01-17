@@ -1,11 +1,4 @@
 <script lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useHead } from '@vueuse/head'
-
-useHead({
-  title: 'Dashboard - Marketing Campaigns',
-})
-
 // Define campaign type
 interface Campaign {
   id: number
@@ -123,7 +116,7 @@ const modelFields = {
 const standardModelEvents = ['created', 'updated', 'deleted', 'restored', 'custom']
 
 // Sample campaigns data
-const campaigns = ref<Campaign[]>([
+const campaigns = [
   {
     id: 1,
     uuid: '11ce123b-57c4-429b-9840-c79f8047d8aa',
@@ -418,15 +411,15 @@ const campaigns = ref<Campaign[]>([
       reminderIntervals: [30, 24 * 60, 72 * 60] // 30 mins, 24 hours, 72 hours
     }
   }
-])
+]
 
 // Filter and sort options
-const searchQuery = ref('')
-const sortBy = ref('startDate')
-const sortOrder = ref('desc')
-const statusFilter = ref('all')
-const typeFilter = ref('all')
-const viewMode = ref('compact') // 'detailed' or 'compact'
+const searchQuery = ''
+const sortBy = 'startDate'
+const sortOrder = 'desc'
+const statusFilter = 'all'
+const typeFilter = 'all'
+const viewMode = 'compact' // 'detailed' or 'compact'
 
 // Available statuses
 const statuses = ['all', 'sent', 'scheduled', 'draft']
@@ -445,78 +438,78 @@ const availableSorts = [
 ]
 
 // Computed filtered and sorted campaigns
-const filteredCampaigns = computed(() => {
-  return campaigns.value
+function filteredCampaigns() {
+  return campaigns
     .filter(campaign => {
       // Apply search filter
       const matchesSearch =
-        campaign.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        campaign.owner.toLowerCase().includes(searchQuery.value.toLowerCase())
+        campaign.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        campaign.owner.toLowerCase().includes(searchQuery.toLowerCase())
 
       // Apply status filter
-      const matchesStatus = statusFilter.value === 'all' || campaign.status === statusFilter.value
+      const matchesStatus = statusFilter === 'all' || campaign.status === statusFilter
 
       // Apply type filter
-      const matchesType = typeFilter.value === 'all' || campaign.type === typeFilter.value
+      const matchesType = typeFilter === 'all' || campaign.type === typeFilter
 
       return matchesSearch && matchesStatus && matchesType
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy.value === 'name') {
+      if (sortBy === 'name') {
         comparison = a.name.localeCompare(b.name)
-      } else if (sortBy.value === 'startDate') {
+      } else if (sortBy === 'startDate') {
         comparison = new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-      } else if (sortBy.value === 'budget') {
+      } else if (sortBy === 'budget') {
         comparison = a.budget - b.budget
-      } else if (sortBy.value === 'goalProgress') {
+      } else if (sortBy === 'goalProgress') {
         comparison = a.goalProgress - b.goalProgress
       }
 
-      return sortOrder.value === 'asc' ? comparison : -comparison
+      return sortOrder === 'asc' ? comparison : -comparison
     })
 })
 
 // Pagination
-const itemsPerPage = ref(9);
-const currentPage = ref(1);
+const itemsPerPage = 9;
+const currentPage = 1;
 
-const totalPages = computed(() => {
-  return Math.ceil(filteredCampaigns.value.length / itemsPerPage.value);
+function totalPages() {
+  return Math.ceil(filteredCampaigns.length / itemsPerPage);
 });
 
-const paginatedCampaigns = computed(() => {
-  const startIndex = (currentPage.value - 1) * itemsPerPage.value;
-  const endIndex = startIndex + itemsPerPage.value;
-  return filteredCampaigns.value.slice(startIndex, endIndex);
+function paginatedCampaigns() {
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  return filteredCampaigns.slice(startIndex, endIndex);
 });
 
 // Pagination functions
 const prevPage = () => {
-  if (currentPage.value > 1) {
+  if (currentPage > 1) {
     currentPage.value--;
   }
 };
 
 const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
+  if (currentPage < totalPages) {
     currentPage.value++;
   }
 };
 
 const goToPage = (page: number) => {
-  currentPage.value = page;
+  currentPage = page;
 };
 
 // Calculate displayed page numbers for pagination
-const displayedPages = computed(() => {
+function displayedPages() {
   const totalPagesToShow = 5;
   const pages: number[] = [];
 
-  if (totalPages.value <= totalPagesToShow) {
+  if (totalPages <= totalPagesToShow) {
     // If we have fewer pages than we want to show, display all pages
-    for (let i = 1; i <= totalPages.value; i++) {
+    for (let i = 1; i <= totalPages; i++) {
       pages.push(i);
     }
   } else {
@@ -524,14 +517,14 @@ const displayedPages = computed(() => {
     pages.push(1);
 
     // Calculate start and end of page range around current page
-    let startPage = Math.max(2, currentPage.value - 1);
-    let endPage = Math.min(totalPages.value - 1, currentPage.value + 1);
+    let startPage = Math.max(2, currentPage - 1);
+    let endPage = Math.min(totalPages - 1, currentPage + 1);
 
     // Adjust if we're at the start or end
-    if (currentPage.value <= 2) {
+    if (currentPage <= 2) {
       endPage = 4;
-    } else if (currentPage.value >= totalPages.value - 1) {
-      startPage = totalPages.value - 3;
+    } else if (currentPage >= totalPages - 1) {
+      startPage = totalPages - 3;
     }
 
     // Add ellipsis if needed before middle pages
@@ -545,12 +538,12 @@ const displayedPages = computed(() => {
     }
 
     // Add ellipsis if needed after middle pages
-    if (endPage < totalPages.value - 1) {
+    if (endPage < totalPages - 1) {
       pages.push(-2); // -2 represents ellipsis
     }
 
     // Always include last page
-    pages.push(totalPages.value);
+    pages.push(totalPages);
   }
 
   return pages;
@@ -558,11 +551,11 @@ const displayedPages = computed(() => {
 
 // Toggle sort order
 function toggleSort(column: string): void {
-  if (sortBy.value === column) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  if (sortBy === column) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy.value = column
-    sortOrder.value = 'desc'
+    sortBy = column
+    sortOrder = 'desc'
   }
 }
 
@@ -599,9 +592,9 @@ function calculateProgress(progress: number, target: number) {
 }
 
 // Modal state
-const showCampaignModal = ref(false)
-const isEditMode = ref(false)
-const currentCampaign = ref<Campaign>({
+const showCampaignModal = false
+const isEditMode = false
+const currentCampaign = {
   id: 0,
   uuid: '',
   name: '',
@@ -620,14 +613,14 @@ const currentCampaign = ref<Campaign>({
   ownerAvatar: '',
   createdAt: '',
   lastModified: ''
-})
+}
 
 const openNewCampaignModal = () => {
   const today = new Date().toISOString().split('T')[0];
   if (!today) return;
 
-  currentCampaign.value = {
-    id: Math.max(...campaigns.value.map(c => c.id)) + 1,
+  currentCampaign = {
+    id: Math.max(...campaigns.map(c => c.id)) + 1,
     uuid: crypto.randomUUID(),
     name: '',
     type: 'Email',
@@ -681,99 +674,83 @@ const openNewCampaignModal = () => {
     }
   };
 
-  isEditMode.value = false;
-  showCampaignModal.value = true;
+  isEditMode = false;
+  showCampaignModal = true;
 };
 
-// Add a watch to initialize abandonedCartTrigger when goalTrigger changes to 'cart_abandoned'
-watch(() => currentCampaign.value.goalTrigger, (newValue) => {
-  if (newValue === 'cart_abandoned' && !currentCampaign.value.abandonedCartTrigger) {
-    currentCampaign.value.abandonedCartTrigger = {
-      timeThreshold: 30,
-      timeUnit: 'minutes',
-      minimumCartValue: 50,
-      excludeProducts: [],
-      requireProducts: [],
-      userSegment: ['registered'],
-      maxReminders: 3,
-      reminderIntervals: [30, 1440, 4320]
-    };
-  }
-});
-
 function openEditCampaignModal(campaign: Campaign): void {
-  currentCampaign.value = { ...campaign }
-  isEditMode.value = true
-  showCampaignModal.value = true
+  currentCampaign = { ...campaign }
+  isEditMode = true
+  showCampaignModal = true
 }
 
 function closeCampaignModal(): void {
-  showCampaignModal.value = false
+  showCampaignModal = false
 }
 
 // Add scheduling state
-const isScheduled = ref(false)
-const scheduleDate = ref('')
-const scheduleTime = ref('')
+const isScheduled = false
+const scheduleDate = ''
+const scheduleTime = ''
 
 // Update save campaign to handle scheduling
 const saveCampaign = () => {
-  if (!currentCampaign.value) return;
+  if (!currentCampaign) return;
 
   const today = new Date().toISOString().split('T')[0];
   if (!today) return;
 
   // Handle scheduling
-  if (isScheduled.value && scheduleDate.value && scheduleTime.value) {
-    const scheduledDateTime = `${scheduleDate.value} ${scheduleTime.value}:00`;
-    currentCampaign.value.scheduled_at = scheduledDateTime;
+  if (isScheduled && scheduleDate && scheduleTime) {
+    const scheduledDateTime = `${scheduleDate} ${scheduleTime}:00`;
+    currentCampaign.scheduled_at = scheduledDateTime;
   } else {
-    currentCampaign.value.scheduled_at = null;
+    currentCampaign.scheduled_at = null;
   }
 
-  currentCampaign.value.lastModified = today;
+  currentCampaign.lastModified = today;
 
-  if (isEditMode.value) {
-    const index = campaigns.value.findIndex(c => c.id === currentCampaign.value?.id);
+  if (isEditMode) {
+    const index = campaigns.findIndex(c => c.id === currentCampaign.value?.id);
     if (index !== -1) {
-      campaigns.value[index] = { ...currentCampaign.value };
+      campaigns.value[index] = { ...currentCampaign };
     }
   } else {
-    campaigns.value.push({ ...currentCampaign.value });
+    campaigns.push({ ...currentCampaign });
   }
 
-  showCampaignModal.value = false;
+  showCampaignModal = false;
 };
 
 // Delete campaign
 function deleteCampaign(campaignId: number): void {
-  const index = campaigns.value.findIndex(c => c.id === campaignId)
+  const index = campaigns.findIndex(c => c.id === campaignId)
   if (index !== -1) {
-    campaigns.value.splice(index, 1)
+    campaigns.splice(index, 1)
   }
 }
 
 // Update SMS character count
 const updateSmsCharacterCount = () => {
-  if (currentCampaign.value && currentCampaign.value.smsContent) {
-    currentCampaign.value.smsCharacterCount = currentCampaign.value.smsContent.length;
-  } else if (currentCampaign.value) {
-    currentCampaign.value.smsCharacterCount = 0;
+  if (currentCampaign && currentCampaign.smsContent) {
+    currentCampaign.smsCharacterCount = currentCampaign.smsContent.length;
+  } else if (currentCampaign) {
+    currentCampaign.smsCharacterCount = 0;
   }
 };
 
 // Calculate summary statistics
-const totalActiveCampaigns = computed(() => campaigns.value.filter(c => c.status === 'Active').length)
-const totalScheduledCampaigns = computed(() => campaigns.value.filter(c => c.status === 'Scheduled').length)
+function totalActiveCampaigns() { return campaigns.filter(c => c.status === 'Active' }.length)
+function totalScheduledCampaigns() { return campaigns.filter(c => c.status === 'Scheduled' }.length)
 // Define empty placeholders for totalBudget and totalSpent to avoid template errors
-const totalBudget = computed(() => 0)
-const totalSpent = computed(() => 0)
+function totalBudget() { return 0 }
+function totalSpent() { return 0 }
 
 // Calculate campaign type metrics
-const totalEmailCampaigns = computed(() => campaigns.value.filter(c => c.type === 'Email').length)
-const totalSmsCampaigns = computed(() => campaigns.value.filter(c => c.type === 'SMS').length)
+function totalEmailCampaigns() { return campaigns.filter(c => c.type === 'Email' }.length)
+function totalSmsCampaigns() { return campaigns.filter(c => c.type === 'SMS' }.length)
 // Commenting out other campaign types as we're focusing only on email and SMS
-// const totalSocialMediaCampaigns = computed(() => campaigns.value.filter(c => c.type === 'Social Media').length)
+// function totalSocialMediaCampaigns() { return campaigns.filter(c => c.type === 'Social Media' }.length)
 
 // Get campaign type icon
 const getCampaignTypeIcon = (type: string): string => {
@@ -853,9 +830,9 @@ const getCampaignMetrics = (campaign: Campaign) => {
 }
 
 // Add computed property for safe access to abandonedCartTrigger
-const cartTrigger = computed(() => {
-  if (!currentCampaign.value.abandonedCartTrigger) {
-    currentCampaign.value.abandonedCartTrigger = {
+function cartTrigger() {
+  if (!currentCampaign.abandonedCartTrigger) {
+    currentCampaign.abandonedCartTrigger = {
       timeThreshold: 30,
       timeUnit: 'minutes',
       minimumCartValue: 50,
@@ -867,23 +844,23 @@ const cartTrigger = computed(() => {
     };
   }
   // Ensure reminderIntervals is always defined
-  if (!currentCampaign.value.abandonedCartTrigger.reminderIntervals) {
-    currentCampaign.value.abandonedCartTrigger.reminderIntervals = [30, 1440, 4320];
+  if (!currentCampaign.abandonedCartTrigger.reminderIntervals) {
+    currentCampaign.abandonedCartTrigger.reminderIntervals = [30, 1440, 4320];
   }
-  return currentCampaign.value.abandonedCartTrigger;
+  return currentCampaign.abandonedCartTrigger;
 });
 
 // Add helper methods for conditions
 const addCondition = () => {
-  if (!currentCampaign.value.modelTrigger) {
-    currentCampaign.value.modelTrigger = {
+  if (!currentCampaign.modelTrigger) {
+    currentCampaign.modelTrigger = {
       model: 'User',
       event: 'created',
       conditions: []
     };
   }
-  const model = currentCampaign.value.modelTrigger.model;
-  currentCampaign.value.modelTrigger.conditions.push({
+  const model = currentCampaign.modelTrigger.model;
+  currentCampaign.modelTrigger.conditions.push({
     field: modelFields[model][0],
     operator: 'equals',
     value: ''
@@ -891,7 +868,7 @@ const addCondition = () => {
 };
 
 const removeCondition = (index: number) => {
-  currentCampaign.value.modelTrigger?.conditions.splice(index, 1);
+  currentCampaign.modelTrigger?.conditions.splice(index, 1);
 };
 </script>
 
@@ -1170,7 +1147,7 @@ const removeCondition = (index: number) => {
                   <div class="space-y-1">
                     <div v-for="metric in getCampaignMetrics(campaign)" :key="metric.label" class="flex items-center">
                       <div :class="metric.icon + ' h-4 w-4 mr-2'"></div>
-                      <span class="text-xs">{{ metric.label }}: {{ metric.value }}</span>
+                      <span class="text-xs">{{ metric.label }}: {{ metric }}</span>
                     </div>
                   </div>
                 </td>
@@ -1254,7 +1231,7 @@ const removeCondition = (index: number) => {
                     <div class="flex items-center">
                       <div :class="metric.icon + ' h-5 w-5 mr-2 text-gray-400 dark:text-gray-500'"></div>
                       <div>
-                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ metric.value }}</div>
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ metric }}</div>
                         <div class="text-xs text-gray-500 dark:text-gray-400">{{ metric.label }}</div>
                       </div>
                     </div>
@@ -1893,8 +1870,3 @@ const removeCondition = (index: number) => {
     </div>
   </main>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>

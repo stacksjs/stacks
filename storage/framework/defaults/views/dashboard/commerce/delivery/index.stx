@@ -1,23 +1,4 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useHead } from '@vueuse/head'
-
-useHead({
-  title: 'Dashboard - Commerce Delivery',
-})
-
-const router = useRouter()
-
-onMounted(() => {
-  // Redirect to shipping methods by default
-  router.replace('/commerce/delivery/shipping-methods')
-})
 </script>
 
 <template>

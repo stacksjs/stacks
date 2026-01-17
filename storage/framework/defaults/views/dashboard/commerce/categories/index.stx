@@ -1,129 +1,106 @@
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
 import { useCategories } from '../../../../functions/commerce/products/categories'
 import CategoriesTable from '../../../../components/Dashboard/Commerce/CategoriesTable.stx'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
 import type { Categories } from '../../../../types/defaults'
 
-useHead({
-  title: 'Dashboard - Commerce Categories',
-})
-
 // Get categories data and functions from the composable
 const { categories, fetchCategories, createCategory, deleteCategory: deleteCategoryFromAPI } = useCategories()
 
-// Fetch categories on component mount
-onMounted(async () => {
-  await fetchCategories()
-})
-
 // Filter and sort options
-const searchQuery = ref('')
-const sortBy = ref('name')
-const sortOrder = ref('asc')
-const featuredFilter = ref('all')
+const searchQuery = ''
+const sortBy = 'name'
+const sortOrder = 'asc'
+const featuredFilter = 'all'
 
 // Pagination
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
+const currentPage = 1
+const itemsPerPage = 10
 
 // Computed filtered and sorted categories
-const filteredCategories = computed(() => {
-  return categories.value
+function filteredCategories() {
+  return categories
     .filter(category => {
       // Apply search filter
-      const matchesSearch = category.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                           (category.description || '').toLowerCase().includes(searchQuery.value.toLowerCase())
+      const matchesSearch = category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           (category.description || '').toLowerCase().includes(searchQuery.toLowerCase())
 
       // Apply featured filter
-      const matchesFeatured = featuredFilter.value === 'all' ||
-                             (featuredFilter.value === 'featured' && category.is_active) ||
-                             (featuredFilter.value === 'not-featured' && !category.is_active)
+      const matchesFeatured = featuredFilter === 'all' ||
+                             (featuredFilter === 'featured' && category.is_active) ||
+                             (featuredFilter === 'not-featured' && !category.is_active)
 
       return matchesSearch && matchesFeatured
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy.value === 'name') {
+      if (sortBy === 'name') {
         comparison = a.name.localeCompare(b.name)
-      } else if (sortBy.value === 'display_order') {
+      } else if (sortBy === 'display_order') {
         comparison = (a.display_order || 0) - (b.display_order || 0)
       }
 
-      return sortOrder.value === 'asc' ? comparison : -comparison
+      return sortOrder === 'asc' ? comparison : -comparison
     })
 })
 
 // Paginated categories
-const paginatedCategories = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredCategories.value.slice(start, end)
+function paginatedCategories() {
+  const start = (currentPage - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredCategories.slice(start, end)
 })
 
 // Pagination handlers
 function handlePrevPage(): void {
-  if (currentPage.value > 1) {
+  if (currentPage > 1) {
     currentPage.value--
   }
 }
 
 function handleNextPage(): void {
-  const totalPages = Math.ceil(filteredCategories.value.length / itemsPerPage.value)
-  if (currentPage.value < totalPages) {
+  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage)
+  if (currentPage < totalPages) {
     currentPage.value++
   }
 }
 
 function handlePageChange(page: number): void {
-  currentPage.value = page
+  currentPage = page
 }
 
 // Reset to first page when search changes
 function handleSearch(query: string): void {
-  searchQuery.value = query
-  currentPage.value = 1
+  searchQuery = query
+  currentPage = 1
 }
 
 // Toggle sort order
 function toggleSort(column: string): void {
-  if (sortBy.value === column) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  if (sortBy === column) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy.value = column
-    sortOrder.value = 'asc'
+    sortBy = column
+    sortOrder = 'asc'
   }
 }
 
 // Modal state
-const showAddModal = ref(false)
-const isEditing = ref(false)
-const editingCategoryId = ref<number | null>(null)
-const newCategory = ref<{
-  name: string;
-  description: string;
-  is_active: boolean;
-  image_url: string;
-  display_order: number;
-}>({
+const showAddModal = false
+const isEditing = false
+const editingCategoryId = null
+const newCategory = {
   name: '',
   description: '',
   is_active: true,
   image_url: '',
   display_order: 0
-})
+}
 
 // Image preview helper
-const imagePreview = computed(() => {
-  return newCategory.value.image_url || '/images/categories/placeholder.jpg'
+function imagePreview() {
+  return newCategory.image_url || '/images/categories/placeholder.jpg'
 })
 
 // Handle file upload
@@ -139,7 +116,7 @@ function handleImageUpload(event: Event): void {
     reader.onload = (e) => {
       if (e.target && e.target.result) {
         // In a real app, this would be the URL returned from the server
-        newCategory.value.image_url = e.target.result as string
+        newCategory.image_url = e.target.result as string
       }
     }
     reader.readAsDataURL(file)
@@ -147,46 +124,46 @@ function handleImageUpload(event: Event): void {
 }
 
 function openAddModal(): void {
-  isEditing.value = false
-  editingCategoryId.value = null
-  newCategory.value = {
+  isEditing = false
+  editingCategoryId = null
+  newCategory = {
     name: '',
     description: '',
     is_active: true,
     image_url: '',
     display_order: 0
   }
-  showAddModal.value = true
+  showAddModal = true
 }
 
 function closeAddModal(): void {
-  showAddModal.value = false
-  isEditing.value = false
-  editingCategoryId.value = null
+  showAddModal = false
+  isEditing = false
+  editingCategoryId = null
 }
 
 async function addCategory(): Promise<void> {
   // First add to local state for immediate UI update
-  const id = Math.max(...categories.value.map(c => c.id || 0)) + 1
+  const id = Math.max(...categories.map(c => c.id || 0)) + 1
 
   const newCategoryData = {
     id,
-    name: newCategory.value.name,
-    description: newCategory.value.description,
-    image_url: newCategory.value.image_url,
-    is_active: newCategory.value.is_active,
-    display_order: newCategory.value.display_order,
+    name: newCategory.name,
+    description: newCategory.description,
+    image_url: newCategory.image_url,
+    is_active: newCategory.is_active,
+    display_order: newCategory.display_order,
     uuid: `category-${id}`
   }
-  categories.value.push(newCategoryData)
+  categories.push(newCategoryData)
 
   // Then send to server
   const categoryData = {
-    name: newCategory.value.name,
-    description: newCategory.value.description,
-    image_url: newCategory.value.image_url,
-    is_active: newCategory.value.is_active,
-    display_order: newCategory.value.display_order
+    name: newCategory.name,
+    description: newCategory.description,
+    image_url: newCategory.image_url,
+    is_active: newCategory.is_active,
+    display_order: newCategory.display_order
   }
 
   try {
@@ -194,7 +171,7 @@ async function addCategory(): Promise<void> {
     closeAddModal()
   } catch (error) {
     // If server request fails, remove from local state
-    categories.value = categories.value.filter(c => c.id !== id)
+    categories = categories.filter(c => c.id !== id)
     console.error('Failed to create category:', error)
   }
 }
@@ -206,31 +183,31 @@ function viewCategory(category: Categories): void {
 }
 
 function editCategory(category: Categories): void {
-  isEditing.value = true
-  editingCategoryId.value = category.id
+  isEditing = true
+  editingCategoryId = category.id
   // Populate the form with existing data
-  newCategory.value = {
+  newCategory = {
     name: category.name,
     description: category.description || '',
     is_active: category.is_active || true,
     image_url: category.image_url || '',
     display_order: category.display_order
   }
-  showAddModal.value = true
+  showAddModal = true
 }
 
 async function handleDeleteCategory(category: Categories): Promise<void> {
   if (confirm(`Are you sure you want to delete the category "${category.name}"?`)) {
     // Remove from local state immediately for better UX
-    const originalCategories = [...categories.value]
-    categories.value = categories.value.filter(c => c.id !== category.id)
+    const originalCategories = [...categories]
+    categories = categories.filter(c => c.id !== category.id)
 
     try {
       // Then send delete request to server
       await deleteCategoryFromAPI(category.id)
     } catch (error) {
       // If server request fails, restore the category
-      categories.value = originalCategories
+      categories = originalCategories
       console.error('Failed to delete category:', error)
     }
   }

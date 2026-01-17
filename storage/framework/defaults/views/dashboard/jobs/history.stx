@@ -1,11 +1,4 @@
 <script server>
-import { ref, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
-
-useHead({
-  title: 'Dashboard - Jobs History',
-})
-
 interface JobHistoryEntry {
   id: string
   name: string
@@ -19,14 +12,14 @@ interface JobHistoryEntry {
   payload: any
 }
 
-const jobs = ref([])
-const isLoading = ref(true)
-const currentPage = ref(1)
-const perPage = ref(25)
-const totalJobs = ref(0)
-const selectedQueue = ref('all')
-const selectedStatus = ref('all')
-const searchQuery = ref('')
+const jobs = []
+const isLoading = true
+const currentPage = 1
+const perPage = 25
+const totalJobs = 0
+const selectedQueue = 'all'
+const selectedStatus = 'all'
+const searchQuery = ''
 
 const queues = ['all', 'default', 'high', 'low']
 const statuses = ['all', 'queued', 'processing', 'completed', 'failed']
@@ -42,49 +35,22 @@ const getJobStatusColor = (status) => {
   return jobStatusColors[status] || 'text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 ring-gray-600/20'
 }
 
-onMounted(async () => {
-  await new Promise(resolve => setTimeout(resolve, 1000))
-
-  const jobNames = ['ProcessPayment', 'SendWelcomeEmail', 'GenerateReport', 'SyncInventory']
-  const queueNames = ['default', 'high', 'low']
-  const statusTypes = ['queued', 'processing', 'completed', 'failed']
-
-  const randomItem = (arr) => {
-    return arr[Math.floor(Math.random() * arr.length)]
-  }
-
-  jobs.value = Array.from({ length: 100 }, (_, i) => ({
-    id: `${i + 1}`,
-    name: randomItem(jobNames),
-    queue: randomItem(queueNames),
-    status: randomItem(statusTypes),
-    attempts: Math.floor(Math.random() * 3) + 1,
-    runtime: Math.random() * 10,
-    started_at: new Date(Date.now() - Math.random() * 86400000).toISOString(),
-    finished_at: new Date(Date.now() - Math.random() * 3600000).toISOString(),
-    payload: { data: 'sample' },
-  }))
-
-  totalJobs.value = jobs.value.length
-  isLoading.value = false
-})
-
-const filteredJobs = computed(() => {
-  return jobs.value.filter((job) => {
-    if (selectedQueue.value !== 'all' && job.queue !== selectedQueue.value) return false
-    if (selectedStatus.value !== 'all' && job.status !== selectedStatus.value) return false
-    if (searchQuery.value && !job.name.toLowerCase().includes(searchQuery.value.toLowerCase())) return false
+function filteredJobs() {
+  return jobs.filter((job) => {
+    if (selectedQueue !== 'all' && job.queue !== selectedQueue) return false
+    if (selectedStatus !== 'all' && job.status !== selectedStatus) return false
+    if (searchQuery && !job.name.toLowerCase().includes(searchQuery.toLowerCase())) return false
     return true
   })
 })
 
-const paginatedJobs = computed(() => {
-  const start = (currentPage.value - 1) * perPage.value
-  const end = start + perPage.value
-  return filteredJobs.value.slice(start, end)
+function paginatedJobs() {
+  const start = (currentPage - 1) * perPage
+  const end = start + perPage
+  return filteredJobs.slice(start, end)
 })
 
-const totalPages = computed(() => Math.ceil(filteredJobs.value.length / perPage.value))
+function totalPages() { return Math.ceil(filteredJobs.length / perPage })
 
 const handleRetry = async (jobId) => {
   console.log('Retrying job:', jobId)

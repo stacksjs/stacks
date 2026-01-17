@@ -1,0 +1,362 @@
+<script server>
+/**
+ * Create Record Modal
+ * Native-styled dialog for creating new model records
+ *
+ * Props passed from parent via attributes:
+ * - modalId: Unique identifier for the modal
+ * - modelName: Display name of the model (e.g., "User")
+ * - tableName: Database table name (e.g., "users")
+ * - columns: Array of column definitions from PRAGMA table_info
+ *
+ * These are passed directly as template variables, no need to redeclare.
+ */
+
+// Use the passed variables directly (they're already in scope from props)
+// Just ensure defaults for safety
+const _modalId = typeof modalId !== 'undefined' ? modalId : 'create-record-modal'
+const _modelName = typeof modelName !== 'undefined' ? modelName : 'Record'
+const _tableName = typeof tableName !== 'undefined' ? tableName : ''
+const _columns = typeof columns !== 'undefined' ? columns : []
+
+// Filter out auto-generated columns that shouldn't be in the form
+const formColumns = _columns.filter(col => {
+  const name = col.name.toLowerCase()
+  // Skip auto-generated fields
+  if (name === 'id') return false
+  if (name === 'created_at' || name === 'updated_at') return false
+  if (name === 'deleted_at') return false
+  return true
+})
+
+// Determine input type based on column type and name
+function getInputType(col) {
+  const name = col.name.toLowerCase()
+  const type = (col.type || '').toUpperCase()
+
+  // Name-based detection
+  if (name.includes('email')) return 'email'
+  if (name.includes('password')) return 'password'
+  if (name.includes('phone') || name.includes('tel')) return 'tel'
+  if (name.includes('url') || name.includes('website') || name.includes('link')) return 'url'
+  if (name.includes('date') && !name.includes('_at')) return 'date'
+  if (name.includes('time') && !name.includes('_at')) return 'time'
+  if (name.includes('color')) return 'color'
+
+  // Type-based detection
+  if (type.includes('INT') || type.includes('NUMERIC') || type.includes('REAL') || type.includes('FLOAT') || type.includes('DOUBLE')) {
+    return 'number'
+  }
+  if (type.includes('BOOL')) return 'checkbox'
+  if (type.includes('TEXT') && (name.includes('description') || name.includes('content') || name.includes('body') || name.includes('bio'))) {
+    return 'textarea'
+  }
+
+  return 'text'
+}
+
+// Check if field should be a select/dropdown
+function isSelectField(col) {
+  const name = col.name.toLowerCase()
+  return name === 'status' || name === 'type' || name === 'role' || name.includes('_type') || name.includes('_status')
+}
+</script>
+
+<template>
+<!-- Native-styled Modal Dialog -->
+<dialog
+  id="{{ modalId }}"
+  class="modal-dialog backdrop:bg-black/50 backdrop:backdrop-blur-sm rounded-xl shadow-2xl border-0 p-0 w-full max-w-lg bg-white dark:bg-neutral-900"
+>
+  <form method="dialog" class="modal-form">
+    <!-- Header - macOS style with vibrancy effect -->
+    <div class="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50/80 dark:bg-neutral-800/80 rounded-t-xl">
+      <div>
+        <h2 class="text-base font-semibold text-neutral-900 dark:text-white">
+          Create {{ modelName }}
+        </h2>
+        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+          Add a new record to {{ tableName }}
+        </p>
+      </div>
+      <button
+        type="button"
+        class="modal-close-btn p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-200 dark:hover:text-neutral-300 dark:hover:bg-neutral-700 transition-colors"
+        aria-label="Close"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body - Form Fields -->
+    <div class="px-5 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+      @foreach(formColumns as col)
+        <div class="form-field">
+          <label
+            for="{{ modalId }}-{{ col.name }}"
+            class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5"
+          >
+            {{ col.label }}
+            @if(col.notnull && col.dflt_value === null)
+              <span class="text-red-500 ml-0.5">*</span>
+            @endif
+          </label>
+
+          @if(isSelectField(col))
+            <!-- Select dropdown for status/type fields -->
+            <select
+              id="{{ modalId }}-{{ col.name }}"
+              name="{{ col.name }}"
+              class="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+              {{ col.notnull && col.dflt_value === null ? 'required' : '' }}
+            >
+              <option value="">Select {{ col.label }}</option>
+              @if(col.name === 'status')
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="pending">Pending</option>
+                <option value="draft">Draft</option>
+              @elseif(col.name === 'role')
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+                <option value="moderator">Moderator</option>
+              @else
+                <option value="default">Default</option>
+              @endif
+            </select>
+
+          @elseif(getInputType(col) === 'textarea')
+            <!-- Textarea for long text -->
+            <textarea
+              id="{{ modalId }}-{{ col.name }}"
+              name="{{ col.name }}"
+              rows="3"
+              class="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-shadow"
+              placeholder="Enter {{ col.label.toLowerCase() }}"
+              {{ col.notnull && col.dflt_value === null ? 'required' : '' }}
+            ></textarea>
+
+          @elseif(getInputType(col) === 'checkbox')
+            <!-- Checkbox toggle -->
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                id="{{ modalId }}-{{ col.name }}"
+                name="{{ col.name }}"
+                value="1"
+                class="w-4 h-4 rounded border-neutral-300 dark:border-neutral-600 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+              />
+              <span class="text-sm text-neutral-600 dark:text-neutral-400">Enable {{ col.label.toLowerCase() }}</span>
+            </label>
+
+          @else
+            <!-- Standard input -->
+            <input
+              type="{{ getInputType(col) }}"
+              id="{{ modalId }}-{{ col.name }}"
+              name="{{ col.name }}"
+              class="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+              placeholder="Enter {{ col.label.toLowerCase() }}"
+              {{ col.notnull && col.dflt_value === null ? 'required' : '' }}
+              {{ getInputType(col) === 'number' ? 'step="any"' : '' }}
+            />
+          @endif
+
+          @if(col.dflt_value !== null)
+            <p class="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
+              Default: {{ col.dflt_value }}
+            </p>
+          @endif
+        </div>
+      @endforeach
+
+      @if(formColumns.length === 0)
+        <div class="text-center py-8 text-neutral-500 dark:text-neutral-400">
+          <p>No editable fields available for this model.</p>
+        </div>
+      @endif
+    </div>
+
+    <!-- Footer - Action buttons -->
+    <div class="flex items-center justify-end gap-3 px-5 py-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/50 rounded-b-xl">
+      <button
+        type="button"
+        class="modal-close-btn px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="modal-submit-btn px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        {{ formColumns.length === 0 ? 'disabled' : '' }}
+      >
+        Create {{ modelName }}
+      </button>
+    </div>
+  </form>
+</dialog>
+</template>
+
+<script client>
+(function() {
+  // Initialize all create record modals
+  document.querySelectorAll('.modal-dialog').forEach(dialog => {
+    const form = dialog.querySelector('.modal-form');
+    const closeButtons = dialog.querySelectorAll('.modal-close-btn');
+    const submitBtn = dialog.querySelector('.modal-submit-btn');
+
+    // Close on close button click
+    closeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        dialog.close();
+      });
+    });
+
+    // Close on backdrop click
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) {
+        dialog.close();
+      }
+    });
+
+    // Close on Escape key
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        dialog.close();
+      }
+    });
+
+    // Handle form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      // Get table name from the modal's data attribute or hidden field
+      const tableName = dialog.dataset.table || '';
+      const modelName = dialog.dataset.model || 'Record';
+
+      // Show loading state
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Creating...
+      `;
+
+      try {
+        // Post to API endpoint
+        const response = await fetch(`/api/data/${tableName}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (response.ok) {
+          // Show success via Craft native alert if available
+          if (window.webkit?.messageHandlers?.craft) {
+            window.webkit.messageHandlers.craft.postMessage({
+              type: 'dialog',
+              action: 'showAlert',
+              data: {
+                title: `${modelName} Created`,
+                message: 'The record was created successfully.',
+                style: 'info'
+              }
+            });
+          }
+
+          dialog.close();
+          form.reset();
+
+          // Reload the page to show the new record
+          window.location.reload();
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Failed to create record');
+        }
+      } catch (error) {
+        // Show error via Craft native alert if available
+        if (window.webkit?.messageHandlers?.craft) {
+          window.webkit.messageHandlers.craft.postMessage({
+            type: 'dialog',
+            action: 'showAlert',
+            data: {
+              title: 'Error',
+              message: error.message || 'Failed to create the record.',
+              style: 'critical'
+            }
+          });
+        } else {
+          alert('Error: ' + (error.message || 'Failed to create the record.'));
+        }
+      } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `Create ${modelName}`;
+      }
+    });
+  });
+})();
+</script>
+
+<style>
+/* Native macOS-style dialog animations */
+.modal-dialog {
+  animation: modal-appear 0.2s ease-out;
+}
+
+.modal-dialog::backdrop {
+  animation: backdrop-fade 0.2s ease-out;
+}
+
+@keyframes modal-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes backdrop-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Focus styles for accessibility */
+.modal-dialog:focus {
+  outline: none;
+}
+
+/* Scrollbar styling for the form area */
+.modal-dialog .max-h-\[60vh\]::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-dialog .max-h-\[60vh\]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-dialog .max-h-\[60vh\]::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.dark .modal-dialog .max-h-\[60vh\]::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+</style>

@@ -1,6 +1,4 @@
 <script server>
-import { ref, computed, watch, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -16,8 +14,6 @@ import {
   CoreScaleOptions,
 } from 'chart.js'
 import * as d3 from 'd3'
-import { useRouter } from 'vue-router'
-
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -29,12 +25,8 @@ ChartJS.register(
   Filler,
 )
 
-useHead({
-  title: 'Dashboard - Subscribers',
-})
-
-const timeRange = ref('30')
-const isLoading = ref(false)
+const timeRange = '30'
+const isLoading = false
 
 const formatDate = (daysAgo) => {
   const date = new Date()
@@ -131,8 +123,8 @@ const chartOptions = {
   },
 }
 
-const chartData = computed(() => {
-  const days = parseInt(timeRange.value)
+function chartData() {
+  const days = parseInt(timeRange)
   const labels = generateDateLabels(days)
   const baseCount = 500
   const dailyGrowth = 5
@@ -149,20 +141,6 @@ const chartData = computed(() => {
     }]
   }
 })
-
-watch(timeRange, async () => {
-  isLoading.value = true
-  await new Promise(resolve => setTimeout(resolve, 500))
-  isLoading.value = false
-})
-
-onMounted(async () => {
-  isLoading.value = true
-  await new Promise(resolve => setTimeout(resolve, 500))
-  isLoading.value = false
-})
-
-const router = useRouter()
 
 interface ModelNode extends d3.SimulationNodeDatum {
   id: string
@@ -184,7 +162,7 @@ interface RelationshipLink {
   type: 'hasMany' | 'belongsTo' | 'hasOne' | 'belongsToMany'
 }
 
-const selectedModel = ref(null)
+const selectedModel = null
 
 const models = [
   {
@@ -212,7 +190,7 @@ const relationships = [
   { source: 'subscriberEmail', target: 'subscriber', type: 'belongsTo' }
 ]
 
-const diagramContainer = ref(null)
+const diagramContainer = null
 let simulation
 
 const getModelRoute = (modelId) => {
@@ -225,131 +203,6 @@ const getModelRoute = (modelId) => {
   return routes[modelId] || '/models'
 }
 
-onMounted(async () => {
-  const subscriberModel = models.find(model => model.id === 'subscriber')
-  if (subscriberModel) {
-    selectedModel.value = subscriberModel
-  }
-
-  if (!diagramContainer.value) return
-
-  const width = 800
-  const height = 400
-  const svg = d3.select(diagramContainer.value)
-    .append('svg')
-    .attr('width', width)
-    .attr('height', height)
-    .attr('viewBox', [0, 0, width, height])
-    .attr('style', 'max-width: 100%; height: auto;')
-
-  svg.append('defs').selectAll('marker')
-    .data(['arrow'])
-    .join('marker')
-    .attr('id', d => d)
-    .attr('viewBox', '0 -5 10 10')
-    .attr('refX', 25)
-    .attr('refY', 0)
-    .attr('markerWidth', 6)
-    .attr('markerHeight', 6)
-    .attr('orient', 'auto')
-    .append('path')
-    .attr('fill', '#999')
-    .attr('d', 'M0,-5L10,0L0,5')
-
-  simulation = d3.forceSimulation(models)
-    .force('link', d3.forceLink(relationships)
-      .id(d => d.id)
-      .distance(150))
-    .force('charge', d3.forceManyBody().strength(-800))
-    .force('center', d3.forceCenter(width / 2, height / 2))
-
-  const link = svg.append('g')
-    .selectAll('line')
-    .data(relationships)
-    .join('line')
-    .attr('stroke', '#999')
-    .attr('stroke-opacity', 0.6)
-    .attr('stroke-width', 2)
-    .attr('marker-end', 'url(#arrow)')
-
-  const node = svg.append('g')
-    .selectAll('g')
-    .data(models)
-    .join('g')
-    .call((selection) => {
-      const drag = d3.drag()
-        .on('start', dragstarted)
-        .on('drag', dragged)
-        .on('end', dragended)
-      return drag(selection)
-    })
-    .style('cursor', 'pointer')
-    .on('click', (event, d) => {
-      selectedModel.value = d
-      if (event.detail === 2) {
-        router.push(getModelRoute(d.id))
-      }
-    })
-
-  node.on('mouseover', function() {
-    d3.select(this).select('circle')
-      .transition()
-      .duration(200)
-      .attr('r', 22)
-  })
-  .on('mouseout', function() {
-    d3.select(this).select('circle')
-      .transition()
-      .duration(200)
-      .attr('r', 20)
-  })
-
-  node.append('circle')
-    .attr('r', 20)
-    .attr('fill', d => d.color)
-
-  node.append('text')
-    .attr('dy', '0.35em')
-    .attr('text-anchor', 'middle')
-    .text(d => d.emoji)
-    .attr('font-size', '20px')
-
-  node.append('text')
-    .attr('dy', 35)
-    .attr('text-anchor', 'middle')
-    .text(d => d.name)
-    .attr('fill', '#374151')
-    .attr('font-size', '14px')
-    .attr('font-weight', 'bold')
-
-  simulation.on('tick', () => {
-    link
-      .attr('x1', d => d.source.x)
-      .attr('y1', d => d.source.y)
-      .attr('x2', d => d.target.x)
-      .attr('y2', d => d.target.y)
-
-    node
-      .attr('transform', d => `translate(${d.x},${d.y})`)
-  })
-
-  function dragstarted(event) {
-    if (!event.active) simulation.alphaTarget(0.3).restart()
-    event.subject.fx = event.subject.x
-    event.subject.fy = event.subject.y
-  }
-
-  function dragged(event) {
-    event.subject.fx = event.x
-    event.subject.fy = event.y
-  }
-
-  function dragended(event) {
-    if (!event.active) simulation.alphaTarget(0)
-    event.subject.fx = null
-    event.subject.fy = null
-  }
-})
 </script>
 
 <template>

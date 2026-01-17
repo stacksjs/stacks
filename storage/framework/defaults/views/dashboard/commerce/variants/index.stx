@@ -1,25 +1,13 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script>
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
-
 export default {
   setup() {
-    useHead({
-      title: 'Dashboard - Commerce Variants',
-    })
-
     // Helper function to ensure we have a string
     function ensureString(value) {
       return value || ''
     }
 
     // Sample variant types data
-    const variantTypes = ref([
+    const variantTypes = [
       {
         id: 1,
         name: 'Size',
@@ -84,104 +72,104 @@ export default {
         active: true,
         createdAt: '2023-08-01'
       }
-    ])
+    ]
 
     // Filter and sort options
-    const searchQuery = ref('')
-    const sortBy = ref('name')
-    const sortOrder = ref('asc')
-    const activeFilter = ref('all')
+    const searchQuery = ''
+    const sortBy = 'name'
+    const sortOrder = 'asc'
+    const activeFilter = 'all'
 
     // Computed filtered and sorted variant types
-    const filteredVariantTypes = computed(() => {
-      return variantTypes.value
+    function filteredVariantTypes() {
+      return variantTypes
         .filter(variantType => {
           // Apply search filter
-          const matchesSearch = variantType.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                               variantType.description.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                               variantType.options.some(option => option.toLowerCase().includes(searchQuery.value.toLowerCase()))
+          const matchesSearch = variantType.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                               variantType.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                               variantType.options.some(option => option.toLowerCase().includes(searchQuery.toLowerCase()))
 
           // Apply active filter
-          const matchesActive = activeFilter.value === 'all' ||
-                               (activeFilter.value === 'active' && variantType.active) ||
-                               (activeFilter.value === 'inactive' && !variantType.active)
+          const matchesActive = activeFilter === 'all' ||
+                               (activeFilter === 'active' && variantType.active) ||
+                               (activeFilter === 'inactive' && !variantType.active)
 
           return matchesSearch && matchesActive
         })
         .sort((a, b) => {
           // Apply sorting
           let comparison = 0
-          if (sortBy.value === 'name') {
+          if (sortBy === 'name') {
             comparison = a.name.localeCompare(b.name)
-          } else if (sortBy.value === 'optionCount') {
+          } else if (sortBy === 'optionCount') {
             comparison = a.options.length - b.options.length
-          } else if (sortBy.value === 'createdAt') {
+          } else if (sortBy === 'createdAt') {
             comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           }
 
-          return sortOrder.value === 'asc' ? comparison : -comparison
+          return sortOrder === 'asc' ? comparison : -comparison
         })
     })
 
     // Toggle sort order
     function toggleSort(column) {
-      if (sortBy.value === column) {
-        sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+      if (sortBy === column) {
+        sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
       } else {
-        sortBy.value = column
-        sortOrder.value = 'asc'
+        sortBy = column
+        sortOrder = 'asc'
       }
     }
 
     // Modal state
-    const showAddModal = ref(false)
-    const newVariantType = ref({
+    const showAddModal = false
+    const newVariantType = {
       name: '',
       description: '',
       options: [],
       active: true
-    })
+    }
 
     // New option input
-    const newOption = ref('')
+    const newOption = ''
 
     function addOption() {
-      if (newOption.value.trim()) {
-        newVariantType.value.options.push(newOption.value.trim())
-        newOption.value = ''
+      if (newOption.trim()) {
+        newVariantType.options.push(newOption.trim())
+        newOption = ''
       }
     }
 
     function removeOption(index) {
-      newVariantType.value.options.splice(index, 1)
+      newVariantType.options.splice(index, 1)
     }
 
     function openAddModal() {
-      newVariantType.value = {
+      newVariantType = {
         name: '',
         description: '',
         options: [],
         active: true
       }
-      newOption.value = ''
-      showAddModal.value = true
+      newOption = ''
+      showAddModal = true
     }
 
     function closeAddModal() {
-      showAddModal.value = false
+      showAddModal = false
     }
 
     function addVariantType() {
       // In a real app, this would send data to the server
-      const id = Math.max(...variantTypes.value.map(v => v.id)) + 1
+      const id = Math.max(...variantTypes.map(v => v.id)) + 1
       const currentDate = new Date().toISOString().split('T')[0];
 
-      variantTypes.value.push({
+      variantTypes.push({
         id,
-        name: ensureString(newVariantType.value.name),
-        description: ensureString(newVariantType.value.description),
-        options: [...newVariantType.value.options],
-        active: newVariantType.value.active,
+        name: ensureString(newVariantType.name),
+        description: ensureString(newVariantType.description),
+        options: [...newVariantType.options],
+        active: newVariantType.active,
         createdAt: currentDate
       })
       closeAddModal()

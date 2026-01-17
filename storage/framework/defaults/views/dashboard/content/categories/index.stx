@@ -1,11 +1,4 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
 import { Line, Bar, Doughnut } from 'vue-chartjs'
 import type { Categorizables, PostCategorizable } from '../../../../types/defaults'
 import { useCategorizables } from '../../../../functions/cms/categorizables'
@@ -36,10 +29,6 @@ ChartJS.register(
   Legend,
   Filler,
 )
-
-useHead({
-  title: 'Dashboard - Blog Categories',
-})
 
 const categorizablesModule = useCategorizables()
 
@@ -81,7 +70,7 @@ const doughnutChartOptions = {
 }
 
 // Generate monthly data for charts
-const monthlyChartData = computed(() => {
+function monthlyChartData() {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   // Sample data - in a real app, this would be calculated from actual category data
@@ -108,8 +97,8 @@ const monthlyChartData = computed(() => {
   }
 
   // Posts per category chart data
-  const postCountData = categories.value.map(category => category.postCount)
-  const categoryNames = categories.value.map(category => category.name)
+  const postCountData = categories.map(category => category.postCount)
+  const categoryNames = categories.map(category => category.name)
 
   const postsPerCategoryChartData = {
     labels: categoryNames,
@@ -160,18 +149,18 @@ const monthlyChartData = computed(() => {
 })
 
 // Time range selector
-const timeRange = ref('Last 30 days')
+const timeRange = 'Last 30 days'
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Sample categories data
-const categories = ref<PostCategorizable[]>([])
+const categories = []
 
 // Filter and sort options
-const searchQuery = ref('')
-const sortBy = ref('postCount')
-const sortOrder = ref('desc')
-const itemsPerPage = ref(10)
-const currentPage = ref(1)
+const searchQuery = ''
+const sortBy = 'postCount'
+const sortOrder = 'desc'
+const itemsPerPage = 10
+const currentPage = 1
 
 // New Category Modal
 interface NewCategoryForm {
@@ -180,30 +169,30 @@ interface NewCategoryForm {
   description: string
 }
 
-const newCategory = ref<NewCategoryForm>({
+const newCategory = {
   name: '',
   slug: undefined,
   description: ''
-})
-const showNewCategoryModal = ref(false)
+}
+const showNewCategoryModal = false
 
 // Edit Category Modal
-const showEditModal = ref(false)
-const categoryToEdit = ref<PostCategorizable | null>(null)
+const showEditModal = false
+const categoryToEdit = null
 
 // Delete Confirmation Modal
-const showDeleteModal = ref(false)
-const categoryToDelete = ref<PostCategorizable | null>(null)
-const selectedCategoryIds = ref<number[]>([])
-const selectAll = ref(false)
+const showDeleteModal = false
+const categoryToDelete = null
+const selectedCategoryIds = []
+const selectAll = false
 
 // Computed properties
-const filteredCategories = computed(() => {
-  let result = [...categories.value]
+function filteredCategories() {
+  let result = [...categories]
 
   // Apply search filter
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase()
     result = result.filter(category =>
       category.name.toLowerCase().includes(query) ||
       category.description.toLowerCase().includes(query)
@@ -212,7 +201,7 @@ const filteredCategories = computed(() => {
 
   // Apply sorting
   result.sort((a, b) => {
-    const sortField = sortBy.value as keyof typeof a
+    const sortField = sortBy as keyof typeof a
     let aValue = a[sortField]
     let bValue = b[sortField]
 
@@ -222,7 +211,7 @@ const filteredCategories = computed(() => {
       bValue = bValue.toLowerCase()
     }
 
-    if (sortOrder.value === 'asc') {
+    if (sortOrder === 'asc') {
       return aValue > bValue ? 1 : -1
     } else {
       return aValue < bValue ? 1 : -1
@@ -233,19 +222,19 @@ const filteredCategories = computed(() => {
 })
 
 // Pagination
-const totalPages = computed(() => Math.ceil(filteredCategories.value.length / itemsPerPage.value))
+function totalPages() { return Math.ceil(filteredCategories.length / itemsPerPage })
 
-const paginatedCategories = computed(() => {
-  const startIndex = (currentPage.value - 1) * itemsPerPage.value
-  const endIndex = startIndex + itemsPerPage.value
-  return filteredCategories.value.slice(startIndex, endIndex)
+function paginatedCategories() {
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  return filteredCategories.slice(startIndex, endIndex)
 })
 
-const paginationRange = computed(() => {
+function paginationRange() {
   const range: number[] = []
   const maxVisiblePages = 5
-  const startPage = Math.max(1, currentPage.value - Math.floor(maxVisiblePages / 2))
-  const endPage = Math.min(totalPages.value, startPage + maxVisiblePages - 1)
+  const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
+  const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
 
   for (let i = startPage; i <= endPage; i++) {
     range.push(i)
@@ -255,12 +244,12 @@ const paginationRange = computed(() => {
 })
 
 // Computed category statistics
-const categoryStats = computed(() => {
+function categoryStats() {
   // Total number of categories
-  const totalCategories = categories.value.length
+  const totalCategories = categories.length
 
   // Total number of posts across all categories
-  const totalPosts = categories.value.reduce((sum, category) => sum + category.postCount, 0)
+  const totalPosts = categories.reduce((sum, category) => sum + category.postCount, 0)
 
   // Average posts per category
   const avgPostsPerCategory = totalCategories > 0
@@ -270,7 +259,7 @@ const categoryStats = computed(() => {
   // Find category with most posts
   let mostPopularCategory = categories.value[0] || { name: 'None', postCount: 0 }
 
-  for (const category of categories.value) {
+  for (const category of categories) {
     if (category.postCount > mostPopularCategory.postCount) {
       mostPopularCategory = category
     }
@@ -279,7 +268,7 @@ const categoryStats = computed(() => {
   // Find category with least posts
   let leastPopularCategory = categories.value[0] || { name: 'None', postCount: 0 }
 
-  for (const category of categories.value) {
+  for (const category of categories) {
     if (category.postCount < leastPopularCategory.postCount) {
       leastPopularCategory = category
     }
@@ -293,7 +282,7 @@ const categoryStats = computed(() => {
   // Find newest category
   let newestCategory = categories.value[0] || { name: 'None', created_at: '' } as Categorizables
 
-  for (const category of categories.value) {
+  for (const category of categories) {
     if (new Date(category.created_at) > new Date(newestCategory.created_at)) {
       newestCategory = category
     }
@@ -312,25 +301,25 @@ const categoryStats = computed(() => {
 
 // Methods
 function openNewCategoryModal(): void {
-  newCategory.value = {
+  newCategory = {
     name: '',
     slug: undefined,
     description: ''
   }
-  showNewCategoryModal.value = true
+  showNewCategoryModal = true
 }
 
 function closeNewCategoryModal(): void {
-  showNewCategoryModal.value = false
+  showNewCategoryModal = false
 }
 
 async function createCategory(): Promise<void> {
   // Validate required fields
-  if (!newCategory.value.name) return
+  if (!newCategory.name) return
 
   const category = {
-    name: newCategory.value.name,
-    description: newCategory.value.description,
+    name: newCategory.name,
+    description: newCategory.description,
     is_active: true,
     categorizable_type: 'posts'
   }
@@ -340,30 +329,30 @@ async function createCategory(): Promise<void> {
 }
 
 function openEditModal(category: PostCategorizable): void {
-  categoryToEdit.value = { ...category }
-  showEditModal.value = true
+  categoryToEdit = { ...category }
+  showEditModal = true
 }
 
 function closeEditModal(): void {
-  showEditModal.value = false
+  showEditModal = false
 }
 
 function updateCategory(): void {
-  if (!categoryToEdit.value) return
+  if (!categoryToEdit) return
 
-  const index = categories.value.findIndex(c => c.id === categoryToEdit.value!.id)
+  const index = categories.findIndex(c => c.id === categoryToEdit.value!.id)
   if (index !== -1) {
     // Generate slug if not provided
-    let slug = categoryToEdit.value.slug
+    let slug = categoryToEdit.slug
     if (!slug) {
-      slug = categoryToEdit.value.name
+      slug = categoryToEdit.name
         .toLowerCase()
         .replace(/[^\w\s]/gi, '')
         .replace(/\s+/g, '-')
     }
 
     categories.value[index] = {
-      ...categoryToEdit.value,
+      ...categoryToEdit,
       slug: slug
     }
   }
@@ -372,64 +361,60 @@ function updateCategory(): void {
 }
 
 function confirmDeleteCategory(category: PostCategorizable): void {
-  categoryToDelete.value = category
-  selectedCategoryIds.value = []
-  showDeleteModal.value = true
+  categoryToDelete = category
+  selectedCategoryIds = []
+  showDeleteModal = true
 }
 
 function confirmDeleteSelected(): void {
-  showDeleteModal.value = true
+  showDeleteModal = true
 }
 
 function closeDeleteModal(): void {
-  showDeleteModal.value = false
-  categoryToDelete.value = null
+  showDeleteModal = false
+  categoryToDelete = null
 }
 
 function deleteSelectedCategories(): void {
-  if (selectedCategoryIds.value.length > 1) {
+  if (selectedCategoryIds.length > 1) {
     // Delete multiple categories
-    categories.value = categories.value.filter(category => !selectedCategoryIds.value.includes(category.id))
-    selectedCategoryIds.value = []
-  } else if (categoryToDelete.value) {
+    categories = categories.filter(category => !selectedCategoryIds.includes(category.id))
+    selectedCategoryIds = []
+  } else if (categoryToDelete) {
     // Delete single category
-    categories.value = categories.value.filter(category => category.id !== categoryToDelete.value!.id)
+    categories = categories.filter(category => category.id !== categoryToDelete.value!.id)
   }
 
   closeDeleteModal()
 }
 
 function toggleSelectAll(): void {
-  if (selectAll.value) {
+  if (selectAll) {
     // Select all categories on current page
-    selectedCategoryIds.value = paginatedCategories.value.map(category => category.id)
+    selectedCategoryIds = paginatedCategories.map(category => category.id)
   } else {
     // Deselect all
-    selectedCategoryIds.value = []
+    selectedCategoryIds = []
   }
 }
 
 function toggleCategorySelection(categoryId: number): void {
-  const index = selectedCategoryIds.value.indexOf(categoryId)
+  const index = selectedCategoryIds.indexOf(categoryId)
   if (index === -1) {
-    selectedCategoryIds.value.push(categoryId)
+    selectedCategoryIds.push(categoryId)
   } else {
-    selectedCategoryIds.value.splice(index, 1)
+    selectedCategoryIds.splice(index, 1)
   }
 
   // Update selectAll based on whether all categories are selected
-  selectAll.value = paginatedCategories.value.every(category => selectedCategoryIds.value.includes(category.id))
+  selectAll = paginatedCategories.every(category => selectedCategoryIds.includes(category.id))
 }
 
-const hasSelectedCategories = computed(() => selectedCategoryIds.value.length > 0)
-
-onMounted(async () => {
-  await fetchCategories()
-})
+function hasSelectedCategories() { return selectedCategoryIds.length > 0 }
 
 async function fetchCategories() {
   const allCategories = await categorizablesModule.fetchCategorizables()
-  categories.value = allCategories
+  categories = allCategories
 }
 </script>
 

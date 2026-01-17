@@ -1,11 +1,4 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script lang="ts">
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
 import { Line, Bar, Doughnut } from 'vue-chartjs'
 import type { StorePost } from '../../../../types/defaults'
 import { usePosts } from '../../../../functions/cms/posts'
@@ -40,10 +33,6 @@ ChartJS.register(
   Legend,
   Filler,
 )
-
-useHead({
-  title: 'Dashboard - Blog Posts',
-})
 
 // Chart options
 const chartOptions = {
@@ -83,7 +72,7 @@ const doughnutChartOptions = {
 }
 
 // Generate monthly data for charts
-const monthlyChartData = computed(() => {
+function monthlyChartData() {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   // Sample data - in a real app, this would be calculated from actual post data
@@ -137,7 +126,7 @@ const monthlyChartData = computed(() => {
   // Category distribution chart data
   const categoryCounts: Record<string, number> = {}
 
-  posts.value.forEach(post => {
+  posts.forEach(post => {
     if (post.category) {
       categoryCounts[post.category] = (categoryCounts[post.category] || 0) + 1
     }
@@ -173,11 +162,11 @@ const monthlyChartData = computed(() => {
 })
 
 // Time range selector
-const timeRange = ref('Last 30 days')
+const timeRange = 'Last 30 days'
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Sample posts data
-const posts: Ref<Posts[]> = ref([
+const posts: Ref<Posts[]> = [
   {
     id: 1,
     title: '10 Tips for Better Code Quality',
@@ -328,10 +317,10 @@ const posts: Ref<Posts[]> = ref([
     featured: false,
     poster: 'https://picsum.photos/seed/10/280/160'
   }
-])
+]
 
 // Categories for filtering
-const categories = ref<Categorizable[]>([])
+const categories = []
 
 // Statuses for filtering
 const statuses = [
@@ -343,16 +332,16 @@ const statuses = [
 ]
 
 // Filter and sort options
-const searchQuery = ref('')
-const selectedCategory = ref('All Categories')
-const selectedStatus = ref('All Statuses')
-const selectedTag = ref('All Tags')
-const sortBy = ref('published')
-const sortOrder = ref('desc')
+const searchQuery = ''
+const selectedCategory = 'All Categories'
+const selectedStatus = 'All Statuses'
+const selectedTag = 'All Tags'
+const sortBy = 'published'
+const sortOrder = 'desc'
 
 // New Post Modal
-const showNewPostModal = ref(false)
-const newPost = ref({
+const showNewPostModal = false
+const newPost = {
   title: '',
   excerpt: '',
   category: 'Tutorials',
@@ -360,14 +349,14 @@ const newPost = ref({
   content: '',
   status: 'Draft',
   poster: 'https://picsum.photos/seed/new/280/160'
-})
+}
 
 // Get all unique tags from posts
-const allTags = computed(() => {
+function allTags() {
   const tagsSet = new Set<string>()
   tagsSet.add('All Tags')
 
-  posts.value.forEach(post => {
+  posts.forEach(post => {
     post.tags.forEach(tag => {
       tagsSet.add(tag)
     })
@@ -376,23 +365,19 @@ const allTags = computed(() => {
   return Array.from(tagsSet)
 })
 
-onMounted(async () => {
-  await fetchCategories()
-})
-
 function openNewPostModal() {
-  showNewPostModal.value = true
+  showNewPostModal = true
 }
 
 async function fetchCategories() {
   const allCategories = await categorizablesModule.fetchCategorizables()
-  categories.value = allCategories
+  categories = allCategories
 }
 
 function closeNewPostModal() {
-  showNewPostModal.value = false
+  showNewPostModal = false
   // Reset form
-  newPost.value = {
+  newPost = {
     title: '',
     excerpt: '',
     category: 'Tutorials',
@@ -405,63 +390,63 @@ function closeNewPostModal() {
 
 async function createNewPost() {
   // In a real app, this would send data to the server
-  const tagsArray = newPost.value.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+  const tagsArray = newPost.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
 
   const post = {
-    id: posts.value.length + 1,
-    title: newPost.value.title,
-    excerpt: newPost.value.excerpt,
-    slug: newPost.value.title.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, '-'),
-    category: newPost.value.category,
+    id: posts.length + 1,
+    title: newPost.title,
+    excerpt: newPost.excerpt,
+    slug: newPost.title.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, '-'),
+    category: newPost.category,
     tags: tagsArray,
-    content: newPost.value.content,
+    content: newPost.content,
     author: 'Current User', // In a real app, this would be the current user
-    published: newPost.value.status === 'Published' ? new Date().toISOString().split('T')[0] : '',
-    status: newPost.value.status,
+    published: newPost.status === 'Published' ? new Date().toISOString().split('T')[0] : '',
+    status: newPost.status,
     featured: false,
-    poster: newPost.value.poster
+    poster: newPost.poster
   } as StorePost
 
   await postsModule.createPost(post)
   
-  // posts.value.unshift(post)
+  // posts.unshift(post)
   closeNewPostModal()
 }
 
 // Computed filtered and sorted posts
-const filteredPosts = computed(() => {
-  return posts.value
+function filteredPosts() {
+  return posts
     .filter(post => {
       // Apply search filter
       const matchesSearch =
-        post.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        post.excerpt.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        post.author.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        post.tags.some(tag => tag.toLowerCase().includes(searchQuery.value.toLowerCase()))
+        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
 
       // Apply category filter
-      const matchesCategory = selectedCategory.value === 'All Categories' || post.category === selectedCategory.value
+      const matchesCategory = selectedCategory === 'All Categories' || post.category === selectedCategory
 
       // Apply status filter
-      const matchesStatus = selectedStatus.value === 'All Statuses' || post.status === selectedStatus.value
+      const matchesStatus = selectedStatus === 'All Statuses' || post.status === selectedStatus
 
       // Apply tag filter
-      const matchesTag = selectedTag.value === 'All Tags' || post.tags.includes(selectedTag.value)
+      const matchesTag = selectedTag === 'All Tags' || post.tags.includes(selectedTag)
 
       return matchesSearch && matchesCategory && matchesStatus && matchesTag
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy.value === 'title') {
+      if (sortBy === 'title') {
         comparison = a.title.localeCompare(b.title)
-      } else if (sortBy.value === 'author') {
+      } else if (sortBy === 'author') {
         comparison = a.author.localeCompare(b.author)
-      } else if (sortBy.value === 'views') {
+      } else if (sortBy === 'views') {
         comparison = a.views - b.views
-      } else if (sortBy.value === 'comments') {
+      } else if (sortBy === 'comments') {
         comparison = a.comments - b.comments
-      } else if (sortBy.value === 'published') {
+      } else if (sortBy === 'published') {
         // Handle draft posts (empty published date)
         if (!a.published && !b.published) return 0
         if (!a.published) return 1
@@ -469,44 +454,44 @@ const filteredPosts = computed(() => {
         return new Date(a.published).getTime() - new Date(b.published).getTime()
       }
 
-      return sortOrder.value === 'asc' ? comparison : -comparison
+      return sortOrder === 'asc' ? comparison : -comparison
     })
 })
 
 // Pagination
-const currentPage = ref(1)
-const itemsPerPage = ref(5)
-const totalPages = computed(() => Math.ceil(filteredPosts.value.length / itemsPerPage.value))
+const currentPage = 1
+const itemsPerPage = 5
+function totalPages() { return Math.ceil(filteredPosts.length / itemsPerPage })
 
-const paginatedPosts = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredPosts.value.slice(start, end)
+function paginatedPosts() {
+  const start = (currentPage - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredPosts.slice(start, end)
 })
 
 function changePage(page: number): void {
-  currentPage.value = page
+  currentPage = page
 }
 
 function previousPage(): void {
-  if (currentPage.value > 1) {
+  if (currentPage > 1) {
     currentPage.value--
   }
 }
 
 function nextPage(): void {
-  if (currentPage.value < totalPages.value) {
+  if (currentPage < totalPages) {
     currentPage.value++
   }
 }
 
 // Toggle sort order
 function toggleSort(column: string): void {
-  if (sortBy.value === column) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  if (sortBy === column) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy.value = column
-    sortOrder.value = 'desc'
+    sortBy = column
+    sortOrder = 'desc'
   }
 }
 
@@ -539,55 +524,55 @@ function formatDate(dateString: string): string {
 }
 
 // Bulk actions
-const selectedPostIds = ref<number[]>([])
-const selectAll = ref(false)
+const selectedPostIds = []
+const selectAll = false
 
 function toggleSelectAll(): void {
-  if (selectAll.value) {
-    selectedPostIds.value = paginatedPosts.value.map(post => post.id)
+  if (selectAll) {
+    selectedPostIds = paginatedPosts.map(post => post.id)
   } else {
-    selectedPostIds.value = []
+    selectedPostIds = []
   }
 }
 
 function togglePostSelection(postId: number): void {
-  const index = selectedPostIds.value.indexOf(postId)
+  const index = selectedPostIds.indexOf(postId)
   if (index === -1) {
-    selectedPostIds.value.push(postId)
+    selectedPostIds.push(postId)
   } else {
-    selectedPostIds.value.splice(index, 1)
+    selectedPostIds.splice(index, 1)
   }
 
   // Update selectAll based on whether all posts are selected
-  selectAll.value = paginatedPosts.value.every(post => selectedPostIds.value.includes(post.id))
+  selectAll = paginatedPosts.every(post => selectedPostIds.includes(post.id))
 }
 
 // Filter by tag
 function filterByTag(tag: string): void {
-  selectedTag.value = tag
+  selectedTag = tag
   // Reset to first page when changing filters
-  currentPage.value = 1
+  currentPage = 1
 }
 
-const hasSelectedPosts = computed(() => selectedPostIds.value.length > 0)
+function hasSelectedPosts() { return selectedPostIds.length > 0 }
 
 // Preview tags for new post
-const previewTags = computed(() => {
-  if (!newPost.value.tags) return []
-  return newPost.value.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+function previewTags() {
+  if (!newPost.tags) return []
+  return newPost.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
 })
 
 // Computed blog post statistics
-const blogStats = computed(() => {
+function blogStats() {
   // Count posts by status
-  const publishedPosts = posts.value.filter(post => post.status === 'Published').length
-  const draftPosts = posts.value.filter(post => post.status === 'Draft').length
-  const scheduledPosts = posts.value.filter(post => post.status === 'Scheduled').length
-  const archivedPosts = posts.value.filter(post => post.status === 'Archived').length
+  const publishedPosts = posts.filter(post => post.status === 'Published').length
+  const draftPosts = posts.filter(post => post.status === 'Draft').length
+  const scheduledPosts = posts.filter(post => post.status === 'Scheduled').length
+  const archivedPosts = posts.filter(post => post.status === 'Archived').length
 
   // Calculate total views and comments
-  const totalViews = posts.value.reduce((sum, post) => sum + post.views, 0)
-  const totalComments = posts.value.reduce((sum, post) => sum + post.comments, 0)
+  const totalViews = posts.reduce((sum, post) => sum + post.views, 0)
+  const totalComments = posts.reduce((sum, post) => sum + post.comments, 0)
 
   // Calculate average views and comments per post
   const publishedPostsCount = Math.max(1, publishedPosts) // Avoid division by zero
@@ -597,7 +582,7 @@ const blogStats = computed(() => {
   // Find most popular post
   let mostPopularPost = posts.value[0] || { title: 'None', views: 0 }
 
-  for (const post of posts.value) {
+  for (const post of posts) {
     if (post.views > mostPopularPost.views) {
       mostPopularPost = post
     }
@@ -606,7 +591,7 @@ const blogStats = computed(() => {
   // Find most commented post
   let mostCommentedPost = posts.value[0] || { title: 'None', comments: 0 }
 
-  for (const post of posts.value) {
+  for (const post of posts) {
     if (post.comments > mostCommentedPost.comments) {
       mostCommentedPost = post
     }
@@ -615,7 +600,7 @@ const blogStats = computed(() => {
   // Count posts by author
   const authorCounts: Record<string, number> = {}
 
-  posts.value.forEach(post => {
+  posts.forEach(post => {
     if (post.author) {
       authorCounts[post.author] = (authorCounts[post.author] || 0) + 1
     }
@@ -631,7 +616,7 @@ const blogStats = computed(() => {
   }
 
   return {
-    totalPosts: posts.value.length,
+    totalPosts: posts.length,
     publishedPosts,
     draftPosts,
     scheduledPosts,

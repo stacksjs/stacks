@@ -1,16 +1,5 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed, reactive } from 'vue'
-import { useHead } from '@vueuse/head'
-import { useLocalStorage } from '@vueuse/core'
-
-useHead({
-  title: 'Self-Service Menu',
-})
+// Storage utilities are provided by STX runtime
 
 // Define menu item type
 interface MenuItem {
@@ -58,7 +47,7 @@ interface Order {
 }
 
 // Sample menu items data
-const menuItems = ref<MenuItem[]>([
+const menuItems = [
   {
     id: 1,
     name: 'Classic Cheeseburger',
@@ -189,7 +178,7 @@ const menuItems = ref<MenuItem[]>([
   },
   {
     id: 9,
-    name: 'Chicken Wings (12 pc)',
+    name: 'Chicken Wings (12 pc',
     description: 'Crispy chicken wings with your choice of sauce: Buffalo, BBQ, or Honey Garlic',
     price: 16.99,
     salePrice: 14.99,
@@ -257,7 +246,7 @@ const menuItems = ref<MenuItem[]>([
 const categories = computed<Category[]>(() => {
   const categoryMap = new Map<string, number>()
 
-  menuItems.value.forEach(item => {
+  menuItems.forEach(item => {
     const count = categoryMap.get(item.category) || 0
     categoryMap.set(item.category, count + 1)
   })
@@ -271,26 +260,26 @@ const categories = computed<Category[]>(() => {
 })
 
 // Current table number
-const tableNumber = ref(1)
+const tableNumber = 1
 const availableTables = Array.from({ length: 20 }, (_, i) => i + 1)
 
 // Filter and sort options
-const searchQuery = ref('')
-const categoryFilter = ref('all')
+const searchQuery = ''
+const categoryFilter = 'all'
 const viewMode = useLocalStorage('menu-view-mode', 'grid') // Default to grid view for better imagery
 
 // Computed filtered and sorted menu items
-const filteredMenuItems = computed(() => {
-  return menuItems.value
+function filteredMenuItems() {
+  return menuItems
     .filter(item => {
       // Apply search filter
       const matchesSearch =
-        item.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        item.tags.some(tag => tag.toLowerCase().includes(searchQuery.value.toLowerCase()))
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
 
       // Apply category filter
-      const matchesCategory = categoryFilter.value === 'all' || item.category === categoryFilter.value
+      const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter
 
       return matchesSearch && matchesCategory
     })
@@ -354,32 +343,32 @@ function updateOrderTotal(): void {
 }
 
 // Special instructions modal
-const showSpecialInstructionsModal = ref(false)
-const currentEditingItemIndex = ref(-1)
-const tempSpecialInstructions = ref('')
+const showSpecialInstructionsModal = false
+const currentEditingItemIndex = -1
+const tempSpecialInstructions = ''
 
 function openSpecialInstructionsModal(index: number): void {
   const item = currentOrder.items[index]
   if (item) {
-    currentEditingItemIndex.value = index
-    tempSpecialInstructions.value = item.specialInstructions
-    showSpecialInstructionsModal.value = true
+    currentEditingItemIndex = index
+    tempSpecialInstructions = item.specialInstructions
+    showSpecialInstructionsModal = true
   }
 }
 
 function saveSpecialInstructions(): void {
-  if (currentEditingItemIndex.value >= 0) {
-    const item = currentOrder.items[currentEditingItemIndex.value]
+  if (currentEditingItemIndex >= 0) {
+    const item = currentOrder.items[currentEditingItemIndex]
     if (item) {
-      item.specialInstructions = tempSpecialInstructions.value
+      item.specialInstructions = tempSpecialInstructions
     }
   }
-  showSpecialInstructionsModal.value = false
+  showSpecialInstructionsModal = false
 }
 
 // Place order functionality
-const orderPlaced = ref(false)
-const orderSummary = ref<Order | null>(null)
+const orderPlaced = false
+const orderSummary = null
 
 function placeOrder(): void {
   if (currentOrder.items.length === 0) {
@@ -388,29 +377,29 @@ function placeOrder(): void {
   }
 
   // Update order status
-  currentOrder.tableNumber = tableNumber.value
+  currentOrder.tableNumber = tableNumber
   currentOrder.status = 'new'
   currentOrder.createdAt = new Date().toISOString()
 
   // Save a copy of the current order for summary display
-  orderSummary.value = JSON.parse(JSON.stringify(currentOrder)) as Order
+  orderSummary = JSON.parse(JSON.stringify(currentOrder)) as Order
 
   // Show order confirmation
-  orderPlaced.value = true
+  orderPlaced = true
 
   // Reset order for a new one
   setTimeout(() => {
     currentOrder.items = []
     currentOrder.totalAmount = 0
     currentOrder.id++
-    orderPlaced.value = false
-    orderSummary.value = null
+    orderPlaced = false
+    orderSummary = null
   }, 10000) // Reset after 10 seconds
 }
 
 // Table selection
 function selectTable(table: number): void {
-  tableNumber.value = table
+  tableNumber = table
 }
 
 // Get allergy tag class

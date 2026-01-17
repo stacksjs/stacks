@@ -1,11 +1,4 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
 import { Pie, Bar } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -29,10 +22,6 @@ ChartJS.register(
   Tooltip,
   Legend,
 )
-
-useHead({
-  title: 'Receipt Printers - Analytics',
-})
 
 // Sample data for the printers dashboard
 const printers = [
@@ -116,16 +105,16 @@ const barChartOptions = {
 }
 
 // Filter options
-const locationFilter = ref('All Locations')
-const statusFilter = ref('All Statuses')
+const locationFilter = 'All Locations'
+const statusFilter = 'All Statuses'
 const locations = ['All Locations', 'Main Floor', 'Second Floor', 'Kitchen', 'Pickup Area']
 const statuses = ['All Statuses', 'Online', 'Offline', 'Warning']
 
 // Computed filtered printers
-const filteredPrinters = computed(() => {
+function filteredPrinters() {
   return printers.filter(printer => {
-    const locationMatch = locationFilter.value === 'All Locations' || printer.location === locationFilter.value
-    const statusMatch = statusFilter.value === 'All Statuses' || printer.status === statusFilter.value
+    const locationMatch = locationFilter === 'All Locations' || printer.location === locationFilter
+    const statusMatch = statusFilter === 'All Statuses' || printer.status === statusFilter
     return locationMatch && statusMatch
   })
 })

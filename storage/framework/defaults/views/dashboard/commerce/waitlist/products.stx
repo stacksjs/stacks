@@ -1,16 +1,5 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed, onMounted, watch } from 'vue'
-import { useHead } from '@vueuse/head'
 import Chart from 'chart.js/auto'
-
-useHead({
-  title: 'Dashboard - Marketing Waitlist',
-})
 
 interface WaitlistEntry {
   id: number
@@ -43,7 +32,7 @@ const tablePreferences = []
 
 function calculateEstimatedWait(partySize) {
   const baseWait = 15
-  const queueFactor = waitlistEntries.value.filter(e => e.status === 'Waiting').length * 5
+  const queueFactor = waitlistEntries.filter(e => e.status === 'Waiting').length * 5
   const partySizeFactor = Math.ceil(partySize / 2) * 5
   return baseWait + queueFactor + partySizeFactor
 }
@@ -67,20 +56,20 @@ async function notifyCustomer(entry, message) {
   entry.notified = true
 }
 
-const waitTimeStats = computed(() => {
-  const waitingEntries = waitlistEntries.value.filter(e => e.status === 'Waiting')
+function waitTimeStats() {
+  const waitingEntries = waitlistEntries.filter(e => e.status === 'Waiting')
   return {
     totalWaiting: waitingEntries.length,
     averageQuantity: Math.round(waitingEntries.reduce((acc, curr) => acc + curr.quantity, 0) / (waitingEntries.length || 1))
   }
 })
 
-const waitlistEntries = ref([
+const waitlistEntries = [
   {
     id: 1,
     name: 'John Smith',
     email: 'john.smith@example.com',
-    phone: '+1 (555) 123-4567',
+    phone: '+1 (555 123-4567',
     productId: 1,
     quantity: 4,
     notificationPreference: 'sms',
@@ -206,10 +195,10 @@ const waitlistEntries = ref([
   }
 ])
 
-const products = computed(() => {
+function products() {
   const productMap = new Map()
 
-  waitlistEntries.value.forEach(entry => {
+  waitlistEntries.forEach(entry => {
     const count = productMap.get(entry.name) || 0
     productMap.set(entry.name, count + 1)
   })
@@ -222,21 +211,21 @@ const products = computed(() => {
   }))
 })
 
-const searchQuery = ref('')
-const statusFilter = ref('all')
-const partySizeFilter = ref('all')
-const tablePreferenceFilter = ref('all')
+const searchQuery = ''
+const statusFilter = 'all'
+const partySizeFilter = 'all'
+const tablePreferenceFilter = 'all'
 
-const filteredEntries = computed(() => {
-  return waitlistEntries.value.filter(entry => {
-    const matchesSearch = searchQuery.value === '' ||
-      entry.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      (entry.phone && entry.phone.includes(searchQuery.value)) ||
-      entry.email.toLowerCase().includes(searchQuery.value.toLowerCase())
+function filteredEntries() {
+  return waitlistEntries.filter(entry => {
+    const matchesSearch = searchQuery === '' ||
+      entry.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (entry.phone && entry.phone.includes(searchQuery)) ||
+      entry.email.toLowerCase().includes(searchQuery.toLowerCase())
 
     let matchesQuantity = true
-    if (partySizeFilter.value !== 'all') {
-      const [minStr, maxStr] = partySizeFilter.value.split('-')
+    if (partySizeFilter !== 'all') {
+      const [minStr, maxStr] = partySizeFilter.split('-')
       if (!minStr) return false
       const min = parseInt(minStr)
       if (maxStr) {
@@ -247,39 +236,39 @@ const filteredEntries = computed(() => {
       }
     }
 
-    const matchesStatus = statusFilter.value === 'all' || entry.status === statusFilter.value
-    const matchesSource = sourceFilter.value === 'all' || entry.source === sourceFilter.value
+    const matchesStatus = statusFilter === 'all' || entry.status === statusFilter
+    const matchesSource = sourceFilter === 'all' || entry.source === sourceFilter
 
     return matchesSearch && matchesQuantity && matchesStatus && matchesSource
   })
 })
 
-const sortBy = ref('dateAdded')
-const sortOrder = ref('asc')
+const sortBy = 'dateAdded'
+const sortOrder = 'asc'
 
 function toggleSort(field) {
-  if (sortBy.value === field) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  if (sortBy === field) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy.value = field
-    sortOrder.value = 'asc'
+    sortBy = field
+    sortOrder = 'asc'
   }
 }
 
-const sortedEntries = computed(() => {
-  return [...filteredEntries.value].sort((a, b) => {
-    if (sortBy.value === 'name') {
-      return sortOrder.value === 'asc'
+function sortedEntries() {
+  return [...filteredEntries].sort((a, b) => {
+    if (sortBy === 'name') {
+      return sortOrder === 'asc'
         ? a.name.localeCompare(b.name)
         : b.name.localeCompare(a.name)
     }
-    if (sortBy.value === 'dateAdded') {
-      return sortOrder.value === 'asc'
+    if (sortBy === 'dateAdded') {
+      return sortOrder === 'asc'
         ? new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime()
         : new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime()
     }
-    if (sortBy.value === 'quantity') {
-      return sortOrder.value === 'asc'
+    if (sortBy === 'quantity') {
+      return sortOrder === 'asc'
         ? a.quantity - b.quantity
         : b.quantity - a.quantity
     }
@@ -288,31 +277,31 @@ const sortedEntries = computed(() => {
 })
 
 const itemsPerPage = 10
-const currentPage = ref(1)
+const currentPage = 1
 
-const paginatedEntries = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
+function paginatedEntries() {
+  const start = (currentPage - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return sortedEntries.value.slice(start, end)
+  return sortedEntries.slice(start, end)
 })
 
-const totalPages = computed(() => Math.ceil(sortedEntries.value.length / itemsPerPage))
+function totalPages() { return Math.ceil(sortedEntries.length / itemsPerPage })
 
 function nextPage() {
-  if (currentPage.value < totalPages.value) {
+  if (currentPage < totalPages) {
     currentPage.value++
   }
 }
 
 function prevPage() {
-  if (currentPage.value > 1) {
+  if (currentPage > 1) {
     currentPage.value--
   }
 }
 
 function goToPage(page) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
+  if (page >= 1 && page <= totalPages) {
+    currentPage = page
   }
 }
 
@@ -344,169 +333,169 @@ function getPriorityClass(priority) {
   }
 }
 
-const showEntryModal = ref(false)
-const isEditMode = ref(false)
-const currentEntry = ref(null)
+const showEntryModal = false
+const isEditMode = false
+const currentEntry = null
 
-const totalEntries = computed(() => waitlistEntries.value.length)
-const waitingEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Waiting').length)
-const notifiedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Notified').length)
-const purchasedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Purchased').length)
-const conversionRate = computed(() => {
-  const total = totalEntries.value
-  const purchased = purchasedEntries.value
+function totalEntries() { return waitlistEntries.length }
+function waitingEntries() { return waitlistEntries.filter(e => e.status === 'Waiting' }.length)
+function notifiedEntries() { return waitlistEntries.filter(e => e.status === 'Notified' }.length)
+function purchasedEntries() { return waitlistEntries.filter(e => e.status === 'Purchased' }.length)
+function conversionRate() {
+  const total = totalEntries
+  const purchased = purchasedEntries
   return total > 0 ? Math.round((purchased / total) * 100) : 0
 })
 
-const entryName = ref('')
-const entryEmail = ref('')
-const entryPhone = ref(null)
-const entryQuantity = ref(2)
-const entryNotificationPreference = ref('sms')
-const entrySource = ref('Website')
-const entryNotes = ref(null)
-const entryPriority = ref(1)
+const entryName = ''
+const entryEmail = ''
+const entryPhone = null
+const entryQuantity = 2
+const entryNotificationPreference = 'sms'
+const entrySource = 'Website'
+const entryNotes = null
+const entryPriority = 1
 
-const sourceFilter = ref('all')
+const sourceFilter = 'all'
 
 function openAddEntryModal() {
-  isEditMode.value = false
+  isEditMode = false
 
-  entryName.value = ''
-  entryEmail.value = ''
-  entryPhone.value = ''
-  entryQuantity.value = 2
-  entryNotificationPreference.value = 'sms'
-  entrySource.value = 'Website'
-  entryNotes.value = ''
-  entryPriority.value = 1
+  entryName = ''
+  entryEmail = ''
+  entryPhone = ''
+  entryQuantity = 2
+  entryNotificationPreference = 'sms'
+  entrySource = 'Website'
+  entryNotes = ''
+  entryPriority = 1
 
-  showEntryModal.value = true
+  showEntryModal = true
 }
 
 function openEditEntryModal(entry) {
-  isEditMode.value = true
-  currentEntry.value = { ...entry }
+  isEditMode = true
+  currentEntry = { ...entry }
 
-  entryName.value = entry.name
-  entryEmail.value = entry.email
-  entryPhone.value = entry.phone
-  entryQuantity.value = entry.quantity
-  entryNotificationPreference.value = entry.notificationPreference
-  entrySource.value = entry.source
-  entryNotes.value = entry.notes
-  entryPriority.value = entry.priority
+  entryName = entry.name
+  entryEmail = entry.email
+  entryPhone = entry.phone
+  entryQuantity = entry.quantity
+  entryNotificationPreference = entry.notificationPreference
+  entrySource = entry.source
+  entryNotes = entry.notes
+  entryPriority = entry.priority
 
-  showEntryModal.value = true
+  showEntryModal = true
 }
 
 function saveEntry() {
   const now = new Date()
   const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const entry = {
-    id: isEditMode.value && currentEntry.value ? currentEntry.value.id : Math.max(0, ...waitlistEntries.value.map(e => e.id)) + 1,
-    name: entryName.value,
-    email: entryEmail.value,
-    phone: entryPhone.value || null,
+    id: isEditMode && currentEntry ? currentEntry.id : Math.max(0, ...waitlistEntries.map(e => e.id)) + 1,
+    name: entryName,
+    email: entryEmail,
+    phone: entryPhone || null,
     productId: Math.floor(Math.random() * 1000),
-    quantity: entryQuantity.value,
-    notificationPreference: entryNotificationPreference.value,
-    notes: entryNotes.value || null,
+    quantity: entryQuantity,
+    notificationPreference: entryNotificationPreference,
+    notes: entryNotes || null,
     status: 'Waiting',
     dateAdded: formattedDate,
     notified: false,
-    priority: entryPriority.value,
+    priority: entryPriority,
     lastNotified: null,
-    source: entrySource.value
+    source: entrySource
   }
 
-  if (isEditMode.value && currentEntry.value) {
-    const index = waitlistEntries.value.findIndex(e => e.id === currentEntry.value.id)
+  if (isEditMode && currentEntry) {
+    const index = waitlistEntries.findIndex(e => e.id === currentEntry.id)
     if (index !== -1) {
       waitlistEntries.value[index] = entry
     }
   } else {
-    waitlistEntries.value.push(entry)
+    waitlistEntries.push(entry)
   }
 
   notifyCustomer(entry, `Thanks for joining the waitlist! We'll notify you when the product becomes available.`)
-  showEntryModal.value = false
+  showEntryModal = false
 }
 
 function deleteEntry(entryId) {
   if (confirm('Are you sure you want to delete this waitlist entry?')) {
-    const index = waitlistEntries.value.findIndex(e => e.id === entryId)
+    const index = waitlistEntries.findIndex(e => e.id === entryId)
     if (index !== -1) {
-      waitlistEntries.value.splice(index, 1)
+      waitlistEntries.splice(index, 1)
     }
   }
 }
 
 function markAsNotified(entryId) {
-  const entry = waitlistEntries.value.find(e => e.id === entryId)
+  const entry = waitlistEntries.find(e => e.id === entryId)
   if (entry) {
     entry.status = 'Notified'
   }
 }
 
 function markAsPurchased(entryId) {
-  const entry = waitlistEntries.value.find(e => e.id === entryId)
+  const entry = waitlistEntries.find(e => e.id === entryId)
   if (entry) {
     entry.status = 'Purchased'
   }
 }
 
-const showNotificationModal = ref(false)
-const notificationSubject = ref('Product Now Available')
-const notificationMessage = ref('Good news! The product you were waiting for is now available for purchase.')
-const selectedEntries = ref([])
-const selectAll = ref(false)
+const showNotificationModal = false
+const notificationSubject = 'Product Now Available'
+const notificationMessage = 'Good news! The product you were waiting for is now available for purchase.'
+const selectedEntries = []
+const selectAll = false
 
 function toggleSelectAll() {
-  selectAll.value = !selectAll.value
-  if (selectAll.value) {
-    selectedEntries.value = paginatedEntries.value.map(entry => entry.id)
+  selectAll = !selectAll
+  if (selectAll) {
+    selectedEntries = paginatedEntries.map(entry => entry.id)
   } else {
-    selectedEntries.value = []
+    selectedEntries = []
   }
 }
 
 function toggleEntrySelection(entryId) {
-  const index = selectedEntries.value.indexOf(entryId)
+  const index = selectedEntries.indexOf(entryId)
   if (index === -1) {
-    selectedEntries.value.push(entryId)
+    selectedEntries.push(entryId)
   } else {
-    selectedEntries.value.splice(index, 1)
+    selectedEntries.splice(index, 1)
   }
 
-  selectAll.value = paginatedEntries.value.length > 0 &&
-    paginatedEntries.value.every(entry => selectedEntries.value.includes(entry.id))
+  selectAll = paginatedEntries.length > 0 &&
+    paginatedEntries.every(entry => selectedEntries.includes(entry.id))
 }
 
 function openNotificationModal() {
-  if (selectedEntries.value.length === 0) {
+  if (selectedEntries.length === 0) {
     alert('Please select at least one waitlist entry to notify')
     return
   }
 
-  notificationSubject.value = 'Product Now Available'
-  notificationMessage.value = 'Good news! The product you were waiting for is now available for purchase.'
-  showNotificationModal.value = true
+  notificationSubject = 'Product Now Available'
+  notificationMessage = 'Good news! The product you were waiting for is now available for purchase.'
+  showNotificationModal = true
 }
 
 function sendNotifications() {
-  waitlistEntries.value.forEach(entry => {
-    if (selectedEntries.value.includes(entry.id)) {
+  waitlistEntries.forEach(entry => {
+    if (selectedEntries.includes(entry.id)) {
       entry.notified = true
       entry.status = 'Notified'
     }
   })
 
-  selectedEntries.value = []
-  selectAll.value = false
-  showNotificationModal.value = false
+  selectedEntries = []
+  selectAll = false
+  showNotificationModal = false
 
-  alert(`Notifications sent to ${selectedEntries.value.length} customers`)
+  alert(`Notifications sent to ${selectedEntries.length} customers`)
 }
 
 function exportWaitlist() {
@@ -514,13 +503,13 @@ function exportWaitlist() {
 }
 
 function bulkChangeStatus(status) {
-  if (selectedEntries.value.length === 0) {
+  if (selectedEntries.length === 0) {
     alert('Please select at least one waitlist entry')
     return
   }
 
-  waitlistEntries.value.forEach(entry => {
-    if (selectedEntries.value.includes(entry.id)) {
+  waitlistEntries.forEach(entry => {
+    if (selectedEntries.includes(entry.id)) {
       entry.status = status
       if (status === 'Notified') {
         entry.notified = true
@@ -528,28 +517,28 @@ function bulkChangeStatus(status) {
     }
   })
 
-  selectedEntries.value = []
-  selectAll.value = false
+  selectedEntries = []
+  selectAll = false
 }
 
 function bulkDelete() {
-  if (selectedEntries.value.length === 0) {
+  if (selectedEntries.length === 0) {
     alert('Please select at least one waitlist entry')
     return
   }
 
-  if (confirm(`Are you sure you want to delete ${selectedEntries.value.length} waitlist entries?`)) {
-    waitlistEntries.value = waitlistEntries.value.filter(entry => !selectedEntries.value.includes(entry.id))
+  if (confirm(`Are you sure you want to delete ${selectedEntries.length} waitlist entries?`)) {
+    waitlistEntries = waitlistEntries.filter(entry => !selectedEntries.includes(entry.id))
 
-    selectedEntries.value = []
-    selectAll.value = false
+    selectedEntries = []
+    selectAll = false
   }
 }
 
-const productChartRef = ref(null)
-const sourceChartRef = ref(null)
-const statusChartRef = ref(null)
-const trendChartRef = ref(null)
+const productChartRef = null
+const sourceChartRef = null
+const statusChartRef = null
+const trendChartRef = null
 
 let productChart = null
 let sourceChart = null
@@ -570,7 +559,7 @@ const generateTrendData = () => {
   return data
 }
 
-const trendData = ref(generateTrendData())
+const trendData = generateTrendData()
 
 const chartColors = {
   blue: {
@@ -650,25 +639,18 @@ const baseChartOptionsWithScales = {
   }
 }
 
-onMounted(() => {
-  initProductChart()
-  initSourceChart()
-  initStatusChart()
-  initTrendChart()
-})
-
 function initProductChart() {
-  if (!productChartRef.value) return
+  if (!productChartRef) return
 
-  const ctx = productChartRef.value.getContext('2d')
+  const ctx = productChartRef.getContext('2d')
   if (!ctx) return
 
   const partySizes = [1, 2, 3, 4, 5, 6, '7+']
   const partySizeCounts = partySizes.map(size => {
     if (size === '7+') {
-      return waitlistEntries.value.filter(entry => entry.quantity >= 7).length
+      return waitlistEntries.filter(entry => entry.quantity >= 7).length
     }
-    return waitlistEntries.value.filter(entry => entry.quantity === size).length
+    return waitlistEntries.filter(entry => entry.quantity === size).length
   })
 
   const gradient = ctx.createLinearGradient(0, 0, 0, 400)
@@ -705,14 +687,14 @@ function initProductChart() {
 }
 
 function initSourceChart() {
-  if (!sourceChartRef.value) return
+  if (!sourceChartRef) return
 
-  const ctx = sourceChartRef.value.getContext('2d')
+  const ctx = sourceChartRef.getContext('2d')
   if (!ctx) return
 
   const sourceLabels = sources.slice(1)
   const sourceCounts = sourceLabels.map(source =>
-    waitlistEntries.value.filter(entry =>
+    waitlistEntries.filter(entry =>
       entry.source ? entry.source === source : false
     ).length
   )
@@ -769,9 +751,9 @@ function initSourceChart() {
 }
 
 function initTrendChart() {
-  if (!trendChartRef.value) return
+  if (!trendChartRef) return
 
-  const ctx = trendChartRef.value.getContext('2d')
+  const ctx = trendChartRef.getContext('2d')
   if (!ctx) return
 
   const gradient = ctx.createLinearGradient(0, 0, 0, 400)
@@ -781,10 +763,10 @@ function initTrendChart() {
   trendChart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: trendData.value.map(d => d.date),
+      labels: trendData.map(d => d.date),
       datasets: [{
         label: 'New Waitlist Entries',
-        data: trendData.value.map(d => d.count),
+        data: trendData.map(d => d.count),
         backgroundColor: gradient,
         borderColor: chartColors.blue.stroke,
         borderWidth: 2,
@@ -835,14 +817,14 @@ function initTrendChart() {
 }
 
 function initStatusChart() {
-  if (!statusChartRef.value) return
+  if (!statusChartRef) return
 
-  const ctx = statusChartRef.value.getContext('2d')
+  const ctx = statusChartRef.getContext('2d')
   if (!ctx) return
 
   const statusLabels = statuses.slice(1)
   const statusData = statusLabels.map(status =>
-    waitlistEntries.value.filter(entry => entry.status === status).length
+    waitlistEntries.filter(entry => entry.status === status).length
   )
 
   statusChart = new Chart(ctx, {
@@ -899,9 +881,9 @@ function updateCharts() {
     const partySizes = [1, 2, 3, 4, 5, 6, '7+']
     const partySizeCounts = partySizes.map(size => {
       if (size === '7+') {
-        return waitlistEntries.value.filter(entry => entry.quantity >= 7).length
+        return waitlistEntries.filter(entry => entry.quantity >= 7).length
       }
-      return waitlistEntries.value.filter(entry => entry.quantity === size).length
+      return waitlistEntries.filter(entry => entry.quantity === size).length
     })
 
     chart.data.labels = partySizes.map(size => `${size} ${size === 1 ? 'unit' : 'units'}`)
@@ -917,7 +899,7 @@ function updateCharts() {
     chart.data.labels = sourceLabels
     if (chart.data.datasets?.[0]) {
       chart.data.datasets[0].data = sourceLabels.map(source =>
-        waitlistEntries.value.filter(entry =>
+        waitlistEntries.filter(entry =>
           entry.source ? entry.source === source : false
         ).length
       )
@@ -931,7 +913,7 @@ function updateCharts() {
     chart.data.labels = statusLabels
     if (chart.data.datasets?.[0]) {
       chart.data.datasets[0].data = statusLabels.map(status =>
-        waitlistEntries.value.filter(entry => entry.status === status).length
+        waitlistEntries.filter(entry => entry.status === status).length
       )
     }
     chart.update()
@@ -939,18 +921,15 @@ function updateCharts() {
 
   if (trendChart && trendChart.data) {
     const chart = trendChart
-    const dates = trendData.value.map(d => d.date)
+    const dates = trendData.map(d => d.date)
     chart.data.labels = dates
     if (chart.data.datasets?.[0]) {
-      chart.data.datasets[0].data = trendData.value.map(d => d.count)
+      chart.data.datasets[0].data = trendData.map(d => d.count)
     }
     chart.update()
   }
 }
 
-watch(waitlistEntries, () => {
-  updateCharts()
-}, { deep: true })
 </script>
 
 <template>

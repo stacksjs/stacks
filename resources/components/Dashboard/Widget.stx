@@ -28,7 +28,7 @@ const props = defineProps({
       @endif
       <h3 class="widget-title">{{ props.title }}</h3>
     </div>
-    <div class="widget-value">{{ props.value }}</div>
+    <div class="widget-value">{{ props }}</div>
     @if (props.description)
       <div class="widget-description">{{ props.description }}</div>
     @endif

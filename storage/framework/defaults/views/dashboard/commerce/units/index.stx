@@ -1,20 +1,8 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script>
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
-
 export default {
   setup() {
-    useHead({
-      title: 'Dashboard - Commerce Units',
-    })
-
     // Sample units data
-    const units = ref([
+    const units = [
       {
         id: 1,
         name: 'Slice',
@@ -29,7 +17,7 @@ export default {
         name: 'Whole',
         abbreviation: 'whole',
         type: 'Food',
-        description: 'Complete item (e.g., whole pizza, whole cake)',
+        description: 'Complete item (e.g., whole pizza, whole cake',
         isDefault: false,
         createdAt: '2023-05-15'
       },
@@ -90,110 +78,110 @@ export default {
     ])
 
     // Filter and sort options
-    const searchQuery = ref('')
-    const sortBy = ref('name')
-    const sortOrder = ref('asc')
-    const typeFilter = ref('all')
-    const defaultFilter = ref('all')
+    const searchQuery = ''
+    const sortBy = 'name'
+    const sortOrder = 'asc'
+    const typeFilter = 'all'
+    const defaultFilter = 'all'
 
     // Get unique unit types for filter
-    const unitTypes = computed(() => {
-      const uniqueTypes = new Set(units.value.map(u => u.type))
+    function unitTypes() {
+      const uniqueTypes = new Set(units.map(u => u.type))
       return Array.from(uniqueTypes).sort()
     })
 
     // Computed filtered and sorted units
-    const filteredUnits = computed(() => {
-      return units.value
+    function filteredUnits() {
+      return units
         .filter(unit => {
           // Apply search filter
-          const matchesSearch = unit.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                               unit.abbreviation.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                               unit.description.toLowerCase().includes(searchQuery.value.toLowerCase())
+          const matchesSearch = unit.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                               unit.abbreviation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                               unit.description.toLowerCase().includes(searchQuery.toLowerCase())
 
           // Apply type filter
-          const matchesType = typeFilter.value === 'all' || unit.type === typeFilter.value
+          const matchesType = typeFilter === 'all' || unit.type === typeFilter
 
           // Apply default filter
-          const matchesDefault = defaultFilter.value === 'all' ||
-                                (defaultFilter.value === 'default' && unit.isDefault) ||
-                                (defaultFilter.value === 'not-default' && !unit.isDefault)
+          const matchesDefault = defaultFilter === 'all' ||
+                                (defaultFilter === 'default' && unit.isDefault) ||
+                                (defaultFilter === 'not-default' && !unit.isDefault)
 
           return matchesSearch && matchesType && matchesDefault
         })
         .sort((a, b) => {
           // Apply sorting
           let comparison = 0
-          if (sortBy.value === 'name') {
+          if (sortBy === 'name') {
             comparison = a.name.localeCompare(b.name)
-          } else if (sortBy.value === 'type') {
+          } else if (sortBy === 'type') {
             comparison = a.type.localeCompare(b.type)
-          } else if (sortBy.value === 'abbreviation') {
+          } else if (sortBy === 'abbreviation') {
             comparison = a.abbreviation.localeCompare(b.abbreviation)
-          } else if (sortBy.value === 'createdAt') {
+          } else if (sortBy === 'createdAt') {
             comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           }
 
-          return sortOrder.value === 'asc' ? comparison : -comparison
+          return sortOrder === 'asc' ? comparison : -comparison
         })
     })
 
     // Toggle sort order
     function toggleSort(column) {
-      if (sortBy.value === column) {
-        sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+      if (sortBy === column) {
+        sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
       } else {
-        sortBy.value = column
-        sortOrder.value = 'asc'
+        sortBy = column
+        sortOrder = 'asc'
       }
     }
 
     // Modal state
-    const showAddModal = ref(false)
-    const newUnit = ref({
+    const showAddModal = false
+    const newUnit = {
       name: '',
       abbreviation: '',
       type: '',
       description: '',
       isDefault: false
-    })
+    }
 
     function openAddModal() {
-      newUnit.value = {
+      newUnit = {
         name: '',
         abbreviation: '',
         type: '',
         description: '',
         isDefault: false
       }
-      showAddModal.value = true
+      showAddModal = true
     }
 
     function closeAddModal() {
-      showAddModal.value = false
+      showAddModal = false
     }
 
     function addUnit() {
       // In a real app, this would send data to the server
-      const id = Math.max(...units.value.map(u => u.id)) + 1
+      const id = Math.max(...units.map(u => u.id)) + 1
       const currentDate = new Date().toISOString().split('T')[0];
 
       // If this is set as default, update other units of the same type
-      if (newUnit.value.isDefault) {
-        units.value.forEach(unit => {
-          if (unit.type === newUnit.value.type) {
+      if (newUnit.isDefault) {
+        units.forEach(unit => {
+          if (unit.type === newUnit.type) {
             unit.isDefault = false
           }
         })
       }
 
-      units.value.push({
+      units.push({
         id,
-        name: newUnit.value.name || '',
-        abbreviation: newUnit.value.abbreviation || '',
-        type: newUnit.value.type || '',
-        description: newUnit.value.description || '',
-        isDefault: newUnit.value.isDefault,
+        name: newUnit.name || '',
+        abbreviation: newUnit.abbreviation || '',
+        type: newUnit.type || '',
+        description: newUnit.description || '',
+        isDefault: newUnit.isDefault,
         createdAt: currentDate
       })
       closeAddModal()

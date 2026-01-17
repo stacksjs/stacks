@@ -29,7 +29,7 @@ const customStats = [
       <div class="grid grid-2">
         @foreach (customStats as stat)
           <div class="stat-card">
-            <div class="stat-card-value">{{ stat.value }}</div>
+            <div class="stat-card-value">{{ stat }}</div>
             <div class="stat-card-label">{{ stat.label }}</div>
           </div>
         @endforeach

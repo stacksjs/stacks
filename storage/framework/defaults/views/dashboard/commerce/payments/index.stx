@@ -1,11 +1,4 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -31,10 +24,6 @@ ChartJS.register(
   Legend,
   Filler,
 )
-
-useHead({
-  title: 'Dashboard - Commerce Payments',
-})
 
 // Chart options
 const chartOptions = {
@@ -62,7 +51,7 @@ const chartOptions = {
 }
 
 // Generate monthly data for charts
-const monthlyChartData = computed(() => {
+function monthlyChartData() {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   // Sample data - in a real app, this would be calculated from actual transaction data
@@ -111,7 +100,7 @@ const monthlyChartData = computed(() => {
 })
 
 // Time range selector
-const timeRange = ref('Last 30 days')
+const timeRange = 'Last 30 days'
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Define payment transaction type
@@ -129,7 +118,7 @@ interface PaymentTransaction {
 }
 
 // Sample payment transactions data
-const transactions = ref<PaymentTransaction[]>([
+const transactions = [
   {
     id: 1,
     orderId: 'ORD-12345',
@@ -186,17 +175,17 @@ const transactions = ref<PaymentTransaction[]>([
     status: 'Completed',
     date: '2023-11-19'
   }
-])
+]
 
 // Computed payment statistics
-const paymentStats = computed(() => {
+function paymentStats() {
   // Count transactions by status
-  const completedTransactions = transactions.value.filter(t => t.status === 'Completed').length
-  const pendingTransactions = transactions.value.filter(t => t.status === 'Pending').length
-  const failedTransactions = transactions.value.filter(t => t.status === 'Failed').length
+  const completedTransactions = transactions.filter(t => t.status === 'Completed').length
+  const pendingTransactions = transactions.filter(t => t.status === 'Pending').length
+  const failedTransactions = transactions.filter(t => t.status === 'Failed').length
 
   // Calculate total amount for completed transactions
-  const totalAmount = transactions.value.reduce((sum, transaction) => {
+  const totalAmount = transactions.reduce((sum, transaction) => {
     if (transaction.status === 'Completed') {
       return sum + transaction.amount
     }
@@ -215,7 +204,7 @@ const paymentStats = computed(() => {
     : '0.0'
 
   // Count transactions by payment method
-  const methodCounts = transactions.value.reduce((counts, transaction) => {
+  const methodCounts = transactions.reduce((counts, transaction) => {
     counts[transaction.method] = (counts[transaction.method] || 0) + 1
     return counts
   }, {} as Record<string, number>)
@@ -232,7 +221,7 @@ const paymentStats = computed(() => {
   }
 
   return {
-    totalTransactions: transactions.value.length,
+    totalTransactions: transactions.length,
     completedTransactions,
     pendingTransactions,
     failedTransactions,
@@ -244,58 +233,58 @@ const paymentStats = computed(() => {
 })
 
 // Filter and sort options
-const searchQuery = ref('')
-const sortBy = ref('date')
-const sortOrder = ref('desc')
-const statusFilter = ref('all')
-const methodFilter = ref('all')
+const searchQuery = ''
+const sortBy = 'date'
+const sortOrder = 'desc'
+const statusFilter = 'all'
+const methodFilter = 'all'
 
 // Available statuses and methods
 const statuses = ['all', 'Completed', 'Pending', 'Failed', 'Refunded']
 const methods = ['all', 'Credit Card', 'PayPal', 'Apple Pay', 'Google Pay', 'Bank Transfer']
 
 // Computed filtered and sorted transactions
-const filteredTransactions = computed(() => {
-  return transactions.value
+function filteredTransactions() {
+  return transactions
     .filter(transaction => {
       // Apply search filter
       const matchesSearch =
-        transaction.orderId.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        transaction.customer.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        transaction.email.toLowerCase().includes(searchQuery.value.toLowerCase())
+        transaction.orderId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        transaction.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        transaction.email.toLowerCase().includes(searchQuery.toLowerCase())
 
       // Apply status filter
-      const matchesStatus = statusFilter.value === 'all' || transaction.status === statusFilter.value
+      const matchesStatus = statusFilter === 'all' || transaction.status === statusFilter
 
       // Apply method filter
-      const matchesMethod = methodFilter.value === 'all' || transaction.method === methodFilter.value
+      const matchesMethod = methodFilter === 'all' || transaction.method === methodFilter
 
       return matchesSearch && matchesStatus && matchesMethod
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy.value === 'date') {
+      if (sortBy === 'date') {
         comparison = new Date(a.date).getTime() - new Date(b.date).getTime()
-      } else if (sortBy.value === 'amount') {
+      } else if (sortBy === 'amount') {
         comparison = a.amount - b.amount
-      } else if (sortBy.value === 'orderId') {
+      } else if (sortBy === 'orderId') {
         comparison = a.orderId.localeCompare(b.orderId)
-      } else if (sortBy.value === 'customer') {
+      } else if (sortBy === 'customer') {
         comparison = a.customer.localeCompare(b.customer)
       }
 
-      return sortOrder.value === 'asc' ? comparison : -comparison
+      return sortOrder === 'asc' ? comparison : -comparison
     })
 })
 
 // Toggle sort order
 function toggleSort(column: string): void {
-  if (sortBy.value === column) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  if (sortBy === column) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy.value = column
-    sortOrder.value = 'desc'
+    sortBy = column
+    sortOrder = 'desc'
   }
 }
 
@@ -334,22 +323,22 @@ function getPaymentMethodIcon(method: string): string {
 }
 
 // Pagination
-const currentPage = ref(1)
+const currentPage = 1
 const itemsPerPage = 10
-const totalPages = computed(() => Math.ceil(filteredTransactions.value.length / itemsPerPage))
-const paginatedTransactions = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
+function totalPages() { return Math.ceil(filteredTransactions.length / itemsPerPage })
+function paginatedTransactions() {
+  const start = (currentPage - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return filteredTransactions.value.slice(start, end)
+  return filteredTransactions.slice(start, end)
 })
 
 function changePage(page: number): void {
-  currentPage.value = page
+  currentPage = page
 }
 
 // Calculate total amount
-const totalAmount = computed(() => {
-  return filteredTransactions.value.reduce((sum, transaction) => {
+function totalAmount() {
+  return filteredTransactions.reduce((sum, transaction) => {
     if (transaction.status === 'Completed') {
       return sum + transaction.amount
     }

@@ -1,16 +1,5 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useHead } from '@vueuse/head'
 import * as d3 from 'd3'
-
-useHead({
-  title: 'Dashboard - Servers',
-})
 
 // Update ServerConfig interface
 interface ServerConfig {
@@ -56,7 +45,7 @@ type InstanceType = keyof typeof workerSizes
 // Update default values
 const defaultServerOS = 'ubuntu-24-lts-x86_64'
 const defaultBunVersion = 'v1.2.3'
-const cloudConfig = ref<CloudConfig>({
+const cloudConfig = {
   type: 'aws',
   useLoadBalancer: true,
   servers: {
@@ -76,7 +65,7 @@ const cloudConfig = ref<CloudConfig>({
       userData: '#!/bin/bash\necho "Hello World!" > /tmp/test.txt',
     },
   },
-})
+}
 
 // Add node and link type definitions
 interface InfraNode extends d3.SimulationNodeDatum {
@@ -135,15 +124,15 @@ type WorkerSizeSpecs = {
 }
 
 // Add worker state
-const workerConfig = ref<WorkerConfig>({
+const workerConfig = {
   name: 'Worker 1',
   size: 't3.micro',
   replicas: 1,
   specs: workerSizes['t3.micro'],
-})
+}
 
 // Add visualization state
-const diagramContainer = ref<HTMLElement | null>(null)
+const diagramContainer = null
 let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>
 let simulation: d3.Simulation<InfraNode, undefined> | undefined
 
@@ -151,43 +140,34 @@ let simulation: d3.Simulation<InfraNode, undefined> | undefined
 let zoomGroup: d3.Selection<SVGGElement, unknown, null, undefined>
 
 // Add selected node state
-const selectedNode = ref<InfraNode | null>(null)
+const selectedNode = null
 
 // Add save state
-const isSaving = ref(false)
-const saveError = ref<string | null>(null)
+const isSaving = false
+const saveError = null
 
 // Add unsaved state
-const hasUnsavedChanges = ref(false)
+const hasUnsavedChanges = false
 
 // Add initial state tracking for change detection
-const initialWorkerConfig = ref({ ...workerConfig.value })
-const initialCloudConfig = ref({ ...cloudConfig.value })
+const initialWorkerConfig = { ...workerConfig }
+const initialCloudConfig = { ...cloudConfig }
 
 // Add edit mode state
 const editMode = ref<Record<string, boolean>>({})
 
-// Update watch to compare with initial state
-watch([cloudConfig, workerConfig], ([newCloud, newWorker]) => {
-  hasUnsavedChanges.value = JSON.stringify(newCloud) !== JSON.stringify(initialCloudConfig.value) ||
-    JSON.stringify(newWorker) !== JSON.stringify(initialWorkerConfig.value)
-  if (diagramContainer.value) {
-    updateVisualization()
-  }
-}, { deep: true })
-
 // Function to create and update the infrastructure visualization
 const updateVisualization = () => {
-  if (!diagramContainer.value) return
+  if (!diagramContainer) return
 
-  const width = diagramContainer.value.clientWidth
+  const width = diagramContainer.clientWidth
   const height = 400
 
   // Clear existing visualization
-  d3.select(diagramContainer.value).selectAll('*').remove()
+  d3.select(diagramContainer).selectAll('*').remove()
 
   // Create SVG
-  svg = d3.select(diagramContainer.value)
+  svg = d3.select(diagramContainer)
     .append('svg')
     .attr('width', width)
     .attr('height', height)
@@ -212,15 +192,15 @@ const updateVisualization = () => {
   nodes.push({ id: 'user', type: 'user', label: 'DNS' })
 
   // Add load balancer if enabled
-  if (cloudConfig.value.useLoadBalancer) {
+  if (cloudConfig.useLoadBalancer) {
     nodes.push({ id: 'lb', type: 'loadbalancer', label: 'Load Balancer' })
     links.push({ source: 'user', target: 'lb' })
   }
 
   // Add servers
-  Object.entries(cloudConfig.value.servers).forEach(([key, server]) => {
+  Object.entries(cloudConfig.servers).forEach(([key, server]) => {
     nodes.push({ id: key, type: 'server', label: server.name, config: server })
-    if (cloudConfig.value.useLoadBalancer) {
+    if (cloudConfig.useLoadBalancer) {
       links.push({ source: 'lb', target: key })
     } else {
       links.push({ source: 'user', target: key })
@@ -228,16 +208,16 @@ const updateVisualization = () => {
   })
 
   // Add worker replicas
-  for (let i = 0; i < workerConfig.value.replicas; i++) {
+  for (let i = 0; i < workerConfig.replicas; i++) {
     const workerId = `worker-${i}`
     nodes.push({
       id: workerId,
       type: 'worker',
-      label: `${workerConfig.value.name} #${i + 1}`,
-      config: workerConfig.value
+      label: `${workerConfig.name} #${i + 1}`,
+      config: workerConfig
     })
     // Connect workers to the first app server if it exists
-    const servers = cloudConfig.value.servers
+    const servers = cloudConfig.servers
     const appServer = Object.keys(servers).find(key => servers[key]?.type === 'app')
     if (appServer) {
       links.push({ source: appServer, target: workerId })
@@ -446,7 +426,7 @@ const updateVisualization = () => {
 
   // Add click handler to clear selection when clicking background
   svg.on('click', () => {
-    selectedNode.value = null
+    selectedNode = null
   })
 }
 
@@ -476,16 +456,10 @@ onUnmounted(() => {
 })
 
 // Initialize visualization on mount
-onMounted(() => {
-  if (diagramContainer.value) {
-    updateVisualization()
-  }
-})
-
 // Methods
 // Function to show node details
 const showNodeDetails = (node) => {
-  selectedNode.value = node
+  selectedNode = node
 }
 
 // Function to format config details
@@ -559,11 +533,6 @@ const updateServerDefaults = (server) => {
   }
 }
 
-// Add a watcher for server type changes
-watch(() => Object.values(cloudConfig.value.servers), (servers) => {
-  servers.forEach(server => {
-    updateServerDefaults(server)
-  })
 }, { deep: true })
 
 interface ServerConfig {
@@ -658,37 +627,37 @@ const servers = ref<Record<string, ServerConfig>>({
   },
 })
 
-const sortKey = ref<keyof ServerConfig>('name')
-const sortOrder = ref<'asc' | 'desc'>('asc')
+const sortKey = 'name'
+const sortOrder = 'asc'
 
 const setSorting = (key) => {
-  if (sortKey.value === key) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  if (sortKey === key) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
   } else {
-    sortKey.value = key
-    sortOrder.value = 'asc'
+    sortKey = key
+    sortOrder = 'asc'
   }
 }
 
-const sortedServers = computed(() => {
-  return Object.entries(servers.value).sort(([, a], [, b]) => {
-    const aValue = a[sortKey.value]
-    const bValue = b[sortKey.value]
+function sortedServers() {
+  return Object.entries(servers).sort(([, a], [, b]) => {
+    const aValue = a[sortKey]
+    const bValue = b[sortKey]
 
     if (!aValue || !bValue || aValue === bValue) return 0
-    if (sortOrder.value === 'asc')
+    if (sortOrder === 'asc')
       return aValue < bValue ? -1 : 1
 
     return aValue < bValue ? 1 : -1
   })
 })
 
-const searchQuery = ref('')
-const filteredServers = computed(() => {
-  const query = searchQuery.value.toLowerCase()
-  if (!query) return sortedServers.value
+const searchQuery = ''
+function filteredServers() {
+  const query = searchQuery.toLowerCase()
+  if (!query) return sortedServers
 
-  return sortedServers.value.filter(([, server]) => {
+  return sortedServers.filter(([, server]) => {
     return (
       server.name.toLowerCase().includes(query) ||
       server.domain.toLowerCase().includes(query) ||
@@ -707,7 +676,7 @@ interface ServerEvent {
   timestamp: string
 }
 
-const serverEvents = ref<ServerEvent[]>([
+const serverEvents = [
   {
     id: '1',
     service: 'App Server',
@@ -743,7 +712,7 @@ const serverEvents = ref<ServerEvent[]>([
     message: 'Index rebuilt successfully',
     timestamp: '2024-03-21 14:05:22'
   }
-])
+]
 
 const getEventTypeColor = (type) => {
   switch (type) {

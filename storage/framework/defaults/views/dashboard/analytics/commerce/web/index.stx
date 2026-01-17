@@ -1,6 +1,4 @@
 <script server>
-import { ref, computed, onMounted, reactive } from 'vue'
-import { useHead } from '@vueuse/head'
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 import PageHeader from '../../../../components/Dashboard/PageHeader.stx'
 import MetricCard from '../../../../components/Dashboard/Cards/MetricCard.stx'
@@ -9,10 +7,6 @@ import TableCard from '../../../../components/Dashboard/Cards/TableCard.stx'
 
 // Register Chart.js components
 Chart.register(...registerables)
-
-useHead({
-  title: 'Dashboard - Commerce Web Analytics',
-})
 
 // Types
 interface DateRange {
@@ -65,25 +59,25 @@ const dateRanges: DateRange[] = [
 ]
 
 // Selected date range
-const selectedDateRange = ref('all-time')
-const dateRangeDisplay = ref('All Time: Sep 7, 2023 to Mar 6, 2025')
-const comparisonType = ref('no-comparison')
-const customStartDate = ref('')
-const customEndDate = ref('')
-const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
+const selectedDateRange = 'all-time'
+const dateRangeDisplay = 'All Time: Sep 7, 2023 to Mar 6, 2025'
+const comparisonType = 'no-comparison'
+const customStartDate = ''
+const customEndDate = ''
+function showCustomDateRange() { return selectedDateRange === 'custom' }
 
 // Analytics overview data
-const analyticsOverview = ref({
+const analyticsOverview = {
   realtime: 42,
   people: 12345,
   views: 45678,
   avgTimeOnSite: '02:18',
   bounceRate: '34%',
   conversionRate: '2.4%'
-})
+}
 
 // Traffic data for chart
-const trafficData = ref([
+const trafficData = [
   { date: '2023-11-01', pageViews: 1200, visitors: 980 },
   { date: '2023-12-01', pageViews: 1500, visitors: 1220 },
   { date: '2024-01-01', pageViews: 1800, visitors: 1440 },
@@ -100,17 +94,17 @@ const trafficData = ref([
   { date: '2024-12-01', pageViews: 3000, visitors: 2300 },
   { date: '2025-01-01', pageViews: 1000, visitors: 800 },
   { date: '2025-02-01', pageViews: 600, visitors: 400 }
-])
+]
 
 // Chart.js configuration
 const chartConfig = reactive({
   type: 'line' as keyof ChartTypeRegistry,
   data: {
-    labels: trafficData.value.map(item => item.date),
+    labels: trafficData.map(item => item.date),
     datasets: [
       {
         label: 'Page Views',
-        data: trafficData.value.map(item => item.pageViews),
+        data: trafficData.map(item => item.pageViews),
         backgroundColor: 'rgba(147, 197, 253, 0.3)',
         borderColor: 'rgba(59, 130, 246, 0.8)',
         borderWidth: 2,
@@ -119,7 +113,7 @@ const chartConfig = reactive({
       },
       {
         label: 'Visitors',
-        data: trafficData.value.map(item => item.visitors),
+        data: trafficData.map(item => item.visitors),
         backgroundColor: 'rgba(147, 197, 253, 0.1)',
         borderColor: 'rgba(96, 165, 250, 0.8)',
         borderWidth: 2,
@@ -140,7 +134,7 @@ const chartConfig = reactive({
           maxTicksLimit: 4,
           callback: function(value, index) {
             const labels = ['Jan 2024', 'May 2024', 'Sep 2024', 'Jan 2025']
-            return index % Math.floor(trafficData.value.length / 4) === 0 ? labels[Math.floor(index / (trafficData.value.length / 4))] || '' : ''
+            return index % Math.floor(trafficData.length / 4) === 0 ? labels[Math.floor(index / (trafficData.length / 4))] || '' : ''
           }
         }
       },
@@ -169,7 +163,7 @@ const chartConfig = reactive({
 })
 
 // Pages data
-const pagesData = ref<PageData[]>([
+const pagesData = [
   { path: '/products', entries: 3800, visitors: 3800, views: 5100, percentage: 0 },
   { path: '/products/category/electronics', entries: 1213, visitors: 1213, views: 1539, percentage: 0 },
   { path: '/products/category/clothing', entries: 951, visitors: 951, views: 1277, percentage: 0 },
@@ -180,17 +174,17 @@ const pagesData = ref<PageData[]>([
   { path: '/products/new-arrivals', entries: 212, visitors: 217, views: 322, percentage: 0 },
   { path: '/products/sale', entries: 209, visitors: 212, views: 313, percentage: 0 },
   { path: '/contact', entries: 109, visitors: 110, views: 115, percentage: 0 }
-])
+]
 
 // Calculate percentages for pages based on views
-const totalPageViews = computed(() => pagesData.value.reduce((sum, page) => sum + page.views, 0))
+function totalPageViews() { return pagesData.reduce((sum, page } => sum + page.views, 0))
 // Update percentages
-pagesData.value.forEach(page => {
-  page.percentage = Math.round((page.views / totalPageViews.value) * 100)
+pagesData.forEach(page => {
+  page.percentage = Math.round((page.views / totalPageViews) * 100)
 })
 
 // Referrers data
-const referrersData = ref<ReferrerData[]>([
+const referrersData = [
   { name: 'Direct / Unknown', visitors: 5400, views: 7100, percentage: 0 },
   { name: 'Google', visitors: 3545, views: 4580, percentage: 0 },
   { name: 'Facebook', visitors: 1246, views: 1550, percentage: 0 },
@@ -201,34 +195,34 @@ const referrersData = ref<ReferrerData[]>([
   { name: 'Bing', visitors: 222, views: 324, percentage: 0 },
   { name: 'TikTok', visitors: 208, views: 308, percentage: 0 },
   { name: 'YouTube', visitors: 107, views: 207, percentage: 0 }
-])
+]
 
 // Calculate percentages for referrers based on views
-const totalReferrerViews = computed(() => referrersData.value.reduce((sum, referrer) => sum + referrer.views, 0))
+function totalReferrerViews() { return referrersData.reduce((sum, referrer } => sum + referrer.views, 0))
 // Update percentages
-referrersData.value.forEach(referrer => {
-  referrer.percentage = Math.round((referrer.views / totalReferrerViews.value) * 100)
+referrersData.forEach(referrer => {
+  referrer.percentage = Math.round((referrer.views / totalReferrerViews) * 100)
 })
 
 // Device data
-const deviceData = ref<DeviceData[]>([
+const deviceData = [
   { name: 'Phone', visitors: 7874, percentage: 58 },
   { name: 'Desktop', visitors: 5300, percentage: 39 },
   { name: 'Tablet', visitors: 405, percentage: 3 }
-])
+]
 
 // Browser data
-const browserData = ref<BrowserData[]>([
+const browserData = [
   { name: 'Chrome', visitors: 6300, percentage: 46 },
   { name: 'Safari', visitors: 4579, percentage: 34 },
   { name: 'Edge', visitors: 1129, percentage: 8 },
   { name: 'Firefox', visitors: 992, percentage: 7 },
   { name: 'Samsung Internet', visitors: 524, percentage: 4 },
   { name: 'Opera', visitors: 124, percentage: 1 }
-])
+]
 
 // Countries data with flag emojis
-const countriesData = ref<CountryData[]>([
+const countriesData = [
   { name: 'United States of America', visitors: 4768, flag: '🇺🇸', percentage: 0 },
   { name: 'United Kingdom', visitors: 1587, flag: '🇬🇧', percentage: 0 },
   { name: 'Germany', visitors: 1240, flag: '🇩🇪', percentage: 0 },
@@ -239,13 +233,13 @@ const countriesData = ref<CountryData[]>([
   { name: 'India', visitors: 583, flag: '🇮🇳', percentage: 0 },
   { name: 'Brazil', visitors: 432, flag: '🇧🇷', percentage: 0 },
   { name: 'Mexico', visitors: 321, flag: '🇲🇽', percentage: 0 }
-])
+]
 
 // Calculate percentages for countries based on visitors
-const totalCountryVisitors = computed(() => countriesData.value.reduce((sum, country) => sum + country.visitors, 0))
+function totalCountryVisitors() { return countriesData.reduce((sum, country } => sum + country.visitors, 0))
 // Update percentages
-countriesData.value.forEach(country => {
-  country.percentage = Math.round((country.visitors / totalCountryVisitors.value) * 100)
+countriesData.forEach(country => {
+  country.percentage = Math.round((country.visitors / totalCountryVisitors) * 100)
 })
 
 // Format numbers with commas
@@ -262,13 +256,6 @@ function getPercentageColorClass(percentage) {
 
 // Initialize chart when component is mounted
 let trafficChart: Chart | null = null
-
-onMounted(() => {
-  const ctx = document.getElementById('trafficChart') as HTMLCanvasElement
-  if (ctx) {
-    trafficChart = new Chart(ctx, chartConfig)
-  }
-})
 
 </script>
 
@@ -631,8 +618,3 @@ onMounted(() => {
 }
 </style>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>

@@ -1,16 +1,4 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script lang="ts">
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
-
-useHead({
-  title: 'Dashboard - Blog SEO',
-})
-
 // Define types
 interface SeoSettings {
   id: number
@@ -41,7 +29,7 @@ interface Post {
 }
 
 // Sample posts data
-const posts = ref<Post[]>([
+const posts = [
   {
     id: 1,
     title: '10 Tips for Better Code Quality',
@@ -82,10 +70,10 @@ const posts = ref<Post[]>([
     published: '2023-11-15',
     status: 'Published'
   }
-])
+]
 
 // Sample SEO data for posts
-const seoData = ref<SeoSettings[]>([
+const seoData = [
   {
     id: 1,
     title: '10 Tips for Better Code Quality - Ultimate Guide',
@@ -176,10 +164,10 @@ const seoData = ref<SeoSettings[]>([
     score: 95,
     lastUpdated: '2023-11-18'
   }
-])
+]
 
 // Global SEO settings
-const globalSeoSettings = ref({
+const globalSeoSettings = {
   siteName: 'My Tech Blog',
   separator: ' | ',
   titleFormat: '%post_title% %separator% %site_name%',
@@ -194,38 +182,38 @@ const globalSeoSettings = ref({
   robotsTxt: 'User-agent: *\nDisallow: /admin/\nDisallow: /dashboard/\nSitemap: https://example.com/sitemap.xml',
   sitemapEnabled: true,
   sitemapFrequency: 'weekly'
-})
+}
 
 // Filter and sort options
-const searchQuery = ref('')
-const sortBy = ref('score')
-const sortOrder = ref('desc')
-const itemsPerPage = ref(10)
-const currentPage = ref(1)
+const searchQuery = ''
+const sortBy = 'score'
+const sortOrder = 'desc'
+const itemsPerPage = 10
+const currentPage = 1
 
 // Edit SEO Modal
-const showEditModal = ref(false)
-const currentSeo = ref<SeoSettings | null>(null)
+const showEditModal = false
+const currentSeo = null
 
 // Global Settings Modal
-const showGlobalSettingsModal = ref(false)
+const showGlobalSettingsModal = false
 
 // Bulk Optimization Modal
-const showBulkOptimizationModal = ref(false)
-const selectedPostIds = ref<number[]>([])
-const selectAll = ref(false)
+const showBulkOptimizationModal = false
+const selectedPostIds = []
+const selectAll = false
 
 // SEO Analysis Modal
-const showAnalysisModal = ref(false)
-const analysisPostId = ref<number | null>(null)
+const showAnalysisModal = false
+const analysisPostId = null
 
 // Computed properties
-const filteredSeoData = computed(() => {
-  let result = [...seoData.value]
+function filteredSeoData() {
+  let result = [...seoData]
 
   // Apply search filter
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase()
     result = result.filter(item =>
       item.title.toLowerCase().includes(query) ||
       item.metaDescription.toLowerCase().includes(query) ||
@@ -236,7 +224,7 @@ const filteredSeoData = computed(() => {
 
   // Apply sorting
   result.sort((a, b) => {
-    const sortField = sortBy.value as keyof SeoSettings
+    const sortField = sortBy as keyof SeoSettings
     let aValue = a[sortField]
     let bValue = b[sortField]
 
@@ -246,7 +234,7 @@ const filteredSeoData = computed(() => {
       bValue = bValue.toLowerCase()
     }
 
-    if (sortOrder.value === 'asc') {
+    if (sortOrder === 'asc') {
       return aValue > bValue ? 1 : -1
     } else {
       return aValue < bValue ? 1 : -1
@@ -257,19 +245,19 @@ const filteredSeoData = computed(() => {
 })
 
 // Pagination
-const totalPages = computed(() => Math.ceil(filteredSeoData.value.length / itemsPerPage.value))
+function totalPages() { return Math.ceil(filteredSeoData.length / itemsPerPage })
 
-const paginatedSeoData = computed(() => {
-  const startIndex = (currentPage.value - 1) * itemsPerPage.value
-  const endIndex = startIndex + itemsPerPage.value
-  return filteredSeoData.value.slice(startIndex, endIndex)
+function paginatedSeoData() {
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  return filteredSeoData.slice(startIndex, endIndex)
 })
 
-const paginationRange = computed(() => {
+function paginationRange() {
   const range: number[] = []
   const maxVisiblePages = 5
-  const startPage = Math.max(1, currentPage.value - Math.floor(maxVisiblePages / 2))
-  const endPage = Math.min(totalPages.value, startPage + maxVisiblePages - 1)
+  const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
+  const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
 
   for (let i = startPage; i <= endPage; i++) {
     range.push(i)
@@ -280,22 +268,22 @@ const paginationRange = computed(() => {
 
 // Methods
 function openEditModal(seo: SeoSettings): void {
-  currentSeo.value = { ...seo }
-  showEditModal.value = true
+  currentSeo = { ...seo }
+  showEditModal = true
 }
 
 function closeEditModal(): void {
-  showEditModal.value = false
-  currentSeo.value = null
+  showEditModal = false
+  currentSeo = null
 }
 
 function saveSeoSettings(): void {
-  if (!currentSeo.value) return
+  if (!currentSeo) return
 
-  const index = seoData.value.findIndex(item => item.id === currentSeo.value!.id)
+  const index = seoData.findIndex(item => item.id === currentSeo.value!.id)
   if (index !== -1) {
     // Make a copy of the current SEO settings
-    const updatedSeo = { ...currentSeo.value };
+    const updatedSeo = { ...currentSeo };
 
     // Ensure slug is a string
     if (updatedSeo.slug === undefined) {
@@ -313,11 +301,11 @@ function saveSeoSettings(): void {
 }
 
 function openGlobalSettingsModal(): void {
-  showGlobalSettingsModal.value = true
+  showGlobalSettingsModal = true
 }
 
 function closeGlobalSettingsModal(): void {
-  showGlobalSettingsModal.value = false
+  showGlobalSettingsModal = false
 }
 
 function saveGlobalSettings(): void {
@@ -326,13 +314,13 @@ function saveGlobalSettings(): void {
 }
 
 function openBulkOptimizationModal(): void {
-  showBulkOptimizationModal.value = true
+  showBulkOptimizationModal = true
 }
 
 function closeBulkOptimizationModal(): void {
-  showBulkOptimizationModal.value = false
-  selectedPostIds.value = []
-  selectAll.value = false
+  showBulkOptimizationModal = false
+  selectedPostIds = []
+  selectAll = false
 }
 
 function runBulkOptimization(): void {
@@ -341,35 +329,35 @@ function runBulkOptimization(): void {
 }
 
 function openAnalysisModal(postId: number): void {
-  analysisPostId.value = postId
-  showAnalysisModal.value = true
+  analysisPostId = postId
+  showAnalysisModal = true
 }
 
 function closeAnalysisModal(): void {
-  showAnalysisModal.value = false
-  analysisPostId.value = null
+  showAnalysisModal = false
+  analysisPostId = null
 }
 
 function toggleSelectAll(): void {
-  if (selectAll.value) {
+  if (selectAll) {
     // Select all posts
-    selectedPostIds.value = paginatedSeoData.value.map(item => item.id)
+    selectedPostIds = paginatedSeoData.map(item => item.id)
   } else {
     // Deselect all
-    selectedPostIds.value = []
+    selectedPostIds = []
   }
 }
 
 function togglePostSelection(postId: number): void {
-  const index = selectedPostIds.value.indexOf(postId)
+  const index = selectedPostIds.indexOf(postId)
   if (index === -1) {
-    selectedPostIds.value.push(postId)
+    selectedPostIds.push(postId)
   } else {
-    selectedPostIds.value.splice(index, 1)
+    selectedPostIds.splice(index, 1)
   }
 
   // Update selectAll based on whether all posts are selected
-  selectAll.value = paginatedSeoData.value.every(item => selectedPostIds.value.includes(item.id))
+  selectAll = paginatedSeoData.every(item => selectedPostIds.includes(item.id))
 }
 
 // Get score color class
@@ -386,7 +374,7 @@ function getScoreBgClass(score: number): string {
   return 'bg-red-100 dark:bg-red-900/30'
 }
 
-const hasSelectedPosts = computed(() => selectedPostIds.value.length > 0)
+function hasSelectedPosts() { return selectedPostIds.length > 0 }
 
 // Generate preview for title and description
 function generateSeoPreview(seo: SeoSettings): string {
@@ -395,7 +383,7 @@ function generateSeoPreview(seo: SeoSettings): string {
 
 // Get post title by ID
 function getPostTitleById(id: number): string {
-  const post = posts.value.find(p => p.id === id)
+  const post = posts.find(p => p.id === id)
   return post ? post.title : 'Unknown Post'
 }
 </script>

@@ -1,14 +1,8 @@
 <script server>
-import { ref, computed, onMounted, reactive } from 'vue'
-import { useHead } from '@vueuse/head'
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
 // Register Chart.js components
 Chart.register(...registerables)
-
-useHead({
-  title: 'Dashboard - Blog Analytics',
-})
 
 // Types
 interface DateRange {
@@ -74,25 +68,25 @@ const dateRanges: DateRange[] = [
 ]
 
 // Selected date range
-const selectedDateRange = ref('all-time')
-const dateRangeDisplay = ref('All Time: Sep 7, 2023 to Mar 6, 2025')
-const comparisonType = ref('no-comparison')
-const customStartDate = ref('')
-const customEndDate = ref('')
-const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
+const selectedDateRange = 'all-time'
+const dateRangeDisplay = 'All Time: Sep 7, 2023 to Mar 6, 2025'
+const comparisonType = 'no-comparison'
+const customStartDate = ''
+const customEndDate = ''
+function showCustomDateRange() { return selectedDateRange === 'custom' }
 
 // Analytics overview data
-const analyticsOverview = ref({
+const analyticsOverview = {
   realtime: 0,
   people: 2200,
   views: 3000,
   avgTimeOnSite: '03:36',
   bounceRate: '89%',
   eventCompletions: 0
-})
+}
 
 // Traffic data for chart
-const trafficData = ref([
+const trafficData = [
   { date: '2023-11-01', pageViews: 100, visitors: 80 },
   { date: '2023-11-15', pageViews: 250, visitors: 180 },
   { date: '2023-12-01', pageViews: 150, visitors: 120 },
@@ -124,17 +118,17 @@ const trafficData = ref([
   { date: '2025-01-01', pageViews: 100, visitors: 80 },
   { date: '2025-01-15', pageViews: 80, visitors: 60 },
   { date: '2025-02-01', pageViews: 60, visitors: 40 }
-])
+]
 
 // Chart.js configuration
 const chartConfig = reactive({
   type: 'line' as keyof ChartTypeRegistry,
   data: {
-    labels: trafficData.value.map(item => item.date),
+    labels: trafficData.map(item => item.date),
     datasets: [
       {
         label: 'Page Views',
-        data: trafficData.value.map(item => item.pageViews),
+        data: trafficData.map(item => item.pageViews),
         backgroundColor: 'rgba(147, 197, 253, 0.3)',
         borderColor: 'rgba(59, 130, 246, 0.8)',
         borderWidth: 2,
@@ -143,7 +137,7 @@ const chartConfig = reactive({
       },
       {
         label: 'Visitors',
-        data: trafficData.value.map(item => item.visitors),
+        data: trafficData.map(item => item.visitors),
         backgroundColor: 'rgba(147, 197, 253, 0.1)',
         borderColor: 'rgba(96, 165, 250, 0.8)',
         borderWidth: 2,
@@ -164,7 +158,7 @@ const chartConfig = reactive({
           maxTicksLimit: 4,
           callback: function(value, index) {
             const labels = ['Jan 2024', 'May 2024', 'Sep 2024', 'Jan 2025']
-            return index % Math.floor(trafficData.value.length / 4) === 0 ? labels[Math.floor(index / (trafficData.value.length / 4))] || '' : ''
+            return index % Math.floor(trafficData.length / 4) === 0 ? labels[Math.floor(index / (trafficData.length / 4))] || '' : ''
           }
         }
       },
@@ -193,7 +187,7 @@ const chartConfig = reactive({
 })
 
 // Pages data - removed duplicates and added unique paths
-const pagesData = ref<PageData[]>([
+const pagesData = [
   { path: '/', entries: 1800, visitors: 1800, views: 2100, percentage: 0 },
   { path: '/blog', entries: 113, visitors: 113, views: 139, percentage: 0 },
   { path: '/about', entries: 51, visitors: 51, views: 77, percentage: 0 },
@@ -204,17 +198,17 @@ const pagesData = ref<PageData[]>([
   { path: '/guide/intro.html', entries: 12, visitors: 17, views: 22, percentage: 0 },
   { path: '/guide/get-started', entries: 9, visitors: 12, views: 13, percentage: 0 },
   { path: '/team', entries: 9, visitors: 10, views: 15, percentage: 0 }
-])
+]
 
 // Calculate percentages for pages based on views
-const totalPageViews = computed(() => pagesData.value.reduce((sum, page) => sum + page.views, 0))
+function totalPageViews() { return pagesData.reduce((sum, page } => sum + page.views, 0))
 // Update percentages
-pagesData.value.forEach(page => {
-  page.percentage = Math.round((page.views / totalPageViews.value) * 100)
+pagesData.forEach(page => {
+  page.percentage = Math.round((page.views / totalPageViews) * 100)
 })
 
 // Referrers data
-const referrersData = ref<ReferrerData[]>([
+const referrersData = [
   { name: 'Direct / Unknown', visitors: 1400, views: 2100, percentage: 0 },
   { name: 'X/Twitter', visitors: 545, views: 580, percentage: 0 },
   { name: 'Google', visitors: 46, views: 50, percentage: 0 },
@@ -225,45 +219,45 @@ const referrersData = ref<ReferrerData[]>([
   { name: 'Bing', visitors: 22, views: 24, percentage: 0 },
   { name: 'Baidu', visitors: 8, views: 8, percentage: 0 },
   { name: 'npmjs.com', visitors: 7, views: 7, percentage: 0 }
-])
+]
 
 // Calculate percentages for referrers based on views
-const totalReferrerViews = computed(() => referrersData.value.reduce((sum, referrer) => sum + referrer.views, 0))
+function totalReferrerViews() { return referrersData.reduce((sum, referrer } => sum + referrer.views, 0))
 // Update percentages
-referrersData.value.forEach(referrer => {
-  referrer.percentage = Math.round((referrer.views / totalReferrerViews.value) * 100)
+referrersData.forEach(referrer => {
+  referrer.percentage = Math.round((referrer.views / totalReferrerViews) * 100)
 })
 
 // Device data
-const deviceData = ref<DeviceData[]>([
+const deviceData = [
   { name: 'Desktop', visitors: 1300, percentage: 60 },
   { name: 'Phone', visitors: 874, percentage: 38 },
   { name: 'Tablet', visitors: 5, percentage: 2 }
-])
+]
 
 // Browser data
-const browserData = ref<BrowserData[]>([
+const browserData = [
   { name: 'Chrome', visitors: 1300, percentage: 58 },
   { name: 'Safari', visitors: 579, percentage: 26 },
   { name: 'Edge', visitors: 129, percentage: 6 },
   { name: 'Firefox', visitors: 92, percentage: 4 },
   { name: 'Mozilla', visitors: 24, percentage: 1 }
-])
+]
 
 // Countries data with flag emojis
-const countriesData = ref<CountryData[]>([
+const countriesData = [
   { name: 'United States of America', visitors: 768, flag: '🇺🇸', percentage: 0 },
   { name: 'Germany', visitors: 140, flag: '🇩🇪', percentage: 0 },
   { name: 'United Kingdom', visitors: 87, flag: '🇬🇧', percentage: 0 },
   { name: 'India', visitors: 83, flag: '🇮🇳', percentage: 0 },
   { name: 'Indonesia', visitors: 80, flag: '🇮🇩', percentage: 0 }
-])
+]
 
 // Calculate percentages for countries based on visitors
-const totalCountryVisitors = computed(() => countriesData.value.reduce((sum, country) => sum + country.visitors, 0))
+function totalCountryVisitors() { return countriesData.reduce((sum, country } => sum + country.visitors, 0))
 // Update percentages
-countriesData.value.forEach(country => {
-  country.percentage = Math.round((country.visitors / totalCountryVisitors.value) * 100)
+countriesData.forEach(country => {
+  country.percentage = Math.round((country.visitors / totalCountryVisitors) * 100)
 })
 
 // Format numbers with commas
@@ -281,10 +275,10 @@ function getPercentageColorClass(percentage) {
 // Mock function to update data when date range changes
 function updateDataForDateRange() {
   // In a real app, this would fetch data from the server based on the selected date range
-  console.log('Updating data for date range:', selectedDateRange.value)
+  console.log('Updating data for date range:', selectedDateRange)
 
-  if (selectedDateRange.value === 'custom') {
-    console.log('Custom date range:', customStartDate.value, 'to', customEndDate.value)
+  if (selectedDateRange === 'custom') {
+    console.log('Custom date range:', customStartDate, 'to', customEndDate)
   }
 }
 
@@ -295,14 +289,6 @@ function handleDateRangeChange() {
 
 // Initialize chart when component is mounted
 let trafficChart: Chart | null = null
-
-onMounted(() => {
-  const ctx = document.getElementById('trafficChart') as HTMLCanvasElement
-  if (ctx) {
-    trafficChart = new Chart(ctx, chartConfig)
-  }
-  updateDataForDateRange()
-})
 
 </script>
 
@@ -659,8 +645,3 @@ onMounted(() => {
 </main>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>

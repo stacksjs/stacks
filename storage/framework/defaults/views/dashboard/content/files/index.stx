@@ -1,20 +1,9 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
 import { Doughnut } from 'vue-chartjs'
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement } from 'chart.js'
 
 // Register ChartJS components
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement)
-
-useHead({
-  title: 'Dashboard - File Manager',
-})
 
 // File and folder interfaces
 interface FileItem {
@@ -221,18 +210,18 @@ const rootFolder = {
 }
 
 // Current state
-const currentFolder = ref(rootFolder)
-const currentPath = ref(['Root'])
-const selectedItems = ref([])
-const viewMode = ref('grid')
-const sortBy = ref('name')
-const sortOrder = ref('asc')
-const searchQuery = ref('')
-const showUploadModal = ref(false)
-const showCreateFolderModal = ref(false)
-const newFolderName = ref('')
-const showDeleteConfirmation = ref(false)
-const showSidePanel = ref(true)
+const currentFolder = rootFolder
+const currentPath = ['Root']
+const selectedItems = []
+const viewMode = 'grid'
+const sortBy = 'name'
+const sortOrder = 'asc'
+const searchQuery = ''
+const showUploadModal = false
+const showCreateFolderModal = false
+const newFolderName = ''
+const showDeleteConfirmation = false
+const showSidePanel = true
 
 // Storage statistics for charts
 const storageStats = {
@@ -250,7 +239,7 @@ const storageByType = {
 }
 
 // Chart data
-const storageChartData = computed(() => {
+function storageChartData() {
   return {
     labels: ['Used', 'Available'],
     datasets: [
@@ -264,7 +253,7 @@ const storageChartData = computed(() => {
   }
 })
 
-const storageByTypeChartData = computed(() => {
+function storageByTypeChartData() {
   return {
     labels: ['Documents', 'Images', 'Videos', 'Other'],
     datasets: [
@@ -305,30 +294,30 @@ const doughnutChartOptions = {
 }
 
 // Computed properties
-const filteredItems = computed(() => {
-  let items = [...currentFolder.value.items]
+function filteredItems() {
+  let items = [...currentFolder.items]
 
   // Apply search filter
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase()
     items = items.filter(item => item.name.toLowerCase().includes(query))
   }
 
   // Apply sorting
   items.sort((a, b) => {
-    if (sortBy.value === 'name') {
-      return sortOrder.value === 'asc'
+    if (sortBy === 'name') {
+      return sortOrder === 'asc'
         ? a.name.localeCompare(b.name)
         : b.name.localeCompare(a.name)
-    } else if (sortBy.value === 'lastModified') {
+    } else if (sortBy === 'lastModified') {
       const dateA = new Date(a.lastModified).getTime()
       const dateB = new Date(b.lastModified).getTime()
-      return sortOrder.value === 'asc' ? dateA - dateB : dateB - dateA
-    } else if (sortBy.value === 'size') {
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA
+    } else if (sortBy === 'size') {
       // For folders, use 0 as size for sorting
       const sizeA = 'size' in a ? a.size : 0
       const sizeB = 'size' in b ? b.size : 0
-      return sortOrder.value === 'asc' ? sizeA - sizeB : sizeB - sizeA
+      return sortOrder === 'asc' ? sizeA - sizeB : sizeB - sizeA
     }
     return 0
   })
@@ -336,7 +325,7 @@ const filteredItems = computed(() => {
   return items
 })
 
-const starredItems = computed(() => {
+function starredItems() {
   // Recursively find all starred items
   const findStarredItems = (folder) => {
     let result = []
@@ -357,7 +346,7 @@ const starredItems = computed(() => {
   return findStarredItems(rootFolder)
 })
 
-const sharedItems = computed(() => {
+function sharedItems() {
   // Recursively find all shared items
   const findSharedItems = (folder) => {
     let result = []
@@ -378,7 +367,7 @@ const sharedItems = computed(() => {
   return findSharedItems(rootFolder)
 })
 
-const recentItems = computed(() => {
+function recentItems() {
   // Recursively find all items and sort by lastModified
   const findAllItems = (folder) => {
     let result = []
@@ -406,31 +395,31 @@ const recentItems = computed(() => {
 
 // Methods
 function navigateToFolder(folder) {
-  currentFolder.value = folder
+  currentFolder = folder
 
   // Update path
-  const pathIndex = currentPath.value.findIndex(p => p === folder.name)
+  const pathIndex = currentPath.findIndex(p => p === folder.name)
   if (pathIndex !== -1) {
     // If folder is already in path, truncate path to this folder
-    currentPath.value = currentPath.value.slice(0, pathIndex + 1)
+    currentPath = currentPath.slice(0, pathIndex + 1)
   } else {
     // Otherwise add to path
-    currentPath.value.push(folder.name)
+    currentPath.push(folder.name)
   }
 
   // Clear selection
-  selectedItems.value = []
+  selectedItems = []
 }
 
 function navigateUp() {
-  if (currentPath.value.length <= 1) return
+  if (currentPath.length <= 1) return
 
   // Remove current folder from path
-  currentPath.value.pop()
+  currentPath.pop()
 
   // Find parent folder
   let parent = rootFolder
-  for (let i = 1; i < currentPath.value.length; i++) {
+  for (let i = 1; i < currentPath.length; i++) {
     const folderName = currentPath.value[i]
     const folder = parent.items.find(item =>
       item.type === 'folder' && item.name === folderName
@@ -441,19 +430,19 @@ function navigateUp() {
     }
   }
 
-  currentFolder.value = parent
-  selectedItems.value = []
+  currentFolder = parent
+  selectedItems = []
 }
 
 function navigateToPath(index) {
-  if (index >= currentPath.value.length - 1) return
+  if (index >= currentPath.length - 1) return
 
   // Truncate path to selected index
-  currentPath.value = currentPath.value.slice(0, index + 1)
+  currentPath = currentPath.slice(0, index + 1)
 
   // Find folder at path
   let folder = rootFolder
-  for (let i = 1; i < currentPath.value.length; i++) {
+  for (let i = 1; i < currentPath.length; i++) {
     const folderName = currentPath.value[i]
     const foundFolder = folder.items.find(item =>
       item.type === 'folder' && item.name === folderName
@@ -464,23 +453,23 @@ function navigateToPath(index) {
     }
   }
 
-  currentFolder.value = folder
-  selectedItems.value = []
+  currentFolder = folder
+  selectedItems = []
 }
 
 function toggleItemSelection(item, event) {
-  const index = selectedItems.value.findIndex(i => i.id === item.id)
+  const index = selectedItems.findIndex(i => i.id === item.id)
 
   if (event.ctrlKey || event.metaKey) {
     // Toggle selection with Ctrl/Cmd key
     if (index === -1) {
-      selectedItems.value.push(item)
+      selectedItems.push(item)
     } else {
-      selectedItems.value.splice(index, 1)
+      selectedItems.splice(index, 1)
     }
   } else {
     // Single selection
-    selectedItems.value = [item]
+    selectedItems = [item]
   }
 }
 
@@ -516,37 +505,37 @@ function getFileIcon(type) {
 }
 
 function createNewFolder() {
-  if (!newFolderName.value.trim()) return
+  if (!newFolderName.trim()) return
 
   const newFolder = {
     id: Date.now(), // Generate a unique ID
-    name: newFolderName.value.trim(),
+    name: newFolderName.trim(),
     type: 'folder',
-    path: `${currentFolder.value.path}/${newFolderName.value.trim()}`,
+    path: `${currentFolder.path}/${newFolderName.trim()}`,
     lastModified: new Date().toISOString(),
     starred: false,
     shared: false,
     items: []
   }
 
-  currentFolder.value.items.push(newFolder)
-  newFolderName.value = ''
-  showCreateFolderModal.value = false
+  currentFolder.items.push(newFolder)
+  newFolderName = ''
+  showCreateFolderModal = false
 }
 
 function deleteSelectedItems() {
-  if (selectedItems.value.length === 0) return
+  if (selectedItems.length === 0) return
 
   // Remove selected items from current folder
-  for (const item of selectedItems.value) {
-    const index = currentFolder.value.items.findIndex(i => i.id === item.id)
+  for (const item of selectedItems) {
+    const index = currentFolder.items.findIndex(i => i.id === item.id)
     if (index !== -1) {
-      currentFolder.value.items.splice(index, 1)
+      currentFolder.items.splice(index, 1)
     }
   }
 
-  selectedItems.value = []
-  showDeleteConfirmation.value = false
+  selectedItems = []
+  showDeleteConfirmation = false
 }
 </script>
 

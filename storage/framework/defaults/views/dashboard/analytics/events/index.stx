@@ -1,14 +1,8 @@
 <script server>
-import { ref, computed, onMounted, reactive } from 'vue'
-import { useHead } from '@vueuse/head'
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
 // Register Chart.js components
 Chart.register(...registerables)
-
-useHead({
-  title: 'Dashboard - Events & Goals',
-})
 
 // Types
 interface DateRange {
@@ -62,31 +56,31 @@ const dateRanges: DateRange[] = [
 ]
 
 // Selected date range
-const selectedDateRange = ref('last30days')
-const dateRangeDisplay = ref('Last 30 Days: Feb 5, 2024 to Mar 6, 2024')
-const comparisonType = ref('no-comparison')
-const customStartDate = ref('')
-const customEndDate = ref('')
-const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
-const isDateRangeOpen = ref(false)
+const selectedDateRange = 'last30days'
+const dateRangeDisplay = 'Last 30 Days: Feb 5, 2024 to Mar 6, 2024'
+const comparisonType = 'no-comparison'
+const customStartDate = ''
+const customEndDate = ''
+function showCustomDateRange() { return selectedDateRange === 'custom' }
+const isDateRangeOpen = false
 
 // Comparison data
 const comparisonData = ref<Record<string, ComparisonData>>({})
-const isComparing = computed(() => comparisonType.value !== 'no-comparison')
-const comparisonLabel = computed(() => {
-  if (comparisonType.value === 'previous-period') return 'vs Previous Period'
-  if (comparisonType.value === 'previous-year') return 'vs Previous Year'
+function isComparing() { return comparisonType !== 'no-comparison' }
+function comparisonLabel() {
+  if (comparisonType === 'previous-period') return 'vs Previous Period'
+  if (comparisonType === 'previous-year') return 'vs Previous Year'
   return ''
 })
 
 // Auto date range
-const isAutoDateRange = ref(true)
+const isAutoDateRange = true
 
 // Conversion calculation type
-const conversionCalculationType = ref('pageviews') // 'pageviews' or 'people'
+const conversionCalculationType = 'pageviews' // 'pageviews' or 'people'
 
 // Events data
-const events = ref<Event[]>([
+const events = [
   {
     id: '1',
     name: 'Newsletter Signup',
@@ -157,11 +151,11 @@ const events = ref<Event[]>([
     createdAt: '2024-02-01',
     lastTriggered: '2024-02-28'
   }
-])
+]
 
 // Blocked events
-const blockedEvents = computed(() => events.value.filter(event => event.status === 'blocked'))
-const activeEvents = computed(() => events.value.filter(event => event.status === 'active'))
+function blockedEvents() { return events.filter(event => event.status === 'blocked' })
+function activeEvents() { return events.filter(event => event.status === 'active' })
 
 // Event data for chart
 const eventChartData = ref<Record<string, EventData[]>>({
@@ -192,11 +186,11 @@ const eventChartData = ref<Record<string, EventData[]>>({
 })
 
 // Selected event for detailed view
-const selectedEvent = ref<Event | null>(null)
-const showEventDetails = ref(false)
-const showCreateEventModal = ref(false)
-const showDeleteConfirmModal = ref(false)
-const eventToDelete = ref<Event | null>(null)
+const selectedEvent = null
+const showEventDetails = false
+const showCreateEventModal = false
+const showDeleteConfirmModal = false
+const eventToDelete = null
 
 // New event form
 const newEvent = reactive({
@@ -227,10 +221,10 @@ function createEventChart(eventId) {
   ]
 
   // Add comparison dataset if comparing
-  if (isComparing.value && comparisonData.value[eventId]) {
+  if (isComparing && comparisonData.value[eventId]) {
     // Create a dataset with values that are 20-40% lower for demonstration
     const comparisonDataset = {
-      label: comparisonLabel.value,
+      label: comparisonLabel,
       data: chartData.map(item => Math.round(item.completions * (0.6 + Math.random() * 0.2))),
       backgroundColor: 'rgba(156, 163, 175, 0.2)',
       borderColor: 'rgba(156, 163, 175, 0.7)',
@@ -274,7 +268,7 @@ function createEventChart(eventId) {
       },
       plugins: {
         legend: {
-          display: isComparing.value,
+          display: isComparing,
           position: 'top' as const
         },
         tooltip: {
@@ -331,8 +325,8 @@ function getPercentageChangeClass(value) {
 
 // Event handlers
 function viewEventDetails(event) {
-  selectedEvent.value = event
-  showEventDetails.value = true
+  selectedEvent = event
+  showEventDetails = true
 
   // Create chart in next tick to ensure DOM is ready
   setTimeout(() => {
@@ -341,8 +335,8 @@ function viewEventDetails(event) {
 }
 
 function closeEventDetails() {
-  showEventDetails.value = false
-  selectedEvent.value = null
+  showEventDetails = false
+  selectedEvent = null
   if (eventChart) {
     eventChart.destroy()
     eventChart = null
@@ -350,11 +344,11 @@ function closeEventDetails() {
 }
 
 function openCreateEventModal() {
-  showCreateEventModal.value = true
+  showCreateEventModal = true
 }
 
 function closeCreateEventModal() {
-  showCreateEventModal.value = false
+  showCreateEventModal = false
   // Reset form
   newEvent.name = ''
   newEvent.hasValue = false
@@ -363,9 +357,9 @@ function closeCreateEventModal() {
 
 function createNewEvent() {
   // In a real app, this would send data to the server
-  const newId = (Math.max(...events.value.map(e => parseInt(e.id))) + 1).toString()
+  const newId = (Math.max(...events.map(e => parseInt(e.id))) + 1).toString()
 
-  events.value.push({
+  events.push({
     id: newId,
     name: newEvent.name,
     completions: 0,
@@ -380,43 +374,43 @@ function createNewEvent() {
 }
 
 function confirmDeleteEvent(event) {
-  eventToDelete.value = event
-  showDeleteConfirmModal.value = true
+  eventToDelete = event
+  showDeleteConfirmModal = true
 }
 
 function cancelDeleteEvent() {
-  eventToDelete.value = null
-  showDeleteConfirmModal.value = false
+  eventToDelete = null
+  showDeleteConfirmModal = false
 }
 
 function deleteEvent() {
-  if (!eventToDelete.value) return
+  if (!eventToDelete) return
 
-  // Type assertion to tell TypeScript that eventToDelete.value is definitely an Event
-  const event = eventToDelete.value as Event
+  // Type assertion to tell TypeScript that eventToDelete is definitely an Event
+  const event = eventToDelete as Event
   const eventId = event.id
 
   if (event.status === 'active') {
     // Block the event instead of deleting
-    const eventIndex = events.value.findIndex(e => e.id === eventId)
+    const eventIndex = events.findIndex(e => e.id === eventId)
     if (eventIndex !== -1) {
       events.value[eventIndex].status = 'blocked'
     }
   } else {
     // Remove completely if already blocked
-    events.value = events.value.filter(e => e.id !== eventId)
+    events = events.filter(e => e.id !== eventId)
   }
 
   // Close modals
-  showDeleteConfirmModal.value = false
-  if (showEventDetails.value && selectedEvent.value?.id === eventId) {
+  showDeleteConfirmModal = false
+  if (showEventDetails && selectedEvent.value?.id === eventId) {
     closeEventDetails()
   }
-  eventToDelete.value = null
+  eventToDelete = null
 }
 
 function unblockEvent(eventId) {
-  const eventIndex = events.value.findIndex(e => e.id === eventId)
+  const eventIndex = events.findIndex(e => e.id === eventId)
   if (eventIndex !== -1) {
     events.value[eventIndex].status = 'active'
   }
@@ -424,45 +418,45 @@ function unblockEvent(eventId) {
 
 function updateConversionCalculationType() {
   // In a real app, this would update the server setting
-  console.log('Conversion calculation type updated to:', conversionCalculationType.value)
+  console.log('Conversion calculation type updated to:', conversionCalculationType)
 }
 
 function updateDataForDateRange() {
   // In a real app, this would fetch data from the server based on the selected date range
-  console.log('Updating data for date range:', selectedDateRange.value)
-  console.log('Comparison type:', comparisonType.value)
+  console.log('Updating data for date range:', selectedDateRange)
+  console.log('Comparison type:', comparisonType)
 
   // Update date range display
-  if (selectedDateRange.value === 'last7days') {
-    dateRangeDisplay.value = 'Last 7 Days: Feb 28, 2024 to Mar 6, 2024'
-  } else if (selectedDateRange.value === 'last30days') {
-    dateRangeDisplay.value = 'Last 30 Days: Feb 5, 2024 to Mar 6, 2024'
-  } else if (selectedDateRange.value === 'thisMonth') {
-    dateRangeDisplay.value = 'This Month: Mar 1, 2024 to Mar 6, 2024'
-  } else if (selectedDateRange.value === 'lastMonth') {
-    dateRangeDisplay.value = 'Last Month: Feb 1, 2024 to Feb 29, 2024'
-  } else if (selectedDateRange.value === 'thisYear') {
-    dateRangeDisplay.value = 'This Year: Jan 1, 2024 to Mar 6, 2024'
-  } else if (selectedDateRange.value === 'custom' && customStartDate.value && customEndDate.value) {
-    const start = formatDate(customStartDate.value)
-    const end = formatDate(customEndDate.value)
-    dateRangeDisplay.value = `Custom Range: ${start} to ${end}`
+  if (selectedDateRange === 'last7days') {
+    dateRangeDisplay = 'Last 7 Days: Feb 28, 2024 to Mar 6, 2024'
+  } else if (selectedDateRange === 'last30days') {
+    dateRangeDisplay = 'Last 30 Days: Feb 5, 2024 to Mar 6, 2024'
+  } else if (selectedDateRange === 'thisMonth') {
+    dateRangeDisplay = 'This Month: Mar 1, 2024 to Mar 6, 2024'
+  } else if (selectedDateRange === 'lastMonth') {
+    dateRangeDisplay = 'Last Month: Feb 1, 2024 to Feb 29, 2024'
+  } else if (selectedDateRange === 'thisYear') {
+    dateRangeDisplay = 'This Year: Jan 1, 2024 to Mar 6, 2024'
+  } else if (selectedDateRange === 'custom' && customStartDate && customEndDate) {
+    const start = formatDate(customStartDate)
+    const end = formatDate(customEndDate)
+    dateRangeDisplay = `Custom Range: ${start} to ${end}`
   } else {
-    dateRangeDisplay.value = 'All Time: Sep 7, 2023 to Mar 6, 2024'
+    dateRangeDisplay = 'All Time: Sep 7, 2023 to Mar 6, 2024'
   }
 
   // Generate comparison data if needed
-  if (comparisonType.value !== 'no-comparison') {
+  if (comparisonType !== 'no-comparison') {
     generateComparisonData()
   } else {
-    comparisonData.value = {}
+    comparisonData = {}
   }
 }
 
 // Generate mock comparison data
 function generateComparisonData() {
   // In a real app, this would be fetched from the server
-  events.value.forEach(event => {
+  events.forEach(event => {
     // Generate random percentage changes between -30% and +50%
     const completionsChange = Math.floor(Math.random() * 80) - 30
     const conversionRateChange = Math.floor(Math.random() * 80) - 30
@@ -471,13 +465,13 @@ function generateComparisonData() {
     // Calculate previous period values based on current values and percentage changes
     const previousCompletions = Math.round(event.completions / (1 + completionsChange / 100))
     const previousConversionRate = +(event.conversionRate / (1 + conversionRateChange / 100)).toFixed(1)
-    const previousValue = Math.round(event.value / (1 + valueChange / 100))
+    const previousValue = Math.round(event / (1 + valueChange / 100))
 
     comparisonData.value[event.id] = {
       current: {
         completions: event.completions,
         conversionRate: event.conversionRate,
-        value: event.value
+        value: event
       },
       previous: {
         completions: previousCompletions,
@@ -495,11 +489,11 @@ function generateComparisonData() {
 
 // Toggle auto date range
 function toggleAutoDateRange() {
-  isAutoDateRange.value = !isAutoDateRange.value
+  isAutoDateRange = !isAutoDateRange
 
-  if (isAutoDateRange.value) {
+  if (isAutoDateRange) {
     // Set to last 30 days when auto is enabled
-    selectedDateRange.value = 'last30days'
+    selectedDateRange = 'last30days'
     updateDataForDateRange()
   }
 }
@@ -507,8 +501,8 @@ function toggleAutoDateRange() {
 // Handle date range change
 function handleDateRangeChange() {
   // Disable auto when manually changing date range
-  if (isAutoDateRange.value) {
-    isAutoDateRange.value = false
+  if (isAutoDateRange) {
+    isAutoDateRange = false
   }
 
   updateDataForDateRange()
@@ -519,13 +513,10 @@ function handleComparisonTypeChange() {
   updateDataForDateRange()
 }
 
-// Initialize when component is mounted
-onMounted(() => {
-  // In a real app, this would fetch data from the server
+// Run on render
+// In a real app, this would fetch data from the server
   console.log('Events component mounted')
   updateDataForDateRange()
-})
-
 </script>
 
 <template>
@@ -753,10 +744,10 @@ onMounted(() => {
                   @endif
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                  <div>{{ formatCurrency(event.value) }}</div>
-                  @if(isComparing && comparisonData[event.id] && event.value > 0)
-                  <div class="text-xs" :class="getPercentageChangeClass(comparisonData[event.id].percentageChange.value)">
-                    {{ formatPercentageChange(comparisonData[event.id].percentageChange.value) }}
+                  <div>{{ formatCurrency(event) }}</div>
+                  @if(isComparing && comparisonData[event.id] && event > 0)
+                  <div class="text-xs" :class="getPercentageChangeClass(comparisonData[event.id].percentageChange)">
+                    {{ formatPercentageChange(comparisonData[event.id].percentageChange) }}
                   </div>
                   @endif
                 </td>
@@ -1018,10 +1009,10 @@ window.addEventListener('load', () => {
 
                 <div class="bg-gray-50 dark:bg-blue-gray-700 p-4 rounded-lg">
                   <div class="text-sm text-gray-500 dark:text-gray-400">Value</div>
-                  <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(selectedEvent.value) }}</div>
-                  @if(isComparing && comparisonData[selectedEvent.id] && selectedEvent.value > 0)
-                  <div class="mt-1 text-sm" :class="getPercentageChangeClass(comparisonData[selectedEvent.id].percentageChange.value)">
-                    {{ formatPercentageChange(comparisonData[selectedEvent.id].percentageChange.value) }} {{ comparisonLabel }}
+                  <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(selectedEvent) }}</div>
+                  @if(isComparing && comparisonData[selectedEvent.id] && selectedEvent > 0)
+                  <div class="mt-1 text-sm" :class="getPercentageChangeClass(comparisonData[selectedEvent.id].percentageChange)">
+                    {{ formatPercentageChange(comparisonData[selectedEvent.id].percentageChange) }} {{ comparisonLabel }}
                   </div>
                   @endif
                 </div>
@@ -1235,8 +1226,3 @@ stacks.trackEvent('{{ selectedEvent.name }}', {
 </main>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>

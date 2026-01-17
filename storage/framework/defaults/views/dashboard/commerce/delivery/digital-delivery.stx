@@ -1,28 +1,12 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
 import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 import DigitalDeliveryTable from '../../../../components/Dashboard/Commerce/Delivery/DigitalDeliveryTable.stx'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
 import { useDigitalDeliveries } from '../../../../functions/commerce/shippings/digital-deliveries'
 
-useHead({
-  title: 'Dashboard - Digital Delivery',
-})
-
 // Get digital deliveries data and functions from the composable
 const { digitalDeliveries, createDigitalDelivery, fetchDigitalDeliveries, updateDigitalDelivery, deleteDigitalDelivery } = useDigitalDeliveries()
-
-// Fetch data on component mount
-onMounted(async () => {
-  await fetchDigitalDeliveries()
-})
 
 // Define new digital delivery type
 interface NewDigitalDeliveryForm {
@@ -36,10 +20,10 @@ interface NewDigitalDeliveryForm {
 }
 
 // Modal state
-const showAddModal = ref(false)
-const showEditModal = ref(false)
-const editingDelivery = ref(null)
-const newDigitalDelivery = ref({
+const showAddModal = false
+const showEditModal = false
+const editingDelivery = null
+const newDigitalDelivery = {
   name: '',
   description: '',
   download_limit: undefined,
@@ -47,10 +31,10 @@ const newDigitalDelivery = ref({
   requires_login: false,
   automatic_delivery: true,
   status: 'Active'
-})
+}
 
 function openAddModal() {
-  newDigitalDelivery.value = {
+  newDigitalDelivery = {
     name: '',
     description: '',
     download_limit: undefined,
@@ -59,16 +43,16 @@ function openAddModal() {
     automatic_delivery: true,
     status: 'Active'
   }
-  showAddModal.value = true
+  showAddModal = true
 }
 
 function closeAddModal() {
-  showAddModal.value = false
+  showAddModal = false
 }
 
 function openEditModal(delivery) {
-  editingDelivery.value = delivery
-  newDigitalDelivery.value = {
+  editingDelivery = delivery
+  newDigitalDelivery = {
     name: delivery.name,
     description: delivery.description,
     download_limit: delivery.download_limit ?? undefined,
@@ -77,17 +61,17 @@ function openEditModal(delivery) {
     automatic_delivery: delivery.automatic_delivery ?? true,
     status: delivery.status ?? 'Active'
   }
-  showEditModal.value = true
+  showEditModal = true
 }
 
 function closeEditModal() {
-  showEditModal.value = false
-  editingDelivery.value = null
+  showEditModal = false
+  editingDelivery = null
 }
 
 async function addDigitalDelivery() {
   try {
-    await createDigitalDelivery(newDigitalDelivery.value)
+    await createDigitalDelivery(newDigitalDelivery)
     closeAddModal()
   } catch (error) {
     console.error('Failed to create digital delivery:', error)
@@ -95,12 +79,12 @@ async function addDigitalDelivery() {
 }
 
 async function saveDigitalDelivery() {
-  if (!editingDelivery.value) return
+  if (!editingDelivery) return
 
   try {
     await updateDigitalDelivery({
-      ...editingDelivery.value,
-      ...newDigitalDelivery.value
+      ...editingDelivery,
+      ...newDigitalDelivery
     })
     closeEditModal()
   } catch (error) {
@@ -109,33 +93,33 @@ async function saveDigitalDelivery() {
 }
 
 // Search and filtering
-const searchQuery = ref('')
-const currentPage = ref(1)
+const searchQuery = ''
+const currentPage = 1
 const itemsPerPage = 5
 
-const filteredDigitalDeliveries = computed(() => {
-  // Ensure digitalDeliveries.value is always an array
-  const deliveries = Array.isArray(digitalDeliveries.value) ? digitalDeliveries.value : []
+function filteredDigitalDeliveries() {
+  // Ensure digitalDeliveries is always an array
+  const deliveries = Array.isArray(digitalDeliveries) ? digitalDeliveries : []
 
-  if (!searchQuery.value) return deliveries
+  if (!searchQuery) return deliveries
 
-  const query = searchQuery.value.toLowerCase()
+  const query = searchQuery.toLowerCase()
   return deliveries.filter(delivery =>
     delivery.name.toLowerCase().includes(query) ||
     delivery.description.toLowerCase().includes(query)
   )
 })
 
-const paginatedDigitalDeliveries = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
+function paginatedDigitalDeliveries() {
+  const start = (currentPage - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return filteredDigitalDeliveries.value.slice(start, end)
+  return filteredDigitalDeliveries.slice(start, end)
 })
 
 // Event handlers
 const handleSearch = (query) => {
-  searchQuery.value = query
-  currentPage.value = 1
+  searchQuery = query
+  currentPage = 1
 }
 
 const handleAddDigitalMethod = () => {
@@ -157,20 +141,20 @@ const handleDeleteDigitalMethod = async (delivery) => {
 }
 
 const handlePrevPage = () => {
-  if (currentPage.value > 1) {
+  if (currentPage > 1) {
     currentPage.value--
   }
 }
 
 const handleNextPage = () => {
-  const totalPages = Math.ceil(filteredDigitalDeliveries.value.length / itemsPerPage)
-  if (currentPage.value < totalPages) {
+  const totalPages = Math.ceil(filteredDigitalDeliveries.length / itemsPerPage)
+  if (currentPage < totalPages) {
     currentPage.value++
   }
 }
 
 const handlePageChange = (page) => {
-  currentPage.value = page
+  currentPage = page
 }
 
 // Tab configuration

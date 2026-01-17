@@ -1,12 +1,8 @@
 <script>
-const router = useRouter()
 // get the [name] of current route
-const name = computed(() => router.currentRoute.value.params.name)
+function name() { return router.currentRoute.params.name }
 
 // set the title of the page
-useHead({
-  title: `Dashboard Settings - ${name.value}`,
-})
 </script>
 
 <main>

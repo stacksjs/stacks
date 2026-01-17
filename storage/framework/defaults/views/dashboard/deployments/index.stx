@@ -1,12 +1,4 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-useHead({
-  title: 'Dashboard - Deployments',
-})
 </script>
 
 <template>

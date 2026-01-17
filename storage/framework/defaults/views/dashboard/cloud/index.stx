@@ -1,16 +1,5 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { useHead } from '@vueuse/head'
 import * as d3 from 'd3'
-
-useHead({
-  title: 'Dashboard - Cloud',
-})
 
 // Update ServerConfig interface
 interface ServerConfig {
@@ -165,8 +154,8 @@ const bunVersions = [
 ]
 
 // State
-const activeView = ref<'visual' | 'code'>('visual')
-const cloudConfig = ref<CloudConfig>({
+const activeView = 'visual'
+const cloudConfig = {
   type: 'aws',
   useLoadBalancer: true,
   servers: {
@@ -186,7 +175,7 @@ const cloudConfig = ref<CloudConfig>({
       userData: '#!/bin/bash\necho "Hello World!" > /tmp/test.txt',
     },
   },
-})
+}
 
 // Add node and link type definitions
 interface InfraNode extends d3.SimulationNodeDatum {
@@ -244,15 +233,15 @@ type WorkerSizeSpecs = {
 }
 
 // Add worker state
-const workerConfig = ref<WorkerConfig>({
+const workerConfig = {
   name: 'Worker 1',
   size: 't3.micro',
   replicas: 1,
   specs: workerSizes['t3.micro'],
-})
+}
 
 // Add visualization state
-const diagramContainer = ref<HTMLElement | null>(null)
+const diagramContainer = null
 let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>
 let simulation: d3.Simulation<d3.SimulationNodeDatum, undefined>
 
@@ -260,18 +249,18 @@ let simulation: d3.Simulation<d3.SimulationNodeDatum, undefined>
 let zoomGroup: d3.Selection<SVGGElement, unknown, null, undefined>
 
 // Add selected node state
-const selectedNode = ref<InfraNode | null>(null)
+const selectedNode = null
 
 // Add save state
-const isSaving = ref(false)
-const saveError = ref<string | null>(null)
+const isSaving = false
+const saveError = null
 
 // Add unsaved state
-const hasUnsavedChanges = ref(false)
+const hasUnsavedChanges = false
 
 // Add initial state tracking for change detection
-const initialWorkerConfig = ref({ ...workerConfig.value })
-const initialCloudConfig = ref({ ...cloudConfig.value })
+const initialWorkerConfig = { ...workerConfig }
+const initialCloudConfig = { ...cloudConfig }
 
 // Add edit mode state
 const editMode = ref<Record<string, boolean>>({})
@@ -283,30 +272,21 @@ const toggleEditMode = (key: string) => {
 
 // Function to update worker specs when size changes
 const updateWorkerSpecs = () => {
-  workerConfig.value.specs = workerSizes[workerConfig.value.size]
+  workerConfig.specs = workerSizes[workerConfig.size]
 }
-
-// Update watch to compare with initial state
-watch([cloudConfig, workerConfig], ([newCloud, newWorker]) => {
-  hasUnsavedChanges.value = JSON.stringify(newCloud) !== JSON.stringify(initialCloudConfig.value) ||
-    JSON.stringify(newWorker) !== JSON.stringify(initialWorkerConfig.value)
-  if (diagramContainer.value) {
-    updateVisualization()
-  }
-}, { deep: true })
 
 // Function to create and update the infrastructure visualization
 const updateVisualization = () => {
-  if (!diagramContainer.value) return
+  if (!diagramContainer) return
 
-  const width = diagramContainer.value.clientWidth
+  const width = diagramContainer.clientWidth
   const height = 400
 
   // Clear existing visualization
-  d3.select(diagramContainer.value).selectAll('*').remove()
+  d3.select(diagramContainer).selectAll('*').remove()
 
   // Create SVG
-  svg = d3.select(diagramContainer.value)
+  svg = d3.select(diagramContainer)
     .append('svg')
     .attr('width', width)
     .attr('height', height)
@@ -331,15 +311,15 @@ const updateVisualization = () => {
   nodes.push({ id: 'user', type: 'user', label: 'User/Client' })
 
   // Add load balancer if enabled
-  if (cloudConfig.value.useLoadBalancer) {
+  if (cloudConfig.useLoadBalancer) {
     nodes.push({ id: 'lb', type: 'loadbalancer', label: 'Load Balancer' })
     links.push({ source: 'user', target: 'lb' })
   }
 
   // Add servers
-  Object.entries(cloudConfig.value.servers).forEach(([key, server]) => {
+  Object.entries(cloudConfig.servers).forEach(([key, server]) => {
     nodes.push({ id: key, type: 'server', label: server.name, config: server })
-    if (cloudConfig.value.useLoadBalancer) {
+    if (cloudConfig.useLoadBalancer) {
       links.push({ source: 'lb', target: key })
     } else {
       links.push({ source: 'user', target: key })
@@ -347,16 +327,16 @@ const updateVisualization = () => {
   })
 
   // Add worker replicas
-  for (let i = 0; i < workerConfig.value.replicas; i++) {
+  for (let i = 0; i < workerConfig.replicas; i++) {
     const workerId = `worker-${i}`
     nodes.push({
       id: workerId,
       type: 'worker',
-      label: `${workerConfig.value.name} #${i + 1}`,
-      config: workerConfig.value
+      label: `${workerConfig.name} #${i + 1}`,
+      config: workerConfig
     })
     // Connect workers to the first app server if it exists
-    const servers = cloudConfig.value.servers
+    const servers = cloudConfig.servers
     const appServer = Object.keys(servers).find(key => servers[key]?.type === 'app')
     if (appServer) {
       links.push({ source: appServer, target: workerId })
@@ -565,7 +545,7 @@ const updateVisualization = () => {
 
   // Add click handler to clear selection when clicking background
   svg.on('click', () => {
-    selectedNode.value = null
+    selectedNode = null
   })
 }
 
@@ -595,15 +575,9 @@ onUnmounted(() => {
 })
 
 // Initialize visualization on mount
-onMounted(() => {
-  if (diagramContainer.value) {
-    updateVisualization()
-  }
-})
-
 // Methods
 const addServer = () => {
-  const id = Object.keys(cloudConfig.value.servers).length + 1
+  const id = Object.keys(cloudConfig.servers).length + 1
   const key = `app${id}`
   const newServer: ServerConfig = {
     name: `app-${generateServerName('app')}`,
@@ -618,24 +592,24 @@ const addServer = () => {
     databaseName: 'stacks',
     searchEngine: 'meilisearch'
   }
-  cloudConfig.value.servers[key] = newServer
+  cloudConfig.servers[key] = newServer
   editMode.value[key] = true
 }
 
 const removeServer = (key: string) => {
-  delete cloudConfig.value.servers[key]
+  delete cloudConfig.servers[key]
 }
 
 // Update server config with proper typing
 const updateServerConfig = <T extends keyof ServerConfig>(key: string, field: T, value: ServerConfig[T]) => {
-  if (cloudConfig.value.servers[key]) {
-    cloudConfig.value.servers[key][field] = value
+  if (cloudConfig.servers[key]) {
+    cloudConfig.servers[key][field] = value
   }
 }
 
 // Function to show node details
 const showNodeDetails = (node: InfraNode) => {
-  selectedNode.value = node
+  selectedNode = node
 }
 
 // Function to format config details
@@ -665,8 +639,8 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
 
 // Update save method to reset initial state
 const saveWorkerConfig = async () => {
-  isSaving.value = true
-  saveError.value = null
+  isSaving = true
+  saveError = null
 
   try {
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3008'
@@ -677,8 +651,8 @@ const saveWorkerConfig = async () => {
         'Accept': 'application/json',
       },
       body: JSON.stringify({
-        worker: workerConfig.value,
-        cloud: cloudConfig.value,
+        worker: workerConfig,
+        cloud: cloudConfig,
       }),
     })
 
@@ -686,13 +660,13 @@ const saveWorkerConfig = async () => {
       throw new Error('Failed to save configuration')
     }
 
-    initialWorkerConfig.value = { ...workerConfig.value }
-    initialCloudConfig.value = { ...cloudConfig.value }
-    hasUnsavedChanges.value = false
+    initialWorkerConfig = { ...workerConfig }
+    initialCloudConfig = { ...cloudConfig }
+    hasUnsavedChanges = false
   } catch (error) {
-    saveError.value = error instanceof Error ? error.message : 'Failed to save worker configuration'
+    saveError = error instanceof Error ? error.message : 'Failed to save worker configuration'
   } finally {
-    isSaving.value = false
+    isSaving = false
   }
 }
 
@@ -760,11 +734,6 @@ const updateServerDefaults = (server: ServerConfig) => {
   }
 }
 
-// Add a watcher for server type changes
-watch(() => Object.values(cloudConfig.value.servers), (servers) => {
-  servers.forEach(server => {
-    updateServerDefaults(server)
-  })
 }, { deep: true })
 </script>
 
@@ -954,7 +923,7 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
                   <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ server.name }}</h5>
                   <div class="flex flex-wrap gap-2">
                     <span
-                      v-for="badge in serverTypes.find((t: ServerType) => t.value === server.type)?.badges"
+                      v-for="badge in serverTypes.find((t: ServerType) => t === server.type)?.badges"
                       :key="badge"
                       class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
                     >
@@ -967,7 +936,7 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
                   <p>{{ server.domain }}</p>
                 </div>
                 <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  {{ serverTypes.find((t: ServerType) => t.value === server.type)?.description }}
+                  {{ serverTypes.find((t: ServerType) => t === server.type)?.description }}
                 </p>
               </div>
 

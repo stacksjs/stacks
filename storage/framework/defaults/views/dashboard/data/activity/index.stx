@@ -1,6 +1,4 @@
 <script server>
-import { ref, computed, onMounted, watch } from 'vue'
-import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -24,10 +22,6 @@ ChartJS.register(
   Legend,
   Filler,
 )
-
-useHead({
-  title: 'Dashboard - Activity Log',
-})
 
 // Laravel-style activity log interfaces
 interface User {
@@ -59,18 +53,18 @@ interface ActivityLog {
 }
 
 // Add pagination
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
-const totalItems = ref(0)
+const currentPage = 1
+const itemsPerPage = 10
+const totalItems = 0
 
-const activityLogs = ref<ActivityLog[]>([])
-const logNameFilter = ref('all')
-const searchTerm = ref('')
-const autoRefresh = ref(true)
-const selectedLog = ref<ActivityLog | null>(null)
-const isLoading = ref(false)
-const eventFilter = ref<string>('all')
-const subjectTypeFilter = ref<string>('all')
+const activityLogs = []
+const logNameFilter = 'all'
+const searchTerm = ''
+const autoRefresh = true
+const selectedLog = null
+const isLoading = false
+const eventFilter = 'all'
+const subjectTypeFilter = 'all'
 
 // Sample users for the activity logs
 const users: User[] = [
@@ -520,59 +514,59 @@ const processLogs = (logs: ActivityLog[]) => {
   })
 }
 
-const filteredLogs = computed(() => {
-  return activityLogs.value.filter(log => {
-    const matchesSearch = log.description.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-      log.subject_name?.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-      log.causer?.name.toLowerCase().includes(searchTerm.value.toLowerCase());
+function filteredLogs() {
+  return activityLogs.filter(log => {
+    const matchesSearch = log.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.subject_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.causer?.name.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesLogName = logNameFilter.value === 'all' || log.log_name === logNameFilter.value;
+    const matchesLogName = logNameFilter === 'all' || log.log_name === logNameFilter;
 
-    const matchesEvent = eventFilter.value === 'all' || log.event === eventFilter.value;
+    const matchesEvent = eventFilter === 'all' || log.event === eventFilter;
 
-    const matchesSubjectType = subjectTypeFilter.value === 'all' || log.subject_type === subjectTypeFilter.value;
+    const matchesSubjectType = subjectTypeFilter === 'all' || log.subject_type === subjectTypeFilter;
 
     return matchesSearch && matchesLogName && matchesEvent && matchesSubjectType;
   }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 });
 
 // Add pagination computed properties
-const paginatedLogs = computed(() => {
-  const startIndex = (currentPage.value - 1) * itemsPerPage.value;
-  const endIndex = startIndex + itemsPerPage.value;
-  totalItems.value = filteredLogs.value.length;
-  return filteredLogs.value.slice(startIndex, endIndex);
+function paginatedLogs() {
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  totalItems = filteredLogs.length;
+  return filteredLogs.slice(startIndex, endIndex);
 });
 
-const totalPages = computed(() => {
-  return Math.ceil(totalItems.value / itemsPerPage.value);
+function totalPages() {
+  return Math.ceil(totalItems / itemsPerPage);
 });
 
 // Add pagination methods
 const goToPage = (page: number) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
+  if (page >= 1 && page <= totalPages) {
+    currentPage = page;
   }
 };
 
 const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
+  if (currentPage < totalPages) {
     currentPage.value++;
   }
 };
 
 const prevPage = () => {
-  if (currentPage.value > 1) {
+  if (currentPage > 1) {
     currentPage.value--;
   }
 };
 
 const resetFilters = () => {
-  searchTerm.value = '';
-  logNameFilter.value = 'all';
-  eventFilter.value = 'all';
-  subjectTypeFilter.value = 'all';
-  currentPage.value = 1;
+  searchTerm = '';
+  logNameFilter = 'all';
+  eventFilter = 'all';
+  subjectTypeFilter = 'all';
+  currentPage = 1;
 };
 
 // Helper functions for UI
@@ -621,17 +615,12 @@ const getLogIconColor = (color: string | undefined) => color || 'text-gray-500'
 
 let refreshInterval: number | undefined
 
-onMounted(() => {
-  activityLogs.value = processLogs(sampleActivityLogs)
-  startAutoRefresh()
-})
-
 onUnmounted(() => {
   stopAutoRefresh()
 })
 
 const startAutoRefresh = () => {
-  if (autoRefresh.value) {
+  if (autoRefresh) {
     refreshInterval = window.setInterval(() => {
       // In reality, this would fetch new logs
       // fetchNewLogs()
@@ -647,8 +636,8 @@ const stopAutoRefresh = () => {
 }
 
 const toggleAutoRefresh = () => {
-  autoRefresh.value = !autoRefresh.value
-  if (autoRefresh.value) {
+  autoRefresh = !autoRefresh
+  if (autoRefresh) {
     startAutoRefresh()
   } else {
     stopAutoRefresh()
@@ -750,19 +739,11 @@ const getLogVolumeData = () => {
   }
 }
 
-const logVolumeData = ref(getLogVolumeData())
+const logVolumeData = getLogVolumeData()
 
 // Add timeRange ref
-const timeRange = ref<'day' | 'week' | 'month' | 'year'>('day')
+const timeRange = 'day'
 
-// Watch for time range changes
-watch(timeRange, async () => {
-  isLoading.value = true
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500))
-  logVolumeData.value = getLogVolumeData()
-  isLoading.value = false
-})
 </script>
 
 <template>
@@ -1233,8 +1214,3 @@ watch(timeRange, async () => {
 </div>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>

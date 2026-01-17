@@ -1,5 +1,5 @@
 <script server>
-const value = props.value || ''
+const value = props || ''
 const label = props.label || ''
 const placeholder = props.placeholder || ''
 const error = props.error || ''

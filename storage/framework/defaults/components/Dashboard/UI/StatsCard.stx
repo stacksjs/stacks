@@ -1,6 +1,6 @@
 <script server>
 const title = props.title || ''
-const value = props.value || ''
+const value = props || ''
 const subtitle = props.subtitle || ''
 const trend = props.trend !== undefined ? props.trend : null // number or null
 const trendLabel = props.trendLabel || ''

@@ -1,6 +1,4 @@
 <script server>
-import { ref, computed, watch, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -24,10 +22,6 @@ ChartJS.register(
   Legend,
   Filler,
 )
-
-useHead({
-  title: 'Dashboard - Functions',
-})
 
 const chartOptions = {
   responsive: true,
@@ -99,9 +93,9 @@ const chartOptions = {
   },
 }
 
-const comparePackage = ref('')
-const timeRange = ref('7')
-const isLoading = ref(false)
+const comparePackage = ''
+const timeRange = '7'
+const isLoading = false
 
 const formatDate = (daysAgo) => {
   const date = new Date()
@@ -137,9 +131,9 @@ interface FunctionStatsMap {
   '365': FunctionStats
 }
 
-const functionStats = ref({
+const functionStats = {
   '7': {
-    labels: generateDateLabels(7),
+    labels: generateDateLabels(7,
     data: [8500, 11800, 10200, 12800, 15200, 14100, 13200],
     compareData: [6500, 8800, 7200, 9800, 11200, 10100, 9200]
   },
@@ -161,33 +155,29 @@ const functionStats = ref({
 })
 
 const fetchFunctionData = async (days) => {
-  isLoading.value = true
+  isLoading = true
   try {
     await new Promise(resolve => setTimeout(resolve, 500))
   } catch (error) {
     console.error('Error fetching function data:', error)
   } finally {
-    isLoading.value = false
+    isLoading = false
   }
 }
 
-watch(timeRange, async (newRange) => {
-  await fetchFunctionData(newRange)
-})
-
-const downloadsData = computed(() => ({
-  labels: functionStats.value[timeRange.value].labels,
+function downloadsData() { return ({
+  labels: functionStats.value[timeRange].labels,
   datasets: [
     {
       label: '@your/function',
-      data: functionStats.value[timeRange.value].data,
-      borderColor: 'rgb(59, 130, 246)',
+      data: functionStats.value[timeRange].data,
+      borderColor: 'rgb(59, 130, 246 }',
       backgroundColor: 'rgba(59, 130, 246, 0.1)',
       fill: true,
     },
-    ...(comparePackage.value ? [{
-      label: comparePackage.value,
-      data: functionStats.value[timeRange.value].compareData,
+    ...(comparePackage ? [{
+      label: comparePackage,
+      data: functionStats.value[timeRange].compareData,
       borderColor: 'rgb(234, 179, 8)',
       backgroundColor: 'rgba(234, 179, 8, 0.1)',
       fill: true,
@@ -196,14 +186,11 @@ const downloadsData = computed(() => ({
 }))
 
 const handleCompare = async () => {
-  if (comparePackage.value) {
-    await fetchFunctionData(timeRange.value)
+  if (comparePackage) {
+    await fetchFunctionData(timeRange)
   }
 }
 
-onMounted(async () => {
-  await fetchFunctionData(timeRange.value)
-})
 </script>
 
 <template>
@@ -487,8 +474,3 @@ onMounted(async () => {
 </div>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>

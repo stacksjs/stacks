@@ -1,6 +1,4 @@
 <script server>
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -35,10 +33,6 @@ ChartJS.register(
   Legend,
   Filler,
 )
-
-useHead({
-  title: 'Dashboard - Packages',
-})
 
 const packages = [
   {
@@ -291,15 +285,15 @@ const timeChartOptions = {
   },
 }
 
-const sortedPackages = computed(() => {
+function sortedPackages() {
   return [...packages].sort((a, b) => b.downloads - a.downloads)
 })
 
-const downloadsData = computed(() => ({
-  labels: sortedPackages.value.map(pkg => pkg.name),
+function downloadsData() { return ({
+  labels: sortedPackages.map(pkg => pkg.name },
   datasets: [{
     label: 'Downloads',
-    data: sortedPackages.value.map(pkg => pkg.downloads),
+    data: sortedPackages.map(pkg => pkg.downloads),
     backgroundColor: 'rgba(59, 130, 246, 0.8)',
     borderColor: 'rgb(59, 130, 246)',
     borderWidth: 1
@@ -350,10 +344,10 @@ const starsOptions = {
   }
 }
 
-const timeRange = ref('30')
-const displayMode = ref('line')
-const selectedPackages = ref([])
-const isLoading = ref(false)
+const timeRange = '30'
+const displayMode = 'line'
+const selectedPackages = []
+const isLoading = false
 
 const formatDate = (daysAgo) => {
   const date = new Date()
@@ -384,25 +378,25 @@ const generateStarGrowthData = (days, baseCount) => {
   })
 }
 
-const useCompactMode = computed(() => packages.length > 10)
+function useCompactMode() { return packages.length > 10 }
 
-const filteredPackages = computed(() => {
+function filteredPackages() {
   let filtered = [...packages]
-  if (useCompactMode.value && selectedPackages.value.length === 0) {
+  if (useCompactMode && selectedPackages.length === 0) {
     filtered = filtered.sort((a, b) => b.downloads - a.downloads).slice(0, 5)
-  } else if (selectedPackages.value.length > 0) {
-    filtered = filtered.filter(pkg => selectedPackages.value.includes(pkg.name))
+  } else if (selectedPackages.length > 0) {
+    filtered = filtered.filter(pkg => selectedPackages.includes(pkg.name))
   }
   return filtered.sort((a, b) => b.downloads - a.downloads)
 })
 
-const downloadsTimeData = computed(() => {
-  const days = parseInt(timeRange.value)
+function downloadsTimeData() {
+  const days = parseInt(timeRange)
   const labels = generateDateLabels(days)
 
   return {
     labels,
-    datasets: filteredPackages.value.map((pkg, index) => {
+    datasets: filteredPackages.map((pkg, index) => {
       const colorIndex = index % colors.length
       const color = colors[colorIndex]
       if (!color) return null
@@ -411,7 +405,7 @@ const downloadsTimeData = computed(() => {
         label: pkg.name,
         data: generateGrowthData(days, pkg.downloads, 100),
         borderColor: color.border,
-        backgroundColor: displayMode.value === 'line'
+        backgroundColor: displayMode === 'line'
           ? color.background.replace('0.8', '0.1')
           : color.background,
         fill: true,
@@ -421,13 +415,13 @@ const downloadsTimeData = computed(() => {
   }
 })
 
-const starsTimeData = computed(() => {
-  const days = parseInt(timeRange.value)
+function starsTimeData() {
+  const days = parseInt(timeRange)
   const labels = generateDateLabels(days)
 
   return {
     labels,
-    datasets: filteredPackages.value.map((pkg, index) => {
+    datasets: filteredPackages.map((pkg, index) => {
       const colorIndex = index % colors.length
       const color = colors[colorIndex]
       if (!color) return null
@@ -436,7 +430,7 @@ const starsTimeData = computed(() => {
         label: pkg.name,
         data: generateStarGrowthData(days, pkg.stars),
         borderColor: color.border,
-        backgroundColor: displayMode.value === 'line'
+        backgroundColor: displayMode === 'line'
           ? color.background.replace('0.8', '0.1')
           : color.background,
         fill: true,
@@ -446,45 +440,45 @@ const starsTimeData = computed(() => {
   }
 })
 
-const totalDownloads = computed(() => {
-  return filteredPackages.value.reduce((sum, pkg) => sum + pkg.downloads, 0)
+function totalDownloads() {
+  return filteredPackages.reduce((sum, pkg) => sum + pkg.downloads, 0)
 })
 
-const totalContributors = computed(() => {
-  return filteredPackages.value.reduce((sum, pkg) => sum + pkg.contributors, 0)
+function totalContributors() {
+  return filteredPackages.reduce((sum, pkg) => sum + pkg.contributors, 0)
 })
 
-const totalIssues = computed(() => {
-  return filteredPackages.value.reduce((sum, pkg) => sum + pkg.issues, 0)
+function totalIssues() {
+  return filteredPackages.reduce((sum, pkg) => sum + pkg.issues, 0)
 })
 
-const contributorsData = computed(() => ({
-  labels: filteredPackages.value.map(pkg => pkg.name),
+function contributorsData() { return ({
+  labels: filteredPackages.map(pkg => pkg.name },
   datasets: [{
     label: 'Contributors',
-    data: filteredPackages.value.map(pkg => pkg.contributors),
+    data: filteredPackages.map(pkg => pkg.contributors),
     backgroundColor: 'rgba(234, 179, 8, 0.8)',
     borderColor: 'rgb(234, 179, 8)',
     borderWidth: 1
   }]
 }))
 
-const issuesData = computed(() => ({
-  labels: filteredPackages.value.map(pkg => pkg.name),
+function issuesData() { return ({
+  labels: filteredPackages.map(pkg => pkg.name },
   datasets: [{
     label: 'Open Issues',
-    data: filteredPackages.value.map(pkg => pkg.issues),
+    data: filteredPackages.map(pkg => pkg.issues),
     backgroundColor: 'rgba(239, 68, 68, 0.8)',
     borderColor: 'rgb(239, 68, 68)',
     borderWidth: 1
   }]
 }))
 
-const starsData = computed(() => ({
-  labels: filteredPackages.value.map(pkg => pkg.name),
+function starsData() { return ({
+  labels: filteredPackages.map(pkg => pkg.name },
   datasets: [{
     label: 'GitHub Stars',
-    data: filteredPackages.value.map(pkg => pkg.stars),
+    data: filteredPackages.map(pkg => pkg.stars),
     backgroundColor: 'rgba(168, 85, 247, 0.8)',
     borderColor: 'rgb(168, 85, 247)',
     borderWidth: 1
@@ -858,8 +852,3 @@ const starsData = computed(() => ({
 </div>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>

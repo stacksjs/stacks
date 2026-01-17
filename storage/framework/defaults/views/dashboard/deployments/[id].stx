@@ -1,22 +1,9 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
 const gitStore = useGitStore()
 const github = useGitHub()
 const route = useRoute()
 
-onMounted(async () => {
-  await gitStore.fetchWorkflowAction(route.params.id)
-})
-
-useHead({
-  title: `Deployments - ${route.params.id}`,
-})
-
-const flag = ref(false)
+const flag = false
 
 function getStatus(conclusion) {
   if (conclusion === 'success')

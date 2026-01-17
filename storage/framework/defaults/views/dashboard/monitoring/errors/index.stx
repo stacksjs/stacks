@@ -1,18 +1,7 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
 import { useErrors } from '../../../../functions/monitoring/errors'
 import DashboardLayout from '../../../../components/Dashboard/DashboardLayout.stx'
 import { StatsCard, Card, Button, Input, Select, Badge, Table, Pagination, Modal } from '../../../../components/Dashboard/UI'
-
-useHead({
-  title: 'Dashboard - Error Tracking',
-})
 
 const {
   groupedErrors,
@@ -25,28 +14,21 @@ const {
   deleteErrorGroup,
 } = useErrors()
 
-onMounted(async () => {
-  await Promise.all([
-    fetchGroupedErrors(),
-    fetchErrorStats(),
-  ])
-})
+const searchQuery = ''
+const statusFilter = null
+const typeFilter = null
+const sortBy = 'last_seen'
+const sortOrder = 'desc'
+const currentPage = 1
+const itemsPerPage = 10
 
-const searchQuery = ref('')
-const statusFilter = ref(null)
-const typeFilter = ref(null)
-const sortBy = ref('last_seen')
-const sortOrder = ref('desc')
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
+const selectedError = null
+const isDetailModalOpen = false
+const showDeleteModal = false
+const errorToDelete = null
 
-const selectedError = ref(null)
-const isDetailModalOpen = ref(false)
-const showDeleteModal = ref(false)
-const errorToDelete = ref(null)
-
-const typeOptions = computed(() => {
-  const types = new Set(groupedErrors.value.map(e => e.type))
+function typeOptions() {
+  const types = new Set(groupedErrors.map(e => e.type))
   return [
     { value: '', label: 'All Types' },
     ...Array.from(types).map(type => ({ value: type, label: type }))
@@ -68,94 +50,94 @@ const columns = [
   { key: 'last_seen', label: 'Last Seen', sortable: true, align: 'right' },
 ]
 
-const filteredErrors = computed(() => {
-  return groupedErrors.value
+function filteredErrors() {
+  return groupedErrors
     .filter(error => {
-      const matchesSearch = !searchQuery.value ||
-        error.type.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        error.message.toLowerCase().includes(searchQuery.value.toLowerCase())
+      const matchesSearch = !searchQuery ||
+        error.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        error.message.toLowerCase().includes(searchQuery.toLowerCase())
 
-      const matchesStatus = !statusFilter.value || error.status === statusFilter.value
-      const matchesType = !typeFilter.value || error.type === typeFilter.value
+      const matchesStatus = !statusFilter || error.status === statusFilter
+      const matchesType = !typeFilter || error.type === typeFilter
 
       return matchesSearch && matchesStatus && matchesType
     })
     .sort((a, b) => {
       let comparison = 0
-      if (sortBy.value === 'type') {
+      if (sortBy === 'type') {
         comparison = a.type.localeCompare(b.type)
-      } else if (sortBy.value === 'count') {
+      } else if (sortBy === 'count') {
         comparison = a.count - b.count
-      } else if (sortBy.value === 'last_seen') {
+      } else if (sortBy === 'last_seen') {
         comparison = new Date(a.last_seen).getTime() - new Date(b.last_seen).getTime()
-      } else if (sortBy.value === 'first_seen') {
+      } else if (sortBy === 'first_seen') {
         comparison = new Date(a.first_seen).getTime() - new Date(b.first_seen).getTime()
       }
-      return sortOrder.value === 'asc' ? comparison : -comparison
+      return sortOrder === 'asc' ? comparison : -comparison
     })
 })
 
-const paginatedErrors = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredErrors.value.slice(start, end)
+function paginatedErrors() {
+  const start = (currentPage - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredErrors.slice(start, end)
 })
 
-const totalPages = computed(() => Math.ceil(filteredErrors.value.length / itemsPerPage.value))
+function totalPages() { return Math.ceil(filteredErrors.length / itemsPerPage })
 
 function handleSort(column, direction) {
-  sortBy.value = column
-  sortOrder.value = direction
+  sortBy = column
+  sortOrder = direction
 }
 
 function viewError(error) {
-  selectedError.value = error
-  isDetailModalOpen.value = true
+  selectedError = error
+  isDetailModalOpen = true
 }
 
 function closeDetailModal() {
-  isDetailModalOpen.value = false
-  selectedError.value = null
+  isDetailModalOpen = false
+  selectedError = null
 }
 
 async function handleResolveError(error) {
   await resolveErrorGroup(error.type, error.message)
   await fetchErrorStats()
-  if (isDetailModalOpen.value && selectedError.value) {
-    selectedError.value = { ...selectedError.value, status: 'resolved' }
+  if (isDetailModalOpen && selectedError) {
+    selectedError = { ...selectedError, status: 'resolved' }
   }
 }
 
 async function handleIgnoreError(error) {
   await ignoreErrorGroup(error.type, error.message)
   await fetchErrorStats()
-  if (isDetailModalOpen.value && selectedError.value) {
-    selectedError.value = { ...selectedError.value, status: 'ignored' }
+  if (isDetailModalOpen && selectedError) {
+    selectedError = { ...selectedError, status: 'ignored' }
   }
 }
 
 async function handleUnresolveError(error) {
   await unresolveErrorGroup(error.type, error.message)
   await fetchErrorStats()
-  if (isDetailModalOpen.value && selectedError.value) {
-    selectedError.value = { ...selectedError.value, status: 'unresolved' }
+  if (isDetailModalOpen && selectedError) {
+    selectedError = { ...selectedError, status: 'unresolved' }
   }
 }
 
 function openDeleteModal(error) {
-  errorToDelete.value = error
-  showDeleteModal.value = true
-  if (isDetailModalOpen.value) {
-    isDetailModalOpen.value = false
+  errorToDelete = error
+  showDeleteModal = true
+  if (isDetailModalOpen) {
+    isDetailModalOpen = false
   }
 }
 
 async function confirmDelete() {
-  if (!errorToDelete.value) return
-  await deleteErrorGroup(errorToDelete.value.type, errorToDelete.value.message)
+  if (!errorToDelete) return
+  await deleteErrorGroup(errorToDelete.type, errorToDelete.message)
   await fetchErrorStats()
-  showDeleteModal.value = false
-  errorToDelete.value = null
+  showDeleteModal = false
+  errorToDelete = null
 }
 
 function getStatusVariant(status) {

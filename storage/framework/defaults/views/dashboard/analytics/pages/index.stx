@@ -1,14 +1,8 @@
 <script server>
-import { ref, computed, onMounted, reactive } from 'vue'
-import { useHead } from '@vueuse/head'
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
 // Register Chart.js components
 Chart.register(...registerables)
-
-useHead({
-  title: 'Dashboard - Page Analytics',
-})
 
 // Types
 interface DateRange {
@@ -46,15 +40,15 @@ const dateRanges: DateRange[] = [
 ]
 
 // Selected date range
-const selectedDateRange = ref('all-time')
-const dateRangeDisplay = ref('All Time: Sep 7, 2023 to Mar 6, 2025')
-const comparisonType = ref('no-comparison')
-const customStartDate = ref('')
-const customEndDate = ref('')
-const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
+const selectedDateRange = 'all-time'
+const dateRangeDisplay = 'All Time: Sep 7, 2023 to Mar 6, 2025'
+const comparisonType = 'no-comparison'
+const customStartDate = ''
+const customEndDate = ''
+function showCustomDateRange() { return selectedDateRange === 'custom' }
 
 // Pages data
-const pagesData = ref<PageData[]>([
+const pagesData = [
   { path: '/', entries: 1800, visitors: 1800, views: 2100, percentage: 25, avgTimeOnPage: '02:15', bounceRate: '65%' },
   { path: '/blog', entries: 613, visitors: 613, views: 739, percentage: 15, avgTimeOnPage: '03:45', bounceRate: '45%' },
   { path: '/about', entries: 451, visitors: 451, views: 577, percentage: 12, avgTimeOnPage: '01:30', bounceRate: '70%' },
@@ -65,10 +59,10 @@ const pagesData = ref<PageData[]>([
   { path: '/guide/intro.html', entries: 212, visitors: 217, views: 322, percentage: 6, avgTimeOnPage: '04:15', bounceRate: '35%' },
   { path: '/guide/get-started', entries: 209, visitors: 212, views: 313, percentage: 6, avgTimeOnPage: '05:30', bounceRate: '32%' },
   { path: '/team', entries: 109, visitors: 110, views: 215, percentage: 5, avgTimeOnPage: '02:45', bounceRate: '60%' }
-])
+]
 
 // Page performance data
-const pagePerformanceData = ref<PagePerformanceData[]>([
+const pagePerformanceData = [
   { path: '/', loadTime: 0.8, fcp: 0.9, lcp: 1.2, cls: 0.05, score: 'Good' },
   { path: '/blog', loadTime: 1.2, fcp: 1.3, lcp: 2.1, cls: 0.08, score: 'Good' },
   { path: '/about', loadTime: 0.7, fcp: 0.8, lcp: 1.0, cls: 0.03, score: 'Good' },
@@ -79,10 +73,10 @@ const pagePerformanceData = ref<PagePerformanceData[]>([
   { path: '/guide/intro.html', loadTime: 1.6, fcp: 1.8, lcp: 2.6, cls: 0.11, score: 'Needs Improvement' },
   { path: '/guide/get-started', loadTime: 1.7, fcp: 1.9, lcp: 2.7, cls: 0.11, score: 'Needs Improvement' },
   { path: '/team', loadTime: 0.8, fcp: 0.9, lcp: 1.3, cls: 0.06, score: 'Good' }
-])
+]
 
 // Page views trend data for line chart
-const pageViewsTrendData = ref([
+const pageViewsTrendData = [
   { date: '2023-09-01', views: 800, visitors: 600 },
   { date: '2023-10-01', views: 850, visitors: 650 },
   { date: '2023-11-01', views: 900, visitors: 700 },
@@ -94,17 +88,17 @@ const pageViewsTrendData = ref([
   { date: '2024-05-01', views: 1500, visitors: 1150 },
   { date: '2024-06-01', views: 1600, visitors: 1250 },
   { date: '2024-07-01', views: 1800, visitors: 1400 }
-])
+]
 
 // Chart.js configuration for page views trend
 const trendChartConfig = reactive({
   type: 'line' as keyof ChartTypeRegistry,
   data: {
-    labels: pageViewsTrendData.value.map(item => item.date),
+    labels: pageViewsTrendData.map(item => item.date),
     datasets: [
       {
         label: 'Page Views',
-        data: pageViewsTrendData.value.map(item => item.views),
+        data: pageViewsTrendData.map(item => item.views),
         borderColor: 'rgba(59, 130, 246, 0.8)',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
         tension: 0.4,
@@ -112,7 +106,7 @@ const trendChartConfig = reactive({
       },
       {
         label: 'Visitors',
-        data: pageViewsTrendData.value.map(item => item.visitors),
+        data: pageViewsTrendData.map(item => item.visitors),
         borderColor: 'rgba(16, 185, 129, 0.8)',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         tension: 0.4,
@@ -156,11 +150,11 @@ const trendChartConfig = reactive({
 const topPagesChartConfig = reactive({
   type: 'bar' as keyof ChartTypeRegistry,
   data: {
-    labels: pagesData.value.slice(0, 5).map(item => item.path),
+    labels: pagesData.slice(0, 5).map(item => item.path),
     datasets: [
       {
         label: 'Page Views',
-        data: pagesData.value.slice(0, 5).map(item => item.views),
+        data: pagesData.slice(0, 5).map(item => item.views),
         backgroundColor: 'rgba(59, 130, 246, 0.8)',
         borderColor: 'rgba(59, 130, 246, 1)',
         borderWidth: 1
@@ -213,7 +207,7 @@ function getPerformanceColorClass(score) {
 
 // Mock function to update data when date range changes
 function updateDataForDateRange() {
-  console.log('Updating data for date range:', selectedDateRange.value)
+  console.log('Updating data for date range:', selectedDateRange)
 }
 
 // Watch for date range changes
@@ -224,20 +218,6 @@ function handleDateRangeChange() {
 // Initialize charts when component is mounted
 let pageViewsTrendChart: Chart | null = null
 let topPagesChart: Chart | null = null
-
-onMounted(() => {
-  const trendCtx = document.getElementById('pageViewsTrendChart') as HTMLCanvasElement
-  if (trendCtx) {
-    pageViewsTrendChart = new Chart(trendCtx, trendChartConfig)
-  }
-
-  const topPagesCtx = document.getElementById('topPagesChart') as HTMLCanvasElement
-  if (topPagesCtx) {
-    topPagesChart = new Chart(topPagesCtx, topPagesChartConfig)
-  }
-
-  updateDataForDateRange()
-})
 
 </script>
 
@@ -442,8 +422,3 @@ onMounted(() => {
 </main>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>

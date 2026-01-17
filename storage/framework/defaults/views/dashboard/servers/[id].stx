@@ -1,17 +1,4 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref } from 'vue'
-import { useHead } from '@vueuse/head'
-import { useRoute } from 'vue-router'
-
-useHead({
-  title: 'Server Details',
-})
-
 const route = useRoute()
 const serverId = route.params.id as string
 
@@ -42,7 +29,7 @@ interface UfwRule {
   description: string
 }
 
-const server = ref<ServerConfig>({
+const server = {
   name: 'app-cosmic-nebula',
   domain: 'stacksjs.com',
   region: 'us-east-1',
@@ -54,9 +41,9 @@ const server = ref<ServerConfig>({
   database: 'sqlite',
   databaseName: 'stacks',
   searchEngine: 'meilisearch'
-})
+}
 
-const ufwRules = ref<UfwRule[]>([
+const ufwRules = [
   {
     id: 1,
     port: '22',
@@ -84,7 +71,7 @@ const ufwRules = ref<UfwRule[]>([
     action: 'ALLOW',
     description: 'HTTPS Traffic'
   }
-])
+]
 
 const newRule = ref<Partial<UfwRule>>({
   port: '',
@@ -95,22 +82,22 @@ const newRule = ref<Partial<UfwRule>>({
   description: ''
 })
 
-const isAddingRule = ref(false)
+const isAddingRule = false
 
 const addRule = () => {
-  if (!newRule.value.port || !newRule.value.description) return
+  if (!newRule.port || !newRule.description) return
 
-  ufwRules.value.push({
-    id: Math.max(0, ...ufwRules.value.map(r => r.id)) + 1,
-    port: newRule.value.port!,
-    from: newRule.value.from!,
-    to: newRule.value.to!,
-    protocol: newRule.value.protocol!,
-    action: newRule.value.action!,
-    description: newRule.value.description!
+  ufwRules.push({
+    id: Math.max(0, ...ufwRules.map(r => r.id)) + 1,
+    port: newRule.port!,
+    from: newRule.from!,
+    to: newRule.to!,
+    protocol: newRule.protocol!,
+    action: newRule.action!,
+    description: newRule.description!
   })
 
-  newRule.value = {
+  newRule = {
     port: '',
     from: '0.0.0.0',
     to: 'any',
@@ -118,11 +105,11 @@ const addRule = () => {
     action: 'ALLOW',
     description: ''
   }
-  isAddingRule.value = false
+  isAddingRule = false
 }
 
 const removeRule = (id) => {
-  ufwRules.value = ufwRules.value.filter(rule => rule.id !== id)
+  ufwRules = ufwRules.filter(rule => rule.id !== id)
 }
 
 const commonPorts = [
