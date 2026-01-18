@@ -1,12 +1,8 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref } from 'vue'
-import { useHead } from '@vueuse/head'
-import { Line, Doughnut } from 'vue-chartjs'
+definePageMeta({
+  middleware: ['auth']
+})
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -31,10 +27,6 @@ ChartJS.register(
   Legend,
   Filler,
 )
-
-useHead({
-  title: 'Dashboard - Blog',
-})
 
 // Sample data for the dashboard
 const viewsData = {
@@ -140,7 +132,7 @@ const draftPosts = [
   { id: 8, title: 'CSS Grid vs Flexbox', category: 'Tutorials', lastEdited: '2023-11-27', author: 'Jane Doe' },
 ]
 
-const timeRange = ref('Last 30 days')
+let timeRange = 'Last 30 days'
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Stats calculations
@@ -149,6 +141,8 @@ const totalViews = 256890
 const totalComments = 3427
 const averageEngagement = '4.2%'
 </script>
+
+@title('Dashboard - Blog')
 
 <template>
 <main>

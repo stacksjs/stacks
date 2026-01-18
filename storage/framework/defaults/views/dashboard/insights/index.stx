@@ -1,7 +1,9 @@
 <script server>
-import { ref } from 'vue'
-import { useHead } from '@vueuse/head'
-import { Line, Doughnut } from 'vue-chartjs'
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -26,10 +28,6 @@ ChartJS.register(
   Filler,
   ArcElement,
 )
-
-useHead({
-  title: 'Dashboard - Insights',
-})
 
 interface SystemMetrics {
   cpu: number
@@ -95,7 +93,7 @@ interface User {
   requests: number
 }
 
-const systemMetrics = ref({
+let systemMetrics = {
   cpu: 6,
   memory: {
     used: 786,
@@ -105,9 +103,9 @@ const systemMetrics = ref({
     used: 6,
     total: 10,
   },
-})
+}
 
-const queues = ref({
+let queues = {
   default: {
     queued: 70,
     processing: 15,
@@ -122,9 +120,9 @@ const queues = ref({
     released: 3,
     failed: 1,
   },
-})
+}
 
-const exceptions = ref([
+let exceptions = [
   {
     type: 'App\\Exceptions\\FlightOverbookedException',
     location: 'app/Jobs/ProcessBooking.ts:33',
@@ -137,9 +135,9 @@ const exceptions = ref([
     count: 22,
     latest: '5 minutes ago',
   },
-])
+]
 
-const cache = ref({
+let cache = {
   hits: 1675,
   misses: 284,
   hitRate: 85.5,
@@ -169,9 +167,9 @@ const cache = ref({
       ttl: 3600
     },
   ],
-})
+}
 
-const slowQueries = ref([
+let slowQueries = [
   {
     query: "insert into `tickets` (`flight_id`, `user_id`, `price`, `created_at`, `updated_at`) values (?, ?, ?, ?, ?)",
     location: "app/Actions/FlightAction.ts:26",
@@ -184,9 +182,9 @@ const slowQueries = ref([
     count: 363,
     slowest: 3088,
   },
-])
+]
 
-const slowRoutes = ref([
+let slowRoutes = [
   {
     method: 'DELETE',
     route: '/flights/{flight}',
@@ -201,15 +199,15 @@ const slowRoutes = ref([
     slowest: 2996,
     action: 'app/Actions/FlightAction.ts:createTicket',
   },
-])
+]
 
-const users = ref([
+let users = [
   { name: 'Chris Breuer', email: 'chris@stacksjs.com', requests: 68 },
   { name: 'Avery', email: 'avery@stacksjs.com', requests: 65 },
   { name: 'Michael', email: 'michael@stacksjs.com', requests: 51 },
   { name: 'Glenn', email: 'glenn@stacksjs.com', requests: 50 },
   { name: 'Zoltan', email: 'zoltan@stacksjs.com', requests: 47 },
-])
+]
 
 const chartOptions = {
   responsive: true,
@@ -305,7 +303,7 @@ const storageData = {
   labels: ['Used', 'Available'],
   datasets: [
     {
-      data: [systemMetrics.value.storage.used, systemMetrics.value.storage.total - systemMetrics.value.storage.used],
+      data: [systemMetrics.storage.used, systemMetrics.storage.total - systemMetrics.storage.used],
       backgroundColor: [
         'rgb(59, 130, 246)',
         'rgba(200, 200, 200, 0.2)',
@@ -357,7 +355,7 @@ const getQueueData = (name) => ({
       fill: true,
     }
   ],
-})
+}
 
 const queueChartOptions = {
   ...chartOptions,
@@ -417,6 +415,8 @@ const statsCards = [
 ]
 </script>
 
+@title('Dashboard - Insights')
+
 <template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <!-- Stats Overview -->
@@ -440,7 +440,7 @@ const statsCards = [
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
               <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
-                {{ stat.value }}
+                {{ stat }}
               </p>
               <p :class="[
                 'ml-2 flex items-baseline text-sm font-semibold',
@@ -884,8 +884,3 @@ const statsCards = [
 </div>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>

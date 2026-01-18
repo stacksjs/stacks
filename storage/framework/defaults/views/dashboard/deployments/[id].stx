@@ -1,22 +1,13 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
 const gitStore = useGitStore()
 const github = useGitHub()
 const route = useRoute()
 
-onMounted(async () => {
-  await gitStore.fetchWorkflowAction(route.params.id)
-})
-
-useHead({
-  title: `Deployments - ${route.params.id}`,
-})
-
-const flag = ref(false)
+let flag = false
 
 function getStatus(conclusion) {
   if (conclusion === 'success')
@@ -299,3 +290,11 @@ function getStatus(conclusion) {
   </div>
 @endif
 </template>
+
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  await gitStore.fetchWorkflowAction(route.params.id)
+})
+</script>

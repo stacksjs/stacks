@@ -1,7 +1,8 @@
 <script server>
-import { ref, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
-import { useRoute, useRouter } from 'vue-router'
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
 
 const route = useRoute('/jobs/[id]')
 const router = useRouter()
@@ -38,14 +39,10 @@ interface JobDetails {
   }>
 }
 
-const job = ref(null)
-const isLoading = ref(true)
-const showPayload = ref(false)
-const showTrace = ref(false)
-
-useHead({
-  title: `Dashboard - Job Details #${route.params.id}`,
-})
+let job = null
+let isLoading = true
+let showPayload = false
+let showTrace = false
 
 const jobStatusColors = {
   queued: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/50 ring-blue-600/20',
@@ -91,62 +88,6 @@ const openFile = (file, line) => {
 
   console.log('Opening file:', filePath, 'at line:', lineNumber)
 }
-
-onMounted(async () => {
-  isLoading.value = true
-  try {
-    await new Promise(resolve => setTimeout(resolve, 500))
-
-    job.value = {
-      id: route.params.id,
-      name: 'ProcessPayment',
-      queue: 'high',
-      connection: 'redis',
-      status: 'failed',
-      attempts: 3,
-      max_tries: 3,
-      timeout: 60,
-      runtime: 5.2,
-      started_at: '2024-03-14 10:15:23',
-      finished_at: '2024-03-14 10:15:28',
-      error: 'Connection timeout at ProcessPayment.handle (/app/jobs/ProcessPayment.ts:25:7)',
-      worker: 'worker-1',
-      memory_usage: 128.5 * 1024 * 1024,
-      cpu_usage: 23.4,
-      tags: ['payment', 'order:12345', 'user:1234'],
-      chain: [
-        'App\\Jobs\\ProcessPayment',
-        'App\\Jobs\\SendPaymentConfirmation',
-        'App\\Jobs\\UpdateOrderStatus'
-      ],
-      payload: {
-        order_id: '12345',
-        amount: 99.99,
-        currency: 'USD',
-      },
-      exception: {
-        message: 'Connection timeout',
-        file: '/app/jobs/ProcessPayment.ts',
-        line: 25,
-        trace: [
-          '#0 /app/jobs/ProcessPayment.ts(25): ProcessPayment->handle()',
-          '#1 /vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(59): ProcessPayment->handle()',
-          '#2 /vendor/laravel/framework/src/Illuminate/Queue/Jobs/Job.php(88): CallQueuedHandler->call()',
-        ]
-      },
-      logs: [
-        { timestamp: '2024-03-14 10:15:23', level: 'info', message: 'Starting payment processing' },
-        { timestamp: '2024-03-14 10:15:24', level: 'info', message: 'Validating payment details' },
-        { timestamp: '2024-03-14 10:15:25', level: 'warning', message: 'Slow response from payment gateway' },
-        { timestamp: '2024-03-14 10:15:28', level: 'error', message: 'Connection timeout while processing payment' }
-      ],
-    }
-  } catch (error) {
-    console.error('Failed to load job details:', error)
-  } finally {
-    isLoading.value = false
-  }
-})
 
 </script>
 
@@ -453,8 +394,63 @@ onMounted(async () => {
 </div>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  isLoading = true
+  try {
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    job = {
+      id: route.params.id,
+      name: 'ProcessPayment',
+      queue: 'high',
+      connection: 'redis',
+      status: 'failed',
+      attempts: 3,
+      max_tries: 3,
+      timeout: 60,
+      runtime: 5.2,
+      started_at: '2024-03-14 10:15:23',
+      finished_at: '2024-03-14 10:15:28',
+      error: 'Connection timeout at ProcessPayment.handle (/app/jobs/ProcessPayment.ts:25:7)',
+      worker: 'worker-1',
+      memory_usage: 128.5 * 1024 * 1024,
+      cpu_usage: 23.4,
+      tags: ['payment', 'order:12345', 'user:1234'],
+      chain: [
+        'App\\Jobs\\ProcessPayment',
+        'App\\Jobs\\SendPaymentConfirmation',
+        'App\\Jobs\\UpdateOrderStatus'
+      ],
+      payload: {
+        order_id: '12345',
+        amount: 99.99,
+        currency: 'USD',
+      },
+      exception: {
+        message: 'Connection timeout',
+        file: '/app/jobs/ProcessPayment.ts',
+        line: 25,
+        trace: [
+          '#0 /app/jobs/ProcessPayment.ts(25): ProcessPayment->handle()',
+          '#1 /vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(59): ProcessPayment->handle()',
+          '#2 /vendor/laravel/framework/src/Illuminate/Queue/Jobs/Job.php(88): CallQueuedHandler->call()',
+        ]
+      },
+      logs: [
+        { timestamp: '2024-03-14 10:15:23', level: 'info', message: 'Starting payment processing' },
+        { timestamp: '2024-03-14 10:15:24', level: 'info', message: 'Validating payment details' },
+        { timestamp: '2024-03-14 10:15:25', level: 'warning', message: 'Slow response from payment gateway' },
+        { timestamp: '2024-03-14 10:15:28', level: 'error', message: 'Connection timeout while processing payment' }
+      ],
+    }
+  } catch (error) {
+    console.error('Failed to load job details:', error)
+  } finally {
+    isLoading = false
+  }
+})
+</script>
+

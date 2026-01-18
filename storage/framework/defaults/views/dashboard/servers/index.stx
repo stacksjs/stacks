@@ -1,16 +1,9 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useHead } from '@vueuse/head'
-import * as d3 from 'd3'
-
-useHead({
-  title: 'Dashboard - Servers',
+definePageMeta({
+  middleware: ['auth']
 })
+
+import * as d3 from 'd3'
 
 // Update ServerConfig interface
 interface ServerConfig {
@@ -56,7 +49,7 @@ type InstanceType = keyof typeof workerSizes
 // Update default values
 const defaultServerOS = 'ubuntu-24-lts-x86_64'
 const defaultBunVersion = 'v1.2.3'
-const cloudConfig = ref<CloudConfig>({
+let cloudConfig = {
   type: 'aws',
   useLoadBalancer: true,
   servers: {
@@ -76,7 +69,7 @@ const cloudConfig = ref<CloudConfig>({
       userData: '#!/bin/bash\necho "Hello World!" > /tmp/test.txt',
     },
   },
-})
+}
 
 // Add node and link type definitions
 interface InfraNode extends d3.SimulationNodeDatum {
@@ -135,15 +128,15 @@ type WorkerSizeSpecs = {
 }
 
 // Add worker state
-const workerConfig = ref<WorkerConfig>({
+let workerConfig = {
   name: 'Worker 1',
   size: 't3.micro',
   replicas: 1,
   specs: workerSizes['t3.micro'],
-})
+}
 
 // Add visualization state
-const diagramContainer = ref<HTMLElement | null>(null)
+let diagramContainer = null
 let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>
 let simulation: d3.Simulation<InfraNode, undefined> | undefined
 
@@ -151,43 +144,34 @@ let simulation: d3.Simulation<InfraNode, undefined> | undefined
 let zoomGroup: d3.Selection<SVGGElement, unknown, null, undefined>
 
 // Add selected node state
-const selectedNode = ref<InfraNode | null>(null)
+let selectedNode = null
 
 // Add save state
-const isSaving = ref(false)
-const saveError = ref<string | null>(null)
+let isSaving = false
+let saveError = null
 
 // Add unsaved state
-const hasUnsavedChanges = ref(false)
+let hasUnsavedChanges = false
 
 // Add initial state tracking for change detection
-const initialWorkerConfig = ref({ ...workerConfig.value })
-const initialCloudConfig = ref({ ...cloudConfig.value })
+let initialWorkerConfig = { ...workerConfig }
+let initialCloudConfig = { ...cloudConfig }
 
 // Add edit mode state
 const editMode = ref<Record<string, boolean>>({})
 
-// Update watch to compare with initial state
-watch([cloudConfig, workerConfig], ([newCloud, newWorker]) => {
-  hasUnsavedChanges.value = JSON.stringify(newCloud) !== JSON.stringify(initialCloudConfig.value) ||
-    JSON.stringify(newWorker) !== JSON.stringify(initialWorkerConfig.value)
-  if (diagramContainer.value) {
-    updateVisualization()
-  }
-}, { deep: true })
-
 // Function to create and update the infrastructure visualization
 const updateVisualization = () => {
-  if (!diagramContainer.value) return
+  if (!diagramContainer) return
 
-  const width = diagramContainer.value.clientWidth
+  const width = diagramContainer.clientWidth
   const height = 400
 
   // Clear existing visualization
-  d3.select(diagramContainer.value).selectAll('*').remove()
+  d3.select(diagramContainer).selectAll('*').remove()
 
   // Create SVG
-  svg = d3.select(diagramContainer.value)
+  svg = d3.select(diagramContainer)
     .append('svg')
     .attr('width', width)
     .attr('height', height)
@@ -197,7 +181,7 @@ const updateVisualization = () => {
     .scaleExtent([0.1, 4])
     .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
       zoomGroup.attr('transform', event.transform.toString())
-    })
+    }
 
   svg.call(zoom)
 
@@ -212,32 +196,32 @@ const updateVisualization = () => {
   nodes.push({ id: 'user', type: 'user', label: 'DNS' })
 
   // Add load balancer if enabled
-  if (cloudConfig.value.useLoadBalancer) {
+  if (cloudConfig.useLoadBalancer) {
     nodes.push({ id: 'lb', type: 'loadbalancer', label: 'Load Balancer' })
     links.push({ source: 'user', target: 'lb' })
   }
 
   // Add servers
-  Object.entries(cloudConfig.value.servers).forEach(([key, server]) => {
+  Object.entries(cloudConfig.servers).forEach(([key, server]) => {
     nodes.push({ id: key, type: 'server', label: server.name, config: server })
-    if (cloudConfig.value.useLoadBalancer) {
+    if (cloudConfig.useLoadBalancer) {
       links.push({ source: 'lb', target: key })
     } else {
       links.push({ source: 'user', target: key })
     }
-  })
+  }
 
   // Add worker replicas
-  for (let i = 0; i < workerConfig.value.replicas; i++) {
+  for (let i = 0; i < workerConfig.replicas; i++) {
     const workerId = `worker-${i}`
     nodes.push({
       id: workerId,
       type: 'worker',
-      label: `${workerConfig.value.name} #${i + 1}`,
-      config: workerConfig.value
-    })
+      label: `${workerConfig.name} #${i + 1}`,
+      config: workerConfig
+    }
     // Connect workers to the first app server if it exists
-    const servers = cloudConfig.value.servers
+    const servers = cloudConfig.servers
     const appServer = Object.keys(servers).find(key => servers[key]?.type === 'app')
     if (appServer) {
       links.push({ source: appServer, target: workerId })
@@ -291,7 +275,7 @@ const updateVisualization = () => {
     .on('click', (event: MouseEvent, d: InfraNode) => {
       event.stopPropagation()
       showNodeDetails(d)
-    })
+    }
 
   // Add circles for nodes
   node.append('circle')
@@ -304,7 +288,7 @@ const updateVisualization = () => {
         case 'worker': return '#FEF3C7' // yellow-100
         default: return '#F3F4F6' // gray-100
       }
-    })
+    }
     .attr('stroke', (d: InfraNode) => {
       switch (d.type) {
         case 'user': return '#EC4899' // pink-500
@@ -313,7 +297,7 @@ const updateVisualization = () => {
         case 'worker': return '#F59E0B' // yellow-500
         default: return '#6B7280' // gray-500
       }
-    })
+    }
     .attr('stroke-width', 3)
 
   // Add icons with colored backgrounds
@@ -327,7 +311,7 @@ const updateVisualization = () => {
         case 'worker': return '#B45309' // yellow-700
         default: return '#374151' // gray-700
       }
-    })
+    }
 
   // Add icons
   node.append('text')
@@ -344,7 +328,7 @@ const updateVisualization = () => {
         case 'worker': return '⚙️'
         default: return '📦'
       }
-    })
+    }
 
   // Update labels with better contrast
   node.append('text')
@@ -365,7 +349,7 @@ const updateVisualization = () => {
 
     node
       .attr('transform', (d: InfraNode) => `translate(${d.x ?? 0},${d.y ?? 0})`)
-  })
+  }
 
   // Add zoom controls
   const zoomControls = svg.append('g')
@@ -385,7 +369,7 @@ const updateVisualization = () => {
       svg.transition()
         .duration(300)
         .call(zoom.scaleBy, 1.3)
-    })
+    }
 
   zoomControls.append('text')
     .attr('x', 15)
@@ -409,7 +393,7 @@ const updateVisualization = () => {
       svg.transition()
         .duration(300)
         .call(zoom.scaleBy, 0.7)
-    })
+    }
 
   zoomControls.append('text')
     .attr('x', 55)
@@ -433,7 +417,7 @@ const updateVisualization = () => {
       svg.transition()
         .duration(300)
         .call(zoom.transform, d3.zoomIdentity)
-    })
+    }
 
   zoomControls.append('text')
     .attr('x', 35)
@@ -446,8 +430,8 @@ const updateVisualization = () => {
 
   // Add click handler to clear selection when clicking background
   svg.on('click', () => {
-    selectedNode.value = null
-  })
+    selectedNode = null
+  }
 }
 
 // Update drag functions to handle undefined simulation
@@ -473,19 +457,12 @@ onUnmounted(() => {
   if (simulation) {
     simulation.stop()
   }
-})
-
-// Initialize visualization on mount
-onMounted(() => {
-  if (diagramContainer.value) {
-    updateVisualization()
-  }
-})
+}
 
 // Methods
 // Function to show node details
 const showNodeDetails = (node) => {
-  selectedNode.value = node
+  selectedNode = node
 }
 
 // Function to format config details
@@ -558,13 +535,6 @@ const updateServerDefaults = (server) => {
     server.searchEngine = server.searchEngine || 'meilisearch'
   }
 }
-
-// Add a watcher for server type changes
-watch(() => Object.values(cloudConfig.value.servers), (servers) => {
-  servers.forEach(server => {
-    updateServerDefaults(server)
-  })
-}, { deep: true })
 
 interface ServerConfig {
   name: string
@@ -656,47 +626,47 @@ const servers = ref<Record<string, ServerConfig>>({
     serverOS: 'ubuntu-24-lts-x86_64',
     bunVersion: 'v1.2.4',
   },
-})
+}
 
-const sortKey = ref<keyof ServerConfig>('name')
-const sortOrder = ref<'asc' | 'desc'>('asc')
+let sortKey = 'name'
+let sortOrder = 'asc'
 
 const setSorting = (key) => {
-  if (sortKey.value === key) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  if (sortKey === key) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
   } else {
-    sortKey.value = key
-    sortOrder.value = 'asc'
+    sortKey = key
+    sortOrder = 'asc'
   }
 }
 
-const sortedServers = computed(() => {
-  return Object.entries(servers.value).sort(([, a], [, b]) => {
-    const aValue = a[sortKey.value]
-    const bValue = b[sortKey.value]
+function sortedServers() {
+  return Object.entries(servers).sort(([, a], [, b]) => {
+    const aValue = a[sortKey]
+    const bValue = b[sortKey]
 
     if (!aValue || !bValue || aValue === bValue) return 0
-    if (sortOrder.value === 'asc')
+    if (sortOrder === 'asc')
       return aValue < bValue ? -1 : 1
 
     return aValue < bValue ? 1 : -1
-  })
-})
+  )}
+)}
 
-const searchQuery = ref('')
-const filteredServers = computed(() => {
-  const query = searchQuery.value.toLowerCase()
-  if (!query) return sortedServers.value
+let searchQuery = ''
+function filteredServers() {
+  const query = searchQuery.toLowerCase()
+  if (!query) return sortedServers
 
-  return sortedServers.value.filter(([, server]) => {
+  return sortedServers.filter(([, server]) => {
     return (
       server.name.toLowerCase().includes(query) ||
       server.domain.toLowerCase().includes(query) ||
       server.type.toLowerCase().includes(query) ||
       server.region.toLowerCase().includes(query)
     )
-  })
-})
+  )}
+)}
 
 // Add server events interface and mock data
 interface ServerEvent {
@@ -705,9 +675,9 @@ interface ServerEvent {
   type: 'info' | 'warning' | 'error' | 'success'
   message: string
   timestamp: string
-}
+)}
 
-const serverEvents = ref<ServerEvent[]>([
+let serverEvents = [
   {
     id: '1',
     service: 'App Server',
@@ -742,8 +712,8 @@ const serverEvents = ref<ServerEvent[]>([
     type: 'success',
     message: 'Index rebuilt successfully',
     timestamp: '2024-03-21 14:05:22'
-  }
-])
+  )}
+]
 
 const getEventTypeColor = (type) => {
   switch (type) {
@@ -763,6 +733,8 @@ const getEventTypeIcon = (type) => {
   }
 }
 </script>
+
+@title('Dashboard - Servers')
 
 <template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
@@ -1035,3 +1007,13 @@ const getEventTypeIcon = (type) => {
   </div>
 </div>
 </template>
+
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  if (diagramContainer) {
+    updateVisualization()
+  }
+})
+</script>

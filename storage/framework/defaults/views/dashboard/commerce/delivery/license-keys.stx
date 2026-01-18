@@ -1,11 +1,8 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
+definePageMeta({
+  middleware: ['auth']
+})
+
 import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 import LicenseKeysTable from '../../../../components/Dashboard/Commerce/Delivery/LicenseKeysTable.stx'
@@ -14,29 +11,17 @@ import { useLicenseKeys } from '../../../../functions/commerce/shippings/license
 import { useCustomers } from '../../../../functions/commerce/customers'
 import type { LicenseKeys, NewLicenseKey } from '../../../../types/defaults'
 
-useHead({
-  title: 'Dashboard - License Keys',
-})
-
 // Get license keys data and functions from the composable
 const { licenseKeys, createLicenseKey, fetchLicenseKeys, updateLicenseKey, deleteLicenseKey } = useLicenseKeys()
 
 // Get customers for dropdown
 const { customers, fetchCustomers } = useCustomers()
 
-// Fetch data on component mount
-onMounted(async () => {
-  await Promise.all([
-    fetchLicenseKeys(),
-    fetchCustomers()
-  ])
-})
-
 // Modal state
-const showAddModal = ref(false)
-const showEditModal = ref(false)
-const editingLicenseKey = ref(null)
-const newLicenseKey = ref({
+let showAddModal = false
+let showEditModal = false
+let editingLicenseKey = null
+let newLicenseKey = {
   key: '',
   template: '',
   customer_id: 0,
@@ -44,10 +29,10 @@ const newLicenseKey = ref({
   order_id: 0,
   expiry_date: '',
   status: 'Active'
-})
+}
 
 function openAddModal() {
-  newLicenseKey.value = {
+  newLicenseKey = {
     key: '',
     template: '',
     customer_id: 0,
@@ -56,16 +41,16 @@ function openAddModal() {
     expiry_date: '',
     status: 'Active'
   }
-  showAddModal.value = true
+  showAddModal = true
 }
 
 function closeAddModal() {
-  showAddModal.value = false
+  showAddModal = false
 }
 
 function openEditModal(licenseKey) {
-  editingLicenseKey.value = licenseKey
-  newLicenseKey.value = {
+  editingLicenseKey = licenseKey
+  newLicenseKey = {
     key: licenseKey.key,
     template: licenseKey.template,
     customer_id: licenseKey.customer_id,
@@ -74,17 +59,17 @@ function openEditModal(licenseKey) {
     expiry_date: typeof licenseKey.expiry_date === 'string' ? licenseKey.expiry_date : new Date(licenseKey.expiry_date).toISOString().split('T')[0] || '',
     status: licenseKey.status
   }
-  showEditModal.value = true
+  showEditModal = true
 }
 
 function closeEditModal() {
-  showEditModal.value = false
-  editingLicenseKey.value = null
+  showEditModal = false
+  editingLicenseKey = null
 }
 
 async function addLicenseKey() {
   try {
-    await createLicenseKey(newLicenseKey.value)
+    await createLicenseKey(newLicenseKey)
     closeAddModal()
   } catch (error) {
     console.error('Failed to create license key:', error)
@@ -92,13 +77,13 @@ async function addLicenseKey() {
 }
 
 async function saveLicenseKey() {
-  if (!editingLicenseKey.value) return
+  if (!editingLicenseKey) return
 
   try {
     await updateLicenseKey({
-      ...editingLicenseKey.value,
-      ...newLicenseKey.value
-    })
+      ...editingLicenseKey,
+      ...newLicenseKey
+    }
     closeEditModal()
   } catch (error) {
     console.error('Failed to update license key:', error)
@@ -106,16 +91,16 @@ async function saveLicenseKey() {
 }
 
 // Search and filtering
-const searchQuery = ref('')
-const currentPage = ref(1)
+let searchQuery = ''
+let currentPage = 1
 const itemsPerPage = 5
 
-const filteredLicenseKeys = computed(() => {
-  const keys = Array.isArray(licenseKeys.value) ? licenseKeys.value : []
+function filteredLicenseKeys() {
+  const keys = Array.isArray(licenseKeys) ? licenseKeys : []
 
-  if (!searchQuery.value) return keys
+  if (!searchQuery) return keys
 
-  const query = searchQuery.value.toLowerCase()
+  const query = searchQuery.toLowerCase()
   return keys.filter(key =>
     key.key.toLowerCase().includes(query) ||
     key.customer.name.toLowerCase().includes(query) ||
@@ -123,18 +108,18 @@ const filteredLicenseKeys = computed(() => {
     key.product.toLowerCase().includes(query) ||
     key.status.toLowerCase().includes(query)
   )
-})
+}
 
-const paginatedLicenseKeys = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
+function paginatedLicenseKeys() {
+  const start = (currentPage - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return filteredLicenseKeys.value.slice(start, end)
-})
+  return filteredLicenseKeys.slice(start, end)
+}
 
 // Event handlers
 const handleSearch = (query) => {
-  searchQuery.value = query
-  currentPage.value = 1
+  searchQuery = query
+  currentPage = 1
 }
 
 const handleAddLicenseKey = () => {
@@ -156,20 +141,20 @@ const handleDeleteLicenseKey = async (licenseKey) => {
 }
 
 const handlePrevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
+  if (currentPage > 1) {
+    currentPage--
   }
 }
 
 const handleNextPage = () => {
-  const totalPages = Math.ceil(filteredLicenseKeys.value.length / itemsPerPage)
-  if (currentPage.value < totalPages) {
-    currentPage.value++
+  const totalPages = Math.ceil(filteredLicenseKeys.length / itemsPerPage)
+  if (currentPage < totalPages) {
+    currentPage++
   }
 }
 
 const handlePageChange = (page) => {
-  currentPage.value = page
+  currentPage = page
 }
 
 // Tab configuration
@@ -184,6 +169,8 @@ const tabs = [
 ]
 
 </script>
+
+@title('Dashboard - License Keys')
 
 <template>
 <div class="py-6">
@@ -508,3 +495,14 @@ const tabs = [
   @endif
 </div>
 </template>
+
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  await Promise.all([
+    fetchLicenseKeys(),
+    fetchCustomers()
+  ])
+})
+</script>

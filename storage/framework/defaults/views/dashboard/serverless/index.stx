@@ -1,16 +1,9 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useHead } from '@vueuse/head'
-import * as d3 from 'd3'
-
-useHead({
-  title: 'Dashboard - Serverless',
+definePageMeta({
+  middleware: ['auth']
 })
+
+import * as d3 from 'd3'
 
 // Service types and their relationships based on the cloud directory structure
 interface ServiceNode extends d3.SimulationNodeDatum {
@@ -263,27 +256,27 @@ const links: ServiceLink[] = [
 ]
 
 // Visualization state
-const diagramContainer = ref<HTMLElement | null>(null)
+let diagramContainer = null
 let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>
 let simulation: d3.Simulation<ServiceNode, undefined>
 let zoomGroup: d3.Selection<SVGGElement, unknown, null, undefined>
-const selectedNode = ref<ServiceNode | null>(null)
+let selectedNode = null
 
 // Add zoom variable to the outer scope
 let zoom: d3.ZoomBehavior<SVGSVGElement, unknown>
 
 // Function to create and update the visualization
 const updateVisualization = () => {
-  if (!diagramContainer.value) return
+  if (!diagramContainer) return
 
-  const width = diagramContainer.value.clientWidth
+  const width = diagramContainer.clientWidth
   const height = 600
 
   // Clear existing visualization
-  d3.select(diagramContainer.value).selectAll('*').remove()
+  d3.select(diagramContainer).selectAll('*').remove()
 
   // Create SVG
-  svg = d3.select(diagramContainer.value)
+  svg = d3.select(diagramContainer)
     .append('svg')
     .attr('width', width)
     .attr('height', height)
@@ -295,7 +288,7 @@ const updateVisualization = () => {
     .scaleExtent([0.1, 4])
     .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
       zoomGroup.attr('transform', event.transform.toString())
-    })
+    }
 
   svg.call(zoom)
 
@@ -315,9 +308,9 @@ const updateVisualization = () => {
       .on('end', dragended)))
     .on('click', (event: MouseEvent, d: ServiceNode) => {
       event.stopPropagation()
-      selectedNode.value = d
+      selectedNode = d
       node.classed('selected', n => n === d)
-    })
+    }
 
   // Add circles for nodes
   node.append('circle')
@@ -370,7 +363,7 @@ const updateVisualization = () => {
         case 'protects': return '#A166FF'
         default: return '#569A31'
       }
-    })
+    }
 
   // Create arrow markers
   svg.append('defs').selectAll('marker')
@@ -393,7 +386,7 @@ const updateVisualization = () => {
         case 'protects': return '#A166FF'
         default: return '#569A31'
       }
-    })
+    }
     .attr('d', 'M0,-5L10,0L0,5')
 
   // Update simulation forces
@@ -451,10 +444,10 @@ const updateVisualization = () => {
       const endY = target.y! - dy * targetRatio
 
       return `M${startX},${startY}L${endX},${endY}`
-    })
+    }
 
     node.attr('transform', d => `translate(${d.x},${d.y})`)
-  })
+  }
 
   // Add hover effects
   node
@@ -474,7 +467,7 @@ const updateVisualization = () => {
             (l.target === d && l.source === n)
           ) ? 1 : 0.3
         )
-    })
+    }
     .on('mouseout', function() {
       // Reset highlights
       link
@@ -482,13 +475,13 @@ const updateVisualization = () => {
         .style('stroke-width', 2)
       node
         .style('opacity', 1)
-    })
+    }
 
   // Add click handler to clear selection
   svg.on('click', () => {
-    selectedNode.value = null
+    selectedNode = null
     node.classed('selected', false)
-  })
+  }
 
   // Update the header text
   const headerText = document.querySelector('.text-base.text-gray-900.dark\\:text-gray-100')
@@ -526,27 +519,13 @@ onUnmounted(() => {
   if (simulation) {
     simulation.stop()
   }
-})
-
-// Initialize visualization
-onMounted(() => {
-  if (diagramContainer.value) {
-    // Add rounded corners to all service icon rectangles
-    const svgRects = document.querySelectorAll('.node svg rect');
-    svgRects.forEach(rect => {
-      rect.setAttribute('rx', '8');
-      rect.setAttribute('ry', '8');
-    });
-
-    updateVisualization();
-  }
-});
+}
 
 // Add these functions before the onMounted hook
 const downloadSVG = () => {
-  if (!diagramContainer.value) return
+  if (!diagramContainer) return
 
-  const svgElement = diagramContainer.value.querySelector('svg')
+  const svgElement = diagramContainer.querySelector('svg')
   if (!svgElement) return
 
   // Create a copy of the SVG to modify for download
@@ -567,9 +546,9 @@ const downloadSVG = () => {
 }
 
 const downloadPNG = () => {
-  if (!diagramContainer.value) return
+  if (!diagramContainer) return
 
-  const svgElement = diagramContainer.value.querySelector('svg')
+  const svgElement = diagramContainer.querySelector('svg')
   if (!svgElement) return
 
   // Create a copy of the SVG to modify for download
@@ -607,7 +586,7 @@ const downloadPNG = () => {
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(pngUrl)
-    })
+    }
   }
 
   img.src = url
@@ -645,7 +624,7 @@ interface ServerEvent {
   timestamp: string
 }
 
-const serverEvents = ref<ServerEvent[]>([
+let serverEvents = [
   {
     id: '1',
     service: 'Lambda',
@@ -681,7 +660,7 @@ const serverEvents = ref<ServerEvent[]>([
     message: 'Bucket policy updated successfully',
     timestamp: '2024-03-21 14:05:22'
   }
-])
+]
 
 const getEventTypeColor = (type: string) => {
   switch (type) {
@@ -701,6 +680,8 @@ const getEventTypeIcon = (type: string) => {
   }
 }
 </script>
+
+@title('Dashboard - Serverless')
 
 <template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
@@ -872,6 +853,23 @@ const getEventTypeIcon = (type: string) => {
   </div>
 </div>
 </template>
+
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  if (diagramContainer) {
+    // Add rounded corners to all service icon rectangles
+    const svgRects = document.querySelectorAll('.node svg rect');
+    svgRects.forEach(rect => {
+      rect.setAttribute('rx', '8');
+      rect.setAttribute('ry', '8');
+    });
+
+    updateVisualization();
+  }
+})
+</script>
 
 <style scoped>
 .dark svg {

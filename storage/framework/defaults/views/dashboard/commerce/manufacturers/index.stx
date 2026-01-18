@@ -1,18 +1,10 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
-
-useHead({
-  title: 'Dashboard - Food Vendors',
+definePageMeta({
+  middleware: ['auth']
 })
 
 // Sample manufacturers data
-const manufacturers = ref([
+let manufacturers = [
   {
     id: 1,
     name: 'Pizza Palace',
@@ -101,112 +93,114 @@ const manufacturers = ref([
     website: 'https://beverageboutique.foodmarket.org',
     createdAt: '2023-08-01'
   }
-])
+]
 
 // Filter and sort options
-const searchQuery = ref('')
-const sortBy = ref('name')
-const sortOrder = ref('asc')
-const featuredFilter = ref('all')
-const countryFilter = ref('all')
+let searchQuery = ''
+let sortBy = 'name'
+let sortOrder = 'asc'
+let featuredFilter = 'all'
+let countryFilter = 'all'
 
 // Get unique countries for filter
-const countries = computed(() => {
-  const uniqueCountries = new Set(manufacturers.value.map(m => m.country))
+function countries() {
+  const uniqueCountries = new Set(manufacturers.map(m => m.country))
   return Array.from(uniqueCountries).sort()
-})
+}
 
 // Computed filtered and sorted manufacturers
-const filteredManufacturers = computed(() => {
-  return manufacturers.value
+function filteredManufacturers() {
+  return manufacturers
     .filter(manufacturer => {
       // Apply search filter
-      const matchesSearch = manufacturer.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                           manufacturer.description.toLowerCase().includes(searchQuery.value.toLowerCase())
+      const matchesSearch = manufacturer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           manufacturer.description.toLowerCase().includes(searchQuery.toLowerCase())
 
       // Apply featured filter
-      const matchesFeatured = featuredFilter.value === 'all' ||
-                             (featuredFilter.value === 'featured' && manufacturer.featured) ||
-                             (featuredFilter.value === 'not-featured' && !manufacturer.featured)
+      const matchesFeatured = featuredFilter === 'all' ||
+                             (featuredFilter === 'featured' && manufacturer.featured) ||
+                             (featuredFilter === 'not-featured' && !manufacturer.featured)
 
       // Apply country filter
-      const matchesCountry = countryFilter.value === 'all' ||
-                            manufacturer.country === countryFilter.value
+      const matchesCountry = countryFilter === 'all' ||
+                            manufacturer.country === countryFilter
 
       return matchesSearch && matchesFeatured && matchesCountry
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy.value === 'name') {
+      if (sortBy === 'name') {
         comparison = a.name.localeCompare(b.name)
-      } else if (sortBy.value === 'productCount') {
+      } else if (sortBy === 'productCount') {
         comparison = a.productCount - b.productCount
-      } else if (sortBy.value === 'country') {
+      } else if (sortBy === 'country') {
         comparison = a.country.localeCompare(b.country)
-      } else if (sortBy.value === 'createdAt') {
+      } else if (sortBy === 'createdAt') {
         comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       }
 
-      return sortOrder.value === 'asc' ? comparison : -comparison
+      return sortOrder === 'asc' ? comparison : -comparison
     })
-})
+}
 
 // Toggle sort order
 function toggleSort(column) {
-  if (sortBy.value === column) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  if (sortBy === column) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy.value = column
-    sortOrder.value = 'asc'
+    sortBy = column
+    sortOrder = 'asc'
   }
 }
 
 // Modal state
-const showAddModal = ref(false)
-const newManufacturer = ref({
+let showAddModal = false
+let newManufacturer = {
   name: '',
   description: '',
   featured: false,
   country: '',
   website: ''
-})
+}
 
 function openAddModal() {
-  newManufacturer.value = {
+  newManufacturer = {
     name: '',
     description: '',
     featured: false,
     country: '',
     website: ''
   }
-  showAddModal.value = true
+  showAddModal = true
 }
 
 function closeAddModal() {
-  showAddModal.value = false
+  showAddModal = false
 }
 
 function addManufacturer() {
   // In a real app, this would send data to the server
-  const id = Math.max(...manufacturers.value.map(m => m.id)) + 1
-  const name = newManufacturer.value.name || '';
+  const id = Math.max(...manufacturers.map(m => m.id)) + 1
+  const name = newManufacturer.name || '';
   const currentDate = new Date().toISOString().split('T')[0]
 
-  manufacturers.value.push({
+  manufacturers.push({
     id,
     name,
     slug: name.toLowerCase().replace(/\s+/g, '-'),
-    description: newManufacturer.value.description || '',
+    description: newManufacturer.description || '',
     productCount: 0,
-    featured: newManufacturer.value.featured,
-    country: newManufacturer.value.country || '',
-    website: newManufacturer.value.website || '',
+    featured: newManufacturer.featured,
+    country: newManufacturer.country || '',
+    website: newManufacturer.website || '',
     createdAt: currentDate
-  })
+  }
   closeAddModal()
 }
 </script>
+
+@title('Dashboard - Food Vendors')
 
 <template>
   <main>

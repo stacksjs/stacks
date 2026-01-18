@@ -1,7 +1,9 @@
 <script server>
-import { ref, computed, watch, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
-import { Line } from 'vue-chartjs'
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -24,10 +26,6 @@ ChartJS.register(
   Legend,
   Filler,
 )
-
-useHead({
-  title: 'Dashboard - Components',
-})
 
 const chartOptions = {
   responsive: true,
@@ -99,9 +97,9 @@ const chartOptions = {
   },
 }
 
-const comparePackage = ref('')
-const timeRange = ref('7')
-const isLoading = ref(false)
+let comparePackage = ''
+let timeRange = '7'
+let isLoading = false
 
 const formatDate = (daysAgo) => {
   const date = new Date()
@@ -109,7 +107,7 @@ const formatDate = (daysAgo) => {
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric'
-  })
+  }
 }
 
 const generateDateLabels = (days) => {
@@ -121,7 +119,7 @@ const generateGrowthData = (days, baseCount, dailyGrowth) => {
     const dayVariance = Math.random() * dailyGrowth * 0.5
     const daysFromStart = i
     return Math.floor(baseCount + (dailyGrowth * daysFromStart) + dayVariance)
-  })
+  }
 }
 
 interface DownloadStats {
@@ -137,9 +135,9 @@ interface DownloadStatsMap {
   '365': DownloadStats
 }
 
-const downloadStats = ref({
+let downloadStats = {
   '7': {
-    labels: generateDateLabels(7),
+    labels: generateDateLabels(7,
     data: [12500, 15800, 14200, 16800, 19200, 18100, 17200],
     compareData: [9500, 11800, 10200, 12800, 15200, 14100, 13200]
   },
@@ -158,36 +156,32 @@ const downloadStats = ref({
     data: Array.from({ length: 365 }, () => Math.floor(Math.random() * 20000) + 10000),
     compareData: Array.from({ length: 365 }, () => Math.floor(Math.random() * 15000) + 8000)
   }
-})
+}
 
 const fetchDownloadData = async (days) => {
-  isLoading.value = true
+  isLoading = true
   try {
     await new Promise(resolve => setTimeout(resolve, 500))
   } catch (error) {
     console.error('Error fetching download data:', error)
   } finally {
-    isLoading.value = false
+    isLoading = false
   }
 }
 
-watch(timeRange, async (newRange) => {
-  await fetchDownloadData(newRange)
-})
-
-const downloadsData = computed(() => ({
-  labels: downloadStats.value[timeRange.value].labels,
+function downloadsData() { return ({
+  labels: downloadStats[timeRange].labels,
   datasets: [
     {
       label: '@your/package',
-      data: downloadStats.value[timeRange.value].data,
-      borderColor: 'rgb(59, 130, 246)',
+      data: downloadStats[timeRange].data,
+      borderColor: 'rgb(59, 130, 246 }',
       backgroundColor: 'rgba(59, 130, 246, 0.1)',
       fill: true,
     },
-    ...(comparePackage.value ? [{
-      label: comparePackage.value,
-      data: downloadStats.value[timeRange.value].compareData,
+    ...(comparePackage ? [{
+      label: comparePackage,
+      data: downloadStats[timeRange].compareData,
       borderColor: 'rgb(234, 179, 8)',
       backgroundColor: 'rgba(234, 179, 8, 0.1)',
       fill: true,
@@ -196,15 +190,14 @@ const downloadsData = computed(() => ({
 }))
 
 const handleCompare = async () => {
-  if (comparePackage.value) {
-    await fetchDownloadData(timeRange.value)
+  if (comparePackage) {
+    await fetchDownloadData(timeRange)
   }
 }
 
-onMounted(async () => {
-  await fetchDownloadData(timeRange.value)
-})
 </script>
+
+@title('Dashboard - Components')
 
 <template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
@@ -482,8 +475,11 @@ onMounted(async () => {
 </div>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  await fetchDownloadData(timeRange)
+})
+</script>
+

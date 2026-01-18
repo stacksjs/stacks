@@ -1,14 +1,13 @@
 <script server>
-import { ref, computed, onMounted, reactive } from 'vue'
-import { useHead } from '@vueuse/head'
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
 // Register Chart.js components
 Chart.register(...registerables)
-
-useHead({
-  title: 'Dashboard - Device Analytics',
-})
 
 // Types
 interface DateRange {
@@ -35,22 +34,22 @@ const dateRanges: DateRange[] = [
 ]
 
 // Selected date range
-const selectedDateRange = ref('all-time')
-const dateRangeDisplay = ref('All Time: Sep 7, 2023 to Mar 6, 2025')
-const comparisonType = ref('no-comparison')
-const customStartDate = ref('')
-const customEndDate = ref('')
-const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
+let selectedDateRange = 'all-time'
+let dateRangeDisplay = 'All Time: Sep 7, 2023 to Mar 6, 2025'
+let comparisonType = 'no-comparison'
+let customStartDate = ''
+let customEndDate = ''
+function showCustomDateRange() { return selectedDateRange === 'custom' }
 
 // Device data
-const deviceData = ref<DeviceData[]>([
+let deviceData = [
   { name: 'Desktop', visitors: 1300, percentage: 60 },
   { name: 'Phone', visitors: 874, percentage: 38 },
   { name: 'Tablet', visitors: 5, percentage: 2 }
-])
+]
 
 // Detailed device data
-const detailedDeviceData = ref<DeviceData[]>([
+let detailedDeviceData = [
   { name: 'Desktop', model: 'Windows PC', os: 'Windows 11', visitors: 450, percentage: 20 },
   { name: 'Desktop', model: 'Windows PC', os: 'Windows 10', visitors: 380, percentage: 17 },
   { name: 'Desktop', model: 'Mac', os: 'macOS 14', visitors: 250, percentage: 11 },
@@ -63,16 +62,16 @@ const detailedDeviceData = ref<DeviceData[]>([
   { name: 'Phone', model: 'Xiaomi', os: 'Android 13', visitors: 135, percentage: 6 },
   { name: 'Tablet', model: 'iPad', os: 'iPadOS 17', visitors: 3, percentage: 0.1 },
   { name: 'Tablet', model: 'Samsung Tab', os: 'Android 14', visitors: 2, percentage: 0.1 }
-])
+]
 
 // Chart.js configuration for device distribution
 const chartConfig = reactive({
   type: 'doughnut' as keyof ChartTypeRegistry,
   data: {
-    labels: deviceData.value.map(item => item.name),
+    labels: deviceData.map(item => item.name),
     datasets: [
       {
-        data: deviceData.value.map(item => item.visitors),
+        data: deviceData.map(item => item.visitors),
         backgroundColor: [
           'rgba(59, 130, 246, 0.8)',
           'rgba(16, 185, 129, 0.8)',
@@ -109,10 +108,10 @@ const chartConfig = reactive({
       }
     }
   }
-})
+}
 
 // Device trend data for line chart
-const deviceTrendData = ref([
+let deviceTrendData = [
   { date: '2023-09', Desktop: 800, Phone: 400, Tablet: 10 },
   { date: '2023-10', Desktop: 850, Phone: 420, Tablet: 9 },
   { date: '2023-11', Desktop: 900, Phone: 450, Tablet: 8 },
@@ -122,17 +121,17 @@ const deviceTrendData = ref([
   { date: '2024-03', Desktop: 1200, Phone: 700, Tablet: 5 },
   { date: '2024-04', Desktop: 1250, Phone: 750, Tablet: 5 },
   { date: '2024-05', Desktop: 1300, Phone: 874, Tablet: 5 }
-])
+]
 
 // Chart.js configuration for device trends
 const trendChartConfig = reactive({
   type: 'line' as keyof ChartTypeRegistry,
   data: {
-    labels: deviceTrendData.value.map(item => item.date),
+    labels: deviceTrendData.map(item => item.date),
     datasets: [
       {
         label: 'Desktop',
-        data: deviceTrendData.value.map(item => item.Desktop),
+        data: deviceTrendData.map(item => item.Desktop),
         borderColor: 'rgba(59, 130, 246, 0.8)',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
         tension: 0.4,
@@ -140,7 +139,7 @@ const trendChartConfig = reactive({
       },
       {
         label: 'Phone',
-        data: deviceTrendData.value.map(item => item.Phone),
+        data: deviceTrendData.map(item => item.Phone),
         borderColor: 'rgba(16, 185, 129, 0.8)',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         tension: 0.4,
@@ -148,7 +147,7 @@ const trendChartConfig = reactive({
       },
       {
         label: 'Tablet',
-        data: deviceTrendData.value.map(item => item.Tablet),
+        data: deviceTrendData.map(item => item.Tablet),
         borderColor: 'rgba(245, 158, 11, 0.8)',
         backgroundColor: 'rgba(245, 158, 11, 0.1)',
         tension: 0.4,
@@ -186,10 +185,10 @@ const trendChartConfig = reactive({
       }
     }
   }
-})
+}
 
 // Screen size data
-const screenSizeData = ref([
+let screenSizeData = [
   { size: '1920x1080', visitors: 580, percentage: 26 },
   { size: '1366x768', visitors: 450, percentage: 20 },
   { size: '1440x900', visitors: 320, percentage: 14 },
@@ -198,7 +197,7 @@ const screenSizeData = ref([
   { size: '360x740', visitors: 180, percentage: 8 },
   { size: '1536x864', visitors: 120, percentage: 5 },
   { size: '768x1024', visitors: 80, percentage: 4 }
-])
+]
 
 // Format numbers with commas
 function formatNumber(number) {
@@ -207,7 +206,7 @@ function formatNumber(number) {
 
 // Mock function to update data when date range changes
 function updateDataForDateRange() {
-  console.log('Updating data for date range:', selectedDateRange.value)
+  console.log('Updating data for date range:', selectedDateRange)
 }
 
 // Watch for date range changes
@@ -219,20 +218,9 @@ function handleDateRangeChange() {
 let deviceDistributionChart: Chart | null = null
 let deviceTrendChart: Chart | null = null
 
-onMounted(() => {
-  const distributionCtx = document.getElementById('deviceDistributionChart') as HTMLCanvasElement
-  if (distributionCtx) {
-    deviceDistributionChart = new Chart(distributionCtx, chartConfig)
-  }
-
-  const trendCtx = document.getElementById('deviceTrendChart') as HTMLCanvasElement
-  if (trendCtx) {
-    deviceTrendChart = new Chart(trendCtx, trendChartConfig)
-  }
-
-  updateDataForDateRange()
-})
 </script>
+
+@title('Dashboard - Device Analytics')
 
 <template>
 <main>
@@ -452,8 +440,21 @@ onMounted(() => {
 </main>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  const distributionCtx = document.getElementById('deviceDistributionChart') as HTMLCanvasElement
+  if (distributionCtx) {
+    deviceDistributionChart = new Chart(distributionCtx, chartConfig)
+  }
+
+  const trendCtx = document.getElementById('deviceTrendChart') as HTMLCanvasElement
+  if (trendCtx) {
+    deviceTrendChart = new Chart(trendCtx, trendChartConfig)
+  }
+
+  updateDataForDateRange()
+})
+</script>
+

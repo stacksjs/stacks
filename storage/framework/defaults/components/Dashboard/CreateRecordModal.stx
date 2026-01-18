@@ -27,7 +27,7 @@ const formColumns = _columns.filter(col => {
   if (name === 'created_at' || name === 'updated_at') return false
   if (name === 'deleted_at') return false
   return true
-})
+}
 
 // Determine input type based on column type and name
 function getInputType(col) {

@@ -1,12 +1,18 @@
 <script server>
   // const router = useRouter()
 
-  // onMounted(() => {
-  //   if (app.maintenanceMode && router.currentRoute.value.path !== '/maintenance')
-  //     router.push('/maintenance')
-  // })
-</script>
+  // </script>
 
 <template>
   <slot />
 </template>
+
+<script client>
+import { onMount } from 'stx'
+
+onMount(() => {
+  //   if (app.maintenanceMode && router.currentRoute.path !== '/maintenance')
+  //     router.push('/maintenance')
+  //
+})
+</script>

@@ -1,18 +1,10 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
-
-useHead({
-  title: 'Dashboard - Commerce Reviews',
+definePageMeta({
+  middleware: ['auth']
 })
 
 // Sample products data (simplified from products page)
-const products = ref([
+let products = [
   {
     id: 1,
     name: 'Classic Cheeseburger',
@@ -49,10 +41,10 @@ const products = ref([
     imageUrl: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
     category: 'Desserts'
   }
-])
+]
 
 // Sample reviews data
-const reviews = ref([
+let reviews = [
   {
     id: 1,
     productId: 1,
@@ -257,16 +249,16 @@ const reviews = ref([
     helpful: 7,
     unhelpful: 4
   }
-])
+]
 
 // Filter and sort options
-const searchQuery = ref('')
-const sortBy = ref('dateAdded')
-const sortOrder = ref('desc')
-const productFilter = ref('all')
-const ratingFilter = ref('all')
-const statusFilter = ref('all')
-const viewMode = ref('detailed')
+let searchQuery = ''
+let sortBy = 'dateAdded'
+let sortOrder = 'desc'
+let productFilter = 'all'
+let ratingFilter = 'all'
+let statusFilter = 'all'
+let viewMode = 'detailed'
 
 // Available statuses
 const statuses = ['all', 'Published', 'Under Review', 'Rejected', 'Spam']
@@ -275,78 +267,78 @@ const statuses = ['all', 'Published', 'Under Review', 'Rejected', 'Spam']
 const ratings = ['all', '5', '4', '3', '2', '1']
 
 // Computed filtered and sorted reviews
-const filteredReviews = computed(() => {
-  return reviews.value
+function filteredReviews() {
+  return reviews
     .filter(review => {
       // Apply search filter
       const matchesSearch =
-        review.customerName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        review.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        review.comment.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        review.productName.toLowerCase().includes(searchQuery.value.toLowerCase())
+        review.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        review.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        review.comment.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        review.productName.toLowerCase().includes(searchQuery.toLowerCase())
 
       // Apply product filter
-      const matchesProduct = productFilter.value === 'all' || review.productId.toString() === productFilter.value
+      const matchesProduct = productFilter === 'all' || review.productId.toString() === productFilter
 
       // Apply rating filter
-      const matchesRating = ratingFilter.value === 'all' || review.rating.toString() === ratingFilter.value
+      const matchesRating = ratingFilter === 'all' || review.rating.toString() === ratingFilter
 
       // Apply status filter
-      const matchesStatus = statusFilter.value === 'all' || review.status === statusFilter.value
+      const matchesStatus = statusFilter === 'all' || review.status === statusFilter
 
       return matchesSearch && matchesProduct && matchesRating && matchesStatus
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy.value === 'dateAdded') {
+      if (sortBy === 'dateAdded') {
         comparison = new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime()
-      } else if (sortBy.value === 'rating') {
+      } else if (sortBy === 'rating') {
         comparison = a.rating - b.rating
-      } else if (sortBy.value === 'helpful') {
+      } else if (sortBy === 'helpful') {
         comparison = a.helpful - b.helpful
-      } else if (sortBy.value === 'customerName') {
+      } else if (sortBy === 'customerName') {
         comparison = a.customerName.localeCompare(b.customerName)
       }
 
-      return sortOrder.value === 'asc' ? comparison : -comparison
+      return sortOrder === 'asc' ? comparison : -comparison
     })
-})
+}
 
 // Pagination
-const currentPage = ref(1)
-const itemsPerPage = ref(5)
-const totalPages = computed(() => Math.ceil(filteredReviews.value.length / itemsPerPage.value))
+let currentPage = 1
+let itemsPerPage = 5
+function totalPages() { return Math.ceil(filteredReviews.length / itemsPerPage) }
 
-const paginatedReviews = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredReviews.value.slice(start, end)
-})
+function paginatedReviews() {
+  const start = (currentPage - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredReviews.slice(start, end)
+}
 
 function changePage(page) {
-  currentPage.value = page
+  currentPage = page
 }
 
 function previousPage() {
-  if (currentPage.value > 1) {
-    currentPage.value--
+  if (currentPage > 1) {
+    currentPage--
   }
 }
 
 function nextPage() {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
+  if (currentPage < totalPages) {
+    currentPage++
   }
 }
 
 // Toggle sort order
 function toggleSort(column) {
-  if (sortBy.value === column) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  if (sortBy === column) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy.value = column
-    sortOrder.value = 'desc'
+    sortBy = column
+    sortOrder = 'desc'
   }
 }
 
@@ -372,44 +364,44 @@ function getRatingStars(rating) {
 }
 
 // Modal state for editing review
-const showReviewModal = ref(false)
-const currentReview = ref(null)
+let showReviewModal = false
+let currentReview = null
 
 function openEditReviewModal(review) {
-  currentReview.value = { ...review }
-  showReviewModal.value = true
+  currentReview = { ...review }
+  showReviewModal = true
 }
 
 function closeReviewModal() {
-  showReviewModal.value = false
+  showReviewModal = false
 }
 
 function saveReview() {
-  if (!currentReview.value) return
+  if (!currentReview) return
 
   // Update existing review
-  const index = reviews.value.findIndex(r => r.id === currentReview.value.id)
+  const index = reviews.findIndex(r => r.id === currentReview.id)
   if (index !== -1) {
-    reviews.value[index] = { ...currentReview.value }
+    reviews[index] = { ...currentReview }
   }
 
   closeReviewModal()
 }
 
 // Calculate summary statistics
-const totalReviews = computed(() => reviews.value.length)
-const publishedReviews = computed(() => reviews.value.filter(r => r.status === 'Published').length)
-const averageRating = computed(() => {
-  const total = reviews.value.reduce((sum, review) => sum + review.rating, 0)
-  return (total / reviews.value.length).toFixed(1)
-})
-const pendingReviews = computed(() => reviews.value.filter(r => r.status === 'Under Review').length)
+function totalReviews() { return reviews.length }
+function publishedReviews() { return reviews.filter(r => r.status === 'Published' }.length)
+function averageRating() {
+  const total = reviews.reduce((sum, review) => sum + review.rating, 0)
+  return (total / reviews.length).toFixed(1)
+}
+function pendingReviews() { return reviews.filter(r => r.status === 'Under Review' }.length)
 
 // Feature or unfeature a review
 function toggleFeature(review) {
-  const index = reviews.value.findIndex(r => r.id === review.id)
+  const index = reviews.findIndex(r => r.id === review.id)
   if (index !== -1) {
-    const reviewToUpdate = reviews.value[index]
+    const reviewToUpdate = reviews[index]
     if (reviewToUpdate) {
       reviewToUpdate.featured = !reviewToUpdate.featured
     }
@@ -418,9 +410,9 @@ function toggleFeature(review) {
 
 // Change review status
 function updateReviewStatus(review, newStatus) {
-  const index = reviews.value.findIndex(r => r.id === review.id)
+  const index = reviews.findIndex(r => r.id === review.id)
   if (index !== -1) {
-    const reviewToUpdate = reviews.value[index]
+    const reviewToUpdate = reviews[index]
     if (reviewToUpdate) {
       reviewToUpdate.status = newStatus
     }
@@ -429,12 +421,14 @@ function updateReviewStatus(review, newStatus) {
 
 // Delete review
 function deleteReview(reviewId) {
-  const index = reviews.value.findIndex(r => r.id === reviewId)
+  const index = reviews.findIndex(r => r.id === reviewId)
   if (index !== -1) {
-    reviews.value.splice(index, 1)
+    reviews.splice(index, 1)
   }
 }
 </script>
+
+@title('Dashboard - Commerce Reviews')
 
 <template>
   <main>

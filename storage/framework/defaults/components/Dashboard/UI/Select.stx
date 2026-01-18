@@ -1,5 +1,5 @@
 <script server>
-const value = props.value || ''
+const value = props || ''
 const options = props.options || [] // Array of { value, label, disabled? }
 const placeholder = props.placeholder || 'Select an option'
 const label = props.label || ''
@@ -61,9 +61,9 @@ const selectId = id || 'select-' + Math.random().toString(36).slice(2, 11)
         @endif
         @foreach(options as option)
           <option
-            value="{{ option.value }}"
+            value="{{ option }}"
             @if(option.disabled) disabled @endif
-            @if(option.value == value) selected @endif
+            @if(option == value) selected @endif
           >
             {{ option.label }}
           </option>

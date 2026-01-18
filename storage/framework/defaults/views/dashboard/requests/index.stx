@@ -1,11 +1,8 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { useHead } from '@vueuse/head'
-import { Line, Bar } from 'vue-chartjs'
+definePageMeta({
+  middleware: ['auth']
+})
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -30,10 +27,6 @@ ChartJS.register(
   Legend,
   Filler,
 )
-
-useHead({
-  title: 'Dashboard - Requests',
-})
 
 const chartOptions = {
   responsive: true,
@@ -170,6 +163,8 @@ const barChartOptions = {
   },
 }
 </script>
+
+@title('Dashboard - Requests')
 
 <template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">

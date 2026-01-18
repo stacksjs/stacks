@@ -1,20 +1,8 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
-<script lang="ts">
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
-import { Line, Bar, Doughnut } from 'vue-chartjs'
+<script server>
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement } from 'chart.js'
 
 // Register ChartJS components
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement)
-
-useHead({
-  title: 'Dashboard - Blog Comments',
-})
 
 // Chart options
 const lineChartOptions = {
@@ -72,7 +60,7 @@ const timeRanges = [
   { label: 'Last year', value: 'year' },
   { label: 'All time', value: 'all' }
 ]
-const selectedTimeRange = ref('30days')
+let selectedTimeRange = '30days'
 
 // Define comment type
 interface Comment {
@@ -87,7 +75,7 @@ interface Comment {
 }
 
 // Sample comments data
-const comments = ref<Comment[]>([
+let comments = [
   {
     id: 1,
     content: "This article was incredibly helpful! I've been struggling with this concept for weeks.",
@@ -208,38 +196,38 @@ const comments = ref<Comment[]>([
     status: 'approved',
     createdAt: '2023-11-20T13:15:00',
   }
-])
+]
 
 // Filter and sort options
-const searchQuery = ref('')
-const sortBy = ref('createdAt')
-const sortOrder = ref('desc')
-const statusFilter = ref('all')
-const itemsPerPage = ref(10)
-const currentPage = ref(1)
+let searchQuery = ''
+let sortBy = 'createdAt'
+let sortOrder = 'desc'
+let statusFilter = 'all'
+let itemsPerPage = 10
+let currentPage = 1
 
 // Edit Comment Modal
-const showEditModal = ref(false)
-const commentToEdit = ref<Comment | null>(null)
+let showEditModal = false
+let commentToEdit = null
 
 // Delete Confirmation Modal
-const showDeleteModal = ref(false)
-const commentToDelete = ref<Comment | null>(null)
-const selectedCommentIds = ref<number[]>([])
-const selectAll = ref(false)
+let showDeleteModal = false
+let commentToDelete = null
+let selectedCommentIds = []
+let selectAll = false
 
 // Computed properties
-const filteredComments = computed(() => {
-  let result = [...comments.value]
+function filteredComments() {
+  let result = [...comments]
 
   // Apply status filter
-  if (statusFilter.value !== 'all') {
-    result = result.filter(comment => comment.status === statusFilter.value)
+  if (statusFilter !== 'all') {
+    result = result.filter(comment => comment.status === statusFilter)
   }
 
   // Apply search filter
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase()
     result = result.filter(comment =>
       comment.content.toLowerCase().includes(query) ||
       comment.author.toLowerCase().includes(query) ||
@@ -250,7 +238,7 @@ const filteredComments = computed(() => {
 
   // Apply sorting
   result.sort((a, b) => {
-    const sortField = sortBy.value as keyof Comment
+    const sortField = sortBy as keyof Comment
     let aValue = a[sortField]
     let bValue = b[sortField]
 
@@ -260,127 +248,127 @@ const filteredComments = computed(() => {
       bValue = bValue.toLowerCase()
     }
 
-    if (sortOrder.value === 'asc') {
+    if (sortOrder === 'asc') {
       return aValue > bValue ? 1 : -1
     } else {
       return aValue < bValue ? 1 : -1
     }
-  })
+  }
 
   return result
-})
+}
 
 // Pagination
-const totalPages = computed(() => Math.ceil(filteredComments.value.length / itemsPerPage.value))
+function totalPages() { return Math.ceil(filteredComments.length / itemsPerPage) }
 
-const paginatedComments = computed(() => {
-  const startIndex = (currentPage.value - 1) * itemsPerPage.value
-  const endIndex = startIndex + itemsPerPage.value
-  return filteredComments.value.slice(startIndex, endIndex)
-})
+function paginatedComments() {
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  return filteredComments.slice(startIndex, endIndex)
+}
 
-const paginationRange = computed(() => {
+function paginationRange() {
   const range: number[] = []
   const maxVisiblePages = 5
-  const startPage = Math.max(1, currentPage.value - Math.floor(maxVisiblePages / 2))
-  const endPage = Math.min(totalPages.value, startPage + maxVisiblePages - 1)
+  const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
+  const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
 
   for (let i = startPage; i <= endPage; i++) {
     range.push(i)
   }
 
   return range
-})
+}
 
 // Methods
 function openEditModal(comment: Comment): void {
-  commentToEdit.value = { ...comment }
-  showEditModal.value = true
+  commentToEdit = { ...comment }
+  showEditModal = true
 }
 
 function closeEditModal(): void {
-  showEditModal.value = false
+  showEditModal = false
 }
 
 function updateComment(): void {
-  if (!commentToEdit.value) return
+  if (!commentToEdit) return
 
-  const index = comments.value.findIndex(c => c.id === commentToEdit.value!.id)
+  const index = comments.findIndex(c => c.id === commentToEdit.value!.id)
   if (index !== -1) {
-    comments.value[index] = { ...commentToEdit.value }
+    comments[index] = { ...commentToEdit }
   }
 
   closeEditModal()
 }
 
 function confirmDeleteComment(comment: Comment): void {
-  commentToDelete.value = comment
-  selectedCommentIds.value = []
-  showDeleteModal.value = true
+  commentToDelete = comment
+  selectedCommentIds = []
+  showDeleteModal = true
 }
 
 function confirmDeleteSelected(): void {
-  showDeleteModal.value = true
+  showDeleteModal = true
 }
 
 function closeDeleteModal(): void {
-  showDeleteModal.value = false
-  commentToDelete.value = null
+  showDeleteModal = false
+  commentToDelete = null
 }
 
 function deleteSelectedComments(): void {
-  if (selectedCommentIds.value.length > 1) {
+  if (selectedCommentIds.length > 1) {
     // Delete multiple comments
-    comments.value = comments.value.filter(comment => !selectedCommentIds.value.includes(comment.id))
-    selectedCommentIds.value = []
-  } else if (commentToDelete.value) {
+    comments = comments.filter(comment => !selectedCommentIds.includes(comment.id))
+    selectedCommentIds = []
+  } else if (commentToDelete) {
     // Delete single comment
-    comments.value = comments.value.filter(comment => comment.id !== commentToDelete.value!.id)
+    comments = comments.filter(comment => comment.id !== commentToDelete.value!.id)
   }
 
   closeDeleteModal()
 }
 
 function toggleSelectAll(): void {
-  if (selectAll.value) {
+  if (selectAll) {
     // Select all comments on current page
-    selectedCommentIds.value = paginatedComments.value.map(comment => comment.id)
+    selectedCommentIds = paginatedComments.map(comment => comment.id)
   } else {
     // Deselect all
-    selectedCommentIds.value = []
+    selectedCommentIds = []
   }
 }
 
 function toggleCommentSelection(commentId: number): void {
-  const index = selectedCommentIds.value.indexOf(commentId)
+  const index = selectedCommentIds.indexOf(commentId)
   if (index === -1) {
-    selectedCommentIds.value.push(commentId)
+    selectedCommentIds.push(commentId)
   } else {
-    selectedCommentIds.value.splice(index, 1)
+    selectedCommentIds.splice(index, 1)
   }
 
   // Update selectAll based on whether all comments are selected
-  selectAll.value = paginatedComments.value.every(comment => selectedCommentIds.value.includes(comment.id))
+  selectAll = paginatedComments.every(comment => selectedCommentIds.includes(comment.id))
 }
 
 function updateCommentStatus(comment: Comment, newStatus: 'approved' | 'pending' | 'spam'): void {
-  const index = comments.value.findIndex(c => c.id === comment.id)
+  const index = comments.findIndex(c => c.id === comment.id)
   if (index !== -1) {
-    comments.value[index] = { ...comment, status: newStatus }
+    comments[index] = { ...comment, status: newStatus }
   }
 }
 
 function bulkUpdateStatus(newStatus: 'approved' | 'pending' | 'spam'): void {
-  for (const id of selectedCommentIds.value) {
-    const comment = comments.value.find(c => c.id === id)
+  for (const id of selectedCommentIds) {
+    const comment = comments.find(c => c.id === id)
     if (comment) {
       updateCommentStatus(comment, newStatus)
     }
   }
-  selectedCommentIds.value = []
+  selectedCommentIds = []
 }
 
-const hasSelectedComments = computed(() => selectedCommentIds.value.length > 0)
+function hasSelectedComments() { return selectedCommentIds.length > 0 }
 
 // Format date for display
 function formatDate(dateString: string): string {
@@ -401,7 +389,7 @@ function truncateText(text: string, max: number): string {
 }
 
 // Monthly chart data
-const monthlyChartData = computed(() => {
+function monthlyChartData() {
   // Generate sample data for comments over time
   const commentsByMonth = [8, 12, 15, 10, 18, 22, 16, 14, 20, 25, 30, 28]
   const approvedByMonth = [6, 10, 12, 8, 15, 18, 14, 12, 16, 20, 24, 22]
@@ -439,21 +427,21 @@ const monthlyChartData = computed(() => {
         ],
         borderWidth: 1,
         data: [
-          comments.value.filter(c => c.status === 'approved').length,
-          comments.value.filter(c => c.status === 'pending').length,
-          comments.value.filter(c => c.status === 'spam').length
+          comments.filter(c => c.status === 'approved').length,
+          comments.filter(c => c.status === 'pending').length,
+          comments.filter(c => c.status === 'spam').length
         ]
       }
     ]
   }
 
   // Generate sample data for comments by post
-  const topPosts = [...new Set(comments.value.map(c => c.postTitle))]
+  const topPosts = [...new Set(comments.map(c => c.postTitle))]
     .slice(0, 5)
     .map(title => {
       return {
         title,
-        count: comments.value.filter(c => c.postTitle === title).length
+        count: comments.filter(c => c.postTitle === title).length
       }
     })
     .sort((a, b) => b.count - a.count)
@@ -476,20 +464,20 @@ const monthlyChartData = computed(() => {
     commentsByStatusChartData: commentsByStatusData,
     commentsByPostChartData: commentsByPostData
   }
-})
+}
 
 // Comment statistics
-const commentStats = computed(() => {
-  const totalComments = comments.value.length
-  const approvedComments = comments.value.filter(c => c.status === 'approved').length
-  const pendingComments = comments.value.filter(c => c.status === 'pending').length
-  const spamComments = comments.value.filter(c => c.status === 'spam').length
+function commentStats() {
+  const totalComments = comments.length
+  const approvedComments = comments.filter(c => c.status === 'approved').length
+  const pendingComments = comments.filter(c => c.status === 'pending').length
+  const spamComments = comments.filter(c => c.status === 'spam').length
 
   // Calculate approval rate
   const approvalRate = totalComments > 0 ? Math.round((approvedComments / totalComments) * 100) : 0
 
   // Find most active author
-  const authorCounts = comments.value.reduce((acc, comment) => {
+  const authorCounts = comments.reduce((acc, comment) => {
     acc[comment.author] = (acc[comment.author] || 0) + 1
     return acc
   }, {} as Record<string, number>)
@@ -499,7 +487,7 @@ const commentStats = computed(() => {
     .map(([author, count]) => ({ author, count }))[0] || { author: 'None', count: 0 }
 
   // Find most commented post
-  const postCounts = comments.value.reduce((acc, comment) => {
+  const postCounts = comments.reduce((acc, comment) => {
     acc[comment.postTitle] = (acc[comment.postTitle] || 0) + 1
     return acc
   }, {} as Record<string, number>)
@@ -509,7 +497,7 @@ const commentStats = computed(() => {
     .map(([title, count]) => ({ title, count }))[0] || { title: 'None', count: 0 }
 
   // Find newest comment
-  const sortedComments = [...comments.value].sort((a, b) =>
+  const sortedComments = [...comments].sort((a, b) =>
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   )
   const newestComment = sortedComments[0] || null
@@ -524,7 +512,7 @@ const commentStats = computed(() => {
     mostCommentedPost,
     newestComment
   }
-})
+}
 </script>
 
 <main>

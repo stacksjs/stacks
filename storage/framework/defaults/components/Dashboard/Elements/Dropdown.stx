@@ -48,7 +48,7 @@
   toggle?.addEventListener('click', function() {
     isOpen = !isOpen
     updateState()
-  })
+  }
 
   updateState()
 })()

@@ -1,11 +1,8 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
+definePageMeta({
+  middleware: ['auth']
+})
+
 import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 import DriversTable from '../../../../components/Dashboard/Commerce/Delivery/DriversTable.stx'
@@ -13,17 +10,8 @@ import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagin
 import { useDrivers } from '../../../../functions/commerce/shippings/drivers'
 import type { Drivers } from '../../../../types/defaults'
 
-useHead({
-  title: 'Dashboard - Delivery Drivers',
-})
-
 // Get drivers data and functions from the composable
 const { drivers, createDriver, fetchDrivers, updateDriver, deleteDriver } = useDrivers()
-
-// Fetch data on component mount
-onMounted(async () => {
-  await fetchDrivers()
-})
 
 // Define new driver type
 interface NewDriverForm {
@@ -36,20 +24,20 @@ interface NewDriverForm {
 }
 
 // Modal state
-const showAddModal = ref(false)
-const showEditModal = ref(false)
-const editingDriver = ref(null)
-const newDriver = ref({
+let showAddModal = false
+let showEditModal = false
+let editingDriver = null
+let newDriver = {
   user_id: 0,
   name: '',
   phone: '',
   vehicle_number: '',
   license: '',
   status: 'Active'
-})
+}
 
 function openAddModal() {
-  newDriver.value = {
+  newDriver = {
     user_id: 0,
     name: '',
     phone: '',
@@ -57,16 +45,16 @@ function openAddModal() {
     license: '',
     status: 'Active'
   }
-  showAddModal.value = true
+  showAddModal = true
 }
 
 function closeAddModal() {
-  showAddModal.value = false
+  showAddModal = false
 }
 
 function openEditModal(driver) {
-  editingDriver.value = driver
-  newDriver.value = {
+  editingDriver = driver
+  newDriver = {
     user_id: driver.user_id,
     name: driver.name,
     phone: driver.phone,
@@ -74,17 +62,17 @@ function openEditModal(driver) {
     license: driver.license,
     status: typeof driver.status === 'string' ? driver.status : (Array.isArray(driver.status) ? driver.status[0] || 'Active' : 'Active')
   }
-  showEditModal.value = true
+  showEditModal = true
 }
 
 function closeEditModal() {
-  showEditModal.value = false
-  editingDriver.value = null
+  showEditModal = false
+  editingDriver = null
 }
 
 async function addDriver() {
   try {
-    await createDriver(newDriver.value)
+    await createDriver(newDriver)
     closeAddModal()
   } catch (error) {
     console.error('Failed to create driver:', error)
@@ -92,13 +80,13 @@ async function addDriver() {
 }
 
 async function saveDriver() {
-  if (!editingDriver.value) return
+  if (!editingDriver) return
 
   try {
     await updateDriver({
-      ...editingDriver.value,
-      ...newDriver.value
-    })
+      ...editingDriver,
+      ...newDriver
+    }
     closeEditModal()
   } catch (error) {
     console.error('Failed to update driver:', error)
@@ -106,16 +94,16 @@ async function saveDriver() {
 }
 
 // Search and filtering
-const searchQuery = ref('')
-const currentPage = ref(1)
+let searchQuery = ''
+let currentPage = 1
 const itemsPerPage = 5
 
-const filteredDrivers = computed(() => {
-  const driverList = Array.isArray(drivers.value) ? drivers.value : []
+function filteredDrivers() {
+  const driverList = Array.isArray(drivers) ? drivers : []
 
-  if (!searchQuery.value) return driverList
+  if (!searchQuery) return driverList
 
-  const query = searchQuery.value.toLowerCase()
+  const query = searchQuery.toLowerCase()
   return driverList.filter(driver =>
     driver.name.toLowerCase().includes(query) ||
     driver.phone.toLowerCase().includes(query) ||
@@ -123,18 +111,18 @@ const filteredDrivers = computed(() => {
     driver.license.toLowerCase().includes(query) ||
     (typeof driver.status === 'string' ? driver.status.toLowerCase().includes(query) : false)
   )
-})
+}
 
-const paginatedDrivers = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
+function paginatedDrivers() {
+  const start = (currentPage - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return filteredDrivers.value.slice(start, end)
-})
+  return filteredDrivers.slice(start, end)
+}
 
 // Event handlers
 const handleSearch = (query) => {
-  searchQuery.value = query
-  currentPage.value = 1
+  searchQuery = query
+  currentPage = 1
 }
 
 const handleAddDriver = () => {
@@ -160,20 +148,20 @@ const viewDriverRoutes = (driver) => {
 }
 
 const handlePrevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
+  if (currentPage > 1) {
+    currentPage--
   }
 }
 
 const handleNextPage = () => {
-  const totalPages = Math.ceil(filteredDrivers.value.length / itemsPerPage)
-  if (currentPage.value < totalPages) {
-    currentPage.value++
+  const totalPages = Math.ceil(filteredDrivers.length / itemsPerPage)
+  if (currentPage < totalPages) {
+    currentPage++
   }
 }
 
 const handlePageChange = (page) => {
-  currentPage.value = page
+  currentPage = page
 }
 
 // Tab configuration
@@ -188,6 +176,8 @@ const tabs = [
 ]
 
 </script>
+
+@title('Dashboard - Delivery Drivers')
 
 <template>
 <div class="py-6">
@@ -527,3 +517,11 @@ const tabs = [
   @endif
 </div>
 </template>
+
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  await fetchDrivers()
+})
+</script>

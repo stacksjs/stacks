@@ -53,7 +53,7 @@ function getModels() {
           table: tableNamePlural,
           count: count,
           href: `/models/${urlSlug}`,
-        })
+        }
       }
     }
 

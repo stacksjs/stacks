@@ -15,7 +15,7 @@ const props = defineProps({
   subtitle: { type: String, default: '' },
   actions: { type: Array, default: [] },
   padding: { type: Boolean, default: true },
-})
+}
 </script>
 
 <template>

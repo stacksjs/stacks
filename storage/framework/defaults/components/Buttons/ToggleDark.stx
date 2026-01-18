@@ -10,5 +10,5 @@
 <script client>
 document.querySelector('[data-toggle-dark]')?.addEventListener('click', function() {
   document.documentElement.classList.toggle('dark')
-})
+}
 </script>

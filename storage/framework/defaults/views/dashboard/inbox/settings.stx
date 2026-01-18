@@ -1,16 +1,17 @@
 <script server>
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
 const { ref, computed, onMounted } = await import('vue')
 const { useHead } = await import('@vueuse/head')
 const { useRouter } = await import('vue-router')
 const EmailSidebar = (await import('../../../components/Dashboard/Email/EmailSidebar.vue')).default
 
-useHead({
-  title: 'Mail - Settings',
-})
-
 const router = useRouter()
-const activeFolder = ref('inbox')
-const isLoading = ref(false)
+let activeFolder = 'inbox'
+let isLoading = false
 
 // Folder structure
 const folders = [
@@ -24,7 +25,7 @@ const folders = [
 ]
 
 // Mock unread counts
-const unreadCounts = computed(() => {
+function unreadCounts() {
   return {
     inbox: 2,
     starred: 1,
@@ -34,10 +35,10 @@ const unreadCounts = computed(() => {
     spam: 1,
     trash: 0,
   }
-})
+}
 
 // Settings sections
-const settingsSections = ref([
+let settingsSections = [
   {
     id: 'general',
     name: 'General',
@@ -74,10 +75,10 @@ const settingsSections = ref([
     icon: 'i-hugeicons-security-check',
     active: false,
   },
-])
+]
 
 // Settings form data
-const settings = ref({
+let settings = {
   general: {
     displayDensity: 'default',
     defaultReplyBehavior: 'replyAll',
@@ -99,14 +100,14 @@ const settings = ref({
       message: 'I am currently out of office with limited access to email.',
     },
   },
-})
+}
 
 // Active section
-const activeSection = ref('general')
+let activeSection = 'general'
 
 const setActiveSection = (sectionId) => {
-  activeSection.value = sectionId
-  settingsSections.value.forEach(section => {
+  activeSection = sectionId
+  settingsSections.forEach(section => {
     section.active = section.id === sectionId
   })
 }
@@ -114,12 +115,12 @@ const setActiveSection = (sectionId) => {
 // Function to handle folder change
 const handleFolderChange = (folder) => {
   // Update the active folder
-  activeFolder.value = folder
+  activeFolder = folder
   // Navigate to the inbox page with the selected folder
   router.push({
     path: '/inbox',
     query: { folder }
-  })
+  }
 }
 
 // Function to handle compose
@@ -129,22 +130,18 @@ const handleCompose = () => {
 
 // Save settings
 const saveSettings = () => {
-  isLoading.value = true
+  isLoading = true
   // Simulate API call
   setTimeout(() => {
-    isLoading.value = false
+    isLoading = false
     // Show success message
     alert('Settings saved successfully')
   }, 1000)
 }
 
-// Initial load
-onMounted(async () => {
-  isLoading.value = true
-  await new Promise(resolve => setTimeout(resolve, 500))
-  isLoading.value = false
-})
 </script>
+
+@title('Mail - Settings')
 
 <template>
 <div class="min-h-screen dark:bg-blue-gray-800">
@@ -457,8 +454,13 @@ onMounted(async () => {
 </div>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  isLoading = true
+  await new Promise(resolve => setTimeout(resolve, 500))
+  isLoading = false
+})
+</script>
+

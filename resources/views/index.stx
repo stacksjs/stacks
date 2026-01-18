@@ -732,7 +732,7 @@ import { Auth } from '@stacksjs/auth'
 const user = await Auth.attempt({
   email: 'user@example.com',
   password: 'secret'
-})
+}
 
 // Get authenticated user
 const current = await Auth.user()

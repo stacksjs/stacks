@@ -1,12 +1,11 @@
 <script server>
-import { ref, computed, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
 import NotificationStatusBadge from '../../../components/Dashboard/NotificationStatusBadge.stx'
 import NotificationErrorModal from '../../../components/Dashboard/NotificationErrorModal.stx'
-
-useHead({
-  title: 'Dashboard - Notification History',
-})
 
 interface NotificationEntry {
   id: string
@@ -22,18 +21,18 @@ interface NotificationEntry {
 }
 
 // Pagination and filtering state
-const notifications = ref<NotificationEntry[]>([])
-const currentPage = ref(1)
-const perPage = ref(10)
-const totalNotifications = ref(0)
-const isLoading = ref(true)
-const searchQuery = ref('')
-const selectedType = ref<string>('all')
-const selectedStatus = ref<string>('all')
-const dateRange = ref<[string, string] | null>(null)
-const showFilters = ref(false)
-const sortField = ref<'sent_at' | 'delivered_at' | null>(null)
-const sortDirection = ref<'asc' | 'desc'>('desc')
+let notifications = []
+let currentPage = 1
+let perPage = 10
+let totalNotifications = 0
+let isLoading = true
+let searchQuery = ''
+let selectedType = 'all'
+let selectedStatus = 'all'
+let dateRange = null
+let showFilters = false
+let sortField = null
+let sortDirection = 'desc'
 
 // Filter options
 const notificationTypes = ['all', 'email', 'sms', 'push', 'discord', 'slack']
@@ -114,29 +113,29 @@ const generateMockNotifications = () => {
     }
 
     return notification
-  })
+  }
 }
 
 // Computed properties for filtering
-const filteredNotifications = computed(() => {
-  return notifications.value.filter(notification => {
-    if (selectedType.value !== 'all' && notification.type !== selectedType.value) return false
-    if (selectedStatus.value !== 'all' && notification.status !== selectedStatus.value) return false
-    if (searchQuery.value) {
-      const query = searchQuery.value.toLowerCase()
+function filteredNotifications() {
+  return notifications.filter(notification => {
+    if (selectedType !== 'all' && notification.type !== selectedType) return false
+    if (selectedStatus !== 'all' && notification.status !== selectedStatus) return false
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
       return notification.subject.toLowerCase().includes(query) ||
              notification.recipient.toLowerCase().includes(query) ||
              notification.content.toLowerCase().includes(query)
-    }
+    )}
     return true
-  })
-})
+  )}
+)}
 
 // Add sorting functionality
-const sortedNotifications = computed(() => {
-  if (!sortField.value) return filteredNotifications.value
+function sortedNotifications() {
+  if (!sortField) return filteredNotifications
 
-  return [...filteredNotifications.value].sort((a, b) => {
+  return [...filteredNotifications].sort((a, b) => {
     const aValue = a[sortField.value!]
     const bValue = b[sortField.value!]
 
@@ -145,17 +144,17 @@ const sortedNotifications = computed(() => {
     if (!bValue) return -1
 
     const comparison = new Date(aValue).getTime() - new Date(bValue).getTime()
-    return sortDirection.value === 'asc' ? comparison : -comparison
-  })
-})
+    return sortDirection === 'asc' ? comparison : -comparison
+  )}
+)}
 
-const paginatedNotifications = computed(() => {
-  const start = (currentPage.value - 1) * perPage.value
-  const end = start + perPage.value
-  return sortedNotifications.value.slice(start, end)
-})
+function paginatedNotifications() {
+  const start = (currentPage - 1) * perPage
+  const end = start + perPage
+  return sortedNotifications.slice(start, end)
+}
 
-const totalPages = computed(() => Math.ceil(filteredNotifications.value.length / perPage.value))
+function totalPages() { return Math.ceil(filteredNotifications.length / perPage) }
 
 // Methods
 const handleRetry = async (notificationId) => {
@@ -164,10 +163,10 @@ const handleRetry = async (notificationId) => {
 }
 
 const resetFilters = () => {
-  selectedType.value = 'all'
-  selectedStatus.value = 'all'
-  searchQuery.value = ''
-  dateRange.value = null
+  selectedType = 'all'
+  selectedStatus = 'all'
+  searchQuery = ''
+  dateRange = null
 }
 
 const formatDate = (date) => {
@@ -175,43 +174,29 @@ const formatDate = (date) => {
 }
 
 const toggleSort = (field) => {
-  if (sortField.value === field) {
-    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  if (sortField === field) {
+    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'
   } else {
-    sortField.value = field
-    sortDirection.value = 'desc'
+    sortField = field
+    sortDirection = 'desc'
   }
 }
 
 // Add state for error modal
-const isErrorModalOpen = ref(false)
-const selectedNotification = ref<NotificationEntry | null>(null)
+let isErrorModalOpen = false
+let selectedNotification = null
 
 // Function to open error modal
 const openErrorModal = (notification) => {
-  selectedNotification.value = notification
-  isErrorModalOpen.value = true
+  selectedNotification = notification
+  isErrorModalOpen = true
 }
 
 // Function to close error modal
 const closeErrorModal = () => {
-  isErrorModalOpen.value = false
+  isErrorModalOpen = false
 }
 
-// Load initial data
-onMounted(async () => {
-  isLoading.value = true
-  try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    notifications.value = generateMockNotifications()
-    totalNotifications.value = notifications.value.length
-  } catch (error) {
-    console.error('Failed to load notifications:', error)
-  } finally {
-    isLoading.value = false
-  }
-})
 </script>
 
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
@@ -463,8 +448,3 @@ onMounted(async () => {
   />
 </div>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>

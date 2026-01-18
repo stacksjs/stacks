@@ -1,12 +1,8 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref } from 'vue'
-import { useHead } from '@vueuse/head'
-import { Line, Bar } from 'vue-chartjs'
+definePageMeta({
+  middleware: ['auth']
+})
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -31,10 +27,6 @@ ChartJS.register(
   Legend,
   Filler,
 )
-
-useHead({
-  title: 'Dashboard - Commerce',
-})
 
 // Sample data for the dashboard
 const revenueData = {
@@ -110,9 +102,11 @@ const recentOrders = [
   { id: '#ORD-5428', customer: 'David Wilson', date: '2023-11-29', total: '$199.99', status: 'Completed' },
 ]
 
-const timeRange = ref('Last 30 days')
+let timeRange = 'Last 30 days'
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 </script>
+
+@title('Dashboard - Commerce')
 
 <template>
 <main>

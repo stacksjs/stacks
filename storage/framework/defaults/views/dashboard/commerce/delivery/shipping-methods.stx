@@ -1,11 +1,8 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
+definePageMeta({
+  middleware: ['auth']
+})
+
 import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 import ShippingMethodsTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingMethodsTable.stx'
@@ -13,62 +10,54 @@ import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagin
 import { useShippingMethods } from '../../../../functions/commerce/shippings/shipping-methods'
 import type { NewShippingMethod } from '../../../../types/defaults'
 
-useHead({
-  title: 'Dashboard - Shipping Methods',
-})
-
 const { shippingMethods, createShippingMethod, fetchShippingMethods, updateShippingMethod, deleteShippingMethod } = useShippingMethods()
 
-onMounted(async () => {
-  await fetchShippingMethods()
-})
-
-const showAddModal = ref(false)
-const showEditModal = ref(false)
-const editingMethod = ref(null)
-const newShippingMethod = ref({
+let showAddModal = false
+let showEditModal = false
+let editingMethod = null
+let newShippingMethod = {
   name: '',
   description: '',
   base_rate: 0,
   free_shipping: undefined,
   status: 'Active'
-})
+}
 
 function openAddModal() {
-  newShippingMethod.value = {
+  newShippingMethod = {
     name: '',
     description: '',
     base_rate: 0,
     free_shipping: undefined,
     status: 'Active'
   }
-  showAddModal.value = true
+  showAddModal = true
 }
 
 function closeAddModal() {
-  showAddModal.value = false
+  showAddModal = false
 }
 
 function openEditModal(method) {
-  editingMethod.value = method
-  newShippingMethod.value = {
+  editingMethod = method
+  newShippingMethod = {
     name: method.name,
     description: method.description || '',
     base_rate: method.base_rate,
     free_shipping: method.free_shipping,
     status: method.status
   }
-  showEditModal.value = true
+  showEditModal = true
 }
 
 function closeEditModal() {
-  showEditModal.value = false
-  editingMethod.value = null
+  showEditModal = false
+  editingMethod = null
 }
 
 async function addShippingMethod() {
   try {
-    await createShippingMethod(newShippingMethod.value)
+    await createShippingMethod(newShippingMethod)
     closeAddModal()
   } catch (error) {
     console.error('Failed to create shipping method:', error)
@@ -76,42 +65,42 @@ async function addShippingMethod() {
 }
 
 async function saveShippingMethod() {
-  if (!editingMethod.value) return
+  if (!editingMethod) return
 
   try {
     await updateShippingMethod({
-      ...editingMethod.value,
-      ...newShippingMethod.value
-    })
+      ...editingMethod,
+      ...newShippingMethod
+    }
     closeEditModal()
   } catch (error) {
     console.error('Failed to update shipping method:', error)
   }
 }
 
-const searchQuery = ref('')
-const currentPage = ref(1)
+let searchQuery = ''
+let currentPage = 1
 const itemsPerPage = 5
 
-const filteredShippingMethods = computed(() => {
-  if (!searchQuery.value) return shippingMethods.value
+function filteredShippingMethods() {
+  if (!searchQuery) return shippingMethods
 
-  const query = searchQuery.value.toLowerCase()
-  return shippingMethods.value.filter(method =>
+  const query = searchQuery.toLowerCase()
+  return shippingMethods.filter(method =>
     method.name.toLowerCase().includes(query) ||
     method.description?.toLowerCase().includes(query)
   )
-})
+}
 
-const paginatedShippingMethods = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
+function paginatedShippingMethods() {
+  const start = (currentPage - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return filteredShippingMethods.value.slice(start, end)
-})
+  return filteredShippingMethods.slice(start, end)
+}
 
 const handleSearch = (query) => {
-  searchQuery.value = query
-  currentPage.value = 1
+  searchQuery = query
+  currentPage = 1
 }
 
 const handleAddMethod = () => {
@@ -133,20 +122,20 @@ const handleDeleteMethod = async (method) => {
 }
 
 const handlePrevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
+  if (currentPage > 1) {
+    currentPage--
   }
 }
 
 const handleNextPage = () => {
-  const totalPages = Math.ceil(filteredShippingMethods.value.length / itemsPerPage)
-  if (currentPage.value < totalPages) {
-    currentPage.value++
+  const totalPages = Math.ceil(filteredShippingMethods.length / itemsPerPage)
+  if (currentPage < totalPages) {
+    currentPage++
   }
 }
 
 const handlePageChange = (page) => {
-  currentPage.value = page
+  currentPage = page
 }
 
 const tabs = [
@@ -160,6 +149,8 @@ const tabs = [
 ]
 
 </script>
+
+@title('Dashboard - Shipping Methods')
 
 <template>
 <div class="py-6">
@@ -442,3 +433,11 @@ const tabs = [
   @endif
 </div>
 </template>
+
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  await fetchShippingMethods()
+})
+</script>

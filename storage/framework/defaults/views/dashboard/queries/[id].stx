@@ -1,16 +1,11 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
-import { useRoute, useRouter } from 'vue-router'
+definePageMeta({
+  middleware: ['auth']
+})
 
 const route = useRoute()
 const router = useRouter()
-const isLoading = ref(true)
+let isLoading = true
 
 interface QueryRecord {
   id: string
@@ -38,15 +33,15 @@ interface QueryRecord {
   explain_plan?: string
 }
 
-const query = ref(null)
+let query = null
 
 const fetchQuery = async (id) => {
-  isLoading.value = true
+  isLoading = true
 
   await new Promise(resolve => setTimeout(resolve, 500))
 
   if (id === '1') {
-    query.value = {
+    query = {
       id: '1',
       query: 'SELECT * FROM users WHERE email = ? LIMIT 1',
       normalized_query: 'SELECT * FROM users WHERE email = ? LIMIT ?',
@@ -68,7 +63,7 @@ const fetchQuery = async (id) => {
       explain_plan: 'EXPLAIN: id-1, select_type-SIMPLE, table-users, partitions-NULL, type-ref, possible_keys-email_index, key-email_index, key_len-767, ref-const, rows-1, filtered-100.00, Extra-Using where'
     }
   } else if (id === '2') {
-    query.value = {
+    query = {
       id: '2',
       query: 'SELECT p.*, c.name as category_name FROM posts p JOIN categories c ON p.category_id = c.id WHERE p.published_at IS NOT NULL ORDER BY p.published_at DESC LIMIT 10',
       normalized_query: 'SELECT p.*, c.name as category_name FROM posts p JOIN categories c ON p.category_id = c.id WHERE p.published_at IS NOT NULL ORDER BY p.published_at DESC LIMIT ?',
@@ -95,7 +90,7 @@ const fetchQuery = async (id) => {
       explain_plan: 'EXPLAIN: id-1, select_type-SIMPLE, table-p, partitions-NULL, type-ALL, possible_keys-NULL, key-NULL, key_len-NULL, ref-NULL, rows-200, filtered-50.00, Extra-Using where; Using filesort...'
     }
   } else {
-    query.value = {
+    query = {
       id: id,
       query: 'SELECT * FROM example_table WHERE id = ?',
       normalized_query: 'SELECT * FROM example_table WHERE id = ?',
@@ -118,7 +113,7 @@ const fetchQuery = async (id) => {
     }
   }
 
-  isLoading.value = false
+  isLoading = false
 }
 
 const formatDuration = (duration) => {
@@ -156,14 +151,6 @@ const queryTypeBadges = {
   OTHER: 'bg-gray-50 dark:bg-gray-900/20 text-gray-700 dark:text-gray-300 ring-gray-700/10 dark:ring-gray-400/30'
 }
 
-useHead({
-  title: computed(() => query.value ? `Query Details: ${query.value.id}` : 'Query Details')
-})
-
-onMounted(() => {
-  const id = route.params.id
-  fetchQuery(id)
-})
 </script>
 
 <template>
@@ -397,3 +384,12 @@ onMounted(() => {
   </main>
 </div>
 </template>
+
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  const id = route.params.id
+  fetchQuery(id)
+})
+</script>

@@ -33,7 +33,7 @@ function getModelItems() {
           label: modelName,
           icon: 'i-hugeicons-database-01',
           href: `/models/${urlSlug}`,
-        })
+        }
       }
     }
   } catch (e) {

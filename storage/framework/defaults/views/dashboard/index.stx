@@ -1,5 +1,9 @@
 <script server>
-import { onMounted, watch } from 'vue'
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
 import { useDashboard } from '../../functions/dashboard'
 
 // Dashboard data from composable
@@ -30,16 +34,6 @@ const quickLinks = [
   { name: 'Cloud', description: 'Monitor cloud performance and status', icon: 'i-hugeicons-cloud', href: '/cloud', color: 'bg-purple-500' },
   { name: 'Settings', description: 'Configure your application settings', icon: 'i-hugeicons-settings-01', href: '/settings', color: 'bg-neutral-500' },
 ]
-
-// Fetch dashboard data on mount
-onMounted(() => {
-  fetchAll(timeRange)
-})
-
-// Watch for time range changes
-watch(() => timeRange, (newRange) => {
-  fetchDashboardStats(newRange)
-})
 
 // Get icon based on activity type
 function getActivityIcon(type) {
@@ -98,7 +92,7 @@ function getStatusDotClass(status) {
         data-model="timeRange"
       >
         @foreach(timeRangeOptions as option)
-          <option value="{{ option.value }}">{{ option.label }}</option>
+          <option value="{{ option }}">{{ option.label }}</option>
         @endforeach
       </Select>
     </div>
@@ -109,7 +103,7 @@ function getStatusDotClass(status) {
     @foreach(stats as stat)
       <StatsCard
         title="{{ stat.title }}"
-        value="{{ stat.value }}"
+        value="{{ stat }}"
         trend="{{ stat.trend }}"
         trendLabel="{{ stat.trendLabel }}"
         icon="{{ stat.icon }}"
@@ -292,8 +286,11 @@ function getStatusDotClass(status) {
 </DashboardLayout>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  fetchAll(timeRange)
+})
+</script>
+

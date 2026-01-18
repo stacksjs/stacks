@@ -16,7 +16,7 @@ const props = defineProps({
   data: { type: Array, required: true },
   striped: { type: Boolean, default: false },
   hoverable: { type: Boolean, default: true },
-})
+}
 </script>
 
 <template>

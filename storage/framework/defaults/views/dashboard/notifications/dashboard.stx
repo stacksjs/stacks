@@ -1,7 +1,4 @@
 <script server>
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
-import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -24,10 +21,6 @@ ChartJS.register(
   Legend,
   Filler,
 )
-
-useHead({
-  title: 'Dashboard - Notifications',
-})
 
 interface NotificationStats {
   total_sent: number
@@ -54,11 +47,11 @@ interface ChannelStats {
 }
 
 // Mock data for demonstration
-const notificationStats = ref<NotificationStats>({
+let notificationStats = {
   total_sent: 45_678,
   delivery_rate: 98.5,
   avg_delivery_time: 1.2,
-})
+}
 
 const channelStats = ref<Record<string, ChannelStats>>({
   email: {
@@ -91,9 +84,9 @@ const channelStats = ref<Record<string, ChannelStats>>({
     failed: 5,
     pending: 3,
   },
-})
+}
 
-const recentNotifications = ref<NotificationEntry[]>([
+let recentNotifications = [
   {
     id: '1',
     type: 'email',
@@ -138,11 +131,11 @@ const recentNotifications = ref<NotificationEntry[]>([
     status: 'pending',
     sent_at: '2024-03-14 10:18:00',
   },
-])
+]
 
-const timeRange = ref<'hour' | 'day' | 'week'>('hour')
-const selectedChannel = ref<string>('all')
-const isLoading = ref(false)
+let timeRange = 'hour'
+let selectedChannel = 'all'
+let isLoading = false
 
 // Chart options
 const chartOptions = {
@@ -244,8 +237,8 @@ const getDeliveryTimeData = () => {
   }
 }
 
-const volumeData = ref(getVolumeData())
-const deliveryTimeData = ref(getDeliveryTimeData())
+let volumeData = getVolumeData()
+let deliveryTimeData = getDeliveryTimeData()
 
 const notificationStatusColors: Record<string, string> = {
   delivered: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/50 ring-green-600/20',
@@ -275,28 +268,13 @@ const getChannelIcon = (type: string): string => {
   }
 }
 
-// Watch for time range changes
-watch([timeRange, selectedChannel], async () => {
-  isLoading.value = true
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500))
-  volumeData.value = getVolumeData()
-  deliveryTimeData.value = getDeliveryTimeData()
-  isLoading.value = false
-})
-
-// Initial load
-onMounted(async () => {
-  isLoading.value = true
-  await new Promise(resolve => setTimeout(resolve, 500))
-  isLoading.value = false
-})
-
 // Add this helper function before the template
 const formatNumber = (num: number): string => {
   return num.toLocaleString()
 }
 </script>
+
+@title('Dashboard - Notifications')
 
 <template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
@@ -542,3 +520,13 @@ const formatNumber = (num: number): string => {
   </div>
 </div>
 </template>
+
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  isLoading = true
+  await new Promise(resolve => setTimeout(resolve, 500))
+  isLoading = false
+})
+</script>

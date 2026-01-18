@@ -1,16 +1,5 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
-<script lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useHead } from '@vueuse/head'
+<script server>
 import Chart from 'chart.js/auto'
-
-useHead({
-  title: 'Dashboard - Marketing Waitlist',
-})
 
 // Define waitlist entry type
 interface WaitlistEntry {
@@ -59,14 +48,14 @@ const tablePreferences = ['No Preference', 'Indoor', 'Outdoor', 'Bar', 'Booth', 
 // Calculate estimated wait time based on party size and current queue
 function calculateEstimatedWait(partySize: number): number {
   const baseWait = 15 // Base wait time in minutes
-  const queueFactor = waitlistEntries.value.filter(e => e.status === 'Waiting').length * 5
+  const queueFactor = waitlistEntries.filter(e => e.status === 'Waiting').length * 5
   const partySizeFactor = Math.ceil(partySize / 2) * 5
   return baseWait + queueFactor + partySizeFactor
 }
 
 // Update queue positions
 function updateQueuePositions(): void {
-  const waitingEntries = waitlistEntries.value
+  const waitingEntries = waitlistEntries
     .filter(e => e.status === 'Waiting')
     .sort((a, b) => new Date(a.checkInTime).getTime() - new Date(b.checkInTime).getTime())
 
@@ -99,25 +88,25 @@ async function notifyCustomer(entry: WaitlistEntry, message: string): Promise<vo
 }
 
 // Calculate wait time statistics
-const waitTimeStats = computed(() => {
-  const completedEntries = waitlistEntries.value.filter(e => e.status === 'Seated' && e.actualSeatingTime)
+function waitTimeStats() {
+  const completedEntries = waitlistEntries.filter(e => e.status === 'Seated' && e.actualSeatingTime)
   if (completedEntries.length === 0) return null
 
   const waitTimes = completedEntries.map(entry => {
     const checkIn = new Date(entry.checkInTime).getTime()
     const seating = new Date(entry.actualSeatingTime!).getTime()
     return (seating - checkIn) / 60000 // Convert to minutes
-  })
+  }
 
   return {
     averageWait: Math.round(waitTimes.reduce((a, b) => a + b, 0) / waitTimes.length),
     maxWait: Math.round(Math.max(...waitTimes)),
     minWait: Math.round(Math.min(...waitTimes))
   }
-})
+}
 
 // Sample waitlist data
-const waitlistEntries = ref<WaitlistEntry[]>([
+let waitlistEntries = [
   {
     id: 1,
     name: 'John Smith',
@@ -294,16 +283,16 @@ const waitlistEntries = ref<WaitlistEntry[]>([
     estimatedSeatingTime: '2024-01-28T12:30:00',
     actualSeatingTime: '2024-01-28T12:30:00'
   }
-])
+]
 
 // Products derived from waitlist entries
 const products = computed<Product[]>(() => {
   const productMap = new Map<string, number>()
 
-  waitlistEntries.value.forEach(entry => {
+  waitlistEntries.forEach(entry => {
     const count = productMap.get(entry.name) || 0
     productMap.set(entry.name, count + 1)
-  })
+  }
 
   return Array.from(productMap.entries()).map(([name, count], index) => ({
     id: index + 1,
@@ -311,27 +300,27 @@ const products = computed<Product[]>(() => {
     slug: name.toLowerCase().replace(/\s+/g, '-'),
     count
   }))
-})
+}
 
 // Search and filter refs
-const searchQuery = ref('')
-const statusFilter = ref('all')
-const partySizeFilter = ref('all')
-const tablePreferenceFilter = ref('all')
+let searchQuery = ''
+let statusFilter = 'all'
+let partySizeFilter = 'all'
+let tablePreferenceFilter = 'all'
 
 // Filter functions
-const filteredEntries = computed(() => {
-  return waitlistEntries.value.filter(entry => {
+function filteredEntries() {
+  return waitlistEntries.filter(entry => {
     // Apply search filter
-    const matchesSearch = searchQuery.value === '' ||
-      entry.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      (entry.phone && entry.phone.includes(searchQuery.value)) ||
-      entry.email.toLowerCase().includes(searchQuery.value.toLowerCase())
+    const matchesSearch = searchQuery === '' ||
+      entry.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (entry.phone && entry.phone.includes(searchQuery)) ||
+      entry.email.toLowerCase().includes(searchQuery.toLowerCase())
 
     // Apply party size filter
     let matchesPartySize = true
-    if (partySizeFilter.value !== 'all') {
-      const [minStr, maxStr] = partySizeFilter.value.split('-')
+    if (partySizeFilter !== 'all') {
+      const [minStr, maxStr] = partySizeFilter.split('-')
       if (!minStr) return false
       const min = parseInt(minStr)
       if (maxStr) {
@@ -340,82 +329,82 @@ const filteredEntries = computed(() => {
       } else {
         // For "7+" case
         matchesPartySize = entry.partySize >= min
-      }
-    }
+      )}
+    )}
 
     // Apply status filter
-    const matchesStatus = statusFilter.value === 'all' || entry.status === statusFilter.value
+    const matchesStatus = statusFilter === 'all' || entry.status === statusFilter
 
     // Apply table preference filter
-    const matchesTablePreference = tablePreferenceFilter.value === 'all' ||
-      (entry.tablePreference && entry.tablePreference === tablePreferenceFilter.value)
+    const matchesTablePreference = tablePreferenceFilter === 'all' ||
+      (entry.tablePreference && entry.tablePreference === tablePreferenceFilter)
 
     return matchesSearch && matchesPartySize && matchesStatus && matchesTablePreference
-  })
-})
+  )}
+)}
 
 // Sort refs and functions
-const sortBy = ref<'name' | 'checkInTime' | 'estimatedWaitMinutes'>('checkInTime')
-const sortOrder = ref<'asc' | 'desc'>('asc')
+let sortBy = 'checkInTime'
+let sortOrder = 'asc'
 
 function toggleSort(field: 'name' | 'checkInTime' | 'estimatedWaitMinutes') {
-  if (sortBy.value === field) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  if (sortBy === field) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy.value = field
-    sortOrder.value = 'asc'
+    sortBy = field
+    sortOrder = 'asc'
   }
 }
 
 // Sort entries
-const sortedEntries = computed(() => {
-  return [...filteredEntries.value].sort((a, b) => {
-    if (sortBy.value === 'name') {
-      return sortOrder.value === 'asc'
+function sortedEntries() {
+  return [...filteredEntries].sort((a, b) => {
+    if (sortBy === 'name') {
+      return sortOrder === 'asc'
         ? a.name.localeCompare(b.name)
         : b.name.localeCompare(a.name)
-    }
-    if (sortBy.value === 'checkInTime') {
-      return sortOrder.value === 'asc'
+    )}
+    if (sortBy === 'checkInTime') {
+      return sortOrder === 'asc'
         ? new Date(a.checkInTime).getTime() - new Date(b.checkInTime).getTime()
         : new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime()
-    }
-    if (sortBy.value === 'estimatedWaitMinutes') {
-      return sortOrder.value === 'asc'
+    )}
+    if (sortBy === 'estimatedWaitMinutes') {
+      return sortOrder === 'asc'
         ? a.estimatedWaitMinutes - b.estimatedWaitMinutes
         : b.estimatedWaitMinutes - a.estimatedWaitMinutes
-    }
+    )}
     return 0
-  })
-})
+  )}
+)}
 
 // Pagination
 const itemsPerPage = 10
-const currentPage = ref(1)
+let currentPage = 1
 
-const paginatedEntries = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
+function paginatedEntries() {
+  const start = (currentPage - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return sortedEntries.value.slice(start, end)
-})
+  return sortedEntries.slice(start, end)
+}
 
-const totalPages = computed(() => Math.ceil(sortedEntries.value.length / itemsPerPage))
+function totalPages() { return Math.ceil(sortedEntries.length / itemsPerPage) }
 
 function nextPage() {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
+  if (currentPage < totalPages) {
+    currentPage++
   }
 }
 
 function prevPage() {
-  if (currentPage.value > 1) {
-    currentPage.value--
+  if (currentPage > 1) {
+    currentPage--
   }
 }
 
 function goToPage(page: number) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
+  if (page >= 1 && page <= totalPages) {
+    currentPage = page
   }
 }
 
@@ -450,98 +439,98 @@ function getPriorityClass(priority: number): string {
 }
 
 // Modal state for adding/editing waitlist entry
-const showEntryModal = ref(false)
-const isEditMode = ref(false)
-const currentEntry = ref<WaitlistEntry | null>(null)
+let showEntryModal = false
+let isEditMode = false
+let currentEntry = null
 
 // Calculate statistics
-const totalEntries = computed(() => waitlistEntries.value.length)
-const waitingEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Waiting').length)
-const seatedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Seated').length)
-const cancelledEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Cancelled').length)
-const noShowEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'No Show').length)
+function totalEntries() { return waitlistEntries.length }
+function waitingEntries() { return waitlistEntries.filter(e => e.status === 'Waiting' }.length)
+function seatedEntries() { return waitlistEntries.filter(e => e.status === 'Seated' }.length)
+function cancelledEntries() { return waitlistEntries.filter(e => e.status === 'Cancelled' }.length)
+function noShowEntries() { return waitlistEntries.filter(e => e.status === 'No Show' }.length)
 
 // Form state for entry fields
-const entryName = ref('')
-const entryEmail = ref('')
-const entryPhone = ref<string | null>('')
-const entryPartySize = ref(2)
-const entryNotificationPreference = ref<'sms' | 'email' | 'both'>('sms')
-const entryTablePreference = ref<string | null>(null)
-const entrySpecialRequests = ref<string | null>(null)
-const entryNotes = ref<string | null>('')
-const entryPriority = ref(1)
+let entryName = ''
+let entryEmail = ''
+let entryPhone = ''
+let entryPartySize = 2
+let entryNotificationPreference = 'sms'
+let entryTablePreference = null
+let entrySpecialRequests = null
+let entryNotes = ''
+let entryPriority = 1
 
 // Initialize form fields when opening modal
 function openAddEntryModal(): void {
-  isEditMode.value = false
+  isEditMode = false
 
   // Reset form fields
-  entryName.value = ''
-  entryEmail.value = ''
-  entryPhone.value = ''
-  entryPartySize.value = 2
-  entryNotificationPreference.value = 'sms'
-  entryTablePreference.value = null
-  entrySpecialRequests.value = null
-  entryNotes.value = ''
-  entryPriority.value = 1
+  entryName = ''
+  entryEmail = ''
+  entryPhone = ''
+  entryPartySize = 2
+  entryNotificationPreference = 'sms'
+  entryTablePreference = null
+  entrySpecialRequests = null
+  entryNotes = ''
+  entryPriority = 1
 
-  showEntryModal.value = true
+  showEntryModal = true
 }
 
 function openEditEntryModal(entry: WaitlistEntry): void {
-  isEditMode.value = true
-  currentEntry.value = { ...entry }
+  isEditMode = true
+  currentEntry = { ...entry }
 
   // Set form fields from entry
-  entryName.value = entry.name
-  entryEmail.value = entry.email
-  entryPhone.value = entry.phone
-  entryPartySize.value = entry.partySize
-  entryNotificationPreference.value = entry.notificationPreference
-  entryTablePreference.value = entry.tablePreference
-  entrySpecialRequests.value = entry.specialRequests
-  entryNotes.value = entry.notes
-  entryPriority.value = entry.priority
+  entryName = entry.name
+  entryEmail = entry.email
+  entryPhone = entry.phone
+  entryPartySize = entry.partySize
+  entryNotificationPreference = entry.notificationPreference
+  entryTablePreference = entry.tablePreference
+  entrySpecialRequests = entry.specialRequests
+  entryNotes = entry.notes
+  entryPriority = entry.priority
 
-  showEntryModal.value = true
+  showEntryModal = true
 }
 
 function saveEntry(): void {
   const now = new Date()
   const entry: WaitlistEntry = {
-    id: isEditMode.value && currentEntry.value ? currentEntry.value.id : Math.max(0, ...waitlistEntries.value.map(e => e.id)) + 1,
-    name: entryName.value,
-    email: entryEmail.value,
-    phone: entryPhone.value,
-    partySize: entryPartySize.value,
-    estimatedWaitMinutes: calculateEstimatedWait(entryPartySize.value),
-    quotedWaitMinutes: Math.ceil(calculateEstimatedWait(entryPartySize.value) * 1.2), // Pad quote by 20%
-    queuePosition: waitlistEntries.value.filter(e => e.status === 'Waiting').length + 1,
-    notificationPreference: entryNotificationPreference.value,
-    notes: entryNotes.value,
+    id: isEditMode && currentEntry ? currentEntry.id : Math.max(0, ...waitlistEntries.map(e => e.id)) + 1,
+    name: entryName,
+    email: entryEmail,
+    phone: entryPhone,
+    partySize: entryPartySize,
+    estimatedWaitMinutes: calculateEstimatedWait(entryPartySize),
+    quotedWaitMinutes: Math.ceil(calculateEstimatedWait(entryPartySize) * 1.2), // Pad quote by 20%
+    queuePosition: waitlistEntries.filter(e => e.status === 'Waiting').length + 1,
+    notificationPreference: entryNotificationPreference,
+    notes: entryNotes,
     status: 'Waiting',
     dateAdded: now.toISOString().split('T')[0],
     notified: false,
-    priority: entryPriority.value,
+    priority: entryPriority,
     lastNotified: null,
-    tablePreference: entryTablePreference.value,
-    specialRequests: entrySpecialRequests.value,
+    tablePreference: entryTablePreference,
+    specialRequests: entrySpecialRequests,
     checkInTime: now.toISOString(),
     estimatedSeatingTime: null,
     actualSeatingTime: null
   }
 
-  if (isEditMode.value && currentEntry.value) {
+  if (isEditMode && currentEntry) {
     // Update existing entry
-    const index = waitlistEntries.value.findIndex(e => e.id === currentEntry.value!.id)
+    const index = waitlistEntries.findIndex(e => e.id === currentEntry.value!.id)
     if (index !== -1) {
-      waitlistEntries.value[index] = entry
+      waitlistEntries[index] = entry
     }
   } else {
     // Add new entry
-    waitlistEntries.value.push(entry)
+    waitlistEntries.push(entry)
   }
 
   // Update queue positions and wait times
@@ -550,22 +539,22 @@ function saveEntry(): void {
   // Send initial notification
   notifyCustomer(entry, `Thanks for joining the waitlist! Your estimated wait time is ${entry.quotedWaitMinutes} minutes. We'll notify you when your table is almost ready.`)
 
-  showEntryModal.value = false
+  showEntryModal = false
 }
 
 // Function to delete an entry
 function deleteEntry(entryId: number): void {
   if (confirm('Are you sure you want to delete this waitlist entry?')) {
-    const index = waitlistEntries.value.findIndex(e => e.id === entryId)
+    const index = waitlistEntries.findIndex(e => e.id === entryId)
     if (index !== -1) {
-      waitlistEntries.value.splice(index, 1)
+      waitlistEntries.splice(index, 1)
     }
   }
 }
 
 // Function to mark an entry as seated
 function markAsSeated(entryId: number): void {
-  const entry = waitlistEntries.value.find(e => e.id === entryId)
+  const entry = waitlistEntries.find(e => e.id === entryId)
   if (entry) {
     entry.status = 'Seated'
     entry.actualSeatingTime = new Date().toISOString()
@@ -575,7 +564,7 @@ function markAsSeated(entryId: number): void {
 
 // Function to mark an entry as no-show
 function markAsNoShow(entryId: number): void {
-  const entry = waitlistEntries.value.find(e => e.id === entryId)
+  const entry = waitlistEntries.find(e => e.id === entryId)
   if (entry) {
     entry.status = 'No Show'
     updateQueuePositions()
@@ -583,65 +572,65 @@ function markAsNoShow(entryId: number): void {
 }
 
 // Notification system
-const showNotificationModal = ref(false)
-const notificationSubject = ref('')
-const notificationMessage = ref('')
-const selectedEntries = ref<number[]>([])
-const selectAll = ref(false)
+let showNotificationModal = false
+let notificationSubject = ''
+let notificationMessage = ''
+let selectedEntries = []
+let selectAll = false
 
 // Toggle select all entries
 function toggleSelectAll(): void {
-  selectAll.value = !selectAll.value
-  if (selectAll.value) {
-    selectedEntries.value = paginatedEntries.value.map(entry => entry.id)
+  selectAll = !selectAll
+  if (selectAll) {
+    selectedEntries = paginatedEntries.map(entry => entry.id)
   } else {
-    selectedEntries.value = []
+    selectedEntries = []
   }
 }
 
 // Toggle selection of a single entry
 function toggleEntrySelection(entryId: number): void {
-  const index = selectedEntries.value.indexOf(entryId)
+  const index = selectedEntries.indexOf(entryId)
   if (index === -1) {
-    selectedEntries.value.push(entryId)
+    selectedEntries.push(entryId)
   } else {
-    selectedEntries.value.splice(index, 1)
+    selectedEntries.splice(index, 1)
   }
 
   // Update selectAll based on whether all entries are selected
-  selectAll.value = paginatedEntries.value.length > 0 &&
-    paginatedEntries.value.every(entry => selectedEntries.value.includes(entry.id))
+  selectAll = paginatedEntries.length > 0 &&
+    paginatedEntries.every(entry => selectedEntries.includes(entry.id))
 }
 
 // Open notification modal
 function openNotificationModal(): void {
-  if (selectedEntries.value.length === 0) {
+  if (selectedEntries.length === 0) {
     alert('Please select at least one waitlist entry to notify')
     return
   }
 
-  notificationSubject.value = 'Product Now Available'
-  notificationMessage.value = 'Good news! The product you were waiting for is now available for purchase.'
-  showNotificationModal.value = true
+  notificationSubject = 'Product Now Available'
+  notificationMessage = 'Good news! The product you were waiting for is now available for purchase.'
+  showNotificationModal = true
 }
 
 // Send notifications to selected entries
 function sendNotifications(): void {
   // In a real app, this would send actual emails or notifications
-  waitlistEntries.value.forEach(entry => {
-    if (selectedEntries.value.includes(entry.id)) {
+  waitlistEntries.forEach(entry => {
+    if (selectedEntries.includes(entry.id)) {
       entry.notified = true
       entry.status = 'Seated'
     }
-  })
+  }
 
   // Reset selection and close modal
-  selectedEntries.value = []
-  selectAll.value = false
-  showNotificationModal.value = false
+  selectedEntries = []
+  selectAll = false
+  showNotificationModal = false
 
   // Show success message (in a real app, this would be a toast notification)
-  alert(`Notifications sent to ${selectedEntries.value.length} customers`)
+  alert(`Notifications sent to ${selectedEntries.length} customers`)
 }
 
 // Export waitlist data
@@ -652,46 +641,46 @@ function exportWaitlist(): void {
 
 // Bulk actions
 function bulkChangeStatus(status: string): void {
-  if (selectedEntries.value.length === 0) {
+  if (selectedEntries.length === 0) {
     alert('Please select at least one waitlist entry')
     return
   }
 
-  waitlistEntries.value.forEach(entry => {
-    if (selectedEntries.value.includes(entry.id)) {
+  waitlistEntries.forEach(entry => {
+    if (selectedEntries.includes(entry.id)) {
       entry.status = status
       if (status === 'Seated') {
         entry.notified = true
       }
     }
-  })
+  }
 
   // Reset selection
-  selectedEntries.value = []
-  selectAll.value = false
+  selectedEntries = []
+  selectAll = false
 }
 
 // Bulk delete
 function bulkDelete(): void {
-  if (selectedEntries.value.length === 0) {
+  if (selectedEntries.length === 0) {
     alert('Please select at least one waitlist entry')
     return
   }
 
-  if (confirm(`Are you sure you want to delete ${selectedEntries.value.length} waitlist entries?`)) {
-    waitlistEntries.value = waitlistEntries.value.filter(entry => !selectedEntries.value.includes(entry.id))
+  if (confirm(`Are you sure you want to delete ${selectedEntries.length} waitlist entries?`)) {
+    waitlistEntries = waitlistEntries.filter(entry => !selectedEntries.includes(entry.id))
 
     // Reset selection
-    selectedEntries.value = []
-    selectAll.value = false
+    selectedEntries = []
+    selectAll = false
   }
 }
 
 // Chart references
-const productChartRef = ref<HTMLCanvasElement | null>(null)
-const sourceChartRef = ref<HTMLCanvasElement | null>(null)
-const statusChartRef = ref<HTMLCanvasElement | null>(null)
-const trendChartRef = ref<HTMLCanvasElement | null>(null)
+let productChartRef = null
+let sourceChartRef = null
+let statusChartRef = null
+let trendChartRef = null
 
 // Chart instances
 let productChart: Chart | null = null
@@ -709,12 +698,12 @@ const generateTrendData = () => {
     data.push({
       date: date.toISOString().split('T')[0],
       count: Math.floor(Math.random() * 5) // Random number of entries per day (0-4)
-    })
+    }
   }
   return data
 }
 
-const trendData = ref(generateTrendData())
+let trendData = generateTrendData()
 
 // Chart colors with gradients
 const chartColors = {
@@ -792,28 +781,20 @@ const baseChartOptions = {
   }
 }
 
-// Initialize charts
-onMounted(() => {
-  initProductChart()
-  initSourceChart()
-  initStatusChart()
-  initTrendChart()
-})
-
 // Initialize product interest chart
 function initProductChart() {
-  if (!productChartRef.value) return
+  if (!productChartRef) return
 
-  const ctx = productChartRef.value.getContext('2d')
+  const ctx = productChartRef.getContext('2d')
   if (!ctx) return
 
   const partySizes = [1, 2, 3, 4, 5, 6, '7+']
   const partySizeCounts = partySizes.map(size => {
     if (size === '7+') {
-      return waitlistEntries.value.filter(entry => entry.partySize >= 7).length
+      return waitlistEntries.filter(entry => entry.partySize >= 7).length
     }
-    return waitlistEntries.value.filter(entry => entry.partySize === size).length
-  })
+    return waitlistEntries.filter(entry => entry.partySize === size).length
+  }
 
   const gradient = ctx.createLinearGradient(0, 0, 0, 400)
   gradient.addColorStop(0, chartColors.blue.fill)
@@ -845,19 +826,19 @@ function initProductChart() {
         }
       }
     }
-  })
+  }
 }
 
 // Initialize source breakdown chart
 function initSourceChart() {
-  if (!sourceChartRef.value) return
+  if (!sourceChartRef) return
 
-  const ctx = sourceChartRef.value.getContext('2d')
+  const ctx = sourceChartRef.getContext('2d')
   if (!ctx) return
 
   const preferenceLabels = tablePreferences.slice(1)
   const preferenceCounts = preferenceLabels.map(preference =>
-    waitlistEntries.value.filter(entry =>
+    waitlistEntries.filter(entry =>
       entry.tablePreference ? entry.tablePreference === preference : false
     ).length
   )
@@ -906,14 +887,14 @@ function initSourceChart() {
         }
       }
     }
-  })
+  }
 }
 
 // Initialize trend chart
 function initTrendChart() {
-  if (!trendChartRef.value) return
+  if (!trendChartRef) return
 
-  const ctx = trendChartRef.value.getContext('2d')
+  const ctx = trendChartRef.getContext('2d')
   if (!ctx) return
 
   const gradient = ctx.createLinearGradient(0, 0, 0, 400)
@@ -923,10 +904,10 @@ function initTrendChart() {
   trendChart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: trendData.value.map(d => d.date),
+      labels: trendData.map(d => d.date),
       datasets: [{
         label: 'New Waitlist Entries',
-        data: trendData.value.map(d => d.count),
+        data: trendData.map(d => d.count),
         backgroundColor: gradient,
         borderColor: chartColors.blue.stroke,
         borderWidth: 2,
@@ -973,19 +954,19 @@ function initTrendChart() {
         }
       }
     }
-  })
+  }
 }
 
 // Initialize status breakdown chart
 function initStatusChart() {
-  if (!statusChartRef.value) return
+  if (!statusChartRef) return
 
-  const ctx = statusChartRef.value.getContext('2d')
+  const ctx = statusChartRef.getContext('2d')
   if (!ctx) return
 
   const statusLabels = statuses.slice(1)
   const statusData = statusLabels.map(status =>
-    waitlistEntries.value.filter(entry => entry.status === status).length
+    waitlistEntries.filter(entry => entry.status === status).length
   )
 
   statusChart = new Chart(ctx, {
@@ -1029,7 +1010,7 @@ function initStatusChart() {
         }
       }
     }
-  })
+  }
 }
 
 // Update charts when data changes
@@ -1039,10 +1020,10 @@ function updateCharts(): void {
     const partySizes = [1, 2, 3, 4, 5, 6, '7+']
     const partySizeCounts = partySizes.map(size => {
       if (size === '7+') {
-        return waitlistEntries.value.filter(entry => entry.partySize >= 7).length
+        return waitlistEntries.filter(entry => entry.partySize >= 7).length
       }
-      return waitlistEntries.value.filter(entry => entry.partySize === size).length
-    })
+      return waitlistEntries.filter(entry => entry.partySize === size).length
+    }
 
     chart.data.labels = partySizes.map(size => `${size} ${size === 1 ? 'person' : 'people'}`)
     if (chart.data.datasets && chart.data.datasets.length > 0) {
@@ -1057,7 +1038,7 @@ function updateCharts(): void {
     chart.data.labels = preferenceLabels
     if (chart.data.datasets && chart.data.datasets.length > 0) {
       chart.data.datasets[0].data = preferenceLabels.map(preference =>
-        waitlistEntries.value.filter(entry =>
+        waitlistEntries.filter(entry =>
           entry.tablePreference ? entry.tablePreference === preference : false
         ).length
       )
@@ -1071,7 +1052,7 @@ function updateCharts(): void {
     chart.data.labels = statusLabels
     if (chart.data.datasets && chart.data.datasets.length > 0) {
       chart.data.datasets[0].data = statusLabels.map(status =>
-        waitlistEntries.value.filter(entry => entry.status === status).length
+        waitlistEntries.filter(entry => entry.status === status).length
       )
     }
     chart.update()
@@ -1079,20 +1060,15 @@ function updateCharts(): void {
 
   if (trendChart && trendChart.data) {
     const chart = trendChart as Chart<'line'>
-    const dates = trendData.value.map(d => d.date)
+    const dates = trendData.map(d => d.date)
     chart.data.labels = dates
     if (chart.data.datasets && chart.data.datasets.length > 0) {
-      chart.data.datasets[0].data = trendData.value.map(d => d.count)
+      chart.data.datasets[0].data = trendData.map(d => d.count)
     }
     chart.update()
   }
 }
 
-// Watch for changes in waitlist entries to update charts
-watch(waitlistEntries, () => {
-  updateQueuePositions()
-  updateCharts()
-}, { deep: true })
 </script>
 
 <main>

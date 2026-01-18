@@ -1,13 +1,4 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
-
-<script lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
-import { Line } from 'vue-chartjs'
+<script server>
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -22,8 +13,6 @@ import {
   CoreScaleOptions,
 } from 'chart.js'
 import * as d3 from 'd3'
-import { useRouter } from 'vue-router'
-
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -34,10 +23,6 @@ ChartJS.register(
   Legend,
   Filler,
 )
-
-useHead({
-  title: 'Dashboard - Authors',
-})
 
 // Define author type
 interface Author {
@@ -52,7 +37,7 @@ interface Author {
 }
 
 // Sample authors data
-const authors = ref<Author[]>([
+let authors = [
   {
     id: '1',
     name: 'John Doe',
@@ -173,13 +158,13 @@ const authors = ref<Author[]>([
     role: 'admin',
     createdAt: '2023-07-15T08:50:00Z'
   }
-])
+]
 
 // Chart and diagram functionality
-const timeRange = ref<'7' | '30' | '90' | '365'>('30')
-const isLoading = ref(false)
-const diagramContainer = ref<HTMLElement | null>(null)
-const selectedModel = ref<ModelNode | null>(null)
+let timeRange = '30'
+let isLoading = false
+let diagramContainer = null
+let selectedModel = null
 const router = useRouter()
 
 // Helper function to format dates
@@ -189,7 +174,7 @@ const formatDate = (daysAgo: number) => {
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric'
-  })
+  }
 }
 
 // Format date string for display
@@ -294,10 +279,10 @@ const chartOptions = {
 } as const
 
 // Chart data
-const chartData = computed(() => {
-  const days = Number(timeRange.value)
+function chartData() {
+  const days = Number(timeRange)
   const labels = generateDateLabels(days)
-  const baseCount = authors.value.length // Starting with current authors count
+  const baseCount = authors.length // Starting with current authors count
   const dailyGrowth = Math.max(1, Math.floor(baseCount * 0.01)) // Average 1% growth per day
 
   return {
@@ -311,14 +296,14 @@ const chartData = computed(() => {
       tension: 0.4
     }, {
       label: 'Total Posts',
-      data: generateGrowthData(days, authors.value.reduce((sum, author) => sum + author.postCount, 0), dailyGrowth * 2), // Posts grow faster
+      data: generateGrowthData(days, authors.reduce((sum, author) => sum + author.postCount, 0), dailyGrowth * 2), // Posts grow faster
       borderColor: 'rgb(34, 197, 94)', // Green color for posts
       backgroundColor: 'rgba(34, 197, 94, 0.1)',
       fill: true,
       tension: 0.4
     }]
   }
-})
+}
 
 // Model node interface
 interface ModelNode extends d3.SimulationNodeDatum {
@@ -441,9 +426,9 @@ const getModelRoute = (modelId: string) => {
 
 // Download functions
 const downloadSVG = () => {
-  if (!diagramContainer.value) return
+  if (!diagramContainer) return
 
-  const svgElement = diagramContainer.value.querySelector('svg')
+  const svgElement = diagramContainer.querySelector('svg')
   if (!svgElement) return
 
   // Create a copy of the SVG to modify for download
@@ -464,9 +449,9 @@ const downloadSVG = () => {
 }
 
 const downloadPNG = () => {
-  if (!diagramContainer.value) return
+  if (!diagramContainer) return
 
-  const svgElement = diagramContainer.value.querySelector('svg')
+  const svgElement = diagramContainer.querySelector('svg')
   if (!svgElement) return
 
   // Create a copy of the SVG to modify for download
@@ -512,156 +497,13 @@ const downloadPNG = () => {
   img.src = url
 }
 
-// Watch for time range changes
-watch(timeRange, async () => {
-  isLoading.value = true
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500))
-  isLoading.value = false
-})
-
-// D3 diagram initialization
-onMounted(async () => {
-  isLoading.value = true
-  // Set Author as the default selected model
-  selectedModel.value = models.find(model => model.id === 'author') || null
-  await new Promise(resolve => setTimeout(resolve, 500))
-  isLoading.value = false
-
-  if (!diagramContainer.value) return
-
-  const width = 800
-  const height = 400
-  const svg = d3.select(diagramContainer.value)
-    .append('svg')
-    .attr('width', width)
-    .attr('height', height)
-    .attr('viewBox', [0, 0, width, height])
-    .attr('style', 'max-width: 100%; height: auto;')
-
-  // Create arrow marker
-  svg.append('defs').selectAll('marker')
-    .data(['arrow'])
-    .join('marker')
-    .attr('id', d => d)
-    .attr('viewBox', '0 -5 10 10')
-    .attr('refX', 25)
-    .attr('refY', 0)
-    .attr('markerWidth', 6)
-    .attr('markerHeight', 6)
-    .attr('orient', 'auto')
-    .append('path')
-    .attr('fill', '#999')
-    .attr('d', 'M0,-5L10,0L0,5')
-
-  // Create the simulation
-  simulation = d3.forceSimulation<ModelNode>(models)
-    .force('link', d3.forceLink<ModelNode, RelationshipLink>(relationships)
-      .id(d => d.id)
-      .distance(150))
-    .force('charge', d3.forceManyBody().strength(-800))
-    .force('center', d3.forceCenter(width / 2, height / 2))
-
-  // Draw the links
-  const link = svg.append('g')
-    .selectAll('line')
-    .data(relationships)
-    .join('line')
-    .attr('stroke', '#999')
-    .attr('stroke-opacity', 0.6)
-    .attr('stroke-width', 2)
-    .attr('marker-end', 'url(#arrow)')
-
-  // Define drag behavior
-  const dragBehavior = d3.drag<SVGGElement, ModelNode>()
-    .on('start', function(event, d) {
-      if (!event.active) simulation.alphaTarget(0.3).restart()
-      d.fx = d.x
-      d.fy = d.y
-    })
-    .on('drag', function(event, d) {
-      d.fx = event.x
-      d.fy = event.y
-    })
-    .on('end', function(event, d) {
-      if (!event.active) simulation.alphaTarget(0)
-      d.fx = null
-      d.fy = null
-    })
-
-  // Draw the nodes
-  const node = svg.append('g')
-    .selectAll<SVGGElement, ModelNode>('g')
-    .data(models)
-    .join('g')
-    .style('cursor', 'pointer') // Add pointer cursor
-    .on('click', (event, d) => {
-      // Set the selected model
-      selectedModel.value = d
-      // Navigate to the model's page on double click
-      if (event.detail === 2) {
-        router.push(getModelRoute(d.id))
-      }
-    })
-
-  // Apply drag behavior
-  node.call(dragBehavior as any)
-
-  // Add hover effect to nodes
-  node.on('mouseover', function() {
-    d3.select(this).select('circle')
-      .transition()
-      .duration(200)
-      .attr('r', 22) // Slightly larger on hover
-  })
-  .on('mouseout', function() {
-    d3.select(this).select('circle')
-      .transition()
-      .duration(200)
-      .attr('r', 20) // Back to normal size
-  })
-
-  // Add circles for nodes
-  node.append('circle')
-    .attr('r', 20)
-    .attr('fill', d => d.color)
-
-  // Add emojis
-  node.append('text')
-    .attr('dy', '0.35em')
-    .attr('text-anchor', 'middle')
-    .text(d => d.emoji)
-    .attr('font-size', '20px')
-
-  // Add labels
-  node.append('text')
-    .attr('dy', 35)
-    .attr('text-anchor', 'middle')
-    .text(d => d.name)
-    .attr('fill', '#374151')
-    .attr('font-size', '14px')
-    .attr('font-weight', 'bold')
-
-  // Update positions on each tick
-  simulation.on('tick', () => {
-    link
-      .attr('x1', d => (d.source as ModelNode).x!)
-      .attr('y1', d => (d.source as ModelNode).y!)
-      .attr('x2', d => (d.target as ModelNode).x!)
-      .attr('y2', d => (d.target as ModelNode).y!)
-
-    node
-      .attr('transform', d => `translate(${d.x},${d.y})`)
-  })
-})
-
 // Original author management functions
-const searchQuery = ref('')
-const sortBy = ref('name')
-const sortOrder = ref('asc')
-const roleFilter = ref('all')
-const itemsPerPage = ref(10)
-const currentPage = ref(1)
+let searchQuery = ''
+let sortBy = 'name'
+let sortOrder = 'asc'
+let roleFilter = 'all'
+let itemsPerPage = 10
+let currentPage = 1
 
 // New Author Modal
 interface NewAuthorForm {
@@ -671,36 +513,36 @@ interface NewAuthorForm {
   role: 'admin' | 'editor' | 'contributor'
 }
 
-const newAuthor = ref<NewAuthorForm>({
+let newAuthor = {
   name: '',
   email: '',
   bio: '',
   role: 'contributor'
-})
-const showNewAuthorModal = ref(false)
+}
+let showNewAuthorModal = false
 
 // Edit Author Modal
-const showEditModal = ref(false)
-const authorToEdit = ref<Author | null>(null)
+let showEditModal = false
+let authorToEdit = null
 
 // Delete Confirmation Modal
-const showDeleteConfirmation = ref(false)
-const authorToDelete = ref<Author | null>(null)
-const selectedAuthorIds = ref<string[]>([])
-const selectAll = ref(false)
+let showDeleteConfirmation = false
+let authorToDelete = null
+let selectedAuthorIds = []
+let selectAll = false
 
 // Computed properties
-const filteredAuthors = computed(() => {
-  let result = [...authors.value]
+function filteredAuthors() {
+  let result = [...authors]
 
   // Apply role filter
-  if (roleFilter.value !== 'all') {
-    result = result.filter(author => author.role === roleFilter.value)
+  if (roleFilter !== 'all') {
+    result = result.filter(author => author.role === roleFilter)
   }
 
   // Apply search filter
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase()
     result = result.filter(author =>
       author.name.toLowerCase().includes(query) ||
       author.email.toLowerCase().includes(query) ||
@@ -710,7 +552,7 @@ const filteredAuthors = computed(() => {
 
   // Apply sorting
   result.sort((a, b) => {
-    const sortField = sortBy.value as keyof Author
+    const sortField = sortBy as keyof Author
     let aValue = a[sortField]
     let bValue = b[sortField]
 
@@ -720,147 +562,147 @@ const filteredAuthors = computed(() => {
       bValue = bValue.toLowerCase()
     }
 
-    if (sortOrder.value === 'asc') {
+    if (sortOrder === 'asc') {
       return aValue > bValue ? 1 : -1
     } else {
       return aValue < bValue ? 1 : -1
     }
-  })
+  }
 
   return result
-})
+}
 
 // Pagination
-const totalPages = computed(() => Math.ceil(filteredAuthors.value.length / itemsPerPage.value))
+function totalPages() { return Math.ceil(filteredAuthors.length / itemsPerPage) }
 
-const paginatedAuthors = computed(() => {
-  const startIndex = (currentPage.value - 1) * itemsPerPage.value
-  const endIndex = startIndex + itemsPerPage.value
-  return filteredAuthors.value.slice(startIndex, endIndex)
-})
+function paginatedAuthors() {
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  return filteredAuthors.slice(startIndex, endIndex)
+}
 
-const paginationRange = computed(() => {
+function paginationRange() {
   const range: number[] = []
   const maxVisiblePages = 5
-  const startPage = Math.max(1, currentPage.value - Math.floor(maxVisiblePages / 2))
-  const endPage = Math.min(totalPages.value, startPage + maxVisiblePages - 1)
+  const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
+  const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
 
   for (let i = startPage; i <= endPage; i++) {
     range.push(i)
   }
 
   return range
-})
+}
 
 // Methods
 function openNewAuthorModal(): void {
-  newAuthor.value = {
+  newAuthor = {
     name: '',
     email: '',
     bio: '',
     role: 'contributor'
   }
-  showNewAuthorModal.value = true
+  showNewAuthorModal = true
 }
 
 function closeNewAuthorModal(): void {
-  showNewAuthorModal.value = false
+  showNewAuthorModal = false
 }
 
 function createAuthor(): void {
   // Validate required fields
-  if (!newAuthor.value.name || !newAuthor.value.email) return
+  if (!newAuthor.name || !newAuthor.email) return
 
-  const newId = (Math.max(...authors.value.map(a => parseInt(a.id))) + 1).toString()
+  const newId = (Math.max(...authors.map(a => parseInt(a.id))) + 1).toString()
   const currentDate = new Date().toISOString()
 
-  authors.value.push({
+  authors.push({
     id: newId,
-    name: newAuthor.value.name,
-    email: newAuthor.value.email,
-    bio: newAuthor.value.bio || '', // Ensure bio is never undefined
+    name: newAuthor.name,
+    email: newAuthor.email,
+    bio: newAuthor.bio || '', // Ensure bio is never undefined
     avatar: '/images/avatars/avatar-1.jpg', // Cycle through available avatars
     postCount: 0,
-    role: newAuthor.value.role,
+    role: newAuthor.role,
     createdAt: currentDate
-  })
+  }
 
   closeNewAuthorModal()
 }
 
 function openEditModal(author: Author): void {
-  authorToEdit.value = { ...author }
-  showEditModal.value = true
+  authorToEdit = { ...author }
+  showEditModal = true
 }
 
 function closeEditModal(): void {
-  showEditModal.value = false
+  showEditModal = false
 }
 
 function updateAuthor(): void {
-  if (!authorToEdit.value) return
+  if (!authorToEdit) return
 
-  const author = authorToEdit.value // Store in a variable to avoid null checks
-  const index = authors.value.findIndex(a => a.id === author.id)
+  const author = authorToEdit // Store in a variable to avoid null checks
+  const index = authors.findIndex(a => a.id === author.id)
   if (index !== -1) {
-    authors.value[index] = { ...author }
+    authors[index] = { ...author }
   }
 
   closeEditModal()
 }
 
 function confirmDeleteAuthor(author: Author): void {
-  authorToDelete.value = author
-  selectedAuthorIds.value = []
-  showDeleteConfirmation.value = true
+  authorToDelete = author
+  selectedAuthorIds = []
+  showDeleteConfirmation = true
 }
 
 function confirmDeleteSelected(): void {
-  showDeleteConfirmation.value = true
+  showDeleteConfirmation = true
 }
 
 function closeDeleteModal(): void {
-  showDeleteConfirmation.value = false
-  authorToDelete.value = null
+  showDeleteConfirmation = false
+  authorToDelete = null
 }
 
 function deleteSelectedAuthors(): void {
-  if (selectedAuthorIds.value.length > 1) {
+  if (selectedAuthorIds.length > 1) {
     // Delete multiple authors
-    authors.value = authors.value.filter(author => !selectedAuthorIds.value.includes(author.id))
-    selectedAuthorIds.value = []
-  } else if (authorToDelete.value) {
+    authors = authors.filter(author => !selectedAuthorIds.includes(author.id))
+    selectedAuthorIds = []
+  } else if (authorToDelete) {
     // Delete single author
-    const author = authorToDelete.value // Store in a variable to avoid null checks
-    authors.value = authors.value.filter(a => a.id !== author.id)
+    const author = authorToDelete // Store in a variable to avoid null checks
+    authors = authors.filter(a => a.id !== author.id)
   }
 
   closeDeleteModal()
 }
 
 function toggleSelectAll(): void {
-  if (selectAll.value) {
+  if (selectAll) {
     // Select all authors on current page
-    selectedAuthorIds.value = paginatedAuthors.value.map(author => author.id)
+    selectedAuthorIds = paginatedAuthors.map(author => author.id)
   } else {
     // Deselect all
-    selectedAuthorIds.value = []
+    selectedAuthorIds = []
   }
 }
 
 function toggleAuthorSelection(authorId: string): void {
-  const index = selectedAuthorIds.value.indexOf(authorId)
+  const index = selectedAuthorIds.indexOf(authorId)
   if (index === -1) {
-    selectedAuthorIds.value.push(authorId)
+    selectedAuthorIds.push(authorId)
   } else {
-    selectedAuthorIds.value.splice(index, 1)
+    selectedAuthorIds.splice(index, 1)
   }
 
   // Update selectAll based on whether all authors are selected
-  selectAll.value = paginatedAuthors.value.every(author => selectedAuthorIds.value.includes(author.id))
+  selectAll = paginatedAuthors.every(author => selectedAuthorIds.includes(author.id))
 }
 
-const hasSelectedAuthors = computed(() => selectedAuthorIds.value.length > 0)
+function hasSelectedAuthors() { return selectedAuthorIds.length > 0 }
 
 // Get role badge class
 function getRoleBadgeClass(role: string): string {

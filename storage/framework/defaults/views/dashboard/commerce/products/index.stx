@@ -1,12 +1,8 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
-import { useLocalStorage } from '@vueuse/core'
+definePageMeta({
+  middleware: ['auth']
+})
+
 import { useProducts } from '../../../../functions/commerce/products'
 import { useCategories } from '../../../../functions/commerce/products/categories'
 import { useManufacturers } from '../../../../functions/commerce/products/manufacturers'
@@ -15,10 +11,6 @@ import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagin
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 import type { Products } from '../../../../types/defaults'
 
-useHead({
-  title: 'Dashboard - Commerce Products',
-})
-
 // Get products data and functions from the composable
 const { products, createProduct, fetchProducts } = useProducts()
 
@@ -26,109 +18,100 @@ const { products, createProduct, fetchProducts } = useProducts()
 const { categories, fetchCategories } = useCategories()
 const { manufacturers, fetchManufacturers } = useManufacturers()
 
-// Fetch all data on component mount
-onMounted(async () => {
-  await Promise.all([
-    fetchProducts(),
-    fetchCategories(),
-    fetchManufacturers()
-  ])
-})
-
 // View mode for grid/list toggle
-const viewMode = useLocalStorage('products-view-mode', 'list')
+let viewMode = 'list'
 
 // Filter and sort options
-const categoryFilter = ref('all')
-const sortBy = ref('name')
-const sortOrder = ref('asc')
+let categoryFilter = 'all'
+let sortBy = 'name'
+let sortOrder = 'asc'
 
 // Search and filtering
-const searchQuery = ref('')
-const currentPage = ref(1)
-const itemsPerPage = ref(5)
+let searchQuery = ''
+let currentPage = 1
+let itemsPerPage = 5
 
 // Computed filtered products
-const filteredProducts = computed(() => {
-  return products.value
+function filteredProducts() {
+  return products
     .filter(product => {
       // Apply search filter
       const matchesSearch =
-        product.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        (product.category?.name || '').toLowerCase().includes(searchQuery.value.toLowerCase())
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.category?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
 
       // Apply category filter
-      const matchesCategory = categoryFilter.value === 'all' || (product.category?.name || '') === categoryFilter.value
+      const matchesCategory = categoryFilter === 'all' || (product.category?.name || '') === categoryFilter
 
       return matchesSearch && matchesCategory
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy.value === 'name') {
+      if (sortBy === 'name') {
         comparison = a.name.localeCompare(b.name)
-      } else if (sortBy.value === 'price') {
+      } else if (sortBy === 'price') {
         comparison = (a.price || 0) - (b.price || 0)
-      } else if (sortBy.value === 'inventory') {
+      } else if (sortBy === 'inventory') {
         comparison = (a.inventory_count || 0) - (b.inventory_count || 0)
-      } else if (sortBy.value === 'dateAdded') {
+      } else if (sortBy === 'dateAdded') {
         const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
         const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
         comparison = dateA - dateB
       }
 
-      return sortOrder.value === 'asc' ? comparison : -comparison
+      return sortOrder === 'asc' ? comparison : -comparison
     })
-})
+}
 
-const paginatedProducts = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredProducts.value.slice(start, end)
-})
+function paginatedProducts() {
+  const start = (currentPage - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredProducts().slice(start, end)
+}
 
 // Get unique categories for filter
-const categoriesForFilter = computed(() => {
-  const categoryCounts = products.value.reduce((acc, product) => {
+function categoriesForFilter() {
+  const categoryCounts = products.reduce((acc, product) => {
     const categoryName = product.category?.name || 'Unknown'
     acc[categoryName] = (acc[categoryName] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
   return Object.entries(categoryCounts).map(([name, count]) => ({ name, count }))
-})
+}
 
 // Event handlers
 const handleSearch = (query: string) => {
-  searchQuery.value = query
-  currentPage.value = 1
+  searchQuery = query
+  currentPage = 1
 }
 
 const handlePrevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
+  if (currentPage > 1) {
+    currentPage--
   }
 }
 
 const handleNextPage = () => {
-  const totalPages = Math.ceil(filteredProducts.value.length / itemsPerPage.value)
-  if (currentPage.value < totalPages) {
-    currentPage.value++
+  const totalPages = Math.ceil(filteredProducts().length / itemsPerPage)
+  if (currentPage < totalPages) {
+    currentPage++
   }
 }
 
 const handlePageChange = (page: number) => {
-  currentPage.value = page
+  currentPage = page
 }
 
 // Toggle sort order
 function toggleSort(column: string): void {
-  if (sortBy.value === column) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  if (sortBy === column) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy.value = column
-    sortOrder.value = 'asc'
+    sortBy = column
+    sortOrder = 'asc'
   }
 }
 
@@ -162,11 +145,11 @@ interface NewProduct {
 }
 
 // Status options for the dropdown
-const statuses = computed(() => ['Active', 'Inactive', 'Draft', 'Archived'])
+function statuses() { return ['Active', 'Inactive', 'Draft', 'Archived'] }
 
 // Modal state
-const showProductModal = ref(false)
-const newProduct = ref<NewProduct>({
+let showProductModal = false
+let newProduct = {
   name: '',
   description: '',
   price: 0,
@@ -181,10 +164,10 @@ const newProduct = ref<NewProduct>({
   rating: 0,
   reviewCount: 0,
   dateAdded: new Date().toISOString().split('T')[0] || ''
-})
+}
 
 function openAddProductModal(): void {
-  newProduct.value = {
+  newProduct = {
     name: '',
     description: '',
     price: 0,
@@ -200,54 +183,54 @@ function openAddProductModal(): void {
     reviewCount: 0,
     dateAdded: new Date().toISOString().split('T')[0] || ''
   }
-  showProductModal.value = true
+  showProductModal = true
 }
 
 function closeProductModal(): void {
-  showProductModal.value = false
+  showProductModal = false
 }
 
 async function addProduct(): Promise<void> {
   // First add to local state for immediate UI update
-  const id = Math.max(...products.value.map(p => p.id || 0)) + 1
+  const id = Math.max(...products.map(p => p.id || 0)) + 1
 
   // Find the selected category and manufacturer
-  const selectedCategory = categories.value.find(c => c.id === newProduct.value.category_id)
-  const selectedManufacturer = manufacturers.value.find(m => m.id === newProduct.value.manufacturer_id)
+  const selectedCategory = categories.find(c => c.id === newProduct.category_id)
+  const selectedManufacturer = manufacturers.find(m => m.id === newProduct.manufacturer_id)
 
   const newProductData = {
     id,
     uuid: `product-${id}`,
-    name: newProduct.value.name,
-    description: newProduct.value.description,
-    price: newProduct.value.price,
-    image_url: newProduct.value.imageUrl,
-    is_available: newProduct.value.status === 'Active' ? 1 : 0,
-    inventory_count: newProduct.value.inventory,
+    name: newProduct.name,
+    description: newProduct.description,
+    price: newProduct.price,
+    image_url: newProduct.imageUrl,
+    is_available: newProduct.status === 'Active' ? 1 : 0,
+    inventory_count: newProduct.inventory,
     preparation_time: 0,
     allergens: '',
     nutritional_info: '',
-    category_id: newProduct.value.category_id,
-    manufacturer_id: newProduct.value.manufacturer_id,
+    category_id: newProduct.category_id,
+    manufacturer_id: newProduct.manufacturer_id,
     created_at: new Date().toISOString(),
     manufacturer: selectedManufacturer,
     category: selectedCategory
   }
-  products.value.push(newProductData)
+  products.push(newProductData)
 
   // Then send to server
   const productData = {
-    name: newProduct.value.name,
-    description: newProduct.value.description,
-    price: newProduct.value.price,
-    image_url: newProduct.value.imageUrl,
-    is_available: newProduct.value.status === 'Active' ? 1 : 0,
-    inventory_count: newProduct.value.inventory,
+    name: newProduct.name,
+    description: newProduct.description,
+    price: newProduct.price,
+    image_url: newProduct.imageUrl,
+    is_available: newProduct.status === 'Active' ? 1 : 0,
+    inventory_count: newProduct.inventory,
     preparation_time: 0,
     allergens: '',
     nutritional_info: '',
-    category_id: newProduct.value.category_id,
-    manufacturer_id: newProduct.value.manufacturer_id,
+    category_id: newProduct.category_id,
+    manufacturer_id: newProduct.manufacturer_id,
   }
 
   try {
@@ -255,11 +238,13 @@ async function addProduct(): Promise<void> {
     closeProductModal()
   } catch (error) {
     // If server request fails, remove from local state
-    products.value = products.value.filter(p => p.id !== id)
+    products = products.filter(p => p.id !== id)
     console.error('Failed to create product:', error)
   }
 }
 </script>
+
+@title('Dashboard - Commerce Products')
 
 <template>
 <div class="py-6">
@@ -359,7 +344,7 @@ async function addProduct(): Promise<void> {
       <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
         <Pagination
           :current-page="currentPage"
-          :total-items="filteredProducts.length"
+          :total-items="filteredProducts().length"
           :items-per-page="itemsPerPage"
           @prev="handlePrevPage"
           @next="handleNextPage"
@@ -551,3 +536,15 @@ async function addProduct(): Promise<void> {
   @endif
 </div>
 </template>
+
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  await Promise.all([
+    fetchProducts(),
+    fetchCategories(),
+    fetchManufacturers()
+  ])
+})
+</script>

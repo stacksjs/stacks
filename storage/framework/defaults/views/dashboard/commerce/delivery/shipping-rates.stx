@@ -1,11 +1,8 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
+definePageMeta({
+  middleware: ['auth']
+})
+
 import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 import ShippingRatesTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingRatesTable.stx'
@@ -15,70 +12,57 @@ import { useShippingMethods } from '../../../../functions/commerce/shippings/shi
 import { useShippingZones } from '../../../../functions/commerce/shippings/shipping-zones'
 import type { NewShippingRate } from '../../../../types/defaults'
 
-useHead({
-  title: 'Dashboard - Shipping Rates',
-})
-
 const { shippingRates, createShippingRate, fetchShippingRates, updateShippingRate, deleteShippingRate } = useShippingRates()
 
 const { shippingMethods, fetchShippingMethods } = useShippingMethods()
 const { shippingZones, fetchShippingZones } = useShippingZones()
 
-onMounted(async () => {
-  await Promise.all([
-    fetchShippingRates(),
-    fetchShippingMethods(),
-    fetchShippingZones()
-  ])
-})
-
-
-const showAddModal = ref(false)
-const showEditModal = ref(false)
-const editingRate = ref(null)
-const newShippingRate = ref({
+let showAddModal = false
+let showEditModal = false
+let editingRate = null
+let newShippingRate = {
   shipping_method_id: 0,
   shipping_zone_id: 0,
   weight_from: 0,
   weight_to: 0,
   rate: 0
-})
+}
 
 function openAddModal() {
-  newShippingRate.value = {
+  newShippingRate = {
     shipping_method_id: 0,
     shipping_zone_id: 0,
     weight_from: 0,
     weight_to: 0,
     rate: 0
   }
-  showAddModal.value = true
+  showAddModal = true
 }
 
 function closeAddModal() {
-  showAddModal.value = false
+  showAddModal = false
 }
 
 function openEditModal(rate) {
-  editingRate.value = rate
-  newShippingRate.value = {
+  editingRate = rate
+  newShippingRate = {
     shipping_method_id: rate.shipping_method_id,
     shipping_zone_id: rate.shipping_zone_id,
     weight_from: rate.weight_from,
     weight_to: rate.weight_to,
     rate: rate.rate
   }
-  showEditModal.value = true
+  showEditModal = true
 }
 
 function closeEditModal() {
-  showEditModal.value = false
-  editingRate.value = null
+  showEditModal = false
+  editingRate = null
 }
 
 async function addShippingRate() {
   try {
-    await createShippingRate(newShippingRate.value)
+    await createShippingRate(newShippingRate)
     closeAddModal()
   } catch (error) {
     console.error('Failed to create shipping rate:', error)
@@ -86,29 +70,29 @@ async function addShippingRate() {
 }
 
 async function saveShippingRate() {
-  if (!editingRate.value) return
+  if (!editingRate) return
 
   try {
     await updateShippingRate({
-      ...editingRate.value,
-      ...newShippingRate.value
-    })
+      ...editingRate,
+      ...newShippingRate
+    }
     closeEditModal()
   } catch (error) {
     console.error('Failed to update shipping rate:', error)
   }
 }
 
-const searchQuery = ref('')
-const currentPage = ref(1)
+let searchQuery = ''
+let currentPage = 1
 const itemsPerPage = 5
 
-const filteredShippingRates = computed(() => {
-  const rates = Array.isArray(shippingRates.value) ? shippingRates.value : []
+function filteredShippingRates() {
+  const rates = Array.isArray(shippingRates) ? shippingRates : []
 
-  if (!searchQuery.value) return rates
+  if (!searchQuery) return rates
 
-  const query = searchQuery.value.toLowerCase()
+  const query = searchQuery.toLowerCase()
   return rates.filter(rate =>
     rate.method.toLowerCase().includes(query) ||
     rate.zone.toLowerCase().includes(query) ||
@@ -116,17 +100,17 @@ const filteredShippingRates = computed(() => {
     rate.weight_to.toString().includes(query) ||
     rate.rate.toString().includes(query)
   )
-})
+}
 
-const paginatedShippingRates = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
+function paginatedShippingRates() {
+  const start = (currentPage - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return filteredShippingRates.value.slice(start, end)
-})
+  return filteredShippingRates.slice(start, end)
+}
 
 const handleSearch = (query) => {
-  searchQuery.value = query
-  currentPage.value = 1
+  searchQuery = query
+  currentPage = 1
 }
 
 const handleAddRate = () => {
@@ -148,20 +132,20 @@ const handleDeleteRate = async (rate) => {
 }
 
 const handlePrevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
+  if (currentPage > 1) {
+    currentPage--
   }
 }
 
 const handleNextPage = () => {
-  const totalPages = Math.ceil(filteredShippingRates.value.length / itemsPerPage)
-  if (currentPage.value < totalPages) {
-    currentPage.value++
+  const totalPages = Math.ceil(filteredShippingRates.length / itemsPerPage)
+  if (currentPage < totalPages) {
+    currentPage++
   }
 }
 
 const handlePageChange = (page) => {
-  currentPage.value = page
+  currentPage = page
 }
 
 const tabs = [
@@ -175,6 +159,8 @@ const tabs = [
 ]
 
 </script>
+
+@title('Dashboard - Shipping Rates')
 
 <template>
 <div class="py-6">
@@ -453,3 +439,15 @@ const tabs = [
   @endif
 </div>
 </template>
+
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  await Promise.all([
+    fetchShippingRates(),
+    fetchShippingMethods(),
+    fetchShippingZones()
+  ])
+})
+</script>

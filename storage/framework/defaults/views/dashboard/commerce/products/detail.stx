@@ -1,11 +1,8 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+definePageMeta({
+  middleware: ['auth']
+})
+
 import { toast } from '@stacksjs/notification'
 // @ts-ignore
 import { Dialog, DialogPanel } from '@stacksjs/dialog'
@@ -36,142 +33,44 @@ interface Product {
 }
 
 // Sample product data - in a real app, this would be fetched from an API
-const product = ref<Product | null>(null)
-const loading = ref(true)
-const activeImageIndex = ref(0)
-const showVideoModal = ref(false)
-const activeVideoUrl = ref('')
+let product = null
+let loading = true
+let activeImageIndex = 0
+let showVideoModal = false
+let activeVideoUrl = ''
 
 // Edit dialog state
-const showEditDialog = ref(false)
-const editingProduct = ref<Product | null>(null)
+let showEditDialog = false
+let editingProduct = null
 
 // Similar products dialog state
-const showSimilarProductsDialog = ref(false)
+let showSimilarProductsDialog = false
 
 // All products for similar products selection
-const allProducts = ref<Product[]>([])
+let allProducts = []
 
 // Similar products to display
-const similarProducts = computed(() => {
-  if (!product.value || !product.value.similarProducts || !allProducts.value.length) return []
+function similarProducts() {
+  if (!product || !product.similarProducts || !allProducts.length) return []
 
-  return allProducts.value.filter(p => product.value?.similarProducts?.includes(p.id))
-})
-
-// Fetch product data
-onMounted(async () => {
-  // Simulate API call
-  setTimeout(() => {
-    // In a real app, you would fetch the product by ID from the route params
-    const productId = parseInt(route.params.id as string)
-
-    // Sample data for all products (simplified)
-    allProducts.value = [
-      {
-        id: 1,
-        name: 'Margherita Pizza',
-        price: 12.99,
-        description: 'Classic Italian pizza with tomato sauce, fresh mozzarella, basil, and extra virgin olive oil.',
-        category: 'Pizza',
-        stock: 78,
-        status: 'Active',
-        images: ['https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'],
-        videos: [],
-        manufacturer: 'Pizza Palace',
-        variants: ['Size', 'Crust Type'],
-        unit: 'Whole',
-        taxRate: 7,
-        specifications: {},
-        similarProducts: [2, 5]
-      },
-      {
-        id: 2,
-        name: 'Classic Cheeseburger',
-        price: 9.99,
-        description: 'Juicy beef patty with melted cheese, lettuce, tomato, and special sauce.',
-        category: 'Burgers',
-        stock: 124,
-        status: 'Active',
-        images: ['https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'],
-        videos: [],
-        manufacturer: 'Burger Bistro',
-        variants: ['Size', 'Protein', 'Toppings'],
-        unit: 'Piece',
-        taxRate: 7,
-        specifications: {},
-        similarProducts: [1]
-      },
-      {
-        id: 5,
-        name: 'Fettuccine Alfredo',
-        price: 13.99,
-        description: 'Creamy pasta with parmesan cheese sauce.',
-        category: 'Pasta',
-        stock: 210,
-        status: 'Active',
-        images: ['https://images.unsplash.com/photo-1645112411341-6c4fd023882c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'],
-        videos: [],
-        manufacturer: 'Pasta Paradise',
-        variants: ['Size', 'Protein'],
-        unit: 'Serving',
-        taxRate: 7,
-        specifications: {},
-        similarProducts: [1]
-      }
-    ]
-
-    // Sample data
-    product.value = {
-      id: productId || 1,
-      name: 'Margherita Pizza',
-      price: 12.99,
-      description: 'Classic Italian pizza with tomato sauce, fresh mozzarella, basil, and extra virgin olive oil. Made with our signature hand-tossed dough and baked in a wood-fired oven for the perfect crispy yet chewy crust.',
-      category: 'Pizza',
-      stock: 78,
-      status: 'Active',
-      images: [
-        'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-        'https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-        'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'
-      ],
-      videos: [
-        'https://example.com/videos/margherita-pizza.mp4',
-        'https://example.com/videos/pizza-preparation.mp4'
-      ],
-      manufacturer: 'Pizza Palace',
-      variants: ['Size', 'Crust Type'],
-      unit: 'Whole',
-      taxRate: 7,
-      specifications: {
-        'Calories': '250 per slice',
-        'Preparation Time': '15-20 minutes',
-        'Ingredients': 'Dough, Tomato Sauce, Fresh Mozzarella, Basil, Olive Oil, Salt',
-        'Allergens': 'Wheat, Dairy',
-        'Dietary': 'Vegetarian',
-        'Serving Size': '8 slices per pizza'
-      },
-      similarProducts: [2, 5]
-    }
-    loading.value = false
-  }, 1000)
-})
+  return allProducts.filter(p => product.value?.similarProducts?.includes(p.id))
+}
 
 // Function to handle image selection
 function selectImage(index: number): void {
-  activeImageIndex.value = index
+  activeImageIndex = index
 }
 
 // Function to open video modal
 function openVideoModal(videoUrl: string): void {
-  activeVideoUrl.value = videoUrl
-  showVideoModal.value = true
+  activeVideoUrl = videoUrl
+  showVideoModal = true
 }
 
 // Function to close video modal
 function closeVideoModal(): void {
-  showVideoModal.value = false
-  activeVideoUrl.value = ''
+  showVideoModal = false
+  activeVideoUrl = ''
 }
 
 // Function to go back to products list
@@ -181,52 +80,52 @@ function goBack(): void {
 
 // Function to edit product
 function editProduct(): void {
-  if (!product.value) return
+  if (!product) return
 
-  editingProduct.value = JSON.parse(JSON.stringify(product.value)) as Product
-  showEditDialog.value = true
+  editingProduct = JSON.parse(JSON.stringify(product)) as Product
+  showEditDialog = true
 }
 
 // Function to save edited product
 function saveProduct(): void {
-  if (!editingProduct.value || !product.value) return
+  if (!editingProduct || !product) return
 
   // Update the product
-  product.value = { ...editingProduct.value }
+  product = { ...editingProduct }
 
   // Show success message
   toast({
     message: 'Product updated successfully',
     type: 'success',
-  })
+  }
 
   // Close the dialog
-  showEditDialog.value = false
+  showEditDialog = false
 }
 
 // Function to open similar products dialog
 function openSimilarProductsDialog(): void {
-  if (!product.value) return
+  if (!product) return
 
-  editingProduct.value = JSON.parse(JSON.stringify(product.value)) as Product
-  showSimilarProductsDialog.value = true
+  editingProduct = JSON.parse(JSON.stringify(product)) as Product
+  showSimilarProductsDialog = true
 }
 
 // Function to save similar products
 function saveSimilarProducts(): void {
-  if (!editingProduct.value || !product.value) return
+  if (!editingProduct || !product) return
 
   // Update only the similarProducts field
-  product.value.similarProducts = editingProduct.value.similarProducts || []
+  product.similarProducts = editingProduct.similarProducts || []
 
   // Show success message
   toast({
     message: 'Similar products updated successfully',
     type: 'success',
-  })
+  }
 
   // Close the dialog
-  showSimilarProductsDialog.value = false
+  showSimilarProductsDialog = false
 }
 
 // Function to delete product
@@ -234,7 +133,7 @@ function deleteProduct(): void {
   toast({
     message: 'Delete functionality would be implemented here',
     type: 'error',
-  })
+  }
   // After successful deletion, navigate back to products list
   // router.push('/commerce/products')
 }
@@ -641,6 +540,107 @@ function deleteProduct(): void {
   </div>
 </main>
 </template>
+
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  // Simulate API call
+  setTimeout(() => {
+    // In a real app, you would fetch the product by ID from the route params
+    const productId = parseInt(route.params.id as string)
+
+    // Sample data for all products (simplified)
+    allProducts = [
+      {
+        id: 1,
+        name: 'Margherita Pizza',
+        price: 12.99,
+        description: 'Classic Italian pizza with tomato sauce, fresh mozzarella, basil, and extra virgin olive oil.',
+        category: 'Pizza',
+        stock: 78,
+        status: 'Active',
+        images: ['https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'],
+        videos: [],
+        manufacturer: 'Pizza Palace',
+        variants: ['Size', 'Crust Type'],
+        unit: 'Whole',
+        taxRate: 7,
+        specifications: {},
+        similarProducts: [2, 5]
+      },
+      {
+        id: 2,
+        name: 'Classic Cheeseburger',
+        price: 9.99,
+        description: 'Juicy beef patty with melted cheese, lettuce, tomato, and special sauce.',
+        category: 'Burgers',
+        stock: 124,
+        status: 'Active',
+        images: ['https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'],
+        videos: [],
+        manufacturer: 'Burger Bistro',
+        variants: ['Size', 'Protein', 'Toppings'],
+        unit: 'Piece',
+        taxRate: 7,
+        specifications: {},
+        similarProducts: [1]
+      },
+      {
+        id: 5,
+        name: 'Fettuccine Alfredo',
+        price: 13.99,
+        description: 'Creamy pasta with parmesan cheese sauce.',
+        category: 'Pasta',
+        stock: 210,
+        status: 'Active',
+        images: ['https://images.unsplash.com/photo-1645112411341-6c4fd023882c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'],
+        videos: [],
+        manufacturer: 'Pasta Paradise',
+        variants: ['Size', 'Protein'],
+        unit: 'Serving',
+        taxRate: 7,
+        specifications: {},
+        similarProducts: [1]
+      }
+    ]
+
+    // Sample data
+    product = {
+      id: productId || 1,
+      name: 'Margherita Pizza',
+      price: 12.99,
+      description: 'Classic Italian pizza with tomato sauce, fresh mozzarella, basil, and extra virgin olive oil. Made with our signature hand-tossed dough and baked in a wood-fired oven for the perfect crispy yet chewy crust.',
+      category: 'Pizza',
+      stock: 78,
+      status: 'Active',
+      images: [
+        'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+        'https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+        'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'
+      ],
+      videos: [
+        'https://example.com/videos/margherita-pizza.mp4',
+        'https://example.com/videos/pizza-preparation.mp4'
+      ],
+      manufacturer: 'Pizza Palace',
+      variants: ['Size', 'Crust Type'],
+      unit: 'Whole',
+      taxRate: 7,
+      specifications: {
+        'Calories': '250 per slice',
+        'Preparation Time': '15-20 minutes',
+        'Ingredients': 'Dough, Tomato Sauce, Fresh Mozzarella, Basil, Olive Oil, Salt',
+        'Allergens': 'Wheat, Dairy',
+        'Dietary': 'Vegetarian',
+        'Serving Size': '8 slices per pizza'
+      },
+      similarProducts: [2, 5]
+    }
+    loading = false
+  }, 1000)
+})
+</script>
 
 <style>
 .fade-enter-active,

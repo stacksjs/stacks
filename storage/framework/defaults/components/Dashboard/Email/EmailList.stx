@@ -28,7 +28,7 @@
       } else {
         return email.folder === activeFolder
       }
-    })
+    }
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase()

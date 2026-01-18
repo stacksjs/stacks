@@ -1,54 +1,48 @@
 <script>
-import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue'
-import { useHead } from '@vueuse/head'
 import CodeEditor from '../../../components/Dashboard/CodeEditor.stx'
 
-const envValues = ref('')
-const searchQuery = ref('')
-const showAddModal = ref(false)
-const isLoading = ref(false)
-const showBackup = ref(false)
-const backupContent = ref('')
+let envValues = ''
+let searchQuery = ''
+let showAddModal = false
+let isLoading = false
+let showBackup = false
+let backupContent = ''
 
 // New variable form
-const newVariable = ref({
+let newVariable = {
   key: '',
   value: '',
   description: ''
-})
-
-useHead({
-  title: 'Dashboard - Environment',
-})
+}
 
 // Platform detection for keyboard shortcuts
-const isMac = computed(() => (typeof window !== 'undefined' && window.navigator?.platform?.toLowerCase().includes('mac')) ?? false)
+function isMac() { return (typeof window !== 'undefined' && window.navigator?.platform?.toLowerCase( }.includes('mac')) ?? false)
 
 // Filter env variables based on search
-const filteredEnvValues = computed(() => {
-  if (!searchQuery.value) return envValues.value
+function filteredEnvValues() {
+  if (!searchQuery) return envValues
 
-  return envValues.value.split('\n')
-    .filter(line => line.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  return envValues.split('\n')
+    .filter(line => line.toLowerCase().includes(searchQuery.toLowerCase()))
     .join('\n')
-})
+}
 
 // Get line numbers including empty lines
-const lineNumbers = computed(() => {
-  const count = (envValues.value.match(/\n/g) || []).length + 1
+function lineNumbers() {
+  const count = (envValues.match(/\n/g) || []).length + 1
   return Array.from({ length: count }, (_, i) => i + 1)
-})
+}
 
 // Syntax highlight the content
-const highlightedContent = computed(() => {
-  return envValues.value.split('\n').map(line => {
+function highlightedContent() {
+  return envValues.split('\n').map(line => {
     const trimmed = line.trim()
     // Empty line
     if (!trimmed) return '&nbsp;'
     // Comments
     if (trimmed.startsWith('#')) {
       return `<span class="text-gray-500 dark:text-gray-400">${line}</span>`
-    }
+    )}
     // Variable assignments
     if (line.includes('=')) {
       const parts = line.split('=')
@@ -67,25 +61,25 @@ const highlightedContent = computed(() => {
       } else if (!isNaN(Number(value))) {
         // Numeric values
         highlightedValue = `<span class="text-purple-600 dark:text-purple-400">${value}</span>`
-      }
+      )}
 
       return `<span class="text-blue-600 dark:text-blue-400">${key}</span><span class="text-gray-400">=</span>${highlightedValue}`
-    }
+    )}
     return line
   }).join('\n')
-})
+}
 
 // Track cursor position for active line
 const updateActiveLine = (event) => {
   const textarea = event.target
-  const value = textarea.value
+  const value = textarea
   const selectionStart = textarea.selectionStart
-  activeLine.value = value.substr(0, selectionStart).split('\n').length
+  activeLine = value.substr(0, selectionStart).split('\n').length
 }
 
 // Keyboard shortcuts
 const handleKeyboardShortcuts = (e) => {
-  const isCmdOrCtrl = isMac.value ? e.metaKey : e.ctrlKey
+  const isCmdOrCtrl = isMac ? e.metaKey : e.ctrlKey
 
   if (isCmdOrCtrl) {
     if (e.key === 's') {
@@ -93,7 +87,7 @@ const handleKeyboardShortcuts = (e) => {
       handleSave()
     } else if (e.key === 'n') {
       e.preventDefault()
-      showAddModal.value = true
+      showAddModal = true
     } else if (e.key === 'F' && e.shiftKey) {
       e.preventDefault()
       formatContent()
@@ -103,7 +97,7 @@ const handleKeyboardShortcuts = (e) => {
 
 // Format content function
 const formatContent = () => {
-  const currentValue = envValues.value
+  const currentValue = envValues
   if (!currentValue) return
 
   const lines = currentValue.split('\n')
@@ -117,9 +111,9 @@ const formatContent = () => {
     const key = parts[0].trim()
     const value = parts.slice(1).join('=').trim()
     return `${key}=${value}`
-  })
+  }
 
-  envValues.value = formattedLines.join('\n')
+  envValues = formattedLines.join('\n')
 }
 
 // Enhanced validation
@@ -146,16 +140,16 @@ const validateEnv = (content) => {
         keys.add(key)
       }
     }
-  })
+  }
 
   return errors
 }
 
 // Save changes with error handling
 const handleSave = async () => {
-  isLoading.value = true
+  isLoading = true
   try {
-    const errors = validateEnv(envValues.value)
+    const errors = validateEnv(envValues)
     if (errors.length) {
       return
     }
@@ -164,40 +158,40 @@ const handleSave = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     // Create backup
-    backupContent.value = envValues.value
+    backupContent = envValues
   } catch (error) {
   } finally {
-    isLoading.value = false
+    isLoading = false
   }
 }
 
 // Add new variable with enhanced validation
 const addVariable = () => {
-  if (!newVariable.value.key || !newVariable.value.value) {
+  if (!newVariable.key || !newVariable) {
     return
   }
 
   // Validate key format
-  if (!/^[A-Z_][A-Z0-9_]*$/.test(newVariable.value.key)) {
+  if (!/^[A-Z_][A-Z0-9_]*$/.test(newVariable.key)) {
     return
   }
 
-  const newLine = `${newVariable.value.key}=${newVariable.value.value}`
-  const description = newVariable.value.description
-    ? `# ${newVariable.value.description}\n`
+  const newLine = `${newVariable.key}=${newVariable}`
+  const description = newVariable.description
+    ? `# ${newVariable.description}\n`
     : ''
 
-  envValues.value = envValues.value.trim() + '\n\n' + description + newLine
+  envValues = envValues.trim() + '\n\n' + description + newLine
 
-  newVariable.value = { key: '', value: '', description: '' }
-  showAddModal.value = false
+  newVariable = { key: '', value: '', description: '' }
+  showAddModal = false
 }
 
 // Restore backup with confirmation
 const restoreBackup = () => {
-  if (backupContent.value) {
-    envValues.value = backupContent.value
-    showBackup.value = false
+  if (backupContent) {
+    envValues = backupContent
+    showBackup = false
   }
 }
 
@@ -210,17 +204,9 @@ const handleScroll = (event) => {
   }
 }
 
-// Focus editor on mount
-onMounted(() => {
-  nextTick(() => {
-    editor.value?.focus()
-  })
-  window.addEventListener('keydown', handleKeyboardShortcuts)
-})
-
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyboardShortcuts)
-})
+}
 </script>
 
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
@@ -435,8 +421,3 @@ onUnmounted(() => {
   @endif
 </div>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>

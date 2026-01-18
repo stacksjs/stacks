@@ -1,12 +1,8 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
-import { Line } from 'vue-chartjs'
+definePageMeta({
+  middleware: ['auth']
+})
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -29,10 +25,6 @@ ChartJS.register(
   Legend,
   Filler,
 )
-
-useHead({
-  title: 'Dashboard - Queries',
-})
 
 interface QueryStats {
   total: number
@@ -64,16 +56,16 @@ interface QueryRecord {
   tags?: string[]
 }
 
-const stats = ref({
+let stats = {
   total: 1286,
   select: 954,
   insert: 152,
   update: 98,
   delete: 82,
   slow: 24,
-})
+}
 
-const recentQueries = ref([
+let recentQueries = [
   {
     id: '1',
     query: 'SELECT * FROM users WHERE email = ? LIMIT 1',
@@ -110,7 +102,7 @@ const recentQueries = ref([
   },
   {
     id: '3',
-    query: 'INSERT INTO user_logs (user_id, action, ip_address, created_at) VALUES (?, ?, ?, ?)',
+    query: 'INSERT INTO user_logs (user_id, action, ip_address, created_at VALUES (?, ?, ?, ?)',
     normalized_query: 'INSERT INTO user_logs (user_id, action, ip_address, created_at) VALUES (?, ?, ?, ?)',
     duration: 2.1,
     connection: 'mysql',
@@ -161,10 +153,10 @@ const recentQueries = ref([
   },
 ])
 
-const timeRange = ref('hour')
-const selectedConnection = ref('all')
-const selectedType = ref('all')
-const isLoading = ref(false)
+let timeRange = 'hour'
+let selectedConnection = 'all'
+let selectedType = 'all'
+let isLoading = false
 
 const chartOptions = {
   responsive: true,
@@ -280,22 +272,18 @@ const getDurationData = () => {
   }
 }
 
-const performanceData = ref(getPerformanceData())
-const durationData = ref(getDurationData())
+let performanceData = getPerformanceData()
+let durationData = getDurationData()
 
 const refreshData = () => {
-  isLoading.value = true
+  isLoading = true
 
   setTimeout(() => {
-    performanceData.value = getPerformanceData()
-    durationData.value = getDurationData()
-    isLoading.value = false
+    performanceData = getPerformanceData()
+    durationData = getDurationData()
+    isLoading = false
   }, 500)
 }
-
-watch([timeRange, selectedConnection, selectedType], () => {
-  refreshData()
-})
 
 const formatQuery = (query) => {
   if (query.length > 100) {
@@ -325,20 +313,22 @@ const queryTypeBadges = {
   OTHER: 'bg-gray-50 dark:bg-gray-900/20 text-gray-700 dark:text-gray-300 ring-gray-700/10 dark:ring-gray-400/30'
 }
 
-const filteredQueries = computed(() => {
-  let filtered = [...recentQueries.value]
+function filteredQueries() {
+  let filtered = [...recentQueries]
 
-  if (selectedConnection.value !== 'all') {
-    filtered = filtered.filter(query => query.connection === selectedConnection.value)
+  if (selectedConnection !== 'all') {
+    filtered = filtered.filter(query => query.connection === selectedConnection)
   }
 
-  if (selectedType.value !== 'all') {
-    filtered = filtered.filter(query => getQueryType(query.query) === selectedType.value)
+  if (selectedType !== 'all') {
+    filtered = filtered.filter(query => getQueryType(query.query) === selectedType)
   }
 
   return filtered
-})
+}
 </script>
+
+@title('Dashboard - Queries')
 
 <template>
 <div class="min-h-screen">

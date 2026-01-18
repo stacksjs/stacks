@@ -1,4 +1,9 @@
 <script server>
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
 const { ref, onMounted } = await import('vue')
 const { useHead } = await import('@vueuse/head')
 const { Line } = await import('vue-chartjs')
@@ -25,12 +30,8 @@ ChartJS.register(
   Filler,
 )
 
-useHead({
-  title: 'Dashboard - DNS',
-})
-
-const timeRange = ref('day')
-const isLoading = ref(false)
+let timeRange = 'day'
+let isLoading = false
 
 // Chart options
 const chartOptions = {
@@ -113,24 +114,11 @@ const getDNSRecordsData = () => {
   }
 }
 
-const dnsRecordsData = ref(getDNSRecordsData())
+let dnsRecordsData = getDNSRecordsData()
 
-// Watch for time range changes
-watch(timeRange, async () => {
-  isLoading.value = true
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500))
-  dnsRecordsData.value = getDNSRecordsData()
-  isLoading.value = false
-})
-
-// Initial load
-onMounted(async () => {
-  isLoading.value = true
-  await new Promise(resolve => setTimeout(resolve, 500))
-  isLoading.value = false
-})
 </script>
+
+@title('Dashboard - DNS')
 
 <template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
@@ -249,8 +237,13 @@ onMounted(async () => {
 </div>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  isLoading = true
+  await new Promise(resolve => setTimeout(resolve, 500))
+  isLoading = false
+})
+</script>
+

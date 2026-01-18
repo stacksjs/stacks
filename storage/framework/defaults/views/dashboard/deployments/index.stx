@@ -1,13 +1,11 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-useHead({
-  title: 'Dashboard - Deployments',
+definePageMeta({
+  middleware: ['auth']
 })
+
 </script>
+
+@title('Dashboard - Deployments')
 
 <template>
 <DeploymentList />

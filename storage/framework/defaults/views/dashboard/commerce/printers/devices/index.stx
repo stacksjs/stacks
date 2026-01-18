@@ -1,12 +1,8 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
-import { Pie, Bar } from 'vue-chartjs'
+definePageMeta({
+  middleware: ['auth']
+})
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -29,10 +25,6 @@ ChartJS.register(
   Tooltip,
   Legend,
 )
-
-useHead({
-  title: 'Receipt Printers - Analytics',
-})
 
 // Sample data for the printers dashboard
 const printers = [
@@ -116,19 +108,19 @@ const barChartOptions = {
 }
 
 // Filter options
-const locationFilter = ref('All Locations')
-const statusFilter = ref('All Statuses')
+let locationFilter = 'All Locations'
+let statusFilter = 'All Statuses'
 const locations = ['All Locations', 'Main Floor', 'Second Floor', 'Kitchen', 'Pickup Area']
 const statuses = ['All Statuses', 'Online', 'Offline', 'Warning']
 
 // Computed filtered printers
-const filteredPrinters = computed(() => {
+function filteredPrinters() {
   return printers.filter(printer => {
-    const locationMatch = locationFilter.value === 'All Locations' || printer.location === locationFilter.value
-    const statusMatch = statusFilter.value === 'All Statuses' || printer.status === statusFilter.value
+    const locationMatch = locationFilter === 'All Locations' || printer.location === locationFilter
+    const statusMatch = statusFilter === 'All Statuses' || printer.status === statusFilter
     return locationMatch && statusMatch
-  })
-})
+  )}
+)}
 
 // Stats summary
 const totalPrinters = printers.length
@@ -139,6 +131,8 @@ const totalPrints = printers.reduce((sum, printer) => sum + printer.printCount, 
 const totalErrors = printers.reduce((sum, printer) => sum + printer.errorCount, 0)
 const errorRate = ((totalErrors / totalPrints) * 100).toFixed(2)
 </script>
+
+@title('Receipt Printers - Analytics')
 
 <template>
 <main>

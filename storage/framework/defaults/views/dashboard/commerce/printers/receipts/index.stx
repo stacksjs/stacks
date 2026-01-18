@@ -1,12 +1,8 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
-import { Line, Bar } from 'vue-chartjs'
+definePageMeta({
+  middleware: ['auth']
+})
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -31,10 +27,6 @@ ChartJS.register(
   Legend,
   Filler,
 )
-
-useHead({
-  title: 'Printer Logs - Analytics',
-})
 
 // Sample data for the prints dashboard
 const prints = [
@@ -115,22 +107,22 @@ const chartOptions = {
 }
 
 // Filter options
-const printerFilter = ref('All Printers')
-const statusFilter = ref('All Statuses')
-const dateFilter = ref('Today')
+let printerFilter = 'All Printers'
+let statusFilter = 'All Statuses'
+let dateFilter = 'Today'
 
 const printers = ['All Printers', 'Checkout-1', 'Checkout-2', 'Checkout-3', 'Checkout-4', 'Kitchen-1', 'Kitchen-2', 'Pickup-1']
 const statuses = ['All Statuses', 'Success', 'Warning', 'Failed']
 const dateRanges = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'This month', 'Last month']
 
 // Computed filtered prints
-const filteredPrints = computed(() => {
+function filteredPrints() {
   return prints.filter(print => {
-    const printerMatch = printerFilter.value === 'All Printers' || print.printer === printerFilter.value
-    const statusMatch = statusFilter.value === 'All Statuses' || print.status === statusFilter.value
+    const printerMatch = printerFilter === 'All Printers' || print.printer === printerFilter
+    const statusMatch = statusFilter === 'All Statuses' || print.status === statusFilter
     return printerMatch && statusMatch
-  })
-})
+  )}
+)}
 
 // Stats summary
 const totalPrints = 755
@@ -141,6 +133,8 @@ const successRate = ((successfulPrints / totalPrints) * 100).toFixed(1)
 const averagePrintTime = '1.4s'
 const totalPages = 1105
 </script>
+
+@title('Printer Logs - Analytics')
 
 <template>
 <main>

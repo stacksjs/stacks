@@ -1,17 +1,17 @@
 <script server>
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
 /**
  * Analytics Dashboard - macOS Style
  * Overview of analytics with macOS-inspired design.
  */
-import { ref } from 'vue'
 import Card from '../../../components/Dashboard/UI/Card.stx'
 import StatsCard from '../../../components/Dashboard/UI/StatsCard.stx'
 
-useHead({
-  title: 'Dashboard - Analytics',
-})
-
-const analyticsCards = ref([
+let analyticsCards = [
   { name: 'Web Analytics', description: 'Page views, sessions, and user behavior', icon: 'i-hugeicons-chart-line-data-02', to: '/analytics/web' },
   { name: 'Blog Analytics', description: 'Post performance and engagement', icon: 'i-hugeicons-edit-02', to: '/analytics/blog' },
   { name: 'Commerce Analytics', description: 'Sales and revenue insights', icon: 'i-hugeicons-shopping-cart-01', to: '/analytics/commerce/sales' },
@@ -22,8 +22,10 @@ const analyticsCards = ref([
   { name: 'Countries', description: 'Geographic distribution', icon: 'i-hugeicons-globe-02', to: '/analytics/countries' },
   { name: 'Devices', description: 'Device breakdown', icon: 'i-hugeicons-smart-phone-01', to: '/analytics/devices' },
   { name: 'Browsers', description: 'Browser usage', icon: 'i-hugeicons-browser', to: '/analytics/browsers' },
-])
+]
 </script>
+
+@title('Dashboard - Analytics')
 
 <template>
 <div>
@@ -93,8 +95,3 @@ const analyticsCards = ref([
 </div>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>

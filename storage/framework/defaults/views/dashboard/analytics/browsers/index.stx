@@ -1,14 +1,13 @@
 <script server>
-import { ref, computed, onMounted, reactive } from 'vue'
-import { useHead } from '@vueuse/head'
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
 import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
 // Register Chart.js components
 Chart.register(...registerables)
-
-useHead({
-  title: 'Dashboard - Browser Analytics',
-})
 
 // Types
 interface DateRange {
@@ -35,15 +34,15 @@ const dateRanges: DateRange[] = [
 ]
 
 // Selected date range
-const selectedDateRange = ref('all-time')
-const dateRangeDisplay = ref('All Time: Sep 7, 2023 to Mar 6, 2025')
-const comparisonType = ref('no-comparison')
-const customStartDate = ref('')
-const customEndDate = ref('')
-const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
+let selectedDateRange = 'all-time'
+let dateRangeDisplay = 'All Time: Sep 7, 2023 to Mar 6, 2025'
+let comparisonType = 'no-comparison'
+let customStartDate = ''
+let customEndDate = ''
+function showCustomDateRange() { return selectedDateRange === 'custom' }
 
 // Browser data
-const browserData = ref<BrowserData[]>([
+let browserData = [
   { name: 'Chrome', visitors: 1300, percentage: 58 },
   { name: 'Safari', visitors: 579, percentage: 26 },
   { name: 'Edge', visitors: 129, percentage: 6 },
@@ -54,10 +53,10 @@ const browserData = ref<BrowserData[]>([
   { name: 'UC Browser', visitors: 12, percentage: 0.5 },
   { name: 'Internet Explorer', visitors: 8, percentage: 0.4 },
   { name: 'Brave', visitors: 7, percentage: 0.3 }
-])
+]
 
 // Detailed browser data with versions
-const detailedBrowserData = ref<BrowserData[]>([
+let detailedBrowserData = [
   { name: 'Chrome', version: '120.0.6099', os: 'Windows', visitors: 450, percentage: 20 },
   { name: 'Chrome', version: '120.0.6099', os: 'macOS', visitors: 380, percentage: 17 },
   { name: 'Chrome', version: '120.0.6099', os: 'Linux', visitors: 220, percentage: 10 },
@@ -70,16 +69,16 @@ const detailedBrowserData = ref<BrowserData[]>([
   { name: 'Edge', version: '120.0.2210', os: 'macOS', visitors: 40, percentage: 2 },
   { name: 'Firefox', version: '121.0', os: 'Windows', visitors: 52, percentage: 2 },
   { name: 'Firefox', version: '121.0', os: 'macOS', visitors: 40, percentage: 2 }
-])
+]
 
 // Chart.js configuration for browser distribution
 const chartConfig = reactive({
   type: 'pie' as keyof ChartTypeRegistry,
   data: {
-    labels: browserData.value.slice(0, 5).map(item => item.name),
+    labels: browserData.slice(0, 5).map(item => item.name),
     datasets: [
       {
-        data: browserData.value.slice(0, 5).map(item => item.visitors),
+        data: browserData.slice(0, 5).map(item => item.visitors),
         backgroundColor: [
           'rgba(59, 130, 246, 0.8)',
           'rgba(16, 185, 129, 0.8)',
@@ -118,10 +117,10 @@ const chartConfig = reactive({
       }
     }
   }
-})
+}
 
 // Browser trend data for line chart
-const browserTrendData = ref([
+let browserTrendData = [
   { date: '2023-09', Chrome: 800, Safari: 400, Edge: 80, Firefox: 60, Other: 30 },
   { date: '2023-10', Chrome: 850, Safari: 420, Edge: 85, Firefox: 65, Other: 32 },
   { date: '2023-11', Chrome: 900, Safari: 450, Edge: 90, Firefox: 70, Other: 35 },
@@ -131,17 +130,17 @@ const browserTrendData = ref([
   { date: '2024-03', Chrome: 1200, Safari: 550, Edge: 120, Firefox: 90, Other: 45 },
   { date: '2024-04', Chrome: 1250, Safari: 560, Edge: 125, Firefox: 92, Other: 47 },
   { date: '2024-05', Chrome: 1300, Safari: 579, Edge: 129, Firefox: 92, Other: 50 }
-])
+]
 
 // Chart.js configuration for browser trends
 const trendChartConfig = reactive({
   type: 'line' as keyof ChartTypeRegistry,
   data: {
-    labels: browserTrendData.value.map(item => item.date),
+    labels: browserTrendData.map(item => item.date),
     datasets: [
       {
         label: 'Chrome',
-        data: browserTrendData.value.map(item => item.Chrome),
+        data: browserTrendData.map(item => item.Chrome),
         borderColor: 'rgba(59, 130, 246, 0.8)',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
         tension: 0.4,
@@ -149,7 +148,7 @@ const trendChartConfig = reactive({
       },
       {
         label: 'Safari',
-        data: browserTrendData.value.map(item => item.Safari),
+        data: browserTrendData.map(item => item.Safari),
         borderColor: 'rgba(16, 185, 129, 0.8)',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         tension: 0.4,
@@ -157,7 +156,7 @@ const trendChartConfig = reactive({
       },
       {
         label: 'Edge',
-        data: browserTrendData.value.map(item => item.Edge),
+        data: browserTrendData.map(item => item.Edge),
         borderColor: 'rgba(245, 158, 11, 0.8)',
         backgroundColor: 'rgba(245, 158, 11, 0.1)',
         tension: 0.4,
@@ -165,7 +164,7 @@ const trendChartConfig = reactive({
       },
       {
         label: 'Firefox',
-        data: browserTrendData.value.map(item => item.Firefox),
+        data: browserTrendData.map(item => item.Firefox),
         borderColor: 'rgba(239, 68, 68, 0.8)',
         backgroundColor: 'rgba(239, 68, 68, 0.1)',
         tension: 0.4,
@@ -173,7 +172,7 @@ const trendChartConfig = reactive({
       },
       {
         label: 'Other',
-        data: browserTrendData.value.map(item => item.Other),
+        data: browserTrendData.map(item => item.Other),
         borderColor: 'rgba(139, 92, 246, 0.8)',
         backgroundColor: 'rgba(139, 92, 246, 0.1)',
         tension: 0.4,
@@ -211,7 +210,7 @@ const trendChartConfig = reactive({
       }
     }
   }
-})
+}
 
 // Format numbers with commas
 function formatNumber(number) {
@@ -220,7 +219,7 @@ function formatNumber(number) {
 
 // Mock function to update data when date range changes
 function updateDataForDateRange() {
-  console.log('Updating data for date range:', selectedDateRange.value)
+  console.log('Updating data for date range:', selectedDateRange)
 }
 
 // Watch for date range changes
@@ -232,20 +231,9 @@ function handleDateRangeChange() {
 let browserDistributionChart: Chart | null = null
 let browserTrendChart: Chart | null = null
 
-onMounted(() => {
-  const distributionCtx = document.getElementById('browserDistributionChart') as HTMLCanvasElement
-  if (distributionCtx) {
-    browserDistributionChart = new Chart(distributionCtx, chartConfig)
-  }
-
-  const trendCtx = document.getElementById('browserTrendChart') as HTMLCanvasElement
-  if (trendCtx) {
-    browserTrendChart = new Chart(trendCtx, trendChartConfig)
-  }
-
-  updateDataForDateRange()
-})
 </script>
+
+@title('Dashboard - Browser Analytics')
 
 <template>
 <main>
@@ -421,8 +409,21 @@ onMounted(() => {
 </main>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  const distributionCtx = document.getElementById('browserDistributionChart') as HTMLCanvasElement
+  if (distributionCtx) {
+    browserDistributionChart = new Chart(distributionCtx, chartConfig)
+  }
+
+  const trendCtx = document.getElementById('browserTrendChart') as HTMLCanvasElement
+  if (trendCtx) {
+    browserTrendChart = new Chart(trendCtx, trendChartConfig)
+  }
+
+  updateDataForDateRange()
+})
+</script>
+

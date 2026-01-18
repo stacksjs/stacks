@@ -1,24 +1,13 @@
-<route lang="yaml">
-  meta:
-    requiresAuth: true
-</route>
-
 <script server>
-import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useHead } from '@vueuse/head'
-
-useHead({
-  title: 'Dashboard - Commerce Delivery',
+definePageMeta({
+  middleware: ['auth']
 })
 
 const router = useRouter()
 
-onMounted(() => {
-  // Redirect to shipping methods by default
-  router.replace('/commerce/delivery/shipping-methods')
-})
 </script>
+
+@title('Dashboard - Commerce Delivery')
 
 <template>
   <div class="py-6">
@@ -33,3 +22,12 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  // Redirect to shipping methods by default
+  router.replace('/commerce/delivery/shipping-methods')
+})
+</script>

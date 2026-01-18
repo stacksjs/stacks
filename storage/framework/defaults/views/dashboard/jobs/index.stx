@@ -1,6 +1,9 @@
 <script server>
-import { ref, watch, onMounted } from 'vue'
-import { Line } from 'vue-chartjs'
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -29,10 +32,6 @@ ChartJS.register(
   Filler,
 )
 
-useHead({
-  title: 'Dashboard - Jobs',
-})
-
 interface Job {
   id: string
   name: string
@@ -49,7 +48,7 @@ interface Job {
   runtime?: number
 }
 
-const recentJobs = ref([
+let recentJobs = [
   {
     id: '1',
     name: 'ProcessPodcast',
@@ -100,10 +99,10 @@ const recentJobs = ref([
     tags: ['inventory', 'sync'],
     priority: 3,
   },
-])
+]
 
-const timeRange = ref('hour')
-const isLoading = ref(false)
+let timeRange = 'hour'
+let isLoading = false
 
 const timeRangeOptions = [
   { value: 'hour', label: 'Last Hour' },
@@ -214,8 +213,8 @@ const getWaitTimeData = () => {
   }
 }
 
-const throughputData = ref(getThroughputData())
-const waitTimeData = ref(getWaitTimeData())
+let throughputData = getThroughputData()
+let waitTimeData = getWaitTimeData()
 
 const getStatusVariant = (status) => {
   const map = {
@@ -227,21 +226,9 @@ const getStatusVariant = (status) => {
   return map[status] || 'default'
 }
 
-watch(timeRange, async () => {
-  isLoading.value = true
-  await new Promise(resolve => setTimeout(resolve, 500))
-  throughputData.value = getThroughputData()
-  waitTimeData.value = getWaitTimeData()
-  isLoading.value = false
-})
-
-onMounted(async () => {
-  isLoading.value = true
-  await new Promise(resolve => setTimeout(resolve, 500))
-  isLoading.value = false
-})
-
 </script>
+
+@title('Dashboard - Jobs')
 
 <template>
 <div>
@@ -404,8 +391,13 @@ onMounted(async () => {
 </div>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  isLoading = true
+  await new Promise(resolve => setTimeout(resolve, 500))
+  isLoading = false
+})
+</script>
+

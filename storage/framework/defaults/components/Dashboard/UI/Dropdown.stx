@@ -58,12 +58,12 @@ const alignClass = align === 'right' ? 'right-0' : 'left-0'
     if (isOpen && !dropdown.contains(e.target)) {
       close()
     }
-  })
+  }
 
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && isOpen) {
       close()
     }
-  })
+  }
 })()
 </script>

@@ -1,11 +1,4 @@
-<script lang="ts">
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
-
-useHead({
-  title: 'Dashboard - Social Media Posts',
-})
-
+<script server>
 // Define post type
 interface SocialPost {
   id: number
@@ -28,7 +21,7 @@ interface SocialPost {
 }
 
 // Sample posts data
-const posts = ref<SocialPost[]>([
+let posts = [
   {
     id: 1,
     content: "Just launched our new summer menu! Come try our refreshing new salads and smoothies. Perfect for the hot weather! #SummerMenu #HealthyEating",
@@ -69,7 +62,7 @@ const posts = ref<SocialPost[]>([
   },
   {
     id: 3,
-    content: "Thread: Our chef's journey to creating the perfect burger (1/4)\n\nIt all started with a passion for quality ingredients and the perfect bun-to-patty ratio. #BurgerStory #CulinaryJourney",
+    content: "Thread: Our chef's journey to creating the perfect burger (1/4\n\nIt all started with a passion for quality ingredients and the perfect bun-to-patty ratio. #BurgerStory #CulinaryJourney",
     images: ["https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80"],
     platform: "Bluesky",
     status: "Draft",
@@ -222,13 +215,13 @@ const posts = ref<SocialPost[]>([
 ])
 
 // Filter and sort options
-const searchQuery = ref('')
-const sortBy = ref('scheduledDate')
-const sortOrder = ref('desc')
-const statusFilter = ref('all')
-const platformFilter = ref('all')
-const authorFilter = ref('all')
-const viewMode = ref('compact') // 'detailed' or 'compact'
+let searchQuery = ''
+let sortBy = 'scheduledDate'
+let sortOrder = 'desc'
+let statusFilter = 'all'
+let platformFilter = 'all'
+let authorFilter = 'all'
+let viewMode = 'compact' // 'detailed' or 'compact'
 
 // Available statuses
 const statuses = ['all', 'Published', 'Scheduled', 'Draft', 'Failed']
@@ -237,82 +230,82 @@ const statuses = ['all', 'Published', 'Scheduled', 'Draft', 'Failed']
 const platforms = ['all', 'Bluesky', 'Twitter', 'Instagram', 'Facebook']
 
 // Get unique authors from posts
-const authors = computed(() => {
+function authors() {
   const uniqueAuthors = new Set(['all'])
-  posts.value.forEach(post => uniqueAuthors.add(post.author))
+  posts.forEach(post => uniqueAuthors.add(post.author))
   return Array.from(uniqueAuthors)
-})
+}
 
 // Computed filtered and sorted posts
-const filteredPosts = computed(() => {
-  return posts.value
+function filteredPosts() {
+  return posts
     .filter(post => {
       // Apply search filter
       const matchesSearch =
-        post.content.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        post.tags.some(tag => tag.toLowerCase().includes(searchQuery.value.toLowerCase())) ||
-        post.author.toLowerCase().includes(searchQuery.value.toLowerCase())
+        post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        post.author.toLowerCase().includes(searchQuery.toLowerCase())
 
       // Apply status filter
-      const matchesStatus = statusFilter.value === 'all' || post.status === statusFilter.value
+      const matchesStatus = statusFilter === 'all' || post.status === statusFilter
 
       // Apply platform filter
-      const matchesPlatform = platformFilter.value === 'all' || post.platform === platformFilter.value
+      const matchesPlatform = platformFilter === 'all' || post.platform === platformFilter
 
       // Apply author filter
-      const matchesAuthor = authorFilter.value === 'all' || post.author === authorFilter.value
+      const matchesAuthor = authorFilter === 'all' || post.author === authorFilter
 
       return matchesSearch && matchesStatus && matchesPlatform && matchesAuthor
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy.value === 'scheduledDate') {
+      if (sortBy === 'scheduledDate') {
         comparison = new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime()
-      } else if (sortBy.value === 'engagement') {
+      } else if (sortBy === 'engagement') {
         comparison = a.engagement - b.engagement
-      } else if (sortBy.value === 'author') {
+      } else if (sortBy === 'author') {
         comparison = a.author.localeCompare(b.author)
       }
 
-      return sortOrder.value === 'asc' ? comparison : -comparison
+      return sortOrder === 'asc' ? comparison : -comparison
     })
-})
+}
 
 // Pagination
-const currentPage = ref(1)
-const itemsPerPage = ref(5)
-const totalPages = computed(() => Math.ceil(filteredPosts.value.length / itemsPerPage.value))
+let currentPage = 1
+let itemsPerPage = 5
+function totalPages() { return Math.ceil(filteredPosts.length / itemsPerPage) }
 
-const paginatedPosts = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredPosts.value.slice(start, end)
-})
+function paginatedPosts() {
+  const start = (currentPage - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredPosts.slice(start, end)
+}
 
 function changePage(page: number): void {
-  currentPage.value = page
+  currentPage = page
 }
 
 function previousPage(): void {
-  if (currentPage.value > 1) {
-    currentPage.value--
+  if (currentPage > 1) {
+    currentPage--
   }
 }
 
 function nextPage(): void {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
+  if (currentPage < totalPages) {
+    currentPage++
   }
 }
 
 // Toggle sort order
 function toggleSort(column: string): void {
-  if (sortBy.value === column) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  if (sortBy === column) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
   } else {
-    sortBy.value = column
-    sortOrder.value = 'desc'
+    sortBy = column
+    sortOrder = 'desc'
   }
 }
 
@@ -347,13 +340,13 @@ function formatDate(date: string | null): string {
 }
 
 // Modal state for editing post
-const showPostModal = ref(false)
-const currentPost = ref<SocialPost | null>(null)
-const isNewPost = ref(false)
+let showPostModal = false
+let currentPost = null
+let isNewPost = false
 
 function openNewPostModal(): void {
-  currentPost.value = {
-    id: Math.max(...posts.value.map(p => p.id)) + 1,
+  currentPost = {
+    id: Math.max(...posts.map(p => p.id)) + 1,
     content: '',
     images: [],
     platform: 'Bluesky',
@@ -371,31 +364,31 @@ function openNewPostModal(): void {
     threadId: null,
     threadSize: 0
   }
-  isNewPost.value = true
-  showPostModal.value = true
+  isNewPost = true
+  showPostModal = true
 }
 
 function openEditPostModal(post: SocialPost): void {
-  currentPost.value = { ...post }
-  isNewPost.value = false
-  showPostModal.value = true
+  currentPost = { ...post }
+  isNewPost = false
+  showPostModal = true
 }
 
 function closePostModal(): void {
-  showPostModal.value = false
+  showPostModal = false
 }
 
 function savePost(): void {
-  if (!currentPost.value) return
+  if (!currentPost) return
 
-  if (isNewPost.value) {
+  if (isNewPost) {
     // Add new post
-    posts.value.push({ ...currentPost.value })
+    posts.push({ ...currentPost })
   } else {
     // Update existing post
-    const index = posts.value.findIndex(p => p.id === currentPost.value!.id)
+    const index = posts.findIndex(p => p.id === currentPost.value!.id)
     if (index !== -1) {
-      posts.value[index] = { ...currentPost.value }
+      posts[index] = { ...currentPost }
     }
   }
 
@@ -404,9 +397,9 @@ function savePost(): void {
 
 // Delete post
 function deletePost(postId: number): void {
-  const index = posts.value.findIndex(p => p.id === postId)
+  const index = posts.findIndex(p => p.id === postId)
   if (index !== -1) {
-    posts.value.splice(index, 1)
+    posts.splice(index, 1)
   }
 }
 
@@ -414,7 +407,7 @@ function deletePost(postId: number): void {
 function duplicatePost(post: SocialPost): void {
   const newPost = {
     ...post,
-    id: Math.max(...posts.value.map(p => p.id)) + 1,
+    id: Math.max(...posts.map(p => p.id)) + 1,
     status: 'Draft',
     publishedDate: null,
     likes: 0,
@@ -422,14 +415,14 @@ function duplicatePost(post: SocialPost): void {
     replies: 0,
     engagement: 0
   }
-  posts.value.push(newPost)
+  posts.push(newPost)
 }
 
 // Calculate summary statistics
-const totalPosts = computed(() => posts.value.length)
-const publishedPosts = computed(() => posts.value.filter(p => p.status === 'Published').length)
-const scheduledPosts = computed(() => posts.value.filter(p => p.status === 'Scheduled').length)
-const draftPosts = computed(() => posts.value.filter(p => p.status === 'Draft').length)
+function totalPosts() { return posts.length }
+function publishedPosts() { return posts.filter(p => p.status === 'Published' }.length)
+function scheduledPosts() { return posts.filter(p => p.status === 'Scheduled' }.length)
+function draftPosts() { return posts.filter(p => p.status === 'Draft' }.length)
 
 // Extract tags from content
 function extractTags(content: string): string[] {
@@ -445,8 +438,8 @@ function extractTags(content: string): string[] {
 
 // Update tags when content changes
 function updateTags(): void {
-  if (currentPost.value) {
-    currentPost.value.tags = extractTags(currentPost.value.content)
+  if (currentPost) {
+    currentPost.tags = extractTags(currentPost.content)
   }
 }
 
@@ -464,7 +457,7 @@ function createThread(posts: SocialPost[]): void {
 
 // Get thread posts
 function getThreadPosts(threadId: number): SocialPost[] {
-  return posts.value.filter(post => post.threadId === threadId)
+  return posts.filter(post => post.threadId === threadId)
     .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime())
 }
 
@@ -475,15 +468,15 @@ function isPartOfThread(post: SocialPost): boolean {
 
 // Add image to post
 function addImageToPost(url: string): void {
-  if (currentPost.value && currentPost.value.images.length < 4) {
-    currentPost.value.images.push(url)
+  if (currentPost && currentPost.images.length < 4) {
+    currentPost.images.push(url)
   }
 }
 
 // Remove image from post
 function removeImageFromPost(index: number): void {
-  if (currentPost.value) {
-    currentPost.value.images.splice(index, 1)
+  if (currentPost) {
+    currentPost.images.splice(index, 1)
   }
 }
 
@@ -1194,8 +1187,3 @@ function truncateText(text: string, max: number): string {
     </div>
   </main>
 
-<route lang="yaml">
-meta:
-  layout: default
-  requiresAuth: true
-</route>
