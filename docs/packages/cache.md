@@ -505,3 +505,23 @@ try {
 | `CircuitBreaker` | Circuit breaker pattern |
 | `CacheInvalidation` | Tag-based invalidation |
 | `BatchOperations` | Batch cache operations |
+
+## Related Resources
+
+### Underlying Libraries
+
+The Stacks cache package is built on top of these zero-dependency libraries from the Stacks ecosystem:
+
+- **[ts-cache](https://github.com/stacksjs/ts-cache)** - The core caching library that powers `@stacksjs/cache`. For advanced use cases or standalone usage, see the [ts-cache documentation](/docs/libraries/ts-cache).
+
+### Related Stacks Packages
+
+- **[Queue Package](/packages/queue)** - Job queues often work alongside caching for deferred operations
+- **[Database Package](/packages/database)** - Cache-aside patterns commonly cache database query results
+- **[Config Package](/packages/config)** - Configure cache drivers and settings
+- **[Rate Limiter](/packages/rate-limiter)** - For more advanced rate limiting, see the dedicated [ts-rate-limiter](https://github.com/stacksjs/ts-rate-limiter) library
+
+### External Resources
+
+- [Caching Best Practices](https://aws.amazon.com/caching/best-practices/) - AWS guide on caching patterns
+- [Redis Documentation](https://redis.io/docs/) - Official Redis documentation for the Redis driver

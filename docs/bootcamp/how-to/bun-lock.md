@@ -1,22 +1,27 @@
 # Bun Lockfile Management
 
-This guide covers managing Bun's binary lockfile (`bun.lockb`) in your Stacks application, including best practices for version control, troubleshooting, and team collaboration.
+This guide covers managing Bun's lockfile (`bun.lock`) in your Stacks application, including best practices for version control, troubleshooting, and team collaboration.
 
-## Understanding bun.lockb
+## Understanding bun.lock
 
-Bun uses a binary lockfile format (`bun.lockb`) instead of the traditional JSON/YAML format used by npm or yarn. This binary format provides:
+Bun uses a text-based lockfile format (`bun.lock`) that is human-readable and git-friendly. This format provides:
 
-- **Faster parsing** - Binary format is faster to read/write than JSON
-- **Smaller size** - More compact than text-based lockfiles
+- **Human-readable** - Text-based JSONC format that can be inspected and diffed
+- **Git-friendly** - Easy to review changes in pull requests
 - **Integrity** - Contains checksums for all packages
 - **Deterministic installs** - Ensures consistent dependencies across environments
+- **Faster parsing** - Optimized for Bun's package resolution
+
+::: tip Migration Note
+If you have an older project with `bun.lockb` (binary format), Bun will automatically migrate to `bun.lock` when you run `bun install`. You can safely delete the old `bun.lockb` file after migration.
+:::
 
 ## Basic Commands
 
 ### Installing Dependencies
 
 ```bash
-# Install all dependencies from bun.lockb
+# Install all dependencies from bun.lock
 bun install
 
 # Install with frozen lockfile (CI/CD)
@@ -26,7 +31,7 @@ bun install --frozen-lockfile
 bun install
 
 # Force fresh install (regenerate lockfile)
-rm -rf node_modules bun.lockb && bun install
+rm -rf node_modules bun.lock && bun install
 ```
 
 ### Updating Dependencies
@@ -69,42 +74,42 @@ bun remove package-name
 
 ### Git Configuration
 
-Add to `.gitattributes`:
-
-```
-# Treat bun.lockb as binary
-bun.lockb binary
-```
-
 Add to `.gitignore`:
 
-```
+```gitignore
 # Node modules
 node_modules/
 
-# DO NOT ignore bun.lockb - it should be committed
-# bun.lockb
+# DO NOT ignore bun.lock - it should be committed
+# bun.lock
 ```
+
+::: info
+Since `bun.lock` is now a text-based format, you no longer need special `.gitattributes` configuration. Git will handle it like any other text file.
+:::
 
 ### Committing the Lockfile
 
-Always commit `bun.lockb` to version control:
+Always commit `bun.lock` to version control:
 
 ```bash
-git add bun.lockb
+git add bun.lock
 git commit -m "chore: update dependencies"
 ```
 
 ### Viewing Lockfile Changes
 
-Since `bun.lockb` is binary, you can convert it to text for diff purposes:
+Since `bun.lock` is text-based JSONC format, you can view changes directly:
 
 ```bash
-# Convert lockfile to yarn.lock format for viewing
-bun bun.lockb > yarn.lock.tmp
-git diff yarn.lock.tmp
-rm yarn.lock.tmp
+# View lockfile changes
+git diff bun.lock
+
+# View lockfile changes in a PR
+gh pr diff --name-only | grep bun.lock
 ```
+
+The text format makes code review much easier - you can see exactly which packages changed and to what versions.
 
 ## CI/CD Configuration
 
@@ -145,10 +150,10 @@ jobs:
 
 ```yaml
 - name: Cache Bun dependencies
-  uses: actions/cache@v3
+  uses: actions/cache@v4
   with:
     path: ~/.bun/install/cache
-    key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+    key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
     restore-keys: |
       ${{ runner.os }}-bun-
 ```
@@ -162,7 +167,7 @@ FROM oven/bun:1 as base
 WORKDIR /app
 
 # Copy lockfile and package.json for caching
-COPY package.json bun.lockb ./
+COPY package.json bun.lock ./
 
 # Install dependencies
 RUN bun install --frozen-lockfile
@@ -193,15 +198,19 @@ When lockfile doesn't match package.json:
 bun install
 ```
 
-### Corrupted Lockfile
+### Corrupted or Invalid Lockfile
 
-If the lockfile appears corrupted:
+If the lockfile appears corrupted or has syntax errors:
 
 ```bash
 # Remove and regenerate
-rm bun.lockb
+rm bun.lock
 bun install
 ```
+
+::: tip
+Since `bun.lock` is now text-based, you can often fix minor issues by editing the file directly. However, regenerating is usually safer.
+:::
 
 ### Dependency Conflicts
 
@@ -270,9 +279,9 @@ When lockfile has merge conflicts:
 
 ```bash
 # Accept one version and regenerate
-git checkout --theirs bun.lockb  # or --ours
+git checkout --theirs bun.lock  # or --ours
 bun install
-git add bun.lockb
+git add bun.lock
 git commit -m "resolve lockfile conflict"
 ```
 
@@ -280,15 +289,19 @@ Or regenerate fresh:
 
 ```bash
 # Remove conflicted file
-rm bun.lockb
+rm bun.lock
 
 # Regenerate
 bun install
 
 # Commit
-git add bun.lockb
+git add bun.lock
 git commit -m "regenerate lockfile after merge"
 ```
+
+::: tip
+Since `bun.lock` is text-based, you can sometimes manually resolve conflicts by editing the file. However, regenerating is usually safer and faster.
+:::
 
 ### Dependency Update Workflow
 
@@ -308,7 +321,7 @@ bun test
 bun run build
 
 # 5. Commit changes
-git add package.json bun.lockb
+git add package.json bun.lock
 git commit -m "chore: update dependencies"
 
 # 6. Create PR
@@ -319,18 +332,21 @@ gh pr create
 
 ### DO
 
-- **Commit bun.lockb** - Always include in version control
+- **Commit bun.lock** - Always include in version control
 - **Use frozen lockfile in CI** - Ensures reproducible builds
 - **Update regularly** - Keep dependencies current for security
-- **Review lockfile changes** - Check what's being updated
+- **Review lockfile changes** - Check what's being updated in PRs
 - **Use exact versions for critical deps** - Avoid unexpected updates
 
 ### DON'T
 
 - **Don't ignore the lockfile** - It ensures consistent installs
-- **Don't manually edit bun.lockb** - It's binary format
 - **Don't delete without reinstalling** - Can cause version drift
 - **Don't mix package managers** - Stick with Bun
+
+::: tip
+Unlike the old binary format, you can now safely inspect and even manually edit `bun.lock` if needed. The text-based format makes debugging dependency issues much easier.
+:::
 
 ### Security
 

@@ -677,3 +677,29 @@ export default class UnreliableJob extends Job {
 | `backoff` | Retry delay (seconds) |
 | `timeout` | Max execution time |
 | `middleware` | Job middleware array |
+
+## Related Resources
+
+### Underlying Libraries
+
+The Stacks queue package is built on these zero-dependency libraries from the Stacks ecosystem:
+
+- **[bun-queue](https://github.com/stacksjs/bun-queue)** - Redis-backed job queue for Bun. For advanced configuration or standalone usage, see the [bun-queue documentation](https://github.com/stacksjs/bun-queue).
+
+### Related Stacks Packages
+
+- **[Scheduler Package](/packages/scheduler)** - Schedule recurring tasks using cron expressions
+- **[Events Package](/packages/events)** - Dispatch jobs in response to application events
+- **[Notifications Package](/packages/notifications)** - Queue notification delivery
+- **[Cache Package](/packages/cache)** - Cache job results or use Redis for both caching and queuing
+- **[Logging Package](/packages/logging)** - Log job execution and failures
+
+### Related Guides
+
+- **[Jobs & Queues Basics](/basics/jobs)** - Getting started with jobs in Stacks
+- **[Error Handling](/basics/error-handling)** - Handling job failures gracefully
+
+### External Resources
+
+- [Redis Pub/Sub](https://redis.io/docs/manual/pubsub/) - Understanding Redis messaging
+- [Background Jobs Best Practices](https://devcenter.heroku.com/articles/background-jobs-queueing) - Heroku guide on job queues
