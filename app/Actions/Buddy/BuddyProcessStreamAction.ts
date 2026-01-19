@@ -34,9 +34,12 @@ export default new Action({
         })
       }
 
-      // Check if we need to open a repo (only required for agentic mode)
+      // Determine actual mode - simple mode requires API key, otherwise falls back to agentic
+      const useSimpleMode = mode === 'simple' && apiKeys.anthropic
+
+      // Check if we need to open a repo (required for agentic mode)
       const currentState = buddyState.getState()
-      if (mode !== 'simple') {
+      if (!useSimpleMode) {
         if (!currentState.repo) {
           if (!repo) {
             return new Response(JSON.stringify({
@@ -52,11 +55,6 @@ export default new Action({
           await openRepository(repo)
         }
       }
-
-      // Start streaming - use simple mode for Q&A (true token-by-token streaming)
-      // or agentic mode for tool use (CLI-based streaming)
-      // Fall back to agentic mode if API key is not set for simple mode
-      const useSimpleMode = mode === 'simple' && apiKeys.anthropic
       const { stream, fullResponse } = useSimpleMode
         ? await buddyStreamSimple(command, history)
         : await buddyProcessStreaming(command, driver || undefined, history)
