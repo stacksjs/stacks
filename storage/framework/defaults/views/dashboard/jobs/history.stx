@@ -59,8 +59,6 @@ const handleRetry = async (jobId) => {
 </script>
 
 @title('Dashboard - Jobs History')
-
-<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
@@ -232,8 +230,6 @@ const handleRetry = async (jobId) => {
     </div>
   </div>
 </div>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

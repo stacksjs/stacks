@@ -27,9 +27,7 @@
     }
   }
 </script>
-
-<template>
-  <!-- Coupons table -->
+<!-- Coupons table -->
   <div class="overflow-hidden rounded-xl border border-stone-200/80 dark:border-neutral-700 shadow-sm">
     <table class="min-w-full divide-y divide-stone-100 dark:divide-neutral-700">
       <thead class="bg-stone-50/80 dark:bg-neutral-800">
@@ -157,4 +155,3 @@
       </tbody>
     </table>
   </div>
-</template>

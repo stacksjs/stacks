@@ -36,9 +36,7 @@ const selectClass = [
 
 const selectId = id || 'select-' + Math.random().toString(36).slice(2, 11)
 </script>
-
-<template>
-  <div class="relative">
+<div class="relative">
     @if(label)
       <label for="{{ selectId }}" class="block text-[13px] font-medium text-neutral-600 dark:text-neutral-400 mb-1.5 tracking-tight">
         {{ label }}
@@ -80,4 +78,3 @@ const selectId = id || 'select-' + Math.random().toString(36).slice(2, 11)
       <p class="mt-1.5 text-[12px] text-neutral-500 dark:text-neutral-400">{{ hint }}</p>
     @endif
   </div>
-</template>

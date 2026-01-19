@@ -11,9 +11,7 @@
   const sqsQueue = props.sqsQueue || 'default'
   const sqsRegion = props.sqsRegion || 'us-east-1'
 </script>
-
-<template>
-  <form>
+<form>
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
       <div class="divide-y divide-gray-900/10">
@@ -215,4 +213,3 @@
       </button>
     </div>
   </form>
-</template>

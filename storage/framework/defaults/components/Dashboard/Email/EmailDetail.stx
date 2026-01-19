@@ -13,9 +13,7 @@
     attachment: false
   }
 </script>
-
-<template>
-  <div class="w-full md:w-2/3 lg:w-3/5 bg-white dark:bg-blue-gray-700 flex flex-col">
+<div class="w-full md:w-2/3 lg:w-3/5 bg-white dark:bg-blue-gray-700 flex flex-col">
     <div class="py-2 px-4 border-b border-gray-200 dark:border-blue-gray-600 flex items-center justify-between">
       <div class="flex items-center space-x-2">
         <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600" data-action="close">
@@ -100,4 +98,3 @@
       </div>
     </div>
   </div>
-</template>

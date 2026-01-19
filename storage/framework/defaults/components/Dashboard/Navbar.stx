@@ -21,8 +21,6 @@ function getNavbarClasses() {
   return isSidebarCollapsed ? 'navbar-collapsed' : 'navbar-expanded'
 }
 </script>
-
-<template>
 <div
   class="sticky top-0 z-10 h-16 flex shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 dark:border-gray-600 dark:bg-blue-gray-900 lg:px-8 sm:px-6 transition-all duration-300 {{ getNavbarClasses() }}"
 >
@@ -161,8 +159,6 @@ function getNavbarClasses() {
     </div>
   </div>
 </div>
-</template>
-
 <style scoped>
 .header-icon-button {
   @apply p-2.5 -m-2.5;

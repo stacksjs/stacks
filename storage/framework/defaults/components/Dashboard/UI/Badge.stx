@@ -50,12 +50,9 @@ const badgeClass = [
 
 const dotClass = 'w-1.5 h-1.5 rounded-full mr-1.5 ' + dotColors[variant]
 </script>
-
-<template>
-  <span class="{{ badgeClass }}">
+<span class="{{ badgeClass }}">
     @if(dot)
       <span class="{{ dotClass }}"></span>
     @endif
     {{ text }}<slot />
   </span>
-</template>

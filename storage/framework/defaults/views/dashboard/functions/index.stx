@@ -198,8 +198,6 @@ const handleCompare = async () => {
 </script>
 
 @title('Dashboard - Functions')
-
-<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="mb-8 px-4 lg:px-8 sm:px-6">
     <div>
@@ -478,8 +476,6 @@ const handleCompare = async () => {
     </div>
   </div>
 </div>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

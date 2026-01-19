@@ -1,5 +1,4 @@
-<template>
-  <div class="h-full flex flex-col items-center justify-center bg-gray-900">
+<div class="h-full flex flex-col items-center justify-center bg-gray-900">
     <h1 class="text-8xl text-gray-50">
       Maintenance
     </h1>
@@ -10,4 +9,3 @@
 
     <slot />
   </div>
-</template>

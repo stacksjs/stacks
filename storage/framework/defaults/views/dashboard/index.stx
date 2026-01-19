@@ -75,8 +75,6 @@ function getStatusDotClass(status) {
   return 'bg-gray-500'
 }
 </script>
-
-<template>
 <DashboardLayout>
   <!-- Page Header -->
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -284,8 +282,6 @@ function getStatusDotClass(status) {
     </Card>
   </div>
 </DashboardLayout>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

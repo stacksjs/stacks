@@ -112,8 +112,6 @@ const options = [
 ]
 function pageTitle() { return options.find(option => option.key === name }?.label || name)
 </script>
-
-<template>
 <main>
   <div class="bg-white px-4 py-6 shadow-sm ring-1 ring-gray-900/5 md:col-span-2 sm:rounded-xl lg:px-8 sm:px-6">
     <h2 class="text-base text-gray-900 font-semibold leading-7">
@@ -174,8 +172,6 @@ function pageTitle() { return options.find(option => option.key === name }?.labe
     </div>
   </div>
 </main>
-</template>
-
 <style scoped>
 
 </style>

@@ -14,8 +14,6 @@ const goBack = () => {
   router.back()
 }
 </script>
-
-<template>
 <div class="min-h-screen flex flex-col lg:flex-row bg-gradient-to-br from-slate-50 to-slate-100">
   <!-- Left side content -->
   <div class="w-full lg:w-1/2 flex items-center justify-center p-8">
@@ -182,8 +180,6 @@ const goBack = () => {
     </svg>
   </div>
 </div>
-</template>
-
 <style>
 @keyframes floatMoon {
   0% { transform: translateX(0); }

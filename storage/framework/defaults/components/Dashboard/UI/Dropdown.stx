@@ -14,9 +14,7 @@ const widthClasses = {
 
 const alignClass = align === 'right' ? 'right-0' : 'left-0'
 </script>
-
-<template>
-  <div class="relative inline-block text-left" data-dropdown="{{ id }}">
+<div class="relative inline-block text-left" data-dropdown="{{ id }}">
     <!-- Trigger -->
     <div data-dropdown-trigger>
       {{ triggerSlot }}
@@ -30,8 +28,6 @@ const alignClass = align === 'right' ? 'right-0' : 'left-0'
       <slot />
     </div>
   </div>
-</template>
-
 <script client>
 (function() {
   const dropdown = document.querySelector('[data-dropdown="{{ id }}"]')

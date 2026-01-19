@@ -2,11 +2,7 @@
   // const router = useRouter()
 
   // </script>
-
-<template>
-  <slot />
-</template>
-
+<slot />
 <script client>
 import { onMount } from 'stx'
 

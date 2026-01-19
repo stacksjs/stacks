@@ -1,9 +1,7 @@
 <script server>
   const currentPath = props.currentPath || '/settings/ai'
 </script>
-
-<template>
-  <header class="border-b border-gray-200 dark:border-gray-600">
+<header class="border-b border-gray-200 dark:border-gray-600">
     <!-- Secondary navigation -->
     <nav class="flex overflow-x-auto py-4">
       <ul
@@ -79,8 +77,6 @@
       </ul>
     </nav>
   </header>
-</template>
-
 <style>
 .sidebar-links {
   @apply text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold

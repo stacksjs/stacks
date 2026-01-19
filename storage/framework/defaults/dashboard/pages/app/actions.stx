@@ -6,9 +6,7 @@ const actions = [
   { name: 'SyncInventory', type: 'sync', runs: 48, avgTime: '12s', status: 'paused' },
 ]
 </script>
-
-<template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
       <div class="">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Actions</h1>
@@ -54,4 +52,3 @@ const actions = [
       </div>
     </div>
   </div>
-</template>

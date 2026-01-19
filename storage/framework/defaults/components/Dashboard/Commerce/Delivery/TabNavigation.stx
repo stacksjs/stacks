@@ -2,9 +2,7 @@
   const modelValue = props.modelValue || ''
   const tabs = props.tabs || []
 </script>
-
-<template>
-  <div>
+<div>
     <div class="sm:hidden">
       <label for="tabs" class="sr-only">Select a tab</label>
       <select
@@ -32,4 +30,3 @@
       </div>
     </div>
   </div>
-</template>

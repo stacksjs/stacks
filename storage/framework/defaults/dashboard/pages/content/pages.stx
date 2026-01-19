@@ -14,9 +14,7 @@ const pages = [
   { title: 'Careers', slug: '/careers', status: 'draft', updated: '2024-01-09' },
 ]
 </script>
-
-<template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
       <div class="">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Pages</h1>
@@ -62,4 +60,3 @@ const pages = [
       </div>
     </div>
   </div>
-</template>

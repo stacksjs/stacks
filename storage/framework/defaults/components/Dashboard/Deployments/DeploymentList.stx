@@ -1,9 +1,7 @@
 <script server>
   const showModal = props.showModal || false
 </script>
-
-<template>
-  <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
       <div>
         <h3 class="text-base text-gray-900 font-semibold leading-6 dark:text-gray-100">
@@ -90,4 +88,3 @@
   @if(showModal)
     <slot name="modal" />
   @endif
-</template>

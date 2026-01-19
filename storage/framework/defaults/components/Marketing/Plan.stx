@@ -6,8 +6,6 @@ const href = props.href || ''
 const features = props.features || []
 const featured = props.featured || false
 </script>
-
-<template>
 <section
   class="flex flex-col rounded-3xl px-6 sm:px-8 {{ featured ? 'order-first bg-blue-600 py-8 lg:order-none' : 'lg:py-8' }}"
 >
@@ -39,4 +37,3 @@ const featured = props.featured || false
     Get started
   </a>
 </section>
-</template>

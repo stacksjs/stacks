@@ -13,9 +13,7 @@
     'storage', 'tests', 'tsconfig.json', '~'
   ]
 </script>
-
-<template>
-  <div class="font-mono">
+<div class="font-mono">
     <div class="h-full w-full flex flex-col rounded-lg bg-[#0D1117] text-[#C9D1D9] shadow">
       <!-- Terminal Header -->
       <header class="flex items-center justify-between rounded-t-lg bg-[#161B22] px-3 py-2">
@@ -79,8 +77,6 @@
       </div>
     </div>
   </div>
-</template>
-
 <style>
 @keyframes blink {
   0%, 100% { opacity: 1; }

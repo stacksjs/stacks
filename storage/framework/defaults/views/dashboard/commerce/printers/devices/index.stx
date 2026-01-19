@@ -133,8 +133,6 @@ const errorRate = ((totalErrors / totalPrints) * 100).toFixed(2)
 </script>
 
 @title('Receipt Printers - Analytics')
-
-<template>
 <main>
   <div class="relative isolate overflow-hidden">
     <div class="px-6 py-6 sm:px-6 lg:px-8">
@@ -319,4 +317,3 @@ const errorRate = ((totalErrors / totalPrints) * 100).toFixed(2)
     </div>
   </div>
 </main>
-</template>

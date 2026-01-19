@@ -2,8 +2,6 @@
   const to = props.to || ''
   const active = props.active || false
 </script>
-
-<template>
 <a
   href="{{ to }}"
   class="bg-primary flex flex-row items-center gap-2 rounded-md p-1 {{ active ? 'dark:bg-blue-gray-700 bg-blue-gray-50 dark:text-blue-300 text-gray-600' : '' }}"
@@ -16,4 +14,3 @@
     <slot />
   </span>
 </a>
-</template>

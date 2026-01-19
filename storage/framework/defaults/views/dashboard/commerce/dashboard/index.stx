@@ -107,8 +107,6 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
 </script>
 
 @title('Dashboard - Commerce')
-
-<template>
 <main>
   <div class="relative isolate overflow-hidden">
     <div class="px-6 py-6 sm:px-6 lg:px-8">
@@ -265,4 +263,3 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
     </div>
   </div>
 </main>
-</template>

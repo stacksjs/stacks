@@ -18,9 +18,7 @@
   const redisPort = props.redisPort || '6379'
   const redisPassword = props.redisPassword || ''
 </script>
-
-<template>
-  <form>
+<form>
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
       <div class="divide-y divide-gray-900/10">
@@ -250,4 +248,3 @@
       </button>
     </div>
   </form>
-</template>

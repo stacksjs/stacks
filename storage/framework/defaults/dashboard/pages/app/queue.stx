@@ -11,9 +11,7 @@ const recentJobs = [
   { id: 'job-1232', queue: 'emails', name: 'SendNotification', status: 'failed', time: '1m ago' },
 ]
 </script>
-
-<template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
       <div class="">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Queue</h1>
@@ -71,4 +69,3 @@ const recentJobs = [
       </div>
     </div>
   </div>
-</template>

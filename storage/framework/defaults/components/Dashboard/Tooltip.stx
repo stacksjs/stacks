@@ -4,9 +4,7 @@
   const dark = props.dark || false
   const alignment = props.alignment || 'center'
 </script>
-
-<template>
-  <div
+<div
     class="tooltip-container"
     data-tooltip
   >
@@ -19,8 +17,6 @@
       {{ text }}
     </span>
   </div>
-</template>
-
 <style>
 .tooltip-container {
   position: relative;

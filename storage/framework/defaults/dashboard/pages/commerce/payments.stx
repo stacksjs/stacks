@@ -22,9 +22,7 @@ const paymentMethods = [
   { name: 'Google Pay', provider: 'Stripe', status: 'active', volume: '$1,532' },
 ]
 </script>
-
-<template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
       <div class="">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Payments</h1>
@@ -131,8 +129,6 @@ const paymentMethods = [
       </div>
     </div>
   </div>
-</template>
-
 <style>
 .p-4 {
   padding: 1rem;

@@ -16,8 +16,6 @@
 
   const buttonBackground = getButtonBackground()
 </script>
-
-<template>
 @if(show)
 <div class="fixed inset-x-0 bottom-0 px-4 pb-6 sm:inset-0 sm:flex sm:items-center sm:justify-center sm:p-0 z-20" data-alert-modal>
   <!-- Backdrop -->
@@ -108,4 +106,3 @@
   </div>
 </div>
 @endif
-</template>

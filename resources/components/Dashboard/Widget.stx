@@ -19,9 +19,7 @@ const props = defineProps({
   icon: { type: String, default: '' },
 }
 </script>
-
-<template>
-  <div class="widget">
+<div class="widget">
     <div class="widget-header">
       @if (props.icon)
         <div class="widget-icon">{{ props.icon }}</div>
@@ -38,8 +36,6 @@ const props = defineProps({
       </div>
     @endif
   </div>
-</template>
-
 <style>
 .widget {
   background: var(--color-bg-card);

@@ -23,9 +23,7 @@
   const s3Driver = props.s3Driver || 's3'
   const s3Root = props.s3Root || 's3'
 </script>
-
-<template>
-  <form>
+<form>
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
       <div class="divide-y divide-gray-900/10">
@@ -259,4 +257,3 @@
       </button>
     </div>
   </form>
-</template>

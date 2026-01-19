@@ -46,8 +46,6 @@ const plans = props.plans || [
   },
 ]
 </script>
-
-<template>
 <section
   id="pricing"
   aria-label="Pricing"
@@ -115,4 +113,3 @@ const plans = props.plans || [
     </div>
   </Container>
 </section>
-</template>

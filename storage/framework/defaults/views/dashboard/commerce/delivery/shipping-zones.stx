@@ -171,8 +171,6 @@ const tabs = [
 </script>
 
 @title('Dashboard - Shipping Zones')
-
-<template>
 <div class="py-6">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
     <!-- Tab Navigation -->
@@ -426,8 +424,6 @@ const tabs = [
     </div>
   @endif
 </div>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

@@ -682,8 +682,6 @@ const getEventTypeIcon = (type: string) => {
 </script>
 
 @title('Dashboard - Serverless')
-
-<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Header -->
@@ -852,8 +850,6 @@ const getEventTypeIcon = (type: string) => {
     </div>
   </div>
 </div>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

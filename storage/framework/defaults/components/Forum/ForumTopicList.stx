@@ -1,8 +1,6 @@
 <script server>
 const title = props.title || ''
 </script>
-
-<template>
 <div class="mb-8">
   <div class="bg-gray-100 px-4 py-3 rounded-t-md flex items-center justify-between">
     <h2 class="text-lg font-bold">{{ title }}</h2>
@@ -19,4 +17,3 @@ const title = props.title || ''
     <slot />
   </div>
 </div>
-</template>

@@ -135,8 +135,6 @@ const totalPages = 1105
 </script>
 
 @title('Printer Logs - Analytics')
-
-<template>
 <main>
   <div class="relative isolate overflow-hidden">
     <div class="px-6 py-6 sm:px-6 lg:px-8">
@@ -341,4 +339,3 @@ const totalPages = 1105
     </div>
   </div>
 </main>
-</template>

@@ -19,8 +19,6 @@
     return paymentIntent?.payment_method?.card?.last4 || ''
   }
 </script>
-
-<template>
 <div class="sm:flex sm:items-center">
   <div class="sm:flex-auto">
     <h1 class="text-base text-gray-900 font-semibold leading-6">
@@ -84,4 +82,3 @@
     </div>
   </div>
 </div>
-</template>

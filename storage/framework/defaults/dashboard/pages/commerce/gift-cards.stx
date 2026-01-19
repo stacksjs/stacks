@@ -16,9 +16,7 @@ const stats = [
 
 const denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
 </script>
-
-<template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
       <div class="">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Gift Cards</h1>
@@ -117,8 +115,6 @@ const denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
       </div>
     </div>
   </div>
-</template>
-
 <style>
 .p-4 {
   padding: 1rem;

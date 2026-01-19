@@ -3,9 +3,7 @@
   const paymentMethods = props.paymentMethods || [] // Array of { id, brand, last_four, exp_month, exp_year }
   const loading = props.loading || false
 </script>
-
-<template>
-  <div class="mt-4">
+<div class="mt-4">
     @if(loading)
       <slot name="loading" />
     @else
@@ -48,4 +46,3 @@
       </ul>
     @endif
   </div>
-</template>

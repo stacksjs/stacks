@@ -2,8 +2,6 @@
 const visible = props.visible || false
 const currentTransition = props.currentTransition || 'fade'
 </script>
-
-<template>
 <div class="max-w-4xl">
   <DocsPlayground>
     <div class="space-y-4 mb-12 flex flex-col items-center justify-center h-[300px]">
@@ -61,8 +59,6 @@ const currentTransition = props.currentTransition || 'fade'
     </div>
   @endif
 </div>
-</template>
-
 <style>
 .fade-enter-active,
 .fade-leave-active {

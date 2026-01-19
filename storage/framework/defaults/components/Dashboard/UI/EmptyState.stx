@@ -6,9 +6,7 @@ const actionLabel = props.actionLabel || ''
 const actionIcon = props.actionIcon || ''
 const actionHref = props.actionHref || ''
 </script>
-
-<template>
-  <div class="flex flex-col items-center justify-center py-12 px-4 text-center">
+<div class="flex flex-col items-center justify-center py-12 px-4 text-center">
     <!-- Icon -->
     <div class="mb-4 p-4 rounded-full bg-neutral-100 dark:bg-neutral-800">
       @if(iconSlot)
@@ -46,4 +44,3 @@ const actionHref = props.actionHref || ''
     <!-- Custom action slot -->
     {{ actionSlot }}
   </div>
-</template>

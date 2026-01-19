@@ -27,9 +27,7 @@ const authors = [
   { name: 'Bob Wilson', posts: 19, views: '34,567', avgViews: '1,819' },
 ]
 </script>
-
-<template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
       <div class="">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Blog Analytics</h1>
@@ -123,4 +121,3 @@ const authors = [
       </div>
     </div>
   </div>
-</template>

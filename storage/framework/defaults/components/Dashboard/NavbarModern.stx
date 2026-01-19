@@ -38,8 +38,6 @@ function getNotificationCount() {
   return getProp('notificationCount', 3)
 }
 </script>
-
-<template>
 <header class="sticky top-0 z-40 h-14 flex items-center gap-4 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-700/50 px-4">
   <!-- Breadcrumb navigation -->
   <nav class="hidden lg:flex items-center gap-2 text-sm">
@@ -176,4 +174,3 @@ function getNotificationCount() {
     </div>
   </div>
 </header>
-</template>

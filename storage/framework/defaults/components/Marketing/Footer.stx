@@ -1,8 +1,6 @@
 <script server>
 const currentYear = props.currentYear || new Date().getFullYear()
 </script>
-
-<template>
 <footer class="bg-white">
   <Container>
     <div class="py-16">
@@ -29,4 +27,3 @@ const currentYear = props.currentYear || new Date().getFullYear()
     </div>
   </Container>
 </footer>
-</template>

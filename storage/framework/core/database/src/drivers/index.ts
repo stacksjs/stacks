@@ -12,6 +12,7 @@ export * from './mysql'
 export * from './postgres'
 export * from './sqlite'
 export * from './defaults'
+export * from './dynamodb'
 
 interface Range {
   min: number

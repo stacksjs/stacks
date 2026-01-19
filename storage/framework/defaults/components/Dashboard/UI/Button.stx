@@ -46,9 +46,7 @@ const buttonClass = [
   variantClasses[variant]
 ].join(' ')
 </script>
-
-<template>
-  @if(href)
+@if(href)
     <a href="{{ href }}" class="{{ buttonClass }}" @if(disabled) aria-disabled="true" @endif>
       @if(loading)
         <svg class="animate-spin h-3.5 w-3.5 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -69,4 +67,3 @@ const buttonClass = [
       <slot />
     </button>
   @endif
-</template>

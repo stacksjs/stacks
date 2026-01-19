@@ -30,8 +30,6 @@ function handleClose() {
   }
 }
 </script>
-
-<template>
 <DashboardLayout
   :show-window-controls="true"
   @minimize="handleMinimize"
@@ -46,18 +44,14 @@ function handleClose() {
           <div class="flex items-center justify-center py-12">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
           </div>
-        </template>
-      </Suspense>
+</Suspense>
     </Transition>
   </RouterView>
 
   <!-- Global toast notifications -->
   <template #overlays>
     <Toast />
-  </template>
 </DashboardLayout>
-</template>
-
 <style>
 body {
   @apply bg-neutral-100 dark:bg-neutral-950;

@@ -1,8 +1,6 @@
 <script server>
 const backgroundImage = props.backgroundImage || '/images/background-call-to-action.jpg'
 </script>
-
-<template>
 <section
   id="get-started-today"
   class="relative overflow-hidden bg-blue-600 py-32"
@@ -26,4 +24,3 @@ const backgroundImage = props.backgroundImage || '/images/background-call-to-act
     </div>
   </Container>
 </section>
-</template>

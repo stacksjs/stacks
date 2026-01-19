@@ -71,8 +71,6 @@ const models = getModels()
 const totalModels = models.length
 const totalRecords = models.reduce((sum, m) => sum + m.count, 0)
 </script>
-
-<template>
 <div class="space-y-6">
   <!-- Page Header -->
   <div class="flex items-center justify-between">
@@ -167,4 +165,3 @@ const totalRecords = models.reduce((sum, m) => sum + m.count, 0)
     </div>
   @endif
 </div>
-</template>

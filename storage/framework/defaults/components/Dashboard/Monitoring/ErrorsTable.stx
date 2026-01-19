@@ -54,8 +54,6 @@ function truncateMessage(message, maxLength = 60) {
   return `${message.substring(0, maxLength)}...`
 }
 </script>
-
-<template>
 <div class="overflow-hidden">
   <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
     <thead class="bg-gray-50 dark:bg-blue-gray-700">
@@ -181,4 +179,3 @@ function truncateMessage(message, maxLength = 60) {
     </tbody>
   </table>
 </div>
-</template>

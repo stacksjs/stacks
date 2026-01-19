@@ -4,8 +4,6 @@ const loading = props.loading || false
 const errors = props.errors || []
 const successMessage = props.successMessage || ''
 </script>
-
-<template>
 <div class="relative isolate overflow-hidden bg-white">
   <svg class="[mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)] absolute inset-0 h-full w-full stroke-gray-200 -z-10" aria-hidden="true">
     <defs>
@@ -84,4 +82,3 @@ const successMessage = props.successMessage || ''
     </div>
   </div>
 </div>
-</template>

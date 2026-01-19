@@ -90,8 +90,6 @@ const openFile = (file, line) => {
 }
 
 </script>
-
-<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="px-4 sm:px-6 lg:px-8">
     <!-- Header -->
@@ -392,8 +390,6 @@ const openFile = (file, line) => {
     @endif
   </div>
 </div>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

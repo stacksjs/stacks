@@ -28,9 +28,7 @@ const translateSizes = {
 
 const toggleId = id || 'toggle-' + Math.random().toString(36).slice(2, 11)
 </script>
-
-<template>
-  <div class="flex items-center gap-3 {{ labelPosition === 'left' ? 'flex-row-reverse justify-end' : '' }} {{ disabled ? 'opacity-60 cursor-not-allowed' : '' }}">
+<div class="flex items-center gap-3 {{ labelPosition === 'left' ? 'flex-row-reverse justify-end' : '' }} {{ disabled ? 'opacity-60 cursor-not-allowed' : '' }}">
     <input
       type="checkbox"
       id="{{ toggleId }}"
@@ -66,8 +64,6 @@ const toggleId = id || 'toggle-' + Math.random().toString(36).slice(2, 11)
       </div>
     @endif
   </div>
-</template>
-
 <style>
 input:checked + label {
   background-color: rgb(34 197 94);

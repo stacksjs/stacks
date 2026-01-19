@@ -1,9 +1,7 @@
 <script server>
   const deployments = props.deployments || [] // Array of deployment records
 </script>
-
-<template>
-  <div class="px-4 pt-12 lg:px-8 sm:px-6">
+<div class="px-4 pt-12 lg:px-8 sm:px-6">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
         <h1 class="text-base text-gray-900 font-semibold leading-6">
@@ -93,4 +91,3 @@
       </div>
     </div>
   </div>
-</template>

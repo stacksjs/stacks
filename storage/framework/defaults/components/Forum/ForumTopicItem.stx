@@ -16,9 +16,7 @@ const lastReplyAuthorName = props.lastReplyAuthorName || ''
 const lastReplyAuthorAvatar = props.lastReplyAuthorAvatar || ''
 const lastReplyAt = props.lastReplyAt || ''
 </script>
-
-<template>
-  <div class="flex items-start p-4 hover:bg-gray-50">
+<div class="flex items-start p-4 hover:bg-gray-50">
     <div class="flex-shrink-0 mr-4">
       <img src="{{ authorAvatar }}" alt="{{ authorName }}" class="w-10 h-10 rounded-full">
     </div>
@@ -73,4 +71,3 @@ const lastReplyAt = props.lastReplyAt || ''
       </div>
     @endif
   </div>
-</template>

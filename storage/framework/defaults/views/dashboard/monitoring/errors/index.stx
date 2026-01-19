@@ -174,8 +174,6 @@ function formatRelativeTime(date) {
 </script>
 
 @title('Dashboard - Error Tracking')
-
-<template>
 <DashboardLayout>
   <!-- Page Header -->
   <div class="mb-6">
@@ -231,8 +229,7 @@ function formatRelativeTime(date) {
           >
             <template #iconLeft>
               <div class="i-hugeicons-search-01 w-4 h-4" />
-            </template>
-          </Input>
+</Input>
           <Select
             v-model="statusFilter"
             :options="statusOptions"
@@ -249,9 +246,7 @@ function formatRelativeTime(date) {
           />
         </div>
       </div>
-    </template>
-
-    <!-- Errors Table -->
+<!-- Errors Table -->
     <Table
       :columns="columns"
       :data="paginatedErrors"
@@ -266,33 +261,23 @@ function formatRelativeTime(date) {
         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200">
           {{ value }}
         </span>
-      </template>
-
-      <template #cell-message="{ value }">
+<template #cell-message="{ value }">
         <span class="text-neutral-700 dark:text-neutral-200 line-clamp-1">
           {{ value }}
         </span>
-      </template>
-
-      <template #cell-count="{ value }">
+<template #cell-count="{ value }">
         <span class="inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200">
           {{ value }}
         </span>
-      </template>
-
-      <template #cell-status="{ value }">
+<template #cell-status="{ value }">
         <Badge :variant="getStatusVariant(value)" size="sm">
           {{ value }}
         </Badge>
-      </template>
-
-      <template #cell-last_seen="{ value }">
+<template #cell-last_seen="{ value }">
         <span class="text-sm text-neutral-500 dark:text-neutral-400">
           {{ formatRelativeTime(value) }}
         </span>
-      </template>
-
-      <template #actions="{ row }">
+<template #actions="{ row }">
         <div class="flex items-center gap-1">
           @if(row.status === 'unresolved')
             <Button
@@ -333,8 +318,7 @@ function formatRelativeTime(date) {
             <div class="i-hugeicons-delete-02 w-4 h-4 text-red-600" />
           </Button>
         </div>
-      </template>
-    </Table>
+</Table>
 
     <!-- Pagination -->
     <template #footer>
@@ -345,8 +329,7 @@ function formatRelativeTime(date) {
         :items-per-page="itemsPerPage"
         show-total-items
       />
-    </template>
-  </Card>
+</Card>
 
   <!-- Error Detail Modal -->
   <Modal
@@ -409,8 +392,7 @@ function formatRelativeTime(date) {
             >
               <template #iconLeft>
                 <div class="i-hugeicons-checkmark-circle-02 w-4 h-4" />
-              </template>
-              Resolve
+Resolve
             </Button>
           @endif
           @if(selectedError?.status === 'unresolved')
@@ -421,8 +403,7 @@ function formatRelativeTime(date) {
             >
               <template #iconLeft>
                 <div class="i-hugeicons-eye-off w-4 h-4" />
-              </template>
-              Ignore
+Ignore
             </Button>
           @endif
           @if(selectedError?.status !== 'unresolved')
@@ -433,8 +414,7 @@ function formatRelativeTime(date) {
             >
               <template #iconLeft>
                 <div class="i-hugeicons-refresh w-4 h-4" />
-              </template>
-              Unresolve
+Unresolve
             </Button>
           @endif
         </div>
@@ -446,16 +426,14 @@ function formatRelativeTime(date) {
           >
             <template #iconLeft>
               <div class="i-hugeicons-delete-02 w-4 h-4" />
-            </template>
-            Delete
+Delete
           </Button>
           <Button variant="ghost" size="sm" @click="close">
             Close
           </Button>
         </div>
       </div>
-    </template>
-  </Modal>
+</Modal>
 
   <!-- Delete Confirmation Modal -->
   <Modal
@@ -484,11 +462,8 @@ function formatRelativeTime(date) {
           Delete All
         </Button>
       </div>
-    </template>
-  </Modal>
+</Modal>
 </DashboardLayout>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

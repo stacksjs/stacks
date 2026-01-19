@@ -16,9 +16,7 @@ const props = defineProps({
   height: { type: String, default: '300px' },
 }
 </script>
-
-<template>
-  <div class="dashboard-chart" style="height: {{ props.height }};">
+<div class="dashboard-chart" style="height: {{ props.height }};">
     <div class="chart-placeholder">
       <div class="chart-icon">📊</div>
       <div class="chart-text">{{ props.type.charAt(0).toUpperCase() + props.type.slice(1) }} Chart</div>
@@ -36,8 +34,6 @@ const props = defineProps({
             </script>
     -->
   </div>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

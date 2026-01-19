@@ -432,8 +432,6 @@ function scrollToOrder(): void {
 </script>
 
 @title('Self-Service Menu')
-
-<template>
 <main>
   <div class="px-6 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
@@ -1016,8 +1014,6 @@ function scrollToOrder(): void {
     </div>
   @endif
 </main>
-</template>
-
 <style scoped>
 .receipt-container {
   background: #f1f1f1;

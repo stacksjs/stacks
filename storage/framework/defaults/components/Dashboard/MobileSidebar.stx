@@ -3,9 +3,7 @@
   const companyLogo = props.companyLogo || 'https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600'
   const companyName = props.companyName || 'Your Company'
 </script>
-
-<template>
-  @if(isOpen)
+@if(isOpen)
   <div
     class="relative z-50 lg:hidden"
     role="dialog"
@@ -43,4 +41,3 @@
     </div>
   </div>
   @endif
-</template>

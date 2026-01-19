@@ -509,8 +509,6 @@ let timeRange = 'day'
 </script>
 
 @title('Dashboard - Logs')
-
-<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Log Volume Chart -->
@@ -1014,8 +1012,6 @@ let timeRange = 'day'
     </div>
   </div>
 </div>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

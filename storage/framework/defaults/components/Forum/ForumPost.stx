@@ -8,8 +8,6 @@ const isOriginalPost = props.isOriginalPost || false
 const title = props.title || ''
 const isSolved = props.isSolved || false
 </script>
-
-<template>
 <div id="post-{{ id }}" class="border rounded-md mb-6">
   <div class="bg-gray-50 px-4 py-3 flex items-center justify-between rounded-t-md">
     <div class="flex items-center gap-2">
@@ -67,4 +65,3 @@ const isSolved = props.isSolved || false
     </div>
   </div>
 </div>
-</template>

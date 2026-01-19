@@ -56,8 +56,6 @@ const testimonials = props.testimonials || [
   ],
 ]
 </script>
-
-<template>
 <section
   id="testimonials"
   aria-label="What our customers are saying"
@@ -115,4 +113,3 @@ const testimonials = props.testimonials || [
     </ul>
   </Container>
 </section>
-</template>

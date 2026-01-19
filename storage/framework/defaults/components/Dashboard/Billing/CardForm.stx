@@ -1,9 +1,7 @@
 <script server>
   const clientSecret = props.clientSecret || ''
 </script>
-
-<template>
-  <div>
+<div>
     <form
       id="card-form"
       class="mt-8 border border-gray-200 p-8"
@@ -30,4 +28,3 @@
       </div>
     </form>
   </div>
-</template>

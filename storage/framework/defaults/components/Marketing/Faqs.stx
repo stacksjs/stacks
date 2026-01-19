@@ -46,8 +46,6 @@ const faqs = props.faqs || [
   ],
 ]
 </script>
-
-<template>
 <section
   id="faq"
   aria-labelledby="faq-title"
@@ -95,4 +93,3 @@ const faqs = props.faqs || [
     </ul>
   </Container>
 </section>
-</template>

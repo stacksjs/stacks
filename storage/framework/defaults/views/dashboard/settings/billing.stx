@@ -15,8 +15,6 @@ const { isEmpty, showCurrentPlan } = useBillable()
 const paymentStore = usePaymentStore()
 
 </script>
-
-<template>
 <div class="mx-auto px-4 py-8 container lg:px-8">
   <div id="subscribed">
     <TransactionHistory />
@@ -38,8 +36,6 @@ const paymentStore = usePaymentStore()
     </div>
   </div>
 </div>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

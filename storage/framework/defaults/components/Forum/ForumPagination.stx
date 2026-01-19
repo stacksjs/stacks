@@ -3,9 +3,7 @@ const currentPage = props.currentPage || 1
 const totalPages = props.totalPages || 1
 const pages = props.pages || []
 </script>
-
-<template>
-  <div class="flex items-center justify-center mt-8">
+<div class="flex items-center justify-center mt-8">
     <nav class="flex items-center gap-1">
       <a
         href="#"
@@ -35,4 +33,3 @@ const pages = props.pages || []
       </a>
     </nav>
   </div>
-</template>

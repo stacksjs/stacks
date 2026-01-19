@@ -12,9 +12,7 @@
   const stripeAppId = props.stripeAppId || ''
   const stripeAppKey = props.stripeAppKey || ''
 </script>
-
-<template>
-  <form>
+<form>
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
       <div class="divide-y divide-gray-900/10">
@@ -190,4 +188,3 @@
       </button>
     </div>
   </form>
-</template>

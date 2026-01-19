@@ -25,9 +25,7 @@ const trendClasses = {
   neutral: 'text-neutral-500 dark:text-neutral-400'
 }
 </script>
-
-<template>
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5 p-5 transition-all duration-150 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-black/20">
+<div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5 p-5 transition-all duration-150 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-black/20">
     <div class="flex items-start justify-between">
       <div class="flex-1 min-w-0">
         <p class="text-[13px] font-medium text-neutral-500 dark:text-neutral-400 truncate tracking-tight">
@@ -75,4 +73,3 @@ const trendClasses = {
 
     <slot />
   </div>
-</template>

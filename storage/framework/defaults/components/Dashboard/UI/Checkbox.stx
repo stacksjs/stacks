@@ -17,9 +17,7 @@ const sizeClasses = {
 
 const checkboxId = id || 'checkbox-' + Math.random().toString(36).slice(2, 11)
 </script>
-
-<template>
-  <div class="relative flex {{ label || description ? 'gap-3' : '' }} {{ disabled ? 'opacity-60 cursor-not-allowed' : '' }}">
+<div class="relative flex {{ label || description ? 'gap-3' : '' }} {{ disabled ? 'opacity-60 cursor-not-allowed' : '' }}">
     <div class="flex items-start pt-0.5">
       <input
         type="checkbox"
@@ -61,8 +59,6 @@ const checkboxId = id || 'checkbox-' + Math.random().toString(36).slice(2, 11)
   @if(error)
     <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
   @endif
-</template>
-
 <style>
 input:checked + label {
   background-color: rgb(37 99 235);

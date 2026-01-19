@@ -8,9 +8,7 @@ const stats = props.stats || {
 const popularTopics = props.popularTopics || []
 const onlineUsers = props.onlineUsers || []
 </script>
-
-<template>
-  <div class="space-y-6">
+<div class="space-y-6">
     <!-- Search -->
     <div class="border rounded-md p-4">
       <h3 class="font-medium mb-3">Search</h3>
@@ -81,4 +79,3 @@ const onlineUsers = props.onlineUsers || []
       </div>
     </div>
   </div>
-</template>

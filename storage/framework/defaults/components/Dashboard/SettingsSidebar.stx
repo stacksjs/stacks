@@ -1,9 +1,7 @@
 <script server>
   const currentPath = props.currentPath || 'ai'
 </script>
-
-<template>
-  <header class="border-b border-gray-200 p-4 lg:w-92 dark:border-gray-600 lg:p-8 sm:p-6">
+<header class="border-b border-gray-200 p-4 lg:w-92 dark:border-gray-600 lg:p-8 sm:p-6">
     <div class="w-full rounded-lg bg-white p-4 shadow-sm">
       <h3 class="text-gray-700 font-semibold md:text-sm">
         Stacks Settings
@@ -225,8 +223,6 @@
       </ul>
     </nav>
   </header>
-</template>
-
 <style>
 .sidebar-links {
   @apply text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold

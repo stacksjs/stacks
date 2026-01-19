@@ -532,8 +532,6 @@ function bulkChangeStatus(status) {
 </script>
 
 @title('Dashboard - Marketing Lists')
-
-<template>
 <main>
     <div class="px-6 py-6 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-7xl">
@@ -1335,5 +1333,3 @@ function bulkChangeStatus(status) {
     </div>
     @endif
   </main>
-</template>
-

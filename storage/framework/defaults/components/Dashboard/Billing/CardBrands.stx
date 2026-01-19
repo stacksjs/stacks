@@ -23,9 +23,6 @@
 
   const logoSrc = getLogoSrc(brand)
 </script>
-
-<template>
-  <div style="width: {{ width }}rem">
+<div style="width: {{ width }}rem">
     <img src="{{ logoSrc }}" alt="{{ brand }} Logo">
   </div>
-</template>

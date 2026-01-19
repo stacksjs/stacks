@@ -15,9 +15,7 @@ const customStats = [
   { label: 'Custom Metric 2', value: '456' },
 ]
 </script>
-
-<template>
-  <div class="page-container">
+<div class="page-container">
     <div class="page-header">
       <div class="page-header-content">
         <h1>{{ pageTitle }}</h1>
@@ -45,4 +43,3 @@ const customStats = [
       </div>
     </div>
   </div>
-</template>

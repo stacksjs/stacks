@@ -2,8 +2,6 @@
   const width = props.width || 30 // in rem
   const position = props.position || 'top-right' // 'center' | 'top' | 'top-right' | 'top-left'
 </script>
-
-<template>
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <div class="fixed inset-0"></div>
 
@@ -31,4 +29,3 @@
     </div>
   </div>
 </div>
-</template>

@@ -16,8 +16,6 @@ function getStatus(conclusion) {
   return 'Failed'
 }
 </script>
-
-<template>
 @if(gitStore.workflowRun)
   <div class="px-4 py-8 lg:px-8 sm:px-6">
     <div class="rounded-lg bg-white px-6 py-8 text-sm dark:bg-blue-gray-800">
@@ -289,8 +287,6 @@ function getStatus(conclusion) {
     </div>
   </div>
 @endif
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

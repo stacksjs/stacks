@@ -36,9 +36,7 @@ function getClasses() {
 
 const classes = getClasses()
 </script>
-
-<template>
-  @if(href)
+@if(href)
     <a
       href="{{ href }}"
       class="{{ classes }}"
@@ -76,4 +74,3 @@ const classes = getClasses()
       {{ trailingSlot }}
     </button>
   @endif
-</template>

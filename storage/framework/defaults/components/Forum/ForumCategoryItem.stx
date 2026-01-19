@@ -7,9 +7,7 @@ const postCount = props.postCount || 0
 const icon = props.icon || 'i-hugeicons-chat'
 const latestTopic = props.latestTopic || null
 </script>
-
-<template>
-  <div class="flex items-start p-4 hover:bg-gray-50">
+<div class="flex items-start p-4 hover:bg-gray-50">
     <div class="flex-shrink-0 mr-4">
       <div class="{{ icon }} w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-500"></div>
     </div>
@@ -42,4 +40,3 @@ const latestTopic = props.latestTopic || null
       </div>
     @endif
   </div>
-</template>

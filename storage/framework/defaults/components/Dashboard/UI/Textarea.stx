@@ -42,9 +42,7 @@ const textareaClass = [
 
 const textareaId = id || 'textarea-' + Math.random().toString(36).slice(2, 11)
 </script>
-
-<template>
-  <div>
+<div>
     @if(label || (showCount && maxLength))
       <div class="flex items-center justify-between mb-1.5">
         @if(label)
@@ -89,4 +87,3 @@ const textareaId = id || 'textarea-' + Math.random().toString(36).slice(2, 11)
       <p class="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">{{ hint }}</p>
     @endif
   </div>
-</template>

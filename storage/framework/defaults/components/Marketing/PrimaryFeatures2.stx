@@ -28,8 +28,6 @@ const features = props.features || [
 const selectedIndex = props.selectedIndex || 0
 const tabOrientation = props.tabOrientation || 'vertical'
 </script>
-
-<template>
 <section
   id="features"
   aria-label="Features for running your books"
@@ -95,4 +93,3 @@ const tabOrientation = props.tabOrientation || 'vertical'
     </div>
   </Container>
 </section>
-</template>

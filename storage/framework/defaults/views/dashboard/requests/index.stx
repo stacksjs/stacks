@@ -165,8 +165,6 @@ const barChartOptions = {
 </script>
 
 @title('Dashboard - Requests')
-
-<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="mb-8 px-4 lg:px-8 sm:px-6">
     <div>
@@ -444,4 +442,3 @@ const barChartOptions = {
     </div>
   </div>
 </div>
-</template>

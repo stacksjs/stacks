@@ -21,9 +21,7 @@ const resources = [
   { name: 'stacks-site', type: 'Pages', provider: 'Cloudflare', status: 'active', cost: '$0/mo' },
 ]
 </script>
-
-<template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
       <div class="">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Cloud</h1>
@@ -108,4 +106,3 @@ const resources = [
       </div>
     </div>
   </div>
-</template>

@@ -28,9 +28,7 @@ const devices = [
   { device: 'Tablet', percentage: 7 },
 ]
 </script>
-
-<template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
       <div class="">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Web Analytics</h1>
@@ -132,8 +130,6 @@ const devices = [
       </div>
     </div>
   </div>
-</template>
-
 <style>
 .progress-bar {
   height: 6px;

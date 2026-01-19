@@ -20,9 +20,7 @@ const recentTransactions = [
   { id: 'TXN-5675', terminal: 'POS-002', amount: '$12.00', method: 'Card', time: '15m ago' },
 ]
 </script>
-
-<template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
       <div class="">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Point of Sale</h1>
@@ -91,4 +89,3 @@ const recentTransactions = [
       </div>
     </div>
   </div>
-</template>

@@ -1,5 +1,4 @@
-<template>
-  <div>
+<div>
     <!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
     <MobileSidebar />
     <Sidebar />
@@ -14,8 +13,6 @@
       <Toast />
     </div>
   </div>
-</template>
-
 <style>
 body {
   @apply dark:bg-blue-gray-900 bg-blue-gray-50;

@@ -73,9 +73,7 @@ function getBgColorIndex(fullName) {
 
 const bgColor = name ? bgColors[getBgColorIndex(name)] : 'bg-black/[0.06] text-neutral-500 dark:bg-white/10 dark:text-neutral-400'
 </script>
-
-<template>
-  <div class="relative inline-flex flex-shrink-0">
+<div class="relative inline-flex flex-shrink-0">
     @if(src)
       <img
         src="{{ src }}"
@@ -98,4 +96,3 @@ const bgColor = name ? bgColors[getBgColorIndex(name)] : 'bg-black/[0.06] text-n
       <span class="absolute bottom-0 right-0 rounded-full ring-2 ring-white dark:ring-neutral-900 {{ statusColors[status] }} {{ statusSizes[size] }}"></span>
     @endif
   </div>
-</template>

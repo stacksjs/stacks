@@ -3,9 +3,7 @@
   const price = props.price || '$0.00'
   const paymentIntent = props.paymentIntent || ''
 </script>
-
-<template>
-  <div>
+<div>
     <form id="payment-form">
       <div id="link-authentication-element"></div>
       <div id="payment-element"></div>
@@ -29,4 +27,3 @@
       </div>
     </form>
   </div>
-</template>

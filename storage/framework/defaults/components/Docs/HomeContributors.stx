@@ -1,9 +1,7 @@
 <script server>
 const contributors = props.contributors || []
 </script>
-
-<template>
-  <div class="vp-doc">
+<div class="vp-doc">
     <h2 class="pb-2 pt-5 font-normal op50">
       Contributors
     </h2>
@@ -19,4 +17,3 @@ const contributors = props.contributors || []
     </div>
     <br>
   </div>
-</template>

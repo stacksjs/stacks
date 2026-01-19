@@ -42,9 +42,6 @@ const cardClass = [
   clickableClass
 ].join(' ')
 </script>
-
-<template>
 <div class="{{ cardClass }}">
   <slot />
 </div>
-</template>

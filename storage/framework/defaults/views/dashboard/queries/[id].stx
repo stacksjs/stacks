@@ -152,8 +152,6 @@ const queryTypeBadges = {
 }
 
 </script>
-
-<template>
 <div class="min-h-screen">
   <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-6 bg-white px-4 py-4 shadow-sm dark:bg-blue-gray-900 sm:px-6 lg:px-8">
     <div>
@@ -383,8 +381,6 @@ const queryTypeBadges = {
     @endif
   </main>
 </div>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

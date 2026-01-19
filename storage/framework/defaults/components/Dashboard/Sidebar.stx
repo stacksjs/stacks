@@ -153,8 +153,6 @@ function getSidebarClass() {
   return isSidebarCollapsed ? 'lg:w-20' : 'lg:w-64'
 }
 </script>
-
-<template>
 <div>
   <!-- Static sidebar for desktop -->
   <div class="hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col transition-all duration-300 ease-in-out {{ getSidebarClass() }}">
@@ -298,8 +296,6 @@ function getSidebarClass() {
     </div>
   </div>
 </div>
-</template>
-
 <style scoped>
 /* Add transition for sidebar collapse */
 .sidebar-links {

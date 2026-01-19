@@ -3,8 +3,6 @@ const title = props.title || ''
 const description = props.description || ''
 const link = props.link || ''
 </script>
-
-<template>
 <div class="flex flex-col items-center gap-3">
   <div class="dropdownWrapper">
     <div class="toast"></div>
@@ -26,8 +24,6 @@ const link = props.link || ''
     Github
   </a>
 </div>
-</template>
-
 <style>
 .dropdownWrapper {
   display: flex;

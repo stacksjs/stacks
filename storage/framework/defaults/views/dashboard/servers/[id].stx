@@ -129,8 +129,6 @@ const commonPorts = [
 </script>
 
 @title('Server Details')
-
-<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Header -->
@@ -362,4 +360,3 @@ const commonPorts = [
     </div>
   </div>
 </div>
-</template>

@@ -15,9 +15,7 @@
     return 'Just now'
   }
 </script>
-
-<template>
-  <aside class="bg-black/2 lg:fixed lg:bottom-0 lg:right-0 lg:top-16 lg:w-96 lg:overflow-y-auto lg:border-l lg:border-white/5">
+<aside class="bg-black/2 lg:fixed lg:bottom-0 lg:right-0 lg:top-16 lg:w-96 lg:overflow-y-auto lg:border-l lg:border-white/5">
     <header class="flex items-center justify-between border-b border-white/5 px-4 py-4 lg:px-8 sm:px-6 sm:py-6">
       <h2 class="text-base font-semibold leading-7 dark:text-white">
         Activity feed
@@ -50,4 +48,3 @@
       </ul>
     @endif
   </aside>
-</template>

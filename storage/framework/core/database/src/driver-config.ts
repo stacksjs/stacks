@@ -76,6 +76,23 @@ export interface DynamoDbConfig {
   prefix?: string
   /** DynamoDB endpoint (for local development) */
   endpoint?: string
+  /** Default table name (for single-table design) */
+  tableName?: string
+  /** Single-table design configuration */
+  singleTable?: {
+    /** Enable single-table design */
+    enabled?: boolean
+    /** Partition key attribute name (default: 'pk') */
+    pkAttribute?: string
+    /** Sort key attribute name (default: 'sk') */
+    skAttribute?: string
+    /** Entity type attribute name (default: '_et') */
+    entityTypeAttribute?: string
+    /** Key delimiter (default: '#') */
+    keyDelimiter?: string
+    /** Number of GSIs to use (default: 5) */
+    gsiCount?: number
+  }
 }
 
 /**

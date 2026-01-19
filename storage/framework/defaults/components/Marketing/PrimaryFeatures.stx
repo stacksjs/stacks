@@ -24,8 +24,6 @@ const features = props.features || [
 
 const selectedIndex = props.selectedIndex || 0
 </script>
-
-<template>
 <section id="features" aria-label="Features for running your books" class="relative overflow-hidden bg-blue-600 pb-28 pt-20 sm:py-32">
   <Container class="relative">
     <div class="max-w-2xl md:mx-auto xl:max-w-none md:text-center">
@@ -76,4 +74,3 @@ const selectedIndex = props.selectedIndex || 0
     </div>
   </Container>
 </section>
-</template>

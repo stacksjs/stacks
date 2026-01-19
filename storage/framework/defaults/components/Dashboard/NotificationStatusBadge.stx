@@ -11,11 +11,8 @@
 
   const colorClass = statusColors[status] || 'text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 ring-gray-600/20'
 </script>
-
-<template>
-  <span
+<span
     class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset {{ colorClass }}"
   >
     {{ status }}
   </span>
-</template>

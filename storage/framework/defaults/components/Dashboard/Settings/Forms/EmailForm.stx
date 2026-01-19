@@ -6,9 +6,7 @@
   const charset = props.charset || 'UTF-8'
   const scanServer = props.scanServer !== undefined ? props.scanServer : true
 </script>
-
-<template>
-  <form>
+<form>
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
       <div class="divide-y divide-gray-900/10">
@@ -96,4 +94,3 @@
       </button>
     </div>
   </form>
-</template>

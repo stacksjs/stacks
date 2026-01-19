@@ -339,8 +339,6 @@ async function confirmDelete(): Promise<void> {
 </script>
 
 @title('Dashboard - Commerce Coupons')
-
-<template>
 <main>
   <div class="px-6 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
@@ -565,8 +563,6 @@ async function confirmDelete(): Promise<void> {
     </div>
   @endif
 </main>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

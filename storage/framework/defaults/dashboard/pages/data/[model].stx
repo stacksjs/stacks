@@ -40,8 +40,6 @@ try {
   error = e.message
 }
 </script>
-
-<template>
 <DashboardLayout pageTitle="{{ modelName }}" pageDescription="View and manage {{ modelName }} data">
   <div class="p-6">
     <!-- Header -->
@@ -168,4 +166,3 @@ try {
     @endif
   </div>
 </DashboardLayout>
-</template>

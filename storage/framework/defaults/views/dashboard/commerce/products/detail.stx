@@ -138,8 +138,6 @@ function deleteProduct(): void {
   // router.push('/commerce/products')
 }
 </script>
-
-<template>
 <main>
   <div class="container mx-auto px-4 py-8">
     <!-- Loading state -->
@@ -539,8 +537,6 @@ function deleteProduct(): void {
     @endif
   </div>
 </main>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

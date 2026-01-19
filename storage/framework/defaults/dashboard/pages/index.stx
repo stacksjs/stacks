@@ -66,8 +66,6 @@ const activities = [
   }))
 ].slice(0, 5)
 </script>
-
-<template>
 <DashboardLayout pageTitle="Dashboard" pageDescription="Welcome back! Here's what's happening with your application.">
   <div class="p-6">
     <!-- Header Actions -->
@@ -175,4 +173,3 @@ const activities = [
     </div>
   </div>
 </DashboardLayout>
-</template>

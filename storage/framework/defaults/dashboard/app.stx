@@ -243,9 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
   console.log('Stacks Dashboard loaded');
 });
 </script>
-
-<template>
-  @craft({ debug: true })
+@craft({ debug: true })
 
   <div id="app" data-page="home">
     <!-- Home Dashboard -->
@@ -445,8 +443,6 @@ document.addEventListener('DOMContentLoaded', function() {
       @include('./pages/utilities/settings')
     </div>
   </div>
-</template>
-
 <style>
 @import './styles/base.css';
 </style>

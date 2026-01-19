@@ -16,9 +16,7 @@ const functions = [
   { name: 'capitalize', category: 'String', calls: 423, description: 'Capitalize first letter' },
 ]
 </script>
-
-<template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
       <div class="">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Functions</h1>
@@ -64,4 +62,3 @@ const functions = [
       </div>
     </div>
   </div>
-</template>

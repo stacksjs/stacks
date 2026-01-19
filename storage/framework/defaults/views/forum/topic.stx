@@ -1,8 +1,6 @@
 <script server>
 const topicId = 0
 </script>
-
-<template>
 <ForumLayout route="forum-topic">
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     <div class="lg:col-span-2">
@@ -143,4 +141,3 @@ bun add -d @types/express-session
     </div>
   </div>
 </ForumLayout>
-</template>

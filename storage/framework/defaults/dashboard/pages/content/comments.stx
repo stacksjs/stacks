@@ -6,9 +6,7 @@ const comments = [
   { author: 'Anonymous', email: 'spam@spam.com', content: 'Buy cheap products...', post: 'Getting Started', status: 'spam', date: '2024-01-08' },
 ]
 </script>
-
-<template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
       <div class="">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Comments</h1>
@@ -63,4 +61,3 @@ const comments = [
       </div>
     </div>
   </div>
-</template>

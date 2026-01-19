@@ -6,9 +6,7 @@
   const argon2Threads = props.argon2Threads || '1'
   const argon2Time = props.argon2Time || '1'
 </script>
-
-<template>
-  <form>
+<form>
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
       <div class="divide-y divide-gray-900/10">
@@ -115,4 +113,3 @@
       </button>
     </div>
   </form>
-</template>

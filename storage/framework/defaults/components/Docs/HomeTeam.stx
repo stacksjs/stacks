@@ -1,9 +1,7 @@
 <script server>
 const coreTeamMembers = props.coreTeamMembers || []
 </script>
-
-<template>
-  <div class="vp-doc">
+<div class="vp-doc">
     <h2 class="pb-2 pt-5 font-normal op50">
       Meet The Team
     </h2>
@@ -14,4 +12,3 @@ const coreTeamMembers = props.coreTeamMembers || []
       <TeamMember data="{{ member }}" />
     @endforeach
   </div>
-</template>

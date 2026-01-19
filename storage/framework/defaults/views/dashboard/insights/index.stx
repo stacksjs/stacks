@@ -416,8 +416,6 @@ const statsCards = [
 </script>
 
 @title('Dashboard - Insights')
-
-<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <!-- Stats Overview -->
   <div class="mb-8 px-4 lg:px-8 sm:px-6">
@@ -882,5 +880,3 @@ const statsCards = [
     </div>
   </div>
 </div>
-</template>
-

@@ -40,8 +40,6 @@ function shouldShowWebSidebar() {
   return getProp('showSidebar', true) && !hasNativeSidebar
 }
 </script>
-
-<template>
 <!-- macOS-inspired layout with subtle background -->
 <div class="min-h-screen bg-white dark:bg-neutral-950">
   <!-- Mobile sidebar overlay -->
@@ -124,4 +122,3 @@ function shouldShowWebSidebar() {
   <!-- Global overlays/modals slot -->
   <slot name="overlays" />
 </div>
-</template>

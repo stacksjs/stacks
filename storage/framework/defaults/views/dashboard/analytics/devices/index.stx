@@ -221,8 +221,6 @@ let deviceTrendChart: Chart | null = null
 </script>
 
 @title('Dashboard - Device Analytics')
-
-<template>
 <main>
   <div class="px-6 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
@@ -438,8 +436,6 @@ let deviceTrendChart: Chart | null = null
     </div>
   </div>
 </main>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

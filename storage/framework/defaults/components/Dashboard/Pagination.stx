@@ -5,9 +5,7 @@
   const from = props.from || 1
   const to = props.to || 20
 </script>
-
-<template>
-  <div class="flex items-center justify-between border-t border-gray-200 rounded-bl-lg rounded-br-lg bg-white px-4 py-3 dark:border-gray-600 dark:bg-blue-gray-800 sm:px-6">
+<div class="flex items-center justify-between border-t border-gray-200 rounded-bl-lg rounded-br-lg bg-white px-4 py-3 dark:border-gray-600 dark:bg-blue-gray-800 sm:px-6">
     <div class="flex flex-1 justify-between sm:hidden">
       <a
         href="#"
@@ -86,4 +84,3 @@
       </div>
     </div>
   </div>
-</template>

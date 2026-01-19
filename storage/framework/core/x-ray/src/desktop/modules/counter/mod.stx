@@ -3,9 +3,7 @@
 
 let count = 0
 </script>
-
-<template>
-  <v-card
+<v-card
     prepend-icon="mdi-counter"
     title="Counter"
     subtitle="See how to count"

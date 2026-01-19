@@ -3,9 +3,7 @@
   const subject = props.subject || ''
   const body = props.body || ''
 </script>
-
-<template>
-  <div class="w-full md:w-2/3 lg:w-3/5 bg-white dark:bg-blue-gray-700 flex flex-col">
+<div class="w-full md:w-2/3 lg:w-3/5 bg-white dark:bg-blue-gray-700 flex flex-col">
     <div class="py-2 px-4 border-b border-gray-200 dark:border-blue-gray-600 flex items-center justify-between">
       <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
         New Message
@@ -68,4 +66,3 @@
       </div>
     </div>
   </div>
-</template>

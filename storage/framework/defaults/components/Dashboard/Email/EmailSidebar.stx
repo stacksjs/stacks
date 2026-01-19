@@ -14,9 +14,7 @@
     return unreadCounts[folderId] || 0
   }
 </script>
-
-<template>
-  <div class="w-64 flex flex-col border-r border-gray-200 dark:border-blue-gray-600 bg-white dark:bg-blue-gray-800">
+<div class="w-64 flex flex-col border-r border-gray-200 dark:border-blue-gray-600 bg-white dark:bg-blue-gray-800">
     <!-- User dropdown -->
     <div class="p-3 border-b border-gray-200 dark:border-blue-gray-600">
       <div class="flex items-center justify-between">
@@ -129,4 +127,3 @@
       </div>
     </div>
   </div>
-</template>

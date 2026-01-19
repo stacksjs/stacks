@@ -1,7 +1,4 @@
 <script server>
 // X-Ray Desktop App - placeholder
 </script>
-
-<template>
-  <div />
-</template>
+<div />

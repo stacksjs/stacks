@@ -2,9 +2,7 @@
   const modelValue = props.modelValue || ''
   const timeRange = props.timeRange || 'day' // 'day' | 'week' | 'month' | 'year'
 </script>
-
-<template>
-  <div class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 py-2 px-4">
+<div class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 py-2 px-4">
     <div class="flex items-center">
       <!-- Search bar -->
       <div class="flex-1 max-w-2xl">
@@ -36,4 +34,3 @@
       </div>
     </div>
   </div>
-</template>

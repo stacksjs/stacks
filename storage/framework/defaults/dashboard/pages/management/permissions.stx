@@ -21,9 +21,7 @@ const recentChanges = [
   { user: 'admin@example.com', action: 'Created role', target: 'Moderator', time: '3d ago' },
 ]
 </script>
-
-<template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
       <div class="">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Permissions</h1>
@@ -93,4 +91,3 @@ const recentChanges = [
       </div>
     </div>
   </div>
-</template>

@@ -40,12 +40,8 @@ async function handleLogin(credentials) {
 </script>
 
 @title('Login - Stacks Dashboard')
-
-<template>
 <Login
   @submit="handleLogin"
   :isLoading="isLoading"
   :error="error"
 />
-</template>
-

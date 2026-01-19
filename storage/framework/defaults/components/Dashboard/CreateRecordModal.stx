@@ -61,8 +61,6 @@ function isSelectField(col) {
   return name === 'status' || name === 'type' || name === 'role' || name.includes('_type') || name.includes('_status')
 }
 </script>
-
-<template>
 <!-- Native-styled Modal Dialog -->
 <dialog
   id="{{ modalId }}"
@@ -197,8 +195,6 @@ function isSelectField(col) {
     </div>
   </form>
 </dialog>
-</template>
-
 <script client>
 (function() {
   // Initialize all create record modals

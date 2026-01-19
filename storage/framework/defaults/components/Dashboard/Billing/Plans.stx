@@ -12,9 +12,7 @@
   const proYearlyPrice = props.proYearlyPrice || 579
   const proLifetimePrice = props.proLifetimePrice || 749
 </script>
-
-<template>
-  <div class="w-full">
+<div class="w-full">
     <div class="flex items-center justify-between">
       <div class="flex items-center space-x-2">
         <h2 class="text-lg text-gray-900 font-medium">
@@ -132,4 +130,3 @@
       </div>
     @endif
   </div>
-</template>

@@ -165,8 +165,6 @@ const analyzeWithAI = async (errorId) => {
 </script>
 
 @title('Dashboard - Errors')
-
-<template>
 <div class="min-h-screen py-8 dark:bg-blue-gray-800">
   <div class="px-4 sm:px-6 lg:px-8">
     <!-- Header -->
@@ -414,5 +412,3 @@ const analyzeWithAI = async (errorId) => {
     </div>
   </div>
 </div>
-</template>
-

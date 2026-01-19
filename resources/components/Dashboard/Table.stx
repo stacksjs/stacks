@@ -18,9 +18,7 @@ const props = defineProps({
   hoverable: { type: Boolean, default: true },
 }
 </script>
-
-<template>
-  <div class="dashboard-table-container">
+<div class="dashboard-table-container">
     <table class="dashboard-table {{ props.striped ? 'striped' : '' }} {{ props.hoverable ? 'hoverable' : '' }}">
       <thead>
         <tr>
@@ -48,8 +46,6 @@ const props = defineProps({
       </tbody>
     </table>
   </div>
-</template>
-
 <style>
 .dashboard-table-container {
   overflow-x: auto;

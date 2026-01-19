@@ -455,8 +455,6 @@ function inboxUnreadCount() {
 </script>
 
 @title('Mail - Your Inbox')
-
-<template>
 <div class="min-h-screen bg-white dark:bg-blue-gray-800">
   <div class="flex h-screen">
     <!-- Sidebar -->
@@ -791,8 +789,6 @@ function inboxUnreadCount() {
     </div>
   </div>
 </div>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

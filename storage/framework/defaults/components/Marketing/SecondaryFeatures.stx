@@ -25,8 +25,6 @@ const features = props.features || [
 
 const selectedIndex = props.selectedIndex || 0
 </script>
-
-<template>
 <section id="secondary-features" aria-label="Features for simplifying everyday business tasks" class="pb-14 pt-20 lg:pb-32 sm:pb-20 sm:pt-32">
   <Container>
     <div class="mx-auto max-w-2xl md:text-center">
@@ -76,4 +74,3 @@ const selectedIndex = props.selectedIndex || 0
     </div>
   </Container>
 </section>
-</template>

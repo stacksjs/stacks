@@ -32,8 +32,6 @@ function getMenuSections(items) {
   return sections
 }
 </script>
-
-<template>
 <div class="max-w-4xl">
   <DocsPlayground>
     <div class="space-y-4 mb-12 flex flex-col items-center justify-center h-[200px]">
@@ -73,8 +71,6 @@ function getMenuSections(items) {
     </div>
   </DocsPlayground>
 </div>
-</template>
-
 <style>
 .rotate-180 {
   transform: rotate(180deg);

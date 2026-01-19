@@ -28,9 +28,7 @@
     { names: 'HelloWorld, AppHelloWorld', description: 'The Hello World custom element, built via this framework.', attributes: 'name : greeting' }
   ]
 </script>
-
-<template>
-  <form>
+<form>
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
       <div class="divide-y divide-gray-900/10">
@@ -386,4 +384,3 @@
       </button>
     </div>
   </form>
-</template>

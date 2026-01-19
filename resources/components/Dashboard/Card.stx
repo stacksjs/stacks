@@ -17,9 +17,7 @@ const props = defineProps({
   padding: { type: Boolean, default: true },
 }
 </script>
-
-<template>
-  <div class="dashboard-card">
+<div class="dashboard-card">
     @if (props.title || props.actions.length > 0)
       <div class="dashboard-card-header">
         <div>
@@ -45,8 +43,6 @@ const props = defineProps({
       <slot></slot>
     </div>
   </div>
-</template>
-
 <style>
 .dashboard-card {
   background: var(--color-bg-card);

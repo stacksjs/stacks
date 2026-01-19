@@ -6,9 +6,7 @@ const plans = props.plans || [
 ]
 const selected = props.selected || plans[0]
 </script>
-
-<template>
-  <div class="max-w-4xl">
+<div class="max-w-4xl">
     <DocsPlayground>
       <div class="space-y-2">
         @foreach(plans as plan)
@@ -48,4 +46,3 @@ const selected = props.selected || plans[0]
       </div>
     </DocsPlayground>
   </div>
-</template>

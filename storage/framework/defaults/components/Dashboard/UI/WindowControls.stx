@@ -37,8 +37,6 @@
   // Check if running in native app
   const isNative = isCraftNative()
 </script>
-
-<template>
 @if(variant == 'macos')
   <div class="flex items-center {{ config.gap }}" data-window-controls>
     <!-- Close button -->
@@ -126,8 +124,6 @@
     </button>
   </div>
 @endif
-</template>
-
 <style>
 [data-window-controls]:hover button svg {
   display: block;

@@ -41,8 +41,6 @@
 
   const inputId = id || 'input-' + Math.random().toString(36).slice(2, 11)
 </script>
-
-<template>
 <div class="{{ fullWidth ? 'w-full' : '' }}">
   @if(label)
     <label for="{{ inputId }}" class="block text-[13px] font-medium mb-1.5 tracking-tight {{ error ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-neutral-400' }}">
@@ -73,4 +71,3 @@
     <p class="mt-1.5 text-sm text-stone-500 dark:text-neutral-400">{{ hint }}</p>
   @endif
 </div>
-</template>

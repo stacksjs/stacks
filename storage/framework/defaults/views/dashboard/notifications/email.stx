@@ -182,8 +182,6 @@ const closeErrorModal = () => {
 </script>
 
 @title('Dashboard - Email Notifications')
-
-<template>
 <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Header -->
@@ -400,8 +398,6 @@ const closeErrorModal = () => {
     @close="closeErrorModal"
   />
 </div>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

@@ -30,9 +30,7 @@ function getVariant() {
   return props.variant || 'macos'
 }
 </script>
-
-<template>
-  @if(getVariant() === 'macos')
+@if(getVariant() === 'macos')
     <!-- macOS-style traffic light controls -->
     <div class="flex items-center {{ getGapClass() }} group">
       <!-- Close button (red) -->
@@ -112,4 +110,3 @@ function getVariant() {
       </button>
     </div>
   @endif
-</template>

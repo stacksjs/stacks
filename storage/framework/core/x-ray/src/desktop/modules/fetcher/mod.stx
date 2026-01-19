@@ -22,9 +22,7 @@ async function makeRequest() {
   }
 }
 </script>
-
-<template>
-  <v-card
+<v-card
     prepend-icon="mdi-earth"
     title="Fetcher"
     subtitle="Make request and get content"

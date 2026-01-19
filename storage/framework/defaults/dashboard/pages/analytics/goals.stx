@@ -21,9 +21,7 @@ const conversions = [
   { funnel: 'Trial → Paid', rate: '24.5%', visitors: '668', conversions: '164' },
 ]
 </script>
-
-<template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
       <div class="">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Goals & Conversions</h1>
@@ -118,4 +116,3 @@ const conversions = [
       </div>
     </div>
   </div>
-</template>

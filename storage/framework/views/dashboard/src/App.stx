@@ -1,7 +1,4 @@
 <script server>
   // import './globals.css'
 </script>
-
-<template>
-  <slot />
-</template>
+<slot />

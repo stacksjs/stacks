@@ -9,8 +9,6 @@ const feature = props.feature || {
 }
 const isActive = props.isActive || false
 </script>
-
-<template>
 <div class="{{ className }} {{ !isActive ? 'opacity-75 hover:opacity-100' : '' }}">
   <div class="w-9 rounded-lg {{ isActive ? 'bg-blue-600' : 'bg-slate-500' }}">
     <svg aria-hidden="true" class="h-9 w-9" fill="none">
@@ -27,4 +25,3 @@ const isActive = props.isActive || false
     {{ feature.description }}
   </p>
 </div>
-</template>

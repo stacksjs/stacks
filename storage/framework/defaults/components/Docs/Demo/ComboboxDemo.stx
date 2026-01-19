@@ -15,8 +15,6 @@ function filterItems(items, query) {
   return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()))
 }
 </script>
-
-<template>
 <div class="demo-wrapper">
   <DocsPlayground>
     <div class="flex flex-col mx-auto max-w-full py-10 w-full">
@@ -76,8 +74,6 @@ function filterItems(items, query) {
     </div>
   </DocsPlayground>
 </div>
-</template>
-
 <style>
 .demo-wrapper {
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,

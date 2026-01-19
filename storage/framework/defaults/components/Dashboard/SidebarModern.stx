@@ -212,8 +212,6 @@ function handleSearch(value) {
   searchQuery = value
 }
 </script>
-
-<template>
 <Sidebar
   :sections="sections"
   :collapsed="isCollapsed"
@@ -235,9 +233,7 @@ function handleSearch(value) {
       :collapsed="isCollapsed"
       @search="handleSearch"
     />
-  </template>
-
-  <template #footer>
+<template #footer>
     <SidebarFooter
       :showSettings="true"
       :showThemeToggle="true"
@@ -245,6 +241,4 @@ function handleSearch(value) {
       :collapsed="isCollapsed"
       :actions="footerActions"
     />
-  </template>
 </Sidebar>
-</template>

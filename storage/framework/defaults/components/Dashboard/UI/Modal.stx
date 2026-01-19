@@ -13,9 +13,7 @@ const sizeClasses = {
   full: 'max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)]'
 }
 </script>
-
-<template>
-  @if(isOpen)
+@if(isOpen)
   <div class="fixed inset-0 z-50 overflow-y-auto">
     <!-- Overlay -->
     <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" data-modal-overlay></div>
@@ -59,8 +57,6 @@ const sizeClasses = {
     </div>
   </div>
   @endif
-</template>
-
 <script client>
 document.querySelectorAll('[data-modal-overlay], [data-modal-close]').forEach(el => {
   el.addEventListener('click', () => {

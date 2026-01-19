@@ -6,9 +6,7 @@ function canSubmit(content) {
   return content.trim().length > 0
 }
 </script>
-
-<template>
-  <div class="border rounded-md mb-6">
+<div class="border rounded-md mb-6">
     <div class="bg-gray-50 px-4 py-3 flex items-center rounded-t-md">
       <h3 class="font-medium">Post a Reply</h3>
     </div>
@@ -72,4 +70,3 @@ function canSubmit(content) {
       </div>
     </div>
   </div>
-</template>

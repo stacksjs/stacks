@@ -20,8 +20,6 @@
     }
   }
 </script>
-
-<template>
 <div class="relative overflow-hidden rounded-xl border border-stone-200/80 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm">
   <!-- Loading overlay -->
   @if(loading)
@@ -139,4 +137,3 @@
     </div>
   @endif
 </div>
-</template>

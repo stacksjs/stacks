@@ -9,9 +9,7 @@ const data = props.data || {
   packages: []
 }
 </script>
-
-<template>
-  <div class="text-center">
+<div class="text-center">
     <img
       loading="lazy"
       width="100"
@@ -74,4 +72,3 @@ const data = props.data || {
       </div>
     @endif
   </div>
-</template>

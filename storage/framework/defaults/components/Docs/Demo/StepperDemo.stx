@@ -19,8 +19,6 @@ function getStepContent(step) {
   }
 }
 </script>
-
-<template>
 <div class="max-w-4xl">
   <DocsPlayground>
     <div class="p-8 max-w-3xl mx-auto">
@@ -132,4 +130,3 @@ function getStepContent(step) {
     </div>
   </DocsPlayground>
 </div>
-</template>

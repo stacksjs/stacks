@@ -63,8 +63,6 @@ function handleSubmit(event) {
   $emit('submit', { name, email, password, password_confirmation: passwordConfirmation })
 }
 </script>
-
-<template>
 <div class="min-h-screen flex items-center justify-center px-4 py-12">
   <div class="w-full max-w-sm">
     <!-- Logo/Brand -->
@@ -239,4 +237,3 @@ function handleSubmit(event) {
     @endif
   </div>
 </div>
-</template>

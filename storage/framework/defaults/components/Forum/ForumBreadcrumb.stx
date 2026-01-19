@@ -1,8 +1,6 @@
 <script server>
 const items = props.items || []
 </script>
-
-<template>
 <div class="mb-4">
   <nav class="flex" aria-label="Breadcrumb">
     <ol class="inline-flex items-center space-x-1 md:space-x-2">
@@ -34,4 +32,3 @@ const items = props.items || []
     </ol>
   </nav>
 </div>
-</template>

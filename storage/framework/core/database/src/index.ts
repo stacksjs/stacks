@@ -95,3 +95,24 @@ export type {
   QueryBuilderConfig,
   SupportedDialect,
 } from 'bun-query-builder'
+
+// DynamoDB entity-centric API
+export {
+  createDynamo,
+  dynamo,
+  EntityQueryBuilder,
+  generateKeyPattern,
+  parseKeyPattern,
+  buildKey,
+  marshall,
+  unmarshall,
+} from './drivers/dynamodb'
+
+export type {
+  DynamoConnectionConfig,
+  SingleTableEntityMapping,
+  SortKeyBuilder,
+  BatchWriteOperation,
+  TransactWriteOperation,
+  QueryResult,
+} from './drivers/dynamodb'

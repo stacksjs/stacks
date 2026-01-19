@@ -1,8 +1,6 @@
 <script server>
 const isPreviewMode = props.isPreviewMode !== undefined ? props.isPreviewMode : true
 </script>
-
-<template>
 <div class="flex flex-col gap-4">
   <div class="flex flex-col gap-2">
     <div class="bg-gray-100 dark:bg-gray-800 rounded-lg relative">
@@ -35,4 +33,3 @@ const isPreviewMode = props.isPreviewMode !== undefined ? props.isPreviewMode : 
     </div>
   </div>
 </div>
-</template>

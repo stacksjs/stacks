@@ -51,9 +51,7 @@ function getPageUrl(page) {
   return baseUrl ? `${baseUrl}?page=${page}` : `?page=${page}`
 }
 </script>
-
-<template>
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <!-- Left: Items info & per page selector -->
     <div class="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
       <!-- Items per page -->
@@ -122,4 +120,3 @@ function getPageUrl(page) {
       </a>
     </nav>
   </div>
-</template>

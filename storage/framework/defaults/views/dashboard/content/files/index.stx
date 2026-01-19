@@ -543,8 +543,6 @@ function deleteSelectedItems() {
 </script>
 
 @title('Dashboard - File Manager')
-
-<template>
 <div class="h-full flex flex-col">
   <!-- Main content -->
   <div class="flex-1 flex">
@@ -1164,4 +1162,3 @@ function deleteSelectedItems() {
   </div>
   @endif
 </div>
-</template>

@@ -4,8 +4,6 @@
   const backLink = props.backLink || ''
   const backLabel = props.backLabel || 'Back'
 </script>
-
-<template>
 <div class="mb-6">
   <!-- Back link -->
   @if(backLink)
@@ -65,4 +63,3 @@
     </div>
   @endif
 </div>
-</template>

@@ -16,12 +16,9 @@ const customData = {
   // Your custom dashboard data
 }
 </script>
-
-<template>
-  <!--
+<!--
     Custom Dashboard Content
 
     This template will be merged with the default dashboard.
     You can add custom sections, widgets, or entirely new views.
   -->
-</template>

@@ -201,8 +201,6 @@ async function addCustomer(): Promise<void> {
 </script>
 
 @title('Dashboard - Commerce Customers')
-
-<template>
 <div class="py-6">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
     <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
@@ -410,8 +408,6 @@ async function addCustomer(): Promise<void> {
     </div>
   @endif
 </div>
-</template>
-
 <script client>
 import { onMount } from 'stx'
 

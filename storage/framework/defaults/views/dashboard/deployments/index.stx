@@ -6,9 +6,6 @@ definePageMeta({
 </script>
 
 @title('Dashboard - Deployments')
-
-<template>
 <DeploymentList />
 
 <!-- <ActivityFeed /> -->
-</template>

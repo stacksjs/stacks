@@ -101,8 +101,6 @@ const displayColumns = columns.filter(col =>
   !col.startsWith('_')
 )
 </script>
-
-<template>
 <div class="space-y-6">
   <!-- Page Header -->
   <div class="flex items-center justify-between">
@@ -203,8 +201,6 @@ const displayColumns = columns.filter(col =>
     </div>
   @endif
 </div>
-</template>
-
 <style>
 /* Ensure tables don't overflow */
 .overflow-x-auto {

@@ -17,9 +17,7 @@ const containerClasses = {
   boxed: 'border border-neutral-200 dark:border-neutral-700 rounded-lg p-1'
 }
 </script>
-
-<template>
-  <div class="flex {{ fullWidth ? 'w-full' : '' }} {{ containerClasses[variant] }}" role="tablist">
+<div class="flex {{ fullWidth ? 'w-full' : '' }} {{ containerClasses[variant] }}" role="tablist">
     @foreach(tabs as tab)
       <button
         type="button"
@@ -41,4 +39,3 @@ const containerClasses = {
       </button>
     @endforeach
   </div>
-</template>

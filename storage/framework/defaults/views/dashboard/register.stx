@@ -41,12 +41,8 @@ async function handleRegister(credentials) {
 </script>
 
 @title('Register - Stacks Dashboard')
-
-<template>
 <Register
   @submit="handleRegister"
   :isLoading="isLoading"
   :error="error"
 />
-</template>
-

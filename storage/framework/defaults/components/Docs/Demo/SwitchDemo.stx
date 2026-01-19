@@ -1,9 +1,7 @@
 <script server>
 const enabled = props.enabled || false
 </script>
-
-<template>
-  <div class="max-w-4xl">
+<div class="max-w-4xl">
     <DocsPlayground>
       <div class="flex items-center gap-2 justify-center my-3">
         <button
@@ -24,4 +22,3 @@ const enabled = props.enabled || false
       </div>
     </DocsPlayground>
   </div>
-</template>
