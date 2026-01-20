@@ -133,7 +133,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Acti
           catch (error) {
             // Middleware threw an error (e.g., 401 Unauthorized)
             if (error instanceof Error && 'statusCode' in error) {
-              return createMiddlewareErrorResponse(
+              return await createMiddlewareErrorResponse(
                 error as Error & { statusCode: number },
                 enhancedReq,
               )
@@ -615,7 +615,7 @@ function wrapHandler(handler: StacksHandler, skipParsing = false): ActionHandler
       catch (error) {
         log.error(`[Router] Error handling request for '${handlerPath}':`, error)
         // Return Ignition-style error page in development, JSON in production
-        return createErrorResponse(
+        return await createErrorResponse(
           error instanceof Error ? error : new Error(String(error)),
           req,
           { handlerPath },

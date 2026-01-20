@@ -25,10 +25,12 @@ export type {
   ErrorPageData,
   HttpError as HttpErrorInfo,
   HttpStatusCode,
+  JobContext,
   QueryInfo,
   RequestContext,
   RoutingContext,
   StackFrame,
+  UserContext,
 } from 'ts-error-handling'
 
 export {
