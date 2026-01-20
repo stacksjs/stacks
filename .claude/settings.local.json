@@ -92,7 +92,8 @@
       "Bash(kill:*)",
       "Bash(pgrep:*)",
       "Bash(zig build:*)",
-      "Bash(/usr/bin/grep:*)"
+      "Bash(/usr/bin/grep:*)",
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": []

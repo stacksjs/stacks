@@ -11,7 +11,7 @@
 export * from 'bun-router'
 
 // Export Stacks-specific action resolver
-export { createStacksRouter, route, serve } from './stacks-router'
+export { createStacksRouter, route, serve, serverResponse } from './stacks-router'
 
 // Export request context helpers
 export { getCurrentRequest, request, runWithRequest, setCurrentRequest } from './request-context'
@@ -21,3 +21,13 @@ export { loadRoutes } from './route-loader'
 
 // Export route registry types
 export type { RouteDefinition, RouteRegistry } from '../../../../../app/Routes'
+
+// Export error handler utilities
+export {
+  clearTrackedQueries,
+  createErrorResponse,
+  createMiddlewareErrorResponse,
+  createNotFoundResponse,
+  createValidationErrorResponse,
+  trackQuery,
+} from './error-handler'

@@ -13,6 +13,7 @@ import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage'
 import { Router } from 'bun-router'
 import { runWithRequest } from './request-context'
+import { createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 
 type StringHandler = string
 type StacksHandler = ActionHandler | StringHandler
@@ -132,16 +133,9 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Acti
           catch (error) {
             // Middleware threw an error (e.g., 401 Unauthorized)
             if (error instanceof Error && 'statusCode' in error) {
-              const httpError = error as Error & { statusCode: number }
-              return new Response(
-                JSON.stringify({ error: error.message }),
-                {
-                  status: httpError.statusCode,
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                  },
-                },
+              return createMiddlewareErrorResponse(
+                error as Error & { statusCode: number },
+                enhancedReq,
               )
             }
             throw error
@@ -615,27 +609,16 @@ function wrapHandler(handler: StacksHandler, skipParsing = false): ActionHandler
         }
 
         const resolvedHandler = await resolveStringHandler(handlerPath)
-        return resolvedHandler(req)
+        // Must await to catch async errors in try-catch
+        return await resolvedHandler(req)
       }
       catch (error) {
         log.error(`[Router] Error handling request for '${handlerPath}':`, error)
-        // Return error with CORS headers so browsers can see the error
-        return new Response(
-          JSON.stringify({
-            error: 'Internal Server Error',
-            message: error instanceof Error ? error.message : String(error),
-            handler: handlerPath,
-            stack: process.env.NODE_ENV !== 'production' && error instanceof Error ? error.stack : undefined,
-          }),
-          {
-            status: 500,
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*',
-              'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-              'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-            },
-          },
+        // Return Ignition-style error page in development, JSON in production
+        return createErrorResponse(
+          error instanceof Error ? error : new Error(String(error)),
+          req,
+          { handlerPath },
         )
       }
     }
@@ -874,6 +857,23 @@ export interface StacksRouterInstance {
 
 // Create and export a default router instance
 export const route = createStacksRouter()
+
+// Track if routes have been loaded
+let routesLoaded = false
+
+/**
+ * Handle a server request through the router
+ * This is the main entry point for the Stacks server
+ */
+export async function serverResponse(request: Request, _body?: string): Promise<Response> {
+  // Load routes on first request if not already loaded
+  if (!routesLoaded) {
+    await route.importRoutes()
+    routesLoaded = true
+  }
+
+  return route.handleRequest(request)
+}
 
 // Export serve function that uses the default router
 export async function serve(options: ServerOptions = {}): Promise<Server> {

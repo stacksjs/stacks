@@ -38,6 +38,9 @@ route.get('/coming-soon', 'Controllers/ComingSoonController@index')
 
 // route.email('/welcome')
 route.health() // adds a GET `/health` route
+
+// Test error page (development only)
+route.get('/test-error', 'Actions/TestErrorAction') // Visit /test-error?type=database|validation|auth|notfound|generic
 route.get('/install', 'Actions/InstallAction')
 route.post('/ai/ask', 'Actions/AI/AskAction')
 route.post('/ai/summary', 'Actions/AI/SummaryAction')
