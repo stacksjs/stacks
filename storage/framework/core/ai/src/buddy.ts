@@ -20,7 +20,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { claudeAgent } from './agents'
-import { createAnthropicDriver, createOllamaDriver, createOpenAIDriver } from './drivers'
+import { createAnthropicDriver, createClaudeAgentSDKDriver, createOllamaDriver, createOpenAIDriver } from './drivers'
 
 // =============================================================================
 // Configuration
@@ -219,11 +219,19 @@ export function getDriver(driverName: string): AIDriver {
         model: CONFIG.ollamaModel,
       })
 
+    case 'claude-sdk':
+    case 'claude-agent-sdk':
+      return createClaudeAgentSDKDriver({
+        cwd: currentState.repo?.path,
+        maxTurns: 25,
+        permissionMode: 'bypassPermissions',
+      })
+
     case 'mock':
       return createMockDriver()
 
     default:
-      throw new Error(`Unknown driver: ${driverName}. Available: claude-cli-local, claude-cli-ec2, claude, openai, ollama, mock`)
+      throw new Error(`Unknown driver: ${driverName}. Available: claude-cli-local, claude-cli-ec2, claude, claude-sdk, openai, ollama, mock`)
   }
 }
 
@@ -231,7 +239,7 @@ export function getDriver(driverName: string): AIDriver {
  * Get list of available AI drivers
  */
 export function getAvailableDrivers(): string[] {
-  return ['claude-cli-local', 'claude-cli-ec2', 'claude', 'openai', 'ollama', 'mock']
+  return ['claude-cli-local', 'claude-cli-ec2', 'claude', 'claude-sdk', 'openai', 'ollama', 'mock']
 }
 
 // =============================================================================
@@ -505,7 +513,6 @@ export async function buddyStreamSimple(
   command: string,
   history?: Array<{ role: string; content: string }>,
 ): Promise<StreamingResult> {
-  const currentState = buddyState.getState()
 
   if (!apiKeys.anthropic) {
     throw new Error('Anthropic API key not set. Configure your API key in settings.')
