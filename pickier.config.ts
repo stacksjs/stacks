@@ -21,6 +21,10 @@ const config: PickierOptions = {
     // Generated declaration files
     '**/*.d.ts',
     '**/temp/**',
+    // Files with template literals that have intentional formatting
+    '**/error-handling/src/error-page.ts',
+    '**/ai/src/buddy.ts',
+    '**/orm/src/generate.ts',
   ],
   lint: {
     extensions: ['ts', 'js'],

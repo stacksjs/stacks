@@ -213,7 +213,7 @@ function startSMTP(tls:boolean){
               s.once('data',async(ud)=>{
                 authUser=Buffer.from(ud.toString().trim(),'base64').toString().trim();
                 console.log('AUTH LOGIN user:',authUser);
-                s.write('334 UGFzc3dvcmQ6\r\n'); // "Password:" base64
+                s.write('334 UGFzc3dvcmQ6\r\n') // 'Password:' base64
                 s.once('data',async(pd)=>{
                   const authPass=Buffer.from(pd.toString().trim(),'base64').toString().trim();
                   if(await authenticate(authUser,authPass)){auth=true;from=authUser;s.write('235 2.7.0 Authentication successful\r\n');}
