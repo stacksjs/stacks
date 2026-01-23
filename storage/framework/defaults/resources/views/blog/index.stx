@@ -1,0 +1,330 @@
+<script server>
+/**
+ * Blog Index - Public blog listing page
+ * Fetches published posts with author info
+ */
+const Database = require('bun:sqlite').Database
+const path = require('path')
+
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+let posts = []
+let featuredPosts = []
+let categories = []
+
+try {
+  const db = new Database(dbPath, { readonly: true })
+
+  const rawPosts = db.query(`
+    SELECT p.id, p.uuid, p.title, p.excerpt, p.poster, p.views, p.published_at,
+           p.is_featured, p.status, a.name as author_name
+    FROM posts p
+    LEFT JOIN authors a ON p.author_id = a.id
+    WHERE p.status = 'published'
+    ORDER BY p.published_at DESC
+    LIMIT 20
+  `).all()
+
+  posts = rawPosts.map(function(p) {
+    const slug = p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    return {
+      id: p.id,
+      uuid: p.uuid,
+      title: p.title || 'Untitled',
+      excerpt: p.excerpt || '',
+      poster: p.poster || null,
+      views: p.views || 0,
+      publishedAt: p.published_at,
+      authorName: p.author_name || 'Anonymous',
+      isFeatured: p.is_featured === 1,
+      slug: slug
+    }
+  })
+
+  featuredPosts = posts.filter(function(p) { return p.isFeatured })
+  posts = posts.filter(function(p) { return !p.isFeatured })
+
+  const rawCategories = db.query(`
+    SELECT c.id, c.name, c.slug, COUNT(cm.categorizable_id) as post_count
+    FROM categories c
+    LEFT JOIN categorizable_models cm ON c.id = cm.category_id AND cm.categorizable_type = 'posts'
+    GROUP BY c.id
+    HAVING post_count > 0
+    ORDER BY post_count DESC
+    LIMIT 10
+  `).all()
+
+  categories = rawCategories.map(function(c) {
+    return {
+      id: c.id,
+      name: c.name,
+      slug: c.slug || c.name.toLowerCase().replace(/\s+/g, '-'),
+      postCount: c.post_count
+    }
+  })
+
+  db.close()
+} catch (e) {
+  posts = []
+  featuredPosts = []
+  categories = []
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  var d = new Date(dateStr)
+  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear()
+}
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog | Stacks</title>
+  <meta name="description" content="A modern blog powered by Stacks">
+  <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="/api/blog/feed.xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-bg: #ffffff;
+      --color-bg-secondary: #f8fafc;
+      --color-text: #1e293b;
+      --color-text-secondary: #64748b;
+      --color-primary: #3b82f6;
+      --color-primary-hover: #2563eb;
+      --color-border: #e2e8f0;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-serif: 'Merriweather', Georgia, serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-bg: #0f172a;
+        --color-bg-secondary: #1e293b;
+        --color-text: #f1f5f9;
+        --color-text-secondary: #94a3b8;
+        --color-border: #334155;
+      }
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { color: var(--color-primary-hover); }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* Header */
+    .blog-header {
+      border-bottom: 1px solid var(--color-border);
+      padding: 1.5rem 0;
+      position: sticky;
+      top: 0;
+      background: var(--color-bg);
+      z-index: 100;
+    }
+
+    .blog-header .container { display: flex; align-items: center; justify-content: space-between; }
+    .blog-logo { font-size: 1.5rem; font-weight: 700; color: var(--color-text); }
+    .blog-nav { display: flex; gap: 2rem; align-items: center; }
+    .blog-nav a { color: var(--color-text-secondary); font-weight: 500; font-size: 0.9375rem; transition: color 0.2s; }
+    .blog-nav a:hover { color: var(--color-text); }
+    .subscribe-btn { background: var(--color-primary); color: white !important; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 500; transition: background 0.2s; }
+    .subscribe-btn:hover { background: var(--color-primary-hover); }
+
+    /* Main content */
+    main { padding: 3rem 0; min-height: calc(100vh - 200px); }
+
+    /* Footer */
+    .blog-footer { border-top: 1px solid var(--color-border); padding: 3rem 0; background: var(--color-bg-secondary); }
+    .blog-footer .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { color: var(--color-text-secondary); font-size: 0.875rem; }
+    .footer-copy { color: var(--color-text-secondary); font-size: 0.875rem; }
+
+    /* Section titles */
+    .section-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--color-text); }
+
+    /* Featured section */
+    .featured-section { margin-bottom: 3rem; }
+    .featured-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+    .featured-card { background: var(--color-bg-secondary); border-radius: 1rem; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
+    .featured-card:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); }
+    .featured-image img { width: 100%; height: 200px; object-fit: cover; }
+    .featured-content { padding: 1.5rem; }
+    .featured-title { font-size: 1.25rem; font-weight: 600; color: var(--color-text); display: block; margin-bottom: 0.75rem; }
+    .featured-title:hover { color: var(--color-primary); }
+    .featured-excerpt { color: var(--color-text-secondary); font-size: 0.9375rem; line-height: 1.6; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+    /* Blog grid layout */
+    .blog-grid { display: grid; grid-template-columns: 1fr 320px; gap: 3rem; }
+    @media (max-width: 1024px) { .blog-grid { grid-template-columns: 1fr; } }
+
+    /* Posts list */
+    .posts-list { display: flex; flex-direction: column; gap: 2rem; }
+    .post-card { display: grid; grid-template-columns: 200px 1fr; gap: 1.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+    @media (max-width: 640px) { .post-card { grid-template-columns: 1fr; } }
+    .post-thumbnail img { width: 100%; height: 140px; object-fit: cover; border-radius: 0.5rem; }
+    .post-content { display: flex; flex-direction: column; justify-content: center; }
+    .post-title { font-size: 1.125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.5rem; line-height: 1.4; }
+    .post-title:hover { color: var(--color-primary); }
+    .post-excerpt { color: var(--color-text-secondary); font-size: 0.9375rem; line-height: 1.6; margin-bottom: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .post-meta { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: var(--color-text-secondary); }
+    .meta-dot { color: var(--color-border); }
+
+    /* Sidebar */
+    .blog-sidebar { display: flex; flex-direction: column; gap: 2rem; }
+    .sidebar-widget { background: var(--color-bg-secondary); padding: 1.5rem; border-radius: 1rem; }
+    .widget-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .category-list { list-style: none; }
+    .category-list li { margin-bottom: 0.5rem; }
+    .category-list a { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; color: var(--color-text-secondary); transition: color 0.2s; }
+    .category-list a:hover { color: var(--color-text); }
+    .category-count { background: var(--color-border); padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.75rem; }
+
+    /* Subscribe widget */
+    .subscribe-widget p { color: var(--color-text-secondary); font-size: 0.875rem; margin-bottom: 1rem; }
+    .subscribe-form { display: flex; flex-direction: column; gap: 0.75rem; }
+    .subscribe-form input { padding: 0.75rem 1rem; border: 1px solid var(--color-border); border-radius: 0.5rem; background: var(--color-bg); color: var(--color-text); font-size: 0.9375rem; }
+    .subscribe-form input:focus { outline: none; border-color: var(--color-primary); }
+    .subscribe-form button { padding: 0.75rem 1rem; background: var(--color-primary); color: white; border: none; border-radius: 0.5rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+    .subscribe-form button:hover { background: var(--color-primary-hover); }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 4rem 2rem; color: var(--color-text-secondary); }
+    .empty-icon { width: 4rem; height: 4rem; margin-bottom: 1rem; opacity: 0.5; }
+    .empty-state h3 { font-size: 1.125rem; margin-bottom: 0.5rem; color: var(--color-text); }
+  </style>
+</head>
+<body>
+  <header class="blog-header">
+    <div class="container">
+      <a href="/blog/index" class="blog-logo">Stacks Blog</a>
+      <nav class="blog-nav">
+        <a href="/blog/index">Articles</a>
+        <a href="/blog/categories">Categories</a>
+        <a href="/api/blog/feed.xml">RSS</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      @if (featuredPosts.length > 0)
+        <section class="featured-section">
+          <h2 class="section-title">Featured</h2>
+          <div class="featured-grid">
+            @foreach (featuredPosts as post)
+              <article class="featured-card">
+                @if (post.poster)
+                  <div class="featured-image">
+                    <img src="{{ post.poster }}" alt="{{ post.title }}" loading="lazy">
+                  </div>
+                @endif
+                <div class="featured-content">
+                  <a href="/blog/post?slug={{ post.slug }}" class="featured-title">{{ post.title }}</a>
+                  <p class="featured-excerpt">{{ post.excerpt }}</p>
+                  <div class="post-meta">
+                    <span>{{ post.authorName }}</span>
+                    <span class="meta-dot">·</span>
+                    <time>{{ formatDate(post.publishedAt) }}</time>
+                  </div>
+                </div>
+              </article>
+            @endforeach
+          </div>
+        </section>
+      @endif
+
+      <div class="blog-grid">
+        <section class="posts-section">
+          <h2 class="section-title">Latest Posts</h2>
+
+          @if (posts.length > 0)
+            <div class="posts-list">
+              @foreach (posts as post)
+                <article class="post-card">
+                  @if (post.poster)
+                    <a href="/blog/post?slug={{ post.slug }}" class="post-thumbnail">
+                      <img src="{{ post.poster }}" alt="{{ post.title }}" loading="lazy">
+                    </a>
+                  @endif
+                  <div class="post-content">
+                    <a href="/blog/post?slug={{ post.slug }}" class="post-title">{{ post.title }}</a>
+                    <p class="post-excerpt">{{ post.excerpt }}</p>
+                    <div class="post-meta">
+                      <span>{{ post.authorName }}</span>
+                      <span class="meta-dot">·</span>
+                      <time>{{ formatDate(post.publishedAt) }}</time>
+                      <span class="meta-dot">·</span>
+                      <span>{{ post.views }} views</span>
+                    </div>
+                  </div>
+                </article>
+              @endforeach
+            </div>
+          @else
+            <div class="empty-state">
+              <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+              </svg>
+              <h3>No posts yet</h3>
+              <p>Check back soon for new content.</p>
+            </div>
+          @endif
+        </section>
+
+        <aside class="blog-sidebar">
+          @if (categories.length > 0)
+            <div class="sidebar-widget">
+              <h3 class="widget-title">Categories</h3>
+              <ul class="category-list">
+                @foreach (categories as cat)
+                  <li>
+                    <a href="/blog/category?slug={{ cat.slug }}">
+                      <span>{{ cat.name }}</span>
+                      <span class="category-count">{{ cat.postCount }}</span>
+                    </a>
+                  </li>
+                @endforeach
+              </ul>
+            </div>
+          @endif
+
+          <div class="sidebar-widget subscribe-widget">
+            <h3 class="widget-title">Stay Updated</h3>
+            <p>Get the latest posts delivered to your inbox.</p>
+            <form class="subscribe-form" action="/api/blog/subscribe" method="POST">
+              <input type="email" name="email" placeholder="your@email.com" required>
+              <button type="submit">Subscribe</button>
+            </form>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <footer class="blog-footer">
+    <div class="container">
+      <div class="footer-links">
+        <a href="/blog/index">Blog</a>
+        <a href="/api/blog/sitemap.xml">Sitemap</a>
+        <a href="/api/blog/feed.xml">RSS Feed</a>
+      </div>
+      <p class="footer-copy">Powered by Stacks</p>
+    </div>
+  </footer>
+</body>
+</html>

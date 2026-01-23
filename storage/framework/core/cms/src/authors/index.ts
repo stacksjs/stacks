@@ -3,6 +3,8 @@ export {
 } from './destroy'
 
 export {
+  fetchAll,
+  fetchById,
   findByEmail,
   findByName,
   findByUserId,

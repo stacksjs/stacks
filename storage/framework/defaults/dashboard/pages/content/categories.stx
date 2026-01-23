@@ -1,56 +1,294 @@
 <script server>
 /**
  * Categories Page
- * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
+ * Uses synchronous SQLite queries (STX doesn't support async/await)
  */
 const Database = require('bun:sqlite').Database
 const path = require('path')
 
 const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
-const db = new Database(dbPath, { readonly: true })
+let categories = []
 
-// Fetch all categories from database
-const rawCategories = db.query('SELECT id, name, slug, description FROM categories ORDER BY name ASC').all()
+try {
+  const db = new Database(dbPath, { readonly: true })
 
-// Transform categories for display
-const categories = rawCategories.map(function(c) {
-  return {
-    name: c.name || 'Unnamed',
-    slug: c.slug || (c.name || '').toLowerCase().replace(/\s+/g, '-') || 'category',
-    posts: Math.floor(Math.random() * 30) + 1,
-    description: c.description || 'Category description'
+  // Fetch all categories with post counts
+  const rawCategories = db.query(`
+    SELECT c.id, c.name, c.slug, c.description, c.parent_id,
+           COUNT(DISTINCT cm.categorizable_id) as post_count
+    FROM categories c
+    LEFT JOIN categorizable_models cm ON c.id = cm.category_id AND cm.categorizable_type = 'posts'
+    GROUP BY c.id
+    ORDER BY c.name ASC
+  `).all()
+
+  categories = rawCategories.map(function(c) {
+    return {
+      id: c.id,
+      name: c.name || 'Unnamed',
+      slug: c.slug || (c.name || '').toLowerCase().replace(/\s+/g, '-'),
+      description: c.description || '',
+      parentId: c.parent_id,
+      postCount: c.post_count || 0
+    }
+  })
+
+  db.close()
+} catch (e) {
+  categories = []
+}
+</script>
+
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+  <div class="flex items-start justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Categories</h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Organize your content with categories</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button id="newCategoryBtn" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          New Category
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-6">
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+        <div class="flex items-center gap-4">
+          <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"></path>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Total Categories</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ categories.length }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Categories Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="categoriesGrid">
+      @foreach (categories as category)
+        <div class="category-card bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow" data-id="{{ category.id }}">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+              </div>
+              <span class="font-semibold text-gray-900 dark:text-white">{{ category.name }}</span>
+            </div>
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">{{ category.postCount }} posts</span>
+          </div>
+          <div class="text-gray-600 dark:text-gray-400 mb-4">
+            <p class="text-sm line-clamp-2">{{ category.description || 'No description' }}</p>
+            <div class="mt-3">
+              <code class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">/{{ category.slug }}</code>
+            </div>
+          </div>
+          <div class="flex items-center justify-end gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+            <button class="edit-category-btn px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" data-id="{{ category.id }}" data-name="{{ category.name }}" data-slug="{{ category.slug }}" data-description="{{ category.description }}">Edit</button>
+            <button class="delete-category-btn px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" data-id="{{ category.id }}">Delete</button>
+          </div>
+        </div>
+      @endforeach
+    </div>
+
+    @if (categories.length === 0)
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"></path>
+        </svg>
+        <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No categories yet</h3>
+        <p class="mt-2 text-gray-500 dark:text-gray-400">Get started by creating your first category.</p>
+        <button id="emptyStateNewCategory" class="mt-4 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Create Category</button>
+      </div>
+    @endif
+  </div>
+</div>
+
+<!-- Category Modal -->
+<div id="categoryModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50" style="display: none;">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md m-4">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <h2 id="modalTitle" class="text-xl font-semibold text-gray-900 dark:text-white">New Category</h2>
+      <button id="closeModal" class="p-2 text-gray-400 hover:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <form id="categoryForm" class="p-6 space-y-4">
+      <input type="hidden" id="categoryId" name="id" value="">
+
+      <div>
+        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name</label>
+        <input type="text" id="name" name="name" required
+          class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+          placeholder="Category name...">
+      </div>
+
+      <div>
+        <label for="slug" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Slug</label>
+        <input type="text" id="slug" name="slug"
+          class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+          placeholder="category-slug">
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Leave empty to auto-generate from name</p>
+      </div>
+
+      <div>
+        <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+        <textarea id="description" name="description" rows="3"
+          class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
+          placeholder="Category description..."></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-4">
+        <button type="button" id="cancelBtn" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">Cancel</button>
+        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">Save Category</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50" style="display: none;">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md m-4 p-6">
+    <div class="text-center">
+      <svg class="mx-auto h-12 w-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+      </svg>
+      <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Delete Category</h3>
+      <p class="mt-2 text-gray-500 dark:text-gray-400">Are you sure you want to delete this category? Posts in this category will become uncategorized.</p>
+    </div>
+    <div class="mt-6 flex items-center justify-center gap-3">
+      <button id="cancelDeleteBtn" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">Cancel</button>
+      <button id="confirmDeleteBtn" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="fixed bottom-4 right-4 transform translate-y-full opacity-0 transition-all duration-300 z-50">
+  <div class="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-4 py-3 rounded-lg shadow-lg">
+    <span id="toastMessage">Category saved!</span>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'http://localhost:3000/cms'
+let deleteCategoryId = null
+
+const categoryModal = document.getElementById('categoryModal')
+const deleteModal = document.getElementById('deleteModal')
+const categoryForm = document.getElementById('categoryForm')
+const nameField = document.getElementById('name')
+const slugField = document.getElementById('slug')
+
+function openNewCategoryModal() {
+  document.getElementById('modalTitle').textContent = 'New Category'
+  document.getElementById('categoryId').value = ''
+  categoryForm.reset()
+  categoryModal.style.display = 'flex'
+}
+
+function openEditCategoryModal(id, name, slug, description) {
+  document.getElementById('modalTitle').textContent = 'Edit Category'
+  document.getElementById('categoryId').value = id
+  nameField.value = name
+  slugField.value = slug
+  document.getElementById('description').value = description
+  categoryModal.style.display = 'flex'
+}
+
+function closeModal() {
+  categoryModal.style.display = 'none'
+  deleteModal.style.display = 'none'
+}
+
+function showToast(message) {
+  const toast = document.getElementById('toast')
+  document.getElementById('toastMessage').textContent = message
+  toast.style.transform = 'translateY(0)'
+  toast.style.opacity = '1'
+  setTimeout(() => {
+    toast.style.transform = 'translateY(100%)'
+    toast.style.opacity = '0'
+  }, 3000)
+}
+
+function saveCategory(e) {
+  e.preventDefault()
+  const formData = new FormData(categoryForm)
+  const id = formData.get('id')
+  const name = formData.get('name')
+  const slug = formData.get('slug') || name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+
+  fetch(id ? `${API_BASE}/categories/${id}` : `${API_BASE}/categories`, {
+    method: id ? 'PATCH' : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, slug, description: formData.get('description') })
+  })
+    .then(r => r.json())
+    .then(() => {
+      showToast(id ? 'Category updated!' : 'Category created!')
+      closeModal()
+      setTimeout(() => location.reload(), 1000)
+    })
+    .catch(() => showToast('Failed to save category'))
+}
+
+function deleteCategory() {
+  if (!deleteCategoryId) return
+  fetch(`${API_BASE}/categories/${deleteCategoryId}`, { method: 'DELETE' })
+    .then(r => r.json())
+    .then(() => {
+      showToast('Category deleted!')
+      closeModal()
+      setTimeout(() => location.reload(), 1000)
+    })
+    .catch(() => showToast('Failed to delete category'))
+}
+
+// Auto-generate slug
+nameField.oninput = function() {
+  if (!slugField.value || slugField.dataset.auto === 'true') {
+    slugField.value = this.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+    slugField.dataset.auto = 'true'
+  }
+}
+slugField.oninput = function() { this.dataset.auto = 'false' }
+
+// Event bindings
+document.getElementById('newCategoryBtn').onclick = openNewCategoryModal
+document.getElementById('emptyStateNewCategory')?.addEventListener('click', openNewCategoryModal)
+document.getElementById('closeModal').onclick = closeModal
+document.getElementById('cancelBtn').onclick = closeModal
+document.getElementById('cancelDeleteBtn').onclick = closeModal
+document.getElementById('confirmDeleteBtn').onclick = deleteCategory
+categoryForm.onsubmit = saveCategory
+
+document.querySelectorAll('.edit-category-btn').forEach(btn => {
+  btn.onclick = function() {
+    openEditCategoryModal(this.dataset.id, this.dataset.name, this.dataset.slug, this.dataset.description)
   }
 })
 
-db.close()
-</script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div class="">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Categories</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Organize your content with categories</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">New Category</button>
-      </div>
-    </div>
+document.querySelectorAll('.delete-category-btn').forEach(btn => {
+  btn.onclick = function() { deleteCategoryId = this.dataset.id; deleteModal.style.display = 'flex' }
+})
 
-    <div class="flex flex-col gap-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        @foreach (categories as category)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-              <span class="font-semibold text-gray-900 dark:text-white">{{ category.name }}</span>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ category.posts }} posts</span>
-            </div>
-            <div class="text-gray-600 dark:text-gray-400">
-              <p class="text-gray-500 dark:text-gray-400">{{ category.description }}</p>
-              <div class="mt-4">
-                <code class="code-inline">/{{ category.slug }}</code>
-              </div>
-            </div>
-          </div>
-        @endforeach
-      </div>
-    </div>
-  </div>
+categoryModal.onclick = e => { if (e.target === categoryModal) closeModal() }
+deleteModal.onclick = e => { if (e.target === deleteModal) closeModal() }
+</script>

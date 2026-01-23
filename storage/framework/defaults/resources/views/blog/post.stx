@@ -1,0 +1,795 @@
+<script server>
+/**
+ * Single Post View - Public blog post page
+ * Fetches post by slug or id from URL
+ */
+const Database = require('bun:sqlite').Database
+const path = require('path')
+
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+let post = null
+let author = null
+let categories = []
+let tags = []
+let relatedPosts = []
+let comments = []
+
+// Get slug from URL path (e.g., /blog/my-post-slug)
+const urlPath = typeof request !== 'undefined' ? request.url : ''
+const pathParts = urlPath.split('/').filter(function(p) { return p && p !== 'blog' })
+const postSlug = pathParts[0] || ''
+
+try {
+  const db = new Database(dbPath, { readonly: true })
+
+  // Try to find post by matching title-derived slug
+  const allPosts = db.query(`
+    SELECT p.*, a.name as author_name, a.email as author_email
+    FROM posts p
+    LEFT JOIN authors a ON p.author_id = a.id
+    WHERE p.status = 'published'
+  `).all()
+
+  // Find matching post by slug
+  for (var i = 0; i < allPosts.length; i++) {
+    var p = allPosts[i]
+    var slug = p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    if (slug === postSlug || String(p.id) === postSlug || p.uuid === postSlug) {
+      post = {
+        id: p.id,
+        uuid: p.uuid,
+        title: p.title,
+        content: p.content || '',
+        excerpt: p.excerpt || '',
+        poster: p.poster || null,
+        views: p.views || 0,
+        publishedAt: p.published_at,
+        authorId: p.author_id,
+        slug: slug
+      }
+      author = {
+        name: p.author_name || 'Anonymous',
+        email: p.author_email || ''
+      }
+      break
+    }
+  }
+
+  if (post) {
+    // Update view count
+    try {
+      var writeDb = new Database(dbPath)
+      writeDb.query('UPDATE posts SET views = views + 1 WHERE id = ?').run(post.id)
+      writeDb.close()
+      post.views = post.views + 1
+    } catch (e) {}
+
+    // Get categories for this post
+    const rawCats = db.query(`
+      SELECT c.id, c.name, c.slug
+      FROM categories c
+      JOIN categorizable_models cm ON c.id = cm.category_id
+      WHERE cm.categorizable_id = ? AND cm.categorizable_type = 'posts'
+    `).all(post.id)
+    categories = rawCats.map(function(c) {
+      return { id: c.id, name: c.name, slug: c.slug || c.name.toLowerCase().replace(/\s+/g, '-') }
+    })
+
+    // Get tags for this post
+    const rawTags = db.query(`
+      SELECT t.id, t.name, t.slug
+      FROM tags t
+      JOIN taggable_models tm ON t.id = tm.tag_id
+      WHERE tm.taggable_id = ? AND tm.taggable_type = 'posts'
+    `).all(post.id)
+    tags = rawTags.map(function(t) {
+      return { id: t.id, name: t.name, slug: t.slug || t.name.toLowerCase().replace(/\s+/g, '-') }
+    })
+
+    // Get approved comments
+    const rawComments = db.query(`
+      SELECT c.id, c.body, c.author_name, c.created_at
+      FROM comments c
+      WHERE c.commentable_id = ? AND c.commentable_type = 'posts' AND c.status = 'approved'
+      ORDER BY c.created_at DESC
+      LIMIT 20
+    `).all(post.id)
+    comments = rawComments.map(function(c) {
+      return { id: c.id, body: c.body, authorName: c.author_name || 'Guest', createdAt: c.created_at }
+    })
+
+    // Get related posts (same category or recent)
+    var catIds = categories.map(function(c) { return c.id })
+    if (catIds.length > 0) {
+      const rawRelated = db.query(`
+        SELECT DISTINCT p.id, p.title, p.excerpt, p.poster, p.published_at, a.name as author_name
+        FROM posts p
+        LEFT JOIN authors a ON p.author_id = a.id
+        JOIN categorizable_models cm ON p.id = cm.categorizable_id AND cm.categorizable_type = 'posts'
+        WHERE cm.category_id IN (${catIds.join(',')}) AND p.id != ? AND p.status = 'published'
+        ORDER BY p.published_at DESC
+        LIMIT 3
+      `).all(post.id)
+      relatedPosts = rawRelated.map(function(p) {
+        return {
+          id: p.id,
+          title: p.title,
+          excerpt: p.excerpt || '',
+          poster: p.poster,
+          publishedAt: p.published_at,
+          authorName: p.author_name || 'Anonymous',
+          slug: p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+        }
+      })
+    }
+  }
+
+  db.close()
+} catch (e) {
+  post = null
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  var d = new Date(dateStr)
+  var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear()
+}
+
+function formatCommentDate(dateStr) {
+  if (!dateStr) return ''
+  var d = new Date(dateStr)
+  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear()
+}
+
+var pageTitle = post ? post.title : 'Post Not Found'
+var pageDescription = post ? post.excerpt : ''
+</script>
+
+<layout name="blog" title="{{ pageTitle }}" description="{{ pageDescription }}">
+  @if (post)
+    <article class="post-article">
+      <div class="container-narrow">
+        <!-- Post Header -->
+        <header class="post-header">
+          @if (categories.length > 0)
+            <div class="post-categories">
+              @foreach (categories as cat)
+                <a href="/blog/category/{{ cat.slug }}" class="category-badge">{{ cat.name }}</a>
+              @endforeach
+            </div>
+          @endif
+
+          <h1 class="post-title">{{ post.title }}</h1>
+
+          <div class="post-meta">
+            <div class="author-info">
+              <div class="author-avatar">{{ author.name.charAt(0).toUpperCase() }}</div>
+              <div>
+                <span class="author-name">{{ author.name }}</span>
+                <div class="meta-details">
+                  <time>{{ formatDate(post.publishedAt) }}</time>
+                  <span class="meta-dot">·</span>
+                  <span>{{ post.views }} views</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Featured Image -->
+        @if (post.poster)
+          <figure class="post-poster">
+            <img src="{{ post.poster }}" alt="{{ post.title }}">
+          </figure>
+        @endif
+
+        <!-- Post Content -->
+        <div class="post-content prose">
+          {{{ post.content }}}
+        </div>
+
+        <!-- Tags -->
+        @if (tags.length > 0)
+          <footer class="post-footer">
+            <div class="post-tags">
+              <span class="tags-label">Tags:</span>
+              @foreach (tags as tag)
+                <a href="/blog/tag/{{ tag.slug }}" class="tag-badge">#{{ tag.name }}</a>
+              @endforeach
+            </div>
+          </footer>
+        @endif
+
+        <!-- Share Section -->
+        <div class="share-section">
+          <span class="share-label">Share this post</span>
+          <div class="share-buttons">
+            <button onclick="shareTwitter()" class="share-btn twitter">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </button>
+            <button onclick="shareLinkedIn()" class="share-btn linkedin">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19a.66.66 0 000 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z"/></svg>
+            </button>
+            <button onclick="copyLink()" class="share-btn copy">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Comments Section -->
+        <section class="comments-section">
+          <h2 class="comments-title">Comments ({{ comments.length }})</h2>
+
+          <!-- Comment Form -->
+          <form id="commentForm" class="comment-form">
+            <input type="hidden" name="postId" value="{{ post.id }}">
+            <div class="form-group">
+              <input type="text" name="authorName" placeholder="Your name" required>
+            </div>
+            <div class="form-group">
+              <input type="email" name="authorEmail" placeholder="Your email (optional)">
+            </div>
+            <div class="form-group">
+              <textarea name="body" placeholder="Write a comment..." rows="4" required></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Post Comment</button>
+          </form>
+
+          <!-- Comments List -->
+          <div class="comments-list">
+            @if (comments.length > 0)
+              @foreach (comments as comment)
+                <div class="comment">
+                  <div class="comment-avatar">{{ comment.authorName.charAt(0).toUpperCase() }}</div>
+                  <div class="comment-body">
+                    <div class="comment-header">
+                      <span class="comment-author">{{ comment.authorName }}</span>
+                      <time class="comment-date">{{ formatCommentDate(comment.createdAt) }}</time>
+                    </div>
+                    <p class="comment-text">{{ comment.body }}</p>
+                  </div>
+                </div>
+              @endforeach
+            @else
+              <p class="no-comments">No comments yet. Be the first to share your thoughts!</p>
+            @endif
+          </div>
+        </section>
+      </div>
+
+      <!-- Related Posts -->
+      @if (relatedPosts.length > 0)
+        <section class="related-section">
+          <div class="container">
+            <h2 class="section-title">Related Posts</h2>
+            <div class="related-grid">
+              @foreach (relatedPosts as related)
+                <article class="related-card">
+                  @if (related.poster)
+                    <a href="/blog/{{ related.slug }}" class="related-image">
+                      <img src="{{ related.poster }}" alt="{{ related.title }}" loading="lazy">
+                    </a>
+                  @endif
+                  <div class="related-content">
+                    <a href="/blog/{{ related.slug }}" class="related-title">{{ related.title }}</a>
+                    <div class="related-meta">
+                      <span>{{ related.authorName }}</span>
+                      <span class="meta-dot">·</span>
+                      <time>{{ formatDate(related.publishedAt) }}</time>
+                    </div>
+                  </div>
+                </article>
+              @endforeach
+            </div>
+          </div>
+        </section>
+      @endif
+    </article>
+  @else
+    <!-- 404 State -->
+    <div class="not-found">
+      <h1>Post Not Found</h1>
+      <p>The post you're looking for doesn't exist or has been removed.</p>
+      <a href="/blog" class="back-link">Back to Blog</a>
+    </div>
+  @endif
+</layout>
+
+<style>
+  /* Post header */
+  .post-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .post-categories {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .category-badge {
+    background: var(--color-primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .post-title {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .post-title { font-size: 1.75rem; }
+  }
+
+  .post-meta {
+    display: flex;
+    justify-content: center;
+  }
+
+  .author-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .author-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+  }
+
+  .author-name {
+    font-weight: 500;
+  }
+
+  .meta-details {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+  }
+
+  .meta-dot {
+    color: var(--color-border);
+  }
+
+  /* Featured image */
+  .post-poster {
+    margin: 0 -3rem 2.5rem;
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+
+  @media (max-width: 640px) {
+    .post-poster { margin: 0 -1.5rem 2rem; border-radius: 0; }
+  }
+
+  .post-poster img {
+    width: 100%;
+    max-height: 500px;
+    object-fit: cover;
+  }
+
+  /* Post content */
+  .post-content.prose {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    line-height: 1.8;
+  }
+
+  .post-content p {
+    margin-bottom: 1.5rem;
+  }
+
+  .post-content h2 {
+    font-family: var(--font-sans);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 2.5rem 0 1rem;
+  }
+
+  .post-content h3 {
+    font-family: var(--font-sans);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+  }
+
+  .post-content ul, .post-content ol {
+    margin: 1rem 0 1.5rem 1.5rem;
+  }
+
+  .post-content li {
+    margin-bottom: 0.5rem;
+  }
+
+  .post-content blockquote {
+    border-left: 4px solid var(--color-primary);
+    padding-left: 1.5rem;
+    margin: 2rem 0;
+    font-style: italic;
+    color: var(--color-text-secondary);
+  }
+
+  .post-content pre {
+    background: var(--color-bg-secondary);
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.875rem;
+  }
+
+  .post-content code {
+    background: var(--color-bg-secondary);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+  }
+
+  .post-content img {
+    max-width: 100%;
+    border-radius: 0.5rem;
+    margin: 1.5rem 0;
+  }
+
+  /* Post footer */
+  .post-footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .post-tags {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tags-label {
+    font-weight: 500;
+    margin-right: 0.5rem;
+  }
+
+  .tag-badge {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+  }
+
+  .tag-badge:hover {
+    color: var(--color-primary);
+  }
+
+  /* Share section */
+  .share-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: var(--color-bg-secondary);
+    border-radius: 0.75rem;
+  }
+
+  .share-label {
+    font-weight: 500;
+    color: var(--color-text-secondary);
+  }
+
+  .share-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .share-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+
+  .share-btn:hover {
+    transform: scale(1.1);
+  }
+
+  .share-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .share-btn.twitter {
+    background: #1DA1F2;
+    color: white;
+  }
+
+  .share-btn.linkedin {
+    background: #0A66C2;
+    color: white;
+  }
+
+  .share-btn.copy {
+    background: var(--color-border);
+    color: var(--color-text);
+  }
+
+  /* Comments section */
+  .comments-section {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .comments-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+
+  .comment-form {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--color-bg-secondary);
+    border-radius: 0.75rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 0.9375rem;
+    font-family: inherit;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .submit-btn {
+    padding: 0.75rem 1.5rem;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .submit-btn:hover {
+    background: var(--color-primary-hover);
+  }
+
+  .comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .comment {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .comment-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--color-bg-secondary);
+    color: var(--color-text-secondary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .comment-body {
+    flex: 1;
+  }
+
+  .comment-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .comment-author {
+    font-weight: 500;
+  }
+
+  .comment-date {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+  }
+
+  .comment-text {
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  .no-comments {
+    text-align: center;
+    color: var(--color-text-secondary);
+    padding: 2rem;
+  }
+
+  /* Related posts */
+  .related-section {
+    margin-top: 4rem;
+    padding: 3rem 0;
+    background: var(--color-bg-secondary);
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .related-card {
+    background: var(--color-bg);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+
+  .related-card:hover {
+    box-shadow: 0 4px 20px -5px rgba(0,0,0,0.1);
+  }
+
+  .related-image img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+  }
+
+  .related-content {
+    padding: 1.25rem;
+  }
+
+  .related-title {
+    font-weight: 600;
+    color: var(--color-text);
+    display: block;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+
+  .related-title:hover {
+    color: var(--color-primary);
+  }
+
+  .related-meta {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+  }
+
+  /* 404 state */
+  .not-found {
+    text-align: center;
+    padding: 6rem 2rem;
+  }
+
+  .not-found h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .not-found p {
+    color: var(--color-text-secondary);
+    margin-bottom: 2rem;
+  }
+
+  .back-link {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 0.5rem;
+    font-weight: 500;
+  }
+
+  .back-link:hover {
+    background: var(--color-primary-hover);
+    color: white;
+  }
+</style>
+
+<script>
+function shareTwitter() {
+  var url = encodeURIComponent(window.location.href)
+  var text = encodeURIComponent(document.querySelector('.post-title').textContent)
+  window.open('https://twitter.com/intent/tweet?url=' + url + '&text=' + text, '_blank')
+}
+
+function shareLinkedIn() {
+  var url = encodeURIComponent(window.location.href)
+  window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + url, '_blank')
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(function() {
+    alert('Link copied to clipboard!')
+  })
+}
+
+var commentForm = document.getElementById('commentForm')
+if (commentForm) {
+  commentForm.onsubmit = function(e) {
+    e.preventDefault()
+    var formData = new FormData(this)
+    var postId = formData.get('postId')
+
+    fetch('http://localhost:3000/cms/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        commentable_id: postId,
+        commentable_type: 'posts',
+        body: formData.get('body'),
+        author_name: formData.get('authorName'),
+        author_email: formData.get('authorEmail') || null,
+        status: 'pending'
+      })
+    })
+    .then(function(r) { return r.json() })
+    .then(function() {
+      alert('Comment submitted! It will appear after moderation.')
+      commentForm.reset()
+    })
+    .catch(function() {
+      alert('Failed to submit comment. Please try again.')
+    })
+  }
+}
+</script>

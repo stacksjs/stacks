@@ -327,6 +327,28 @@ export function appPath(path?: string, options?: { relative?: boolean, cwd?: str
 }
 
 /**
+ * Returns the path to the defaults `app` directory within the framework directory.
+ * This is where default Actions, Controllers, etc. are stored.
+ *
+ * @param path - The relative path to the file or directory within the defaults app directory.
+ * @returns The absolute path to the specified file or directory within the defaults app directory.
+ */
+export function defaultsAppPath(path?: string): string {
+  return frameworkPath(`defaults/app/${path || ''}`)
+}
+
+/**
+ * Returns the path to the defaults `resources` directory within the framework directory.
+ * This is where default views, components, layouts, etc. are stored.
+ *
+ * @param path - The relative path to the file or directory within the defaults resources directory.
+ * @returns The absolute path to the specified file or directory within the defaults resources directory.
+ */
+export function defaultsResourcesPath(path?: string): string {
+  return frameworkPath(`defaults/resources/${path || ''}`)
+}
+
+/**
  * Returns the path to the `auth` directory within the core directory.
  *
  * @param path - The relative path to the file or directory within the auth directory.
@@ -1374,6 +1396,8 @@ export interface Path {
   analyticsPath: (path?: string) => string
   arraysPath: (path?: string) => string
   appPath: (path?: string) => string
+  defaultsAppPath: (path?: string) => string
+  defaultsResourcesPath: (path?: string) => string
   authPath: (path?: string) => string
   coreApiPath: (path?: string) => string
   buddyPath: (path?: string) => string
@@ -1506,6 +1530,8 @@ export const path: Path = {
   analyticsPath,
   arraysPath,
   appPath,
+  defaultsAppPath,
+  defaultsResourcesPath,
   authPath,
   coreApiPath,
   buddyPath,

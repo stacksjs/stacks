@@ -1,0 +1,426 @@
+<script server>
+/**
+ * Category Archive - Shows posts in a specific category
+ */
+const Database = require('bun:sqlite').Database
+const path = require('path')
+
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+let category = null
+let posts = []
+let allCategories = []
+
+// Get category slug from URL path (e.g., /blog/category/tech)
+const urlPath = typeof request !== 'undefined' ? request.url : ''
+const pathParts = urlPath.split('/').filter(function(p) { return p && p !== 'blog' && p !== 'category' })
+const categorySlug = pathParts[0] || ''
+
+try {
+  const db = new Database(dbPath, { readonly: true })
+
+  // Find category by slug
+  const allCats = db.query('SELECT * FROM categories').all()
+  for (var i = 0; i < allCats.length; i++) {
+    var c = allCats[i]
+    var slug = c.slug || c.name.toLowerCase().replace(/\s+/g, '-')
+    if (slug === categorySlug) {
+      category = { id: c.id, name: c.name, slug: slug, description: c.description || '' }
+      break
+    }
+  }
+
+  if (category) {
+    // Get posts in this category
+    const rawPosts = db.query(`
+      SELECT p.id, p.title, p.excerpt, p.poster, p.views, p.published_at, a.name as author_name
+      FROM posts p
+      LEFT JOIN authors a ON p.author_id = a.id
+      JOIN categorizable_models cm ON p.id = cm.categorizable_id AND cm.categorizable_type = 'posts'
+      WHERE cm.category_id = ? AND p.status = 'published'
+      ORDER BY p.published_at DESC
+    `).all(category.id)
+
+    posts = rawPosts.map(function(p) {
+      return {
+        id: p.id,
+        title: p.title,
+        excerpt: p.excerpt || '',
+        poster: p.poster,
+        views: p.views || 0,
+        publishedAt: p.published_at,
+        authorName: p.author_name || 'Anonymous',
+        slug: p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+      }
+    })
+  }
+
+  // Get all categories for sidebar
+  const rawCategories = db.query(`
+    SELECT c.id, c.name, c.slug, COUNT(cm.categorizable_id) as post_count
+    FROM categories c
+    LEFT JOIN categorizable_models cm ON c.id = cm.category_id AND cm.categorizable_type = 'posts'
+    GROUP BY c.id
+    ORDER BY post_count DESC
+  `).all()
+
+  allCategories = rawCategories.map(function(c) {
+    return {
+      id: c.id,
+      name: c.name,
+      slug: c.slug || c.name.toLowerCase().replace(/\s+/g, '-'),
+      postCount: c.post_count
+    }
+  })
+
+  db.close()
+} catch (e) {
+  category = null
+  posts = []
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  var d = new Date(dateStr)
+  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear()
+}
+
+var pageTitle = category ? category.name + ' - Category' : 'Category Not Found'
+</script>
+
+<layout name="blog" title="{{ pageTitle }}">
+  <div class="container">
+    @if (category)
+      <!-- Category Header -->
+      <header class="category-header">
+        <div class="category-badge">Category</div>
+        <h1 class="category-title">{{ category.name }}</h1>
+        @if (category.description)
+          <p class="category-description">{{ category.description }}</p>
+        @endif
+        <p class="post-count">{{ posts.length }} {{ posts.length === 1 ? 'post' : 'posts' }}</p>
+      </header>
+
+      <div class="blog-grid">
+        <!-- Posts List -->
+        <section class="posts-section">
+          @if (posts.length > 0)
+            <div class="posts-grid">
+              @foreach (posts as post)
+                <article class="post-card">
+                  @if (post.poster)
+                    <a href="/blog/{{ post.slug }}" class="post-image">
+                      <img src="{{ post.poster }}" alt="{{ post.title }}" loading="lazy">
+                    </a>
+                  @endif
+                  <div class="post-content">
+                    <a href="/blog/{{ post.slug }}" class="post-title">{{ post.title }}</a>
+                    <p class="post-excerpt">{{ post.excerpt }}</p>
+                    <div class="post-meta">
+                      <span>{{ post.authorName }}</span>
+                      <span class="meta-dot">·</span>
+                      <time>{{ formatDate(post.publishedAt) }}</time>
+                    </div>
+                  </div>
+                </article>
+              @endforeach
+            </div>
+          @else
+            <div class="empty-state">
+              <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+              </svg>
+              <h3>No posts in this category</h3>
+              <p>Check back soon for new content.</p>
+            </div>
+          @endif
+        </section>
+
+        <!-- Sidebar -->
+        <aside class="blog-sidebar">
+          <div class="sidebar-widget">
+            <h3 class="widget-title">All Categories</h3>
+            <ul class="category-list">
+              @foreach (allCategories as cat)
+                <li class="{{ cat.slug === categorySlug ? 'active' : '' }}">
+                  <a href="/blog/category/{{ cat.slug }}">
+                    <span>{{ cat.name }}</span>
+                    <span class="category-count">{{ cat.postCount }}</span>
+                  </a>
+                </li>
+              @endforeach
+            </ul>
+          </div>
+
+          <a href="/blog" class="back-to-blog">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Back to Blog
+          </a>
+        </aside>
+      </div>
+    @else
+      <!-- 404 State -->
+      <div class="not-found">
+        <h1>Category Not Found</h1>
+        <p>The category you're looking for doesn't exist.</p>
+        <a href="/blog" class="back-link">Back to Blog</a>
+      </div>
+    @endif
+  </div>
+</layout>
+
+<style>
+  /* Category header */
+  .category-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .category-badge {
+    display: inline-block;
+    background: var(--color-primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+  }
+
+  .category-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+
+  @media (max-width: 640px) {
+    .category-title { font-size: 1.75rem; }
+  }
+
+  .category-description {
+    color: var(--color-text-secondary);
+    font-size: 1.125rem;
+    max-width: 600px;
+    margin: 0 auto 1rem;
+  }
+
+  .post-count {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+  }
+
+  /* Blog grid */
+  .blog-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 3rem;
+  }
+
+  @media (max-width: 1024px) {
+    .blog-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .blog-sidebar {
+      order: -1;
+    }
+  }
+
+  /* Posts grid */
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .post-card {
+    background: var(--color-bg-secondary);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px -10px rgba(0,0,0,0.1);
+  }
+
+  .post-image img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+
+  .post-content {
+    padding: 1.25rem;
+  }
+
+  .post-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    display: block;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+
+  .post-title:hover {
+    color: var(--color-primary);
+  }
+
+  .post-excerpt {
+    color: var(--color-text-secondary);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+  }
+
+  .meta-dot {
+    color: var(--color-border);
+  }
+
+  /* Sidebar */
+  .blog-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .sidebar-widget {
+    background: var(--color-bg-secondary);
+    padding: 1.5rem;
+    border-radius: 1rem;
+  }
+
+  .widget-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .category-list {
+    list-style: none;
+  }
+
+  .category-list li {
+    margin-bottom: 0.25rem;
+  }
+
+  .category-list li.active a {
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+
+  .category-list a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    margin: 0 -0.75rem;
+    color: var(--color-text-secondary);
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+  }
+
+  .category-list a:hover {
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  .category-count {
+    background: var(--color-border);
+    padding: 0.125rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+  }
+
+  .back-to-blog {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--color-bg-secondary);
+    border-radius: 0.75rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .back-to-blog:hover {
+    background: var(--color-primary);
+    color: white;
+  }
+
+  .back-to-blog svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--color-text-secondary);
+  }
+
+  .empty-icon {
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  .empty-state h3 {
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-text);
+  }
+
+  /* 404 state */
+  .not-found {
+    text-align: center;
+    padding: 6rem 2rem;
+  }
+
+  .not-found h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .not-found p {
+    color: var(--color-text-secondary);
+    margin-bottom: 2rem;
+  }
+
+  .back-link {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 0.5rem;
+    font-weight: 500;
+  }
+
+  .back-link:hover {
+    background: var(--color-primary-hover);
+    color: white;
+  }
+</style>

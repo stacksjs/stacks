@@ -171,7 +171,21 @@ function createChainableRoute(routeKey: string): ChainableRoute {
 }
 
 /**
+ * Check if a file exists
+ */
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    const file = Bun.file(path)
+    return await file.exists()
+  }
+  catch {
+    return false
+  }
+}
+
+/**
  * Resolve a string handler to an actual handler function
+ * Supports user overrides: checks user's app/ first, then falls back to defaults
  */
 async function resolveStringHandler(handlerPath: string): Promise<ActionHandler> {
   let modulePath = handlerPath
@@ -182,8 +196,11 @@ async function resolveStringHandler(handlerPath: string): Promise<ActionHandler>
   // Handle controller-based routing (e.g., 'Controllers/MyController@method')
   if (modulePath.includes('Controller')) {
     const [controllerPath, methodName = 'index'] = modulePath.split('@')
-    const fullPath = p.appPath(`${controllerPath}.ts`)
 
+    // Try user path first, then fall back to defaults
+    const userPath = p.appPath(`${controllerPath}.ts`)
+    const defaultPath = p.storagePath(`framework/defaults/app/${controllerPath}.ts`)
+    const fullPath = await fileExists(userPath) ? userPath : defaultPath
 
     try {
       const controller = await import(fullPath)
@@ -211,14 +228,20 @@ async function resolveStringHandler(handlerPath: string): Promise<ActionHandler>
   if (modulePath.includes('storage/framework/orm')) {
     fullPath = modulePath
   }
-  else if (modulePath.includes('Actions')) {
-    fullPath = p.projectPath(`app/${modulePath}.ts`)
-  }
   else if (modulePath.includes('OrmAction')) {
     fullPath = p.storagePath(`framework/actions/src/${modulePath}.ts`)
   }
+  else if (modulePath.includes('Actions')) {
+    // Try user path first, then fall back to defaults
+    const userPath = p.projectPath(`app/${modulePath}.ts`)
+    const defaultPath = p.storagePath(`framework/defaults/app/${modulePath}.ts`)
+    fullPath = await fileExists(userPath) ? userPath : defaultPath
+  }
   else {
-    fullPath = p.appPath(`${modulePath}.ts`)
+    // Generic app path - try user first, then defaults
+    const userPath = p.appPath(`${modulePath}.ts`)
+    const defaultPath = p.storagePath(`framework/defaults/app/${modulePath}.ts`)
+    fullPath = await fileExists(userPath) ? userPath : defaultPath
   }
 
 

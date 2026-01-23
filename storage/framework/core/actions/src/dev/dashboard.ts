@@ -175,9 +175,12 @@ for (const craftPath of craftPaths) {
 }
 
 if (!craftBinary) {
-  log.error('Could not find Craft binary. Please build Craft first:')
-  log.info('  cd ~/Code/craft && zig build')
-  process.exit(1)
+  log.warn('Craft binary not found. Running STX server only.')
+  log.info('To enable native macOS sidebar, build Craft: cd ~/Code/craft && zig build')
+  log.info(`Dashboard available at: http://localhost:${dashboardPort}/pages/index`)
+
+  // Keep the process running since we're serving via STX
+  await new Promise(() => {}) // Block forever
 }
 
 // Build sidebar config - each item needs a url for navigation

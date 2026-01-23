@@ -150,6 +150,61 @@ route.group({ prefix: '/monitoring' }, () => {
 
 
 
+// CMS / Blog routes
+route.group({ prefix: '/cms' }, () => {
+  // Posts - Full CRUD for blog posts
+  route.get('/posts', 'Actions/Cms/PostIndexAction')
+  route.get('/posts/{id}', 'Actions/Cms/PostShowAction')
+  route.post('/posts', 'Actions/Cms/PostStoreAction')
+  route.patch('/posts/{id}', 'Actions/Cms/PostUpdateAction')
+  route.delete('/posts/{id}', 'Actions/Cms/PostDestroyAction')
+  route.patch('/posts/{id}/views', 'Actions/Cms/PostViewsUpdateAction')
+
+  // Authors
+  route.get('/authors', 'Actions/Cms/AuthorIndexAction')
+  route.get('/authors/{id}', 'Actions/Cms/AuthorShowAction')
+  route.post('/authors', 'Actions/Cms/AuthorStoreAction')
+  route.patch('/authors/{id}', 'Actions/Cms/AuthorUpdateAction')
+  route.delete('/authors/{id}', 'Actions/Cms/AuthorDestroyAction')
+
+  // Categories
+  route.get('/categories', 'Actions/Cms/CategorizableIndexAction')
+  route.get('/categories/{id}', 'Actions/Cms/CategorizableShowAction')
+  route.post('/categories', 'Actions/Cms/CategorizableStoreAction')
+  route.patch('/categories/{id}', 'Actions/Cms/CategorizableUpdateAction')
+  route.delete('/categories/{id}', 'Actions/Cms/CategorizableDestroyAction')
+
+  // Tags
+  route.get('/tags', 'Actions/Cms/TaggableIndexAction')
+  route.get('/tags/{id}', 'Actions/Cms/TaggableShowAction')
+  route.post('/tags', 'Actions/Cms/TaggableStoreAction')
+  route.patch('/tags/{id}', 'Actions/Cms/TaggableUpdateAction')
+  route.delete('/tags/{id}', 'Actions/Cms/TaggableDestroyAction')
+
+  // Comments
+  route.get('/comments', 'Actions/Cms/CommentIndexAction')
+  route.get('/comments/{id}', 'Actions/Cms/CommentShowAction')
+  route.post('/comments', 'Actions/Cms/CommentStoreAction')
+  route.patch('/comments/{id}', 'Actions/Cms/CommentUpdateAction')
+  route.delete('/comments/{id}', 'Actions/Cms/CommentDestroyAction')
+
+  // Pages
+  route.get('/pages', 'Actions/Cms/PageIndexAction')
+  route.post('/pages', 'Actions/Cms/PageStoreAction')
+  route.patch('/pages/{id}', 'Actions/Cms/PageUpdateAction')
+  route.delete('/pages/{id}', 'Actions/Cms/PageDestroyAction')
+})
+
+// Public Blog routes (for frontend consumption)
+route.group({ prefix: '/blog' }, () => {
+  route.get('/posts', 'Actions/Cms/PostIndexAction')
+  route.get('/posts/{id}', 'Actions/Cms/PostShowAction')
+  route.get('/categories', 'Actions/Cms/CategorizableIndexAction')
+  route.get('/tags', 'Actions/Cms/TaggableIndexAction')
+  route.get('/feed.xml', 'Actions/Cms/RssFeedAction')
+  route.get('/sitemap.xml', 'Actions/Cms/SitemapAction')
+})
+
 // Authenticated user routes
 route.group({ middleware: 'auth' }, () => {
   route.get('/me', 'Actions/Auth/AuthUserAction')

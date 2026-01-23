@@ -1,0 +1,195 @@
+<script server>
+/**
+ * Categories Index - Shows all blog categories
+ */
+const Database = require('bun:sqlite').Database
+const path = require('path')
+
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+let categories = []
+
+try {
+  const db = new Database(dbPath, { readonly: true })
+
+  const rawCategories = db.query(`
+    SELECT c.id, c.name, c.slug, c.description,
+           COUNT(cm.categorizable_id) as post_count
+    FROM categories c
+    LEFT JOIN categorizable_models cm ON c.id = cm.category_id AND cm.categorizable_type = 'posts'
+    GROUP BY c.id
+    ORDER BY post_count DESC, c.name ASC
+  `).all()
+
+  categories = rawCategories.map(function(c) {
+    return {
+      id: c.id,
+      name: c.name,
+      slug: c.slug || c.name.toLowerCase().replace(/\s+/g, '-'),
+      description: c.description || '',
+      postCount: c.post_count
+    }
+  })
+
+  db.close()
+} catch (e) {
+  categories = []
+}
+</script>
+
+<layout name="blog" title="Categories">
+  <div class="container">
+    <header class="page-header">
+      <h1>Categories</h1>
+      <p>Browse posts by topic</p>
+    </header>
+
+    @if (categories.length > 0)
+      <div class="categories-grid">
+        @foreach (categories as cat)
+          <a href="/blog/category/{{ cat.slug }}" class="category-card">
+            <div class="category-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/>
+              </svg>
+            </div>
+            <h2 class="category-name">{{ cat.name }}</h2>
+            @if (cat.description)
+              <p class="category-description">{{ cat.description }}</p>
+            @endif
+            <span class="category-count">{{ cat.postCount }} {{ cat.postCount === 1 ? 'post' : 'posts' }}</span>
+          </a>
+        @endforeach
+      </div>
+    @else
+      <div class="empty-state">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/>
+        </svg>
+        <h3>No categories yet</h3>
+        <p>Categories will appear here once posts are organized.</p>
+        <a href="/blog" class="back-link">View all posts</a>
+      </div>
+    @endif
+  </div>
+</layout>
+
+<style>
+  .page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .page-header p {
+    color: var(--color-text-secondary);
+    font-size: 1.125rem;
+  }
+
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .category-card {
+    background: var(--color-bg-secondary);
+    border-radius: 1rem;
+    padding: 2rem;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .category-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px -10px rgba(0,0,0,0.15);
+  }
+
+  .category-icon {
+    width: 4rem;
+    height: 4rem;
+    background: var(--color-primary);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+  }
+
+  .category-icon svg {
+    width: 2rem;
+    height: 2rem;
+    color: white;
+  }
+
+  .category-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+  }
+
+  .category-description {
+    color: var(--color-text-secondary);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .category-count {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    background: var(--color-bg);
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--color-text-secondary);
+  }
+
+  .empty-icon {
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  .empty-state h3 {
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-text);
+  }
+
+  .empty-state p {
+    margin-bottom: 1.5rem;
+  }
+
+  .back-link {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 0.5rem;
+    font-weight: 500;
+  }
+
+  .back-link:hover {
+    background: var(--color-primary-hover);
+    color: white;
+  }
+</style>

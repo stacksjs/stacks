@@ -1,63 +1,368 @@
 <script server>
-const comments = [
-  { author: 'John Doe', email: 'john@example.com', content: 'Great article!', post: 'Getting Started', status: 'approved', date: '2024-01-10' },
-  { author: 'Jane Smith', email: 'jane@example.com', content: 'Very helpful, thanks!', post: 'TypeScript Tips', status: 'pending', date: '2024-01-10' },
-  { author: 'Bob Wilson', email: 'bob@example.com', content: 'Could you explain more?', post: 'Database Guide', status: 'approved', date: '2024-01-09' },
-  { author: 'Anonymous', email: 'spam@spam.com', content: 'Buy cheap products...', post: 'Getting Started', status: 'spam', date: '2024-01-08' },
-]
+/**
+ * Comments Moderation Page
+ * Uses synchronous SQLite queries (STX doesn't support async/await)
+ */
+const Database = require('bun:sqlite').Database
+const path = require('path')
+
+const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+let comments = []
+let stats = { total: 0, pending: 0, approved: 0, spam: 0 }
+
+try {
+  const db = new Database(dbPath, { readonly: true })
+
+  // Fetch all comments with post info
+  const rawComments = db.query(`
+    SELECT c.id, c.author_name, c.author_email, c.content, c.status, c.created_at, c.ip_address,
+           p.title as post_title, p.id as post_id
+    FROM comments c
+    LEFT JOIN posts p ON c.commentable_id = p.id AND c.commentable_type = 'posts'
+    ORDER BY c.created_at DESC
+  `).all()
+
+  comments = rawComments.map(function(c) {
+    return {
+      id: c.id,
+      author: c.author_name || 'Anonymous',
+      email: c.author_email || '',
+      content: c.content || '',
+      status: c.status || 'pending',
+      date: c.created_at ? String(c.created_at).split('T')[0] : 'N/A',
+      postTitle: c.post_title || 'Unknown Post',
+      postId: c.post_id,
+      ip: c.ip_address || ''
+    }
+  })
+
+  // Calculate stats
+  stats.total = comments.length
+  stats.pending = comments.filter(function(c) { return c.status === 'pending' }).length
+  stats.approved = comments.filter(function(c) { return c.status === 'approved' }).length
+  stats.spam = comments.filter(function(c) { return c.status === 'spam' }).length
+
+  db.close()
+} catch (e) {
+  comments = []
+}
 </script>
+
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div class="">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Comments</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Moderate and manage comments</p>
-      </div>
+  <div class="flex items-start justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Comments</h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Moderate and manage comments</p>
     </div>
+  </div>
 
-    <div class="flex flex-col gap-6">
-      <div class="flex gap-2 mb-4">
-        <button class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">All</button>
-        <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Pending</button>
-        <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Approved</button>
-        <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Spam</button>
+  <div class="flex flex-col gap-6">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+        <div class="flex items-center gap-4">
+          <div class="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+            <svg class="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Total</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.total }}</p>
+          </div>
+        </div>
       </div>
-
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Author</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Comment</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Post</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach (comments as comment)
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <div class="font-medium">{{ comment.author }}</div>
-                    <div class="text-sm text-muted">{{ comment.email }}</div>
-                  </td>
-                  <td class="truncate" style="max-width: 300px;">{{ comment.content }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ comment.post }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ comment.status === 'approved' ? 'success' : comment.status === 'pending' ? 'warning' : 'error'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : comment.status === 'approved' ? 'success' : comment.status === 'pending' ? 'warning' : 'error'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : comment.status === 'approved' ? 'success' : comment.status === 'pending' ? 'warning' : 'error'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                      {{ comment.status }}
-                    </span>
-                  </td>
-                  <td class="text-gray-500 dark:text-gray-400">{{ comment.date }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Review</button>
-                  </td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+        <div class="flex items-center gap-4">
+          <div class="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+            <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Pending</p>
+            <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ stats.pending }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+        <div class="flex items-center gap-4">
+          <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Approved</p>
+            <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ stats.approved }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+        <div class="flex items-center gap-4">
+          <div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+            <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Spam</p>
+            <p class="text-2xl font-bold text-red-600 dark:text-red-400">{{ stats.spam }}</p>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex gap-2" id="filterTabs">
+      <button data-filter="all" class="filter-tab active px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg">All ({{ stats.total }})</button>
+      <button data-filter="pending" class="filter-tab px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Pending ({{ stats.pending }})</button>
+      <button data-filter="approved" class="filter-tab px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Approved ({{ stats.approved }})</button>
+      <button data-filter="spam" class="filter-tab px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Spam ({{ stats.spam }})</button>
+    </div>
+
+    <!-- Comments Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm">
+      <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700/50">
+            <tr>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Author</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Comment</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Post</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="commentsTableBody">
+            @foreach (comments as comment)
+              <tr class="comment-row hover:bg-gray-50 dark:hover:bg-gray-700/30 border-t border-gray-100 dark:border-gray-700" data-status="{{ comment.status }}" data-id="{{ comment.id }}">
+                <td class="px-4 py-3">
+                  <div class="font-medium text-gray-900 dark:text-white">{{ comment.author }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ comment.email }}</div>
+                </td>
+                <td class="px-4 py-3 max-w-xs">
+                  <p class="text-gray-600 dark:text-gray-300 truncate">{{ comment.content }}</p>
+                </td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ comment.postTitle }}</td>
+                <td class="px-4 py-3">
+                  @if (comment.status === 'approved')
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">Approved</span>
+                  @elseif (comment.status === 'pending')
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400">Pending</span>
+                  @elseif (comment.status === 'spam')
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">Spam</span>
+                  @else
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ comment.status }}</span>
+                  @endif
+                </td>
+                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ comment.date }}</td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-1">
+                    @if (comment.status !== 'approved')
+                      <button class="approve-btn p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors" data-id="{{ comment.id }}" title="Approve">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                      </button>
+                    @endif
+                    @if (comment.status !== 'spam')
+                      <button class="spam-btn p-1.5 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded transition-colors" data-id="{{ comment.id }}" title="Mark as Spam">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                        </svg>
+                      </button>
+                    @endif
+                    <button class="view-btn p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors" data-id="{{ comment.id }}" data-author="{{ comment.author }}" data-email="{{ comment.email }}" data-content="{{ comment.content }}" data-post="{{ comment.postTitle }}" data-date="{{ comment.date }}" data-ip="{{ comment.ip }}" title="View">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                      </svg>
+                    </button>
+                    <button class="delete-btn p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors" data-id="{{ comment.id }}" title="Delete">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+
+      @if (comments.length === 0)
+        <div class="text-center py-12">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+          </svg>
+          <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No comments yet</h3>
+          <p class="mt-2 text-gray-500 dark:text-gray-400">Comments will appear here when readers engage with your content.</p>
+        </div>
+      @endif
+    </div>
   </div>
+</div>
+
+<!-- View Comment Modal -->
+<div id="viewModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50" style="display: none;">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg m-4">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Comment Details</h2>
+      <button id="closeViewModal" class="p-2 text-gray-400 hover:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="p-6 space-y-4">
+      <div>
+        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Author</label>
+        <p id="viewAuthor" class="text-gray-900 dark:text-white font-medium"></p>
+        <p id="viewEmail" class="text-sm text-gray-500 dark:text-gray-400"></p>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Comment</label>
+        <p id="viewContent" class="text-gray-900 dark:text-white whitespace-pre-wrap"></p>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Post</label>
+          <p id="viewPost" class="text-gray-900 dark:text-white"></p>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Date</label>
+          <p id="viewDate" class="text-gray-900 dark:text-white"></p>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">IP Address</label>
+        <p id="viewIp" class="text-gray-500 dark:text-gray-400 font-mono text-sm"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50" style="display: none;">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md m-4 p-6">
+    <div class="text-center">
+      <svg class="mx-auto h-12 w-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+      </svg>
+      <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Delete Comment</h3>
+      <p class="mt-2 text-gray-500 dark:text-gray-400">Are you sure you want to delete this comment? This action cannot be undone.</p>
+    </div>
+    <div class="mt-6 flex items-center justify-center gap-3">
+      <button id="cancelDeleteBtn" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">Cancel</button>
+      <button id="confirmDeleteBtn" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="fixed bottom-4 right-4 transform translate-y-full opacity-0 transition-all duration-300 z-50">
+  <div class="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-4 py-3 rounded-lg shadow-lg">
+    <span id="toastMessage">Action completed!</span>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'http://localhost:3000/cms'
+let deleteCommentId = null
+
+const viewModal = document.getElementById('viewModal')
+const deleteModal = document.getElementById('deleteModal')
+
+function closeModals() {
+  viewModal.style.display = 'none'
+  deleteModal.style.display = 'none'
+}
+
+function showToast(message) {
+  const toast = document.getElementById('toast')
+  document.getElementById('toastMessage').textContent = message
+  toast.style.transform = 'translateY(0)'
+  toast.style.opacity = '1'
+  setTimeout(() => {
+    toast.style.transform = 'translateY(100%)'
+    toast.style.opacity = '0'
+  }, 3000)
+}
+
+function updateStatus(id, status) {
+  fetch(`${API_BASE}/comments/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  })
+    .then(r => r.json())
+    .then(() => {
+      showToast(`Comment ${status}!`)
+      setTimeout(() => location.reload(), 1000)
+    })
+    .catch(() => showToast('Failed to update comment'))
+}
+
+function deleteComment() {
+  if (!deleteCommentId) return
+  fetch(`${API_BASE}/comments/${deleteCommentId}`, { method: 'DELETE' })
+    .then(r => r.json())
+    .then(() => {
+      showToast('Comment deleted!')
+      closeModals()
+      setTimeout(() => location.reload(), 1000)
+    })
+    .catch(() => showToast('Failed to delete comment'))
+}
+
+function filterComments(status) {
+  document.querySelectorAll('.comment-row').forEach(row => {
+    row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none'
+  })
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    const isActive = tab.dataset.filter === status
+    tab.classList.toggle('text-white', isActive)
+    tab.classList.toggle('bg-blue-600', isActive)
+    tab.classList.toggle('text-gray-500', !isActive)
+  })
+}
+
+// Event bindings
+document.getElementById('closeViewModal').onclick = closeModals
+document.getElementById('cancelDeleteBtn').onclick = closeModals
+document.getElementById('confirmDeleteBtn').onclick = deleteComment
+
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.onclick = function() { filterComments(this.dataset.filter) }
+})
+
+document.querySelectorAll('.approve-btn').forEach(btn => {
+  btn.onclick = function() { updateStatus(this.dataset.id, 'approved') }
+})
+
+document.querySelectorAll('.spam-btn').forEach(btn => {
+  btn.onclick = function() { updateStatus(this.dataset.id, 'spam') }
+})
+
+document.querySelectorAll('.view-btn').forEach(btn => {
+  btn.onclick = function() {
+    document.getElementById('viewAuthor').textContent = this.dataset.author
+    document.getElementById('viewEmail').textContent = this.dataset.email
+    document.getElementById('viewContent').textContent = this.dataset.content
+    document.getElementById('viewPost').textContent = this.dataset.post
+    document.getElementById('viewDate').textContent = this.dataset.date
+    document.getElementById('viewIp').textContent = this.dataset.ip || 'Not recorded'
+    viewModal.style.display = 'flex'
+  }
+})
+
+document.querySelectorAll('.delete-btn').forEach(btn => {
+  btn.onclick = function() { deleteCommentId = this.dataset.id; deleteModal.style.display = 'flex' }
+})
+
+viewModal.onclick = e => { if (e.target === viewModal) closeModals() }
+deleteModal.onclick = e => { if (e.target === deleteModal) closeModals() }
+</script>

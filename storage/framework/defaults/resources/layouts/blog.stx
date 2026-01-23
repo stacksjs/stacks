@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title || 'Blog' }} | Stacks Blog</title>
+  <meta name="description" content="{{ description || 'A modern blog powered by Stacks' }}">
+  <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="/api/blog/feed.xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-bg: #ffffff;
+      --color-bg-secondary: #f8fafc;
+      --color-text: #1e293b;
+      --color-text-secondary: #64748b;
+      --color-primary: #3b82f6;
+      --color-primary-hover: #2563eb;
+      --color-border: #e2e8f0;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-serif: 'Merriweather', Georgia, serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-bg: #0f172a;
+        --color-bg-secondary: #1e293b;
+        --color-text: #f1f5f9;
+        --color-text-secondary: #94a3b8;
+        --color-border: #334155;
+      }
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { color: var(--color-primary-hover); }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .container-narrow {
+      max-width: 768px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Header */
+    .blog-header {
+      border-bottom: 1px solid var(--color-border);
+      padding: 1.5rem 0;
+      position: sticky;
+      top: 0;
+      background: var(--color-bg);
+      z-index: 100;
+    }
+
+    .blog-header .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .blog-logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+
+    .blog-nav {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .blog-nav a {
+      color: var(--color-text-secondary);
+      font-weight: 500;
+      font-size: 0.9375rem;
+      transition: color 0.2s;
+    }
+
+    .blog-nav a:hover { color: var(--color-text); }
+
+    .subscribe-btn {
+      background: var(--color-primary);
+      color: white !important;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .subscribe-btn:hover { background: var(--color-primary-hover); }
+
+    /* Main content */
+    main { padding: 3rem 0; min-height: calc(100vh - 200px); }
+
+    /* Footer */
+    .blog-footer {
+      border-top: 1px solid var(--color-border);
+      padding: 3rem 0;
+      background: var(--color-bg-secondary);
+    }
+
+    .blog-footer .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .footer-links a {
+      color: var(--color-text-secondary);
+      font-size: 0.875rem;
+    }
+
+    .footer-copy {
+      color: var(--color-text-secondary);
+      font-size: 0.875rem;
+    }
+
+    /* Utility classes */
+    .text-secondary { color: var(--color-text-secondary); }
+    .text-sm { font-size: 0.875rem; }
+    .mt-2 { margin-top: 0.5rem; }
+    .mt-4 { margin-top: 1rem; }
+    .mt-8 { margin-top: 2rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-8 { margin-bottom: 2rem; }
+  </style>
+</head>
+<body>
+  <header class="blog-header">
+    <div class="container">
+      <a href="/blog" class="blog-logo">Stacks Blog</a>
+      <nav class="blog-nav">
+        <a href="/blog">Articles</a>
+        <a href="/blog/categories">Categories</a>
+        <a href="/api/blog/feed.xml">RSS</a>
+        <a href="/blog/subscribe" class="subscribe-btn">Subscribe</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <slot />
+  </main>
+
+  <footer class="blog-footer">
+    <div class="container">
+      <div class="footer-links">
+        <a href="/blog">Blog</a>
+        <a href="/api/blog/sitemap.xml">Sitemap</a>
+        <a href="/api/blog/feed.xml">RSS Feed</a>
+      </div>
+      <p class="footer-copy">Powered by Stacks</p>
+    </div>
+  </footer>
+</body>
+</html>

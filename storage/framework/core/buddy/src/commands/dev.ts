@@ -271,8 +271,16 @@ export function dev(buddy: CLI): void {
 }
 
 export async function startDevelopmentServer(options: DevOptions): Promise<void> {
-  await runAction(Action.Dev, options)
-  // Dev server runs indefinitely, so this line should not be reached
+  // Start both frontend and API servers concurrently
+  log.info('Starting frontend and API development servers...')
+
+  // Run both servers in parallel
+  await Promise.all([
+    runFrontendDevServer(options),
+    runApiDevServer(options),
+  ])
+
+  // Dev servers run indefinitely, so this line should not be reached
 }
 
 function wantsInteractive(options: DevOptions) {
