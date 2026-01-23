@@ -96,7 +96,8 @@
       "Bash(node -e:*)",
       "Bash(cd:*)",
       "Bash(npm ls:*)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(npm show:*)"
     ],
     "deny": [],
     "ask": []

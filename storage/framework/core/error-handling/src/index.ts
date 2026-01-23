@@ -17,7 +17,7 @@ export {
   ok,
 } from 'ts-error-handling'
 
-// Error page exports (Ignition-style)
+// Error page exports (Ignition-style) - local implementation
 export type {
   CodeSnippet,
   EnvironmentContext,
@@ -31,15 +31,15 @@ export type {
   RoutingContext,
   StackFrame,
   UserContext,
-} from 'ts-error-handling'
+} from './error-page'
 
 export {
   createErrorHandler,
   ERROR_PAGE_CSS,
-  ErrorHandler as ErrorPageHandler,
+  ErrorPageHandler,
   errorResponse,
   HTTP_ERRORS,
   renderError,
   renderErrorPage,
   renderProductionErrorPage,
-} from 'ts-error-handling'
+} from './error-page'

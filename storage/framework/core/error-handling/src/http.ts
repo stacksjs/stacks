@@ -2,13 +2,13 @@ import {
   createErrorHandler,
   HTTP_ERRORS,
   renderProductionErrorPage,
-} from 'ts-error-handling'
+} from './error-page'
 import type {
   ErrorPageConfig,
   HttpStatusCode,
   RequestContext,
   RoutingContext,
-} from 'ts-error-handling'
+} from './error-page'
 
 export class HttpError extends Error {
   constructor(public status: number, message: string) {
