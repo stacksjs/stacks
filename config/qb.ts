@@ -6,16 +6,23 @@ const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
 
 
 
+const dialect = (envVars.DB_CONNECTION as SupportedDialect) || 'sqlite'
+
+// For SQLite, use file path; for other databases, use connection params
+const databaseConfig = dialect === 'sqlite'
+  ? { database: envVars.DB_DATABASE_PATH || 'database/stacks.sqlite' }
+  : {
+      database: envVars.DB_DATABASE || 'stacks',
+      username: envVars.DB_USERNAME || '',
+      password: envVars.DB_PASSWORD || '',
+      host: envVars.DB_HOST || 'localhost',
+      port: Number(envVars.DB_PORT) || 5432,
+    }
+
 export default {
   verbose: true,
-  dialect: envVars.DB_CONNECTION as SupportedDialect || 'postgres',
-  database: {
-    database: envVars.DB_DATABASE || 'stacks',
-    username: envVars.DB_USERNAME || '',
-    password: envVars.DB_PASSWORD || '',
-    host: envVars.DB_HOST || 'localhost',
-    port: Number(envVars.DB_PORT) || 5432,
-  },
+  dialect,
+  database: databaseConfig,
   timestamps: {
     createdAt: 'created_at',
     updatedAt: 'updated_at',

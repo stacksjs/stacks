@@ -5,20 +5,7 @@
  * configured using the stacks database config.
  */
 
-import { createQueryBuilder } from 'bun-query-builder'
-
-// Try to import setConfig if available (newer versions)
-let setConfig: ((config: any) => void) | undefined
-try {
-  // Dynamic import to handle both old and new versions
-  const mod = await import('bun-query-builder')
-  if ('setConfig' in mod && typeof mod.setConfig === 'function') {
-    setConfig = mod.setConfig
-  }
-}
-catch {
-  // setConfig not available in this version
-}
+import { createQueryBuilder, setConfig } from 'bun-query-builder'
 
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
@@ -154,11 +141,6 @@ function getDbConfig(): { database: string, username?: string, password?: string
  * Update bun-query-builder configuration
  */
 function updateQueryBuilderConfig(): void {
-  if (!setConfig) {
-    // setConfig not available in this version, config will be passed to createQueryBuilder
-    return
-  }
-
   const dialect = getDialect()
   const dbConfigForQb = getDbConfig()
 
@@ -178,6 +160,10 @@ function updateQueryBuilderConfig(): void {
     },
   })
 }
+
+// Initialize config immediately at module load time
+// This ensures bun-query-builder is configured before any queries run
+updateQueryBuilderConfig()
 
 // Config is initialized lazily when first accessed via getDb()
 // Do NOT call updateQueryBuilderConfig() at module level to avoid circular deps

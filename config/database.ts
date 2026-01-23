@@ -15,7 +15,8 @@ export default {
 
   connections: {
     sqlite: {
-      database: envVars.DB_DATABASE || 'stacks',
+      // SQLite requires a file path, not a database name
+      database: envVars.DB_DATABASE_PATH || 'database/stacks.sqlite',
       prefix: '',
     },
 

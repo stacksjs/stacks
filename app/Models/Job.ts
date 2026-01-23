@@ -1,0 +1,1 @@
+/Users/chrisbreuer/Code/stacks/storage/framework/models/Job.ts

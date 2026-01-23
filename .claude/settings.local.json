@@ -95,7 +95,8 @@
       "Bash(/usr/bin/grep:*)",
       "Bash(node -e:*)",
       "Bash(cd:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(tee:*)"
     ],
     "deny": [],
     "ask": []

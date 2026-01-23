@@ -205,6 +205,175 @@ route.group({ prefix: '/blog' }, () => {
   route.get('/sitemap.xml', 'Actions/Cms/SitemapAction')
 })
 
+// Commerce routes
+route.group({ prefix: '/commerce' }, () => {
+  // Products
+  route.get('/products', 'Actions/Commerce/Product/ProductIndexAction')
+  route.get('/products/{id}', 'Actions/Commerce/Product/ProductShowAction')
+  route.post('/products', 'Actions/Commerce/Product/ProductStoreAction')
+  route.patch('/products/{id}', 'Actions/Commerce/Product/ProductUpdateAction')
+  route.delete('/products/{id}', 'Actions/Commerce/Product/ProductDestroyAction')
+
+  // Product Variants
+  route.get('/products/{productId}/variants', 'Actions/Commerce/Product/ProductVariantIndexAction')
+  route.get('/variants/{id}', 'Actions/Commerce/Product/ProductVariantShowAction')
+  route.post('/variants', 'Actions/Commerce/Product/ProductVariantStoreAction')
+  route.patch('/variants/{id}', 'Actions/Commerce/Product/ProductVariantUpdateAction')
+  route.delete('/variants/{id}', 'Actions/Commerce/Product/ProductVariantDestroyAction')
+
+  // Product Units
+  route.get('/units', 'Actions/Commerce/Product/ProductUnitIndexAction')
+  route.get('/units/{id}', 'Actions/Commerce/Product/ProductUnitShowAction')
+  route.post('/units', 'Actions/Commerce/Product/ProductUnitStoreAction')
+  route.delete('/units/{id}', 'Actions/Commerce/Product/ProductUnitDestroyAction')
+
+  // Product Categories
+  route.get('/product-categories', 'Actions/Commerce/Product/ProductCategoryIndexAction')
+  route.post('/product-categories', 'Actions/Commerce/Product/ProductCategoryStoreAction')
+
+  // Manufacturers
+  route.get('/manufacturers', 'Actions/Commerce/Product/ManufacturerIndexAction')
+  route.get('/manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerShowAction')
+  route.post('/manufacturers', 'Actions/Commerce/Product/ManufacturerStoreAction')
+  route.patch('/manufacturers/{id}', 'Actions/Commerce/Product/ProductManufacturerUpdateAction')
+  route.delete('/manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerDestroyAction')
+
+  // Orders
+  route.get('/orders', 'Actions/Commerce/OrderIndexAction')
+  route.get('/orders/{id}', 'Actions/Commerce/OrderShowAction')
+  route.post('/orders', 'Actions/Commerce/OrderStoreAction')
+  route.patch('/orders/{id}', 'Actions/Commerce/OrderUpdateAction')
+  route.delete('/orders/{id}', 'Actions/Commerce/OrderDestroyAction')
+  route.get('/orders/export', 'Actions/Commerce/OrderExportAction')
+
+  // Customers
+  route.get('/customers', 'Actions/Commerce/CustomerIndexAction')
+  route.get('/customers/{id}', 'Actions/Commerce/CustomerShowAction')
+  route.post('/customers', 'Actions/Commerce/CustomerStoreAction')
+  route.patch('/customers/{id}', 'Actions/Commerce/CustomerUpdateAction')
+  route.delete('/customers/{id}', 'Actions/Commerce/CustomerDestroyAction')
+
+  // Coupons
+  route.get('/coupons', 'Actions/Commerce/CouponIndexAction')
+  route.get('/coupons/{id}', 'Actions/Commerce/CouponShowAction')
+  route.post('/coupons', 'Actions/Commerce/CouponStoreAction')
+  route.patch('/coupons/{id}', 'Actions/Commerce/CouponUpdateAction')
+  route.delete('/coupons/{id}', 'Actions/Commerce/CouponDestroyAction')
+
+  // Gift Cards
+  route.get('/gift-cards', 'Actions/Commerce/GiftCardIndexAction')
+  route.get('/gift-cards/stats', 'Actions/Commerce/GiftCardStatsAction')
+  route.get('/gift-cards/{id}', 'Actions/Commerce/GiftCardShowAction')
+  route.post('/gift-cards', 'Actions/Commerce/GiftCardStoreAction')
+  route.patch('/gift-cards/{id}', 'Actions/Commerce/GiftCardUpdateAction')
+  route.patch('/gift-cards/{id}/balance', 'Actions/Commerce/GiftCardUpdateBalanceAction')
+  route.delete('/gift-cards/{id}', 'Actions/Commerce/GiftCardDestroyAction')
+
+  // Tax Rates
+  route.get('/tax-rates', 'Actions/Commerce/TaxRateIndexAction')
+  route.get('/tax-rates/{id}', 'Actions/Commerce/TaxRateShowAction')
+  route.post('/tax-rates', 'Actions/Commerce/TaxRateStoreAction')
+  route.patch('/tax-rates/{id}', 'Actions/Commerce/TaxRateUpdateAction')
+  route.delete('/tax-rates/{id}', 'Actions/Commerce/TaxRateDestroyAction')
+
+  // Reviews
+  route.get('/reviews', 'Actions/Commerce/ReviewIndexAction')
+  route.get('/reviews/{id}', 'Actions/Commerce/ReviewShowAction')
+  route.post('/reviews', 'Actions/Commerce/ReviewStoreAction')
+  route.patch('/reviews/{id}', 'Actions/Commerce/ReviewUpdateAction')
+
+  // Receipts
+  route.get('/receipts', 'Actions/Commerce/ReceiptIndexAction')
+  route.get('/receipts/{id}', 'Actions/Commerce/ReceiptShowAction')
+  route.post('/receipts', 'Actions/Commerce/ReceiptStoreAction')
+  route.patch('/receipts/{id}', 'Actions/Commerce/ReceiptUpdateAction')
+  route.delete('/receipts/{id}', 'Actions/Commerce/ReceiptDestroyAction')
+
+  // Print Devices (POS)
+  route.get('/print-devices', 'Actions/Commerce/PrintDeviceIndexAction')
+  route.get('/print-devices/{id}', 'Actions/Commerce/PrintDeviceShowAction')
+  route.post('/print-devices', 'Actions/Commerce/PrintDeviceStoreAction')
+  route.patch('/print-devices/{id}', 'Actions/Commerce/PrintDeviceUpdateAction')
+  route.delete('/print-devices/{id}', 'Actions/Commerce/PrintDeviceDestroyAction')
+
+  // Commerce Payments (stats & trends)
+  route.get('/payment-stats', 'Actions/Commerce/PaymentFetchStatsAction')
+  route.get('/payment-trends', 'Actions/Commerce/PaymentMonthlyTrendsAction')
+  route.get('/commerce-payments', 'Actions/Commerce/PaymentIndexAction')
+  route.get('/commerce-payments/{id}', 'Actions/Commerce/PaymentShowAction')
+  route.post('/commerce-payments', 'Actions/Commerce/PaymentStoreAction')
+
+  // Waitlist - Product
+  route.get('/waitlist/products', 'Actions/Commerce/WaitlistProductIndexAction')
+  route.get('/waitlist/products/analytics', 'Actions/Commerce/WaitlistProductAnalyticsAction')
+  route.get('/waitlist/products/status', 'Actions/Commerce/WaitlistProductStatusAction')
+  route.get('/waitlist/products/time-series', 'Actions/Commerce/WaitlistProductTimeSeriesAction')
+  route.get('/waitlist/products/quantity-distribution', 'Actions/Commerce/WaitlistProductQuantityDistributionAction')
+  route.get('/waitlist/products/{id}', 'Actions/Commerce/WaitlistProductShowAction')
+  route.post('/waitlist/products', 'Actions/Commerce/WaitlistProductStoreAction')
+  route.patch('/waitlist/products/{id}', 'Actions/Commerce/WaitlistProductUpdateAction')
+  route.delete('/waitlist/products/{id}', 'Actions/Commerce/WaitlistProductDestroyAction')
+
+  // Waitlist - Restaurant
+  route.get('/waitlist/restaurants', 'Actions/Commerce/WaitlistRestaurantIndexAction')
+  route.get('/waitlist/restaurants/dashboard', 'Actions/Commerce/WaitlistRestaurantDashboardAction')
+  route.get('/waitlist/restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantShowAction')
+  route.post('/waitlist/restaurants', 'Actions/Commerce/WaitlistRestaurantStoreAction')
+  route.patch('/waitlist/restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantUpdateAction')
+  route.delete('/waitlist/restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantDestroyAction')
+})
+
+// Shipping routes
+route.group({ prefix: '/shipping' }, () => {
+  // Shipping Methods
+  route.get('/methods', 'Actions/Commerce/Shipping/ShippingMethodIndexAction')
+  route.get('/methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodShowAction')
+  route.post('/methods', 'Actions/Commerce/Shipping/ShippingMethodStoreAction')
+  route.patch('/methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodUpdateAction')
+  route.delete('/methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodDestroyAction')
+
+  // Shipping Rates
+  route.get('/rates', 'Actions/Commerce/Shipping/ShippingRateIndexAction')
+  route.get('/rates/{id}', 'Actions/Commerce/Shipping/ShippingRateShowAction')
+  route.post('/rates', 'Actions/Commerce/Shipping/ShippingRateStoreAction')
+  route.patch('/rates/{id}', 'Actions/Commerce/Shipping/ShippingRateUpdateAction')
+  route.delete('/rates/{id}', 'Actions/Commerce/Shipping/ShippingRateDestroyAction')
+
+  // Shipping Zones
+  route.get('/zones', 'Actions/Commerce/Shipping/ShippingZoneIndexAction')
+  route.get('/zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneShowAction')
+  route.post('/zones', 'Actions/Commerce/Shipping/ShippingZoneStoreAction')
+  route.patch('/zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneUpdateAction')
+  route.delete('/zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneDestroyAction')
+
+  // Delivery Routes
+  route.get('/delivery-routes', 'Actions/Commerce/Shipping/DeliveryRouteIndexAction')
+  route.get('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteShowAction')
+  route.post('/delivery-routes', 'Actions/Commerce/Shipping/DeliveryRouteStoreAction')
+  route.patch('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteUpdateAction')
+  route.delete('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteDestroyAction')
+
+  // Drivers
+  route.get('/drivers', 'Actions/Commerce/Shipping/DriverIndexAction')
+  route.get('/drivers/{id}', 'Actions/Commerce/Shipping/DriverShowAction')
+  route.post('/drivers', 'Actions/Commerce/Shipping/DriverStoreAction')
+  route.patch('/drivers/{id}', 'Actions/Commerce/Shipping/DriverUpdateAction')
+
+  // Digital Delivery
+  route.get('/digital', 'Actions/Commerce/Shipping/DigitalDeliveryIndexAction')
+  route.get('/digital/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryShowAction')
+  route.post('/digital', 'Actions/Commerce/Shipping/DigitalDeliveryStoreAction')
+  route.patch('/digital/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryUpdateAction')
+  route.delete('/digital/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryDestroyAction')
+
+  // License Keys
+  route.get('/license-keys', 'Actions/Commerce/Shipping/LicenseKeyIndexAction')
+  route.get('/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyShowAction')
+  route.post('/license-keys', 'Actions/Commerce/Shipping/LicenseKeyStoreAction')
+  route.patch('/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyUpdateAction')
+  route.delete('/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyDestroyAction')
+})
+
 // Authenticated user routes
 route.group({ middleware: 'auth' }, () => {
   route.get('/me', 'Actions/Auth/AuthUserAction')
