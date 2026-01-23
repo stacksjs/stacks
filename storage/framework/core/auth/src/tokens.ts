@@ -50,7 +50,7 @@ const isMysql: boolean = dbDriver === 'mysql'
  * - MySQL uses NOW() and 1/0
  * - SQLite uses datetime('now') and 1/0
  */
-const now: string = isPostgres || isMysql ? 'NOW()' : "datetime('now')"
+const now: string = isPostgres || isMysql ? 'NOW()' : `datetime('now')`
 const boolTrue: string = isPostgres ? 'true' : '1'
 const boolFalse: string = isPostgres ? 'false' : '0'
 

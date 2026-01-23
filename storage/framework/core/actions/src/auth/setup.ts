@@ -15,7 +15,7 @@ const isMysql = dbDriver === 'mysql'
 // - SQLite: INTEGER PRIMARY KEY AUTOINCREMENT, datetime('now'), 1/0
 const autoIncrement = isPostgres ? 'SERIAL' : 'INTEGER'
 const primaryKey = isPostgres ? 'PRIMARY KEY' : (isMysql ? 'PRIMARY KEY AUTO_INCREMENT' : 'PRIMARY KEY AUTOINCREMENT')
-const now = isPostgres || isMysql ? 'NOW()' : "datetime('now')"
+const now = isPostgres || isMysql ? 'NOW()' : `datetime('now')`
 const boolTrue = isPostgres ? 'true' : '1'
 const boolFalse = isPostgres ? 'false' : '0'
 

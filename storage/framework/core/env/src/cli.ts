@@ -141,7 +141,7 @@ export function encryptEnv(options: EncryptOptions = {}): { success: boolean, ou
 
       // Remove quotes if present
       if ((value.startsWith('"') && value.endsWith('"')) ||
-          (value.startsWith("'") && value.endsWith("'"))) {
+          (value.startsWith(`'`) && value.endsWith(`'`))) {
         value = value.slice(1, -1)
       }
 
@@ -253,7 +253,7 @@ export function decryptEnv(options: DecryptOptions = {}): { success: boolean, ou
 
       // Remove quotes if present
       if ((value.startsWith('"') && value.endsWith('"')) ||
-          (value.startsWith("'") && value.endsWith("'"))) {
+          (value.startsWith(`'`) && value.endsWith(`'`))) {
         value = value.slice(1, -1)
       }
 

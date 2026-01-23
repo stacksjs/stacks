@@ -28,7 +28,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
   const isPostgres = dbDriver === 'postgres'
   const isMysql = dbDriver === 'mysql'
   const boolTrue = isPostgres ? 'true' : '1'
-  const now = isPostgres || isMysql ? 'NOW()' : "datetime('now')"
+  const now = isPostgres || isMysql ? 'NOW()' : `datetime('now')`
 
   if (options.verbose) {
     log.info(`Creating auth tables for ${dbDriver}...`)

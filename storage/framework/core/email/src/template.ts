@@ -96,7 +96,7 @@ function htmlToText(html: string): string {
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
+    .replace(/&quot;/g, `"`)
     .replace(/&#39;/g, "'")
     .replace(/&copy;/g, '(c)')
     // Clean up whitespace

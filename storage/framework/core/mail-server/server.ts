@@ -209,7 +209,7 @@ function startSMTP(tls:boolean){
               });
             }else if(args==='LOGIN'||args.startsWith('LOGIN')){
               let authUser='';
-              s.write('334 VXNlcm5hbWU6\r\n'); // "Username:" base64
+              s.write('334 VXNlcm5hbWU6\r\n') // 'Username:' base64
               s.once('data',async(ud)=>{
                 authUser=Buffer.from(ud.toString().trim(),'base64').toString().trim();
                 console.log('AUTH LOGIN user:',authUser);

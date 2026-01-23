@@ -51,7 +51,7 @@ export function parse(src: string, options: ParseOptions = {}): ParseResult {
 
     // Handle quoted values
     if ((value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'"))) {
+        (value.startsWith(`'`) && value.endsWith(`'`))) {
       value = value.slice(1, -1)
 
       // Handle multiline values

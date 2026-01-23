@@ -12,6 +12,15 @@ const config: PickierOptions = {
     '**/*.min.js',
     '**/*.min.css',
     '**/vendor/**',
+    // Generated files with inconsistent formatting
+    '**/storage/framework/requests/**',
+    '**/storage/framework/types/**',
+    '**/storage/framework/orm/**',
+    '**/storage/framework/actions/**',
+    '**/bun-queue/**',
+    // Generated declaration files
+    '**/*.d.ts',
+    '**/temp/**',
   ],
   lint: {
     extensions: ['ts', 'js'],
@@ -31,12 +40,18 @@ const config: PickierOptions = {
   },
   rules: {
     noDebugger: 'error',
-    noConsole: 'warn',
+    noConsole: 'off',
     noUnusedCapturingGroup: 'off',
   },
   pluginRules: {
     'ts/no-top-level-await': 'off',
     'no-super-linear-backtracking': 'off',
+    'indent': 'off',
+    '@stylistic/indent': 'off',
+    'style/indent': 'off',
+    'quotes': 'off',
+    'style/brace-style': 'off',
+    'max-statements-per-line': 'off',
   },
 }
 

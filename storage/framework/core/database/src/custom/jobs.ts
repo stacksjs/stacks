@@ -45,7 +45,7 @@ async function jobsTableExists(): Promise<boolean> {
   if (existsSync(sqlitePath)) {
     try {
       const sqlite = new Database(sqlitePath)
-      const result = sqlite.query("SELECT name FROM sqlite_master WHERE type='table' AND name='jobs'").get()
+      const result = sqlite.query(`SELECT name FROM sqlite_master WHERE type='table' AND name='jobs'`).get()
       sqlite.close()
       return result !== null
     }
