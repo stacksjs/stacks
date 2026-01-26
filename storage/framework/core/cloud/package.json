@@ -55,7 +55,6 @@
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "@stacksjs/validation": "workspace:*",
-    "ts-cloud": "link:ts-cloud"
+    "@stacksjs/validation": "workspace:*"
   }
 }

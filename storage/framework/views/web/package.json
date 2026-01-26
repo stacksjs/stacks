@@ -18,7 +18,5 @@
     "@vueuse/core": "^13.9.0",
     "@vueuse/head": "^2.0.0"
   },
-  "devDependencies": {
-    "ts-md": "workspace:*"
-  }
+  "devDependencies": {}
 }

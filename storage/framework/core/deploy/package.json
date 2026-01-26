@@ -10,7 +10,5 @@
       "import": "./index.ts"
     }
   },
-  "dependencies": {
-    "ts-cloud": "workspace:*"
-  }
+  "dependencies": {}
 }

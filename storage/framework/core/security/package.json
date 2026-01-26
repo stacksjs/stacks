@@ -34,9 +34,7 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
-    "ts-security-crypto": "workspace:*"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
     "better-dx": "^0.2.5",

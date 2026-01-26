@@ -45,7 +45,6 @@
   },
   "devDependencies": {
     "chart.js": "^4.4.7",
-    "d3": "^7.9.0",
-    "ts-craft": "workspace:*"
+    "d3": "^7.9.0"
   }
 }

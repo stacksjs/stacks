@@ -62,7 +62,6 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "@stacksjs/validation": "workspace:*",
-    "ts-md": "workspace:*"
+    "@stacksjs/validation": "workspace:*"
   }
 }
