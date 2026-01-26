@@ -6,6 +6,7 @@
 [install]
 # set default registry as a string
 registry = { url = "https://registry.npmjs.org" }
+linker = "hoisted"
 
 # where `bun install --global` installs packages
 globalDir = "~/.stacks/bun/install/global"

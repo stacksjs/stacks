@@ -65,7 +65,6 @@
     "stacks": "workspace:*"
   },
   "workspaces": [
-    "bun-queue",
     "storage/framework/**",
     "!storage/framework/cloud/cdk.out",
     "!storage/framework/cloud/cdk.out/**",
