@@ -22,8 +22,7 @@
     "framework",
     "typescript",
     "javascript",
-    "bun",
-    "vite"
+    "bun"
   ],
   "exports": {
     ".": {

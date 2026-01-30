@@ -21,10 +21,7 @@
     "stacks",
     "framework",
     "typescript",
-    "javascript",
-    "vite",
-    "nitro",
-    "vue"
+    "javascript"
   ],
   "exports": {
     ".": {
@@ -52,9 +49,6 @@
     "@stacksjs/cli": "workspace:*",
     "better-dx": "^0.2.5",
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "@types/babel__generator": "^7.27.0",
-    "@types/babel__traverse": "^7.28.0",
-    "vue-docgen-web-types": "^0.1.8"
+    "@stacksjs/storage": "workspace:*"
   }
 }
