@@ -153,6 +153,8 @@ catch (err: any) {
 
 // Path to the Craft binary - check common locations (craft-minimal parses CLI args)
 const craftPaths = [
+  `${process.env.HOME}/Code/Tools/craft/packages/zig/zig-out/bin/craft-minimal`, // Development location (Tools)
+  `${process.env.HOME}/Code/Tools/craft/zig-out/bin/craft-minimal`, // Development location (Tools, single package)
   projectPath('../craft/packages/zig/zig-out/bin/craft-minimal'), // Development location (monorepo)
   projectPath('../craft/zig-out/bin/craft-minimal'), // Development location (single package)
   '/usr/local/bin/craft', // Installed location
@@ -176,7 +178,7 @@ for (const craftPath of craftPaths) {
 
 if (!craftBinary) {
   log.warn('Craft binary not found. Running STX server only.')
-  log.info('To enable native macOS sidebar, build Craft: cd ~/Code/craft && zig build')
+  log.info('To enable native macOS sidebar, build Craft: cd ~/Code/Tools/craft && zig build')
   log.info(`Dashboard available at: http://localhost:${dashboardPort}/pages/index`)
 
   // Keep the process running since we're serving via STX
@@ -341,7 +343,7 @@ const craftProcess = spawn(craftBinary!, [
 
 craftProcess.on('error', (err) => {
   log.error(`Failed to start Craft: ${err.message}`)
-  log.info('Make sure Craft is built. Run: cd ~/Code/craft && zig build')
+  log.info('Make sure Craft is built. Run: cd ~/Code/Tools/craft && zig build')
   process.exit(1)
 })
 
