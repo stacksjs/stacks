@@ -44,7 +44,7 @@
     "typecheck": "bun tsc --noEmit"
   },
   "devDependencies": {
-    "chart.js": "^4.4.7",
+    "chart.js": "^4.5.1",
     "d3": "^7.9.0"
   }
 }
