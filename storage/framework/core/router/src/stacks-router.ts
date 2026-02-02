@@ -6,12 +6,12 @@
  */
 
 import type { Server } from 'bun'
-import type { ActionHandler, EnhancedRequest, Route, ServerOptions } from 'bun-router'
+import type { ActionHandler, EnhancedRequest, Route, ServerOptions } from '@stacksjs/bun-router'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage'
-import { Router } from 'bun-router'
+import { Router } from '@stacksjs/bun-router'
 import { runWithRequest } from './request-context'
 import { createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 

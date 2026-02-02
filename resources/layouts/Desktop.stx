@@ -1,0 +1,53 @@
+<script server>
+import { defineProps, withDefaults } from 'stx'
+
+interface DesktopLayoutProps {
+  title?: string
+  stylesheetPath?: string
+  scriptPath?: string
+}
+
+const { title, stylesheetPath, scriptPath } = withDefaults(
+  defineProps<DesktopLayoutProps>(),
+  {
+    title: 'Stacks.js',
+    stylesheetPath: '/assets/styles/main.css',
+    scriptPath: '/assets/scripts/main.ts'
+  }
+)
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tahoma:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ stylesheetPath }}">
+  @stack('head')
+</head>
+<body>
+  @yield('login-screens')
+
+  <div class="desktop">
+    <div class="desktop-icons">
+      @yield('desktop-icons')
+    </div>
+
+    @yield('sponsor-icon')
+    @yield('trash-icon')
+    @yield('windows')
+
+    @yield('taskbar')
+  </div>
+
+  @yield('context-menus')
+  @yield('notification-popup')
+
+  <script type="module" src="{{ scriptPath }}"></script>
+  @stack('scripts')
+</body>
+</html>

@@ -1,0 +1,49 @@
+<script server>
+import { defineProps, withDefaults } from 'stx'
+
+interface LoginFormProps {
+  id: string
+  icon?: string
+  title?: string
+  prompt?: string
+  submitHandler?: string
+}
+
+const { id, icon, title, prompt, submitHandler } = withDefaults(
+  defineProps<LoginFormProps>(),
+  {
+    icon: '👤',
+    title: 'Login',
+    prompt: 'Enter your credentials',
+    submitHandler: 'handleLogin()'
+  }
+)
+</script>
+
+<template>
+  <div id="{{ id }}" class="login-form hidden">
+    <div class="login-form-background">
+      <div class="login-form-container">
+        <button class="login-close-btn" onclick="closeLoginScreens()">×</button>
+        <div class="login-form-header">
+          <button class="login-back-button" onclick="hideLoginForms()">← Back</button>
+          <div class="login-form-title">
+            <div class="login-form-icon">{{ icon }}</div>
+            <h2>{{ title }}</h2>
+          </div>
+        </div>
+
+        <div class="login-form-content">
+          <div class="login-form-prompt">{{ prompt }}</div>
+          <slot />
+          <div class="login-actions">
+            <button class="login-submit-btn" onclick="{{ submitHandler }}">
+              <span class="login-btn-icon">→</span>
+              <span>Log In</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

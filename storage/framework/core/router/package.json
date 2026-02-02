@@ -36,7 +36,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "bun-router": "file:../../../../../bun-router/packages/bun-router",
+    "@stacksjs/bun-router": "link:@stacksjs/bun-router",
     "ts-rate-limiter": "^0.4.0"
   },
   "devDependencies": {

@@ -1,0 +1,32 @@
+<script server>
+import { defineProps, withDefaults } from 'stx'
+
+interface InputGroupProps {
+  id: string
+  label: string
+  type?: 'text' | 'email' | 'password'
+  placeholder?: string
+  class?: string
+}
+
+const { id, label, type, placeholder, class: classList } = withDefaults(
+  defineProps<InputGroupProps>(),
+  {
+    type: 'text',
+    placeholder: '',
+    class: 'login-input'
+  }
+)
+</script>
+
+<template>
+  <div class="login-input-group">
+    <label>{{ label }}:</label>
+    <input
+      type="{{ type }}"
+      id="{{ id }}"
+      class="{{ classList }}"
+      placeholder="{{ placeholder }}"
+    />
+  </div>
+</template>

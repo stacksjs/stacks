@@ -1,0 +1,22 @@
+<script server>
+import { defineProps, withDefaults } from 'stx'
+
+interface PackageItemProps {
+  emoji: string
+  title: string
+  description: string
+}
+
+const { emoji, title, description } = withDefaults(
+  defineProps<PackageItemProps>(),
+  {}
+)
+</script>
+
+<template>
+  <div class="package-item">
+    <div class="package-emoji">{{ emoji }}</div>
+    <div class="package-title">{{ title }}</div>
+    <div class="package-desc">{{ description }}</div>
+  </div>
+</template>

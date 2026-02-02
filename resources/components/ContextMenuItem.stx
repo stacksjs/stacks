@@ -1,0 +1,39 @@
+<script server>
+import { defineProps, withDefaults } from 'stx'
+
+interface ContextMenuItemProps {
+  icon?: string
+  label: string
+  onclick?: string
+  hasSubmenu?: boolean
+}
+
+const { icon, label, onclick, hasSubmenu } = withDefaults(
+  defineProps<ContextMenuItemProps>(),
+  {
+    icon: '',
+    hasSubmenu: false
+  }
+)
+</script>
+
+<template>
+  @if (hasSubmenu)
+  <div class="context-menu-item has-submenu">
+    @if (icon)
+    <div class="context-menu-item-icon">{{ icon }}</div>
+    @endif
+    <div>{{ label }}</div>
+    <div class="context-submenu">
+      <slot />
+    </div>
+  </div>
+  @else
+  <button class="context-menu-item" @if (onclick)onclick="{{ onclick }}"@endif>
+    @if (icon)
+    <div class="context-menu-item-icon">{{ icon }}</div>
+    @endif
+    <div>{{ label }}</div>
+  </button>
+  @endif
+</template>

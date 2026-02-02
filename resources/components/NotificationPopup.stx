@@ -1,0 +1,58 @@
+<script server>
+import { defineProps, withDefaults } from 'stx'
+
+interface NotificationPopupProps {
+  id?: string
+  title?: string
+  showSignup?: boolean
+}
+
+const { id, title, showSignup } = withDefaults(
+  defineProps<NotificationPopupProps>(),
+  {
+    id: 'notification-popup',
+    title: 'Notifications',
+    showSignup: true
+  }
+)
+</script>
+
+<template>
+  <div class="notification-popup" id="{{ id }}" style="display: none;">
+    <div class="notification-header">
+      <span class="notification-title">{{ title }}</span>
+      <button class="notification-close" onclick="closeNotificationPopup()">×</button>
+    </div>
+    <div class="notification-content">
+      <slot />
+    </div>
+    @if (showSignup)
+    <div class="notification-signup" id="notification-signup">
+      <div class="notification-separator"></div>
+      <div class="notification-signup-text">Get updates on new features & releases:</div>
+      <div class="notification-signup-form">
+        <input
+          type="email"
+          id="notification-email"
+          class="notification-email-input"
+          placeholder="your@email.com"
+          autocomplete="email"
+        />
+        <button class="notification-signup-btn" onclick="handleEmailSignup()">
+          Sign Up
+        </button>
+      </div>
+    </div>
+    <div class="notification-success" id="notification-success" style="display: none;">
+      <div class="notification-separator"></div>
+      <div class="notification-success-content">
+        <div class="notification-success-icon">✓</div>
+        <div class="notification-success-text">
+          <div class="notification-success-title">Thanks for subscribing!</div>
+          <div class="notification-success-subtitle">We'll keep you updated.</div>
+        </div>
+      </div>
+    </div>
+    @endif
+  </div>
+</template>

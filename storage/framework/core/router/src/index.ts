@@ -8,7 +8,7 @@
  */
 
 // Re-export everything from bun-router (includes response factory)
-export * from 'bun-router'
+export * from '@stacksjs/bun-router'
 
 // Export Stacks-specific action resolver
 export { createStacksRouter, route, serve, serverResponse } from './stacks-router'

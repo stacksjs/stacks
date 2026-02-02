@@ -45,7 +45,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "bun-queue": "workspace:*"
+    "bun-queue": "link:bun-queue"
   },
   "devDependencies": {
     "better-dx": "^0.2.5"

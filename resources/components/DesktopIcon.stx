@@ -1,0 +1,49 @@
+<script server>
+import { defineProps, withDefaults } from 'stx'
+
+interface DesktopIconProps {
+  id: string
+  icon?: string
+  label: string
+  type?: 'window' | 'link' | 'action'
+  section?: string
+  url?: string
+  onclick?: string
+  left?: string
+  top?: string
+  style?: string
+}
+
+const { id, icon, label, type, section, url, onclick, left, top, style } = withDefaults(
+  defineProps<DesktopIconProps>(),
+  {
+    icon: '📄',
+    type: 'window',
+    section: '',
+    url: '',
+    left: '20px',
+    top: '20px',
+    style: ''
+  }
+)
+
+const computedStyle = style || `left: ${left}; top: ${top};`
+const onclickAttr = onclick ? `onclick="${onclick}"` : ''
+</script>
+
+<template>
+  <button
+    class="desktop-icon"
+    data-icon-id="{{ id }}"
+    data-icon-type="{{ type }}"
+    data-icon-section="{{ section }}"
+    data-icon-url="{{ url }}"
+    style="{{ computedStyle }}"
+    @if (onclick)
+    onclick="{{ onclick }}"
+    @endif
+  >
+    <div class="desktop-icon-image">{{ icon }}</div>
+    <div class="desktop-icon-label">{{ label }}</div>
+  </button>
+</template>

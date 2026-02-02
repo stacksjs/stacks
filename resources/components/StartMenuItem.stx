@@ -1,0 +1,33 @@
+<script server>
+import { defineProps, withDefaults } from 'stx'
+
+interface StartMenuItemProps {
+  icon?: string
+  label: string
+  onclick?: string
+  url?: string
+  highlighted?: boolean
+}
+
+const { icon, label, onclick, url, highlighted } = withDefaults(
+  defineProps<StartMenuItemProps>(),
+  {
+    icon: '📄',
+    highlighted: false
+  }
+)
+
+const clickHandler = url
+  ? `window.open('${url}', '_blank')`
+  : onclick || ''
+</script>
+
+<template>
+  <button
+    class="start-menu-item @if (highlighted)highlighted@endif"
+    @if (clickHandler)onclick="{{ clickHandler }}"@endif
+  >
+    <span class="start-menu-item-icon">{{ icon }}</span>
+    <span class="start-menu-item-label">{{ label }}</span>
+  </button>
+</template>

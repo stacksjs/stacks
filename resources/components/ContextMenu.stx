@@ -1,0 +1,18 @@
+<script server>
+import { defineProps, withDefaults } from 'stx'
+
+interface ContextMenuProps {
+  id: string
+}
+
+const { id } = withDefaults(
+  defineProps<ContextMenuProps>(),
+  {}
+)
+</script>
+
+<template>
+  <div class="context-menu" id="{{ id }}" style="display: none;">
+    <slot />
+  </div>
+</template>

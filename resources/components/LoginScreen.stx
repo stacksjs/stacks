@@ -1,0 +1,51 @@
+<script server>
+import { defineProps, withDefaults } from 'stx'
+
+interface LoginScreenProps {
+  id?: string
+  logoText?: string
+  subtitle?: string
+}
+
+const { id, logoText, subtitle } = withDefaults(
+  defineProps<LoginScreenProps>(),
+  {
+    id: 'login-screen',
+    logoText: 'STACKS',
+    subtitle: 'To begin, click your user name'
+  }
+)
+</script>
+
+<template>
+  <div id="{{ id }}" class="login-screen hidden">
+    <div class="login-background">
+      <div class="login-container">
+        <button class="login-close-btn" onclick="closeLoginScreens()">×</button>
+        <div class="login-header">
+          <div class="login-logo">{{ logoText }}</div>
+          <div class="login-subtitle">{{ subtitle }}</div>
+        </div>
+
+        <div class="login-users">
+          <slot name="login-options">
+            <button class="login-user-button" id="email-login-btn">
+              <div class="login-user-icon">👤</div>
+              <div class="login-user-name">Email Login</div>
+            </button>
+            <button class="login-user-button" id="license-login-btn">
+              <div class="login-user-icon">🔑</div>
+              <div class="login-user-name">License Key</div>
+            </button>
+          </slot>
+        </div>
+
+        <div class="login-footer">
+          <slot name="footer">
+            <div class="login-footer-text">After you log in, you can access the STACKS Desktop</div>
+          </slot>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

@@ -1,0 +1,25 @@
+<script server>
+import { defineProps, withDefaults } from 'stx'
+
+interface FeatureButtonProps {
+  label: string
+  onclick?: string
+  active?: boolean
+}
+
+const { label, onclick, active } = withDefaults(
+  defineProps<FeatureButtonProps>(),
+  {
+    active: false
+  }
+)
+</script>
+
+<template>
+  <button
+    class="feature-btn @if (active)active@endif"
+    @if (onclick)onclick="{{ onclick }}"@endif
+  >
+    {{ label }}
+  </button>
+</template>

@@ -1,0 +1,57 @@
+<script server>
+import { defineProps, withDefaults } from 'stx'
+
+interface StartMenuProps {
+  id?: string
+  userName?: string
+  userImage?: string
+}
+
+const { id, userName, userImage } = withDefaults(
+  defineProps<StartMenuProps>(),
+  {
+    id: 'start-menu',
+    userName: 'Developer',
+    userImage: '👤'
+  }
+)
+</script>
+
+<template>
+  <div class="start-menu" id="{{ id }}" style="display: none;">
+    <div class="start-menu-header">
+      <div class="start-menu-user-image">{{ userImage }}</div>
+      <div class="start-menu-user-name">{{ userName }}</div>
+    </div>
+
+    <div class="start-menu-content">
+      <div class="start-menu-left">
+        <slot name="pinned-items" />
+        <div class="start-menu-separator"></div>
+        <slot name="all-programs">
+          <button class="start-menu-item all-programs">
+            <span>All Programs</span>
+            <span class="arrow">▸</span>
+          </button>
+        </slot>
+      </div>
+
+      <div class="start-menu-right">
+        <slot name="right-items" />
+      </div>
+    </div>
+
+    <div class="start-menu-footer">
+      <slot name="footer">
+        <button class="start-menu-footer-btn" onclick="showLoginScreen()">
+          <span class="footer-icon">🔑</span>
+          <span>Log Off</span>
+        </button>
+        <button class="start-menu-footer-btn" onclick="window.location.reload()">
+          <span class="footer-icon">🔄</span>
+          <span>Restart</span>
+        </button>
+      </slot>
+    </div>
+  </div>
+</template>

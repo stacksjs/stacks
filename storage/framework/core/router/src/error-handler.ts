@@ -5,7 +5,7 @@
  * database queries, and request context.
  */
 
-import type { EnhancedRequest } from 'bun-router'
+import type { EnhancedRequest } from '@stacksjs/bun-router'
 import process from 'node:process'
 import {
   createErrorHandler,

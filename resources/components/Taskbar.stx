@@ -1,0 +1,47 @@
+<script server>
+import { defineProps, withDefaults } from 'stx'
+
+interface TaskbarProps {
+  showStartMenu?: boolean
+}
+
+const { showStartMenu } = withDefaults(
+  defineProps<TaskbarProps>(),
+  {
+    showStartMenu: true
+  }
+)
+</script>
+
+<template>
+  <div class="taskbar">
+    @if (showStartMenu)
+    <button class="start-button" onclick="toggleStartMenu()">
+      <div class="start-button-flag">
+        <div class="flag-red"></div>
+        <div class="flag-green"></div>
+        <div class="flag-blue"></div>
+        <div class="flag-yellow"></div>
+      </div>
+      <span>Start</span>
+    </button>
+    @endif
+
+    <div class="quick-launch">
+      <slot name="quick-launch" />
+    </div>
+
+    <div class="taskbar-windows" id="taskbar-windows">
+      <slot name="taskbar-windows" />
+    </div>
+
+    <div class="system-tray">
+      <slot name="system-tray">
+        <button class="tray-icon" onclick="toggleNotificationPopup()">🔔</button>
+        <button class="tray-icon" onclick="window.open('https://github.com/stacksjs/stacks', '_blank')">💻</button>
+        <button class="tray-icon" onclick="window.open('https://discord.gg/stacksjs', '_blank')">💬</button>
+      </slot>
+      <div class="clock" id="clock"></div>
+    </div>
+  </div>
+</template>
