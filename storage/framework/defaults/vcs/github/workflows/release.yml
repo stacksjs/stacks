@@ -17,7 +17,7 @@ jobs:
       version: ${{ env.VERSION }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -25,7 +25,7 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Use Cached node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: node_modules
           key: node-modules-${{ hashFiles('**/bun.lock') }}
@@ -59,8 +59,7 @@ jobs:
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Create GitHub Release
-        id: create_release
-        uses: softprops/action-gh-release@v2
+        uses: stacksjs/action-releaser@v1.2.7
         with:
           files: |
             storage/framework/core/buddy/bin/buddy-linux-x64.zip
@@ -68,9 +67,6 @@ jobs:
             storage/framework/core/buddy/bin/buddy-windows-x64.zip
             storage/framework/core/buddy/bin/buddy-darwin-x64.zip
             storage/framework/core/buddy/bin/buddy-darwin-arm64.zip
-          name: ${{ env.VERSION }}
-          tag_name: ${{ env.VERSION }}
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -79,7 +75,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -90,10 +86,10 @@ jobs:
 
       - name: Generate GitHub App Token
         id: generate-token
-        uses: tibdex/github-app-token@v2
+        uses: actions/create-github-app-token@v2
         with:
-          app_id: ${{ secrets.GH_APP_ID }}
-          private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
 
       - name: Setup GitHub CLI with PAT
         run: |
