@@ -1223,9 +1223,8 @@ function showFeature(section, featureId) {
 
 // Start menu toggle
 const startButton = document.querySelector('.start-button')
-const startMenu = document.getElementById('start-menu')
 
-startButton.addEventListener('click', (e) => {
+startButton?.addEventListener('click', (e) => {
   e.stopPropagation()
   startMenu.classList.toggle('active')
 })
@@ -2178,7 +2177,17 @@ function taskbarContextClose() {
   closeTaskbarContextMenu()
 }
 
+// Toggle notification popup
+function toggleNotificationPopup() {
+  const notification = document.getElementById('notification-popup')
+  if (notification) {
+    notification.classList.toggle('hidden')
+  }
+}
+
 // Make functions globally accessible for inline onclick handlers
+window.toggleStartMenu = toggleStartMenu
+window.toggleNotificationPopup = toggleNotificationPopup
 window.openWindow = openWindow
 window.closeWindow = closeWindow
 window.minimizeWindow = minimizeWindow
