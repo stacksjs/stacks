@@ -26,7 +26,9 @@ const { id, userName, userImage } = withDefaults(
 
     <div class="start-menu-content">
       <div class="start-menu-left">
-        <slot name="pinned-items" />
+        <div class="start-menu-pinned">
+          <slot name="pinned-items" />
+        </div>
         <div class="start-menu-separator"></div>
         <slot name="all-programs">
           <button class="start-menu-item all-programs">

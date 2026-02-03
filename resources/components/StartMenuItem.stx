@@ -16,18 +16,31 @@ const { icon, label, onclick, url, highlighted } = withDefaults(
     highlighted: false
   }
 )
-
-const clickHandler = url
-  ? `window.open('${url}', '_blank')`
-  : onclick || ''
 </script>
 
 <template>
+  @if (url)
   <button
     class="start-menu-item @if (highlighted)highlighted@endif"
-    @if (clickHandler)onclick="{{ clickHandler }}"@endif
+    onclick="window.open('{{ url }}', '_blank')"
   >
     <span class="start-menu-item-icon">{{ icon }}</span>
     <span class="start-menu-item-label">{{ label }}</span>
   </button>
+  @elseif (onclick)
+  <button
+    class="start-menu-item @if (highlighted)highlighted@endif"
+    onclick="{{ onclick }}"
+  >
+    <span class="start-menu-item-icon">{{ icon }}</span>
+    <span class="start-menu-item-label">{{ label }}</span>
+  </button>
+  @else
+  <button
+    class="start-menu-item @if (highlighted)highlighted@endif"
+  >
+    <span class="start-menu-item-icon">{{ icon }}</span>
+    <span class="start-menu-item-label">{{ label }}</span>
+  </button>
+  @endif
 </template>

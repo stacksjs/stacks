@@ -824,6 +824,40 @@ body {
   font-weight: bold;
   font-size: 14px;
   border-bottom: 1px solid #0831d9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.start-menu-user-image {
+  font-size: 32px;
+}
+
+.start-menu-user-name {
+  font-weight: bold;
+}
+
+.start-menu-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.start-menu-left {
+  flex: 1;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+
+.start-menu-right {
+  width: 150px;
+  background: #d3e5fa;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+  border-left: 1px solid #a5b4ce;
 }
 
 .start-menu-user {
@@ -847,17 +881,17 @@ body {
 }
 
 .start-menu-item {
-  padding: 8px 50px 8px 12px;
+  padding: 6px 12px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   cursor: pointer;
   background: transparent;
   border: none;
   width: 100%;
   text-align: left;
   font-family: 'Tahoma', sans-serif;
-  font-size: 13px;
+  font-size: 11px;
   transition: background 0.15s;
   position: relative;
 }
@@ -865,6 +899,10 @@ body {
 .start-menu-item:hover {
   background: linear-gradient(to right, #0997ff 0%, #0053ee 100%);
   color: white;
+}
+
+.start-menu-item.highlighted {
+  font-weight: bold;
 }
 
 .start-menu-item.has-submenu {
@@ -875,6 +913,20 @@ body {
   content: '▶';
   position: absolute;
   right: 12px;
+  font-size: 10px;
+}
+
+.start-menu .all-programs {
+  margin-top: auto;
+  padding: 6px 12px;
+  border-top: 1px solid #c0c0c0;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.start-menu .all-programs .arrow {
   font-size: 10px;
 }
 
@@ -916,6 +968,16 @@ body {
   position: relative;
 }
 
+.start-menu-right .start-menu-item {
+  font-weight: bold;
+  font-size: 11px;
+}
+
+.start-menu-right .start-menu-item-icon {
+  font-size: 20px;
+  width: 24px;
+}
+
 /* Shortcut indicator for external links in start menu */
 .start-menu-item[onclick*="window.open"] .start-menu-item-icon::after {
   content: '↗';
@@ -934,7 +996,13 @@ body {
 .start-menu-separator {
   height: 1px;
   background: #b0b0b0;
-  margin: 4px 50px 4px 12px;
+  margin: 4px 12px;
+}
+
+.start-menu-pinned {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .start-menu-footer {
@@ -956,10 +1024,18 @@ body {
   cursor: pointer;
   transition: all 0.15s;
   font-family: 'Tahoma', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .start-menu-footer-btn:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+.start-menu-footer-btn .footer-icon {
+  font-size: 14px;
 }
 
 /* Notification Popup */

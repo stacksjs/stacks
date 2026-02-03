@@ -24,11 +24,10 @@ const { id, icon, title, left, top, width, height, style } = withDefaults(
   }
 )
 
-const computedStyle = style || `left: ${left}; top: ${top}; width: ${width}; height: ${height};`
 </script>
 
 <template>
-  <div id="window-{{ id }}" class="window" style="{{ computedStyle }}">
+  <div id="window-{{ id }}" class="window" style="@if(style){{ style }}@else left: {{ left }}; top: {{ top }}; width: {{ width }}; height: {{ height }};@endif">
     <div class="window-titlebar">
       <div class="window-icon">{{ icon }}</div>
       <div class="window-title">{{ title }}</div>

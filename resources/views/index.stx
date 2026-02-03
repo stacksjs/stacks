@@ -163,8 +163,24 @@ const shareOptions = [
 Sponsor Here</div>
     </button>
 
-    <!-- Trash Bin -->
-    <DesktopIcon id="trash" icon="🗑️" label="Recycle Bin" type="window" section="trash" />
+    <!-- Trash Bin - positioned in bottom right corner -->
+    <DesktopIcon id="trash" icon="🗑️" label="Recycle Bin" type="window" section="trash" style="position: absolute; right: 20px; bottom: 60px; left: auto; top: auto;" />
+
+    <!-- Recycle Bin Window -->
+    <Window id="trash" icon="🗑️" title="Recycle Bin" left="200px" top="150px" width="500px" height="400px">
+      <div style="display: flex; flex-direction: column; height: 100%;">
+        <div style="padding: 8px; background: #f5f5f5; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 16px;">
+          <button style="padding: 4px 12px; cursor: pointer;" onclick="alert('Empty Recycle Bin feature coming soon!')">Empty Recycle Bin</button>
+          <span style="color: #666; font-size: 12px;">0 items</span>
+        </div>
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center; color: #999;">
+          <div style="text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 12px;">🗑️</div>
+            <div>Recycle Bin is empty</div>
+          </div>
+        </div>
+      </div>
+    </Window>
 
     <!-- About Window -->
     <Window id="about" icon="📄" title="About Stacks" left="100px" top="80px" width="600px" height="500px">
@@ -387,20 +403,37 @@ export default {
     <!-- Start Menu -->
     <StartMenu id="start-menu" userName="Developer" userImage="👤">
       <template #pinned-items>
-        <StartMenuItem icon="🌐" label="Internet Explorer" url="https://stacksjs.com" highlighted />
-        <StartMenuItem icon="📧" label="E-mail" url="mailto:hello@stacksjs.com" highlighted />
-        <StartMenuItem icon="📚" label="Documentation" url="https://stacksjs.com/docs" />
+        <StartMenuItem icon="🌐" label="Stacks Website" url="https://stacksjs.com" highlighted />
+        <StartMenuItem icon="📚" label="Documentation" url="https://stacksjs.com/docs" highlighted />
         <StartMenuItem icon="💻" label="GitHub" url="https://github.com/stacksjs/stacks" />
         <StartMenuItem icon="💬" label="Discord" url="https://discord.gg/stacksjs" />
+        <StartMenuItem icon="📧" label="Contact" url="mailto:hello@stacksjs.com" />
       </template>
       <template #right-items>
-        <StartMenuItem icon="📁" label="My Documents" onclick="openWindow('templates')" />
-        <StartMenuItem icon="🖼️" label="My Pictures" onclick="openWindow('templates')" />
-        <StartMenuItem icon="🎵" label="My Music" onclick="openWindow('templates')" />
-        <StartMenuItem icon="💻" label="My Computer" onclick="openWindow('ecosystem')" />
+        <StartMenuItem icon="🌐" label="Ecosystem" onclick="openWindow('ecosystem')" />
+        <StartMenuItem icon="🎨" label="Frontend" onclick="openWindow('frontend')" />
+        <StartMenuItem icon="⚙️" label="Backend" onclick="openWindow('backend')" />
+        <StartMenuItem icon="☁️" label="Cloud" onclick="openWindow('cloud')" />
         <div class="start-menu-separator"></div>
-        <StartMenuItem icon="⚙️" label="Control Panel" onclick="openWindow('backend')" />
-        <StartMenuItem icon="❓" label="Help and Support" url="https://stacksjs.com/docs" />
+        <StartMenuItem icon="📊" label="Dashboard" onclick="openWindow('dashboard')" />
+        <StartMenuItem icon="📄" label="About Stacks" onclick="openWindow('about')" />
+        <StartMenuItem icon="❓" label="Help & Support" url="https://stacksjs.com/docs" />
+      </template>
+      <template #all-programs>
+        <div class="start-menu-item has-submenu all-programs">
+          <span>All Programs</span>
+          <span class="arrow">▸</span>
+          <div class="start-submenu">
+            <StartMenuItem icon="📦" label="Bun" url="https://bun.sh" />
+            <StartMenuItem icon="🔷" label="TypeScript" url="https://www.typescriptlang.org" />
+            <StartMenuItem icon="🖥️" label="Craft" url="https://craft-native.org/" />
+            <div class="start-menu-separator"></div>
+            <StartMenuItem icon="📋" label="Stacks CLI" url="https://stacksjs.com/docs/cli" />
+            <StartMenuItem icon="🧩" label="Components" url="https://stacksjs.com/docs/components" />
+            <StartMenuItem icon="🔌" label="Actions" url="https://stacksjs.com/docs/actions" />
+            <StartMenuItem icon="📡" label="API" url="https://stacksjs.com/docs/api" />
+          </div>
+        </div>
       </template>
     </StartMenu>
   </div>

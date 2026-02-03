@@ -27,8 +27,6 @@ const { id, icon, label, type, section, url, onclick, left, top, style } = withD
   }
 )
 
-const computedStyle = style || `left: ${left}; top: ${top};`
-const onclickAttr = onclick ? `onclick="${onclick}"` : ''
 </script>
 
 <template>
@@ -38,7 +36,7 @@ const onclickAttr = onclick ? `onclick="${onclick}"` : ''
     data-icon-type="{{ type }}"
     data-icon-section="{{ section }}"
     data-icon-url="{{ url }}"
-    style="{{ computedStyle }}"
+    style="@if(style){{ style }}@else left: {{ left }}; top: {{ top }};@endif"
     @if (onclick)
     onclick="{{ onclick }}"
     @endif
