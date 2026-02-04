@@ -5,6 +5,7 @@ export * from './dev'
 
 export * from './generate'
 export * from './helpers'
+export * from './setup'
 
 // makeFactory,
 export {

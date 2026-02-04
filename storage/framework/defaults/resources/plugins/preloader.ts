@@ -45,3 +45,99 @@ if (!skipPreloader) {
 // Uncomment after running: bun add bun-plugin-stx
 // eslint-disable-next-line antfu/no-top-level-await
 // await import('bun-plugin-stx')
+
+// Auto-import ALL Stacks framework modules into globalThis
+// This allows using Action, response, Activity, etc. without ANY imports
+async function loadAutoImports() {
+  const { Glob } = await import('bun')
+  const { path } = await import('@stacksjs/path')
+
+  // CRITICAL: Never overwrite these built-in globals
+  const protectedGlobals = new Set([
+    'process', 'globalThis', 'global', 'window', 'self',
+    'console', 'require', 'module', 'exports', '__dirname', '__filename',
+    'Buffer', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval',
+    'setImmediate', 'clearImmediate', 'queueMicrotask',
+    'fetch', 'Request', 'Response', 'Headers', 'URL', 'URLSearchParams',
+    'TextEncoder', 'TextDecoder', 'Blob', 'File', 'FormData',
+    'crypto', 'performance', 'navigator', 'location',
+    'Promise', 'Symbol', 'Proxy', 'Reflect', 'WeakMap', 'WeakSet', 'Map', 'Set',
+    'Array', 'Object', 'String', 'Number', 'Boolean', 'Date', 'RegExp', 'Error',
+    'JSON', 'Math', 'Intl', 'eval', 'isNaN', 'isFinite', 'parseInt', 'parseFloat',
+    'encodeURI', 'encodeURIComponent', 'decodeURI', 'decodeURIComponent',
+    'Bun', 'Deno', 'Node',
+  ])
+
+  // 1. Load Stacks framework packages into globalThis
+  const stacksPackages = [
+    '@stacksjs/actions',
+    '@stacksjs/router',
+    '@stacksjs/orm',
+    '@stacksjs/validation',
+    '@stacksjs/strings',
+    '@stacksjs/arrays',
+    '@stacksjs/objects',
+    '@stacksjs/collections',
+    '@stacksjs/path',
+    '@stacksjs/storage',
+    '@stacksjs/env',
+    '@stacksjs/config',
+    '@stacksjs/logging',
+    '@stacksjs/cache',
+    '@stacksjs/queue',
+    '@stacksjs/events',
+    '@stacksjs/notifications',
+    '@stacksjs/email',
+    '@stacksjs/security',
+    '@stacksjs/auth',
+    '@stacksjs/database',
+    '@stacksjs/error-handling',
+  ]
+
+  for (const pkg of stacksPackages) {
+    try {
+      const module = await import(pkg)
+      for (const [name, value] of Object.entries(module)) {
+        // Skip default exports and protected globals
+        if (name === 'default' || protectedGlobals.has(name)) continue
+        if (typeof value !== 'undefined') {
+          (globalThis as any)[name] = value
+        }
+      }
+    } catch {
+      // Package might not exist or not be built yet
+    }
+  }
+
+  // 2. Load all functions from resources/functions
+  const functionsPath = path.resourcesPath('functions')
+  const glob = new Glob('**/*.ts')
+
+  for await (const file of glob.scan({
+    cwd: functionsPath,
+    absolute: true,
+    onlyFiles: true,
+  })) {
+    if (file.endsWith('.d.ts')) continue
+
+    try {
+      const module = await import(file)
+      for (const [name, value] of Object.entries(module)) {
+        // Skip default exports and protected globals
+        if (name === 'default' || protectedGlobals.has(name)) continue
+        if (typeof value !== 'undefined') {
+          (globalThis as any)[name] = value
+        }
+      }
+    } catch {
+      // Some files may have client-side dependencies, skip them
+    }
+  }
+}
+
+// Load auto-imports for server/API contexts (dev, serve, any server process)
+// Skip only for pure CLI info commands like --version, --help
+const skipAutoImports = ['--version', '-v', 'version', '--help', '-h', 'help'].includes(args[0])
+if (!skipAutoImports) {
+  await loadAutoImports()
+}

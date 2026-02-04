@@ -20,3 +20,6 @@ export * from './requests'
 export * from './subquery'
 export * from './transaction'
 export * from './utils'
+
+// Export User model from db package
+export { default as User } from '../../db/src/orm/Models/User'

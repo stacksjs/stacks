@@ -14,9 +14,44 @@ class UserModel {
     this.query = db2.selectFrom('users')
   }
 
+  // Getters for common properties
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get email(): string | undefined {
+    return this.attributes.email
+  }
+
+  get name(): string | undefined {
+    return this.attributes.name
+  }
+
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
+
+  get createdAt(): string | undefined {
+    return this.attributes.created_at
+  }
+
+  get updatedAt(): string | undefined {
+    return this.attributes.updated_at
+  }
+
+  get password(): string | undefined {
+    return this.attributes.password
+  }
+
   // Static method to create a new query instance
   static query() {
     return new UserModel()
+  }
+
+  // Static where clause for chaining
+  static where(column: string, operator: any, value?: any) {
+    const instance = new UserModel()
+    return instance.where(column, operator, value)
   }
 
   // Find by ID

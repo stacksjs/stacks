@@ -4,6 +4,9 @@ import { serverResponse } from '@stacksjs/router'
 import { retry } from '@stacksjs/utils'
 import type { Server, ServerWebSocket } from 'bun'
 
+// Auto-imports (ORM models + resources/functions) are loaded via preloader
+// See: storage/framework/defaults/resources/plugins/preloader.ts
+
 process.on('SIGINT', () => {
   console.log('Exited using Ctrl-C')
   process.exit()

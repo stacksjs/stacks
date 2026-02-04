@@ -1,8 +1,4 @@
-import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
-import { Auth } from '@stacksjs/auth'
-import { response } from '@stacksjs/router'
-import { schema } from '@stacksjs/validation'
+// No imports needed - everything is auto-imported!
 
 export default new Action({
   name: 'LoginAction',
@@ -14,14 +10,13 @@ export default new Action({
       rule: schema.string().email(),
       message: 'Email must be a valid email address.',
     },
-
     password: {
       rule: schema.string().min(6).max(255),
       message: 'Password must be between 6 and 255 characters.',
     },
   },
 
-  async handle(request: RequestInstance) {
+  async handle(request: any) {
     const email = request.get('email')
     const password = request.get('password')
 

@@ -18,21 +18,16 @@ export async function register(credentials: NewUser): Promise<{ token: AuthToken
   const hashedPassword = await makeHash(password, { algorithm: 'bcrypt' })
 
   // Create the user
-  const result = await db.insertInto('users')
+  await db.insertInto('users')
     .values({
       email,
       password: hashedPassword,
       name,
     })
-    .executeTakeFirst()
+    .execute()
 
-  const insertId = Number(result?.insertId) || Number(result?.numInsertedOrUpdatedRows)
-
-  if (!insertId)
-    throw new Error('Failed to create user')
-
-  // Get the created user
-  const user = await User.find(insertId)
+  // Get the created user by email (unique field)
+  const user = await User.where('email', '=', email).first()
 
   if (!user)
     throw new Error('Failed to retrieve created user')

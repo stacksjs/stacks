@@ -1,6 +1,6 @@
 import type { CLI, CliOptions } from '@stacksjs/types'
 import process from 'node:process'
-import { runAction } from '@stacksjs/actions'
+import { runAction, setupSSL } from '@stacksjs/actions'
 import { log, runCommand } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { handleError } from '@stacksjs/error-handling'
@@ -11,10 +11,14 @@ import { ExitCode } from '@stacksjs/types'
 export function setup(buddy: CLI): void {
   const descriptions = {
     setup: 'This command ensures your project is setup correctly',
+    ssl: 'Setup SSL certificates and hosts file for HTTPS development',
     ohMyZsh: 'Enable Oh My Zsh',
     aws: 'Ensures AWS is connected to the project',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
+    domain: 'Custom domain to setup (defaults to APP_URL)',
+    skipHosts: 'Skip adding domain to hosts file',
+    skipTrust: 'Skip trusting the certificate',
   }
 
   buddy
@@ -35,6 +39,29 @@ export function setup(buddy: CLI): void {
       // TODO: optimizeAddDir()
 
       await initializeProject(options)
+    })
+
+  buddy
+    .command('setup:ssl', descriptions.ssl)
+    .alias('ssl:setup')
+    .option('-d, --domain [domain]', descriptions.domain)
+    .option('--skip-hosts', descriptions.skipHosts, { default: false })
+    .option('--skip-trust', descriptions.skipTrust, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: CliOptions & { domain?: string, skipHosts?: boolean, skipTrust?: boolean }) => {
+      log.debug('Running `buddy setup:ssl` ...', options)
+
+      const success = await setupSSL({
+        domain: options.domain,
+        skipHosts: options.skipHosts,
+        skipTrust: options.skipTrust,
+        verbose: options.verbose,
+      })
+
+      if (!success) {
+        log.warn('SSL setup completed with warnings')
+        log.info('You may need to manually trust certificates or update hosts file')
+      }
     })
 
   buddy

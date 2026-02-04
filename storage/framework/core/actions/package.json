@@ -50,6 +50,7 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
+    "@stacksjs/tlsx": "link:@stacksjs/tlsx",
     "better-dx": "^0.2.5",
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/enums": "workspace:*",
