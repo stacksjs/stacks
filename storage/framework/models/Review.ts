@@ -11,126 +11,102 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'productId', 'rating', 'title', 'content', 'isVerifiedPurchase', 'isApproved'],
-      searchable: ['title', 'content', 'productId'],
-      sortable: ['rating', 'createdAt', 'updatedAt', 'helpfulVotes'],
-      filterable: ['productId', 'rating', 'isVerifiedPurchase', 'isApproved'],
+      displayable: ['id', 'userId', 'trailId', 'rating', 'title'],
+      searchable: ['title', 'content'],
+      sortable: ['createdAt', 'rating', 'helpfulCount'],
+      filterable: ['rating', 'trailId'],
     },
-
     useSeeder: {
-      count: 50,
+      count: 100,
     },
-
     useApi: {
-      uri: 'product-reviews',
+      uri: 'reviews',
+      routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
-
-    observe: true,
   },
 
-  belongsTo: ['Product', 'Customer'],
+  belongsTo: ['User', 'Trail'],
 
   attributes: {
     rating: {
-      order: 3,
+      order: 1,
       fillable: true,
       validation: {
         rule: schema.number().required().min(1).max(5),
         message: {
+          required: 'Rating is required',
           min: 'Rating must be at least 1',
-          max: 'Rating cannot be more than 5',
+          max: 'Rating must be at most 5',
         },
       },
-      factory: faker => faker.number.int({ min: 1, max: 5 }),
+      factory: (faker) => faker.number.int({ min: 3, max: 5 }),
     },
 
     title: {
-      order: 4,
+      order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().required().max(100),
-        message: {
-          max: 'Title must have a maximum of 100 characters',
-        },
+        rule: schema.string().max(200),
       },
-      factory: faker => faker.lorem.sentence({ min: 3, max: 8 }),
+      factory: (faker) => faker.helpers.arrayElement([
+        'Amazing trail!',
+        'Beautiful views',
+        'Great workout',
+        'Perfect for beginners',
+        'Challenging but worth it',
+        'Best trail in the area',
+        'Highly recommend',
+        'Nice and peaceful',
+      ]),
     },
 
     content: {
+      order: 3,
+      fillable: true,
+      validation: {
+        rule: schema.string().required().min(10).max(2000),
+        message: {
+          required: 'Review content is required',
+          min: 'Review must be at least 10 characters',
+        },
+      },
+      factory: (faker) => faker.lorem.paragraphs(2),
+    },
+
+    visitDate: {
+      order: 4,
+      fillable: true,
+      validation: {
+        rule: schema.string(),
+      },
+      factory: (faker) => faker.date.recent({ days: 90 }).toISOString().split('T')[0],
+    },
+
+    conditions: {
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string().required().max(2000),
-        message: {
-          max: 'Review content must have a maximum of 2000 characters',
-        },
+        rule: schema.string(),
       },
-      factory: faker => faker.lorem.paragraphs({ min: 1, max: 3 }),
+      factory: (faker) => faker.helpers.arrayElement(['excellent', 'good', 'fair', 'poor', 'muddy', 'icy']),
     },
 
-    isVerifiedPurchase: {
+    helpfulCount: {
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.boolean(),
+        rule: schema.number().min(0),
       },
-      factory: faker => faker.datatype.boolean({ probability: 0.7 }),
+      factory: (faker) => faker.number.int({ min: 0, max: 200 }),
     },
 
-    isApproved: {
+    photos: {
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.boolean(),
-      },
-      factory: faker => faker.datatype.boolean({ probability: 0.9 }),
-    },
-
-    isFeatured: {
-      order: 8,
-      fillable: true,
-      validation: {
-        rule: schema.boolean(),
-      },
-      factory: faker => faker.datatype.boolean({ probability: 0.9 }),
-    },
-
-    helpfulVotes: {
-      order: 9,
-      default: 0,
-      fillable: true,
-      validation: {
-        rule: schema.number().min(0),
-      },
-      factory: faker => faker.number.int({ min: 0, max: 200 }),
-    },
-
-    unhelpfulVotes: {
-      order: 10,
-      default: 0,
-      fillable: true,
-      validation: {
-        rule: schema.number().min(0),
-      },
-      factory: faker => faker.number.int({ min: 0, max: 50 }),
-    },
-
-    purchaseDate: {
-      order: 11,
-      fillable: true,
-      validation: {
         rule: schema.string(),
       },
-      factory: faker => faker.date.past({ years: 1 }).toISOString(),
-    },
-
-    images: {
-      order: 12,
-      fillable: true,
-      validation: {
-        rule: schema.string(),
-      },
-      factory: () => 'test',
+      factory: () => null,
     },
   },
 
