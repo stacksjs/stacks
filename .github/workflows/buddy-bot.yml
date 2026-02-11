@@ -2,8 +2,8 @@ name: Buddy Bot
 
 on:
   schedule:
-    # Check for rebase requests every minute
-    - cron: '*/1 * * * *'
+    # Check for rebase requests every 20 minutes
+    - cron: '*/20 * * * *'
     # Update dependencies every 2 hours
     - cron: '0 */2 * * *'
     # Update dashboard 15 minutes after dependency updates (ensures updates are reflected)
@@ -102,7 +102,7 @@ jobs:
             fi
           elif [ "${{ github.event_name }}" = "schedule" ]; then
             # Determine based on cron schedule
-            if [ "${{ github.event.schedule }}" = "*/1 * * * *" ]; then
+            if [ "${{ github.event.schedule }}" = "*/20 * * * *" ]; then
               echo "run_check=true" >> $GITHUB_OUTPUT
             elif [ "${{ github.event.schedule }}" = "0 */2 * * *" ]; then
               echo "run_update=true" >> $GITHUB_OUTPUT
@@ -223,7 +223,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if [ "${{ github.event_name }}" = "schedule" ]; then
-            echo "⏰ **Scheduled Check**: Automatically checks every minute" >> $GITHUB_STEP_SUMMARY
+            echo "⏰ **Scheduled Check**: Automatically checks every 20 minutes" >> $GITHUB_STEP_SUMMARY
           else
             echo "🖱️ **Manual Check**: Manually triggered from Actions tab" >> $GITHUB_STEP_SUMMARY
           fi

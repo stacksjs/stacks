@@ -60,7 +60,7 @@ jobs:
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Create GitHub Release
-        uses: stacksjs/action-releaser@v1.2.7
+        uses: stacksjs/action-releaser@v1.2.9
         with:
           files: |
             storage/framework/core/buddy/bin/buddy-linux-x64.zip
