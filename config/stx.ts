@@ -1,18 +1,14 @@
-import { defineStxConfig } from '@stacksjs/stx'
+/**
+ * STX Configuration for Stacks
+ * Note: Dashboard mode overrides these settings via serve() options
+ */
+export default {
+  // Components directory - for user-defined components
+  componentsDir: 'resources/components',
 
-export default defineStxConfig({
-  enabled: true,
-  debug: false,
-  cache: true,
-  streaming: {
-    enabled: true,
-  },
-  markdown: {
-    enabled: true,
-    syntaxHighlighting: {
-      enabled: true,
-      serverSide: true,
-      defaultTheme: 'github-dark',
-    },
-  },
-})
+  // Layouts directory - for layout templates
+  layoutsDir: 'resources/layouts',
+
+  // Partials directory - for partial templates
+  partialsDir: 'resources/partials',
+}
