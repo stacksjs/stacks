@@ -111,7 +111,12 @@
       "Bash(if grep -q '\"\"pickier\"\"' \"$BASE/package.json\")",
       "Bash(HAS_PICKIER=1)",
       "Bash(__NEW_LINE_e15e6a5c24a320c4__ if [ $HAS_ESLINT -eq 1 ])",
-      "Bash([ $HAS_PICKIER -eq 1 ])"
+      "Bash([ $HAS_PICKIER -eq 1 ])",
+      "Bash(python3:*)",
+      "Bash(xxd:*)",
+      "Bash(git clone:*)",
+      "Bash(for f in packages/rpx/test/*.test.ts packages/vite-plugin/test/*.test.ts)",
+      "Bash(do echo \"=== $f ===\")"
     ],
     "deny": [],
     "ask": []
