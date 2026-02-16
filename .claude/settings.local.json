@@ -97,7 +97,21 @@
       "Bash(cd:*)",
       "Bash(npm ls:*)",
       "Bash(tee:*)",
-      "Bash(npm show:*)"
+      "Bash(npm show:*)",
+      "Bash(for dir in action-releaser buddy-bot bun-query-builder bun-router bunpress crosswind den stacks stx ts-analytics ts-auth ts-broadcasting ts-cloud ts-countries ts-md ts-pantry ts-punycode ts-qr-codes ts-validation voide pantry pantry-setup pantry-test-oidc)",
+      "Bash(do)",
+      "Bash(BASE=\"/Users/glennmichaeltorregosa/Documents/Projects/$dir\")",
+      "Bash(if [ -f \"$BASE/package.json\" ])",
+      "Bash(then)",
+      "Bash(HAS_ESLINT=0)",
+      "Bash(HAS_PICKIER=0:*)",
+      "Bash(__NEW_LINE_e15e6a5c24a320c4__ if grep -q '\"\"eslint\"\"' \"$BASE/package.json\")",
+      "Bash(HAS_ESLINT=1)",
+      "Bash(fi)",
+      "Bash(if grep -q '\"\"pickier\"\"' \"$BASE/package.json\")",
+      "Bash(HAS_PICKIER=1)",
+      "Bash(__NEW_LINE_e15e6a5c24a320c4__ if [ $HAS_ESLINT -eq 1 ])",
+      "Bash([ $HAS_PICKIER -eq 1 ])"
     ],
     "deny": [],
     "ask": []
