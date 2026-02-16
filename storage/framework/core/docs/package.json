@@ -41,7 +41,7 @@
     "@vite-pwa/vitepress": "^1.0.0",
     "@cwcss/crosswind": "link:@cwcss/crosswind",
     "unplugin-icons": "^22.2.0",
-    "unplugin-vue-components": "^28.8.0",
+    "unplugin-vue-components": "^31.0.0",
     "vite-plugin-pwa": "^1.0.3",
     "vitepress": "1.6.4"
   },
