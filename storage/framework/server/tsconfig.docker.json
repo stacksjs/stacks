@@ -20,12 +20,6 @@
       "../../../env": ["../storage/framework/env.ts"]
     },
     "resolveJsonModule": true,
-    "types": [
-      "vite/client",
-      "vite-plugin-pwa/client",
-      "vite-plugin-layouts/client",
-      "@intlify/unplugin-vue-i18n/messages"
-    ],
     "allowImportingTsExtensions": true,
     "allowJs": true,
     "strict": true,

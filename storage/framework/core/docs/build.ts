@@ -12,11 +12,6 @@ const result = await Bun.build({
   // sourcemap: 'linked',
   minify: true,
   external: [
-    'vite-plugin-pwa',
-    '@vitejs/plugin-vue',
-    '@vite-pwa/vitepress',
-    'vitepress',
-    '@shikijs/vitepress-twoslash',
     '@stacksjs/config',
     '@stacksjs/alias',
     '@stacksjs/path',

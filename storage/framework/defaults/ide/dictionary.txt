@@ -37,6 +37,7 @@ bumpp
 bundleconfig
 bunfig
 bunnel
+bunpress
 bunx
 bunx --bun
 cardano
@@ -76,6 +77,7 @@ cryptojs
 cssnano
 cssnanorc
 customresources
+cwcss
 czrc
 dangerfile
 datetime
