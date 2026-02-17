@@ -52,7 +52,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "bun-queue": "link:bun-queue"
+    "@stacksjs/bun-queue": "^0.0.1"
   },
   "devDependencies": {
     "better-dx": "^0.2.5"
