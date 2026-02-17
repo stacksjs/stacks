@@ -13,6 +13,10 @@ import { HttpError } from '@stacksjs/error-handling'
  * @template C - The table columns type (for type-safe where clauses)
  * @template J - The JSON response type
  */
+export type ScopeCallback<T, C, J> = (query: BaseOrm<T, C, J>) => BaseOrm<T, C, J>
+
+export type CastType = 'boolean' | 'number' | 'integer' | 'float' | 'string' | 'date' | 'datetime' | 'json' | 'array'
+
 export class BaseOrm<T, C, J> {
   protected tableName: string
 
@@ -22,12 +26,287 @@ export class BaseOrm<T, C, J> {
   protected withRelations: string[]
   protected hasSelect: boolean = false
 
+  // ─── Global Scopes ──────────────────────────────────────────────
+  private static _globalScopes: Map<string, Map<string, ScopeCallback<any, any, any>>> = new Map()
+  private _withoutGlobalScopes: string[] = []
+  private _ignoreAllGlobalScopes = false
+
+  // ─── Model Casts ────────────────────────────────────────────────
+  protected static _casts: Record<string, CastType> = {}
+
   constructor(tableName: string) {
     this.tableName = tableName
     this.selectFromQuery = db.selectFrom(this.tableName)
     this.updateFromQuery = db.updateTable(this.tableName)
     this.deleteFromQuery = db.deleteFrom(this.tableName)
     this.withRelations = []
+    this.applyGlobalScopes()
+  }
+
+  // ─── Global Scopes ──────────────────────────────────────────────
+
+  /**
+   * Register a global scope for this model class
+   */
+  static addGlobalScope<ST, SC, SJ>(name: string, scope: ScopeCallback<ST, SC, SJ>): void {
+    const modelName = this.name
+    if (!BaseOrm._globalScopes.has(modelName)) {
+      BaseOrm._globalScopes.set(modelName, new Map())
+    }
+    BaseOrm._globalScopes.get(modelName)!.set(name, scope as ScopeCallback<any, any, any>)
+  }
+
+  /**
+   * Remove a global scope by name
+   */
+  static removeGlobalScope(name: string): void {
+    const modelName = this.name
+    BaseOrm._globalScopes.get(modelName)?.delete(name)
+  }
+
+  /**
+   * Query without a specific global scope
+   */
+  withoutGlobalScope(name: string): this {
+    this._withoutGlobalScopes.push(name)
+    return this
+  }
+
+  /**
+   * Query without any global scopes
+   */
+  withoutGlobalScopes(): this {
+    this._ignoreAllGlobalScopes = true
+    return this
+  }
+
+  private applyGlobalScopes(): void {
+    const modelName = (this.constructor as any).name
+    const scopes = BaseOrm._globalScopes.get(modelName)
+    if (!scopes || this._ignoreAllGlobalScopes) return
+
+    for (const [name, scope] of scopes) {
+      if (!this._withoutGlobalScopes.includes(name)) {
+        scope(this)
+      }
+    }
+  }
+
+  // ─── Named Query Scopes ─────────────────────────────────────────
+
+  /**
+   * Apply a named scope. Subclasses define scopes as static methods.
+   */
+  applyScope(name: string, ...args: any[]): this {
+    const scopeMethod = (this.constructor as any)[`scope${name.charAt(0).toUpperCase() + name.slice(1)}`]
+    if (typeof scopeMethod === 'function') {
+      return scopeMethod.call(this.constructor, this, ...args)
+    }
+    throw new Error(`Scope '${name}' not found on model ${(this.constructor as any).name}`)
+  }
+
+  // ─── Model Casts ────────────────────────────────────────────────
+
+  /**
+   * Cast a value to the specified type
+   */
+  protected castAttribute(key: string, value: any): any {
+    const casts = (this.constructor as any)._casts || {}
+    const castType = casts[key] as CastType | undefined
+    if (!castType || value === null || value === undefined) return value
+
+    switch (castType) {
+      case 'boolean':
+        return Boolean(value)
+      case 'number':
+      case 'float':
+        return Number(value)
+      case 'integer':
+        return Math.trunc(Number(value))
+      case 'string':
+        return String(value)
+      case 'date':
+      case 'datetime':
+        return value instanceof Date ? value : new Date(value)
+      case 'json':
+        return typeof value === 'string' ? JSON.parse(value) : value
+      case 'array':
+        if (Array.isArray(value)) return value
+        return typeof value === 'string' ? JSON.parse(value) : [value]
+      default:
+        return value
+    }
+  }
+
+  /**
+   * Serialize a value for database storage based on cast type
+   */
+  protected serializeAttribute(key: string, value: any): any {
+    const casts = (this.constructor as any)._casts || {}
+    const castType = casts[key] as CastType | undefined
+    if (!castType || value === null || value === undefined) return value
+
+    switch (castType) {
+      case 'boolean':
+        return value ? 1 : 0
+      case 'date':
+      case 'datetime':
+        return value instanceof Date ? value.toISOString() : value
+      case 'json':
+      case 'array':
+        return typeof value === 'string' ? value : JSON.stringify(value)
+      default:
+        return value
+    }
+  }
+
+  /**
+   * Apply casts to all attributes of a model result
+   */
+  protected applyCasts(model: any): void {
+    if (!model || typeof model !== 'object') return
+    const casts = (this.constructor as any)._casts || {}
+
+    for (const key of Object.keys(casts)) {
+      if (key in model) {
+        model[key] = this.castAttribute(key, model[key])
+      }
+    }
+  }
+
+  // ─── Pivot Operations (belongsToMany) ───────────────────────────
+
+  /**
+   * Attach records to a many-to-many relationship via pivot table
+   */
+  async attach(
+    pivotTable: string,
+    foreignKey: string,
+    foreignId: number,
+    relatedKey: string,
+    relatedIds: number | number[],
+    pivotData?: Record<string, any>,
+  ): Promise<void> {
+    const ids = Array.isArray(relatedIds) ? relatedIds : [relatedIds]
+
+    for (const relatedId of ids) {
+      const values: Record<string, any> = {
+        [foreignKey]: foreignId,
+        [relatedKey]: relatedId,
+        ...pivotData,
+      }
+
+      // Use INSERT OR IGNORE to avoid duplicate key errors
+      try {
+        await db.insertInto(pivotTable).values(values).executeTakeFirst()
+      }
+      catch {
+        // Silently ignore duplicate entries
+      }
+    }
+  }
+
+  /**
+   * Detach records from a many-to-many relationship via pivot table
+   */
+  async detach(
+    pivotTable: string,
+    foreignKey: string,
+    foreignId: number,
+    relatedKey: string,
+    relatedIds?: number | number[],
+  ): Promise<void> {
+    if (relatedIds === undefined) {
+      // Detach all
+      await db.deleteFrom(pivotTable).where(foreignKey, '=', foreignId).execute()
+    }
+    else {
+      const ids = Array.isArray(relatedIds) ? relatedIds : [relatedIds]
+      for (const relatedId of ids) {
+        await db
+          .deleteFrom(pivotTable)
+          .where(foreignKey, '=', foreignId)
+          .where(relatedKey, '=', relatedId)
+          .execute()
+      }
+    }
+  }
+
+  /**
+   * Sync records in a many-to-many relationship.
+   * Attaches new IDs, detaches removed IDs.
+   */
+  async sync(
+    pivotTable: string,
+    foreignKey: string,
+    foreignId: number,
+    relatedKey: string,
+    relatedIds: number[],
+    pivotData?: Record<string, any>,
+  ): Promise<{ attached: number[], detached: number[] }> {
+    // Get current related IDs
+    const existing = await db
+      .selectFrom(pivotTable)
+      .where(foreignKey, '=', foreignId)
+      .selectAll()
+      .execute()
+
+    const currentIds = existing.map((r: any) => r[relatedKey] as number)
+
+    const toAttach = relatedIds.filter(id => !currentIds.includes(id))
+    const toDetach = currentIds.filter(id => !relatedIds.includes(id))
+
+    if (toDetach.length > 0) {
+      await this.detach(pivotTable, foreignKey, foreignId, relatedKey, toDetach)
+    }
+
+    if (toAttach.length > 0) {
+      await this.attach(pivotTable, foreignKey, foreignId, relatedKey, toAttach, pivotData)
+    }
+
+    return { attached: toAttach, detached: toDetach }
+  }
+
+  /**
+   * Toggle records in a many-to-many relationship.
+   * Attaches if not present, detaches if present.
+   */
+  async toggle(
+    pivotTable: string,
+    foreignKey: string,
+    foreignId: number,
+    relatedKey: string,
+    relatedIds: number[],
+  ): Promise<{ attached: number[], detached: number[] }> {
+    const existing = await db
+      .selectFrom(pivotTable)
+      .where(foreignKey, '=', foreignId)
+      .selectAll()
+      .execute()
+
+    const currentIds = existing.map((r: any) => r[relatedKey] as number)
+
+    const toAttach: number[] = []
+    const toDetach: number[] = []
+
+    for (const id of relatedIds) {
+      if (currentIds.includes(id)) {
+        toDetach.push(id)
+      }
+      else {
+        toAttach.push(id)
+      }
+    }
+
+    if (toDetach.length > 0) {
+      await this.detach(pivotTable, foreignKey, foreignId, relatedKey, toDetach)
+    }
+
+    if (toAttach.length > 0) {
+      await this.attach(pivotTable, foreignKey, foreignId, relatedKey, toAttach)
+    }
+
+    return { attached: toAttach, detached: toDetach }
   }
 
   applySelect(params: (keyof J)[] | RawBuilder<string> | string): this {
@@ -915,9 +1194,17 @@ export class BaseOrm<T, C, J> {
   }
 
   // Methods to be implemented by child classes
-  protected mapCustomGetters(_model: T): void {}
+  protected mapCustomGetters(_model: T | T[]): void {
+    // Also apply casts when processing models
+    if (Array.isArray(_model)) {
+      for (const m of _model) this.applyCasts(m)
+    }
+    else {
+      this.applyCasts(_model)
+    }
+  }
 
-  protected async loadRelations(_model: T): Promise<void> {}
+  protected async loadRelations(_model: T | T[]): Promise<void> {}
 
   // Base implementations for categorizable trait
   protected async getCategoryIds(id: number): Promise<number[]> {

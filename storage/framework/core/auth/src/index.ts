@@ -21,6 +21,12 @@ export * from './gate'
 export * from './policy'
 export * from './authorizable'
 
+// Role-Based Access Control (RBAC)
+export * from './rbac'
+
+// Email Verification
+export * from './email-verification'
+
 // TOTP (Two-Factor Authentication) - re-export from ts-auth
 export {
   generateTOTP,
