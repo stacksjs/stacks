@@ -116,7 +116,19 @@
       "Bash(xxd:*)",
       "Bash(git clone:*)",
       "Bash(for f in packages/rpx/test/*.test.ts packages/vite-plugin/test/*.test.ts)",
-      "Bash(do echo \"=== $f ===\")"
+      "Bash(do echo \"=== $f ===\")",
+      "Bash(for pkg in cli enums path types database config)",
+      "Bash(do echo \"=== $pkg ===\")",
+      "Bash(for pkg in browser actions cli enums)",
+      "Bash(/dev/null --include=*.ts)",
+      "Bash(/dev/null --include=*.js --max-count=1)",
+      "Bash(/dev/null --include=*.js)",
+      "Bash(dscacheutil:*)",
+      "Bash(ping:*)",
+      "Bash(do grep -l @stacksjs/router $f)",
+      "Bash(do if cat \"$f\")",
+      "Bash(then echo \"$f\")",
+      "Bash(openssl x509:*)"
     ],
     "deny": [],
     "ask": []

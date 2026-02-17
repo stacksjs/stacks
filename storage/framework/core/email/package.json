@@ -4,7 +4,9 @@
   "version": "0.70.23",
   "description": "The Stacks Email integration. Painlessly create & manage your inboxes, templates, and send emails.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.com>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/email#readme",
@@ -16,19 +18,31 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["email", "ses", "aws", "stacks", "emailjs", "mailgun"],
+  "keywords": [
+    "email",
+    "ses",
+    "aws",
+    "stacks",
+    "emailjs",
+    "mailgun"
+  ],
   "exports": {
     ".": {
+      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
+      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "build": "bun build.ts",
     "build:inbound": "bun build-inbound.ts",

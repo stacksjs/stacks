@@ -1,633 +1,268 @@
 <script server>
-import { defineProps, withDefaults } from 'stx'
+const appName = 'Stacks'
+const appVersion = '0.1.0'
 
-// Page configuration
-const pageTitle = 'Stacks.js - Coming Soon'
-
-// Desktop icon definitions
-const desktopIcons = [
-  { id: 'welcome', icon: '📃', label: 'Welcome.pdf', type: 'window', section: 'welcome', left: '20px', top: '20px' },
-  { id: 'about', icon: '📄', label: 'About', type: 'window', section: 'about', left: '140px', top: '20px' },
-  { id: 'ecosystem', icon: '🌐', label: 'Ecosystem', type: 'window', section: 'ecosystem', left: '260px', top: '20px' },
-  { id: 'backend', icon: '⚙️', label: 'Backend', type: 'window', section: 'backend', left: '380px', top: '20px' },
-  { id: 'frontend', icon: '🎨', label: 'Frontend', type: 'window', section: 'frontend', left: '500px', top: '20px' },
-  { id: 'cloud', icon: '☁️', label: 'Cloud', type: 'window', section: 'cloud', left: '620px', top: '20px' },
-  { id: 'dashboard', icon: '📊', label: 'Dashboard', type: 'window', section: 'dashboard', left: '20px', top: '140px' },
-  { id: 'license', icon: '🔑', label: 'License', type: 'window', section: 'license', left: '140px', top: '140px' },
-  { id: 'login', icon: '🔐', label: 'Login', type: 'action', onclick: 'showLoginScreen()', left: '260px', top: '140px' },
-  { id: 'benchmarks', icon: '📁', label: 'Benchmarks', type: 'window', section: 'benchmarks', left: '380px', top: '140px' },
-  { id: 'libraries', icon: '📁', label: 'Libraries & CLIs', type: 'window', section: 'libraries', left: '500px', top: '140px' },
-  { id: 'plugins', icon: '📁', label: 'Plugins & Actions', type: 'window', section: 'plugins', left: '620px', top: '140px' },
-  { id: 'templates', icon: '📁', label: 'Templates', type: 'window', section: 'templates', left: '20px', top: '260px' },
-  { id: 'docs', icon: '📚', label: 'Documentation', type: 'link', url: 'https://stacksjs.com/docs', left: '140px', top: '260px' },
-  { id: 'blog', icon: '📝', label: 'Blog', type: 'window', section: 'blog', left: '260px', top: '260px' },
-  { id: 'github', icon: '💻', label: 'GitHub', type: 'link', url: 'https://github.com/stacksjs/stacks', left: '380px', top: '260px' },
-  { id: 'sponsors', icon: '💖', label: 'Sponsors', type: 'window', section: 'sponsors', left: '500px', top: '260px' },
-  { id: 'discord', icon: '💬', label: 'Discord', type: 'link', url: 'https://discord.gg/stacksjs', left: '620px', top: '260px' },
-  { id: 'whitepaper', icon: '📄', label: 'White Paper', type: 'link', url: 'https://github.com/stacksjs/white-paper', left: '20px', top: '380px' },
-  { id: 'contact', icon: '📫', label: 'Contact', type: 'window', section: 'contact', left: '140px', top: '380px' },
+const features = [
+  {
+    title: 'Documentation',
+    description: 'Explore our comprehensive guides and API references to get the most out of Stacks.',
+    url: 'https://stacksjs.org/docs',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="card-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>`,
+  },
+  {
+    title: 'GitHub',
+    description: 'View the source code, report issues, and contribute to the Stacks ecosystem.',
+    url: 'https://github.com/stacksjs/stacks',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="card-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>`,
+  },
+  {
+    title: 'Discord',
+    description: 'Join our community of developers. Get help, share ideas, and stay up to date.',
+    url: 'https://discord.gg/stacksjs',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="card-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg>`,
+  },
+  {
+    title: 'Dashboard',
+    description: 'Manage your application with the built-in admin dashboard and developer tools.',
+    url: '/dashboard',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="card-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>`,
+  },
 ]
 
-// Core packages data
-const corePackages = [
-  { emoji: '🤖', title: 'AI', description: 'Deep AI integrations for agentic workflows' },
-  { emoji: '🔌', title: 'API', description: 'Build scalable REST APIs' },
-  { emoji: '🔐', title: 'Auth', description: 'Authentication and authorization' },
-  { emoji: '⚡', title: 'Cache', description: 'Multi-driver caching system' },
-  { emoji: '⌨️', title: 'CLI', description: 'Beautiful command-line interfaces' },
-  { emoji: '☁️', title: 'Cloud', description: 'Cloud infrastructure management' },
-  { emoji: '🗄️', title: 'Database', description: 'Database connections & migrations' },
-  { emoji: '🗺️', title: 'ORM', description: 'Elegant object-relational mapper' },
-  { emoji: '🧭', title: 'Router', description: 'Fast & flexible routing' },
-  { emoji: '✅', title: 'Validation', description: 'Type-safe validation' },
-  { emoji: '📬', title: 'Queue', description: 'Background job processing' },
-  { emoji: '💾', title: 'Storage', description: 'File storage abstraction' },
-  { emoji: '📫', title: 'Email', description: 'Send emails with ease' },
-  { emoji: '📡', title: 'Events', description: 'Event-driven architecture' },
-  { emoji: '🔔', title: 'Notifications', description: 'Multi-channel notifications' },
-  { emoji: '🧪', title: 'Testing', description: 'Testing utilities & helpers' },
-  { emoji: '🔍', title: 'Search Engine', description: 'Full-text search capabilities' },
-  { emoji: '⚡', title: 'Realtime', description: 'WebSocket & real-time features' },
-  { emoji: '🔬', title: 'X-Ray', description: 'Debugging & monitoring tools' },
-  { emoji: '💳', title: 'Payments', description: 'Payment processing integration' },
-]
-
-// Frameworks data
-const frameworks = [
-  { name: 'BunPress', desc: 'Modern documentation-needs covered. Coming soon.', url: 'https://github.com/stacksjs/bunpress' },
-  { name: 'Clapp', desc: 'A modern framework to build powerful & pretty CLI apps.', url: 'https://github.com/stacksjs/clapp' },
-  { name: 'Crosswind', desc: 'A Tailwind-like utility-first CSS framework. Powered by Bun.', url: 'https://github.com/cwcss/crosswind' },
-  { name: 'Launchpad', desc: 'Performant system & project dependency management. Similar to Homebrew, just faster.', url: 'https://github.com/stacksjs/launchpad' },
-  { name: 'Stacks', desc: 'Develop powerful apps, clouds & framework-agnostic libraries—faster.', url: 'https://github.com/stacksjs/stacks' },
-  { name: 'stx', desc: 'A fast & powerful UI framework. Templating inspired by Laravel Blade & Vue.', url: 'https://github.com/stacksjs/stx' },
-]
-
-// Sponsorware data
-const sponsorware = [
-  { name: 'bun-queue', desc: 'A modern & powerful Queue / Messaging system. Optimized for Bun.', url: 'https://github.com/stacksjs/bun-queue' },
-  { name: 'bun-router', desc: 'Powerful routing. High-performance, feature-rich.', url: 'https://github.com/stacksjs/bun-router' },
-  { name: 'Stacks Dashboard', desc: 'The Stacks Dashboard. For developers, and their clients.', url: 'https://github.com/stacksjs/stacks' },
-  { name: 'Stacks ORM - DynamoDB', desc: 'More than a driver—automated Single Table Design. Cheap, fast, endless scalability.', url: 'https://github.com/stacksjs/stacks' },
-  { name: 'Stacks Raycast', desc: 'Stacks (and Buddy) integrated into Raycast.', url: 'https://github.com/stacksjs/stacks' },
-]
-
-// Apps data
-const apps = [
-  { name: 'Barista', desc: 'A lightweight macOS utility that serves up a perfectly organized menubar.', url: 'https://github.com/stacksjs/barista' },
-  { name: 'Hush', desc: 'Lightweight macOS utility that ensures notifications are suppressed during meetings.', url: 'https://github.com/stacksjs/hush' },
-  { name: 'Pomodoro', desc: 'Minimal, functional, yet simple Pomodoro menubar app, to help stay focussed. For Mac.', url: 'https://github.com/stacksjs/pomodoro' },
-]
-
-// Context menu items
-const shareOptions = [
-  { icon: '🐦', label: 'Share on Twitter', action: "shareVia('twitter')" },
-  { icon: '🦋', label: 'Share on Bluesky', action: "shareVia('bluesky')" },
-  { icon: '💼', label: 'Share on LinkedIn', action: "shareVia('linkedin')" },
-  { icon: '📧', label: 'Share via Email', action: "shareVia('email')" },
-  { icon: '📋', label: 'Copy Link', action: "shareVia('copy')" },
-]
 </script>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ pageTitle }}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Tahoma:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles/main.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ appName }}</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+      background-color: #111827;
+      color: #d1d5db;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 64rem;
+      padding: 2rem;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .logo-diamond {
+      width: 3rem;
+      height: 3rem;
+      background: linear-gradient(135deg, #818cf8, #6366f1);
+      transform: rotate(45deg);
+      border-radius: 0.5rem;
+      box-shadow: 0 0 40px rgba(99, 102, 241, 0.3);
+    }
+
+    .logo-text {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: #f9fafb;
+      letter-spacing: -0.025em;
+    }
+
+    .subtitle {
+      font-size: 1.125rem;
+      color: #6b7280;
+      max-width: 36rem;
+      margin: 0 auto;
+      line-height: 1.75;
+    }
+
+    .version-badge {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.25rem 0.75rem;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      color: #818cf8;
+      font-weight: 500;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    @media (max-width: 640px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      display: block;
+      padding: 1.5rem;
+      background: rgba(31, 41, 55, 0.5);
+      border: 1px solid #374151;
+      border-radius: 0.75rem;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .card:hover {
+      background: rgba(55, 65, 81, 0.5);
+      border-color: #4b5563;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-icon {
+      width: 1.5rem;
+      height: 1.5rem;
+      color: #818cf8;
+      flex-shrink: 0;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #f9fafb;
+    }
+
+    .card-arrow {
+      margin-left: auto;
+      color: #4b5563;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .card:hover .card-arrow {
+      color: #818cf8;
+      transform: translateX(4px);
+    }
+
+    .card-description {
+      font-size: 0.875rem;
+      color: #9ca3af;
+      line-height: 1.625;
+    }
+
+    .footer {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid #1f2937;
+    }
+
+    .tech-stack {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tech-link {
+      color: #6b7280;
+      text-decoration: none;
+      font-size: 0.8125rem;
+      transition: color 0.15s;
+    }
+
+    .tech-link:hover {
+      color: #818cf8;
+    }
+
+    .tech-separator {
+      color: #374151;
+      font-size: 0.75rem;
+      user-select: none;
+    }
+
+    .env-badge {
+      display: inline-block;
+      margin-top: 0.75rem;
+      padding: 0.125rem 0.5rem;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 9999px;
+      font-size: 0.6875rem;
+      color: #34d399;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.bunny.net">
+  <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700" rel="stylesheet" />
 </head>
 <body>
-  <!-- Login Screen -->
-  <LoginScreen id="login-screen" logoText="STACKS" subtitle="To begin, click your user name" />
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <div class="logo-diamond"></div>
+        <span class="logo-text">{{ appName }}</span>
+      </div>
+      <p class="subtitle">
+        Build modern web applications, APIs, and cloud infrastructure with an elegant, type-safe framework.
+      </p>
+      <span class="version-badge">v{{ appVersion }}</span>
+    </div>
 
-  <!-- Email Login Form -->
-  <LoginForm
-    id="email-login-form"
-    icon="👤"
-    title="Email Login"
-    prompt="Type your email and password"
-    submitHandler="handleEmailLogin()"
-  >
-    <InputGroup id="email-input" label="Email" type="email" placeholder="user@example.com" />
-    <InputGroup id="password-input" label="Password" type="password" placeholder="Enter your password" />
-  </LoginForm>
-
-  <!-- License Login Form -->
-  <LoginForm
-    id="license-login-form"
-    icon="🔑"
-    title="License Key Login"
-    prompt="Enter your STACKS license key"
-    submitHandler="handleLicenseLogin()"
-  >
-    <InputGroup id="license-input" label="License Key" type="text" placeholder="XXXX-XXXX-XXXX-XXXX" />
-  </LoginForm>
-
-  <div class="desktop">
-    <!-- Desktop Icons -->
-    <div class="desktop-icons">
-      @foreach (desktopIcons as iconData)
-        <button
-          class="desktop-icon"
-          data-icon-id="{{ iconData.id }}"
-          data-icon-type="{{ iconData.type }}"
-          data-icon-section="{{ iconData.section }}"
-          data-icon-url="{{ iconData.url }}"
-          style="left: {{ iconData.left }}; top: {{ iconData.top }};"
-          @if (iconData.onclick)
-          onclick="{{ iconData.onclick }}"
-          @endif
-        >
-          <div class="desktop-icon-image">{{ iconData.icon }}</div>
-          <div class="desktop-icon-label">{{ iconData.label }}</div>
-        </button>
+    <div class="cards">
+      @foreach (features as feature)
+        <a href="{{ feature.url }}" class="card" target="_blank" rel="noopener noreferrer">
+          <div class="card-header">
+            {!! feature.icon !!}
+            <span class="card-title">{{ feature.title }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:1rem;height:1rem;" class="card-arrow"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+          </div>
+          <p class="card-description">{{ feature.description }}</p>
+        </a>
       @endforeach
     </div>
 
-    <!-- Sponsor Ad Space -->
-    <button
-      id="sponsor-icon"
-      class="desktop-icon"
-      data-icon-id="sponsor"
-      data-icon-type="link"
-      data-icon-section=""
-      data-icon-url="https://github.com/sponsors/stacksjs"
-    >
-      <div class="desktop-icon-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; box-shadow: 0 3px 6px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.2); font-size: 28px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;">
-        🏢
+    <div class="footer">
+      <div class="tech-stack">
+        <a href="https://bun.sh" class="tech-link" target="_blank" rel="noopener noreferrer">Bun</a>
+        <span class="tech-separator">/</span>
+        <a href="https://www.typescriptlang.org" class="tech-link" target="_blank" rel="noopener noreferrer">TypeScript</a>
+        <span class="tech-separator">/</span>
+        <a href="https://github.com/stacksjs/stx" class="tech-link" target="_blank" rel="noopener noreferrer">STX</a>
       </div>
-      <div class="desktop-icon-label" style="white-space: pre-line; line-height: 1.2; font-size: 10px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">Your Brand
-Sponsor Here</div>
-    </button>
-
-    <!-- Trash Bin - positioned in bottom right corner -->
-    <DesktopIcon id="trash" icon="🗑️" label="Recycle Bin" type="window" section="trash" style="position: absolute; right: 20px; bottom: 60px; left: auto; top: auto;" />
-
-    <!-- Recycle Bin Window -->
-    <Window id="trash" icon="🗑️" title="Recycle Bin" left="200px" top="150px" width="500px" height="400px">
-      <div style="display: flex; flex-direction: column; height: 100%;">
-        <div style="padding: 8px; background: #f5f5f5; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 16px;">
-          <button style="padding: 4px 12px; cursor: pointer;" onclick="alert('Empty Recycle Bin feature coming soon!')">Empty Recycle Bin</button>
-          <span style="color: #666; font-size: 12px;">0 items</span>
-        </div>
-        <div style="flex: 1; display: flex; align-items: center; justify-content: center; color: #999;">
-          <div style="text-align: center;">
-            <div style="font-size: 48px; margin-bottom: 12px;">🗑️</div>
-            <div>Recycle Bin is empty</div>
-          </div>
-        </div>
-      </div>
-    </Window>
-
-    <!-- About Window -->
-    <Window id="about" icon="📄" title="About Stacks" left="100px" top="80px" width="600px" height="500px">
-      <h2>STACKS.JS</h2>
-      <h3>Rapid Development Framework</h3>
-      <p>
-        A TypeScript framework for building modern web applications, APIs, and cloud infrastructure.
-      </p>
-      <p>
-        Stacks provides an elegant, opinionated solution for common development needs with a focus on
-        developer experience and productivity.
-      </p>
-      <p>
-        Built on <strong>Bun</strong>, <strong>TypeScript</strong>, and <strong>Tauri</strong>.
-      </p>
-      <div style="margin-top: 24px; padding: 12px; background: #fffacd; border: 2px solid #ffd700;">
-        <p style="margin: 0; font-weight: bold;">✨ Convention over configuration, while staying wholly configurable</p>
-      </div>
-    </Window>
-
-    <!-- Ecosystem Window -->
-    <Window id="ecosystem" icon="🌐" title="Ecosystem" left="150px" top="100px" width="850px" height="650px">
-      <h2>Ecosystem</h2>
-      <p style="margin-bottom: 20px;">The complete Stacks.js ecosystem—all open source, all TypeScript.</p>
-
-      <div class="feature-buttons" style="margin-bottom: 20px;">
-        <FeatureButton label="Core Packages" onclick="showEcosystemTab('core')" active />
-        <FeatureButton label="Frameworks" onclick="showEcosystemTab('frameworks')" />
-        <FeatureButton label="Sponsorware" onclick="showEcosystemTab('sponsorware')" />
-        <FeatureButton label="Apps" onclick="showEcosystemTab('apps')" />
-      </div>
-
-      <div id="ecosystem-tab-content" style="max-height: 450px; overflow-y: auto;">
-        <!-- Core Packages Tab -->
-        <div id="tab-core" class="ecosystem-tab">
-          <h3>Core Packages</h3>
-          <div class="package-grid">
-            @foreach (corePackages as pkg)
-              <PackageItem emoji="{{ pkg.emoji }}" title="{{ pkg.title }}" description="{{ pkg.description }}" />
-            @endforeach
-          </div>
-        </div>
-
-        <!-- Frameworks Tab -->
-        <div id="tab-frameworks" class="ecosystem-tab" style="display: none;">
-          <h3 style="color: #0831d9; margin-bottom: 12px;">Frameworks</h3>
-          <p style="margin-bottom: 16px; color: #333;">Powerful frameworks for modern development.</p>
-          <div class="folder-list">
-            @foreach (frameworks as framework)
-              <a href="{{ framework.url }}" target="_blank" class="folder-item">
-                <div class="folder-item-icon">🏗️</div>
-                <div class="folder-item-content">
-                  <div class="folder-item-name">{{ framework.name }}</div>
-                  <div class="folder-item-desc">{{ framework.desc }}</div>
-                </div>
-              </a>
-            @endforeach
-          </div>
-        </div>
-
-        <!-- Sponsorware Tab -->
-        <div id="tab-sponsorware" class="ecosystem-tab" style="display: none;">
-          <h3 style="color: #0831d9; margin-bottom: 12px;">Sponsorware</h3>
-          <p style="margin-bottom: 16px; color: #333;">Premium tools & services for sponsors.</p>
-          <div class="folder-list">
-            @foreach (sponsorware as item)
-              <a href="{{ item.url }}" target="_blank" class="folder-item">
-                <div class="folder-item-icon">💎</div>
-                <div class="folder-item-content">
-                  <div class="folder-item-name">{{ item.name }}</div>
-                  <div class="folder-item-desc">{{ item.desc }}</div>
-                </div>
-              </a>
-            @endforeach
-          </div>
-        </div>
-
-        <!-- Apps Tab -->
-        <div id="tab-apps" class="ecosystem-tab" style="display: none;">
-          <h3 style="color: #0831d9; margin-bottom: 12px;">Apps</h3>
-          <p style="margin-bottom: 16px; color: #333;">Useful macOS utilities built with Stacks.</p>
-          <div class="folder-list">
-            @foreach (apps as app)
-              <a href="{{ app.url }}" target="_blank" class="folder-item">
-                <div class="folder-item-icon">📱</div>
-                <div class="folder-item-content">
-                  <div class="folder-item-name">{{ app.name }}</div>
-                  <div class="folder-item-desc">{{ app.desc }}</div>
-                </div>
-              </a>
-            @endforeach
-          </div>
-        </div>
-      </div>
-    </Window>
-
-    <!-- Backend Window -->
-    <Window id="backend" icon="⚙️" title="Backend Features" left="200px" top="120px" width="700px" height="550px">
-      <h2>Backend</h2>
-      <p>Simple, elegant syntax powers amazing functionality.</p>
-
-      <div class="feature-buttons">
-        <FeatureButton label="Authentication" onclick="showFeature('backend', 'auth')" active />
-        <FeatureButton label="ORM" onclick="showFeature('backend', 'orm')" />
-        <FeatureButton label="Validation" onclick="showFeature('backend', 'validation')" />
-        <FeatureButton label="Storage" onclick="showFeature('backend', 'storage')" />
-        <FeatureButton label="Queues" onclick="showFeature('backend', 'queue')" />
-        <FeatureButton label="Events" onclick="showFeature('backend', 'events')" />
-      </div>
-
-      <div id="backend-feature-content">
-        <h3>Authentication</h3>
-        <div class="code-display">
-import { Auth } from '@stacksjs/auth'
-
-// Login user
-const user = await Auth.attempt({
-  email: 'user@example.com',
-  password: 'secret'
-}
-
-// Get authenticated user
-const current = await Auth.user()
-        </div>
-      </div>
-    </Window>
-
-    <!-- Frontend Window -->
-    <Window id="frontend" icon="🎨" title="Frontend Features" left="250px" top="140px" width="700px" height="550px">
-      <h2>Frontend</h2>
-      <p>Develop dynamic UIs with helpers for atomic design, and much more.</p>
-      <p style="color: #333; font-size: 12px;">⚡️ Powered by TypeScript, Bun & Tauri</p>
-
-      <div class="feature-buttons">
-        <FeatureButton label="Components" onclick="showFeature('frontend', 'components')" active />
-        <FeatureButton label="UI Kit" onclick="showFeature('frontend', 'ui-kit')" />
-        <FeatureButton label="Routing" onclick="showFeature('frontend', 'routing')" />
-        <FeatureButton label="Desktop" onclick="showFeature('frontend', 'desktop')" />
-      </div>
-
-      <div id="frontend-feature-content">
-        <h3>Components</h3>
-        <div class="code-display">
-&lt;template&gt;
-  &lt;Card title="Hello"&gt;
-    &lt;p&gt;Reusable components&lt;/p&gt;
-  &lt;/Card&gt;
-&lt;/template&gt;
-
-&lt;script setup&gt;
-// Auto-imported
-&lt;/script&gt;
-        </div>
-      </div>
-    </Window>
-
-    <!-- Cloud Window -->
-    <Window id="cloud" icon="☁️" title="Cloud Features" left="300px" top="160px" width="700px" height="550px">
-      <h2>Cloud</h2>
-      <p>Develop & maintain cloud infrastructure with ease.</p>
-      <p style="color: #333; font-size: 12px;">Imagine Vercel, Vapor and Forge having been unified.</p>
-
-      <div class="feature-buttons">
-        <FeatureButton label="Deployment" onclick="showFeature('cloud', 'deployment')" active />
-        <FeatureButton label="Storage" onclick="showFeature('cloud', 'storage')" />
-        <FeatureButton label="CDN" onclick="showFeature('cloud', 'cdn')" />
-        <FeatureButton label="DNS" onclick="showFeature('cloud', 'dns')" />
-      </div>
-
-      <div id="cloud-feature-content">
-        <h3>Deployment</h3>
-        <div class="code-display">
-export default {
-  provider: 'aws',
-  region: 'us-east-1',
-
-  compute: {
-    type: 'serverless',
-    memory: 1024
-  }
-}
-        </div>
-      </div>
-    </Window>
-
-    <!-- Dashboard Window -->
-    <Window id="dashboard" icon="📊" title="Dashboard" left="350px" top="180px" width="600px" height="400px">
-      <h2>Dashboard</h2>
-      <div style="margin-top: 40px; text-align: center;">
-        <div style="font-size: 64px; margin-bottom: 20px;">🚧</div>
-        <h3 style="color: #0831d9; margin-bottom: 12px;">Work in Progress</h3>
-        <p style="color: #333;">The Stacks Dashboard is currently under development.</p>
-        <p style="color: #333; margin-top: 8px;">Check back soon for exciting new features!</p>
-        <div style="margin-top: 32px; padding: 16px; background: #fffacd; border: 2px solid #ffd700; border-radius: 4px; display: inline-block;">
-          <p style="margin: 0; font-weight: bold; color: #333;">💡 Coming Soon: Real-time metrics, analytics, and insights</p>
-        </div>
-      </div>
-    </Window>
-
-    <!-- Blog Window -->
-    <Window id="blog" icon="📝" title="Stacks Blog" left="120px" top="80px" width="900px" height="650px">
-      <div style="display: flex; flex-direction: column; height: 100%; background: #f8f9fa;">
-        <!-- Blog Header -->
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px 24px; color: white;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <h2 style="margin: 0; font-size: 24px;">📝 Stacks Blog</h2>
-              <p style="margin: 4px 0 0; opacity: 0.9; font-size: 13px;">News, updates, and insights from the Stacks team</p>
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <button style="padding: 8px 16px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; color: white; cursor: pointer; font-size: 12px;">✏️ New Post</button>
-              <button style="padding: 8px 16px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; color: white; cursor: pointer; font-size: 12px;">⚙️ Settings</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Blog Stats Bar -->
-        <div style="display: flex; gap: 24px; padding: 12px 24px; background: white; border-bottom: 1px solid #e0e0e0;">
-          <div style="text-align: center;">
-            <div style="font-size: 20px; font-weight: bold; color: #667eea;">12</div>
-            <div style="font-size: 11px; color: #666;">Published</div>
-          </div>
-          <div style="text-align: center;">
-            <div style="font-size: 20px; font-weight: bold; color: #f59e0b;">3</div>
-            <div style="font-size: 11px; color: #666;">Drafts</div>
-          </div>
-          <div style="text-align: center;">
-            <div style="font-size: 20px; font-weight: bold; color: #10b981;">2.4k</div>
-            <div style="font-size: 11px; color: #666;">Total Views</div>
-          </div>
-          <div style="text-align: center;">
-            <div style="font-size: 20px; font-weight: bold; color: #ec4899;">47</div>
-            <div style="font-size: 11px; color: #666;">Comments</div>
-          </div>
-          <div style="flex: 1;"></div>
-          <input type="text" placeholder="🔍 Search posts..." style="padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; width: 200px;" />
-        </div>
-
-        <!-- Blog Content -->
-        <div style="flex: 1; overflow-y: auto; padding: 20px 24px;">
-          <!-- Featured Post -->
-          <div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
-            <div style="display: flex;">
-              <div style="width: 280px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;">
-                🚀
-              </div>
-              <div style="flex: 1; padding: 20px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                  <span style="background: #667eea; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold;">FEATURED</span>
-                  <span style="color: #666; font-size: 11px;">January 15, 2026</span>
-                </div>
-                <h3 style="margin: 0 0 8px; font-size: 18px; color: #1a1a2e;">Introducing Stacks 1.0: The Modern WordPress Alternative</h3>
-                <p style="margin: 0 0 12px; color: #555; font-size: 13px; line-height: 1.5;">
-                  After years of development, we're thrilled to announce Stacks 1.0 — a fully type-safe, modern framework that combines the best of Laravel, Vue, and cutting-edge tooling.
-                </p>
-                <div style="display: flex; align-items: center; gap: 16px;">
-                  <span style="font-size: 12px; color: #666;">👤 Chris Breuer</span>
-                  <span style="font-size: 12px; color: #666;">👁️ 1,247 views</span>
-                  <span style="font-size: 12px; color: #666;">💬 23 comments</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Post List -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            <!-- Post Card 1 -->
-            <div style="background: white; border-radius: 8px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                <span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 3px; font-size: 9px;">PUBLISHED</span>
-                <span style="color: #999; font-size: 11px;">Jan 10, 2026</span>
-              </div>
-              <h4 style="margin: 0 0 8px; font-size: 14px; color: #333;">Type-Safe APIs with Stacks Actions</h4>
-              <p style="margin: 0 0 12px; color: #666; font-size: 12px; line-height: 1.4;">Learn how to build fully type-safe API endpoints using Stacks Actions...</p>
-              <div style="display: flex; justify-content: space-between; font-size: 11px; color: #888;">
-                <span>👁️ 342 views</span>
-                <span>💬 8 comments</span>
-              </div>
-            </div>
-
-            <!-- Post Card 2 -->
-            <div style="background: white; border-radius: 8px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                <span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 3px; font-size: 9px;">PUBLISHED</span>
-                <span style="color: #999; font-size: 11px;">Jan 5, 2026</span>
-              </div>
-              <h4 style="margin: 0 0 8px; font-size: 14px; color: #333;">Building Desktop Apps with Stacks & Tauri</h4>
-              <p style="margin: 0 0 12px; color: #666; font-size: 12px; line-height: 1.4;">Turn your Stacks web app into a native desktop application...</p>
-              <div style="display: flex; justify-content: space-between; font-size: 11px; color: #888;">
-                <span>👁️ 289 views</span>
-                <span>💬 5 comments</span>
-              </div>
-            </div>
-
-            <!-- Post Card 3 -->
-            <div style="background: white; border-radius: 8px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                <span style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 3px; font-size: 9px;">DRAFT</span>
-                <span style="color: #999; font-size: 11px;">Jan 2, 2026</span>
-              </div>
-              <h4 style="margin: 0 0 8px; font-size: 14px; color: #333;">Migrating from WordPress to Stacks</h4>
-              <p style="margin: 0 0 12px; color: #666; font-size: 12px; line-height: 1.4;">A comprehensive guide to migrating your WordPress site to Stacks...</p>
-              <div style="display: flex; justify-content: space-between; font-size: 11px; color: #888;">
-                <span>👁️ 0 views</span>
-                <span>💬 0 comments</span>
-              </div>
-            </div>
-
-            <!-- Post Card 4 -->
-            <div style="background: white; border-radius: 8px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                <span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 3px; font-size: 9px;">PUBLISHED</span>
-                <span style="color: #999; font-size: 11px;">Dec 28, 2025</span>
-              </div>
-              <h4 style="margin: 0 0 8px; font-size: 14px; color: #333;">Stacks Components: A Deep Dive</h4>
-              <p style="margin: 0 0 12px; color: #666; font-size: 12px; line-height: 1.4;">Everything you need to know about building reusable components...</p>
-              <div style="display: flex; justify-content: space-between; font-size: 11px; color: #888;">
-                <span>👁️ 521 views</span>
-                <span>💬 11 comments</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Blog Footer -->
-        <div style="padding: 12px 24px; background: white; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
-          <div style="font-size: 11px; color: #666;">
-            Powered by <strong>Stacks CMS</strong> — The modern content management system
-          </div>
-          <div style="display: flex; gap: 8px;">
-            <button style="padding: 6px 12px; background: #667eea; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 11px;">📊 Analytics</button>
-            <button style="padding: 6px 12px; background: #10b981; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 11px;" onclick="handleBlogNewsletterSignup()">📧 Newsletter</button>
-          </div>
-        </div>
-      </div>
-    </Window>
-
-    <!-- Welcome Window (PDF Viewer) -->
-    <div id="window-welcome" class="window active" style="left: 150px; top: 100px; width: 700px; height: 600px; z-index: 101;">
-      <div class="window-titlebar">
-        <div class="window-icon">📃</div>
-        <div class="window-title">Welcome.pdf - PDF Viewer</div>
-        <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('welcome')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('welcome')">□</button>
-          <button class="window-control close" onclick="closeWindow('welcome')">×</button>
-        </div>
-      </div>
-      <div class="window-content" style="background: #525659; padding: 0;">
-        @include('welcome-pdf-toolbar')
-        @include('welcome-pdf-content')
-      </div>
+      <div class="env-badge">local</div>
     </div>
-
-    <!-- Taskbar -->
-    <Taskbar />
-
-    <!-- Start Menu -->
-    <StartMenu id="start-menu" userName="Developer" userImage="👤">
-      <template #pinned-items>
-        <StartMenuItem icon="🌐" label="Stacks Website" url="https://stacksjs.com" highlighted />
-        <StartMenuItem icon="📚" label="Documentation" url="https://stacksjs.com/docs" highlighted />
-        <StartMenuItem icon="💻" label="GitHub" url="https://github.com/stacksjs/stacks" />
-        <StartMenuItem icon="💬" label="Discord" url="https://discord.gg/stacksjs" />
-        <StartMenuItem icon="📧" label="Contact" url="mailto:hello@stacksjs.com" />
-      </template>
-      <template #right-items>
-        <StartMenuItem icon="🌐" label="Ecosystem" onclick="openWindow('ecosystem')" />
-        <StartMenuItem icon="🎨" label="Frontend" onclick="openWindow('frontend')" />
-        <StartMenuItem icon="⚙️" label="Backend" onclick="openWindow('backend')" />
-        <StartMenuItem icon="☁️" label="Cloud" onclick="openWindow('cloud')" />
-        <div class="start-menu-separator"></div>
-        <StartMenuItem icon="📝" label="Blog" onclick="openWindow('blog')" />
-        <StartMenuItem icon="📊" label="Dashboard" onclick="openWindow('dashboard')" />
-        <StartMenuItem icon="📄" label="About Stacks" onclick="openWindow('about')" />
-        <StartMenuItem icon="❓" label="Help & Support" url="https://stacksjs.com/docs" />
-      </template>
-      <template #all-programs>
-        <div class="start-menu-item has-submenu all-programs">
-          <span>All Programs</span>
-          <span class="arrow">▸</span>
-          <div class="start-submenu">
-            <StartMenuItem icon="📦" label="Bun" url="https://bun.sh" />
-            <StartMenuItem icon="🔷" label="TypeScript" url="https://www.typescriptlang.org" />
-            <StartMenuItem icon="🖥️" label="Craft" url="https://craft-native.org/" />
-            <div class="start-menu-separator"></div>
-            <StartMenuItem icon="📋" label="Stacks CLI" url="https://stacksjs.com/docs/cli" />
-            <StartMenuItem icon="🧩" label="Components" url="https://stacksjs.com/docs/components" />
-            <StartMenuItem icon="🔌" label="Actions" url="https://stacksjs.com/docs/actions" />
-            <StartMenuItem icon="📡" label="API" url="https://stacksjs.com/docs/api" />
-          </div>
-        </div>
-      </template>
-    </StartMenu>
   </div>
-
-  <!-- Context Menu -->
-  <ContextMenu id="context-menu">
-    <ContextMenuItem icon="📤" label="Share with a friend..." hasSubmenu>
-      @foreach (shareOptions as option)
-        <ContextMenuItem icon="{{ option.icon }}" label="{{ option.label }}" onclick="{{ option.action }}" />
-      @endforeach
-    </ContextMenuItem>
-    <div class="context-menu-separator"></div>
-    <ContextMenuItem icon="🎨" label="Copy Logo as SVG" onclick="copyLogoSVG()" />
-    <ContextMenuItem icon="✏️" label="Copy Wordmark as SVG" onclick="copyWordmarkSVG()" />
-    <ContextMenuItem icon="📖" label="Brand Guidelines" onclick="window.open('https://stacksjs.com/brand', '_blank')" />
-    <div class="context-menu-separator"></div>
-    <ContextMenuItem icon="📚" label="Documentation" onclick="window.open('https://stacksjs.com/docs', '_blank')" />
-    <ContextMenuItem icon="💻" label="View on GitHub" onclick="window.open('https://github.com/stacksjs/stacks', '_blank')" />
-    <div class="context-menu-separator"></div>
-    <ContextMenuItem icon="🖼️" label="Change Background Image" onclick="changeBackgroundImage()" />
-    <div class="context-menu-separator"></div>
-    <ContextMenuItem icon="🔄" label="Refresh" onclick="window.location.reload()" />
-  </ContextMenu>
-
-  <!-- Icon Context Menu -->
-  <ContextMenu id="icon-context-menu">
-    <ContextMenuItem icon="📂" label="Open" onclick="openIconFromMenu()" />
-    <div class="context-menu-separator"></div>
-    <ContextMenuItem icon="✏️" label="Rename" onclick="renameIcon()" />
-    <ContextMenuItem icon="🗑️" label="Delete" onclick="deleteIcon()" />
-    <div class="context-menu-separator"></div>
-    <ContextMenuItem icon="📤" label="Share with a friend..." hasSubmenu>
-      @foreach (shareOptions as option)
-        <ContextMenuItem icon="{{ option.icon }}" label="{{ option.label }}" onclick="{{ option.action }}" />
-      @endforeach
-    </ContextMenuItem>
-    <div class="context-menu-separator"></div>
-    <ContextMenuItem icon="🎨" label="Copy Logo as SVG" onclick="copyLogoSVG()" />
-    <ContextMenuItem icon="✏️" label="Copy Wordmark as SVG" onclick="copyWordmarkSVG()" />
-    <ContextMenuItem icon="📖" label="Brand Guidelines" onclick="window.open('https://stacksjs.com/brand', '_blank')" />
-    <div class="context-menu-separator"></div>
-    <ContextMenuItem icon="📚" label="Documentation" onclick="window.open('https://stacksjs.com/docs', '_blank')" />
-    <ContextMenuItem icon="💻" label="View on GitHub" onclick="window.open('https://github.com/stacksjs/stacks', '_blank')" />
-    <div class="context-menu-separator"></div>
-    <ContextMenuItem icon="🔄" label="Refresh" onclick="window.location.reload()" />
-  </ContextMenu>
-
-  <!-- Notification Popup -->
-  <NotificationPopup id="notification-popup" title="Notifications" showSignup>
-    <div class="notification-empty">
-      <div class="notification-empty-icon">🔔</div>
-      <div class="notification-empty-text">No new notifications</div>
-    </div>
-  </NotificationPopup>
-
-  <script type="module" src="/assets/scripts/main.ts"></script>
 </body>
 </html>

@@ -4,7 +4,9 @@
   "version": "0.70.23",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.com>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/actions#readme",
@@ -26,20 +28,26 @@
   ],
   "exports": {
     ".": {
+      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./run-action": {
+      "bun": "./src/run-action.ts",
       "types": "./dist/run-action.d.ts",
       "import": "./dist/run-action.js"
     },
     "./*": {
+      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",

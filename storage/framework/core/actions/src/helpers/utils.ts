@@ -1,6 +1,7 @@
 import type { Action as ActionType } from '@stacksjs/actions'
 import type { Err, Ok, Result } from '@stacksjs/error-handling'
 import type { ActionOptions, CliOptions, CommandError, Readable, Subprocess, Writable } from '@stacksjs/types'
+import process from 'node:process'
 import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import { err } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
@@ -23,13 +24,17 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   // Special case: handle dev/views directly for maximum performance
   if (action === 'dev/views') {
     try {
-      log.success('🚀 Starting STX development server on http://localhost:3456\n')
+      const port = Number(process.env.PORT) || 3000
 
       // Import and call serve function directly - no subprocess!
       const { serve } = await import('bun-plugin-stx/serve')
       await serve({
-        patterns: ['resources/views'],
-        port: 3456,
+        patterns: ['resources/views', 'storage/framework/defaults/resources/views'],
+        port,
+        componentsDir: 'storage/framework/defaults/components/Dashboard',
+        layoutsDir: 'resources/layouts',
+        partialsDir: 'resources/views',
+        quiet: true,
       })
 
       // This will never return since serve runs forever
@@ -96,6 +101,8 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
     cwd: options?.cwd || p.projectPath(),
     stdio: [options?.stdin ?? 'inherit', 'pipe', 'pipe'],
     ...options,
+    // Suppress stdout for dev actions (output handled by unified dev output)
+    ...(isDevAction && !options?.verbose && { quiet: true }),
   }
 
   return await runCommand(cmd, optionsWithCwd)

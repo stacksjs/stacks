@@ -1,7 +1,6 @@
 import type { CLI, DevOptions } from '@stacksjs/types'
 import process from 'node:process'
 import {
-  isSSLSetupComplete,
   runAction,
   runApiDevServer,
   runComponentsDevServer,
@@ -10,13 +9,12 @@ import {
   runDocsDevServer,
   runFrontendDevServer,
   runSystemTrayDevServer,
-  setupSSL,
-  sslCertificatesExist,
 } from '@stacksjs/actions'
-import { intro, log, outro, prompts, runCommand } from '@stacksjs/cli'
+import { bold, cyan, dim, green, intro, log, outro, prompts, runCommand } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
-import { libsPath, projectPath } from '@stacksjs/path'
+import { libsPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { version } from '../../package.json'
 
 export function dev(buddy: CLI): void {
   const descriptions = {
@@ -52,7 +50,7 @@ export function dev(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (server: string | undefined, options: DevOptions) => {
 
-      const perf = await intro('buddy dev')
+      const perf = performance.now()
 
       // log.info('Ensuring web server/s running...')
 
@@ -274,97 +272,98 @@ export function dev(buddy: CLI): void {
 }
 
 export async function startDevelopmentServer(options: DevOptions): Promise<void> {
-  // Start both frontend and API servers concurrently
-  log.info('Starting frontend and API development servers...')
+  const appUrl = process.env.APP_URL
+  const frontendPort = Number(process.env.PORT) || 3000
+  const apiPort = 3008
+  const hasCustomDomain = appUrl && appUrl !== 'localhost' && !appUrl.includes('localhost:')
+  const domain = hasCustomDomain ? appUrl.replace(/^https?:\/\//, '') : null
+  const apiDomain = domain ? `api.${domain}` : null
+  const frontendUrl = domain ? `https://${domain}` : `http://localhost:${frontendPort}`
+  const apiUrl = apiDomain ? `https://${apiDomain}` : `http://localhost:${apiPort}`
 
-  // Run both servers in parallel
+  // Print Vite-style unified output
+  console.log()
+  console.log(`  ${bold(cyan('stacks'))} ${dim(`v${version}`)}`)
+  console.log()
+  console.log(`  ${green('➜')}  ${bold('Frontend')}:   ${cyan(frontendUrl)}`)
+  console.log(`  ${green('➜')}  ${bold('API')}:        ${cyan(apiUrl)}`)
+  if (options.verbose && domain) {
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:      ${dim(`localhost:${frontendPort} → ${domain}`)}`)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:      ${dim(`localhost:${apiPort} → ${apiDomain}`)}`)
+  }
+  console.log()
+
+  // Clean up child processes on exit to prevent orphaned processes
+  let isExiting = false
+  const cleanup = () => {
+    if (isExiting) return
+    isExiting = true
+    // SIGKILL the entire process group (all children spawned by this process)
+    try { process.kill(0, 'SIGKILL') }
+    catch { process.exit(0) }
+  }
+  process.on('SIGINT', cleanup)
+  process.on('SIGTERM', cleanup)
+
+  // Start all servers silently — output is handled above
   await Promise.all([
-    runFrontendDevServer(options),
-    runApiDevServer(options),
-    startReverseProxy(options),
+    runFrontendDevServer(options).catch((error) => {
+      if (options.verbose)
+        log.error(`Frontend: ${error}`)
+    }),
+    runApiDevServer(options).catch((error) => {
+      if (options.verbose)
+        log.error(`API: ${error}`)
+    }),
+    hasCustomDomain
+      ? startReverseProxy(options).catch((error) => {
+        if (options.verbose)
+          log.warn(`Proxy: ${error}`)
+      })
+      : Promise.resolve(),
   ])
-
-  // Dev servers run indefinitely, so this line should not be reached
 }
 
 /**
- * Start the reverse proxy (rpx) to enable HTTPS with custom domains.
- * Reads APP_URL from environment to determine the target domain.
+ * Start the reverse proxies (rpx) to enable HTTPS with custom domains.
+ * Proxies both frontend (stacks.localhost) and API (api.stacks.localhost).
+ * rpx wraps tlsx and handles SSL (certs, hosts, trust) automatically.
  */
 async function startReverseProxy(options: DevOptions): Promise<void> {
   const appUrl = process.env.APP_URL
 
   // Skip if no APP_URL is set or if it's localhost
   if (!appUrl || appUrl === 'localhost' || appUrl.includes('localhost:')) {
-    if (options.verbose) {
-      log.info('Skipping reverse proxy (APP_URL is localhost or not set)')
-    }
     return
   }
 
   const domain = appUrl.replace(/^https?:\/\//, '')
-
-  // Ensure SSL is setup before starting the proxy
-  if (!sslCertificatesExist(domain)) {
-    log.info(`Setting up SSL for ${domain}...`)
-    await setupSSL({
-      domain,
-      verbose: options.verbose,
-    })
-  }
-  else if (!isSSLSetupComplete(domain)) {
-    // Certificates exist but hosts entry might be missing
-    log.info(`Completing SSL setup for ${domain}...`)
-    await setupSSL({
-      domain,
-      verbose: options.verbose,
-    })
-  }
+  const apiDomain = `api.${domain}`
+  const frontendPort = Number(process.env.PORT) || 3000
+  const apiPort = 3008
+  const sslBasePath = `${process.env.HOME}/.stacks/ssl`
+  const verbose = options.verbose ?? false
 
   try {
-    // Check if rpx is available
-    const { startProxy } = await import('@stacksjs/rpx')
+    const { startProxies } = await import('@stacksjs/rpx')
 
-    log.info(`Starting reverse proxy: https://${domain} -> localhost:3456`)
-
-    const os = await import('node:os')
-    const path = await import('node:path')
-    const sslBasePath = path.join(os.homedir(), '.stacks', 'ssl')
-
-    await startProxy({
-      from: 'localhost:3456',
-      to: domain,
+    // Use multi-proxy mode so rpx generates a SINGLE cert covering all domains
+    await startProxies({
+      proxies: [
+        { from: `localhost:${frontendPort}`, to: domain, cleanUrls: false },
+        { from: `localhost:${apiPort}`, to: apiDomain, cleanUrls: false },
+      ],
       https: {
-        domain,
-        hostCertCN: domain,
         basePath: sslBasePath,
-        caCertPath: path.join(sslBasePath, `${domain}.ca.crt`),
-        certPath: path.join(sslBasePath, `${domain}.crt`),
-        keyPath: path.join(sslBasePath, `${domain}.key`),
-        altNameIPs: ['127.0.0.1', '::1'],
-        altNameURIs: ['localhost', domain],
-        organizationName: 'Stacks Development',
-        countryName: 'US',
-        stateName: 'California',
-        localityName: 'Playa Vista',
-        commonName: domain,
-        validityDays: 365,
+        validityDays: 825,
       },
-      // Skip certificate regeneration/trust since setupSSL() already handles it
-      // This prevents multiple sudo prompts
       regenerateUntrustedCerts: false,
-      cleanup: {
-        hosts: false, // Don't cleanup hosts on exit - managed by setup:ssl
-        certs: false,
-      },
-      verbose: options.verbose ?? false,
+      verbose,
     })
-
-    log.success(`Reverse proxy started: https://${domain}`)
   }
   catch (error) {
     if (options.verbose) {
-      log.warn('Reverse proxy (rpx) not available, skipping HTTPS setup')
+      log.warn('Reverse proxy not available, skipping HTTPS')
       log.warn(String(error))
     }
   }

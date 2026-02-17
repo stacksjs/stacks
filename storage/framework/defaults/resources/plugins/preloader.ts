@@ -135,9 +135,9 @@ async function loadAutoImports() {
   }
 }
 
-// Load auto-imports for server/API contexts (dev, serve, any server process)
-// Skip only for pure CLI info commands like --version, --help
-const skipAutoImports = ['--version', '-v', 'version', '--help', '-h', 'help'].includes(args[0])
+// Load auto-imports for server/API contexts (serve, any server process)
+// Skip for fast commands (dev, build, test, etc.) and CLI info commands
+const skipAutoImports = skipPreloader || ['--version', '-v', 'version', '--help', '-h', 'help'].includes(args[0])
 if (!skipAutoImports) {
   await loadAutoImports()
 }

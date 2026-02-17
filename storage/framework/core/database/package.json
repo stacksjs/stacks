@@ -4,7 +4,9 @@
   "version": "0.70.23",
   "description": "The Stacks database integration.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.com>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/database#readme",
@@ -27,30 +29,28 @@
   ],
   "exports": {
     ".": {
+      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
+      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.876.0",
-    "@aws-sdk/lib-dynamodb": "^3.883.0",
-    "bun-query-builder": "link:bun-query-builder",
-    "dynamodb-toolbox": "^2.7.1",
-    "pg": "^8.16.3"
-  },
-  "optionalDependencies": {
-    "mysql2": "^3.14.4"
+    "bun-query-builder": "link:bun-query-builder"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
@@ -62,11 +62,6 @@
     "@stacksjs/query-builder": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/utils": "workspace:*",
-    "@types/tar": "^6.1.13",
-    "debug": "^4.4.1",
-    "dynamodb-tooling": "^0.3.2",
-    "mkdirp": "^3.0.1",
-    "tar": "^7.4.3"
+    "@stacksjs/utils": "workspace:*"
   }
 }

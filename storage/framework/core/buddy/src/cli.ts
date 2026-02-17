@@ -45,18 +45,18 @@ async function main() {
 
   // Skip expensive setup for commands that don't need it
   if (needsFullSetup) {
+    // Load required commands for setup and key generation
+    const { setup } = await import('./commands/setup.ts')
+    setup(buddy)
+
+    const { key } = await import('./commands/key.ts')
+    key(buddy)
+
+    // Before running any commands, ensure the project is already initialized
     const { runAction } = await import('@stacksjs/actions')
     const { Action } = await import('@stacksjs/enums')
     const { ensureProjectIsInitialized } = await import('@stacksjs/utils')
 
-    // Load required commands for setup
-    const { setup } = await import('./commands/setup.ts')
-    const { key } = await import('./commands/key.ts')
-
-    setup(buddy)
-    key(buddy)
-
-    // before running any commands, ensure the project is already initialized
     const isAppKeySet = await ensureProjectIsInitialized()
     if (!isAppKeySet) {
       log.info('Your `APP_KEY` is not yet set')
@@ -178,7 +178,7 @@ async function dynamicImports(buddy: CLI) {
 
       // Check if file exists
       if (!fs.existsSync(commandPath)) {
-        log.warn(`Command file not found: ${commandPath} (registered as '${signature}')`)
+        log.debug(`Command file not found: ${commandPath} (registered as '${signature}')`)
         continue
       }
 

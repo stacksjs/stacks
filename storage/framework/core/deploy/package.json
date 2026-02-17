@@ -6,6 +6,7 @@
   "private": true,
   "exports": {
     ".": {
+      "bun": "./index.ts",
       "types": "./index.ts",
       "import": "./index.ts"
     }

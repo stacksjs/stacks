@@ -1,6 +1,5 @@
 import type { GeneratorOptions } from '@stacksjs/types'
 import process from 'node:process'
-import { generateOpenApi } from '@stacksjs/api'
 import { runCommand } from '@stacksjs/cli'
 import { Action, NpmScript } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
@@ -127,6 +126,8 @@ export async function generateCoreSymlink(): Promise<void> {
 }
 
 export async function generateOpenApiSpec(): Promise<void> {
+  // Lazy import to avoid pulling in @stacksjs/router (and bun-router) at module load time
+  const { generateOpenApi } = await import('@stacksjs/api')
   await generateOpenApi()
 
   log.success('Successfully generated Open API Spec')

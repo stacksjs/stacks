@@ -4,7 +4,9 @@
   "version": "0.70.23",
   "description": "The Stacks cloud/serverless integration & implementation.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.com>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/cloud#readme",
@@ -26,16 +28,21 @@
   ],
   "exports": {
     ".": {
+      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
+      "bun": "./src/*",
       "import": "./dist/*"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "bootstrap": "bunx --bun cdk bootstrap",
     "deploy": "cd ../.. && bun run build && cd ../docs && bun run build && cd ../core/cloud && bunx --bun cdk deploy --require-approval never",

@@ -48,14 +48,17 @@ export function isDomainInHosts(domain: string): boolean {
     return hostsContent.includes(`127.0.0.1 ${domain}`) || hostsContent.includes(`::1 ${domain}`)
   }
   catch {
-    // Try with sudo on Unix
+    // /etc/hosts may not be readable without sudo — use sudo cat if SUDO_PASSWORD is available
     if (process.platform !== 'win32') {
-      try {
-        const result = execSync(`cat "${HOSTS_FILE}"`, { encoding: 'utf-8' })
-        return result.includes(`127.0.0.1 ${domain}`) || result.includes(`::1 ${domain}`)
-      }
-      catch {
-        return false
+      const sudoPassword = getSudoPassword()
+      if (sudoPassword) {
+        try {
+          const result = execSync(`echo '${sudoPassword}' | sudo -S cat "${HOSTS_FILE}" 2>/dev/null`, { encoding: 'utf-8' })
+          return result.includes(`127.0.0.1 ${domain}`) || result.includes(`::1 ${domain}`)
+        }
+        catch {
+          return false
+        }
       }
     }
     return false
@@ -85,8 +88,10 @@ export async function addDomainToHosts(domain: string, verbose?: boolean): Promi
 
   // Check if we can run sudo (either interactive or have password)
   if (!canRunSudo()) {
-    log.warn(`Cannot add ${domain} to hosts file (non-interactive mode and no SUDO_PASSWORD set)`)
-    log.info('Run `buddy setup:ssl` in a terminal or set SUDO_PASSWORD environment variable')
+    if (verbose) {
+      log.warn(`Cannot add ${domain} to hosts file (non-interactive mode and no SUDO_PASSWORD set)`)
+      log.info('Run `buddy setup:ssl` in a terminal or set SUDO_PASSWORD environment variable')
+    }
     return false
   }
 
@@ -94,7 +99,6 @@ export async function addDomainToHosts(domain: string, verbose?: boolean): Promi
 
   // Unix: use sudo
   return new Promise((resolve) => {
-    log.info(`Adding ${domain} to hosts file (requires sudo)...`)
 
     let child
     if (sudoPassword) {
@@ -112,14 +116,15 @@ export async function addDomainToHosts(domain: string, verbose?: boolean): Promi
 
     child.on('close', (code) => {
       if (code === 0) {
-        log.success(`Added ${domain} to hosts file`)
+        if (verbose)
+          log.success(`Added ${domain} to hosts file`)
         resolve(true)
       }
       else {
-        log.error(`Failed to add ${domain} to hosts file`)
-        log.warn('You can manually add this to your /etc/hosts file:')
-        log.warn(`127.0.0.1 ${domain}`)
-        log.warn(`::1 ${domain}`)
+        if (verbose) {
+          log.error(`Failed to add ${domain} to hosts file`)
+          log.warn(`Manually add: 127.0.0.1 ${domain}`)
+        }
         resolve(false)
       }
     })
@@ -193,9 +198,10 @@ export async function trustCertificate(domain: string, verbose?: boolean): Promi
 
   // Check if we can run sudo (either interactive or have password)
   if (!canRunSudo()) {
-    log.warn('Cannot trust certificate (non-interactive mode and no SUDO_PASSWORD set)')
-    log.info('Run `buddy setup:ssl` in a terminal or set SUDO_PASSWORD environment variable')
-    log.info('Or type "thisisunsafe" in Chrome/Arc to bypass certificate warnings')
+    if (verbose) {
+      log.warn('Cannot trust certificate (non-interactive mode and no SUDO_PASSWORD set)')
+      log.info('Run `buddy setup:ssl` in a terminal or set SUDO_PASSWORD environment variable')
+    }
     return false
   }
 
@@ -203,7 +209,6 @@ export async function trustCertificate(domain: string, verbose?: boolean): Promi
 
   if (process.platform === 'darwin') {
     return new Promise((resolve) => {
-      log.info('Trusting SSL certificate (requires sudo)...')
 
       // Combine both CA and host cert trust into a single sudo command to minimize password prompts
       const combinedCommand = `security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain '${caCertPath}' && security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain '${certPath}'`
@@ -224,13 +229,9 @@ export async function trustCertificate(domain: string, verbose?: boolean): Promi
 
       child.on('close', (code) => {
         if (code === 0) {
-          log.success('CA and host certificates trusted in system keychain')
-
           // Also add host cert to login keychain (no sudo needed)
           try {
             execSync(`security add-trusted-cert -d -r trustRoot -k ~/Library/Keychains/login.keychain-db "${certPath}" 2>/dev/null || true`)
-            if (verbose)
-              log.success('Host certificate added to login keychain')
           }
           catch {
             // Ignore login keychain errors
@@ -239,9 +240,10 @@ export async function trustCertificate(domain: string, verbose?: boolean): Promi
           resolve(true)
         }
         else {
-          log.warn('Could not trust certificate automatically')
-          log.info('You can manually trust the certificate:')
-          log.info(`  sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "${caCertPath}"`)
+          if (verbose) {
+            log.warn('Could not trust certificate automatically')
+            log.info(`  sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "${caCertPath}"`)
+          }
           resolve(false)
         }
       })
@@ -254,7 +256,6 @@ export async function trustCertificate(domain: string, verbose?: boolean): Promi
   }
   else if (process.platform === 'linux') {
     return new Promise((resolve) => {
-      log.info('Trusting SSL certificate (requires sudo)...')
 
       const linuxCommands = `mkdir -p /usr/local/share/ca-certificates/stacks && cp '${caCertPath}' /usr/local/share/ca-certificates/stacks/ && update-ca-certificates`
 
@@ -352,7 +353,8 @@ export async function generateCertificates(domain: string, verbose?: boolean): P
     fs.writeFileSync(config.certPath, hostCert.certificate)
     fs.writeFileSync(config.keyPath, hostCert.privateKey)
 
-    log.success(`SSL certificates generated for ${domain}`)
+    if (verbose)
+      log.success(`SSL certificates generated for ${domain}`)
     return true
   }
   catch (error) {
@@ -373,29 +375,25 @@ export async function setupSSL(options: SSLSetupOptions = {}): Promise<boolean> 
     return true
   }
 
-  log.info(`Setting up HTTPS development for ${domain}`)
-
   let success = true
 
   // 1. Add to hosts file
   if (!options.skipHosts) {
     const hostsResult = await addDomainToHosts(domain, options.verbose)
-    if (!hostsResult) {
+    if (!hostsResult && options.verbose) {
       log.warn('Hosts file not updated - you may need to add the entry manually')
     }
   }
 
   // 2. Generate certificates if needed
   if (!sslCertificatesExist(domain)) {
-    log.info('Generating SSL certificates...')
+    if (options.verbose)
+      log.info('Generating SSL certificates...')
     const certResult = await generateCertificates(domain, options.verbose)
     if (!certResult) {
       log.error('Failed to generate SSL certificates')
       return false
     }
-  }
-  else {
-    log.success('SSL certificates already exist')
   }
 
   // 3. Trust certificates if needed
@@ -403,16 +401,8 @@ export async function setupSSL(options: SSLSetupOptions = {}): Promise<boolean> 
     const trustResult = await trustCertificate(domain, options.verbose)
     if (!trustResult) {
       log.warn('Certificate not trusted - you may see browser warnings')
-      log.info('Tip: Type "thisisunsafe" in Chrome/Arc to bypass certificate warnings')
       success = false
     }
-  }
-  else if (!options.skipTrust) {
-    log.success('SSL certificate is already trusted')
-  }
-
-  if (success) {
-    log.success(`HTTPS development setup complete for ${domain}`)
   }
 
   return success

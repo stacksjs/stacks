@@ -711,7 +711,7 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
  */
 export function createStacksRouter(config: StacksRouterConfig = {}): StacksRouterInstance {
   const bunRouter = new Router({
-    verbose: config.verbose ?? process.env.APP_ENV !== 'production',
+    verbose: config.verbose ?? false,
   })
 
   let currentPrefix = ''

@@ -4,7 +4,9 @@
   "version": "0.70.23",
   "description": "Stacks Analytics. Privacy-friendly.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.com>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/analytics#readme",
@@ -31,12 +33,16 @@
   ],
   "exports": {
     ".": {
+      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",
