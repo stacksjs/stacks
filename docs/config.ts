@@ -1,103 +1,5 @@
 import type { DocsConfig } from '@stacksjs/types'
-import type { HeadConfig } from 'vitepress'
 import { SocialLinkIcon } from '@stacksjs/types'
-import analytics from '../config/analytics'
-
-export const faviconHead: HeadConfig[] = [
-  [
-    'link',
-    {
-      rel: 'icon',
-      href: 'https://raw.githubusercontent.com/stacksjs/stacks/main/public/logo-transparent.svg?https://raw.githubusercontent.com/stacksjs/stacks/main/public/logo-transparent.svg?asdas',
-    },
-  ],
-]
-
-export const googleAnalyticsHead: HeadConfig[] = [
-  [
-    'script',
-    {
-      async: '',
-      src: `https://www.googletagmanager.com/gtag/js?id=${analytics.drivers?.googleAnalytics?.trackingId}`,
-    },
-  ],
-  [
-    'script',
-    {},
-    `window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'TAG_ID');`,
-  ],
-]
-
-export const fathomAnalyticsHead: HeadConfig[] = [
-  [
-    'script',
-    {
-      'src': 'https://cdn.usefathom.com/script.js',
-      'data-site': analytics.drivers?.fathom?.siteId || '',
-      'defer': '',
-    },
-  ],
-]
-
-// Self-hosted analytics using Stacks Analytics (dynamodb-tooling)
-function generateSelfHostedAnalyticsScript(): string {
-  const config = analytics.drivers?.selfHosted
-  if (!config?.siteId || !config?.apiEndpoint) {
-    return ''
-  }
-
-  const honorDnt = config.honorDnt ? `if(n.doNotTrack==="1")return;` : ''
-  const hashTracking = config.trackHashChanges ? `w.addEventListener('hashchange',pv);` : ''
-  const outboundTracking = config.trackOutboundLinks
-    ? `d.addEventListener('click',function(e){var a=e.target.closest('a');if(a&&a.hostname!==location.hostname){t('outbound',{url:a.href});}});`
-    : ''
-
-  return `(function(){
-'use strict';
-var d=document,w=window,n=navigator,s=d.currentScript;
-var site=s.dataset.site,api=s.dataset.api;
-${honorDnt}
-var q=[],sid=Math.random().toString(36).slice(2);
-function t(e,p){
-var x=new XMLHttpRequest();
-x.open('POST',api+'/collect',true);
-x.setRequestHeader('Content-Type','application/json');
-x.send(JSON.stringify({s:site,sid:sid,e:e,p:p||{},u:location.href,r:d.referrer,t:d.title,sw:screen.width,sh:screen.height}));
-}
-function pv(){t('pageview');}
-${hashTracking}
-${outboundTracking}
-if(d.readyState==='complete')pv();
-else w.addEventListener('load',pv);
-w.stacksAnalytics={track:function(n,v){t('event',{name:n,value:v});}};
-})();`
-}
-
-export const selfHostedAnalyticsHead: HeadConfig[] = analytics.drivers?.selfHosted?.siteId
-  ? [
-      [
-        'script',
-        {
-          'data-site': analytics.drivers.selfHosted.siteId,
-          'data-api': analytics.drivers.selfHosted.apiEndpoint || '',
-          'defer': '',
-        },
-        generateSelfHostedAnalyticsScript(),
-      ],
-    ]
-  : []
-
-export const analyticsHead
-  = analytics.driver === 'fathom'
-    ? fathomAnalyticsHead
-    : analytics.driver === 'google-analytics'
-      ? googleAnalyticsHead
-      : analytics.driver === 'self-hosted'
-        ? selfHostedAnalyticsHead
-        : []
 
 const nav = [
   {
@@ -738,57 +640,31 @@ const sidebar = {
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  lang: 'en-US',
   title: 'Stacks',
   description: 'Rapid application, cloud & library development framework.',
-  lastUpdated: true,
   deploy: true,
-  base: '/docs/',
 
-  metaChunk: true,
+  nav,
 
-  head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/images/logos/logo-mini.svg' }],
-    ['link', { rel: 'icon', type: 'image/png', href: '/images/logos/logo.png' }],
-    ['meta', { name: 'theme-color', content: '#1e40af' }],
-    ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:locale', content: 'en' }],
-    ['meta', { property: 'og:title', content: 'Stacks | A better developer environment.' }],
-    ['meta', { property: 'og:site_name', content: 'Stacks' }],
-    ['meta', { property: 'og:image', content: 'https://stacksjs.com/images/og-image.png' }],
-    ['meta', { property: 'og:url', content: 'https://stacksjs.com/' }],
-    // ['script', { 'src': 'https://cdn.usefathom.com/script.js', 'data-site': '', 'data-spa': 'auto', 'defer': '' }],
-    ...analyticsHead,
-  ],
-
-  themeConfig: {
-    logo: '/images/logos/logo-transparent.svg',
-
-    nav,
+  markdown: {
+    title: 'Stacks Documentation',
+    meta: {
+      description: 'Rapid application, cloud & library development framework.',
+      author: 'Stacks.js',
+    },
     sidebar,
-
-    editLink: {
-      pattern: 'https://github.com/stacksjs/stacks/edit/main/docs/docs/:path',
-      text: 'Edit this page on GitHub',
+    themeConfig: {
+      logo: '/images/logos/logo-transparent.svg',
+      footer: {
+        message: 'Released under the MIT License.',
+        copyright: 'Copyright 2024-present Stacks.js, Inc.',
+      },
+      socialLinks: [
+        { icon: SocialLinkIcon.Twitter, link: 'https://twitter.com/stacksjs' },
+        { icon: SocialLinkIcon.Bluesky, link: 'https://bsky.app/profile/chrisbreuer.dev' },
+        { icon: SocialLinkIcon.GitHub, link: 'https://github.com/stacksjs/stacks' },
+        { icon: SocialLinkIcon.Discord, link: 'https://discord.gg/stacksjs' },
+      ],
     },
-
-    footer: {
-      message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2024-present Stacks.js, Inc.',
-    },
-
-    socialLinks: [
-      { icon: SocialLinkIcon.Twitter, link: 'https://twitter.com/stacksjs' },
-      { icon: SocialLinkIcon.Bluesky, link: 'https://bsky.app/profile/chrisbreuer.dev' },
-      { icon: SocialLinkIcon.GitHub, link: 'https://github.com/stacksjs/stacks' },
-      { icon: SocialLinkIcon.Discord, link: 'https://discord.gg/stacksjs' },
-    ],
-
-    // algolia: services.algolia,
-
-    // carbonAds: {
-    //   code: '',
-    //   placement: '',
-    // },
   },
 } satisfies DocsConfig

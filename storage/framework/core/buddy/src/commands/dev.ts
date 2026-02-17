@@ -275,11 +275,14 @@ export async function startDevelopmentServer(options: DevOptions): Promise<void>
   const appUrl = process.env.APP_URL
   const frontendPort = Number(process.env.PORT) || 3000
   const apiPort = 3008
+  const docsPort = Number(process.env.PORT_DOCS) || 3006
   const hasCustomDomain = appUrl && appUrl !== 'localhost' && !appUrl.includes('localhost:')
   const domain = hasCustomDomain ? appUrl.replace(/^https?:\/\//, '') : null
   const apiDomain = domain ? `api.${domain}` : null
+  const docsDomain = domain ? `docs.${domain}` : null
   const frontendUrl = domain ? `https://${domain}` : `http://localhost:${frontendPort}`
   const apiUrl = apiDomain ? `https://${apiDomain}` : `http://localhost:${apiPort}`
+  const docsUrl = docsDomain ? `https://${docsDomain}` : `http://localhost:${docsPort}`
 
   // Print Vite-style unified output
   console.log()
@@ -287,9 +290,11 @@ export async function startDevelopmentServer(options: DevOptions): Promise<void>
   console.log()
   console.log(`  ${green('➜')}  ${bold('Frontend')}:   ${cyan(frontendUrl)}`)
   console.log(`  ${green('➜')}  ${bold('API')}:        ${cyan(apiUrl)}`)
+  console.log(`  ${green('➜')}  ${bold('Docs')}:       ${cyan(docsUrl)}`)
   if (options.verbose && domain) {
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:      ${dim(`localhost:${frontendPort} → ${domain}`)}`)
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:      ${dim(`localhost:${apiPort} → ${apiDomain}`)}`)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:      ${dim(`localhost:${docsPort} → ${docsDomain}`)}`)
   }
   console.log()
 
@@ -315,6 +320,10 @@ export async function startDevelopmentServer(options: DevOptions): Promise<void>
       if (options.verbose)
         log.error(`API: ${error}`)
     }),
+    runDocsDevServer(options).catch((error) => {
+      if (options.verbose)
+        log.error(`Docs: ${error}`)
+    }),
     hasCustomDomain
       ? startReverseProxy(options).catch((error) => {
         if (options.verbose)
@@ -326,7 +335,7 @@ export async function startDevelopmentServer(options: DevOptions): Promise<void>
 
 /**
  * Start the reverse proxies (rpx) to enable HTTPS with custom domains.
- * Proxies both frontend (stacks.localhost) and API (api.stacks.localhost).
+ * Proxies frontend, API, and docs subdomains.
  * rpx wraps tlsx and handles SSL (certs, hosts, trust) automatically.
  */
 async function startReverseProxy(options: DevOptions): Promise<void> {
@@ -339,8 +348,10 @@ async function startReverseProxy(options: DevOptions): Promise<void> {
 
   const domain = appUrl.replace(/^https?:\/\//, '')
   const apiDomain = `api.${domain}`
+  const docsDomain = `docs.${domain}`
   const frontendPort = Number(process.env.PORT) || 3000
   const apiPort = 3008
+  const docsPort = Number(process.env.PORT_DOCS) || 3006
   const sslBasePath = `${process.env.HOME}/.stacks/ssl`
   const verbose = options.verbose ?? false
 
@@ -352,6 +363,7 @@ async function startReverseProxy(options: DevOptions): Promise<void> {
       proxies: [
         { from: `localhost:${frontendPort}`, to: domain, cleanUrls: false },
         { from: `localhost:${apiPort}`, to: apiDomain, cleanUrls: false },
+        { from: `localhost:${docsPort}`, to: docsDomain, cleanUrls: false },
       ],
       https: {
         basePath: sslBasePath,

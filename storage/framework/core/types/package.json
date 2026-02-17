@@ -45,6 +45,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/bunpress": "link:@stacksjs/bunpress",
     "@stacksjs/ts-validation": "^0.4.7"
   },
   "devDependencies": {

@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@cwcss/crosswind": "link:@cwcss/crosswind",
-    "@stacksjs/bunpress": "0.1.1"
+    "@stacksjs/bunpress": "link:@stacksjs/bunpress"
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",

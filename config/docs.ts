@@ -1,7 +1,7 @@
 import type { BunPressOptions } from '@stacksjs/bunpress'
 
 const config: BunPressOptions = {
-  verbose: true,
+  verbose: false,
   docsDir: './docs',
   outDir: './dist/docs',
 

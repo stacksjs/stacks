@@ -1,7 +1,12 @@
-import { runCommand } from '@stacksjs/cli'
-import { frameworkPath } from '@stacksjs/path'
+import { projectPath } from '@stacksjs/path'
 
-await runCommand('bun run dev', {
-  cwd: frameworkPath('docs'),
-  // verbose: true,
+const port = Number(process.env.PORT_DOCS) || 3006
+
+const { startServer } = await import('@stacksjs/bunpress')
+
+await startServer({
+  port,
+  root: projectPath('docs'),
+  watch: true,
+  quiet: true,
 })

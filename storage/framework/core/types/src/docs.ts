@@ -1,7 +1,7 @@
-import type { UserConfig } from 'vitepress'
+import type { BunPressOptions } from '@stacksjs/bunpress'
 
-export interface DocsUserConfig extends UserConfig {
-  deploy: boolean
+export interface DocsUserConfig extends BunPressOptions {
+  deploy?: boolean
 }
 
 export type DocsConfig = DocsUserConfig
