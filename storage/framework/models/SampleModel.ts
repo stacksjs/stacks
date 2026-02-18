@@ -2,6 +2,7 @@ import { defineModel } from '@stacksjs/orm'
 
 export default defineModel({
   name: 'SampleModel',
+  table: 'sample_models',
 
   traits: {
     useTimestamps: true,

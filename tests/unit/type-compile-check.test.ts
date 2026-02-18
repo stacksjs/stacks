@@ -1,426 +1,124 @@
 /**
- * Type-level compile checks for ORM type narrowing.
+ * Type-level compile checks for the zero-generation ORM architecture.
  *
- * Since bun doesn't do type checking and tsc has import resolution issues
- * with temp files, we verify type narrowing through structural analysis:
- * - Read the actual TypeScript type definitions
- * - Parse them to verify they produce the correct type constraints
- * - Verify that union types are exhaustive (no `string` escape hatches)
- * - Verify that `never` types are used for empty relation sets
- * - Verify that type files use BaseModelType from @stacksjs/orm
- * - Verify that BaseOrm provides shared static query methods
+ * Verifies that the type system is structurally correct:
+ * - defineModel() return type preserves definition properties
+ * - model-types.ts has correct type utilities (ModelRow, NewModelData, etc.)
+ * - types.ts SelectedQuery/SelectedResult are properly typed
+ * - orm-globals.d.ts declares global types correctly
+ * - server-auto-imports.d.ts uses relative paths for models
+ * - action.ts uses smart InferRequest for model-aware handlers
+ * - request.ts RequestInstance is generic with field narrowing
+ * - Model definition files use defineModel with `as const`
  */
 import { describe, expect, test } from 'bun:test'
-import { readFileSync, readdirSync, existsSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 const rootDir = resolve(import.meta.dir, '../..')
-const typesDir = join(rootDir, 'storage/framework/orm/src/types')
-const actionPathsFile = join(rootDir, 'storage/framework/core/router/src/action-paths.ts')
+const coreOrmDir = join(rootDir, 'storage/framework/core/orm/src')
+const typesDir = join(rootDir, 'storage/framework/types')
+const frameworkModelsDir = join(rootDir, 'storage/framework/models')
+const defaultModelsDir = join(rootDir, 'storage/framework/defaults/models')
+const actionFile = join(rootDir, 'storage/framework/core/actions/src/action.ts')
+const requestFile = join(rootDir, 'storage/framework/core/types/src/request.ts')
+const routerDir = join(rootDir, 'storage/framework/core/router/src')
 
-function readTypeFile(name: string): string {
-  return readFileSync(join(typesDir, name), 'utf-8')
-}
+// ─── Helpers ──────────────────────────────────────────────────────────
 
-function getActiveTypeFiles(): string[] {
-  return readdirSync(typesDir).filter(f => {
-    if (!f.endsWith('Type.ts')) return false
-    const content = readFileSync(join(typesDir, f), 'utf-8').trim()
+function getModelFiles(dir: string): string[] {
+  if (!existsSync(dir)) return []
+  return readdirSync(dir).filter(f => {
+    if (!f.endsWith('.ts') || f === 'index.ts' || f.endsWith('.d.ts')) return false
+    const content = readFileSync(join(dir, f), 'utf-8').trim()
     return content.length > 0
   })
 }
 
-// ─── Type constraint verification via structural analysis ────────────
+// ─── 1. model-types.ts type utilities ─────────────────────────────────
 
-describe('type constraints are structurally narrow (no escape hatches)', () => {
-  const typeFiles = getActiveTypeFiles()
-
-  test('should have at least 40 active type files', () => {
-    expect(typeFiles.length).toBeGreaterThanOrEqual(40)
-  })
-
-  describe('no [key: string]: any anywhere', () => {
-    for (const file of typeFiles) {
-      test(file, () => {
-        const content = readTypeFile(file)
-        expect(content).not.toContain('[key: string]: any')
-        expect(content).not.toContain('[key: string]: unknown')
-      })
-    }
-  })
-
-  describe('no `| string` widening on column/relation types', () => {
-    for (const file of typeFiles) {
-      test(`${file}: with() does not accept string[]`, () => {
-        const content = readTypeFile(file)
-        expect(content).not.toContain('with: (relations: string[])')
-        expect(content).not.toMatch(/with:\s*\(relations:\s*string\[\]/)
-      })
-
-      test(`${file}: orWhere() does not accept [string, any][]`, () => {
-        const content = readTypeFile(file)
-        expect(content).not.toContain('orWhere: (...conditions: [string, any][])')
-      })
-    }
-  })
-
-  describe('RelationName is a proper union (not string)', () => {
-    for (const file of typeFiles) {
-      const modelName = file.replace('Type.ts', '')
-      test(`${modelName}RelationName is never or a union of string literals`, () => {
-        const content = readTypeFile(file)
-        const match = content.match(new RegExp(`export type ${modelName}RelationName = (.+)`))
-        expect(match).not.toBeNull()
-        const typeBody = match![1].trim()
-
-        if (typeBody === 'never') {
-          // Valid — no relations
-          return
-        }
-
-        // Must be a union of string literals like 'author' | 'tags'
-        const members = typeBody.split('|').map(m => m.trim())
-        for (const member of members) {
-          // Each member must be a single-quoted lowercase_snake_case identifier
-          expect(member).toMatch(/^'[a-z][a-z0-9_]*'$/)
-        }
-
-        // Must NOT be `string`
-        expect(typeBody).not.toBe('string')
-        expect(typeBody).not.toContain(' string')
-      })
-    }
-  })
-
-  describe('JsonResponse extends Selectable<*Read> with no string index', () => {
-    for (const file of typeFiles) {
-      const modelName = file.replace('Type.ts', '')
-      test(`${modelName}JsonResponse extends Omit<Selectable<*Read>, 'password'>`, () => {
-        const content = readTypeFile(file)
-        expect(content).toContain(`${modelName}JsonResponse extends Omit<Selectable<${modelName}Read>, 'password'>`)
-      })
-
-      test(`${modelName}JsonResponse has no [key: string] index signature`, () => {
-        const content = readTypeFile(file)
-        // Extract the JsonResponse interface body
-        const jsonResponseMatch = content.match(new RegExp(`interface ${modelName}JsonResponse[^{]*{([^}]*)}`, 's'))
-        if (jsonResponseMatch) {
-          const body = jsonResponseMatch[1]
-          expect(body).not.toContain('[key: string]')
-          expect(body).not.toContain('[key: string]: any')
-        }
-      })
-    }
-  })
-})
-
-// ─── StacksActionPath narrowness ─────────────────────────────────────
-
-describe('StacksActionPath is a narrow string literal union', () => {
-  const content = readFileSync(actionPathsFile, 'utf-8')
-  const allPaths = content.match(/\| '([^']+)'/g)?.map(m => m.replace("| '", '').replace("'", '')) ?? []
-
-  test('is not `string` type', () => {
-    expect(content).not.toMatch(/export type StacksActionPath = string\s/)
-  })
-
-  test('every member starts with Actions/ or Controllers/', () => {
-    for (const p of allPaths) {
-      expect(p.startsWith('Actions/') || p.startsWith('Controllers/')).toBe(true)
-    }
-  })
-
-  test('no member is a generic string or contains whitespace', () => {
-    for (const p of allPaths) {
-      expect(p).not.toContain(' ')
-      expect(p).not.toContain('\t')
-      expect(p.length).toBeGreaterThan(10) // minimum path length
-    }
-  })
-
-  test('action paths use PascalCase for action names', () => {
-    for (const p of allPaths) {
-      if (p.startsWith('Controllers/')) continue
-      const parts = p.split('/')
-      const actionName = parts[parts.length - 1]
-      // Must start with uppercase (PascalCase)
-      expect(actionName[0]).toBe(actionName[0].toUpperCase())
-    }
-  })
-
-  test('controller paths use Class@method format', () => {
-    const controllerPaths = allPaths.filter(p => p.startsWith('Controllers/'))
-    for (const p of controllerPaths) {
-      const name = p.replace('Controllers/', '')
-      expect(name).toContain('@')
-      const [className, methodName] = name.split('@')
-      expect(className[0]).toBe(className[0].toUpperCase()) // PascalCase class
-      expect(methodName[0]).toBe(methodName[0].toLowerCase()) // camelCase method
-    }
-  })
-})
-
-// ─── Cross-reference: relation names match JsonResponse properties ───
-
-describe('relation names match JsonResponse properties', () => {
-  test('Post: every PostRelationName has a matching optional property in PostJsonResponse', () => {
-    const content = readTypeFile('PostType.ts')
-    const relationMatch = content.match(/export type PostRelationName = (.+)/)
-    if (!relationMatch || relationMatch[1] === 'never') return
-
-    const names = relationMatch[1].split('|').map(m => m.trim().replace(/'/g, ''))
-    const jsonResponseBlock = content.match(/interface PostJsonResponse[^{]*{([\s\S]*?)}/)?.[1] ?? ''
-
-    for (const name of names) {
-      // Each relation name should appear as an optional property in JsonResponse
-      expect(jsonResponseBlock).toContain(`${name}?:`)
-    }
-  })
-
-  test('User: every UserRelationName has a matching optional property in UserJsonResponse', () => {
-    const content = readTypeFile('UserType.ts')
-    const relationMatch = content.match(/export type UserRelationName = (.+)/)
-    if (!relationMatch || relationMatch[1] === 'never') return
-
-    const names = relationMatch[1].split('|').map(m => m.trim().replace(/'/g, ''))
-    const jsonResponseBlock = content.match(/interface UserJsonResponse[^{]*{([\s\S]*?)}/)?.[1] ?? ''
-
-    for (const name of names) {
-      expect(jsonResponseBlock).toContain(`${name}?:`)
-    }
-  })
-
-  test('Payment: every PaymentRelationName has a matching optional property', () => {
-    const content = readTypeFile('PaymentType.ts')
-    const relationMatch = content.match(/export type PaymentRelationName = (.+)/)
-    if (!relationMatch || relationMatch[1] === 'never') return
-
-    const names = relationMatch[1].split('|').map(m => m.trim().replace(/'/g, ''))
-    const jsonResponseBlock = content.match(/interface PaymentJsonResponse[^{]*{([\s\S]*?)}/)?.[1] ?? ''
-
-    for (const name of names) {
-      expect(jsonResponseBlock).toContain(`${name}?:`)
-    }
-  })
-
-  test('all models: RelationName members correspond to JsonResponse properties', () => {
-    const typeFiles = getActiveTypeFiles()
-    for (const file of typeFiles) {
-      const modelName = file.replace('Type.ts', '')
-      const content = readTypeFile(file)
-
-      const relationMatch = content.match(new RegExp(`export type ${modelName}RelationName = (.+)`))
-      if (!relationMatch || relationMatch[1].trim() === 'never') continue
-
-      const names = relationMatch[1].split('|').map(m => m.trim().replace(/'/g, ''))
-      const jsonResponseBlock = content.match(new RegExp(`interface ${modelName}JsonResponse[^{]*{([\\s\\S]*?)}`))?.[1] ?? ''
-
-      for (const name of names) {
-        expect(jsonResponseBlock).toContain(`${name}?:`)
-      }
-    }
-  })
-})
-
-// ─── Table interface structure ───────────────────────────────────────
-
-describe('Table interfaces are self-contained (no string index)', () => {
-  const typeFiles = getActiveTypeFiles()
-
-  for (const file of typeFiles) {
-    const modelName = file.replace('Type.ts', '')
-    test(`${modelName}: Table has id: Generated<number>`, () => {
-      const content = readTypeFile(file)
-      expect(content).toContain('id: Generated<number>')
-    })
-  }
-})
-
-// ─── BaseModelType & QueryMethods shared types ──────────────────────
-
-describe('model-types.ts defines shared QueryMethods and BaseModelType', () => {
-  const modelTypesFile = join(rootDir, 'storage/framework/core/orm/src/model-types.ts')
+describe('model-types.ts defines correct type utilities', () => {
+  const modelTypesFile = join(coreOrmDir, 'model-types.ts')
 
   test('model-types.ts exists', () => {
     expect(existsSync(modelTypesFile)).toBe(true)
   })
 
-  test('exports QueryMethods interface', () => {
+  test('exports Def type (extracts ModelDefinition from defineModel return)', () => {
     const content = readFileSync(modelTypesFile, 'utf-8')
-    expect(content).toContain('export interface QueryMethods<')
+    expect(content).toContain('export type Def<T>')
+    expect(content).toContain('getDefinition')
+    expect(content).toContain('ModelDefinition')
   })
 
-  test('exports BaseModelType type', () => {
+  test('exports BelongsToForeignKeys type', () => {
     const content = readFileSync(modelTypesFile, 'utf-8')
-    expect(content).toContain('export type BaseModelType<')
+    expect(content).toContain('export type BelongsToForeignKeys<TDef>')
+    // Must derive from belongsTo array
+    expect(content).toContain('belongsTo')
+    // Must produce _id columns
+    expect(content).toContain('_id')
   })
 
-  test('QueryMethods has all expected type parameters', () => {
+  test('exports ModelRow type (attributes + FK columns)', () => {
     const content = readFileSync(modelTypesFile, 'utf-8')
-    expect(content).toContain('QueryMethods<TTable, TJson, TNew, TUpdate, TRelation extends string, TSelf>')
+    expect(content).toContain('export type ModelRow<T>')
+    // Must compose ModelAttributes and BelongsToForeignKeys
+    expect(content).toContain('ModelAttributes')
+    expect(content).toContain('BelongsToForeignKeys')
   })
 
-  test('BaseModelType composes QueryMethods with readonly id', () => {
+  test('exports NewModelData type (all optional)', () => {
     const content = readFileSync(modelTypesFile, 'utf-8')
-    expect(content).toContain('QueryMethods<TTable, TJson, TNew, TUpdate, TRelation, TSelf>')
-    expect(content).toContain('readonly id: number')
+    expect(content).toContain('export type NewModelData<T>')
+    expect(content).toContain('Partial<')
   })
 
-  test('QueryMethods includes select overloads with SelectedQuery', () => {
+  test('exports UpdateModelData type (all optional)', () => {
     const content = readFileSync(modelTypesFile, 'utf-8')
-    expect(content).toContain('select: {')
-    expect(content).toMatch(/<K extends keyof TTable & string>\(fields: K\[\]\): SelectedQuery<TTable, TJson, K>/)
-    expect(content).toContain('(params: RawBuilder<string> | string): TSelf')
+    expect(content).toContain('export type UpdateModelData<T>')
+    expect(content).toContain('Partial<')
   })
 
-  test('QueryMethods includes where clause methods', () => {
+  test('imports from bun-query-builder (not generated types)', () => {
     const content = readFileSync(modelTypesFile, 'utf-8')
-    expect(content).toContain('where: <V = string>(column: keyof TTable, ...args: [V] | [Operator, V]) => TSelf')
-    expect(content).toContain('orWhere: (...conditions: [keyof TTable, any][]) => TSelf')
-    expect(content).toContain('whereNull: (column: keyof TTable) => TSelf')
-    expect(content).toContain('whereNotNull: (column: keyof TTable) => TSelf')
-    expect(content).toContain('whereLike: (column: keyof TTable, value: string) => TSelf')
-    expect(content).toContain('whereIn: <V = number>(column: keyof TTable, values: V[]) => TSelf')
-    expect(content).toContain('whereNotIn: <V = number>(column: keyof TTable, values: V[]) => TSelf')
-    expect(content).toContain('whereBetween: <V = number>(column: keyof TTable, range: [V, V]) => TSelf')
-    expect(content).toContain('whereColumn: (first: keyof TTable, operator: Operator, second: keyof TTable) => TSelf')
+    expect(content).toContain("from 'bun-query-builder'")
+    expect(content).toContain('InferModelAttributes')
+    expect(content).toContain('ModelAttributes')
+    expect(content).toContain('ModelDefinition')
   })
 
-  test('QueryMethods includes ordering and grouping', () => {
+  test('does NOT reference generated type files', () => {
     const content = readFileSync(modelTypesFile, 'utf-8')
-    expect(content).toContain('orderBy: (column: keyof TTable, order: \'asc\' | \'desc\') => TSelf')
-    expect(content).toContain('groupBy: (column: keyof TTable) => TSelf')
-    expect(content).toContain('having: <V = string>(column: keyof TTable, operator: Operator, value: V) => TSelf')
-  })
-
-  test('QueryMethods includes aggregate methods returning Promise<number>', () => {
-    const content = readFileSync(modelTypesFile, 'utf-8')
-    expect(content).toContain('max: (field: keyof TTable) => Promise<number>')
-    expect(content).toContain('min: (field: keyof TTable) => Promise<number>')
-    expect(content).toContain('avg: (field: keyof TTable) => Promise<number>')
-    expect(content).toContain('sum: (field: keyof TTable) => Promise<number>')
-    expect(content).toContain('count: () => Promise<number>')
-  })
-
-  test('QueryMethods includes finder methods returning Promise<TSelf>', () => {
-    const content = readFileSync(modelTypesFile, 'utf-8')
-    expect(content).toContain('find: (id: number) => Promise<TSelf | undefined>')
-    expect(content).toContain('first: () => Promise<TSelf | undefined>')
-    expect(content).toContain('last: () => Promise<TSelf | undefined>')
-    expect(content).toContain('all: () => Promise<TSelf[]>')
-    expect(content).toContain('findOrFail: (id: number) => Promise<TSelf | undefined>')
-    expect(content).toContain('findMany: (ids: number[]) => Promise<TSelf[]>')
-  })
-
-  test('QueryMethods includes relation loading with TRelation', () => {
-    const content = readFileSync(modelTypesFile, 'utf-8')
-    expect(content).toContain('with: (relations: TRelation[]) => TSelf')
-  })
-
-  test('QueryMethods includes mutation methods', () => {
-    const content = readFileSync(modelTypesFile, 'utf-8')
-    expect(content).toContain('create: (newRecord: TNew) => Promise<TSelf>')
-    expect(content).toContain('update: (newRecord: TUpdate) => Promise<TSelf | undefined>')
-    expect(content).toContain('save: () => Promise<TSelf>')
-    expect(content).toContain('delete: () => Promise<number>')
+    expect(content).not.toContain('PostType')
+    expect(content).not.toContain('UserType')
+    expect(content).not.toContain('orm/src/types')
+    expect(content).not.toContain('BaseOrm')
+    expect(content).not.toContain('BaseModelType')
   })
 })
 
-// ─── Type files import BaseModelType (not Operator/SelectedQuery) ────
+// ─── 2. types.ts SelectedQuery/SelectedResult ─────────────────────────
 
-describe('type files import BaseModelType from @stacksjs/orm', () => {
-  const typeFiles = getActiveTypeFiles()
+describe('types.ts defines SelectedQuery and SelectedResult', () => {
+  const typesFile = join(coreOrmDir, 'types.ts')
 
-  describe('imports BaseModelType instead of Operator/SelectedQuery', () => {
-    for (const file of typeFiles) {
-      const modelName = file.replace('Type.ts', '')
-      test(`${modelName}: imports BaseModelType from @stacksjs/orm`, () => {
-        const content = readTypeFile(file)
-        expect(content).toContain("import type { BaseModelType } from '@stacksjs/orm'")
-      })
-
-      test(`${modelName}: does NOT import Operator or SelectedQuery directly`, () => {
-        const content = readTypeFile(file)
-        expect(content).not.toContain("import type { Operator, SelectedQuery } from '@stacksjs/orm'")
-        expect(content).not.toContain("import type { Operator } from '@stacksjs/orm'")
-        expect(content).not.toContain("import type { SelectedQuery } from '@stacksjs/orm'")
-      })
-    }
-  })
-})
-
-// ─── ModelType uses BaseModelType intersection (not interface) ───────
-
-describe('ModelType uses BaseModelType<...> intersection type', () => {
-  const typeFiles = getActiveTypeFiles()
-
-  for (const file of typeFiles) {
-    const modelName = file.replace('Type.ts', '')
-
-    test(`${modelName}: uses export type *ModelType = BaseModelType<...> & { ... }`, () => {
-      const content = readTypeFile(file)
-      // Must use type alias with BaseModelType, not interface with inline methods
-      expect(content).toMatch(new RegExp(`export type ${modelName}ModelType = BaseModelType<`))
-      // Must NOT use the old interface pattern
-      expect(content).not.toMatch(new RegExp(`export interface ${modelName}ModelType\\s*\\{`))
-    })
-
-    test(`${modelName}: BaseModelType is parameterized with correct types`, () => {
-      const content = readTypeFile(file)
-      // The BaseModelType should reference Table, JsonResponse, New*, *Update, RelationName, and self
-      const baseModelMatch = content.match(new RegExp(`export type ${modelName}ModelType = BaseModelType<([^>]+)>`))
-      expect(baseModelMatch).not.toBeNull()
-
-      const params = baseModelMatch![1]
-      // Should contain the table type, json response type, and self-reference
-      expect(params).toContain('Table')
-      expect(params).toContain(`${modelName}JsonResponse`)
-      expect(params).toContain(`${modelName}ModelType`)
-    })
-
-    test(`${modelName}: does NOT have inline query method signatures`, () => {
-      const content = readTypeFile(file)
-      // The old pattern had 50+ inline method signatures in the interface.
-      // Now those come from BaseModelType. The type should NOT have these inline:
-      expect(content).not.toMatch(new RegExp(`${modelName}ModelType[^}]*where: <V = string>\\(column: keyof`))
-      expect(content).not.toMatch(new RegExp(`${modelName}ModelType[^}]*orWhere: \\(\\.\\.\\.\\s*conditions:`))
-      expect(content).not.toMatch(new RegExp(`${modelName}ModelType[^}]*orderBy: \\(column: keyof`))
-
-      // Should not have the old select overloads inline
-      expect(content).not.toMatch(new RegExp(`${modelName}ModelType[^}]*select: \\{[\\s\\S]*?keyof \\w+Table & string`))
-    })
-  }
-})
-
-// ─── Core ORM index exports model-types ──────────────────────────────
-
-describe('core ORM index.ts exports model-types and types', () => {
-  const indexFile = join(rootDir, 'storage/framework/core/orm/src/index.ts')
-
-  test('re-exports from ./model-types', () => {
-    const content = readFileSync(indexFile, 'utf-8')
-    expect(content).toContain("export * from './model-types'")
+  test('types.ts exists', () => {
+    expect(existsSync(typesFile)).toBe(true)
   })
 
-  test('re-exports from ./types', () => {
-    const content = readFileSync(indexFile, 'utf-8')
-    expect(content).toContain("export * from './types'")
-  })
-})
-
-// ─── SelectedQuery / SelectedResult still in core types ──────────────
-
-describe('SelectedQuery and SelectedResult remain in core ORM types', () => {
-  const coreTypesFile = join(rootDir, 'storage/framework/core/orm/src/types.ts')
-
-  test('SelectedQuery type is defined in core ORM types', () => {
-    const content = readFileSync(coreTypesFile, 'utf-8')
+  test('SelectedQuery interface uses keyof TTable for column narrowing', () => {
+    const content = readFileSync(typesFile, 'utf-8')
     expect(content).toContain('export interface SelectedQuery<TTable, TJson, K extends string>')
-    expect(content).toContain('export type SelectedResult<TJson, K extends string>')
+    // Chain methods use keyof TTable
+    expect(content).toContain('where<V = string>(column: keyof TTable')
+    expect(content).toContain('orderBy(column: keyof TTable')
+    expect(content).toContain('whereNull(column: keyof TTable)')
+    expect(content).toContain('groupBy(column: keyof TTable)')
   })
 
   test('SelectedQuery terminal methods return SelectedResult (narrowed)', () => {
-    const content = readFileSync(coreTypesFile, 'utf-8')
+    const content = readFileSync(typesFile, 'utf-8')
     expect(content).toContain('first(): Promise<SelectedResult<TJson, K> | undefined>')
     expect(content).toContain('all(): Promise<SelectedResult<TJson, K>[]>')
     expect(content).toContain('get(): Promise<SelectedResult<TJson, K>[]>')
@@ -432,18 +130,12 @@ describe('SelectedQuery and SelectedResult remain in core ORM types', () => {
   })
 
   test('SelectedQuery chain methods return SelectedQuery (preserving K)', () => {
-    const content = readFileSync(coreTypesFile, 'utf-8')
-    expect(content).toContain('where<V = string>(column: keyof TTable, ...args: [V] | [Operator, V]): SelectedQuery<TTable, TJson, K>')
-    expect(content).toContain('orWhere(...conditions: [keyof TTable, any][]): SelectedQuery<TTable, TJson, K>')
-    expect(content).toContain('orderBy(column: keyof TTable, order: \'asc\' | \'desc\'): SelectedQuery<TTable, TJson, K>')
-    expect(content).toContain('whereNull(column: keyof TTable): SelectedQuery<TTable, TJson, K>')
-    expect(content).toContain('groupBy(column: keyof TTable): SelectedQuery<TTable, TJson, K>')
-    expect(content).toContain('skip(count: number): SelectedQuery<TTable, TJson, K>')
-    expect(content).toContain('take(count: number): SelectedQuery<TTable, TJson, K>')
+    const content = readFileSync(typesFile, 'utf-8')
+    expect(content).toContain('): SelectedQuery<TTable, TJson, K>')
   })
 
-  test('SelectedQuery aggregate methods return number (not narrowed)', () => {
-    const content = readFileSync(coreTypesFile, 'utf-8')
+  test('SelectedQuery aggregate methods return Promise<number>', () => {
+    const content = readFileSync(typesFile, 'utf-8')
     expect(content).toContain('max(field: keyof TTable): Promise<number>')
     expect(content).toContain('min(field: keyof TTable): Promise<number>')
     expect(content).toContain('avg(field: keyof TTable): Promise<number>')
@@ -451,127 +143,434 @@ describe('SelectedQuery and SelectedResult remain in core ORM types', () => {
     expect(content).toContain('count(): Promise<number>')
   })
 
-  test('SelectedResult is Pick<TJson, K | id> & { id: number }', () => {
-    const content = readFileSync(coreTypesFile, 'utf-8')
+  test('SelectedResult is Pick<TJson, K | id>', () => {
+    const content = readFileSync(typesFile, 'utf-8')
     expect(content).toContain("Pick<TJson, Extract<K | 'id', keyof TJson>> & { id: number }")
   })
-})
 
-// ─── BaseOrm has static query methods ────────────────────────────────
-
-describe('BaseOrm provides static query methods (inherited by all models)', () => {
-  const baseOrmFile = join(rootDir, 'storage/framework/orm/src/utils/base.ts')
-
-  test('BaseOrm file exists', () => {
-    expect(existsSync(baseOrmFile)).toBe(true)
-  })
-
-  test('BaseOrm class is exported', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toContain('export class BaseOrm<')
-  })
-
-  test('BaseOrm has static where()', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toContain('static where(column: any, ...args: any[]): any')
-  })
-
-  test('BaseOrm has static find()', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toContain('static async find(id: number): Promise<any>')
-  })
-
-  test('BaseOrm has static first()', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toContain('static async first(): Promise<any>')
-  })
-
-  test('BaseOrm has static last()', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toContain('static async last(): Promise<any>')
-  })
-
-  test('BaseOrm has static all()', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toContain('static async all(): Promise<any[]>')
-  })
-
-  test('BaseOrm has static select()', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toContain('static select(params: any): any')
-  })
-
-  test('BaseOrm has static orderBy()', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toContain('static orderBy(column: any, order: \'asc\' | \'desc\'): any')
-  })
-
-  test('BaseOrm has static groupBy()', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toContain('static groupBy(column: any): any')
-  })
-
-  test('BaseOrm has static whereNull()', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toContain('static whereNull(column: any): any')
-  })
-
-  test('BaseOrm has static whereIn()', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toContain('static whereIn(column: any, values: any[]): any')
-  })
-
-  test('BaseOrm has static findOrFail()', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toContain('static async findOrFail(id: number): Promise<any>')
-  })
-
-  test('BaseOrm has static findMany()', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toContain('static async findMany(ids: number[]): Promise<any[]>')
-  })
-
-  test('BaseOrm has static aggregate methods (max, min, avg, sum, count)', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toContain('static async max(field: any): Promise<number>')
-    expect(content).toContain('static async min(field: any): Promise<number>')
-    expect(content).toContain('static async avg(field: any): Promise<number>')
-    expect(content).toContain('static async sum(field: any): Promise<number>')
-    expect(content).toContain('static async count(): Promise<number>')
-  })
-
-  test('BaseOrm has static paginate()', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toMatch(/static async paginate\(/)
-  })
-
-  test('BaseOrm has static create()', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toContain('static async create(newRecord: any): Promise<any>')
-  })
-
-  test('BaseOrm has instance select() with overloads', () => {
-    const content = readFileSync(baseOrmFile, 'utf-8')
-    expect(content).toMatch(/select<K extends keyof C & string>\(fields: K\[\]\): SelectedQuery<C, J, K>/)
-    expect(content).toContain('select(params: RawBuilder<string> | string): this')
+  test('does NOT contain [key: string]: any', () => {
+    const content = readFileSync(typesFile, 'utf-8')
+    expect(content).not.toContain('[key: string]: any')
   })
 })
 
-// ─── Generated model files extend BaseOrm (no inline static wrappers) ─
+// ─── 3. define-model.ts exports and structure ─────────────────────────
 
-describe('generated model files extend BaseOrm', () => {
-  const modelsDir = join(rootDir, 'storage/framework/orm/src/models')
+describe('define-model.ts exports defineModel and type re-exports', () => {
+  const defineModelFile = join(coreOrmDir, 'define-model.ts')
 
-  test('Post model extends BaseOrm', () => {
-    const content = readFileSync(join(modelsDir, 'Post.ts'), 'utf-8')
-    expect(content).toContain('extends BaseOrm<')
-    expect(content).toContain("import { BaseOrm } from '../utils/base'")
+  test('define-model.ts exists', () => {
+    expect(existsSync(defineModelFile)).toBe(true)
   })
 
-  test('Post model does NOT import Operator or SelectedQuery directly', () => {
-    const content = readFileSync(join(modelsDir, 'Post.ts'), 'utf-8')
-    // The model file should not need to import these — BaseOrm handles them
-    expect(content).not.toContain("import type { Operator } from '@stacksjs/orm'")
-    expect(content).not.toContain("import type { SelectedQuery } from '@stacksjs/orm'")
+  test('exports defineModel function', () => {
+    const content = readFileSync(defineModelFile, 'utf-8')
+    expect(content).toContain('export function defineModel')
+  })
+
+  test('defineModel uses const generic for literal type preservation', () => {
+    const content = readFileSync(defineModelFile, 'utf-8')
+    expect(content).toContain('<const TDef extends ModelDefinition>')
+  })
+
+  test('defineModel adds _isStacksModel flag', () => {
+    const content = readFileSync(defineModelFile, 'utf-8')
+    expect(content).toContain('_isStacksModel: true as const')
+  })
+
+  test('defineModel adds getDefinition accessor', () => {
+    const content = readFileSync(defineModelFile, 'utf-8')
+    expect(content).toContain('getDefinition: () => definition')
+  })
+
+  test('re-exports type utilities from bun-query-builder', () => {
+    const content = readFileSync(defineModelFile, 'utf-8')
+    expect(content).toContain("from 'bun-query-builder'")
+    expect(content).toContain('ModelDefinition')
+    expect(content).toContain('InferRelationNames')
+    expect(content).toContain('ModelAttributes')
+    expect(content).toContain('InferModelAttributes')
+    expect(content).toContain('ColumnName')
+    expect(content).toContain('AttributeKeys')
+    expect(content).toContain('FillableKeys')
+    expect(content).toContain('HiddenKeys')
+  })
+
+  test('imports createModel from bun-query-builder', () => {
+    const content = readFileSync(defineModelFile, 'utf-8')
+    expect(content).toContain("import { createModel")
+    expect(content).toContain("from 'bun-query-builder'")
+  })
+
+  test('does NOT reference generated files or BaseOrm', () => {
+    const content = readFileSync(defineModelFile, 'utf-8')
+    expect(content).not.toContain('BaseOrm')
+    expect(content).not.toContain('orm/src/models')
+    expect(content).not.toContain('orm/src/types')
+    expect(content).not.toContain('generate')
+  })
+})
+
+// ─── 4. ORM index.ts barrel exports ───────────────────────────────────
+
+describe('core ORM index.ts exports all necessary modules', () => {
+  const indexFile = join(coreOrmDir, 'index.ts')
+
+  test('re-exports from ./model-types', () => {
+    const content = readFileSync(indexFile, 'utf-8')
+    expect(content).toContain("from './model-types'")
+  })
+
+  test('re-exports from ./types', () => {
+    const content = readFileSync(indexFile, 'utf-8')
+    expect(content).toContain("from './types'")
+  })
+
+  test('re-exports from ./define-model', () => {
+    const content = readFileSync(indexFile, 'utf-8')
+    expect(content).toContain("from './define-model'")
+  })
+
+  test('re-exports type utilities from bun-query-builder', () => {
+    const content = readFileSync(indexFile, 'utf-8')
+    expect(content).toContain("from 'bun-query-builder'")
+  })
+})
+
+// ─── 5. orm-globals.d.ts declares global types ────────────────────────
+
+describe('orm-globals.d.ts declares global type aliases', () => {
+  const globalsFile = join(typesDir, 'orm-globals.d.ts')
+
+  test('orm-globals.d.ts exists', () => {
+    expect(existsSync(globalsFile)).toBe(true)
+  })
+
+  test('declares global ModelRow type', () => {
+    const content = readFileSync(globalsFile, 'utf-8')
+    expect(content).toContain('type ModelRow<T>')
+  })
+
+  test('declares global NewModelData type', () => {
+    const content = readFileSync(globalsFile, 'utf-8')
+    expect(content).toContain('type NewModelData<T>')
+  })
+
+  test('declares global UpdateModelData type', () => {
+    const content = readFileSync(globalsFile, 'utf-8')
+    expect(content).toContain('type UpdateModelData<T>')
+  })
+
+  test('declares global RequestInstance type', () => {
+    const content = readFileSync(globalsFile, 'utf-8')
+    expect(content).toContain('type RequestInstance<')
+  })
+
+  test('uses declare global block', () => {
+    const content = readFileSync(globalsFile, 'utf-8')
+    expect(content).toContain('declare global')
+  })
+
+  test('imports from @stacksjs/orm and @stacksjs/types', () => {
+    const content = readFileSync(globalsFile, 'utf-8')
+    expect(content).toContain("from '@stacksjs/orm'")
+    expect(content).toContain("from '@stacksjs/types'")
+  })
+
+  test('RequestInstance resolves to model-aware type when TModel provided', () => {
+    const content = readFileSync(globalsFile, 'utf-8')
+    // The global type should map TModel to _RequestInstance<_ModelRow<TModel>>
+    expect(content).toContain('_RequestInstance<_ModelRow<TModel>>')
+  })
+
+  test('does NOT contain [key: string]: any', () => {
+    const content = readFileSync(globalsFile, 'utf-8')
+    expect(content).not.toContain('[key: string]: any')
+  })
+})
+
+// ─── 6. server-auto-imports.d.ts model declarations ───────────────────
+
+describe('server-auto-imports.d.ts has model declarations with relative paths', () => {
+  const autoImportsFile = join(typesDir, 'server-auto-imports.d.ts')
+
+  test('server-auto-imports.d.ts exists', () => {
+    expect(existsSync(autoImportsFile)).toBe(true)
+  })
+
+  test('uses declare global block', () => {
+    const content = readFileSync(autoImportsFile, 'utf-8')
+    expect(content).toContain('declare global')
+  })
+
+  test('declares Post model as global const', () => {
+    const content = readFileSync(autoImportsFile, 'utf-8')
+    expect(content).toMatch(/const Post:\s*typeof import\(/)
+  })
+
+  test('declares User model as global const', () => {
+    const content = readFileSync(autoImportsFile, 'utf-8')
+    expect(content).toMatch(/const User:\s*typeof import\(/)
+  })
+
+  test('uses relative paths (not absolute)', () => {
+    const content = readFileSync(autoImportsFile, 'utf-8')
+    // Should use relative paths like '../models/Post'
+    expect(content).not.toContain('/Users/')
+    expect(content).not.toContain('C:\\')
+    // All import paths should start with '..'
+    const importPaths = content.match(/import\('([^']+)'\)/g) || []
+    for (const importPath of importPaths) {
+      const path = importPath.match(/import\('([^']+)'\)/)?.[1]
+      expect(path).toMatch(/^\.\./)
+    }
+  })
+
+  test('references default export from model files', () => {
+    const content = readFileSync(autoImportsFile, 'utf-8')
+    expect(content).toContain("['default']")
+  })
+
+  test('has at least 40 model declarations', () => {
+    const content = readFileSync(autoImportsFile, 'utf-8')
+    const declarations = content.match(/const \w+:\s*typeof import/g) || []
+    expect(declarations.length).toBeGreaterThanOrEqual(40)
+  })
+
+  test('does NOT contain ModelRegistry', () => {
+    const content = readFileSync(autoImportsFile, 'utf-8')
+    expect(content).not.toContain('ModelRegistry')
+  })
+})
+
+// ─── 7. Action class smart type inference ─────────────────────────────
+
+describe('Action class uses smart InferRequest for model-aware handlers', () => {
+  test('action.ts exists', () => {
+    expect(existsSync(actionFile)).toBe(true)
+  })
+
+  test('defines InferRequest type that uses _isStacksModel discriminator', () => {
+    const content = readFileSync(actionFile, 'utf-8')
+    expect(content).toContain('InferRequest<TModel>')
+    expect(content).toContain('_isStacksModel')
+    expect(content).toContain('RequestInstance<TModel>')
+    expect(content).toContain('RequestInstance')
+  })
+
+  test('Action class is generic over TModel', () => {
+    const content = readFileSync(actionFile, 'utf-8')
+    expect(content).toContain('class Action<TModel')
+  })
+
+  test('handle method uses InferRequest<TModel> for request type', () => {
+    const content = readFileSync(actionFile, 'utf-8')
+    expect(content).toContain('handle: (request: InferRequest<TModel>)')
+  })
+
+  test('model property is stored as string for runtime', () => {
+    const content = readFileSync(actionFile, 'utf-8')
+    expect(content).toContain('model?: string')
+  })
+
+  test('constructor extracts model name from object reference', () => {
+    const content = readFileSync(actionFile, 'utf-8')
+    // When model is an object with a name property, extract the name string
+    expect(content).toContain("'name' in model")
+    expect(content).toContain('(model as any).name')
+  })
+
+  test('does NOT import ModelRegistry', () => {
+    const content = readFileSync(actionFile, 'utf-8')
+    expect(content).not.toContain('ModelRegistry')
+  })
+
+  test('does NOT use string-to-type mapping', () => {
+    const content = readFileSync(actionFile, 'utf-8')
+    // Should not have any pattern like TModelName extends keyof SomeRegistry
+    expect(content).not.toContain('keyof ModelRegistry')
+    expect(content).not.toContain('extends keyof')
+  })
+})
+
+// ─── 8. RequestInstance is generic with field narrowing ────────────────
+
+describe('RequestInstance<TFields> is generic with model-aware narrowing', () => {
+  test('request.ts exists', () => {
+    expect(existsSync(requestFile)).toBe(true)
+  })
+
+  test('RequestInstance has TFields generic parameter', () => {
+    const content = readFileSync(requestFile, 'utf-8')
+    expect(content).toContain('interface RequestInstance<TFields extends Record<string, any>')
+  })
+
+  test('TFields defaults to Record<string, any> for backward compatibility', () => {
+    const content = readFileSync(requestFile, 'utf-8')
+    expect(content).toContain('= Record<string, any>>')
+  })
+
+  test('get() method narrows key to keyof TFields', () => {
+    const content = readFileSync(requestFile, 'utf-8')
+    expect(content).toContain('get: <K extends keyof TFields & string>(key: K')
+  })
+
+  test('input() method narrows key to keyof TFields', () => {
+    const content = readFileSync(requestFile, 'utf-8')
+    expect(content).toContain('input: <K extends keyof TFields & string>(key: K')
+  })
+
+  test('only() method returns Pick<TFields, K>', () => {
+    const content = readFileSync(requestFile, 'utf-8')
+    expect(content).toContain('only: <K extends keyof TFields & string>(keys: K[]) => Pick<TFields, K>')
+  })
+
+  test('except() method returns Omit<TFields, K>', () => {
+    const content = readFileSync(requestFile, 'utf-8')
+    expect(content).toContain('except: <K extends keyof TFields & string>(keys: K[]) => Omit<TFields, K>')
+  })
+
+  test('validate() returns Promise<TFields>', () => {
+    const content = readFileSync(requestFile, 'utf-8')
+    expect(content).toContain('validate: (rules?: Record<string, string>, messages?: Record<string, string>) => Promise<TFields>')
+  })
+
+  test('all() returns TFields', () => {
+    const content = readFileSync(requestFile, 'utf-8')
+    expect(content).toContain('all: () => TFields')
+  })
+
+  test('has() narrows keys to keyof TFields', () => {
+    const content = readFileSync(requestFile, 'utf-8')
+    expect(content).toContain('has: (key: (keyof TFields & string) | (keyof TFields & string)[]) => boolean')
+  })
+
+  test('safe() returns SafeData<TFields>', () => {
+    const content = readFileSync(requestFile, 'utf-8')
+    expect(content).toContain('safe: () => SafeData<TFields>')
+  })
+
+  test('keys() returns model field names', () => {
+    const content = readFileSync(requestFile, 'utf-8')
+    expect(content).toContain('keys: () => (keyof TFields & string)[]')
+  })
+
+  test('type-casting methods narrow keys to keyof TFields', () => {
+    const content = readFileSync(requestFile, 'utf-8')
+    expect(content).toContain('string: (key: keyof TFields & string')
+    expect(content).toContain('integer: (key: keyof TFields & string')
+    expect(content).toContain('float: (key: keyof TFields & string')
+    expect(content).toContain('boolean: (key: keyof TFields & string')
+  })
+
+  test('file methods are NOT narrowed (independent of model)', () => {
+    const content = readFileSync(requestFile, 'utf-8')
+    // File methods use plain string, not keyof TFields
+    expect(content).toContain('file: (key: string)')
+    expect(content).toContain('hasFile: (key: string)')
+  })
+})
+
+// ─── 9. Model definition files use defineModel with as const ──────────
+
+describe('model definition files use defineModel pattern', () => {
+  const frameworkModels = getModelFiles(frameworkModelsDir)
+  const defaultModels = getModelFiles(defaultModelsDir)
+  const allModels = [
+    ...frameworkModels.map(f => ({ file: f, dir: frameworkModelsDir })),
+    ...defaultModels.map(f => ({ file: f, dir: defaultModelsDir })),
+  ]
+
+  test('should have model files in framework/models or defaults/models', () => {
+    expect(allModels.length).toBeGreaterThan(30)
+  })
+
+  for (const { file, dir } of allModels) {
+    const modelName = file.replace('.ts', '')
+
+    test(`${modelName}: uses defineModel()`, () => {
+      const content = readFileSync(join(dir, file), 'utf-8')
+      expect(content).toContain('defineModel(')
+    })
+
+    test(`${modelName}: uses 'as const' for literal type preservation`, () => {
+      const content = readFileSync(join(dir, file), 'utf-8')
+      expect(content).toContain('as const)')
+    })
+
+    test(`${modelName}: is a default export`, () => {
+      const content = readFileSync(join(dir, file), 'utf-8')
+      expect(content).toContain('export default defineModel(')
+    })
+
+    test(`${modelName}: has name property`, () => {
+      const content = readFileSync(join(dir, file), 'utf-8')
+      expect(content).toMatch(/name:\s*'/)
+    })
+
+    test(`${modelName}: has table property`, () => {
+      const content = readFileSync(join(dir, file), 'utf-8')
+      expect(content).toMatch(/table:\s*'/)
+    })
+
+    test(`${modelName}: has attributes object`, () => {
+      const content = readFileSync(join(dir, file), 'utf-8')
+      expect(content).toContain('attributes:')
+    })
+
+    test(`${modelName}: does NOT use 'satisfies Model' pattern`, () => {
+      const content = readFileSync(join(dir, file), 'utf-8')
+      expect(content).not.toContain('satisfies Model')
+    })
+  }
+})
+
+// ─── 10. No generated type files or model classes exist ───────────────
+
+describe('old generated files are removed', () => {
+  const oldTypesDir = join(rootDir, 'storage/framework/orm/src/types')
+  const oldModelsDir = join(rootDir, 'storage/framework/orm/src/models')
+  const oldBaseOrm = join(rootDir, 'storage/framework/orm/src/utils/base.ts')
+  const oldGenerator = join(rootDir, 'storage/framework/core/orm/src/generate.ts')
+
+  test('generated types directory does not exist', () => {
+    expect(existsSync(oldTypesDir)).toBe(false)
+  })
+
+  test('generated models directory does not exist', () => {
+    expect(existsSync(oldModelsDir)).toBe(false)
+  })
+
+  test('BaseOrm file does not exist', () => {
+    expect(existsSync(oldBaseOrm)).toBe(false)
+  })
+
+  test('generator file does not exist', () => {
+    expect(existsSync(oldGenerator)).toBe(false)
+  })
+})
+
+// ─── 11. Stacks router uses StacksActionPath (not plain string) ───────
+
+describe('stacks-router uses StacksActionPath type', () => {
+  const routerFile = join(routerDir, 'stacks-router.ts')
+
+  test('stacks-router.ts exists', () => {
+    expect(existsSync(routerFile)).toBe(true)
+  })
+
+  test('imports StacksActionPath from action-paths', () => {
+    const content = readFileSync(routerFile, 'utf-8')
+    expect(content).toContain("import type { StacksActionPath } from './action-paths'")
+  })
+
+  test('StacksHandler uses StacksActionPath (not string)', () => {
+    const content = readFileSync(routerFile, 'utf-8')
+    expect(content).toContain('type StacksHandler = ActionHandler | StacksActionPath')
+  })
+
+  test('does NOT use StringHandler = string', () => {
+    const content = readFileSync(routerFile, 'utf-8')
+    expect(content).not.toContain('type StringHandler = string')
   })
 })

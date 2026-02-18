@@ -97,8 +97,17 @@ function buildEventHooks(definition: ModelDefinition): ModelDefinition['hooks'] 
   return hooks
 }
 
-function buildTraitMethods(definition: ModelDefinition): Record<string, any> {
-  const methods: Record<string, any> = {}
+interface TraitMethods {
+  _taggable?: ReturnType<typeof createTaggableMethods>
+  _categorizable?: ReturnType<typeof createCategorizableMethods>
+  _commentable?: ReturnType<typeof createCommentableMethods>
+  _billable?: ReturnType<typeof createBillableMethods>
+  _likeable?: ReturnType<typeof createLikeableMethods>
+  _twoFactor?: ReturnType<typeof createTwoFactorMethods>
+}
+
+function buildTraitMethods(definition: ModelDefinition): TraitMethods {
+  const methods: TraitMethods = {}
   const tableName = definition.table
   const traits = definition.traits
 

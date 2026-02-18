@@ -2,6 +2,8 @@ import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 
+type CategoryRow = ModelRow<typeof Category>
+
 /**
  * Update a category by ID
  *
@@ -9,7 +11,7 @@ import { fetchById } from './fetch'
  * @param request The updated category data
  * @returns The updated category record
  */
-export async function update(id: number, request: RequestInstance<typeof Category>): Promise<Record<string, any> | undefined> {
+export async function update(id: number, request: RequestInstance<typeof Category>): Promise<CategoryRow | undefined> {
   // Validate the request data
   await request.validate()
 
@@ -20,13 +22,13 @@ export async function update(id: number, request: RequestInstance<typeof Categor
   }
 
   // Create update data object using request fields
-  const updateData: Record<string, any> = {
+  const updateData = {
     name: request.get('name'),
     description: request.get('description'),
     image_url: request.get('image_url'),
-    is_active: request.get<boolean>('is_active'),
+    is_active: request.get('is_active'),
     parent_category_id: request.get('parent_category_id'),
-    display_order: request.get<number>('display_order'),
+    display_order: request.get('display_order'),
     updated_at: formatDate(new Date()),
   }
 
@@ -67,7 +69,7 @@ export async function update(id: number, request: RequestInstance<typeof Categor
  * @param newOrder The new display order value
  * @returns The updated category
  */
-export async function updateDisplayOrder(id: number, newOrder: number): Promise<Record<string, any> | undefined> {
+export async function updateDisplayOrder(id: number, newOrder: number): Promise<CategoryRow | undefined> {
   // Check if category exists
   const category = await fetchById(id)
 
@@ -105,7 +107,7 @@ export async function updateDisplayOrder(id: number, newOrder: number): Promise<
  * @param isActive Whether the category should be active
  * @returns The updated category
  */
-export async function updateActiveStatus(id: number, isActive: boolean): Promise<Record<string, any> | undefined> {
+export async function updateActiveStatus(id: number, isActive: boolean): Promise<CategoryRow | undefined> {
   // Check if category exists
   const category = await fetchById(id)
 
@@ -143,7 +145,7 @@ export async function updateActiveStatus(id: number, isActive: boolean): Promise
  * @param newParentId The ID of the new parent category, or null to make it a root category
  * @returns The updated category
  */
-export async function updateParent(id: number, newParentId: string | null): Promise<Record<string, any> | undefined> {
+export async function updateParent(id: number, newParentId: string | null): Promise<CategoryRow | undefined> {
   // Check if category exists
   const category = await fetchById(id)
 
@@ -173,9 +175,9 @@ export async function updateParent(id: number, newParentId: string | null): Prom
 
   try {
     // Update the category's parent
-    const updateObject = {
+    const updateObject: { updated_at: string, parent_category_id?: string | undefined } = {
       updated_at: formatDate(new Date()),
-    } as Record<string, any>
+    }
 
     // Set parent_category_id explicitly based on whether newParentId is null
     if (newParentId === null) {

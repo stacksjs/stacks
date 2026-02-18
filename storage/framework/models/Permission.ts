@@ -1,7 +1,7 @@
-import type { Model } from '@stacksjs/types'
+import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
-export default {
+export default defineModel({
   name: 'Permission',
   table: 'permissions',
   primaryKey: 'id',
@@ -53,4 +53,4 @@ export default {
       factory: (faker: any) => faker.lorem.sentence(),
     },
   },
-} satisfies Model
+} as const)
