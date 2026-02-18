@@ -50,7 +50,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.911.0"
+    "@aws-sdk/client-ses": "^3.992.0"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
