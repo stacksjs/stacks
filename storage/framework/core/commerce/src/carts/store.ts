@@ -1,4 +1,5 @@
-import type { CartJsonResponse, NewCart } from '@stacksjs/orm'
+type CartJsonResponse = ModelRow<typeof Cart>
+type NewCart = NewModelData<typeof Cart>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

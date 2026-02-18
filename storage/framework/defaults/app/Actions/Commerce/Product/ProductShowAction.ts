@@ -1,4 +1,3 @@
-import type { ProductItemRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { products } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   description: 'ProductItem Show ORM Action',
   method: 'GET',
 
-  async handle(request: ProductItemRequestType) {
+  async handle(request: RequestInstance) {
     const id = request.getParam('id')
 
     const model = await products.items.fetchById(id)

@@ -1,4 +1,5 @@
-import type { CustomerJsonResponse, NewCustomer } from '@stacksjs/orm'
+type CustomerJsonResponse = ModelRow<typeof Customer>
+type NewCustomer = NewModelData<typeof Customer>
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 

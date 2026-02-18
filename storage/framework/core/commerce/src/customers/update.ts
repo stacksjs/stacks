@@ -1,6 +1,7 @@
-import type { CustomerJsonResponse, CustomerUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type CustomerJsonResponse = ModelRow<typeof Customer>
+type CustomerUpdate = UpdateModelData<typeof Customer>
 
 /**
  * Update a customer

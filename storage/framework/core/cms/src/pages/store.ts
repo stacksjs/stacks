@@ -1,4 +1,5 @@
-import type { NewPage, PageJsonResponse } from '@stacksjs/orm'
+type PageJsonResponse = ModelRow<typeof Page>
+type NewPage = NewModelData<typeof Page>
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 

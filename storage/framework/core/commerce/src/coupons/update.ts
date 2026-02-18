@@ -1,6 +1,7 @@
-import type { CouponJsonResponse, CouponUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type CouponJsonResponse = ModelRow<typeof Coupon>
+type CouponUpdate = UpdateModelData<typeof Coupon>
 import { fetchById } from './fetch'
 
 /**

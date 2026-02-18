@@ -1,4 +1,4 @@
-import type { AuthorJsonResponse } from '@stacksjs/orm'
+type AuthorJsonResponse = ModelRow<typeof Author>
 import { db } from '@stacksjs/database'
 
 /**

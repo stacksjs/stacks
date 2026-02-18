@@ -1,4 +1,5 @@
-import type { DriverJsonResponse, NewDriver } from '@stacksjs/orm'
+type DriverJsonResponse = ModelRow<typeof Driver>
+type NewDriver = NewModelData<typeof Driver>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

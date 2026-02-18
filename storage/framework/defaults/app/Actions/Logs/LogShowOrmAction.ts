@@ -1,4 +1,3 @@
-import type { LogRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { Log } from '@stacksjs/orm'
@@ -8,7 +7,7 @@ export default new Action({
   name: 'Log Show',
   description: 'Log Show ORM Action',
   method: 'GET',
-  async handle(request: LogRequestType) {
+  async handle(request: RequestInstance) {
     const id = request.getParam('id')
 
     const model = await Log.findOrFail(id)

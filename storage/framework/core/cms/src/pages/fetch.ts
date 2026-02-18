@@ -1,4 +1,4 @@
-import type { PageJsonResponse } from '@stacksjs/orm'
+type PageJsonResponse = ModelRow<typeof Page>
 import { db } from '@stacksjs/database'
 
 /**

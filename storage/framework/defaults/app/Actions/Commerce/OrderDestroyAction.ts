@@ -1,4 +1,3 @@
-import type { OrderRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { orders } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   name: 'Order Destroy',
   description: 'Order Destroy ORM Action',
   method: 'DELETE',
-  async handle(request: OrderRequestType) {
+  async handle(request: RequestInstance) {
     const id = request.getParam('id')
 
     await orders.destroy(id)

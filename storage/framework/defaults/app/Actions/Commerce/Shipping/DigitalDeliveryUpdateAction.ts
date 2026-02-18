@@ -1,4 +1,3 @@
-import type { DigitalDeliveryRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { shippings } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   name: 'DigitalDelivery Update',
   description: 'DigitalDelivery Update ORM Action',
   method: 'PUT',
-  async handle(request: DigitalDeliveryRequestType) {
+  async handle(request: RequestInstance) {
     const id = request.getParam('id')
 
     const model = await shippings.digital.update(id, request)

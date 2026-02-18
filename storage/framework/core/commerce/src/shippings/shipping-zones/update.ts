@@ -1,6 +1,7 @@
-import type { ShippingZoneJsonResponse, ShippingZoneUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type ShippingZoneJsonResponse = ModelRow<typeof ShippingZone>
+type ShippingZoneUpdate = UpdateModelData<typeof ShippingZone>
 
 /**
  * Update a shipping zone

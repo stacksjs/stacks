@@ -1,5 +1,6 @@
 // Import dependencies
-import type { NewShippingRate, ShippingRateJsonResponse } from '@stacksjs/orm'
+type ShippingRateJsonResponse = ModelRow<typeof ShippingRate>
+type NewShippingRate = NewModelData<typeof ShippingRate>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { fetchById as fetchShippingMethodById } from '../shipping-methods/fetch'

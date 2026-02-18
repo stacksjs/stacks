@@ -1,4 +1,4 @@
-import type { ProductVariantJsonResponse } from '@stacksjs/orm'
+type ProductVariantJsonResponse = ModelRow<typeof ProductVariant>
 import { db } from '@stacksjs/database'
 
 /**

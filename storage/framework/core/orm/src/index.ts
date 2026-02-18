@@ -1,28 +1,18 @@
-// import { config } from '@stacksjs/config'
-
-// import { dynamodbClient } from './drivers/dynamodb'
-
-// if (config.database.default === 'dynamodb') {
-// dynamodbClient.createTable('users', (table) => {
-//   table.string('id').primary()
-//   table.string('name')
-//   table.string('email')
-//   table.string('password')
-//   table.timestamps()
-// })
-// }
-
 export * from '../../../orm/src'
 export * from '../../../orm/src/types'
 export * from './db'
 export * from './generated'
-export * from './requests'
 export * from './subquery'
 export * from './transaction'
 export * from './model-types'
 export * from './types'
 export * from './utils'
 export * from './define-model'
+
+// Re-export type utilities from bun-query-builder so consumers can infer
+// model types directly from defineModel() definitions
+export type { InferAttributes, InferPrimaryKey, InferTableName, ModelDefinition } from 'bun-query-builder'
+export type { InferRelationNames } from 'bun-query-builder'
 
 // Export User model from db package
 export { default as User } from '../../db/src/orm/Models/User'

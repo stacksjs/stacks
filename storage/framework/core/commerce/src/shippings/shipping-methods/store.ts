@@ -1,4 +1,5 @@
-import type { NewShippingMethod, ShippingMethodJsonResponse } from '@stacksjs/orm'
+type ShippingMethodJsonResponse = ModelRow<typeof ShippingMethod>
+type NewShippingMethod = NewModelData<typeof ShippingMethod>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'

@@ -8,7 +8,7 @@ export default new Action({
   name: 'Category Update',
   description: 'Category Update ORM Action',
   method: 'PATCH',
-  async handle(request: CategorizableRequestType) {
+  async handle(request: RequestInstance) {
     await request.validate({
       name: {
         rule: schema.string(),

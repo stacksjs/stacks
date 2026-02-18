@@ -1,4 +1,3 @@
-import type { OrderRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { orders } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   name: 'Order Update',
   description: 'Order Update ORM Action',
   method: 'PUT',
-  async handle(request: OrderRequestType) {
+  async handle(request: RequestInstance) {
     await request.validate()
 
     const id = request.getParam('id')

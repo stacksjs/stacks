@@ -1,6 +1,6 @@
-import type { PaymentJsonResponse } from '@stacksjs/orm'
 import { db, sql } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type PaymentJsonResponse = ModelRow<typeof Payment>
 
 /**
  * Payment statistics response interface

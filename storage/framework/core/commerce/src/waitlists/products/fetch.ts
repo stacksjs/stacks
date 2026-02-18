@@ -1,6 +1,6 @@
-import type { WaitlistProductJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate, toTimestamp } from '@stacksjs/orm'
+type WaitlistProductJsonResponse = ModelRow<typeof WaitlistProduct>
 
 /**
  * Fetch a waitlist product by ID

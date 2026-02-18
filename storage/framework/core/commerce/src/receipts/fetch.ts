@@ -1,6 +1,6 @@
-import type { ReceiptJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type ReceiptJsonResponse = ModelRow<typeof Receipt>
 
 /**
  * Fetch a print log by ID

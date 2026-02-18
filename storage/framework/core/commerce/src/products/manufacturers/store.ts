@@ -1,4 +1,5 @@
-import type { ManufacturerJsonResponse, NewManufacturer } from '@stacksjs/orm'
+type ManufacturerJsonResponse = ModelRow<typeof Manufacturer>
+type NewManufacturer = NewModelData<typeof Manufacturer>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

@@ -1,6 +1,7 @@
-import type { DeliveryRouteJsonResponse, DeliveryRouteUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type DeliveryRouteJsonResponse = ModelRow<typeof DeliveryRoute>
+type DeliveryRouteUpdate = UpdateModelData<typeof DeliveryRoute>
 
 /**
  * Update a delivery route

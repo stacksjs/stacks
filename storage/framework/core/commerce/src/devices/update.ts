@@ -1,6 +1,7 @@
-import type { PrintDeviceJsonResponse, PrintDeviceUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type PrintDeviceJsonResponse = ModelRow<typeof PrintDevice>
+type PrintDeviceUpdate = UpdateModelData<typeof PrintDevice>
 import { fetchById } from './fetch'
 
 /**

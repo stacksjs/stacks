@@ -1,4 +1,3 @@
-import type { TaggableRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { tags } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
@@ -8,7 +7,7 @@ export default new Action({
   name: 'Tag Store',
   description: 'Tag Store ORM Action',
   method: 'POST',
-  async handle(request: TaggableRequestType) {
+  async handle(request: RequestInstance) {
     await request.validate({
       name: {
         rule: schema.string(),

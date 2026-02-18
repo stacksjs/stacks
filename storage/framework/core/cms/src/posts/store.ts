@@ -1,4 +1,5 @@
-import type { NewPost, PostJsonResponse } from '@stacksjs/orm'
+type PostJsonResponse = ModelRow<typeof Post>
+type NewPost = NewModelData<typeof Post>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'

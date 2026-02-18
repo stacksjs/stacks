@@ -1,4 +1,3 @@
-import type { PrintDeviceRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { devices } from '@stacksjs/commerce'
@@ -8,7 +7,7 @@ export default new Action({
   name: 'PrintDevice Show',
   description: 'PrintDevice Show ORM Action',
   method: 'GET',
-  async handle(request: PrintDeviceRequestType) {
+  async handle(request: RequestInstance) {
     const id = request.getParam('id')
 
     const model = await devices.fetchById(id)

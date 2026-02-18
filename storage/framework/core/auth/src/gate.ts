@@ -5,7 +5,8 @@
  * Supports both inline gates and policy classes.
  */
 
-import type { UserModel } from '@stacksjs/orm'
+
+type UserModel = typeof User
 
 /**
  * Gate callback function type

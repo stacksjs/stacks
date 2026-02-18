@@ -1,7 +1,8 @@
-import type { OrderJsonResponse, OrderUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
+type OrderJsonResponse = ModelRow<typeof Order>
+type OrderUpdate = UpdateModelData<typeof Order>
 import { fetchById } from './fetch'
 
 /**

@@ -1,7 +1,7 @@
-import type { GiftCardJsonResponse } from '@stacksjs/orm'
 import type { GiftCardStats } from '../types'
 import { db, sql } from '@stacksjs/database'
 import { formatDate, toTimestamp } from '@stacksjs/orm'
+type GiftCardJsonResponse = ModelRow<typeof GiftCard>
 
 /**
  * Fetch all gift cards from the database

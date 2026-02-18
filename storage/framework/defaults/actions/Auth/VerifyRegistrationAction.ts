@@ -1,4 +1,3 @@
-import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { setCurrentRegistrationOptions, verifyRegistrationResponse } from '@stacksjs/auth'
 import { User } from '@stacksjs/orm'

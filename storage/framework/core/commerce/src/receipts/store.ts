@@ -1,4 +1,5 @@
-import type { NewReceipt, ReceiptJsonResponse } from '@stacksjs/orm'
+type ReceiptJsonResponse = ModelRow<typeof Receipt>
+type NewReceipt = NewModelData<typeof Receipt>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

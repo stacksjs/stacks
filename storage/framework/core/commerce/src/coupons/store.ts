@@ -1,4 +1,5 @@
-import type { CouponJsonResponse, NewCoupon } from '@stacksjs/orm'
+type CouponJsonResponse = ModelRow<typeof Coupon>
+type NewCoupon = NewModelData<typeof Coupon>
 import { db } from '@stacksjs/database'
 
 /**

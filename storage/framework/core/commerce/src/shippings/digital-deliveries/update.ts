@@ -1,7 +1,8 @@
-import type { DigitalDeliveryJsonResponse, DigitalDeliveryUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
+type DigitalDeliveryJsonResponse = ModelRow<typeof DigitalDelivery>
+type DigitalDeliveryUpdate = UpdateModelData<typeof DigitalDelivery>
 
 /**
  * Update a digital delivery

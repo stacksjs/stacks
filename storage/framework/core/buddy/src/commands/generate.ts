@@ -13,8 +13,6 @@ import {
   invoke as startGenerationProcess,
 } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
-import { generateModelFiles } from '@stacksjs/orm'
-import { initiateImports } from '@stacksjs/server'
 import { ExitCode } from '@stacksjs/types'
 
 export function generate(buddy: CLI): void {
@@ -29,7 +27,6 @@ export function generate(buddy: CLI): void {
     componentMeta: 'Generate component meta information',
     coreSymlink: 'Generate symlink of the core framework to the project root',
     pantry: 'Generate the pantry configuration file',
-    modelFiles: 'Generate the model files',
     openApi: 'Generate the OpenAPI specification',
     select: 'What are you trying to generate?',
     project: 'Target a specific project',
@@ -45,7 +42,6 @@ export function generate(buddy: CLI): void {
     .option('-i, --ide-helpers', descriptions.ideHelpers)
     .option('-c, --component-meta', descriptions.componentMeta)
     .option('-p, --pantry', descriptions.pantry)
-    .option('-m, --model-files', descriptions.modelFiles)
     .option('-o, --openapi', descriptions.openApi)
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--core-symlink', descriptions.coreSymlink)
@@ -141,29 +137,6 @@ export function generate(buddy: CLI): void {
     .action((options: GeneratorOptions) => {
       log.debug('Running `buddy generate:pantry-config` ...', options)
       generatePantryConfig()
-    })
-
-  buddy
-    .command('generate:model-files', descriptions.modelFiles)
-    .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(async () => {
-      const perf = await intro('buddy generate:model-files')
-
-      try {
-        await generateModelFiles()
-
-        await initiateImports()
-
-        outro('Generated Model files', {
-          startTime: perf,
-          useSeconds: true,
-        })
-      }
-      catch (error) {
-        log.error('There was an error generating your model files', error)
-        process.exit(ExitCode.FatalError)
-      }
     })
 
   buddy

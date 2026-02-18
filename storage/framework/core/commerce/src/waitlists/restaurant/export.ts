@@ -1,4 +1,4 @@
-import type { WaitlistRestaurantJsonResponse } from '@stacksjs/orm'
+type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>
 import type { SpreadsheetWrapper } from 'ts-spreadsheets'
 import { createSpreadsheet } from 'ts-spreadsheets'
 import { fetchAll } from './fetch'

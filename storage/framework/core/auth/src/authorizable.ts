@@ -12,7 +12,8 @@
  * }
  */
 
-import type { UserModel } from '@stacksjs/orm'
+
+type UserModel = typeof User
 import { can, cannot, any, all, authorize as gateAuthorize, inspect } from './gate'
 import type { AuthorizationResponse } from './gate'
 

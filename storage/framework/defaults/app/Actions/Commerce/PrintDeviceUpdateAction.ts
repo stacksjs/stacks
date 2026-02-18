@@ -1,4 +1,3 @@
-import type { PrintDeviceRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { devices } from '@stacksjs/commerce'
@@ -8,7 +7,7 @@ export default new Action({
   name: 'PrintDevice Update',
   description: 'PrintDevice Update ORM Action',
   method: 'PATCH',
-  async handle(request: PrintDeviceRequestType) {
+  async handle(request: RequestInstance) {
     await request.validate()
 
     const id = request.getParam('id')

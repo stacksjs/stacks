@@ -27,7 +27,8 @@
  * }
  */
 
-import type { UserModel } from '@stacksjs/orm'
+
+type UserModel = typeof User
 import { AuthorizationResponse } from './gate'
 
 export abstract class BasePolicy<T = any> {

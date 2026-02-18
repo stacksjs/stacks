@@ -1,4 +1,5 @@
-import type { AuthorJsonResponse, NewAuthor } from '@stacksjs/orm'
+type AuthorJsonResponse = ModelRow<typeof Author>
+type NewAuthor = NewModelData<typeof Author>
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 

@@ -1,4 +1,4 @@
-import type { ReceiptJsonResponse } from '@stacksjs/orm'
+type ReceiptJsonResponse = ModelRow<typeof Receipt>
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../receipts/destroy'

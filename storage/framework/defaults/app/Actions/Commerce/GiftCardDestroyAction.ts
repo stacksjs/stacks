@@ -1,4 +1,3 @@
-import type { GiftCardRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { giftCards } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   name: 'GiftCard Destroy',
   description: 'GiftCard Destroy ORM Action',
   method: 'DELETE',
-  async handle(request: GiftCardRequestType) {
+  async handle(request: RequestInstance) {
     const id = request.getParam('id')
 
     await giftCards.destroy(id)

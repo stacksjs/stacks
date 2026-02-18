@@ -1,4 +1,3 @@
-import type { OrderRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { orders } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   name: 'Order Show',
   description: 'Order Show ORM Action',
   method: 'GET',
-  async handle(request: OrderRequestType) {
+  async handle(request: RequestInstance) {
     const id = request.getParam('id')
 
     const model = await orders.fetchById(id)

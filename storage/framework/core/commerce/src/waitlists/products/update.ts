@@ -1,6 +1,7 @@
-import type { WaitlistProductJsonResponse, WaitlistProductUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type WaitlistProductJsonResponse = ModelRow<typeof WaitlistProduct>
+type WaitlistProductUpdate = UpdateModelData<typeof WaitlistProduct>
 
 /**
  * Update a waitlist product

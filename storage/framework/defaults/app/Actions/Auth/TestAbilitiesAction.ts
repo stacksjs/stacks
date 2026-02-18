@@ -1,4 +1,3 @@
-import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { currentAccessToken, tokenAbilities, tokenCan, tokenCanAll, tokenCanAny } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'

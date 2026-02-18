@@ -1,4 +1,6 @@
-import type { PaymentTransactionsTable, UserModel } from '@stacksjs/orm'
+
+type PaymentTransactionsTable = ModelRow<typeof PaymentTransaction>
+type UserModel = typeof User
 import { db } from '@stacksjs/database'
 
 export interface ManageTransaction {

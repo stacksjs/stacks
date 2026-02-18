@@ -1,4 +1,6 @@
-import type { SubscriptionsTable, UserModel } from '@stacksjs/orm'
+
+type SubscriptionsTable = ModelRow<typeof Subscription>
+type UserModel = typeof User
 import type Stripe from 'stripe'
 import { db } from '@stacksjs/database'
 

@@ -1,4 +1,3 @@
-import type { ReviewRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { products } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
@@ -7,7 +6,7 @@ export default new Action({
   name: 'Review Update',
   description: 'Review Update ORM Action',
   method: 'PATCH',
-  async handle(request: ReviewRequestType) {
+  async handle(request: RequestInstance) {
     await request.validate()
 
     const id = request.getParam('id')

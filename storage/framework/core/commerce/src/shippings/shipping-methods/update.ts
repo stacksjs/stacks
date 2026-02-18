@@ -1,6 +1,7 @@
-import type { ShippingMethodJsonResponse, ShippingMethodUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type ShippingMethodJsonResponse = ModelRow<typeof ShippingMethod>
+type ShippingMethodUpdate = UpdateModelData<typeof ShippingMethod>
 
 /**
  * Update a shipping method

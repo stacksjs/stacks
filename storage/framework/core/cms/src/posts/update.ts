@@ -1,4 +1,5 @@
-import type { PostJsonResponse, PostUpdate } from '@stacksjs/orm'
+type PostJsonResponse = ModelRow<typeof Post>
+type PostUpdate = UpdateModelData<typeof Post>
 import { db } from '@stacksjs/database'
 
 /**

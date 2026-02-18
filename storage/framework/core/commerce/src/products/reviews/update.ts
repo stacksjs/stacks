@@ -1,6 +1,7 @@
-import type { ReviewJsonResponse, ReviewUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type ReviewJsonResponse = ModelRow<typeof Review>
+type ReviewUpdate = UpdateModelData<typeof Review>
 
 /**
  * Update a review

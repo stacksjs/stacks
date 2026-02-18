@@ -1,7 +1,8 @@
-import type { LicenseKeyJsonResponse, LicenseKeyUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
+type LicenseKeyJsonResponse = ModelRow<typeof LicenseKey>
+type LicenseKeyUpdate = UpdateModelData<typeof LicenseKey>
 
 /**
  * Update a license key

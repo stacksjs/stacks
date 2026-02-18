@@ -1,4 +1,3 @@
-import type { PostRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { posts } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
@@ -8,7 +7,7 @@ export default new Action({
   name: 'Post Views Update',
   description: 'Updates the view count for a post',
   method: 'PATCH',
-  async handle(request: PostRequestType) {
+  async handle(request: RequestInstance) {
     await request.validate({
       views: {
         rule: schema.number(),

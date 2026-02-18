@@ -1,6 +1,12 @@
 // Import the CustomerTable type from the ORM
 
-import type { CouponJsonResponse, CustomerJsonResponse, GiftCardJsonResponse, ManufacturerJsonResponse, OrderItemJsonResponse, OrderJsonResponse, ReviewJsonResponse } from '@stacksjs/orm'
+type CouponJsonResponse = ModelRow<typeof Coupon>
+type CustomerJsonResponse = ModelRow<typeof Customer>
+type GiftCardJsonResponse = ModelRow<typeof GiftCard>
+type ManufacturerJsonResponse = ModelRow<typeof Manufacturer>
+type OrderJsonResponse = ModelRow<typeof Order>
+type OrderItemJsonResponse = ModelRow<typeof OrderItem>
+type ReviewJsonResponse = ModelRow<typeof Review>
 
 // Define the input for creating a customer
 export interface CreateCustomerInput {

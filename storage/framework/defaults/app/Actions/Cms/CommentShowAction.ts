@@ -1,4 +1,3 @@
-import type { CommentablesRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { comments } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
@@ -7,7 +6,7 @@ export default new Action({
   name: 'Comment Show',
   description: 'Comment Show ORM Action',
   method: 'GET',
-  async handle(request: CommentablesRequestType) {
+  async handle(request: RequestInstance) {
     const id = request.getParam('id')
 
     const model = await comments.fetchCommentById(id)

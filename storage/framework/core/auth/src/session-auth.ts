@@ -1,4 +1,5 @@
-import type { UserModel } from '@stacksjs/orm'
+
+type UserModel = typeof User
 import { HttpError } from '@stacksjs/error-handling'
 import { User } from '@stacksjs/orm'
 import { verifyHash } from '@stacksjs/security'

@@ -1,4 +1,3 @@
-import type { CategorizableRequestType, CategoryJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
@@ -10,7 +9,7 @@ import { fetchById } from './fetch'
  * @param request The updated category data
  * @returns The updated category record
  */
-export async function update(id: number, request: CategorizableRequestType): Promise<CategoryJsonResponse | undefined> {
+export async function update(id: number, request: RequestInstance): Promise<Record<string, any> | undefined> {
   // Validate the request data
   await request.validate()
 
@@ -68,7 +67,7 @@ export async function update(id: number, request: CategorizableRequestType): Pro
  * @param newOrder The new display order value
  * @returns The updated category
  */
-export async function updateDisplayOrder(id: number, newOrder: number): Promise<CategoryJsonResponse | undefined> {
+export async function updateDisplayOrder(id: number, newOrder: number): Promise<Record<string, any> | undefined> {
   // Check if category exists
   const category = await fetchById(id)
 
@@ -106,7 +105,7 @@ export async function updateDisplayOrder(id: number, newOrder: number): Promise<
  * @param isActive Whether the category should be active
  * @returns The updated category
  */
-export async function updateActiveStatus(id: number, isActive: boolean): Promise<CategoryJsonResponse | undefined> {
+export async function updateActiveStatus(id: number, isActive: boolean): Promise<Record<string, any> | undefined> {
   // Check if category exists
   const category = await fetchById(id)
 
@@ -144,7 +143,7 @@ export async function updateActiveStatus(id: number, isActive: boolean): Promise
  * @param newParentId The ID of the new parent category, or null to make it a root category
  * @returns The updated category
  */
-export async function updateParent(id: number, newParentId: string | null): Promise<CategoryJsonResponse | undefined> {
+export async function updateParent(id: number, newParentId: string | null): Promise<Record<string, any> | undefined> {
   // Check if category exists
   const category = await fetchById(id)
 

@@ -1,4 +1,3 @@
-import type { LogRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { Log } from '@stacksjs/orm'
@@ -8,7 +7,7 @@ export default new Action({
   name: 'Log Store',
   description: 'Log Store ORM Action',
   method: 'POST',
-  async handle(request: LogRequestType) {
+  async handle(request: RequestInstance) {
     await request.validate()
     const model = await Log.create(request.all())
 

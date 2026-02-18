@@ -1,4 +1,4 @@
-import type { LicenseKeyJsonResponse } from '@stacksjs/orm'
+type LicenseKeyJsonResponse = ModelRow<typeof LicenseKey>
 import { db } from '@stacksjs/database'
 
 /**

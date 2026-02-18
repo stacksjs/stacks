@@ -1,4 +1,3 @@
-import type { RequestInstance } from '@stacksjs/types'
 import { existsSync, statSync } from 'node:fs'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'

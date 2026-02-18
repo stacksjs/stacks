@@ -1,4 +1,3 @@
-import type { CustomerRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { customers } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   name: 'Customer Update',
   description: 'Customer Update ORM Action',
   method: 'PATCH',
-  async handle(request: CustomerRequestType) {
+  async handle(request: RequestInstance) {
     await request.validate()
 
     const id = request.getParam('id')

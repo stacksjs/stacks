@@ -1,7 +1,8 @@
-import type { DriverJsonResponse, DriverUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
+type DriverJsonResponse = ModelRow<typeof Driver>
+type DriverUpdate = UpdateModelData<typeof Driver>
 
 /**
  * Update a driver

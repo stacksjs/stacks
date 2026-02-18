@@ -1,4 +1,3 @@
-import type { PageRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { pages } from '@stacksjs/cms'
 import { formatDate } from '@stacksjs/orm'
@@ -9,7 +8,7 @@ export default new Action({
   description: 'Page Update ORM Action',
   method: 'PATCH',
   model: 'Page',
-  async handle(request: PageRequestType) {
+  async handle(request: RequestInstance) {
     await request.validate()
 
     const id = request.getParam('id')

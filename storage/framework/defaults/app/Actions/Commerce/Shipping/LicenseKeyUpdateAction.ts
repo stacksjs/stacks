@@ -1,4 +1,3 @@
-import type { LicenseKeyRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { shippings } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   name: 'LicenseKey Update',
   description: 'LicenseKey Update ORM Action',
   method: 'PUT',
-  async handle(request: LicenseKeyRequestType) {
+  async handle(request: RequestInstance) {
     const id = request.getParam('id')
 
     const results = await shippings.licenses.update(id, request)

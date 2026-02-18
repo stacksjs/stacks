@@ -60,8 +60,10 @@ export async function makePolicy(options: MakePolicyOptions): Promise<boolean> {
  * Generate policy file content
  */
 function generatePolicyContent(policyName: string, modelName: string): string {
-  return `import type { UserModel } from '@stacksjs/orm'
+  return `import type _User from '../models/User'
 import { BasePolicy } from '@stacksjs/auth'
+
+type UserModel = _User
 
 /**
  * ${policyName}

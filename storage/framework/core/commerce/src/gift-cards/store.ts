@@ -1,4 +1,5 @@
-import type { GiftCardJsonResponse, NewGiftCard } from '@stacksjs/orm'
+type GiftCardJsonResponse = ModelRow<typeof GiftCard>
+type NewGiftCard = NewModelData<typeof GiftCard>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

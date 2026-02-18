@@ -1,6 +1,7 @@
-import type { WaitlistRestaurantJsonResponse, WaitlistRestaurantUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>
+type WaitlistRestaurantUpdate = UpdateModelData<typeof WaitlistRestaurant>
 
 /**
  * Update a restaurant waitlist entry

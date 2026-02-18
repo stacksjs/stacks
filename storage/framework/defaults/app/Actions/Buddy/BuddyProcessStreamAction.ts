@@ -1,4 +1,3 @@
-import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { apiKeys, applyChanges, buddyProcessStreaming, buddyState, buddyStreamSimple, openRepository } from '@stacksjs/ai'
 

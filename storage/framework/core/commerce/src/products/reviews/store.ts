@@ -1,4 +1,5 @@
-import type { NewReview, ReviewJsonResponse } from '@stacksjs/orm'
+type ReviewJsonResponse = ModelRow<typeof Review>
+type NewReview = NewModelData<typeof Review>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

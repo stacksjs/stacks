@@ -1,4 +1,3 @@
-import type { LicenseKeyRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { shippings } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   name: 'LicenseKey Store',
   description: 'LicenseKey Store ORM Action',
   method: 'POST',
-  async handle(request: LicenseKeyRequestType) {
+  async handle(request: RequestInstance) {
     const data = await request.all()
 
     const results = await shippings.licenses.store(data)

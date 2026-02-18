@@ -1,4 +1,3 @@
-import type { LogRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { Log } from '@stacksjs/orm'
@@ -8,7 +7,7 @@ export default new Action({
   name: 'Log Update',
   description: 'Log Update ORM Action',
   method: 'PATCH',
-  async handle(request: LogRequestType) {
+  async handle(request: RequestInstance) {
     await request.validate()
 
     const id = request.getParam('id')

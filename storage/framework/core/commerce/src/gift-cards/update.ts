@@ -1,6 +1,7 @@
-import type { GiftCardJsonResponse, GiftCardUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type GiftCardJsonResponse = ModelRow<typeof GiftCard>
+type GiftCardUpdate = UpdateModelData<typeof GiftCard>
 import { fetchById } from './fetch'
 
 /**

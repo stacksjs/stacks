@@ -1,4 +1,3 @@
-import type { CategorizableRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { categorizable } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
@@ -8,7 +7,7 @@ export default new Action({
   name: 'Category Store',
   description: 'Category Store ORM Action',
   method: 'POST',
-  async handle(request: CategorizableRequestType) {
+  async handle(request: RequestInstance) {
     await request.validate({
       name: {
         rule: schema.string(),

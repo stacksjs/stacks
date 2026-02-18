@@ -1,4 +1,5 @@
-import type { DeliveryRouteJsonResponse, NewDeliveryRoute } from '@stacksjs/orm'
+type DeliveryRouteJsonResponse = ModelRow<typeof DeliveryRoute>
+type NewDeliveryRoute = NewModelData<typeof DeliveryRoute>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

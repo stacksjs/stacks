@@ -1,6 +1,7 @@
-import type { ProductUnitJsonResponse, ProductUnitUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type ProductUnitJsonResponse = ModelRow<typeof ProductUnit>
+type ProductUnitUpdate = UpdateModelData<typeof ProductUnit>
 
 /**
  * Update a product unit

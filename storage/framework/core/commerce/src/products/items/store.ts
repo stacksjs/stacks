@@ -1,4 +1,5 @@
-import type { NewProduct, ProductJsonResponse } from '@stacksjs/orm'
+type ProductJsonResponse = ModelRow<typeof Product>
+type NewProduct = NewModelData<typeof Product>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'

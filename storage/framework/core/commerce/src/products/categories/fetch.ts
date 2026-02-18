@@ -1,7 +1,7 @@
-import type { CategoryJsonResponse } from '@stacksjs/orm'
 import type { CategoryStats } from '../../types'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type CategoryJsonResponse = ModelRow<typeof Category>
 
 /**
  * Fetch all categories from the database

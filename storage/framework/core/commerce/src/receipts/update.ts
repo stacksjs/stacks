@@ -1,6 +1,7 @@
-import type { ReceiptJsonResponse, ReceiptUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type ReceiptJsonResponse = ModelRow<typeof Receipt>
+type ReceiptUpdate = UpdateModelData<typeof Receipt>
 
 /**
  * Update a receipt

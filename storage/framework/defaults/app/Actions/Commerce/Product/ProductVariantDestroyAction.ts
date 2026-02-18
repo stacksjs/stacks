@@ -1,4 +1,3 @@
-import type { ProductVariantRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { products } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   name: 'ProductVariant Destroy',
   description: 'ProductVariant Destroy ORM Action',
   method: 'DELETE',
-  async handle(request: ProductVariantRequestType) {
+  async handle(request: RequestInstance) {
     const id = request.getParam('id')
 
     await products.variants.destroy(id)

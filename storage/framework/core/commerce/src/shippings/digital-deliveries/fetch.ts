@@ -1,4 +1,4 @@
-import type { DigitalDeliveryJsonResponse } from '@stacksjs/orm'
+type DigitalDeliveryJsonResponse = ModelRow<typeof DigitalDelivery>
 import { db } from '@stacksjs/database'
 
 /**

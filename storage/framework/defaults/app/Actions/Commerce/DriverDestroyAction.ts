@@ -1,4 +1,3 @@
-import type { DriverRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { shippings } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   name: 'Driver Destroy',
   description: 'Driver Destroy ORM Action',
   method: 'DELETE',
-  async handle(request: DriverRequestType) {
+  async handle(request: RequestInstance) {
     const id = request.getParam('id')
 
     await shippings.drivers.destroy(id)

@@ -1,6 +1,7 @@
-import type { TaxRateJsonResponse, TaxRateUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type TaxRateJsonResponse = ModelRow<typeof TaxRate>
+type TaxRateUpdate = UpdateModelData<typeof TaxRate>
 
 /**
  * Update a tax rate

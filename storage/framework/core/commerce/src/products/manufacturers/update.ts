@@ -1,6 +1,7 @@
-import type { ManufacturerJsonResponse, ManufacturerUpdate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type ManufacturerJsonResponse = ModelRow<typeof Manufacturer>
+type ManufacturerUpdate = UpdateModelData<typeof Manufacturer>
 
 /**
  * Update a manufacturer

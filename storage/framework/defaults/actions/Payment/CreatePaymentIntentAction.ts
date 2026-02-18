@@ -1,4 +1,3 @@
-import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { HttpError } from '@stacksjs/error-handling'
 import { response } from '@stacksjs/router'

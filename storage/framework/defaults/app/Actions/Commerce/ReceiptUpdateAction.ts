@@ -1,4 +1,3 @@
-import type { ReceiptRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { receipts } from '@stacksjs/commerce'
@@ -8,7 +7,7 @@ export default new Action({
   name: 'Receipt Update',
   description: 'Receipt Update ORM Action',
   method: 'PATCH',
-  async handle(request: ReceiptRequestType) {
+  async handle(request: RequestInstance) {
     await request.validate()
 
     const id = request.getParam('id')

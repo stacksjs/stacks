@@ -1,4 +1,4 @@
-import type { WaitlistRestaurantJsonResponse } from '@stacksjs/orm'
+type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>
 import { db } from '@stacksjs/database'
 
 /**

@@ -1,4 +1,4 @@
-import type { ManufacturerJsonResponse } from '@stacksjs/orm'
+type ManufacturerJsonResponse = ModelRow<typeof Manufacturer>
 import type { FetchManufacturersOptions, ManufacturerResponse } from '../../types'
 import { db } from '@stacksjs/database'
 

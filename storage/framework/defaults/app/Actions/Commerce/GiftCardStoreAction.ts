@@ -1,4 +1,3 @@
-import type { GiftCardRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { giftCards } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   name: 'GiftCard Store',
   description: 'GiftCard Store ORM Action',
   method: 'POST',
-  async handle(request: GiftCardRequestType) {
+  async handle(request: RequestInstance) {
     await request.validate()
 
     const data = {

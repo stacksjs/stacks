@@ -1,5 +1,8 @@
 import type { Selectable } from '@stacksjs/database'
-import type { PaymentMethodModel, PaymentMethodsTable, UserModel } from '@stacksjs/orm'
+
+type PaymentMethodModel = typeof PaymentMethod
+type PaymentMethodsTable = ModelRow<typeof PaymentMethod>
+type UserModel = typeof User
 import type Stripe from 'stripe'
 import { db } from '@stacksjs/database'
 import { PaymentMethod } from '@stacksjs/orm'

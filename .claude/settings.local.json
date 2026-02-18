@@ -136,7 +136,14 @@
       "Bash(git -C /private/tmp log --oneline -5)",
       "Bash(git -C /private/tmp rev-parse:*)",
       "Bash(npx tsc:*)",
-      "Bash(BUN_TEST_COVERAGE=0 bun test:*)"
+      "Bash(BUN_TEST_COVERAGE=0 bun test:*)",
+      "Bash(rg:*)",
+      "Bash(bash)",
+      "Bash(while:*)",
+      "Bash(do sed -i '' \"/^import type { RequestInstance } from [''''\"\"]@stacksjs\\\\/types[''''\"\"]/d\" \"$file\")",
+      "Bash(CMS_DIR=\"/Users/chrisbreuer/Code/stacks/storage/framework/core/cms/src\")",
+      "Bash(__NEW_LINE_db9c67b134c4d290__ echo \"=== Checking for any remaining _Post, _Author, _Page references ===\")",
+      "Bash(__NEW_LINE_db9c67b134c4d290__ echo \"\")"
     ],
     "deny": [],
     "ask": []

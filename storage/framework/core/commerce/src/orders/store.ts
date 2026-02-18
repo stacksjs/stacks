@@ -1,8 +1,9 @@
 // Import dependencies
-import type { NewOrder, OrderJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+type OrderJsonResponse = ModelRow<typeof Order>
+type NewOrder = NewModelData<typeof Order>
 
 /**
  * Create a new order

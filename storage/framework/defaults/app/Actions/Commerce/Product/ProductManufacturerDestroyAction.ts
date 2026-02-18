@@ -1,4 +1,3 @@
-import type { ManufacturerRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { products } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   name: 'ProductManufacturer Destroy',
   description: 'ProductManufacturer Destroy ORM Action',
   method: 'DELETE',
-  async handle(request: ManufacturerRequestType) {
+  async handle(request: RequestInstance) {
     const id = request.getParam('id')
 
     await products.manufacturers.destroy(id)

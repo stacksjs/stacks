@@ -1,9 +1,7 @@
-import type { UserModelType } from '@stacksjs/orm'
+
+type UserJsonResponse = ModelRow<typeof User>
 import type { UploadedFile } from '@stacksjs/storage'
 import type { AuthToken, RouteParam } from '@stacksjs/types'
-
-// @ts-ignore - requests.d.ts may not be a module
-export type * from '../../../types/requests'
 
 interface RequestData {
   [key: string]: any
@@ -331,5 +329,5 @@ export interface RequestInstance {
   ip: () => string | null
   ipForRateLimit: () => string | null
   getMethod: () => HttpMethod
-  user: () => Promise<UserModelType | undefined>
+  user: () => Promise<UserJsonResponse | undefined>
 }

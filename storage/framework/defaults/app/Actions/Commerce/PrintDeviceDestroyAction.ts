@@ -1,4 +1,3 @@
-import type { PrintDeviceRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { devices } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   name: 'PrintDevice Destroy',
   description: 'PrintDevice Destroy ORM Action',
   method: 'DELETE',
-  async handle(request: PrintDeviceRequestType) {
+  async handle(request: RequestInstance) {
     const id = request.getParam('id')
 
     await devices.destroy(id)

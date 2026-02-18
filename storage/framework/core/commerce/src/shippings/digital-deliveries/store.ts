@@ -1,4 +1,5 @@
-import type { DigitalDeliveryJsonResponse, NewDigitalDelivery } from '@stacksjs/orm'
+type DigitalDeliveryJsonResponse = ModelRow<typeof DigitalDelivery>
+type NewDigitalDelivery = NewModelData<typeof DigitalDelivery>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'

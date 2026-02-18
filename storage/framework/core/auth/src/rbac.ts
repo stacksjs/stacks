@@ -11,7 +11,8 @@
  * await assignRole(userId, 'editor')
  */
 
-import type { UserModel } from '@stacksjs/orm'
+
+type UserModel = typeof User
 
 export interface RoleRecord {
   id: number

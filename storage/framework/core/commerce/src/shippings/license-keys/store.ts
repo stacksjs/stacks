@@ -1,5 +1,6 @@
 // Import dependencies
-import type { LicenseKeyJsonResponse, NewLicenseKey } from '@stacksjs/orm'
+type LicenseKeyJsonResponse = ModelRow<typeof LicenseKey>
+type NewLicenseKey = NewModelData<typeof LicenseKey>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'

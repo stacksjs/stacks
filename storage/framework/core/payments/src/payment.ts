@@ -5,7 +5,8 @@
  * Uses the underlying billable modules for Stripe integration.
  */
 
-import type { UserModel } from '@stacksjs/orm'
+
+type UserModel = typeof User
 import type Stripe from 'stripe'
 import { stripe } from './drivers/stripe'
 import { manageCharge } from './billable/charge'

@@ -1,4 +1,3 @@
-import type { PasswordResetsRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { RateLimiter } from '@stacksjs/auth'
 import { User } from '@stacksjs/orm'
@@ -16,7 +15,7 @@ export default new Action({
       rule: schema.string().email().required(),
     },
   },
-  async handle(request: PasswordResetsRequestType) {
+  async handle(request: RequestInstance) {
     console.log('[Action] SendPasswordResetEmailAction.handle() called')
 
     const email = request.get('email')

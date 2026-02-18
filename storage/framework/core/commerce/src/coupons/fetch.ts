@@ -1,7 +1,7 @@
-import type { CouponJsonResponse } from '@stacksjs/orm'
 import type { CouponCountStats, CouponRedemptionStats, CouponStats, CouponTimeStats } from '../types'
 import { db } from '@stacksjs/database'
 import { extractDate, formatDate } from '@stacksjs/orm'
+type CouponJsonResponse = ModelRow<typeof Coupon>
 
 /**
  * Process coupon data from the database

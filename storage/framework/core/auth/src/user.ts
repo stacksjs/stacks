@@ -1,4 +1,6 @@
-import type { UserJsonResponse, UserModel } from '@stacksjs/orm'
+
+type UserModel = typeof User
+type UserJsonResponse = ModelRow<typeof User>
 import { request } from '@stacksjs/router'
 import { Auth } from './authentication'
 
