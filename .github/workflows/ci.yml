@@ -73,7 +73,7 @@ jobs:
         run: bun install
 
       - name: Typecheck
-        run: bun buddy test:types
+        run: bun run typecheck
 
   test:
     runs-on: ${{ matrix.os }}
