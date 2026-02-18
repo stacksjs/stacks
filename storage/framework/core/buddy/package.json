@@ -84,7 +84,6 @@
     "prepublishOnly": "bun run build && bun run compile:all && bun run zip:all"
   },
   "dependencies": {
-    "@stacksjs/rpx": "link:@stacksjs/rpx",
     "@stacksjs/actions": "^0.70.23",
     "@stacksjs/ai": "^0.70.23",
     "@stacksjs/alias": "^0.70.23",
@@ -98,7 +97,6 @@
     "@stacksjs/config": "^0.70.23",
     "@stacksjs/database": "^0.70.23",
     "@stacksjs/desktop": "^0.70.23",
-    "better-dx": "^0.2.5",
     "@stacksjs/dns": "^0.70.23",
     "@stacksjs/docs": "^0.70.23",
     "@stacksjs/email": "^0.70.23",
@@ -116,6 +114,7 @@
     "@stacksjs/payments": "^0.70.23",
     "@stacksjs/realtime": "^0.70.23",
     "@stacksjs/router": "^0.70.23",
+    "@stacksjs/rpx": "^0.11.0",
     "@stacksjs/search-engine": "^0.70.23",
     "@stacksjs/security": "^0.70.23",
     "@stacksjs/server": "^0.70.23",
@@ -126,7 +125,8 @@
     "@stacksjs/types": "^0.70.23",
     "@stacksjs/ui": "^0.70.23",
     "@stacksjs/utils": "^0.70.23",
-    "@stacksjs/validation": "^0.70.23"
+    "@stacksjs/validation": "^0.70.23",
+    "better-dx": "^0.2.5"
   },
   "devDependencies": {
     "better-dx": "^0.2.5"

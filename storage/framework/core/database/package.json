@@ -50,7 +50,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "bun-query-builder": "link:bun-query-builder"
+    "bun-query-builder": "^0.1.11"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
