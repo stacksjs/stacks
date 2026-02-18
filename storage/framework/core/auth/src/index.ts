@@ -27,6 +27,9 @@ export * from './rbac'
 // Email Verification
 export * from './email-verification'
 
+// Session-based Authentication (SPA Cookie Auth)
+export * from './session-auth'
+
 // TOTP (Two-Factor Authentication) - re-export from ts-auth
 export {
   generateTOTP,

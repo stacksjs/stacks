@@ -4,6 +4,7 @@ import { notification as config } from '@stacksjs/config'
 import { err } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
 import { chat, email, sms } from './drivers'
+import { DatabaseNotificationDriver } from './drivers/database'
 
 export function useChat(driver = 'slack'): any {
   return chat[driver as keyof typeof chat]
@@ -15,6 +16,10 @@ export function useEmail(driver = 'mailtrap'): any {
 
 export function useSMS(driver = 'twilio'): any {
   return sms[driver as keyof typeof sms]
+}
+
+export function useDatabase(): typeof DatabaseNotificationDriver {
+  return DatabaseNotificationDriver
 }
 
 export function useNotification(typeParam = 'email', driverParam = 'mailtrap'): any {
@@ -33,6 +38,8 @@ export function useNotification(typeParam = 'email', driverParam = 'mailtrap'): 
       return useChat(driver)
     case 'sms':
       return useSMS(driver)
+    case 'database':
+      return useDatabase()
     default:
       return err(`Type ${type} not supported`)
   }
@@ -41,3 +48,6 @@ export function useNotification(typeParam = 'email', driverParam = 'mailtrap'): 
 export function notification(): any {
   return useNotification()
 }
+
+export { DatabaseNotificationDriver } from './drivers/database'
+export type { CreateNotificationOptions, DatabaseNotification } from './drivers/database'

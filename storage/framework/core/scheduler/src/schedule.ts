@@ -1,5 +1,8 @@
 import type { CatchCallbackFn, CronOptions } from '@stacksjs/cron'
 import type { TimedSchedule, Timezone, UntimedSchedule } from './types'
+import { spawn } from 'node:child_process'
+import { existsSync, mkdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { runAction } from '@stacksjs/actions'
 import { log, runCommand } from '@stacksjs/cli'
 import { Cron } from '@stacksjs/cron'
@@ -35,6 +38,12 @@ export class Schedule implements UntimedSchedule {
   private cronPattern = ''
   private timezone: Timezone = 'America/Los_Angeles'
   private readonly task: () => void
+  private static lockDir = join(process.cwd(), 'storage', 'framework', 'locks')
+  private static activeLocks = new Set<string>()
+  private shouldPreventOverlap = false
+  private overlapExpiresAfterMinutes = 24 * 60
+  private shouldRunOnOneServer = false
+  private shouldRunInBackground = false
   private options: {
     timezone?: string
     catch?: CatchCallbackFn
@@ -179,14 +188,134 @@ export class Schedule implements UntimedSchedule {
     return this
   }
 
+  withoutOverlapping(expiresAfterMinutes?: number): this {
+    this.shouldPreventOverlap = true
+    if (expiresAfterMinutes !== undefined)
+      this.overlapExpiresAfterMinutes = expiresAfterMinutes
+    return this
+  }
+
+  onOneServer(): this {
+    this.shouldRunOnOneServer = true
+    return this
+  }
+
+  runInBackground(): this {
+    this.shouldRunInBackground = true
+    return this
+  }
+
+  private acquireLock(name: string): boolean {
+    const lockFile = join(Schedule.lockDir, `${name}.lock`)
+
+    if (!existsSync(Schedule.lockDir)) {
+      mkdirSync(Schedule.lockDir, { recursive: true })
+    }
+
+    if (Schedule.activeLocks.has(name)) {
+      // Check if the lock has expired
+      if (existsSync(lockFile)) {
+        try {
+          const stats = statSync(lockFile)
+          const ageMs = Date.now() - stats.mtimeMs
+          const expiryMs = this.overlapExpiresAfterMinutes * 60 * 1000
+          if (ageMs < expiryMs) {
+            return false
+          }
+        }
+        catch {
+          // If we can't stat the file, proceed with acquiring
+        }
+      }
+    }
+
+    try {
+      writeFileSync(lockFile, String(Date.now()), { flag: 'wx' })
+    }
+    catch {
+      // File exists — check if expired
+      try {
+        const stats = statSync(lockFile)
+        const ageMs = Date.now() - stats.mtimeMs
+        const expiryMs = this.overlapExpiresAfterMinutes * 60 * 1000
+        if (ageMs < expiryMs) {
+          return false
+        }
+        // Expired lock — overwrite
+        writeFileSync(lockFile, String(Date.now()))
+      }
+      catch {
+        return false
+      }
+    }
+
+    Schedule.activeLocks.add(name)
+    return true
+  }
+
+  private releaseLock(name: string): void {
+    const lockFile = join(Schedule.lockDir, `${name}.lock`)
+    Schedule.activeLocks.delete(name)
+    try {
+      unlinkSync(lockFile)
+    }
+    catch {
+      // Lock file already removed
+    }
+  }
+
+  private wrapTask(originalTask: () => void): () => void {
+    const taskName = this.options.name || 'unnamed-task'
+    let wrappedTask = originalTask
+
+    if (this.shouldPreventOverlap || this.shouldRunOnOneServer) {
+      const self = this
+      const innerTask = wrappedTask
+      wrappedTask = () => {
+        if (!self.acquireLock(taskName)) {
+          log.info(`Skipping overlapping task: ${taskName}`)
+          return
+        }
+        try {
+          const result = innerTask()
+          if (result instanceof Promise) {
+            (result as Promise<any>).finally(() => self.releaseLock(taskName))
+          }
+          else {
+            self.releaseLock(taskName)
+          }
+        }
+        catch (error) {
+          self.releaseLock(taskName)
+          throw error
+        }
+      }
+    }
+
+    if (this.shouldRunInBackground) {
+      const innerTask = wrappedTask
+      wrappedTask = () => {
+        const child = spawn(process.execPath, ['-e', `(${innerTask.toString()})()`], {
+          detached: true,
+          stdio: 'ignore',
+        })
+        child.unref()
+        log.info(`Task ${taskName} spawned in background (pid: ${child.pid})`)
+      }
+    }
+
+    return wrappedTask
+  }
+
   private start(): Cron {
+    const task = this.wrapTask(this.task)
     const job = new Cron(
       this.cronPattern,
       {
         ...this.options,
         timezone: this.timezone,
       } as CronOptions,
-      this.task,
+      task,
     )
 
     if (this.options.name) {

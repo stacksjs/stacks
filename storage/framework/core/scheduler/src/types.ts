@@ -78,6 +78,9 @@ export interface BaseSchedule {
   withInterval: (seconds: number) => this
   between: (startAt: string | Date, stopAt: string | Date) => this
   setTimeZone: (timezone: Timezone) => this
+  withoutOverlapping: (expiresAfterMinutes?: number) => this
+  onOneServer: () => this
+  runInBackground: () => this
 }
 
 // Interface for schedule after timing is set
