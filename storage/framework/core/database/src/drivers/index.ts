@@ -20,10 +20,10 @@ interface Range {
 }
 
 export async function deleteMigrationFiles(): Promise<void> {
-  const files = await fs.readdir(path.userMigrationsPath())
+  const files = await (fs.readdir as any)(path.userMigrationsPath())
 
-  if (files.length) {
-    for (const file of files) {
+  if ((files as any).length) {
+    for (const file of files as any) {
       if (file.endsWith('.ts')) {
         const migrationPath = path.userMigrationsPath(`${file}`)
 
@@ -35,10 +35,10 @@ export async function deleteMigrationFiles(): Promise<void> {
 }
 
 export async function deleteFrameworkModels(): Promise<void> {
-  const modelFiles = await fs.readdir(path.frameworkPath('models'))
+  const modelFiles = await (fs.readdir as any)(path.frameworkPath('models'))
 
-  if (modelFiles.length) {
-    for (const modelFile of modelFiles) {
+  if ((modelFiles as any).length) {
+    for (const modelFile of modelFiles as any) {
       if (modelFile.endsWith('.ts')) {
         const modelPath = path.frameworkPath(`models/${modelFile}`)
 
@@ -87,7 +87,7 @@ export async function hasMigrationBeenCreated(tableName: string): Promise<boolea
 
 export async function getExecutedMigrations(): Promise<{ name: string }[]> {
   try {
-    return await db.selectFrom('migrations').select('name').execute()
+    return await (db as any).selectFrom('migrations').select('name').execute()
   }
 
   catch (error: any) {
@@ -143,9 +143,9 @@ export function compareRanges(range1: Range, range2: Range): boolean {
 }
 
 export async function checkPivotMigration(dynamicPart: string): Promise<boolean> {
-  const files = await fs.readdir(path.userMigrationsPath())
+  const files = await (fs.readdir as any)(path.userMigrationsPath())
 
-  return files.some((migrationFile: string) => {
+  return (files as any).some((migrationFile: string) => {
     // Escape special characters in the dynamic part to ensure it's treated as a literal string
     const escapedDynamicPart = dynamicPart.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 

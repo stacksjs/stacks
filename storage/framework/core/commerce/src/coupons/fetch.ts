@@ -96,7 +96,7 @@ export async function fetchStats(): Promise<CouponStats> {
   // Total coupons
   const totalCoupons = await db
     .selectFrom('coupons')
-    .select(eb => eb.fn.count('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .executeTakeFirst()
 
   // Active coupons
@@ -106,13 +106,13 @@ export async function fetchStats(): Promise<CouponStats> {
     .where('is_active', '=', true)
     .where('start_date', '<=', currentDate)
     .where('end_date', '>=', currentDate)
-    .select(eb => eb.fn.count('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .executeTakeFirst()
 
   // Coupons by discount type
   const couponsByType = await db
     .selectFrom('coupons')
-    .select(['discount_type', eb => eb.fn.count('id').as('count')])
+    .select(['discount_type', (eb: any) => eb.fn.count('id').as('count')])
     .groupBy('discount_type')
     .execute()
 
@@ -344,7 +344,7 @@ export async function fetchRedemptionStats(): Promise<CouponRedemptionStats> {
     .execute()
 
   const byType: Record<string, number> = {}
-  byTypeResults.forEach((item) => {
+  byTypeResults.forEach((item: any) => {
     byType[item.discount_type] = Number(item.total || 0)
   })
 
@@ -399,7 +399,7 @@ export async function fetchRedemptionTrend(days: number = 30): Promise<any[]> {
   // Group by date (this is done in JS rather than SQL for simplicity)
   const trendData: Record<string, number> = {}
 
-  coupons.forEach((coupon) => {
+  coupons.forEach((coupon: any) => {
     // Format date as YYYY-MM-DD
     const dateString = coupon.updated_at
       ? new Date(coupon.updated_at).toISOString().split('T')[0]

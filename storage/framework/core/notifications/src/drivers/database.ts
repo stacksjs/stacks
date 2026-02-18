@@ -31,12 +31,14 @@ export const DatabaseNotificationDriver = {
         created_at: now,
         updated_at: now,
       } as any)
-      .executeTakeFirst()
+      .execute()
+
+    const insertId = Number((result as any)?.[0]?.insertId ?? 0)
 
     log.info(`Database notification sent to user ${options.userId}: ${options.type}`)
 
     return {
-      id: Number(result.insertId),
+      id: insertId,
       user_id: options.userId,
       type: options.type,
       data: JSON.stringify(options.data),
@@ -89,12 +91,12 @@ export const DatabaseNotificationDriver = {
   async unreadCount(userId: number): Promise<number> {
     const result = await db
       .selectFrom('notifications' as any)
-      .select(db.fn.count('id').as('count'))
+      .selectAll()
       .where('user_id' as any, '=', userId)
       .where('read_at' as any, 'is', null)
-      .executeTakeFirst()
+      .execute()
 
-    return Number((result as any)?.count ?? 0)
+    return (result as any[]).length
   },
 
   async deleteNotification(id: number): Promise<void> {

@@ -407,7 +407,7 @@ export async function fetchOtherModelRelations(modelName?: string): Promise<Rela
     if (!relations.length)
       continue
 
-    const relation = relations.find(relation => relation.model === modelName)
+    const relation = relations.find((relation: any) => relation.model === modelName)
 
     if (relation)
       modelRelations.push(relation)
@@ -441,7 +441,7 @@ export function getGuardedAttributes(model: Model): string[] {
 
       return attributes[key]?.guarded === true
     })
-    .map(attribute => snakeCase(attribute))
+    .map((attribute: any) => snakeCase(attribute))
 }
 
 export function getFillableAttributes(model: Model, otherModelRelations: RelationConfig[]): string[] {
@@ -465,7 +465,7 @@ export function getFillableAttributes(model: Model, otherModelRelations: Relatio
   if (usePasskey)
     additionalCols.push(...['two_factor_secret', 'public_key'])
 
-  const foreignKeys = otherModelRelations.map(otherModelRelation => otherModelRelation.foreignKey).filter(relation => relation)
+  const foreignKeys = otherModelRelations.map((otherModelRelation: any) => otherModelRelation.foreignKey).filter((relation: any) => relation)
 
   return [
     ...Object.keys(attributes)
@@ -475,7 +475,7 @@ export function getFillableAttributes(model: Model, otherModelRelations: Relatio
 
         return attributes[key]?.fillable === true
       })
-      .map(attribute => snakeCase(attribute)),
+      .map((attribute: any) => snakeCase(attribute)),
     ...additionalCols,
     ...foreignKeys,
   ]
@@ -960,7 +960,7 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
     match = regex.exec(code)
   }
 
-  const input = fieldKeys.map((field, index) => {
+  const input = fieldKeys.map((field: any, index: any) => {
     const fieldExist: Attribute = fields[field]
     let defaultValue = null
     let uniqueValue = false
@@ -1281,7 +1281,7 @@ export async function generateDatabaseTypes(): Promise<void> {
     const tableName = getTableName(model, modelFile)
     const modelName = getModelName(model, modelFile)
     const words = tableName.split('_')
-    const pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}`
+    const pivotFormatted = `${words.map((word: any) => word.charAt(0).toUpperCase() + word.slice(1)).join('')}`
 
     text += `import type { ${pivotFormatted}Table } from '../src/types/${modelName}Type'\n`
   }
@@ -1296,7 +1296,7 @@ export async function generateDatabaseTypes(): Promise<void> {
 
     for (const pivotTable of pivotTables) {
       const words = pivotTable.table.split('_')
-      pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
+      pivotFormatted = `${words.map((word: any) => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
 
       text += `export interface ${pivotFormatted} {
         id: Generated<number>
@@ -1327,7 +1327,7 @@ export async function generateDatabaseTypes(): Promise<void> {
     }
 
     const words = tableName.split('_')
-    const formattedTableName = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
+    const formattedTableName = `${words.map((word: any) => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
 
     if (!pushedTables.includes(tableName)) {
       text += `  ${tableName}: ${formattedTableName}\n`
@@ -1574,7 +1574,7 @@ export async function extractAttributesFromModel(filePath: string): Promise<Attr
     ObjectExpression(path) {
       // Look for the `attributes` key in the object
       const fieldsProperty = path.node.properties.find(
-        property =>
+        (property: any) =>
           property.type === 'ObjectProperty'
           && property.key.type === 'Identifier'
           && property.key.name === 'attributes',

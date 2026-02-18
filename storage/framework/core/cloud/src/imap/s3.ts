@@ -156,7 +156,7 @@ export class S3Client {
       }
 
       // Delete in batches of 1000 (S3 limit)
-      const keys = objects.map(obj => obj.Key)
+      const keys = objects.map((obj: any) => obj.Key)
       for (let i = 0; i < keys.length; i += 1000) {
         const batch = keys.slice(i, i + 1000)
         await this.deleteObjects(bucket, batch)
@@ -328,12 +328,12 @@ export class S3Client {
       // Create canonical request
       const canonicalHeaders = Object.keys(requestHeaders)
         .sort()
-        .map(key => `${key.toLowerCase()}:${requestHeaders[key].trim()}\n`)
+        .map((key: any) => `${key.toLowerCase()}:${requestHeaders[key].trim()}\n`)
         .join('')
 
       const signedHeaders = Object.keys(requestHeaders)
         .sort()
-        .map(key => key.toLowerCase())
+        .map((key: any) => key.toLowerCase())
         .join(';')
 
       const canonicalRequest = [
@@ -464,7 +464,7 @@ export class S3Client {
   async deleteObjects(bucket: string, keys: string[]): Promise<void> {
     const deleteXml = `<?xml version="1.0" encoding="UTF-8"?>
 <Delete>
-  ${keys.map(key => `<Object><Key>${key}</Key></Object>`).join('\n  ')}
+  ${keys.map((key: any) => `<Object><Key>${key}</Key></Object>`).join('\n  ')}
 </Delete>`
 
     await this.client.request({
@@ -565,7 +565,7 @@ export class S3Client {
    */
   async deletePrefix(bucket: string, prefix: string): Promise<void> {
     const objects = await this.list({ bucket, prefix })
-    const keys = objects.map(obj => obj.Key)
+    const keys = objects.map((obj: any) => obj.Key)
 
     if (keys.length > 0) {
       await this.deleteObjects(bucket, keys)
@@ -577,7 +577,7 @@ export class S3Client {
    */
   async getBucketSize(bucket: string, prefix?: string): Promise<number> {
     const objects = await this.list({ bucket, prefix })
-    return objects.reduce((total, obj) => total + obj.Size, 0)
+    return objects.reduce((total: any, obj: any) => total + obj.Size, 0)
   }
 
   /**
@@ -634,12 +634,12 @@ export class S3Client {
 
     const canonicalHeaders = Object.keys(requestHeaders)
       .sort()
-      .map(key => `${key.toLowerCase()}:${requestHeaders[key].trim()}\n`)
+      .map((key: any) => `${key.toLowerCase()}:${requestHeaders[key].trim()}\n`)
       .join('')
 
     const signedHeaders = Object.keys(requestHeaders)
       .sort()
-      .map(key => key.toLowerCase())
+      .map((key: any) => key.toLowerCase())
       .join(';')
 
     const canonicalRequest = [
@@ -715,12 +715,12 @@ export class S3Client {
 
     const canonicalHeaders = Object.keys(requestHeaders)
       .sort()
-      .map(key => `${key.toLowerCase()}:${requestHeaders[key].trim()}\n`)
+      .map((key: any) => `${key.toLowerCase()}:${requestHeaders[key].trim()}\n`)
       .join('')
 
     const signedHeaders = Object.keys(requestHeaders)
       .sort()
-      .map(key => key.toLowerCase())
+      .map((key: any) => key.toLowerCase())
       .join(';')
 
     const canonicalRequest = [
@@ -1171,7 +1171,7 @@ export class S3Client {
    * Put bucket tagging
    */
   async putBucketTagging(bucket: string, tags: Array<{ Key: string; Value: string }>): Promise<void> {
-    const tagsXml = tags.map(t => `<Tag><Key>${t.Key}</Key><Value>${t.Value}</Value></Tag>`).join('')
+    const tagsXml = tags.map((t: any) => `<Tag><Key>${t.Key}</Key><Value>${t.Value}</Value></Tag>`).join('')
 
     const body = `<?xml version="1.0" encoding="UTF-8"?>
 <Tagging>
@@ -1229,7 +1229,7 @@ export class S3Client {
    * Put object tagging
    */
   async putObjectTagging(bucket: string, key: string, tags: Array<{ Key: string; Value: string }>): Promise<void> {
-    const tagsXml = tags.map(t => `<Tag><Key>${t.Key}</Key><Value>${t.Value}</Value></Tag>`).join('')
+    const tagsXml = tags.map((t: any) => `<Tag><Key>${t.Key}</Key><Value>${t.Value}</Value></Tag>`).join('')
 
     const body = `<?xml version="1.0" encoding="UTF-8"?>
 <Tagging>
@@ -1783,12 +1783,12 @@ export class S3Client {
 
     const canonicalHeaders = Object.keys(requestHeaders)
       .sort()
-      .map(k => `${k.toLowerCase()}:${requestHeaders[k].trim()}\n`)
+      .map((k: any) => `${k.toLowerCase()}:${requestHeaders[k].trim()}\n`)
       .join('')
 
     const signedHeaders = Object.keys(requestHeaders)
       .sort()
-      .map(k => k.toLowerCase())
+      .map((k: any) => k.toLowerCase())
       .join(';')
 
     const canonicalRequest = [
@@ -1839,8 +1839,8 @@ export class S3Client {
    */
   async completeMultipartUpload(bucket: string, key: string, uploadId: string, parts: Array<{ PartNumber: number; ETag: string }>): Promise<void> {
     const partsXml = parts
-      .sort((a, b) => a.PartNumber - b.PartNumber)
-      .map(p => `<Part><PartNumber>${p.PartNumber}</PartNumber><ETag>${p.ETag}</ETag></Part>`)
+      .sort((a: any, b: any) => a.PartNumber - b.PartNumber)
+      .map((p: any) => `<Part><PartNumber>${p.PartNumber}</PartNumber><ETag>${p.ETag}</ETag></Part>`)
       .join('')
 
     const body = `<?xml version="1.0" encoding="UTF-8"?>

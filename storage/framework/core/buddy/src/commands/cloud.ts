@@ -207,11 +207,11 @@ export function cloud(buddy: CLI): void {
           stdin: 'pipe',
         })
 
-        if (result.isErr) {
+        if ((result as any).isErr) {
           await outro(
             'While running the cloud command, there was an issue',
             { startTime, useSeconds: true },
-            result.error,
+            (result as any).error,
           )
           process.exit(ExitCode.FatalError)
         }
@@ -221,7 +221,7 @@ export function cloud(buddy: CLI): void {
       }
 
       if (options.invalidateCache) {
-        const { confirm } = await prompts({
+        const { confirm } = await (prompts as any)({
           name: 'confirm',
           type: 'confirm',
           message: 'Would you like to invalidate the CDN (CloudFront) cache?',
@@ -258,17 +258,17 @@ export function cloud(buddy: CLI): void {
           stdin: 'pipe',
         })
 
-        if (result.isErr) {
+        if ((result as any).isErr) {
           await outro(
             'While running the cloud diff command, there was an issue',
             { startTime, useSeconds: true },
-            result.error,
+            (result as any).error,
           )
           process.exit(ExitCode.FatalError)
         }
 
         await outro('Showing diff of the current, undeployed cloud changes', { startTime, useSeconds: true })
-        console.log(result.value)
+        console.log((result as any).value)
         process.exit(ExitCode.Success)
       }
 
@@ -287,7 +287,7 @@ export function cloud(buddy: CLI): void {
       const startTime = await intro('buddy cloud:add')
 
       if (options.jumpBox) {
-        const { confirm } = await prompts({
+        const { confirm } = await (prompts as any)({
           name: 'confirm',
           type: 'confirm',
           message: 'Would you like to add a jump-box to your cloud?',
@@ -305,11 +305,11 @@ export function cloud(buddy: CLI): void {
 
         const result = await addJumpBox()
 
-        if (result.isErr) {
+        if ((result as any).isErr) {
           await outro(
             'While running the cloud:add command, there was an issue',
             { startTime, useSeconds: true },
-            result.error,
+            (result as any).error,
           )
           process.exit(ExitCode.FatalError)
         }
@@ -351,7 +351,7 @@ export function cloud(buddy: CLI): void {
       const startTime = await intro('buddy cloud:remove')
 
       if (options.jumpBox) {
-        const { confirm } = await prompts({
+        const { confirm } = await (prompts as any)({
           name: 'confirm',
           type: 'confirm',
           message: 'Would you like to remove your jump-box for now?',
@@ -364,8 +364,8 @@ export function cloud(buddy: CLI): void {
 
         const result = await deleteJumpBox()
 
-        if (result.isErr) {
-          await outro('While removing your jump-box, there was an issue', { startTime, useSeconds: true }, result.error)
+        if ((result as any).isErr) {
+          await outro('While removing your jump-box, there was an issue', { startTime, useSeconds: true }, (result as any).error)
           process.exit(ExitCode.FatalError)
         }
 
@@ -492,7 +492,7 @@ export function cloud(buddy: CLI): void {
       const startTime = await intro('buddy cloud:optimize-cost')
 
       if (options.jumpBox) {
-        const { confirm } = await prompts({
+        const { confirm } = await (prompts as any)({
           name: 'confirm',
           type: 'confirm',
           message: 'Would you like to remove your jump-box to optimize your costs?',
@@ -539,9 +539,9 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any jump-boxes...')
       try {
         const result = await deleteJumpBox()
-        if (result && typeof result.isErr === 'function' && result.isErr) {
-          if (result.error !== 'Jump-box not found') {
-            log.warn(`Jump-box cleanup issue: ${result.error}`)
+        if (result && typeof (result as any).isErr === 'function' && (result as any).isErr) {
+          if ((result as any).error !== 'Jump-box not found') {
+            log.warn(`Jump-box cleanup issue: ${(result as any).error}`)
           }
         }
       }
@@ -552,8 +552,8 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any retained S3 buckets...')
       try {
         const result2 = await deleteStacksBuckets()
-        if (result2 && typeof result2.isErr === 'function' && result2.isErr) {
-          log.warn(`S3 cleanup issue: ${result2.error}`)
+        if (result2 && typeof (result2 as any).isErr === 'function' && (result2 as any).isErr) {
+          log.warn(`S3 cleanup issue: ${(result2 as any).error}`)
         }
       }
       catch (e: any) {
@@ -563,13 +563,13 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any retained Lambda functions...')
       try {
         const result3 = await deleteStacksFunctions()
-        if (result3 && typeof result3.isErr === 'function' && result3.isErr) {
-          if (result3.error !== 'No stacks functions found') {
-            log.warn(`Lambda cleanup issue: ${result3.error}`)
+        if (result3 && typeof (result3 as any).isErr === 'function' && (result3 as any).isErr) {
+          if ((result3 as any).error !== 'No stacks functions found') {
+            log.warn(`Lambda cleanup issue: ${(result3 as any).error}`)
           }
         }
-        else if (result3?.value) {
-          log.info(result3.value)
+        else if ((result3 as any)?.value) {
+          log.info((result3 as any).value)
         }
       }
       catch (e: any) {
@@ -579,8 +579,8 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any remaining Stacks logs...')
       try {
         const result4 = await deleteLogGroups()
-        if (result4 && typeof result4.isErr === 'function' && result4.isErr) {
-          log.warn(`Log groups cleanup issue: ${result4.error}`)
+        if (result4 && typeof (result4 as any).isErr === 'function' && (result4 as any).isErr) {
+          log.warn(`Log groups cleanup issue: ${(result4 as any).error}`)
         }
       }
       catch (e: any) {
@@ -598,8 +598,8 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any stored parameters...')
       try {
         const result7 = await deleteParameterStore()
-        if (result7 && typeof result7.isErr === 'function' && result7.isErr) {
-          log.warn(`Parameter store cleanup issue: ${result7.error}`)
+        if (result7 && typeof (result7 as any).isErr === 'function' && (result7 as any).isErr) {
+          log.warn(`Parameter store cleanup issue: ${(result7 as any).error}`)
         }
       }
       catch (e: any) {
@@ -610,8 +610,8 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any VPCs...')
       try {
         const result9 = await deleteVpcs()
-        if (result9 && typeof result9.isErr === 'function' && result9.isErr) {
-          log.warn(`VPC cleanup issue: ${result9.error}`)
+        if (result9 && typeof (result9 as any).isErr === 'function' && (result9 as any).isErr) {
+          log.warn(`VPC cleanup issue: ${(result9 as any).error}`)
         }
       }
       catch (e: any) {
@@ -621,8 +621,8 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any Subnets...')
       try {
         const result10 = await deleteSubnets()
-        if (result10 && typeof result10.isErr === 'function' && result10.isErr) {
-          log.warn(`Subnet cleanup issue: ${result10.error}`)
+        if (result10 && typeof (result10 as any).isErr === 'function' && (result10 as any).isErr) {
+          log.warn(`Subnet cleanup issue: ${(result10 as any).error}`)
         }
       }
       catch (e: any) {
@@ -632,8 +632,8 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any CDK remnants...')
       try {
         const result6 = await deleteCdkRemnants()
-        if (result6 && typeof result6.isErr === 'function' && result6.isErr) {
-          log.warn(`CDK remnants cleanup issue: ${result6.error}`)
+        if (result6 && typeof (result6 as any).isErr === 'function' && (result6 as any).isErr) {
+          log.warn(`CDK remnants cleanup issue: ${(result6 as any).error}`)
         }
       }
       catch (e: any) {
@@ -643,8 +643,8 @@ export function cloud(buddy: CLI): void {
       log.info('Removing any IAM users...')
       try {
         const result8 = await deleteIamUsers()
-        if (result8 && typeof result8.isErr === 'function' && result8.isErr) {
-          log.warn(`IAM users cleanup issue: ${result8.error}`)
+        if (result8 && typeof (result8 as any).isErr === 'function' && (result8 as any).isErr) {
+          log.warn(`IAM users cleanup issue: ${(result8 as any).error}`)
         }
       }
       catch (e: any) {
@@ -671,7 +671,7 @@ export function cloud(buddy: CLI): void {
 
       const startTime = await intro('buddy cloud:invalidate-cache')
 
-      const { confirm } = await prompts({
+      const { confirm } = await (prompts as any)({
         name: 'confirm',
         type: 'confirm',
         message: 'Would you like to invalidate the CloudFront cache?',
@@ -699,11 +699,11 @@ export function cloud(buddy: CLI): void {
           },
         ) // TODO: this should be the cloud path
 
-        if (result.isErr) {
+        if ((result as any).isErr) {
           await outro(
             'While running the cloud command, there was an issue',
             { startTime, useSeconds: true },
-            result.error,
+            (result as any).error,
           )
           process.exit(ExitCode.FatalError)
         }
@@ -730,17 +730,17 @@ export function cloud(buddy: CLI): void {
         stdin: 'pipe',
       })
 
-      if (result.isErr) {
+      if ((result as any).isErr) {
         await outro(
           'While running the cloud diff command, there was an issue',
           { startTime, useSeconds: true },
-          result.error,
+          (result as any).error,
         )
         process.exit(ExitCode.FatalError)
       }
 
       await outro('Showing diff of the current, undeployed cloud changes', { startTime, useSeconds: true })
-      console.log(result.value)
+      console.log((result as any).value)
       process.exit(ExitCode.Success)
     })
 

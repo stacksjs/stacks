@@ -70,13 +70,13 @@ export function email(buddy: CLI): void {
         const identity = await withTimeout(ses.getEmailIdentity(emailDomain))
 
         if (identity) {
-          console.log(`\n✅ Domain Status: ${identity.VerificationStatus || 'Unknown'}`)
+          console.log(`\n✅ Domain Status: ${(identity as any).VerificationStatus || 'Unknown'}`)
 
-          if (identity.DkimAttributes) {
-            console.log(`\nDKIM Status: ${identity.DkimAttributes.Status || 'Unknown'}`)
-            if (identity.DkimAttributes.Tokens) {
+          if ((identity as any).DkimAttributes) {
+            console.log(`\nDKIM Status: ${(identity as any).DkimAttributes.Status || 'Unknown'}`)
+            if ((identity as any).DkimAttributes.Tokens) {
               console.log('\nDKIM Records needed:')
-              for (const token of identity.DkimAttributes.Tokens) {
+              for (const token of (identity as any).DkimAttributes.Tokens) {
                 console.log(`  CNAME: ${token}._domainkey.${emailDomain}`)
                 console.log(`  Value: ${token}.dkim.amazonses.com`)
               }
@@ -145,7 +145,7 @@ export function email(buddy: CLI): void {
         }))
 
         console.log('✅ Test email sent successfully!')
-        console.log(`   Message ID: ${result.MessageId}`)
+        console.log(`   Message ID: ${(result as any).MessageId}`)
       }
       catch (error: any) {
         console.error('\n❌ Error sending test email:', error.message)
@@ -209,13 +209,13 @@ export function email(buddy: CLI): void {
           limit: 1,
         }))
 
-        if (!streams.logStreams || streams.logStreams.length === 0) {
+        if (!(streams as any).logStreams || (streams as any).logStreams.length === 0) {
           console.log('No log streams found.')
           console.log('\n💡 Logs will appear after emails are processed.')
           return
         }
 
-        const logStreamName = streams.logStreams[0].logStreamName
+        const logStreamName = (streams as any).logStreams[0].logStreamName
         if (!logStreamName) {
           console.log('No log stream name found.')
           return
@@ -227,8 +227,8 @@ export function email(buddy: CLI): void {
           limit: parseInt(options.lines || '20', 10),
         }))
 
-        if (events.events && events.events.length > 0) {
-          for (const event of events.events) {
+        if ((events as any).events && (events as any).events.length > 0) {
+          for (const event of (events as any).events) {
             const time = new Date(event.timestamp || 0).toISOString()
             console.log(`[${time}] ${event.message}`)
           }
@@ -263,7 +263,7 @@ export function email(buddy: CLI): void {
         const stackName = `${appName}-cloud`
 
         const result = await withTimeout(cf.listStackResources(stackName))
-        const emailResources = result.StackResourceSummaries?.filter(
+        const emailResources = (result as any).StackResourceSummaries?.filter(
           (r: any) => r.LogicalResourceId.includes('Email') || r.LogicalResourceId.includes('Inbound') || r.LogicalResourceId.includes('Outbound')
         ) || []
 
@@ -282,7 +282,7 @@ export function email(buddy: CLI): void {
 
         // Get outputs
         const stacks = await withTimeout(cf.describeStacks({ stackName }))
-        const outputs = stacks.Stacks?.[0]?.Outputs || []
+        const outputs = (stacks as any).Stacks?.[0]?.Outputs || []
         const emailOutputs = outputs.filter((o: any) => o.OutputKey?.includes('Email'))
 
         if (emailOutputs.length > 0) {

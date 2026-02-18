@@ -49,8 +49,8 @@ export async function fetchAll(): Promise<ProductJsonResponse[]> {
   const models = await db.selectFrom('products').selectAll().execute()
 
   // Get the IDs of all manufacturers and categories
-  const manufacturerIds = models.map(model => model.manufacturer_id).filter(id => id !== null && id !== undefined)
-  const categoryIds = models.map(model => model.category_id).filter(id => id !== null && id !== undefined)
+  const manufacturerIds = models.map((model: any) => model.manufacturer_id).filter((id: any) => id !== null && id !== undefined)
+  const categoryIds = models.map((model: any) => model.category_id).filter((id: any) => id !== null && id !== undefined)
 
   let manufacturersQuery = db.selectFrom('manufacturers')
   let categoriesQuery = db.selectFrom('categories')
@@ -68,18 +68,18 @@ export async function fetchAll(): Promise<ProductJsonResponse[]> {
   const allCategories = await categoriesQuery.selectAll().execute()
 
   // Group manufacturers and categories by ID
-  const manufacturersById = allManufacturers.reduce((acc, manufacturer) => {
+  const manufacturersById = allManufacturers.reduce((acc: any, manufacturer: any) => {
     acc[manufacturer.id] = manufacturer
     return acc
   }, {} as Record<number, typeof allManufacturers[0]>)
 
-  const categoriesById = allCategories.reduce((acc, category) => {
+  const categoriesById = allCategories.reduce((acc: any, category: any) => {
     acc[category.id] = category
     return acc
   }, {} as Record<number, typeof allCategories[0]>)
 
   // Attach manufacturers and categories to each product
-  return models.map(model => ({
+  return models.map((model: any) => ({
     ...model,
     manufacturer: model.manufacturer_id ? manufacturersById[model.manufacturer_id] : null,
     category: model.category_id ? categoriesById[model.category_id] : null,
@@ -177,7 +177,7 @@ export async function formatProductOptions(): Promise<{ id: number, name: string
       .execute()
 
     // Filter out any results with undefined/null values to match the return type
-    return results.filter(result =>
+    return results.filter((result: any) =>
       result.name !== null
       && result.name !== undefined
       && result.uuid !== null

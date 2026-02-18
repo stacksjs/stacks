@@ -1,5 +1,11 @@
 import { log } from '@stacksjs/logging'
-import { prunable } from '@stacksjs/orm'
+
+interface PrunableModelConfig {
+  table: string
+  olderThanDays?: number
+  column?: string
+  query?: (qb: any) => any
+}
 
 export default class PruneModelsJob {
   public static config = {
@@ -14,23 +20,20 @@ export default class PruneModelsJob {
    * The models to prune and their configurations.
    * Add entries here to register prunable models.
    */
-  private static prunableModels: Array<{
-    table: string
-    olderThanDays?: number
-    column?: string
-    query?: (qb: any) => any
-  }> = []
+  private static prunableModels: PrunableModelConfig[] = []
 
   /**
    * Register a model for pruning.
    */
-  public static register(table: string, options: { olderThanDays?: number, column?: string, query?: (qb: any) => any } = {}): void {
+  public static register(table: string, options: Omit<PrunableModelConfig, 'table'> = {}): void {
     PruneModelsJob.prunableModels.push({ table, ...options })
   }
 
   public static async handle(): Promise<{ total: number, results: Array<{ table: string, pruned: number }> }> {
     try {
       log.info('Running model pruning job')
+
+      const { prunable } = await import('../../orm/src/utils/prunable')
 
       const results: Array<{ table: string, pruned: number }> = []
       let total = 0

@@ -1,4 +1,4 @@
-import type { Buffer } from 'node:buffer'
+import { Buffer } from 'node:buffer'
 import { file, write as bunWrite } from 'bun'
 import { basename, dirname, join, relative } from 'node:path'
 import type {

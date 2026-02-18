@@ -48,6 +48,7 @@
     "release": "./buddy release",
     "changelog": "./buddy changelog",
     "generate": "./buddy generate",
+    "typecheck": "bun tsc --noEmit",
     "types:check": "bun tsc --noEmit",
     "types:fix": "./buddy types:fix",
     "test": "./buddy test",
@@ -56,7 +57,7 @@
     "test:types": "./buddy test:types",
     "bud": "./buddy",
     "stx": "./buddy",
-    "postinstall": "mkdir -p node_modules/bun-query-builder/src && echo 'export * from \"../dist/index.js\"' > node_modules/bun-query-builder/src/index.ts"
+    "postinstall": "bun scripts/postinstall.ts"
   },
   "dependencies": {
     "stacks": "workspace:*"

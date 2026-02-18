@@ -83,25 +83,25 @@ export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   await db.schema.createTable('migration_locks').ifNotExists().execute()
   await db.schema.createTable('activities').ifNotExists().execute()
 
-  return ok('All tables dropped successfully!')
+  return ok('All tables dropped successfully!') as any
 }
 
 export async function generatePostgresMigration(modelPath: string): Promise<void> {
   // check if any files are in the database folder
-  const files = await fs.readdir(path.userMigrationsPath())
+  const files = await (fs.readdir as any)(path.userMigrationsPath(''))
 
-  if (files.length === 0) {
+  if ((files as any).length === 0) {
     log.debug('No migrations found in the database folder, deleting all framework/database/*.json files...')
 
     // delete the *.ts files in the models folder
-    const modelFiles = await fs.readdir(path.frameworkPath('models'))
+    const modelFiles = await (fs.readdir as any)(path.frameworkPath('models'))
 
-    if (modelFiles.length) {
+    if ((modelFiles as any).length) {
       log.debug('No existing model files in framework path...')
 
-      for (const file of modelFiles) {
+      for (const file of modelFiles as any) {
         if (file.endsWith('.ts'))
-          await fs.unlink(path.frameworkPath(`models/${file}`))
+          await (fs.unlink as any)(path.frameworkPath(`models/${file}`))
       }
     }
   }
@@ -147,7 +147,7 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
 
   const useBillable = model.traits?.billable || false
 
-  if (useBillable && tableName === 'users')
+  if (useBillable && (tableName as string) === 'users')
     await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))
 
   if (haveFieldsChanged)
@@ -176,7 +176,7 @@ async function createTableMigration(modelPath: string) {
   const useBillable = model.traits?.billable || false
   const useUuid = model.traits?.useUuid || false
 
-  if (useBillable && tableName === 'users')
+  if (useBillable && (tableName as string) === 'users')
     await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`

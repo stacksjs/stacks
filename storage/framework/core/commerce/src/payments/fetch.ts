@@ -204,7 +204,7 @@ export async function fetchPaymentStatsByMethod(daysRange: number = 30): Promise
     percentage_of_total: number
   }> = {}
 
-  methodStats.forEach((item) => {
+  methodStats.forEach((item: any) => {
     const count = Number(item.count || 0)
     const revenue = Number(item.revenue || 0)
     const percentageOfTotal = totalCount > 0 ? (count / totalCount) * 100 : 0
@@ -256,7 +256,7 @@ export async function fetchMonthlyPaymentTrends(): Promise<Array<{
     .execute()
 
   // Format the results
-  return monthlyData.map((item) => {
+  return monthlyData.map((item: any) => {
     const transactions = Number(item.transactions || 0)
     const revenue = Number(item.revenue || 0)
     const average = transactions > 0 ? revenue / transactions : 0

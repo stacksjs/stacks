@@ -47,10 +47,10 @@ async function main() {
   if (needsFullSetup) {
     // Load required commands for setup and key generation
     const { setup } = await import('./commands/setup.ts')
-    setup(buddy)
+    setup(buddy as any)
 
     const { key } = await import('./commands/key.ts')
-    key(buddy)
+    key(buddy as any)
 
     // Before running any commands, ensure the project is already initialized
     const { runAction } = await import('@stacksjs/actions')
@@ -72,7 +72,7 @@ async function main() {
     // Use lazy loading for better cold start performance
     const { loadCommands, getCommandsToLoad } = await import('./lazy-commands.ts')
     const commandsToLoad = getCommandsToLoad(args)
-    await loadCommands(commandsToLoad, buddy)
+    await loadCommands(commandsToLoad, buddy as any)
 
     // dynamic imports - skip for list command since we already have all commands
     const baseCommand = args[0]?.split(':')[0]
@@ -83,13 +83,13 @@ async function main() {
   else {
     // For minimal commands, only load what's needed for better cold start
     const { loadCommand } = await import('./lazy-commands.ts')
-    await loadCommand('version', buddy)
+    await loadCommand('version', buddy as any)
   }
 
   buddy.help()
 
   // Handle interactive mode when no command is specified
-  if (args.length === 0 && process.stdin.isTTY && !buddy.isNoInteraction) {
+  if (args.length === 0 && process.stdin.isTTY && !(buddy as any).isNoInteraction) {
     await showInteractiveMenu(buddy)
   }
   else {
@@ -191,7 +191,7 @@ async function dynamicImports(buddy: CLI) {
           // Register aliases if specified
           if (commandConfig.aliases && Array.isArray(commandConfig.aliases)) {
             for (const alias of commandConfig.aliases) {
-              buddy.alias(signature, alias)
+              ;(buddy as any).alias(signature, alias)
             }
           }
         }

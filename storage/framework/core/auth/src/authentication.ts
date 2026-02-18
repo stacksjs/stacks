@@ -193,7 +193,7 @@ export class Auth {
       return false
 
     const authPass = credentials[password] || ''
-    return verifyHash(authPass, user.password, 'bcrypt')
+    return verifyHash(authPass, user.password)
   }
 
   /**
@@ -600,7 +600,7 @@ export class Auth {
       .selectAll()
       .execute()
 
-    return tokens.map(token => ({
+    return tokens.map((token: any) => ({
       id: token.id,
       userId: token.user_id,
       clientId: token.oauth_client_id,
@@ -765,7 +765,7 @@ export class Auth {
       return false
 
     const authPass = credentials[password] || ''
-    const hashCheck = await verifyHash(authPass, user.password, 'bcrypt')
+    const hashCheck = await verifyHash(authPass, user.password)
 
     if (hashCheck) {
       this.authUser = user

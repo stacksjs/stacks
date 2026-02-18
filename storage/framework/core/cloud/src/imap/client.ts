@@ -300,7 +300,7 @@ export class AWSClient {
    */
   private headersToObject(headers: Headers): Record<string, string> {
     const result: Record<string, string> = {}
-    headers.forEach((value, key) => {
+    headers.forEach((value: any, key: any) => {
       result[key] = value
     })
     return result
@@ -408,7 +408,7 @@ export class AWSClient {
     if (body) {
       // Don't override content-type if already set (case-insensitive check)
       const hasContentType = Object.keys(headers).some(
-        k => k.toLowerCase() === 'content-type'
+        (k: any) => k.toLowerCase() === 'content-type'
       )
       if (!hasContentType) {
         headers['content-type'] = 'application/x-www-form-urlencoded'
@@ -426,16 +426,16 @@ export class AWSClient {
       : ''
 
     // Sort headers by lowercase key name (AWS SigV4 requirement)
-    const sortedHeaderKeys = Object.keys(headers).sort((a, b) =>
+    const sortedHeaderKeys = Object.keys(headers).sort((a: any, b: any) =>
       a.toLowerCase().localeCompare(b.toLowerCase())
     )
 
     const canonicalHeaders = sortedHeaderKeys
-      .map(key => `${key.toLowerCase()}:${headers[key].trim()}\n`)
+      .map((key: any) => `${key.toLowerCase()}:${headers[key].trim()}\n`)
       .join('')
 
     const signedHeaders = sortedHeaderKeys
-      .map(key => key.toLowerCase())
+      .map((key: any) => key.toLowerCase())
       .join(';')
 
     const canonicalRequest = [
@@ -764,7 +764,7 @@ export function buildQueryParams(params: Record<string, any>): Record<string, st
     }
 
     if (Array.isArray(value)) {
-      value.forEach((item, index) => {
+      value.forEach((item: any, index: any) => {
         result[`${key}.${index + 1}`] = String(item)
       })
     }

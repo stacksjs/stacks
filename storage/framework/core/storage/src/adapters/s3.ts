@@ -1,4 +1,4 @@
-import type { Buffer } from 'node:buffer'
+import { Buffer } from 'node:buffer'
 import { basename } from 'node:path'
 import { Readable } from 'node:stream'
 import {

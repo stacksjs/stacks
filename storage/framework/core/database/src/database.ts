@@ -75,7 +75,7 @@ export interface DatabaseOptions {
  * ```
  */
 export class Database {
-  private _queryBuilder: QueryBuilder | null = null
+  private _queryBuilder: QueryBuilder<any> | null = null
   private _options: DatabaseOptions
   private _initialized = false
 
@@ -121,7 +121,7 @@ export class Database {
    * Get the query builder instance
    * Lazily initializes the connection on first access
    */
-  get query(): QueryBuilder {
+  get query(): QueryBuilder<any> {
     if (!this._queryBuilder) {
       this.initialize()
     }

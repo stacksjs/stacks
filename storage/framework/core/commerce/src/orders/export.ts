@@ -42,7 +42,7 @@ async function fetchAllWithDetails(): Promise<OrderWithTotals[] | []> {
     .select(['customers.name as customer_name', 'customers.email as customer_email'])
     .execute()
 
-  const orderIds = ordersWithCustomers.map(order => order.id)
+  const orderIds = ordersWithCustomers.map((order: any) => order.id)
 
   if (orderIds.length === 0) {
     return []
@@ -60,7 +60,7 @@ async function fetchAllWithDetails(): Promise<OrderWithTotals[] | []> {
     .execute()
 
   const orderItemsMap = allOrderItems.reduce<Record<number, { totalItems: number, totalPrice: number }>>(
-    (acc, item) => {
+    (acc: any, item: any) => {
       if (!item.order_id)
         return acc // Skip items without order_id
 
@@ -79,7 +79,7 @@ async function fetchAllWithDetails(): Promise<OrderWithTotals[] | []> {
     {},
   )
 
-  const enrichedOrders = ordersWithCustomers.map((order) => {
+  const enrichedOrders = ordersWithCustomers.map((order: any) => {
     const orderItemData = orderItemsMap[order.id] || { totalItems: 0, totalPrice: 0 }
 
     return {
@@ -109,7 +109,7 @@ function prepareOrdersForExport(orders: OrderWithTotals[]) {
   ]
 
   // Transform orders into export format
-  const data = orders.map((order) => {
+  const data = orders.map((order: any) => {
     // Convert items to a readable string
     const itemsString = order.order_items
       ?.map(item => `${item.product?.name} (Qty: ${item.quantity}, Price: $${item.price})`)

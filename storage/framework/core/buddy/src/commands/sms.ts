@@ -58,9 +58,9 @@ export function sms(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        const { getSmsInfrastructureStatus } = await import('ts-cloud/aws')
+        const { getSmsInfrastructureStatus } = await import('ts-cloud/aws' as any)
 
-        const status = await withTimeout(
+        const status: any = await withTimeout(
           getSmsInfrastructureStatus({
             region: process.env.AWS_REGION || 'us-east-1',
             accountName: 'stacks',
@@ -106,7 +106,7 @@ export function sms(buddy: CLI): void {
           console.log('   Or visit AWS Console > End User Messaging > SMS > Request production access')
         }
 
-        if (status.phoneNumbers.some(p => p.status === 'PENDING')) {
+        if (status.phoneNumbers.some((p: any) => p.status === 'PENDING')) {
           console.log('\n⏳ Note: Phone number verification can take 24-72 hours for toll-free numbers')
         }
       }
@@ -115,11 +115,11 @@ export function sms(buddy: CLI): void {
 
         // Try basic check with End User Messaging API
         try {
-          const { PinpointSmsVoiceClient } = await import('ts-cloud/aws')
+          const { PinpointSmsVoiceClient } = await import('ts-cloud/aws' as any)
           const smsClient = new PinpointSmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
 
-          const phoneNumbers = await withTimeout(smsClient.describePhoneNumbers({}))
-          const activeNumbers = phoneNumbers.PhoneNumbers?.filter(p => p.Status === 'ACTIVE' || p.Status === 'PENDING')
+          const phoneNumbers: any = await withTimeout(smsClient.describePhoneNumbers({}))
+          const activeNumbers = phoneNumbers.PhoneNumbers?.filter((p: any) => p.Status === 'ACTIVE' || p.Status === 'PENDING')
 
           if (activeNumbers && activeNumbers.length > 0) {
             console.log('\n✅ SMS Service Active (End User Messaging)')
@@ -149,28 +149,28 @@ export function sms(buddy: CLI): void {
 
       try {
         // Try Pinpoint SMS Voice V2 first (more reliable)
-        const { SMSClient } = await import('ts-cloud/aws')
+        const { SMSClient } = await import('ts-cloud/aws' as any)
         const smsClient = new SMSClient({
           region: process.env.AWS_REGION || 'us-east-1',
         })
 
         // Get origination number from config or existing phone numbers
-        const smsConfig = await import('@stacksjs/config').then(m => m.config?.sms)
+        const smsConfig = await import('@stacksjs/config').then(m => (m.config as any)?.sms)
         let originationNumber = smsConfig?.originationNumber
 
         // If no configured origination number, try to find one
         if (!originationNumber) {
-          const { PinpointSmsVoiceClient } = await import('ts-cloud/aws')
+          const { PinpointSmsVoiceClient } = await import('ts-cloud/aws' as any)
           const pinpointV2 = new PinpointSmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
-          const phoneNumbers = await withTimeout(pinpointV2.describePhoneNumbers({}))
-          const activePhone = phoneNumbers.PhoneNumbers?.find(p => p.Status === 'ACTIVE')
+          const phoneNumbers: any = await withTimeout(pinpointV2.describePhoneNumbers({}))
+          const activePhone = phoneNumbers.PhoneNumbers?.find((p: any) => p.Status === 'ACTIVE')
           originationNumber = activePhone?.PhoneNumber
         }
 
         // Handle template if specified
         let finalMessage = msg
         if (options?.template && smsConfig?.templates) {
-          const template = smsConfig.templates.find(t => t.name === options.template)
+          const template = smsConfig.templates.find((t: any) => t.name === options.template)
           if (template) {
             finalMessage = template.body
             console.log(`Using template: ${options.template}`)
@@ -180,7 +180,7 @@ export function sms(buddy: CLI): void {
           }
         }
 
-        const result = await withTimeout(smsClient.send({
+        const result: any = await withTimeout(smsClient.send({
           to: phone,
           message: finalMessage,
           originationNumber,
@@ -227,7 +227,7 @@ export function sms(buddy: CLI): void {
 
       try {
         // Import SMS config
-        const smsConfig = await import('@stacksjs/config').then(m => m.config?.sms)
+        const smsConfig = await import('@stacksjs/config').then(m => (m.config as any)?.sms)
 
         if (!smsConfig?.enabled) {
           console.log('SMS is disabled in config/sms.ts')
@@ -252,9 +252,9 @@ export function sms(buddy: CLI): void {
 
         console.log('Setting up SMS infrastructure...\n')
 
-        const { createSmsInfrastructure } = await import('ts-cloud/aws')
+        const { createSmsInfrastructure } = await import('ts-cloud/aws' as any)
 
-        const result = await withTimeout(
+        const result: any = await withTimeout(
           createSmsInfrastructure({
             enabled: smsConfig.enabled,
             provider: smsConfig.provider || 'pinpoint',
@@ -323,10 +323,10 @@ export function sms(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        const { PinpointSmsVoiceClient } = await import('ts-cloud/aws')
+        const { PinpointSmsVoiceClient } = await import('ts-cloud/aws' as any)
         const smsClient = new PinpointSmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
 
-        const result = await withTimeout(smsClient.addSandboxPhone(phone), 30000)
+        const result: any = await withTimeout(smsClient.addSandboxPhone(phone), 30000)
 
         if (result.status === 'VERIFIED') {
           console.log('✅ Phone is already verified!')
@@ -361,10 +361,10 @@ export function sms(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        const { PinpointSmsVoiceClient } = await import('ts-cloud/aws')
+        const { PinpointSmsVoiceClient } = await import('ts-cloud/aws' as any)
         const smsClient = new PinpointSmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
 
-        const result = await withTimeout(smsClient.verifySandboxPhone(id, code), 30000)
+        const result: any = await withTimeout(smsClient.verifySandboxPhone(id, code), 30000)
 
         if (result.success) {
           console.log('✅ Phone verified successfully!')
@@ -392,10 +392,10 @@ export function sms(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        const { PinpointSmsVoiceClient } = await import('ts-cloud/aws')
+        const { PinpointSmsVoiceClient } = await import('ts-cloud/aws' as any)
         const smsClient = new PinpointSmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
 
-        const phones = await withTimeout(smsClient.listSandboxPhones(), 30000)
+        const phones: any = await withTimeout(smsClient.listSandboxPhones(), 30000)
 
         if (phones.length === 0) {
           console.log('No verified sandbox numbers yet.')

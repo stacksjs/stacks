@@ -539,8 +539,8 @@ async function promptAndSaveCredentials() {
   const { setEnv } = await import('@stacksjs/env')
 
   // Set and encrypt the credentials
-  await setEnv('AWS_ACCESS_KEY_ID', accessKeyId, { file: '.env.production', encrypt: true })
-  await setEnv('AWS_SECRET_ACCESS_KEY', secretAccessKey, { file: '.env.production', encrypt: true })
+  await setEnv('AWS_ACCESS_KEY_ID', accessKeyId, { file: '.env.production', encrypt: true } as any)
+  await setEnv('AWS_SECRET_ACCESS_KEY', secretAccessKey, { file: '.env.production', encrypt: true } as any)
   await setEnv('AWS_REGION', region || 'us-east-1', { file: '.env.production' })
 
   // Update process.env
@@ -625,7 +625,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     log.info('Ensuring AWS cloud stack exists...')
 
     // Check if AWS credentials are configured in env vars (non-empty values)
-    let hasCredentials = process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+    let hasCredentials: any = process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
 
     // Try to load from environment-specific .env file first
     if (!hasCredentials) {
@@ -778,7 +778,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
         }
 
         // Always update if mail server mode changed or instance needs replacement
-        const currentMode = stackOutputs.find(
+        const currentMode = (result.Stacks[0]?.Outputs || []).find(
           (o: any) => o.OutputKey === 'MailServerMode'
         )?.OutputValue
         const configuredMode = emailConfig?.server?.mode || 'serverless'

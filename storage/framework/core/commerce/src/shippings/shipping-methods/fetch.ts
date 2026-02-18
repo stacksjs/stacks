@@ -31,7 +31,7 @@ export async function fetchAll(): Promise<ShippingMethodJsonResponse[]> {
   const models = await db.selectFrom('shipping_methods').selectAll().execute()
 
   // Get the IDs of all shipping methods
-  const shippingMethodIds = models.map(model => model.id)
+  const shippingMethodIds = models.map((model: any) => model.id)
 
   let shippingQuery = db.selectFrom('shipping_zones')
 
@@ -43,7 +43,7 @@ export async function fetchAll(): Promise<ShippingMethodJsonResponse[]> {
   const allShippingZones = await shippingQuery.selectAll().execute()
 
   // Group shipping zones by shipping method ID
-  const shippingZonesByMethodId = allShippingZones.reduce((acc, zone) => {
+  const shippingZonesByMethodId = allShippingZones.reduce((acc: any, zone: any) => {
     const methodId = zone.shipping_method_id
     if (methodId !== null && methodId !== undefined) {
       if (!acc[methodId]) {
@@ -55,7 +55,7 @@ export async function fetchAll(): Promise<ShippingMethodJsonResponse[]> {
   }, {} as Record<number, typeof allShippingZones>)
 
   // Attach shipping zones to each shipping method
-  return models.map(model => ({
+  return models.map((model: any) => ({
     ...model,
     shipping_zones: shippingZonesByMethodId[model.id] || [],
   }))

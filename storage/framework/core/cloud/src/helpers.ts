@@ -90,7 +90,7 @@ export interface PurchaseOptions {
   privacyAdmin: boolean
   privacyTech: boolean
   privacyRegistrant: boolean
-  contactType: ContactType
+  contactType: typeof ContactType
   verbose: boolean
 }
 
@@ -99,7 +99,7 @@ export function purchaseDomain(
   options: PurchaseOptions,
 ): Result<Promise<RegisterDomainCommandOutput>, Error> {
   const route53domains = new Route53Domains({ region: 'us-east-1' })
-  const contactType = options.contactType.toUpperCase() as ContactType
+  const contactType = options.contactType.toUpperCase() as typeof ContactType
 
   const params = {
     DomainName: domain,
@@ -218,7 +218,7 @@ export async function deleteIamUsers(): Promise<Result<string, string>> {
   const data = await iam.listUsers({})
   const teamName = slug(config.team.name)
   const users
-    = data.Users?.filter((user) => {
+    = data.Users?.filter((user: any) => {
       const userNameLower = user.UserName?.toLowerCase()
       return (
         userNameLower !== 'stacks'
@@ -230,7 +230,7 @@ export async function deleteIamUsers(): Promise<Result<string, string>> {
   if (!users || users.length === 0)
     return ok(`No Stacks IAM users found for team ${teamName}`)
 
-  const promises = users.map(async (user) => {
+  const promises = users.map(async (user: any) => {
     const userName = user.UserName || ''
 
     log.info(`Deleting IAM user: ${userName}`)
@@ -240,7 +240,7 @@ export async function deleteIamUsers(): Promise<Result<string, string>> {
 
     // Detach each policy
     await Promise.all(
-      policies.AttachedPolicies?.map(policy =>
+      policies.AttachedPolicies?.map((policy: any) =>
         iam.detachUserPolicy({
           UserName: userName,
           PolicyArn: policy.PolicyArn || '',
@@ -253,7 +253,7 @@ export async function deleteIamUsers(): Promise<Result<string, string>> {
 
     // Delete each access key
     await Promise.all(
-      accessKeys.AccessKeyMetadata?.map(key =>
+      accessKeys.AccessKeyMetadata?.map((key: any) =>
         iam.deleteAccessKey({
           UserName: userName,
           AccessKeyId: key.AccessKeyId || '',
@@ -280,7 +280,7 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
     const stacksBuckets = data.Buckets?.filter(bucket => bucket.Name?.includes('stacks'))
 
     if (!stacksBuckets)
-      return err('No stacks buckets found')
+      return err('No stacks buckets found') as any
 
     const promises = stacksBuckets.map(async (bucket) => {
       const bucketName = bucket.Name || ''
@@ -303,8 +303,8 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
           log.info(`Deleting ${objects.Contents.length} objects from bucket ${bucketName}...`)
 
           await Promise.all(
-            objects.Contents.map(object =>
-              s3.deleteObject({ Bucket: bucketName, Key: object.Key || '' }).catch(error => handleError(error)),
+            objects.Contents.map((object: any) =>
+              s3.deleteObject({ Bucket: bucketName, Key: object.Key || '' }).catch((error: any) => handleError(error)),
             ),
           )
         }
@@ -333,28 +333,28 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
           // Delete versions in this batch
           if (versions.Versions && versions.Versions.length > 0) {
             await Promise.all(
-              versions.Versions.map(version =>
+              versions.Versions.map((version: any) =>
                 s3.deleteObject({
                   Bucket: bucketName,
                   Key: version.Key || '',
                   VersionId: version.VersionId,
                 }),
               ),
-            ).catch(error => handleError(error))
+            ).catch((error: any) => handleError(error))
             log.info(`Deleted ${versions.Versions.length} versions from bucket ${bucketName}`)
           }
 
           // Delete delete markers in this batch
           if (versions.DeleteMarkers && versions.DeleteMarkers.length > 0) {
             await Promise.all(
-              versions.DeleteMarkers.map(marker =>
+              versions.DeleteMarkers.map((marker: any) =>
                 s3.deleteObject({
                   Bucket: bucketName,
                   Key: marker.Key || '',
                   VersionId: marker.VersionId,
                 }),
               ),
-            ).catch(error => handleError(error))
+            ).catch((error: any) => handleError(error))
             log.info(`Deleted ${versions.DeleteMarkers.length} delete markers from bucket ${bucketName}`)
           }
 
@@ -372,19 +372,19 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
           log.info('Aborting bucket multipart uploads...')
 
           await Promise.all(
-            uploads.Uploads.map(upload =>
+            uploads.Uploads.map((upload: any) =>
               s3.abortMultipartUpload({
                 Bucket: bucketName,
                 Key: upload.Key || '',
                 UploadId: upload.UploadId,
               }),
             ),
-          ).catch(error => handleError(error))
+          ).catch((error: any) => handleError(error))
 
           log.info(`Finished aborting multipart uploads from bucket ${bucketName}`)
         }
 
-        await s3.deleteBucket({ Bucket: bucketName }).catch(error => handleError(error))
+        await s3.deleteBucket({ Bucket: bucketName }).catch((error: any) => handleError(error))
 
         log.info(`Bucket ${bucketName} deleted`)
       }
@@ -401,19 +401,19 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
     return ok('Stacks buckets deleted')
   }
   catch (error) {
-    return err(handleError('Error deleting stacks buckets', error))
+    return err(handleError('Error deleting stacks buckets', error)) as any
   }
 }
 
 export async function deleteStacksFunctions(): Promise<Result<string, string>> {
   const lambda = new Lambda({ region: 'us-east-1' })
   const data = await lambda.listFunctions({})
-  const stacksFunctions = data.Functions?.filter(func => func.FunctionName?.includes('stacks')) || []
+  const stacksFunctions = data.Functions?.filter((func: any) => func.FunctionName?.includes('stacks')) || []
 
   if (!stacksFunctions || stacksFunctions.length === 0)
     return ok('No stacks functions found')
 
-  const promises = stacksFunctions.map(func => lambda.deleteFunction({ FunctionName: func.FunctionName || '' }))
+  const promises = stacksFunctions.map((func: any) => lambda.deleteFunction({ FunctionName: func.FunctionName || '' }))
 
   await Promise.all(promises).catch((error: Error) => {
     if (error.message.includes('it is a replicated function')) {
@@ -432,7 +432,7 @@ export async function deleteLogGroups(): Promise<Result<string, Error>> {
   try {
     const ec2Client = new EC2Client({ region: 'us-east-1' })
     const { Regions } = await ec2Client.send(new DescribeRegionsCommand({}))
-    const regions = Regions?.map(region => region.RegionName) || []
+    const regions = Regions?.map((region: any) => region.RegionName) || []
 
     for (const region of regions) {
       const client = new CloudWatchLogsClient({ region })
@@ -462,12 +462,12 @@ export async function deleteParameterStore(): Promise<Result<string, string>> {
     return ok('No parameters found')
 
   const appName = config.app.name?.toLocaleLowerCase() || 'stacks'
-  const stacksParameters = data.Parameters.filter(param => param.Name?.includes(appName)) || []
+  const stacksParameters = data.Parameters.filter((param: any) => param.Name?.includes(appName)) || []
 
   if (!stacksParameters || stacksParameters.length === 0)
     return ok('No stacks parameters found')
 
-  const promises = stacksParameters.map(param => ssm.deleteParameter({ Name: param.Name || '' }))
+  const promises = stacksParameters.map((param: any) => ssm.deleteParameter({ Name: param.Name || '' }))
 
   await Promise.all(promises).catch((error: Error) => {
     return err(handleError('Error deleting parameter store', error))
@@ -490,7 +490,7 @@ export async function deleteVpcs(): Promise<Result<string, Error>> {
     }
 
     // Filter VPCs based on the name pattern
-    const vpcsToDel = Vpcs.filter(vpc => vpc.Tags?.some(tag => tag.Key === 'Name' && tag.Value === vpcNamePattern))
+    const vpcsToDel = Vpcs.filter((vpc: any) => vpc.Tags?.some((tag: any) => tag.Key === 'Name' && tag.Value === vpcNamePattern))
 
     if (vpcsToDel.length === 0) {
       return ok(`No VPCs found matching the pattern: ${vpcNamePattern}`)
@@ -536,8 +536,8 @@ export async function deleteSubnets(): Promise<Result<string, Error>> {
     }
 
     // Filter subnets based on the name pattern
-    const subnetsToDel = Subnets.filter(subnet =>
-      subnet.Tags?.some(tag => tag.Key === 'Name' && tag.Value?.startsWith(subnetNamePattern)),
+    const subnetsToDel = Subnets.filter((subnet: any) =>
+      subnet.Tags?.some((tag: any) => tag.Key === 'Name' && tag.Value?.startsWith(subnetNamePattern)),
     )
 
     if (subnetsToDel.length === 0) {
@@ -593,7 +593,7 @@ export async function deleteSubnets(): Promise<Result<string, Error>> {
         // Delete the subnet
         const deleteSubnetCommand = new DeleteSubnetCommand({ SubnetId: subnet.SubnetId })
         await ec2Client.send(deleteSubnetCommand)
-        log.info(`Deleted subnet: ${subnet.SubnetId} (${subnet.Tags?.find(tag => tag.Key === 'Name')?.Value})`)
+        log.info(`Deleted subnet: ${subnet.SubnetId} (${subnet.Tags?.find((tag: any) => tag.Key === 'Name')?.Value})`)
       }
     }
 
@@ -624,7 +624,7 @@ export async function hasBeenDeployed(): Promise<Result<boolean, Error>> {
 export async function getJumpBoxInstanceProfileName(): Promise<Result<string | undefined, string>> {
   const iam = new IAM({ region: 'us-east-1' })
   const data = await iam.listInstanceProfiles({})
-  const instanceProfile = data.InstanceProfiles?.find(profile => profile.InstanceProfileName?.includes('JumpBox'))
+  const instanceProfile = data.InstanceProfiles?.find((profile: any) => profile.InstanceProfileName?.includes('JumpBox'))
 
   if (!instanceProfile)
     return err('Jump-box IAM instance profile not found')
@@ -647,13 +647,13 @@ export async function addJumpBox(stackName?: string): Promise<Result<string, str
 
   if (r.isErr)
     return err(r.error)
-  if (!r.value)
+  if (!(r as any).value)
     return err('Security group not found when adding jump-box')
 
-  const result = await getSecurityGroupId(r.value)
+  const result = await getSecurityGroupId((r as any).value)
   if (result.isErr)
     return err(result.error)
-  const sgId = result.value
+  const sgId = (result as any).value
 
   if (!sgId)
     return err('Security group not found when adding jump-box')
@@ -662,7 +662,7 @@ export async function addJumpBox(stackName?: string): Promise<Result<string, str
   const command = new DescribeFileSystemsCommand({})
   const data = await client.send(command)
   const fileSystemName = `stacks-${config.app.env}-efs`
-  const fileSystem = data.FileSystems?.find(fs => fs.Name === fileSystemName)
+  const fileSystem = data.FileSystems?.find((fs: any) => fs.Name === fileSystemName)
   const fileSystemId = fileSystem?.FileSystemId
 
   if (!fileSystem || !fileSystemId)
@@ -685,7 +685,7 @@ git clone https://github.com/stacksjs/stacks.git /mnt/efs
   if (res.isErr)
     return err(res.error)
 
-  const jumpBoxInstanceProfileName: string | undefined = res.value
+  const jumpBoxInstanceProfileName: string | undefined = (res as any).value
   if (!jumpBoxInstanceProfileName)
     return err('Jump-box IAM instance profile not found')
 
@@ -760,7 +760,7 @@ export async function isFirstDeployment(): Promise<boolean> {
   const data = await cloudFormation.listStacks({
     StackStatusFilter: ['CREATE_COMPLETE', 'UPDATE_COMPLETE'],
   })
-  const isStacksCloudPresent = data.StackSummaries?.some(stack => stack.StackName === stackName)
+  const isStacksCloudPresent = data.StackSummaries?.some((stack: any) => stack.StackName === stackName)
 
   return !isStacksCloudPresent
 }
@@ -770,7 +770,7 @@ export async function isFailedState(): Promise<boolean> {
   const data = await cloudFormation.listStacks({
     StackStatusFilter: ['CREATE_FAILED', 'UPDATE_FAILED', 'ROLLBACK_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'],
   })
-  const isStacksCloudPresent = data.StackSummaries?.some(stack => stack.StackName === cloudName)
+  const isStacksCloudPresent = data.StackSummaries?.some((stack: any) => stack.StackName === cloudName)
 
   return !isStacksCloudPresent
 }

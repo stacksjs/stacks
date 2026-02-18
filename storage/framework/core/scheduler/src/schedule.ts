@@ -277,8 +277,8 @@ export class Schedule implements UntimedSchedule {
           return
         }
         try {
-          const result = innerTask()
-          if (result instanceof Promise) {
+          const result: any = innerTask()
+          if (result && typeof result === 'object' && typeof (result as any).finally === 'function') {
             (result as Promise<any>).finally(() => self.releaseLock(taskName))
           }
           else {

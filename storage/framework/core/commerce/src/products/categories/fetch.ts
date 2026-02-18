@@ -102,28 +102,28 @@ export async function fetchStats(): Promise<CategoryStats> {
   // Total categories
   const totalCategories = await db
     .selectFrom('categories')
-    .select(eb => eb.fn.count('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .executeTakeFirst()
 
   // Active categories
   const activeCategories = await db
     .selectFrom('categories')
     .where('is_active', '=', true)
-    .select(eb => eb.fn.count('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .executeTakeFirst()
 
   // Root vs child categories
   const rootCategories = await db
     .selectFrom('categories')
     .where('parent_category_id', 'is', null)
-    .select(eb => eb.fn.count('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .executeTakeFirst()
 
   // Categories with images
   const categoriesWithImages = await db
     .selectFrom('categories')
     .where('image_url', 'is not', null)
-    .select(eb => eb.fn.count('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .executeTakeFirst()
 
   // Recently added categories (last 30 days)
@@ -146,7 +146,7 @@ export async function fetchStats(): Promise<CategoryStats> {
     .select([
       'c.parent_category_id',
       'parent.name as parent_name',
-      eb => eb.fn.count('c.id').as('child_count'),
+      (eb: any) => eb.fn.count('c.id').as('child_count'),
     ])
     .groupBy(['c.parent_category_id', 'parent.name'])
     .orderBy('child_count', 'desc')
@@ -160,7 +160,7 @@ export async function fetchStats(): Promise<CategoryStats> {
     child_categories: Number(totalCategories?.count || 0) - Number(rootCategories?.count || 0),
     with_images: Number(categoriesWithImages?.count || 0),
     recently_added: recentlyAddedCategories,
-    top_parent_categories: categoriesByParent.map(item => ({
+    top_parent_categories: categoriesByParent.map((item: any) => ({
       id: String(item.parent_category_id || ''),
       name: String(item.parent_name || ''),
       child_count: Number(item.child_count),
@@ -239,7 +239,7 @@ export async function fetchCategoryTree(): Promise<any[]> {
 
   // Create a map for quick access
   const categoryMap = new Map()
-  allCategories.forEach((category) => {
+  allCategories.forEach((category: any) => {
     categoryMap.set(category.id, {
       ...category,
       children: [],
@@ -249,7 +249,7 @@ export async function fetchCategoryTree(): Promise<any[]> {
   // Build the tree
   const rootCategories: any[] = []
 
-  allCategories.forEach((category) => {
+  allCategories.forEach((category: any) => {
     const categoryWithChildren = categoryMap.get(category.id)
 
     if (category.parent_category_id) {
@@ -271,7 +271,7 @@ export async function fetchCategoryTree(): Promise<any[]> {
   // Sort children by display_order
   const sortChildrenByDisplayOrder = (categories: any[]) => {
     categories.sort((a, b) => a.display_order - b.display_order)
-    categories.forEach((category) => {
+    categories.forEach((category: any) => {
       if (category.children.length > 0) {
         sortChildrenByDisplayOrder(category.children)
       }

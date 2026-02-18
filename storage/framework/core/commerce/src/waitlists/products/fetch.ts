@@ -34,7 +34,7 @@ export async function fetchCountBySource(
     .selectFrom('waitlist_products')
     .select([
       'source',
-      eb => eb.fn.count<number>('id').as('count'),
+      (eb: any) => eb.fn.count('id').as('count'),
     ])
     .groupBy('source')
 
@@ -48,7 +48,7 @@ export async function fetchCountBySource(
 
   const results = await query.execute()
 
-  return results.reduce((acc, { source, count }) => {
+  return results.reduce((acc: any, { source, count }: any) => {
     acc[source] = count
     return acc
   }, {} as Record<string, number>)
@@ -71,7 +71,7 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
 
   const result = await db
     .selectFrom('waitlist_products')
-    .select(eb => eb.fn.count<number>('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .where('created_at', '>=', startDateStr)
     .where('created_at', '<=', endDateStr)
     .executeTakeFirst()
@@ -87,7 +87,7 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
 export async function fetchCountByQuantity(quantity: number): Promise<number> {
   const result = await db
     .selectFrom('waitlist_products')
-    .select(eb => eb.fn.count<number>('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .where('party_size', '=', quantity)
     .executeTakeFirst()
 
@@ -108,7 +108,7 @@ export async function fetchCountByAllQuantities(
     .selectFrom('waitlist_products')
     .select([
       'quantity',
-      eb => eb.fn.count<number>('id').as('count'),
+      (eb: any) => eb.fn.count('id').as('count'),
     ])
     .groupBy('quantity')
 
@@ -122,7 +122,7 @@ export async function fetchCountByAllQuantities(
 
   const results = await query.execute()
 
-  return results.reduce((acc, { quantity, count }) => {
+  return results.reduce((acc: any, { quantity, count }: any) => {
     acc[quantity] = count
     return acc
   }, {} as Record<number, number>)
@@ -241,7 +241,7 @@ export async function fetchCountByStatus(
 ): Promise<number> {
   let query = db
     .selectFrom('waitlist_products')
-    .select(eb => eb.fn.count<number>('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .where('status', '=', status)
 
   if (startDate && endDate) {
@@ -273,7 +273,7 @@ export async function fetchConversionRates(
     .selectFrom('waitlist_products')
     .select([
       'status',
-      eb => eb.fn.count<number>('id').as('count'),
+      (eb: any) => eb.fn.count('id').as('count'),
     ])
     .groupBy('status')
 
@@ -288,14 +288,14 @@ export async function fetchConversionRates(
   const results = await query.execute()
 
   // Calculate total count and purchased count
-  const totalCount = results.reduce((sum, { count }) => sum + count, 0)
-  const purchasedCount = results.find(r => r.status === 'purchased')?.count ?? 0
+  const totalCount = results.reduce((sum: any, { count }: any) => sum + count, 0)
+  const purchasedCount = results.find((r: any) => r.status === 'purchased')?.count ?? 0
 
   // Calculate conversion rate
   const totalConversionRate = totalCount > 0 ? (purchasedCount / totalCount) * 100 : 0
 
   // Create status breakdown with percentages
-  const statusBreakdown = results.reduce((acc, { status, count }) => {
+  const statusBreakdown = results.reduce((acc: any, { status, count }: any) => {
     acc[status as string] = {
       count,
       percentage: totalCount > 0 ? (count / totalCount) * 100 : 0,
@@ -324,7 +324,7 @@ export async function fetchCountBetweenDates(
 
   const result = await db
     .selectFrom('waitlist_products')
-    .select(eb => eb.fn.count<number>('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .where('created_at', '>=', startDateStr)
     .where('created_at', '<=', endDateStr)
     .executeTakeFirst()
@@ -357,7 +357,7 @@ export async function fetchCountByDateGrouped(
   const results = await query.execute()
 
   // Group by date and count
-  const dateCounts = results.reduce((acc, { created_at }) => {
+  const dateCounts = results.reduce((acc: any, { created_at }: any) => {
     const date = created_at!.split('T')[0] // Get YYYY-MM-DD
     acc[date] = (acc[date] || 0) + 1
     return acc

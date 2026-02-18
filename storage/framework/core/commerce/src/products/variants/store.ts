@@ -86,7 +86,7 @@ export function formatVariantOptions(rawOptions: string[]): string {
     return JSON.stringify([])
 
   // Clean and normalize the options
-  const cleanedOptions = rawOptions.map(option => option.trim()).filter(Boolean)
+  const cleanedOptions = rawOptions.map((option: any) => option.trim()).filter(Boolean)
 
   return JSON.stringify(cleanedOptions)
 }

@@ -399,68 +399,75 @@ export class MailServerStack {
       sesCode = readFileSync(sesPath, 'utf-8')
     }
 
+    // Build the users JSON for the startup script
+    const usersJson = JSON.stringify(Object.fromEntries(
+      Object.entries(users).map(([k, v]) => [k, { password: 'changeme', email: (v as any).email }]),
+    ), null, 2)
+
+    const region = Stack.of({ node: { id: 'scope' } } as any).region || 'us-east-1'
+    const bucketName = this.mailBucket.bucketName
+
     // Create the startup script that starts both IMAP and SMTP servers
-    const startupScript = `#!/usr/bin/env bun
-import * as fs from 'node:fs'
-import { startImapServer } from './imap-server'
-import { startSmtpServer } from './smtp-server'
-
-async function main() {
-  console.log('Starting mail server (IMAP + SMTP)...')
-
-  const hasTlsCerts = fs.existsSync('/etc/letsencrypt/live/mail.${domain}/privkey.pem')
-  console.log('TLS certificates available:', hasTlsCerts)
-
-  // Get passwords from environment or use defaults
-  const users = ${JSON.stringify(Object.fromEntries(
-    Object.entries(users).map(([k, v]) => [k, { password: process.env[\`IMAP_PASSWORD_\${k.toUpperCase()}\`] || 'changeme', email: (v as any).email }])
-  ), null, 2).replace(/process\.env\[`IMAP_PASSWORD_([A-Z]+)`\]/g, "process.env.IMAP_PASSWORD_$1 || 'changeme'")}
-
-  const tlsConfig = hasTlsCerts ? {
-    key: '/etc/letsencrypt/live/mail.${domain}/privkey.pem',
-    cert: '/etc/letsencrypt/live/mail.${domain}/fullchain.pem',
-  } : undefined
-
-  // Start IMAP server
-  const imapServer = await startImapServer({
-    port: 143,
-    sslPort: 993,
-    host: '0.0.0.0',
-    region: '${Stack.of({ node: { id: 'scope' } } as any).region || 'us-east-1'}',
-    bucket: '${this.mailBucket.bucketName}',
-    prefix: 'incoming/',
-    domain: '${domain}',
-    users,
-    tls: tlsConfig,
-  })
-  console.log('IMAP server running on port 143' + (hasTlsCerts ? ' and 993 (TLS)' : ''))
-
-  // Start SMTP server (relay to SES)
-  const smtpServer = await startSmtpServer({
-    port: 587,
-    tlsPort: 465,
-    host: '0.0.0.0',
-    region: '${Stack.of({ node: { id: 'scope' } } as any).region || 'us-east-1'}',
-    domain: '${domain}',
-    users,
-    tls: tlsConfig,
-    sentBucket: '${this.mailBucket.bucketName}',
-    sentPrefix: 'sent/',
-  })
-  console.log('SMTP server running on port 587' + (hasTlsCerts ? ' and 465 (TLS)' : ''))
-
-  const shutdown = async () => {
-    console.log('Shutting down...')
-    await Promise.all([imapServer.stop(), smtpServer.stop()])
-    process.exit(0)
-  }
-
-  process.on('SIGINT', shutdown)
-  process.on('SIGTERM', shutdown)
-}
-
-main().catch(console.error)
-`
+    const startupScript = [
+      '#!/usr/bin/env bun',
+      'import * as fs from \'node:fs\'',
+      'import { startImapServer } from \'./imap-server\'',
+      'import { startSmtpServer } from \'./smtp-server\'',
+      '',
+      'async function main() {',
+      '  console.log(\'Starting mail server (IMAP + SMTP)...\')',
+      '',
+      `  const hasTlsCerts = fs.existsSync('/etc/letsencrypt/live/mail.${domain}/privkey.pem')`,
+      '  console.log(\'TLS certificates available:\', hasTlsCerts)',
+      '',
+      '  // Get passwords from environment or use defaults',
+      `  const users = ${usersJson}`,
+      '',
+      '  const tlsConfig = hasTlsCerts ? {',
+      `    key: '/etc/letsencrypt/live/mail.${domain}/privkey.pem',`,
+      `    cert: '/etc/letsencrypt/live/mail.${domain}/fullchain.pem',`,
+      '  } : undefined',
+      '',
+      '  // Start IMAP server',
+      '  const imapServer = await startImapServer({',
+      '    port: 143,',
+      '    sslPort: 993,',
+      '    host: \'0.0.0.0\',',
+      `    region: '${region}',`,
+      `    bucket: '${bucketName}',`,
+      '    prefix: \'incoming/\',',
+      `    domain: '${domain}',`,
+      '    users,',
+      '    tls: tlsConfig,',
+      '  })',
+      '  console.log(\'IMAP server running on port 143\' + (hasTlsCerts ? \' and 993 (TLS)\' : \'\'))',
+      '',
+      '  // Start SMTP server (relay to SES)',
+      '  const smtpServer = await startSmtpServer({',
+      '    port: 587,',
+      '    tlsPort: 465,',
+      '    host: \'0.0.0.0\',',
+      `    region: '${region}',`,
+      `    domain: '${domain}',`,
+      '    users,',
+      '    tls: tlsConfig,',
+      `    sentBucket: '${bucketName}',`,
+      '    sentPrefix: \'sent/\',',
+      '  })',
+      '  console.log(\'SMTP server running on port 587\' + (hasTlsCerts ? \' and 465 (TLS)\' : \'\'))',
+      '',
+      '  const shutdown = async () => {',
+      '    console.log(\'Shutting down...\')',
+      '    await Promise.all([imapServer.stop(), smtpServer.stop()])',
+      '    process.exit(0)',
+      '  }',
+      '',
+      '  process.on(\'SIGINT\', shutdown)',
+      '  process.on(\'SIGTERM\', shutdown)',
+      '}',
+      '',
+      'main().catch(console.error)',
+    ].join('\n')
 
     userData.addCommands(
       '#!/bin/bash',
@@ -523,7 +530,7 @@ main().catch(console.error)
       'Type=simple',
       'User=root',
       'WorkingDirectory=/opt/imap-server',
-      'Environment="AWS_REGION=${Stack.of({ node: { id: 'scope' } } as any).region || 'us-east-1'}"',
+      `Environment="AWS_REGION=${Stack.of({ node: { id: 'scope' } } as any).region || 'us-east-1'}"`,
       ...Object.keys(users).map(u => `Environment="IMAP_PASSWORD_${u.toUpperCase()}=changeme"`),
       'ExecStart=/root/.bun/bin/bun run /opt/imap-server/server.ts',
       'Restart=always',

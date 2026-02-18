@@ -57,7 +57,7 @@ export async function fetchStats(): Promise<GiftCardStats> {
   // Total gift cards
   const totalGiftCards = await db
     .selectFrom('gift_cards')
-    .select(eb => eb.fn.count('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .executeTakeFirst()
 
   // Active gift cards
@@ -67,45 +67,45 @@ export async function fetchStats(): Promise<GiftCardStats> {
     .selectFrom('gift_cards')
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where(eb => eb.or([
+    .where((eb: any) => eb.or([
       eb('expiry_date', '>=', currentDate),
       eb('expiry_date', 'is', null),
     ]))
-    .select(eb => eb.fn.count('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .executeTakeFirst()
 
   // Gift cards by status
   const giftCardsByStatus = await db
     .selectFrom('gift_cards')
-    .select(['status', eb => eb.fn.count('id').as('count')])
+    .select(['status', (eb: any) => eb.fn.count('id').as('count')])
     .groupBy('status')
     .execute()
 
   // Calculate balance distribution counts - separate queries for better reliability
   const lowBalanceCount = await db
     .selectFrom('gift_cards')
-    .where((eb) => {
+    .where((eb: any) => {
       return sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} < 0.25`
     })
-    .select(eb => eb.fn.count('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .executeTakeFirst()
 
   const mediumBalanceCount = await db
     .selectFrom('gift_cards')
-    .where((eb) => {
+    .where((eb: any) => {
       // Using a raw expression inside the expression builder
       return sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} >= 0.25 AND ${eb.ref('current_balance')} / ${eb.ref('initial_balance')} <= 0.75`
     })
-    .select(eb => eb.fn.count('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .executeTakeFirst()
 
   const highBalanceCount = await db
     .selectFrom('gift_cards')
-    .where((eb) => {
+    .where((eb: any) => {
       // Using a raw expression inside the expression builder
       return sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} > 0.75`
     })
-    .select(eb => eb.fn.count('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .executeTakeFirst()
 
   // Expiring soon gift cards (next 30 days)
@@ -133,7 +133,7 @@ export async function fetchStats(): Promise<GiftCardStats> {
   return {
     total: Number(totalGiftCards?.count || 0),
     active: Number(activeGiftCards?.count || 0),
-    by_status: giftCardsByStatus.map(item => ({
+    by_status: giftCardsByStatus.map((item: any) => ({
       status: item.status,
       count: Number(item.count),
     })),
@@ -218,7 +218,7 @@ export async function compareActiveGiftCards(daysRange: number = 30): Promise<{
     .select(db.fn.count('id').as('count'))
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where(eb => eb.or([
+    .where((eb: any) => eb.or([
       eb('expiry_date', '>=', toTimestamp(today)),
       eb('expiry_date', 'is', null),
     ]))
@@ -232,7 +232,7 @@ export async function compareActiveGiftCards(daysRange: number = 30): Promise<{
     .select(db.fn.count('id').as('count'))
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where(eb => eb.or([
+    .where((eb: any) => eb.or([
       eb('expiry_date', '>=', toTimestamp(previousPeriodStart)),
       eb('expiry_date', 'is', null),
     ]))
@@ -320,7 +320,7 @@ export async function calculateGiftCardValues(daysRange: number = 30): Promise<{
     ])
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where(eb => eb.or([
+    .where((eb: any) => eb.or([
       eb('expiry_date', '>=', toTimestamp(today)),
       eb('expiry_date', 'is', null),
     ]))
@@ -338,7 +338,7 @@ export async function calculateGiftCardValues(daysRange: number = 30): Promise<{
     ])
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where(eb => eb.or([
+    .where((eb: any) => eb.or([
       eb('expiry_date', '>=', toTimestamp(previousPeriodStart)),
       eb('expiry_date', 'is', null),
     ]))

@@ -6,7 +6,7 @@
 
 import type { VerifiedRegistrationResponse } from 'ts-auth'
 import type { Insertable } from '@stacksjs/database'
-import type { UserModel } from '../../../orm/src/models/User'
+import type { UserModel } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 // Re-export WebAuthn functions from ts-auth
@@ -29,7 +29,6 @@ export type {
   VerifiedAuthenticationResponse,
   RegistrationCredential,
   AuthenticationCredential,
-  AuthenticationResponseJSON,
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialRequestOptions,
   RegistrationOptions,

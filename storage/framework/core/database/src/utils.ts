@@ -5,7 +5,12 @@
  * configured using the stacks database config.
  */
 
+import type { DatabaseSchema } from 'bun-query-builder'
 import { createQueryBuilder, setConfig } from 'bun-query-builder'
+
+// Permissive schema type that accepts any table name with any columns
+// This allows the query builder to work before model types are generated
+type AnySchema = DatabaseSchema<any> & Record<string, { columns: Record<string, any>, primaryKey: string }>
 
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
@@ -217,7 +222,7 @@ ensureConfigLoaded()
  * Lazy proxy for the query builder - connection is only made when first used.
  * This is the main entry point for database operations.
  */
-export const db: ReturnType<typeof createQueryBuilder> = new Proxy({} as ReturnType<typeof createQueryBuilder>, {
+export const db = new Proxy({} as ReturnType<typeof createQueryBuilder<AnySchema>>, {
   get(_target, prop) {
     const instance = getDb()
     const value = (instance as any)[prop]

@@ -212,7 +212,7 @@ export class ComputeStack {
       'LAMBDA_RUNTIME_DIR',
       '_',
     ]
-    keysToRemove.forEach(key => delete env[key as EnvKey])
+    keysToRemove.forEach((key: any) => delete env[key as EnvKey])
 
     const secrets = new secretsmanager.Secret(scope, 'StacksSecrets', {
       secretName: `${props.slug}-${props.appEnv}-secrets`,

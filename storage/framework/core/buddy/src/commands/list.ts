@@ -37,8 +37,8 @@ export function list(buddy: CLI): void {
 
       // Filter commands if filter option is provided
       let filteredCommands = commands
-      if (options.filter) {
-        const filterStr = String(options.filter).toLowerCase()
+      if ((options as any).filter) {
+        const filterStr = String((options as any).filter).toLowerCase()
         filteredCommands = commands.filter((cmd: any) => {
           const name = cmd.name || ''
           const desc = cmd.description || ''
@@ -47,8 +47,8 @@ export function list(buddy: CLI): void {
       }
 
       // Filter by namespace if provided
-      if (options.namespace) {
-        const namespaceStr = String(options.namespace).toLowerCase()
+      if ((options as any).namespace) {
+        const namespaceStr = String((options as any).namespace).toLowerCase()
         filteredCommands = filteredCommands.filter((cmd: any) => {
           const namespace = cmd.namespace || ''
           return namespace.toLowerCase() === namespaceStr
@@ -56,20 +56,20 @@ export function list(buddy: CLI): void {
       }
 
       if (filteredCommands.length === 0) {
-        if (options.format === 'json') {
+        if ((options as any).format === 'json') {
           console.log(JSON.stringify({ commands: [], total: 0 }, null, 2))
         }
         else {
           console.log(dim('No commands found'))
-          if (options.filter) {
-            console.log(dim(`Try removing the filter: ${options.filter}`))
+          if ((options as any).filter) {
+            console.log(dim(`Try removing the filter: ${(options as any).filter}`))
           }
         }
         return
       }
 
       // Handle JSON output format
-      if (options.format === 'json') {
+      if ((options as any).format === 'json') {
         const jsonOutput = filteredCommands.map((cmd: any) => ({
           name: cmd.name || '',
           description: cmd.description || '',
@@ -80,7 +80,7 @@ export function list(buddy: CLI): void {
       }
 
       // Group commands by category (based on command name prefix)
-      if (options.grouped) {
+      if ((options as any).grouped) {
         const groups = new Map<string, any[]>()
 
         for (const cmd of filteredCommands) {

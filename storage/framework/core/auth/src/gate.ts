@@ -21,11 +21,19 @@ export type PolicyMethod<T = any> = (user: UserModel | null, model?: T, ...args:
  * Authorization response for detailed allow/deny
  */
 export class AuthorizationResponse {
+  public readonly isAllowed: boolean
+  public readonly message?: string
+  public readonly code?: string
+
   constructor(
-    public readonly allowed: boolean,
-    public readonly message?: string,
-    public readonly code?: string,
-  ) {}
+    allowed: boolean,
+    message?: string,
+    code?: string,
+  ) {
+    this.isAllowed = allowed
+    this.message = message
+    this.code = code
+  }
 
   static allow(message?: string): AuthorizationResponse {
     return new AuthorizationResponse(true, message)
@@ -36,15 +44,15 @@ export class AuthorizationResponse {
   }
 
   allowed(): boolean {
-    return this.allowed
+    return this.isAllowed
   }
 
   denied(): boolean {
-    return !this.allowed
+    return !this.isAllowed
   }
 
   authorize(): void {
-    if (!this.allowed) {
+    if (!this.isAllowed) {
       throw new AuthorizationException(this.message || 'This action is unauthorized.', this.code)
     }
   }
@@ -237,7 +245,7 @@ export async function none(abilities: string[], user: UserModel | null, ...args:
 export async function authorize(ability: string, user: UserModel | null, ...args: any[]): Promise<AuthorizationResponse> {
   const result = await inspect(ability, user, ...args)
 
-  if (!result.allowed) {
+  if (!result.isAllowed) {
     throw new AuthorizationException(result.message, result.code)
   }
 
@@ -297,7 +305,7 @@ export async function inspect(ability: string, user: UserModel | null, ...args: 
 
     // Run after callbacks
     for (const callback of state.afterCallbacks) {
-      const afterResult = await callback(user, ability, response.allowed, args)
+      const afterResult = await callback(user, ability, response.isAllowed, args)
       if (typeof afterResult === 'boolean') {
         return afterResult ? AuthorizationResponse.allow() : AuthorizationResponse.deny()
       }
@@ -315,7 +323,7 @@ export async function inspect(ability: string, user: UserModel | null, ...args: 
  */
 async function check(ability: string, user: UserModel | null, ...args: any[]): Promise<boolean> {
   const response = await inspect(ability, user, ...args)
-  return response.allowed
+  return response.isAllowed
 }
 
 /**

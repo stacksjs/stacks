@@ -25,9 +25,9 @@ export async function fetchAll(): Promise<PrintDeviceJsonResponse[]> {
 export async function countAll(): Promise<number> {
   return await db
     .selectFrom('print_devices')
-    .select(db.fn.count<number>('id').as('count'))
+    .select(db.fn.count('id').as('count'))
     .executeTakeFirst()
-    .then(result => result?.count ?? 0)
+    .then((result: any) => result?.count ?? 0)
 }
 
 /**
@@ -39,7 +39,7 @@ export async function countTotalPrints(): Promise<number> {
     .select('print_count')
     .executeTakeFirst()
 
-  return result?.print_count ?? 0
+  return (result as any)?.print_count ?? 0
 }
 
 /**
@@ -52,7 +52,7 @@ export async function countPrintsByDeviceId(printDeviceId: number): Promise<numb
     .where('id', '=', printDeviceId)
     .executeTakeFirst()
 
-  return result?.print_count ?? 0
+  return (result as any)?.print_count ?? 0
 }
 
 /**
@@ -62,18 +62,18 @@ export async function calculateErrorRate(): Promise<number> {
   const result = await db
     .selectFrom('receipts')
     .select([
-      db.fn.count<number>('id').as('total'),
-      db.fn.count<number>('id')
+      db.fn.count('id').as('total'),
+      db.fn.count('id')
         .filterWhere('status', '=', 'error')
         .as('error_count'),
     ])
     .executeTakeFirst()
 
-  if (!result?.total || result.total === 0) {
+  if (!(result as any)?.total || (result as any).total === 0) {
     return 0
   }
 
-  return Number(((result.error_count ?? 0) / result.total) * 100)
+  return Number((((result as any).error_count ?? 0) / (result as any).total) * 100)
 }
 
 /**
@@ -95,18 +95,18 @@ export async function calculatePrinterHealth(): Promise<number> {
   const result = await db
     .selectFrom('print_devices')
     .select([
-      db.fn.count<number>('id').as('total'),
-      db.fn.count<number>('id')
+      db.fn.count('id').as('total'),
+      db.fn.count('id')
         .filterWhere('status', '=', 'online')
         .as('online_count'),
     ])
     .executeTakeFirst()
 
-  if (!result?.total || result.total === 0) {
+  if (!(result as any)?.total || (result as any).total === 0) {
     return 0
   }
 
-  return Number(((result.online_count ?? 0) / result.total) * 100)
+  return Number((((result as any).online_count ?? 0) / (result as any).total) * 100)
 }
 
 /**
@@ -117,13 +117,13 @@ export async function getPrinterStatusCounts(): Promise<Record<string, number>> 
     .selectFrom('print_devices')
     .select([
       'status',
-      db.fn.count<number>('id').as('count'),
+      db.fn.count('id').as('count'),
     ])
     .groupBy('status')
     .execute()
 
   // Convert array to object with status as key and count as value
-  return result.reduce((acc, curr) => {
+  return result.reduce((acc: any, curr: any) => {
     acc[curr.status as string] = curr.count
     return acc
   }, {} as Record<string, number>)

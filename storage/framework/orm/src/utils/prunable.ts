@@ -18,7 +18,8 @@ export async function prunable(tableName: string, options: PrunableOptions = {})
       let qb = db.deleteFrom(tableName as any)
       qb = query(qb)
       const result = await qb.execute()
-      const count = Number(result[0]?.numDeletedRows ?? result.length ?? 0)
+      const rows = Array.isArray(result) ? result : [result]
+      const count = Number((rows[0] as any)?.numDeletedRows ?? rows.length ?? 0)
       log.info(`Pruned ${count} records from ${tableName}`)
       return count
     }
@@ -31,7 +32,8 @@ export async function prunable(tableName: string, options: PrunableOptions = {})
       .where(column as any, '<', cutoffDate.toISOString())
       .execute()
 
-    const count = Number(result[0]?.numDeletedRows ?? result.length ?? 0)
+    const rows = Array.isArray(result) ? result : [result]
+    const count = Number((rows[0] as any)?.numDeletedRows ?? rows.length ?? 0)
     log.info(`Pruned ${count} records from ${tableName} older than ${olderThanDays} days`)
     return count
   }

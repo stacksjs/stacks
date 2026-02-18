@@ -93,8 +93,8 @@ export async function countTaggedPosts(taggableType: string): Promise<number> {
   try {
     const result = await db
       .selectFrom('taggable_models')
-      .select(({ fn }) => [
-        fn.count<number>('id').as('count'),
+      .select(({ fn }: any) => [
+        fn.count('id').as('count'),
       ])
       .where('taggable_type', '=', taggableType)
       .executeTakeFirst()
@@ -119,8 +119,8 @@ export async function countTotalTags(): Promise<number> {
   try {
     const result = await db
       .selectFrom('taggables')
-      .select(({ fn }) => [
-        fn.count<number>('id').as('count'),
+      .select(({ fn }: any) => [
+        fn.count('id').as('count'),
       ])
       .executeTakeFirst()
 
@@ -146,9 +146,9 @@ export async function findMostUsedTag(taggableType?: string): Promise<{ name: st
     let query = db
       .selectFrom('taggable_models')
       .innerJoin('taggables', 'taggable.id', 'taggable_models.tag_id')
-      .select(({ fn }) => [
+      .select(({ fn }: any) => [
         'taggable.name',
-        fn.count<number>('taggable_models.id').as('usage_count'),
+        fn.count('taggable_models.id').as('usage_count'),
       ])
       .groupBy('taggable.name')
 
@@ -164,8 +164,8 @@ export async function findMostUsedTag(taggableType?: string): Promise<{ name: st
     }
 
     return {
-      name: result.name,
-      count: result.usage_count,
+      name: (result as any).name,
+      count: (result as any).usage_count,
     }
   }
   catch (error) {
@@ -187,9 +187,9 @@ export async function findLeastUsedTag(): Promise<{ name: string, count: number 
     const result = await db
       .selectFrom('taggable_models')
       .innerJoin('taggables', 'taggable.id', 'taggable_models.tag_id')
-      .select(({ fn }) => [
+      .select(({ fn }: any) => [
         'taggable.name',
-        fn.count<number>('taggable_models.id').as('usage_count'),
+        fn.count('taggable_models.id').as('usage_count'),
       ])
       .groupBy('taggable.name')
       .orderBy('usage_count', 'asc')
@@ -200,8 +200,8 @@ export async function findLeastUsedTag(): Promise<{ name: string, count: number 
     }
 
     return {
-      name: result.name,
-      count: result.usage_count,
+      name: (result as any).name,
+      count: (result as any).usage_count,
     }
   }
   catch (error) {
@@ -222,19 +222,19 @@ export async function fetchTagsWithPostCounts(): Promise<Array<{ name: string, p
   try {
     const result = await db
       .selectFrom('taggables')
-      .leftJoin('taggable_models', join => join
+      .leftJoin('taggable_models', (join: any) => join
         .onRef('taggable.id', '=', 'taggable_models.tag_id')
         .on('taggable_models.taggable_type', '=', 'posts'))
-      .select(({ fn }) => [
+      .select(({ fn }: any) => [
         'taggable.name',
-        fn.count<number>('taggable_models.id').as('post_count'),
+        fn.count('taggable_models.id').as('post_count'),
       ])
       .groupBy('taggable.name')
       .orderBy('post_count', 'desc')
       .limit(10)
       .execute()
 
-    return result.map(row => ({
+    return result.map((row: any) => ({
       name: row.name,
       postCount: Number(row.post_count),
     }))
@@ -257,21 +257,21 @@ export async function fetchTagDistribution(): Promise<Array<{ name: string, coun
   try {
     const result = await db
       .selectFrom('taggables')
-      .leftJoin('taggable_models', join => join
+      .leftJoin('taggable_models', (join: any) => join
         .onRef('taggable.id', '=', 'taggable_models.tag_id')
         .on('taggable_models.taggable_type', '=', 'posts'))
-      .select(({ fn }) => [
+      .select(({ fn }: any) => [
         'taggable.name',
-        fn.count<number>('taggable_models.id').as('count'),
+        fn.count('taggable_models.id').as('count'),
       ])
       .groupBy('taggable.name')
       .orderBy('count', 'desc')
       .execute()
 
     // Calculate total count for percentage calculation
-    const totalCount = result.reduce((sum, row) => sum + Number(row.count), 0)
+    const totalCount = result.reduce((sum: any, row: any) => sum + Number(row.count), 0)
 
-    return result.map(row => ({
+    return result.map((row: any) => ({
       name: row.name,
       count: Number(row.count),
       percentage: totalCount > 0 ? (Number(row.count) / totalCount) * 100 : 0,

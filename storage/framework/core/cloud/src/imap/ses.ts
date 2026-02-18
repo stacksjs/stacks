@@ -798,13 +798,13 @@ export class SESClient {
 
     // Add recipients
     if (params.Rule.Recipients) {
-      params.Rule.Recipients.forEach((recipient, index) => {
+      params.Rule.Recipients.forEach((recipient: any, index: any) => {
         formParams[`Rule.Recipients.member.${index + 1}`] = recipient
       })
     }
 
     // Add actions
-    params.Rule.Actions.forEach((action, index) => {
+    params.Rule.Actions.forEach((action: any, index: any) => {
       const actionNum = index + 1
 
       if (action.S3Action) {
@@ -984,13 +984,13 @@ export class SESClient {
 
     // Add recipients
     if (params.Rule.Recipients) {
-      params.Rule.Recipients.forEach((recipient, index) => {
+      params.Rule.Recipients.forEach((recipient: any, index: any) => {
         formParams[`Rule.Recipients.member.${index + 1}`] = recipient
       })
     }
 
     // Add actions
-    params.Rule.Actions.forEach((action, index) => {
+    params.Rule.Actions.forEach((action: any, index: any) => {
       const actionNum = index + 1
 
       if (action.S3Action) {
@@ -1055,7 +1055,7 @@ export class SESClient {
     }
 
     // Add destinations
-    params.destinations.forEach((dest, index) => {
+    params.destinations.forEach((dest: any, index: any) => {
       formParams[`Destinations.member.${index + 1}`] = dest
     })
 

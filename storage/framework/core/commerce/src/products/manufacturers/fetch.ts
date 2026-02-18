@@ -58,7 +58,7 @@ export async function fetchByCountry(country: string, options: FetchManufacturer
 
   // Get total count for pagination
   const countResult = await countQuery
-    .select(eb => eb.fn.count('id').as('total'))
+    .select((eb: any) => eb.fn.count('id').as('total'))
     .executeTakeFirst()
 
   const total = Number(countResult?.total || 0)
@@ -100,7 +100,7 @@ export async function fetchWithProductCount(options: FetchManufacturersOptions =
       'm.featured',
       'm.created_at',
       'm.updated_at',
-      eb => eb.fn.count('p.id').as('product_count'),
+      (eb: any) => eb.fn.count('p.id').as('product_count'),
     ])
     .groupBy('m.id')
 

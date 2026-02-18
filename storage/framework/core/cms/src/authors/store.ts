@@ -18,7 +18,7 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
     // First, try to find an existing author by email or name
     const existingAuthor = await db
       .selectFrom('authors')
-      .where(eb => eb.or([
+      .where((eb: any) => eb.or([
         eb('email', '=', data.email),
         eb('name', '=', data.name),
       ]))
@@ -97,7 +97,7 @@ export async function store(data: NewAuthor): Promise<AuthorJsonResponse> {
     // First, try to find an existing author by email or name
     const existingAuthor = await db
       .selectFrom('authors')
-      .where(eb => eb.or([
+      .where((eb: any) => eb.or([
         eb('email', '=', data.email),
         eb('name', '=', data.name),
       ]))

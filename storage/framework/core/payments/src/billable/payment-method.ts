@@ -172,7 +172,7 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       throw new Error('Customer does not exist in Stripe')
     }
 
-    const paymentMethods = await db.selectFrom('payment_methods').selectAll().where(eb => eb.or([
+    const paymentMethods = await db.selectFrom('payment_methods').selectAll().where((eb: any) => eb.or([
       eb('is_default', 'is', null),
       eb('is_default', '=', false),
     ])).where('user_id', '=', user.id).execute()

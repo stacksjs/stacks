@@ -73,7 +73,7 @@ function getUpvoteForeignKey(model: Model, modelName: string): string {
 export async function findRelation(model: Model, modelName: string, relationName: string): Promise<RelationConfig | undefined> {
   const relations = await getRelations(model, modelName)
 
-  return relations.find(relationStr => relationStr.relationName === relationName)
+  return relations.find((relationStr: any) => relationStr.relationName === relationName)
 }
 
 export async function generateModelString(
@@ -494,7 +494,7 @@ export async function generateModelString(
       toSearchableObject(): Partial<${modelName}JsonResponse> {
         return {
           ${searchAttrs
-            .map(attr => `${snakeCase(attr)}: this.${snakeCase(attr)}`)
+            .map((attr: any) => `${snakeCase(attr)}: this.${snakeCase(attr)}`)
             .join(',\n')}
         }
       }
@@ -788,7 +788,7 @@ export async function generateModelString(
 
         const defaultOptions: Partial<Stripe.Checkout.SessionCreateParams> = {
           mode: 'payment',
-          customer: await this.createOrGetStripeUser({}).then(customer => customer.id),
+          customer: await this.createOrGetStripeUser({}).then((customer: any) => customer.id),
           line_items: priceIds.map((item: CheckoutLineItem) => ({
             price: item.priceId,
             quantity: item.quantity || 1,
@@ -1078,7 +1078,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
       this.attributes = { ...${formattedModelName} }
       this.originalAttributes = { ...${formattedModelName} }
 
-      Object.keys(${formattedModelName}).forEach(key => {
+      Object.keys(${formattedModelName}).forEach((key: any) => {
         if (!(key in this)) {
            this.customColumns[key] = (${formattedModelName} as ${modelName}JsonResponse)[key]
         }
@@ -1097,7 +1097,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTab
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length) return
 
-    const modelIds = modelArray.map(model => model.id)
+    const modelIds = modelArray.map((model: any) => model.id)
 
     for (const relation of this.withRelations) {
       const relatedRecords = await db

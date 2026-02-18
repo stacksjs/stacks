@@ -1,4 +1,4 @@
-import type { Buffer } from 'node:buffer'
+import { Buffer } from 'node:buffer'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { access, constants, copyFile, lstat, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
 import { basename, dirname, join, relative } from 'node:path'

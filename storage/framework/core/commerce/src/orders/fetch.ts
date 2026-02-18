@@ -23,7 +23,7 @@ export async function fetchAll(limit?: number): Promise<OrderJsonResponse[]> {
   const orders = await query.execute()
 
   // Fetch items for each order
-  return await Promise.all(orders.map(async (order) => {
+  return await Promise.all(orders.map(async (order: any) => {
     const items = await db
       .selectFrom('order_items')
       .where('order_id', '=', order.id)
@@ -65,20 +65,20 @@ export async function fetchStats(): Promise<OrderStats> {
   // Total orders
   const totalOrders = await db
     .selectFrom('orders')
-    .select(eb => eb.fn.count('id').as('count'))
+    .select((eb: any) => eb.fn.count('id').as('count'))
     .executeTakeFirst()
 
   // Orders by status
   const ordersByStatus = await db
     .selectFrom('orders')
-    .select(['status', eb => eb.fn.count('id').as('count')])
+    .select(['status', (eb: any) => eb.fn.count('id').as('count')])
     .groupBy('status')
     .execute() as StatusCount[]
 
   // Orders by type
   const ordersByType = await db
     .selectFrom('orders')
-    .select(['order_type', eb => eb.fn.count('id').as('count')])
+    .select(['order_type', (eb: any) => eb.fn.count('id').as('count')])
     .groupBy('order_type')
     .execute() as OrderTypeCount[]
 
@@ -91,7 +91,7 @@ export async function fetchStats(): Promise<OrderStats> {
     .execute()
 
   // Fetch items for each recent order
-  const recentOrders = await Promise.all(recentOrdersRaw.map(async (order) => {
+  const recentOrders = await Promise.all(recentOrdersRaw.map(async (order: any) => {
     const items = await db
       .selectFrom('order_items')
       .where('order_id', '=', order.id)
@@ -107,7 +107,7 @@ export async function fetchStats(): Promise<OrderStats> {
   // Total revenue
   const revenue = await db
     .selectFrom('orders')
-    .select(eb => eb.fn.sum('total_amount').as('total'))
+    .select((eb: any) => eb.fn.sum('total_amount').as('total'))
     .executeTakeFirst()
 
   return {
@@ -303,11 +303,11 @@ export async function calculateOrderMetrics(daysRange: number = 30): Promise<{
       total_orders: currentTotalOrders,
       total_revenue: currentTotalRevenue,
       average_order_value: currentAverageOrderValue,
-      orders_by_status: ordersByStatus.map(item => ({
+      orders_by_status: ordersByStatus.map((item: any) => ({
         status: item.status,
         count: Number(item.count),
       })),
-      orders_by_type: ordersByType.map(item => ({
+      orders_by_type: ordersByType.map((item: any) => ({
         order_type: item.order_type,
         count: Number(item.count),
       })),
@@ -366,7 +366,7 @@ export async function fetchDailyOrderTrends(daysRange: number = 30): Promise<{
     .orderBy('created_at', 'asc')
     .execute()
 
-  return dailyOrders.map(day => ({
+  return dailyOrders.map((day: any) => ({
     date: day.created_at!,
     order_count: Number(day.order_count || 0),
     revenue: Number(day.revenue || 0),

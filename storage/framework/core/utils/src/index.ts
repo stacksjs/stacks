@@ -9,7 +9,8 @@ export * from './hash'
 export * from './helpers'
 export * from './macroable'
 export * from './versions'
-export * from '@stacksjs/browser'
+export * as browserUtils from '@stacksjs/browser'
+export { clamp, notNullish, retry, useOnline } from '@stacksjs/browser'
 
 // Native utility replacements
 export * from './merge'

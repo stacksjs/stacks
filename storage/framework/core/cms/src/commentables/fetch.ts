@@ -88,7 +88,7 @@ export async function fetchCommentCountByPeriod(days: number): Promise<number> {
   try {
     const result = await db
       .selectFrom('commentables')
-      .select(eb => [
+      .select((eb: any) => [
         eb.fn.count('id').as('count'),
       ])
       .where('created_at', '>=', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
@@ -176,7 +176,7 @@ export async function fetchPostsWithMostComments(dateRange: DateRange, options: 
   try {
     let query = db
       .selectFrom('posts')
-      .leftJoin('commentables', join => join
+      .leftJoin('commentables', (join: any) => join
         .onRef('posts.id', '=', 'commentables.commentables_id')
         .on('commentables.commentables_type', '=', 'posts'))
       .where('commentables.created_at', '>=', formatDate(dateRange.startDate))
@@ -194,7 +194,7 @@ export async function fetchPostsWithMostComments(dateRange: DateRange, options: 
 
     const results = await query.execute()
 
-    return results.map(row => ({
+    return results.map((row: any) => ({
       id: Number(row.id),
       title: String(row.title),
       comment_count: Number(row.comment_count),
@@ -219,8 +219,8 @@ export async function fetchCommentCountBarGraph(dateRange: DateRange, options: {
     const posts = await fetchPostsWithMostComments(dateRange, options)
 
     return {
-      labels: posts.map(post => post.title),
-      values: posts.map(post => post.comment_count),
+      labels: posts.map((post: any) => post.title),
+      values: posts.map((post: any) => post.comment_count),
     }
   }
   catch (error) {
@@ -251,10 +251,10 @@ export async function fetchStatusDistributionDonut(dateRange: DateRange): Promis
       .groupBy('status')
       .execute()
 
-    const total = results.reduce((sum, row) => sum + Number(row.count), 0)
-    const labels = results.map(row => row.status)
-    const values = results.map(row => Number(row.count))
-    const percentages = values.map(value => total > 0 ? (value / total) * 100 : 0)
+    const total = results.reduce((sum: any, row: any) => sum + Number(row.count), 0)
+    const labels = results.map((row: any) => row.status)
+    const values = results.map((row: any) => Number(row.count))
+    const percentages = values.map((value: any) => total > 0 ? (value / total) * 100 : 0)
 
     return {
       labels,
@@ -302,7 +302,7 @@ export async function fetchMonthlyCommentCounts(dateRange: DateRange): Promise<L
     // Convert to arrays for the graph
     const labels: string[] = []
     const values: number[] = []
-    monthlyCounts.forEach((count, key) => {
+    monthlyCounts.forEach((count: any, key: any) => {
       const [year, month] = key.split('-')
       labels.push(new Date(Number(year), Number(month) - 1).toLocaleString('default', { month: 'short', year: 'numeric' }))
       values.push(count)

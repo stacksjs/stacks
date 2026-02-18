@@ -143,7 +143,7 @@ export function passwordResets(email: string): PasswordResetActions {
 
     // Verify the hashed token
     const hashedToken = result.token
-    return await verifyHash(token, hashedToken, 'bcrypt')
+    return await verifyHash(token, hashedToken)
   }
 
   async function resetPassword(token: string, newPassword: string): Promise<PasswordResetResult> {
@@ -182,7 +182,7 @@ export function passwordResets(email: string): PasswordResetActions {
 
       // Verify the hashed token
       const hashedToken = resetRecord.token
-      const isValid = await verifyHash(token, hashedToken, 'bcrypt')
+      const isValid = await verifyHash(token, hashedToken)
 
       if (!isValid) {
         await trx.rollback().execute()

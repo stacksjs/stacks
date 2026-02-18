@@ -337,6 +337,9 @@ export interface CloudOptions {
   }
 
   infrastructure: InfrastructureOptions
+  cdn: any
+  api: any
+  firewall: any
 }
 
 export type CloudConfig = Partial<CloudOptions>

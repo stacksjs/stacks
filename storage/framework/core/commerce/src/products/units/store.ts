@@ -117,8 +117,8 @@ export function formatUnitOptions(
       query = query.where('type', '=', type)
 
     // Convert db results to ensure id is string and handle potentially undefined is_default
-    return query.execute().then(results =>
-      results.map(result => ({
+    return query.execute().then((results: any) =>
+      results.map((result: any) => ({
         id: String(result.id), // Convert id to string
         name: result.name,
         abbreviation: result.abbreviation,

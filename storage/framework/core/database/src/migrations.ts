@@ -137,7 +137,7 @@ export async function resetDatabase(): Promise<Ok<string, never>> {
   // Then drop user model tables
   await qbResetDatabase(modelsDir, { dialect })
 
-  return ok('All tables dropped successfully!')
+  return ok('All tables dropped successfully!') as any
 }
 
 /**
@@ -147,7 +147,7 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'postgres'): Pr
   // Disable foreign key checks for MySQL to avoid constraint issues
   if (dialect === 'mysql') {
     try {
-      await db.unsafe('SET FOREIGN_KEY_CHECKS = 0').execute()
+      await (db as any).unsafe('SET FOREIGN_KEY_CHECKS = 0').execute()
     }
     catch (error) {
       log.warn(`Could not disable foreign key checks: ${error instanceof Error ? error.message : String(error)}`)
@@ -157,7 +157,7 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'postgres'): Pr
   // Disable foreign key checks for SQLite
   if (dialect === 'sqlite') {
     try {
-      await db.unsafe('PRAGMA foreign_keys = OFF').execute()
+      await (db as any).unsafe('PRAGMA foreign_keys = OFF').execute()
     }
     catch (error) {
       log.warn(`Could not disable foreign key checks: ${error instanceof Error ? error.message : String(error)}`)
@@ -181,7 +181,7 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'postgres'): Pr
 
       log.info(`Dropping framework table: ${tableName}`)
 
-      await db.unsafe(dropSql).execute()
+      await (db as any).unsafe(dropSql).execute()
 
       log.info(`Dropped framework table: ${tableName}`)
     }
@@ -194,7 +194,7 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'postgres'): Pr
   // Re-enable foreign key checks for MySQL
   if (dialect === 'mysql') {
     try {
-      await db.unsafe('SET FOREIGN_KEY_CHECKS = 1').execute()
+      await (db as any).unsafe('SET FOREIGN_KEY_CHECKS = 1').execute()
     }
     catch (error) {
       log.warn(`Could not re-enable foreign key checks: ${error instanceof Error ? error.message : String(error)}`)
@@ -204,7 +204,7 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'postgres'): Pr
   // Re-enable foreign key checks for SQLite
   if (dialect === 'sqlite') {
     try {
-      await db.unsafe('PRAGMA foreign_keys = ON').execute()
+      await (db as any).unsafe('PRAGMA foreign_keys = ON').execute()
     }
     catch (error) {
       log.warn(`Could not re-enable foreign key checks: ${error instanceof Error ? error.message : String(error)}`)

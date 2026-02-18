@@ -44,24 +44,24 @@ export async function fetchPrintJobStats(
     .where('timestamp', '>=', formatDate(startDate))
     .where('timestamp', '<=', endDate)
     .select([
-      db.fn.count<number>('id').as('total'),
-      db.fn.count<number>('id').filterWhere('status', '=', 'success').as('success'),
-      db.fn.count<number>('id').filterWhere('status', '=', 'failed').as('failed'),
-      db.fn.count<number>('id').filterWhere('status', '=', 'warning').as('warning'),
-      db.fn.avg<number>('size').as('averageSize'),
-      db.fn.avg<number>('pages').as('averagePages'),
-      db.fn.avg<number>('duration').as('averageDuration'),
+      db.fn.count('id').as('total'),
+      db.fn.count('id').filterWhere('status', '=', 'success').as('success'),
+      db.fn.count('id').filterWhere('status', '=', 'failed').as('failed'),
+      db.fn.count('id').filterWhere('status', '=', 'warning').as('warning'),
+      db.fn.avg('size').as('averageSize'),
+      db.fn.avg('pages').as('averagePages'),
+      db.fn.avg('duration').as('averageDuration'),
     ])
     .executeTakeFirst()
 
   return {
-    total: stats?.total || 0,
-    success: stats?.success || 0,
-    failed: stats?.failed || 0,
-    warning: stats?.warning || 0,
-    averageSize: Math.round(stats?.averageSize || 0),
-    averagePages: Math.round(stats?.averagePages || 0),
-    averageDuration: Math.round(stats?.averageDuration || 0),
+    total: (stats as any)?.total || 0,
+    success: (stats as any)?.success || 0,
+    failed: (stats as any)?.failed || 0,
+    warning: (stats as any)?.warning || 0,
+    averageSize: Math.round((stats as any)?.averageSize || 0),
+    averagePages: Math.round((stats as any)?.averagePages || 0),
+    averageDuration: Math.round((stats as any)?.averageDuration || 0),
   }
 }
 
@@ -87,17 +87,17 @@ export async function fetchSuccessRate(
     .where('timestamp', '>=', formatDate(startDate))
     .where('timestamp', '<=', formatDate(endDate))
     .select([
-      db.fn.count<number>('id').as('total'),
-      db.fn.count<number>('id').filterWhere('status', '=', 'success').as('success'),
-      db.fn.count<number>('id').filterWhere('status', '=', 'failed').as('failed'),
-      db.fn.count<number>('id').filterWhere('status', '=', 'warning').as('warning'),
+      db.fn.count('id').as('total'),
+      db.fn.count('id').filterWhere('status', '=', 'success').as('success'),
+      db.fn.count('id').filterWhere('status', '=', 'failed').as('failed'),
+      db.fn.count('id').filterWhere('status', '=', 'warning').as('warning'),
     ])
     .executeTakeFirst()
 
-  const total = stats?.total || 0
-  const success = stats?.success || 0
-  const failed = stats?.failed || 0
-  const warning = stats?.warning || 0
+  const total = (stats as any)?.total || 0
+  const success = (stats as any)?.success || 0
+  const failed = (stats as any)?.failed || 0
+  const warning = (stats as any)?.warning || 0
 
   // Calculate success rate as percentage of successful jobs vs total jobs
   const successRate = total > 0 ? Math.round((success / total) * 100) : 0
@@ -131,16 +131,16 @@ export async function fetchPageStats(
     .where('timestamp', '>=', formatDate(startDate))
     .where('timestamp', '<=', formatDate(endDate))
     .select([
-      db.fn.count<number>('id').as('totalReceipts'),
-      db.fn.sum<number>('pages').as('totalPages'),
-      db.fn.avg<number>('pages').as('averagePagesPerReceipt'),
+      db.fn.count('id').as('totalReceipts'),
+      db.fn.sum('pages').as('totalPages'),
+      db.fn.avg('pages').as('averagePagesPerReceipt'),
     ])
     .executeTakeFirst()
 
   return {
-    totalPages: stats?.totalPages || 0,
-    averagePagesPerReceipt: Math.round(stats?.averagePagesPerReceipt || 0),
-    totalReceipts: stats?.totalReceipts || 0,
+    totalPages: (stats as any)?.totalPages || 0,
+    averagePagesPerReceipt: Math.round((stats as any)?.averagePagesPerReceipt || 0),
+    totalReceipts: (stats as any)?.totalReceipts || 0,
   }
 }
 
@@ -165,18 +165,18 @@ export async function fetchPrintTimeStats(
     .where('timestamp', '>=', formatDate(startDate))
     .where('timestamp', '<=', formatDate(endDate))
     .select([
-      db.fn.count<number>('id').as('totalJobs'),
-      db.fn.avg<number>('duration').as('averageDuration'),
-      db.fn.min<number>('duration').as('minDuration'),
-      db.fn.max<number>('duration').as('maxDuration'),
+      db.fn.count('id').as('totalJobs'),
+      db.fn.avg('duration').as('averageDuration'),
+      db.fn.min('duration').as('minDuration'),
+      db.fn.max('duration').as('maxDuration'),
     ])
     .executeTakeFirst()
 
   return {
-    averageDuration: Math.round(stats?.averageDuration || 0),
-    minDuration: stats?.minDuration || 0,
-    maxDuration: stats?.maxDuration || 0,
-    totalJobs: stats?.totalJobs || 0,
+    averageDuration: Math.round((stats as any)?.averageDuration || 0),
+    minDuration: (stats as any)?.minDuration || 0,
+    maxDuration: (stats as any)?.maxDuration || 0,
+    totalJobs: (stats as any)?.totalJobs || 0,
   }
 }
 
@@ -215,7 +215,7 @@ export async function fetchPrintsPerHour(
     count: 0,
   }))
 
-  receipts.forEach((receipt) => {
+  receipts.forEach((receipt: any) => {
     const date = new Date(receipt.timestamp)
     const hour = date.getHours()
     hourlyBreakdown[hour].count++

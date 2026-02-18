@@ -49,8 +49,8 @@ export async function fetchAll(): Promise<ShippingRateJsonResponse[]> {
   const models = await db.selectFrom('shipping_rates').selectAll().execute()
 
   // Get the IDs of all shipping zones and methods
-  const shippingZoneIds = models.map(model => model.shipping_zone_id).filter(id => id !== null && id !== undefined)
-  const shippingMethodIds = models.map(model => model.shipping_method_id).filter(id => id !== null && id !== undefined)
+  const shippingZoneIds = models.map((model: any) => model.shipping_zone_id).filter((id: any) => id !== null && id !== undefined)
+  const shippingMethodIds = models.map((model: any) => model.shipping_method_id).filter((id: any) => id !== null && id !== undefined)
 
   let shippingZonesQuery = db.selectFrom('shipping_zones')
   let shippingMethodsQuery = db.selectFrom('shipping_methods')
@@ -68,18 +68,18 @@ export async function fetchAll(): Promise<ShippingRateJsonResponse[]> {
   const allShippingMethods = await shippingMethodsQuery.selectAll().execute()
 
   // Group shipping zones and methods by ID
-  const shippingZonesById = allShippingZones.reduce((acc, zone) => {
+  const shippingZonesById = allShippingZones.reduce((acc: any, zone: any) => {
     acc[zone.id] = zone
     return acc
   }, {} as Record<number, typeof allShippingZones[0]>)
 
-  const shippingMethodsById = allShippingMethods.reduce((acc, method) => {
+  const shippingMethodsById = allShippingMethods.reduce((acc: any, method: any) => {
     acc[method.id] = method
     return acc
   }, {} as Record<number, typeof allShippingMethods[0]>)
 
   // Attach shipping zones and methods to each shipping rate
-  return models.map(model => ({
+  return models.map((model: any) => ({
     ...model,
     shipping_zone: model.shipping_zone_id ? shippingZonesById[model.shipping_zone_id] : [],
     shipping_method: model.shipping_method_id ? shippingMethodsById[model.shipping_method_id] : [],
@@ -154,7 +154,7 @@ export async function formatShippingRateOptions(): Promise<{ id: number, shippin
       .execute()
 
     // Filter out any results with undefined/null values to match the return type
-    return results.filter(result =>
+    return results.filter((result: any) =>
       result.shipping_method_id !== null
       && result.shipping_method_id !== undefined
       && result.shipping_zone_id !== null

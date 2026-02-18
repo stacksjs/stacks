@@ -747,7 +747,7 @@ export class ImapServer {
     // Since we don't track this properly across sessions, we return 0.
     // Mail.app uses \Seen flag (not \Recent) to determine unread messages.
     const recent = 0
-    const unseenIdx = messages.findIndex(m => !m.flags.includes('\\Seen'))
+    const unseenIdx = messages.findIndex((m: any) => !m.flags.includes('\\Seen'))
     const unseen = unseenIdx >= 0 ? unseenIdx + 1 : 0
     const uidnext = this.getUidCounterForFolder(session.email || '', mailbox) + 1
 
@@ -954,7 +954,7 @@ export class ImapServer {
           results.push(`UIDVALIDITY ${this.getUidValidity(session.email || '')}`)
           break
         case 'UNSEEN':
-          results.push(`UNSEEN ${messages.filter(m => !m.flags.includes('\\Seen')).length}`)
+          results.push(`UNSEEN ${messages.filter((m: any) => !m.flags.includes('\\Seen')).length}`)
           break
       }
     }
@@ -1052,11 +1052,11 @@ export class ImapServer {
     const messages = this.getMessagesForFolder(session.email || '', folder)
 
     // Parse UID set
-    const maxUid = messages.length > 0 ? Math.max(...messages.map(m => m.uid)) : 0
+    const maxUid = messages.length > 0 ? Math.max(...messages.map((m: any) => m.uid)) : 0
     const uids = this.parseSequenceSet(uidSet, maxUid)
 
     for (const uid of uids) {
-      const idx = messages.findIndex(m => m.uid === uid)
+      const idx = messages.findIndex((m: any) => m.uid === uid)
       if (idx === -1)
         continue
 
@@ -1084,7 +1084,7 @@ export class ImapServer {
     if (messages.length === 0) {
       this.send(session, `* SEARCH`)
     } else {
-      const results = messages.map((_, i) => i + 1)
+      const results = messages.map((_: any, i: any) => i + 1)
       this.send(session, `* SEARCH ${results.join(' ')}`)
     }
     this.send(session, `${tag} OK SEARCH completed`)
@@ -1101,7 +1101,7 @@ export class ImapServer {
     if (messages.length === 0) {
       this.send(session, `* SEARCH`)
     } else {
-      const results = messages.map(m => m.uid)
+      const results = messages.map((m: any) => m.uid)
       this.send(session, `* SEARCH ${results.join(' ')}`)
     }
     this.send(session, `${tag} OK UID SEARCH completed`)
@@ -1132,7 +1132,7 @@ export class ImapServer {
     const messages = this.getMessagesForFolder(session.email || '', folder)
     const indices = this.parseSequenceSet(sequenceSet, messages.length)
     const silent = operation.toUpperCase().includes('.SILENT')
-    const flags = flagsStr.split(/\s+/).filter(f => f)
+    const flags = flagsStr.split(/\s+/).filter((f: any) => f)
 
     // Load persisted flags
     const persistedFlags = await this.loadFlags(session.email || '')
@@ -1193,17 +1193,17 @@ export class ImapServer {
     const [, uidSet, operation, flagsStr] = match
     const folder = session.selectedMailbox || 'INBOX'
     const messages = this.getMessagesForFolder(session.email || '', folder)
-    const maxUid = messages.length > 0 ? Math.max(...messages.map(m => m.uid)) : 0
+    const maxUid = messages.length > 0 ? Math.max(...messages.map((m: any) => m.uid)) : 0
     const uids = this.parseSequenceSet(uidSet, maxUid)
     const silent = operation.toUpperCase().includes('.SILENT')
-    const flags = flagsStr.split(/\s+/).filter(f => f)
+    const flags = flagsStr.split(/\s+/).filter((f: any) => f)
 
     // Load persisted flags
     const persistedFlags = await this.loadFlags(session.email || '')
 
     // For each message, update flags and send FETCH response (unless SILENT)
     for (const uid of uids) {
-      const idx = messages.findIndex(m => m.uid === uid)
+      const idx = messages.findIndex((m: any) => m.uid === uid)
       if (idx === -1) continue
 
       const msg = messages[idx]
@@ -1314,7 +1314,7 @@ export class ImapServer {
     const [, uidSet, destMailbox] = match
     const sourceFolder = session.selectedMailbox || 'INBOX'
     const messages = this.getMessagesForFolder(session.email || '', sourceFolder)
-    const maxUid = messages.length > 0 ? Math.max(...messages.map(m => m.uid)) : 0
+    const maxUid = messages.length > 0 ? Math.max(...messages.map((m: any) => m.uid)) : 0
     const uids = this.parseSequenceSet(uidSet, maxUid)
 
     // Get destination folder S3 prefix
@@ -1322,7 +1322,7 @@ export class ImapServer {
 
     // Copy messages to destination folder
     for (const uid of uids) {
-      const msg = messages.find(m => m.uid === uid)
+      const msg = messages.find((m: any) => m.uid === uid)
       if (!msg) continue
 
       try {
@@ -1403,13 +1403,13 @@ export class ImapServer {
     }
 
     // Send EXPUNGE responses for moved messages (in reverse order per RFC)
-    const sortedIndices = [...movedIndices].sort((a, b) => b - a)
+    const sortedIndices = [...movedIndices].sort((a: any, b: any) => b - a)
     for (const idx of sortedIndices) {
       this.send(session, `* ${idx} EXPUNGE`)
     }
 
     // Update cache
-    const remainingMessages = messages.filter((_, i) => !movedIndices.includes(i + 1))
+    const remainingMessages = messages.filter((_: any, i: any) => !movedIndices.includes(i + 1))
     this.setMessagesForFolder(session.email || '', sourceFolder, remainingMessages)
 
     // Update EXISTS count
@@ -1438,7 +1438,7 @@ export class ImapServer {
     const [, uidSet, destMailbox] = match
     const sourceFolder = session.selectedMailbox || 'INBOX'
     const messages = this.getMessagesForFolder(session.email || '', sourceFolder)
-    const maxUid = messages.length > 0 ? Math.max(...messages.map(m => m.uid)) : 0
+    const maxUid = messages.length > 0 ? Math.max(...messages.map((m: any) => m.uid)) : 0
     const uids = this.parseSequenceSet(uidSet, maxUid)
     const destPrefix = this.getFolderPrefix(destMailbox)
 
@@ -1446,7 +1446,7 @@ export class ImapServer {
 
     // Copy messages to destination then delete from source
     for (const uid of uids) {
-      const idx = messages.findIndex(m => m.uid === uid)
+      const idx = messages.findIndex((m: any) => m.uid === uid)
       if (idx === -1) continue
 
       const msg = messages[idx]
@@ -1474,13 +1474,13 @@ export class ImapServer {
     }
 
     // Send EXPUNGE responses for moved messages (in reverse order per RFC)
-    const sortedIndices = [...movedIndices].sort((a, b) => b - a)
+    const sortedIndices = [...movedIndices].sort((a: any, b: any) => b - a)
     for (const idx of sortedIndices) {
       this.send(session, `* ${idx} EXPUNGE`)
     }
 
     // Update cache
-    const remainingMessages = messages.filter((_, i) => !movedIndices.includes(i + 1))
+    const remainingMessages = messages.filter((_: any, i: any) => !movedIndices.includes(i + 1))
     this.setMessagesForFolder(session.email || '', sourceFolder, remainingMessages)
 
     // Update EXISTS count
@@ -1504,7 +1504,7 @@ export class ImapServer {
 
     // Parse UID set from args
     const uidSet = args.trim()
-    const maxUid = messages.length > 0 ? Math.max(...messages.map(m => m.uid)) : 0
+    const maxUid = messages.length > 0 ? Math.max(...messages.map((m: any) => m.uid)) : 0
     const uids = this.parseSequenceSet(uidSet, maxUid)
 
     const indicesToExpunge: number[] = []
@@ -1535,7 +1535,7 @@ export class ImapServer {
     }
 
     // Remove deleted messages from cache
-    const remainingMessages = messages.filter((_, i) => !indicesToExpunge.includes(i + 1))
+    const remainingMessages = messages.filter((_: any, i: any) => !indicesToExpunge.includes(i + 1))
     this.setMessagesForFolder(session.email || '', folder, remainingMessages)
 
     // Send EXISTS if messages were removed
@@ -1594,7 +1594,7 @@ export class ImapServer {
     }
 
     // Remove deleted messages from cache
-    const remainingMessages = messages.filter(m => !m.flags.includes('\\Deleted'))
+    const remainingMessages = messages.filter((m: any) => !m.flags.includes('\\Deleted'))
     this.setMessagesForFolder(session.email || '', folder, remainingMessages)
 
     // Send EXISTS if messages were removed
@@ -1760,7 +1760,7 @@ export class ImapServer {
       }
 
       // Sort messages by UID (ascending) for correct sequence numbers
-      messages.sort((a, b) => a.uid - b.uid)
+      messages.sort((a: any, b: any) => a.uid - b.uid)
 
       // Save UID mapping if new messages were added
       if (hasNewMessages) {
@@ -1768,7 +1768,7 @@ export class ImapServer {
       }
 
       // Update UID counter for folder to max UID
-      const maxUid = messages.length > 0 ? Math.max(...messages.map(m => m.uid)) : 0
+      const maxUid = messages.length > 0 ? Math.max(...messages.map((m: any) => m.uid)) : 0
       this.setUidCounterForFolder(email, folder, maxUid)
       this.setMessagesForFolder(email, folder, messages)
       this.cacheTimestamp.set(cacheKey, Date.now())
@@ -1865,7 +1865,7 @@ export class ImapServer {
     }
 
     // Sort messages by UID (ascending) for correct sequence numbers
-    allMessages.sort((a, b) => a.uid - b.uid)
+    allMessages.sort((a: any, b: any) => a.uid - b.uid)
 
     // Save UID mapping if new messages were added
     if (hasNewMessages) {
@@ -1873,7 +1873,7 @@ export class ImapServer {
     }
 
     // Update UID counter for folder to max UID
-    const maxUid = allMessages.length > 0 ? Math.max(...allMessages.map(m => m.uid)) : 0
+    const maxUid = allMessages.length > 0 ? Math.max(...allMessages.map((m: any) => m.uid)) : 0
     this.setUidCounterForFolder(email, folder, maxUid)
     this.setMessagesForFolder(email, folder, allMessages)
     this.cacheTimestamp.set(cacheKey, Date.now())
@@ -1972,7 +1972,7 @@ export class ImapServer {
     }
 
     // Sort messages by UID (ascending) for correct sequence numbers
-    starredMessages.sort((a, b) => a.uid - b.uid)
+    starredMessages.sort((a: any, b: any) => a.uid - b.uid)
 
     // Save UID mapping if new messages were added
     if (hasNewMessages) {
@@ -1980,7 +1980,7 @@ export class ImapServer {
     }
 
     // Update UID counter for folder to max UID
-    const maxUid = starredMessages.length > 0 ? Math.max(...starredMessages.map(m => m.uid)) : 0
+    const maxUid = starredMessages.length > 0 ? Math.max(...starredMessages.map((m: any) => m.uid)) : 0
     this.setUidCounterForFolder(email, folder, maxUid)
     this.setMessagesForFolder(email, folder, starredMessages)
     this.cacheTimestamp.set(cacheKey, Date.now())
@@ -2080,7 +2080,7 @@ export class ImapServer {
     }
 
     // Sort messages by UID (ascending) for correct sequence numbers
-    importantMessages.sort((a, b) => a.uid - b.uid)
+    importantMessages.sort((a: any, b: any) => a.uid - b.uid)
 
     // Save UID mapping if new messages were added
     if (hasNewMessages) {
@@ -2088,7 +2088,7 @@ export class ImapServer {
     }
 
     // Update UID counter for folder to max UID
-    const maxUid = importantMessages.length > 0 ? Math.max(...importantMessages.map(m => m.uid)) : 0
+    const maxUid = importantMessages.length > 0 ? Math.max(...importantMessages.map((m: any) => m.uid)) : 0
     this.setUidCounterForFolder(email, folder, maxUid)
     this.setMessagesForFolder(email, folder, importantMessages)
     this.cacheTimestamp.set(cacheKey, Date.now())
@@ -2196,7 +2196,7 @@ export class ImapServer {
       }
 
       // Sort messages by UID (ascending) for correct sequence numbers
-      messages.sort((a, b) => a.uid - b.uid)
+      messages.sort((a: any, b: any) => a.uid - b.uid)
 
       // Save UID mapping if new messages were added
       if (hasNewMessages) {
@@ -2204,7 +2204,7 @@ export class ImapServer {
       }
 
       // Update UID counter for folder to max UID
-      const maxUid = messages.length > 0 ? Math.max(...messages.map(m => m.uid)) : 0
+      const maxUid = messages.length > 0 ? Math.max(...messages.map((m: any) => m.uid)) : 0
       this.setUidCounterForFolder(email, folder, maxUid)
       this.setMessagesForFolder(email, folder, messages)
       this.cacheTimestamp.set(cacheKey, Date.now())
@@ -2368,7 +2368,7 @@ export class ImapServer {
       }
     }
 
-    return [...new Set(results)].sort((a, b) => a - b)
+    return [...new Set(results)].sort((a: any, b: any) => a - b)
   }
 
   /**

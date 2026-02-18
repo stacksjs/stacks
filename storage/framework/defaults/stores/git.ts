@@ -1,5 +1,3 @@
-import type { GitHubCommit, WorkflowRun } from '../types/git'
-
 const owner = 'stacksjs'
 const repo = 'stacks'
 const numberOfCommits = 10
@@ -9,17 +7,21 @@ const apiUrl = `https://api.github.com/repos/${owner}/${repo}`
 
 const token = ''
 
+declare const defineStore: any
+declare const useHttpFetch: any
+declare const acceptHMRUpdate: any
+
 export const useGitStore = defineStore('git', {
   state: (): any => {
     return {
-      commitLists: [] as GitHubCommit[],
-      workflowRuns: [] as WorkflowRun[],
-      workflowRun: {} as WorkflowRun,
+      commitLists: [] as any[],
+      workflowRuns: [] as any[],
+      workflowRun: {} as any,
     }
   },
 
   actions: {
-    async fetchCommits(): Promise<void> {
+    async fetchCommits(this: any): Promise<void> {
       const fetch = await useHttpFetch(apiUrl)
 
       fetch.setToken(token)
@@ -29,7 +31,7 @@ export const useGitStore = defineStore('git', {
       this.commitLists = response
     },
 
-    async fetchWorkflowActions(): Promise<void> {
+    async fetchWorkflowActions(this: any): Promise<void> {
       const fetch = await useHttpFetch(apiUrl)
 
       fetch.setToken(token)
@@ -39,7 +41,7 @@ export const useGitStore = defineStore('git', {
       this.workflowRuns = response.workflow_runs
     },
 
-    async fetchWorkflowAction(id: number): Promise<void> {
+    async fetchWorkflowAction(this: any, id: number): Promise<void> {
       const fetch = await useHttpFetch(apiUrl)
 
       fetch.setToken(token)
@@ -51,19 +53,19 @@ export const useGitStore = defineStore('git', {
   },
 
   getters: {
-    getCommits(state): GitHubCommit[] {
+    getCommits(state: any): any[] {
       return state.commitLists
     },
 
-    hasCommits(state) {
+    hasCommits(state: any) {
       return state.commitLists.length
     },
 
-    hasWorkflowRuns(state) {
+    hasWorkflowRuns(state: any) {
       return state.workflowRuns.length
     },
 
-    getWorkflowRuns(state): GitHubCommit[] {
+    getWorkflowRuns(state: any): any[] {
       return state.workflowRuns
     },
   },
