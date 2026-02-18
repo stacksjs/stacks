@@ -12,7 +12,7 @@ import { join, resolve } from 'node:path'
  * Protected globals (Array, Map, etc.) are never overwritten.
  */
 
-const tmpDir = resolve(import.meta.dir, '../../.tmp-preloader-test')
+const tmpDir = resolve(import.meta.dir, '../../../../../.tmp-preloader-test')
 
 // Track globals we add so we can clean them up
 const addedGlobals: string[] = []

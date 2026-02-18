@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { defineModel } from '../../storage/framework/core/orm/src/define-model'
+import { defineModel } from '../src/define-model'
 
 describe('defineModel', () => {
   describe('basic model creation', () => {

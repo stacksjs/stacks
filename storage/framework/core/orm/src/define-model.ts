@@ -130,7 +130,7 @@ function buildTraitMethods(definition: ModelDefinition): TraitMethods {
   }
 
   if (traits.likeable) {
-    const likeableOpts = typeof traits.likeable === 'object' ? traits.likeable as any : undefined
+    const likeableOpts = typeof traits.likeable === 'object' ? traits.likeable as { table?: string, foreignKey?: string } : undefined
     methods._likeable = createLikeableMethods(tableName, likeableOpts)
   }
 

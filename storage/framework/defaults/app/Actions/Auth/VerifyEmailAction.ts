@@ -5,9 +5,9 @@ export default new Action({
   description: 'Verify user email address',
   method: 'GET',
 
-  async handle(request: any) {
-    const userId = Number(request.params?.id)
-    const token = request.params?.token
+  async handle(request: RequestInstance) {
+    const userId = request.getParamAsInt('id')
+    const token = request.getParam('token')
 
     if (!userId || !token) {
       return response.json({ success: false, message: 'Invalid verification link.' }, 422)

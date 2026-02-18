@@ -5,8 +5,8 @@ export default new Action({
   description: 'Resend email verification link',
   method: 'POST',
 
-  async handle(request: any) {
-    const user = request.user || request._user
+  async handle(request: RequestInstance) {
+    const user = await request.user()
 
     if (!user) {
       return response.unauthorized('Unauthenticated.')

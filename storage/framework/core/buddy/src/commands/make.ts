@@ -206,7 +206,7 @@ export function make(buddy: CLI): void {
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-s, --signature [signature]', 'The command signature (CLI name)', { default: false })
     .option('-d, --description [description]', 'The command description', { default: false })
-    .option('--no-register', 'Do not register in Commands.ts', { default: false })
+    .option('--no-register', 'Do not register in Commands.ts')
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy make:command SendEmails')

@@ -6,8 +6,8 @@ export default new Action({
   name: 'Error Show',
   description: 'Fetch a single error by ID',
   method: 'GET',
-  async handle(request: any) {
-    const id = Number(request.params.id)
+  async handle(request: RequestInstance) {
+    const id = request.getParamAsInt('id')
     const result = await errors.fetchById(id)
 
     if (!result) {

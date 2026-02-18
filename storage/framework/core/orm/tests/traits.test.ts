@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'bun:test'
-import { createTaggableMethods } from '../../storage/framework/core/orm/src/traits/taggable'
-import { createCategorizableMethods } from '../../storage/framework/core/orm/src/traits/categorizable'
-import { createCommentableMethods } from '../../storage/framework/core/orm/src/traits/commentable'
-import { createBillableMethods } from '../../storage/framework/core/orm/src/traits/billable'
-import { createLikeableMethods } from '../../storage/framework/core/orm/src/traits/likeable'
-import { createTwoFactorMethods } from '../../storage/framework/core/orm/src/traits/two-factor'
+import { createTaggableMethods } from '../src/traits/taggable'
+import { createCategorizableMethods } from '../src/traits/categorizable'
+import { createCommentableMethods } from '../src/traits/commentable'
+import { createBillableMethods } from '../src/traits/billable'
+import { createLikeableMethods } from '../src/traits/likeable'
+import { createTwoFactorMethods } from '../src/traits/two-factor'
 
 /**
  * Unit tests for trait modules.
@@ -166,7 +166,7 @@ describe('trait modules', () => {
 
   describe('trait integration with defineModel', () => {
     it('should attach multiple traits to a single model', () => {
-      const { defineModel } = require('../../storage/framework/core/orm/src/define-model')
+      const { defineModel } = require('../src/define-model')
 
       const Post = defineModel({
         name: 'TestPost',
@@ -191,7 +191,7 @@ describe('trait modules', () => {
     })
 
     it('should not create trait methods when model has no traits', () => {
-      const { defineModel } = require('../../storage/framework/core/orm/src/define-model')
+      const { defineModel } = require('../src/define-model')
 
       const Simple = defineModel({
         name: 'TestSimple',
@@ -211,7 +211,7 @@ describe('trait modules', () => {
     })
 
     it('should handle all traits simultaneously', () => {
-      const { defineModel } = require('../../storage/framework/core/orm/src/define-model')
+      const { defineModel } = require('../src/define-model')
 
       const User = defineModel({
         name: 'TestUser',

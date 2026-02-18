@@ -11,7 +11,7 @@ import { dirname, join, relative, resolve } from 'node:path'
  */
 
 // Create a temporary directory structure for testing
-const tmpDir = resolve(import.meta.dir, '../../.tmp-auto-imports-test')
+const tmpDir = resolve(import.meta.dir, '../../../../../.tmp-auto-imports-test')
 
 beforeAll(() => {
   // Create directory structure

@@ -28,11 +28,4 @@ export type CommandRegistry = Record<string, string | CommandConfig>
  */
 export default {
   'inspire': 'Inspire',
-  // Add more commands here
-  // 'my-command': 'MyCommand',
-  // 'send-emails': {
-  //   file: 'SendEmails',
-  //   enabled: true,
-  //   aliases: ['emails'],
-  // },
 } satisfies CommandRegistry

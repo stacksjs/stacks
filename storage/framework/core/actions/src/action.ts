@@ -1,9 +1,8 @@
 import type { JobOptions } from '@stacksjs/types'
-import type { schema } from '@stacksjs/validation'
 
 interface ActionValidations {
   [key: string]: {
-    rule: ReturnType<typeof schema.string>
+    rule: { validate: (value: unknown) => { valid: boolean, errors?: Array<{ message: string }> } }
     message?: string | Record<string, string>
   }
 }
@@ -78,7 +77,7 @@ export class Action<TModel = string> {
 
     // Extract model name string for runtime (route generation, etc.)
     if (model && typeof model === 'object' && 'name' in model) {
-      this.model = (model as any).name
+      this.model = (model as { name: string }).name
     }
     else if (typeof model === 'string') {
       this.model = model

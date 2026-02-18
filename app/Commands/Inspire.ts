@@ -1,4 +1,3 @@
-@ -1, 43 + 0, 0 @@
 import type { CLI } from '@stacksjs/types'
 // triggered via `$your-cli inspire` and `buddy inspire`
 import process from 'node:process'
@@ -19,19 +18,33 @@ export default function (cli: CLI) {
     })
     .alias('insp')
     .action((options: InspireOptions) => {
-      if (options.two)
-        quotes.random(2).map((quote, index) => log.info(`${index + 1}. ${quote}`))
-      else log.info(quotes.random())
+      try {
+        if (options.two) {
+          const randomQuotes = quotes.random(2)
+          randomQuotes.toArray().forEach((quote: string, index: number) => {
+            console.log(`${index + 1}. ${quote}`)
+          })
+        }
+        else {
+          const quote = quotes.random(1).first()
+          console.log(`\n"${quote}"\n`)
+        }
 
-      log.success('Have a great day!')
+        console.log('Have a great day!')
+      }
+      catch (error) {
+        console.error('Error:', error)
+      }
       process.exit(ExitCode.Success)
     })
 
   cli.command('inspire:two', 'Inspire yourself with two random quotes').action(() => {
-    // @ts-expect-error - this is safe because we hard-coded the quotes
-    quotes.random(2).map((quote, index) => log.info(`${index + 1}. ${quote}`))
-
-    log.success('Have a great day!')
+    console.log('')
+    quotes.random(2).toArray().forEach((quote: string, index: number) => {
+      console.log(`${index + 1}. "${quote}"`)
+    })
+    console.log('')
+    console.log('Have a great day!')
     process.exit(ExitCode.Success)
   })
 
@@ -39,6 +52,4 @@ export default function (cli: CLI) {
     log.error('Invalid command: %s\nSee --help for a list of available commands.', cli.args.join(' '))
     process.exit(1)
   })
-
-  return cli // TODO: this may not be needed
 }

@@ -14,7 +14,7 @@ import { describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
-const rootDir = resolve(import.meta.dir, '../..')
+const rootDir = resolve(import.meta.dir, '../../../../..')
 const coreOrmDir = join(rootDir, 'storage/framework/core/orm/src')
 const typesDir = join(rootDir, 'storage/framework/types')
 const frameworkModelsDir = join(rootDir, 'storage/framework/models')

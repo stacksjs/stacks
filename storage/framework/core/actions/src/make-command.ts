@@ -114,7 +114,8 @@ async function registerCommand(name: string, signature: string): Promise<void> {
     let content = await get(commandsPath)
 
     // Find the default export object and add the new command
-    const exportMatch = content.match(/export default \{([^}]*)\} satisfies/)
+    // Use [\s\S]* to match across lines including commented-out braces
+    const exportMatch = content.match(/export default \{([\s\S]*)\} satisfies/)
 
     if (exportMatch) {
       const existingCommands = exportMatch[1]
@@ -130,7 +131,7 @@ async function registerCommand(name: string, signature: string): Promise<void> {
       const updatedCommands = existingCommands.trimEnd() + '\n' + newCommand
 
       content = content.replace(
-        /export default \{([^}]*)\} satisfies/,
+        /export default \{[\s\S]*\} satisfies/,
         `export default {${updatedCommands}} satisfies`,
       )
 

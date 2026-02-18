@@ -78,11 +78,8 @@ async function main() {
     const commandsToLoad = getCommandsToLoad(args)
     await loadCommands(commandsToLoad, buddy as any)
 
-    // dynamic imports - skip for list command since we already have all commands
-    const baseCommand = args[0]?.split(':')[0]
-    if (baseCommand !== 'list') {
-      await dynamicImports(buddy)
-    }
+    // Load user commands from app/Commands/
+    await dynamicImports(buddy)
   }
   else {
     // For minimal commands, only load what's needed for better cold start
@@ -210,18 +207,29 @@ async function dynamicImports(buddy: CLI) {
   }
   catch {
     // If Commands.ts doesn't exist, fall back to auto-discovery
+    if (!fs.existsSync(commandsDir)) {
+      log.debug('app/Commands directory not found, skipping user commands')
+      return
+    }
+
     log.debug('Commands.ts not found, using auto-discovery')
 
     const commandFiles = fs.readdirSync(commandsDir).filter((file: string) => file.endsWith('.ts'))
 
     for (const file of commandFiles) {
       const commandPath = `${commandsDir}/${file}`
-      const dynamicImport = await import(commandPath)
 
-      if (typeof dynamicImport.default === 'function')
-        dynamicImport.default(buddy)
-      else
-        log.error(`Expected a default export function in ${file}, but got:`, dynamicImport.default)
+      try {
+        const dynamicImport = await import(commandPath)
+
+        if (typeof dynamicImport.default === 'function')
+          dynamicImport.default(buddy)
+        else
+          log.debug(`Skipping ${file} — no default export function`)
+      }
+      catch (error) {
+        log.error(`Failed to load command ${file}:`, error)
+      }
     }
   }
 

@@ -6,8 +6,9 @@ export default new Action({
   name: 'Error Resolve',
   description: 'Resolve all errors in a group',
   method: 'PATCH',
-  async handle(request: any) {
-    const { type, message } = request.body || {}
+  async handle(request: RequestInstance) {
+    const type = request.string('type')
+    const message = request.string('message')
 
     if (!type || !message) {
       return response.json({ error: 'Both type and message are required' }, 400)

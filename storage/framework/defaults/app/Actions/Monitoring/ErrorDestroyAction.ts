@@ -6,9 +6,9 @@ export default new Action({
   name: 'Error Destroy',
   description: 'Delete all errors in a group',
   method: 'DELETE',
-  async handle(request: any) {
-    const type = decodeURIComponent(request.query.type || '')
-    const message = decodeURIComponent(request.query.message || '')
+  async handle(request: RequestInstance) {
+    const type = decodeURIComponent(request.string('type'))
+    const message = decodeURIComponent(request.string('message'))
 
     if (!type || !message) {
       return response.json({ error: 'Both type and message are required' }, 400)

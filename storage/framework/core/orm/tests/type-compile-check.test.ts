@@ -15,7 +15,7 @@ import { describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
-const rootDir = resolve(import.meta.dir, '../..')
+const rootDir = resolve(import.meta.dir, '../../../../..')
 const coreOrmDir = join(rootDir, 'storage/framework/core/orm/src')
 const typesDir = join(rootDir, 'storage/framework/types')
 const frameworkModelsDir = join(rootDir, 'storage/framework/models')
@@ -377,7 +377,8 @@ describe('Action class uses smart InferRequest for model-aware handlers', () => 
     const content = readFileSync(actionFile, 'utf-8')
     // When model is an object with a name property, extract the name string
     expect(content).toContain("'name' in model")
-    expect(content).toContain('(model as any).name')
+    // Uses a typed cast instead of `as any`
+    expect(content).toContain('(model as { name: string }).name')
   })
 
   test('does NOT import ModelRegistry', () => {
@@ -390,6 +391,27 @@ describe('Action class uses smart InferRequest for model-aware handlers', () => 
     // Should not have any pattern like TModelName extends keyof SomeRegistry
     expect(content).not.toContain('keyof ModelRegistry')
     expect(content).not.toContain('extends keyof')
+  })
+
+  test('ActionValidations uses structural validate() typing (not schema.string)', () => {
+    const content = readFileSync(actionFile, 'utf-8')
+    // Should use structural typing that accepts any validator with validate()
+    expect(content).toContain('validate')
+    // Should NOT be tied to a specific schema method return type
+    expect(content).not.toContain('ReturnType<typeof schema')
+    expect(content).not.toContain('schema.string')
+  })
+
+  test('does NOT import @stacksjs/validation', () => {
+    const content = readFileSync(actionFile, 'utf-8')
+    // ActionValidations should not depend on validation package
+    expect(content).not.toContain('@stacksjs/validation')
+  })
+
+  test('constructor does not use `as any` cast', () => {
+    const content = readFileSync(actionFile, 'utf-8')
+    // Model name extraction should use typed cast, not `as any`
+    expect(content).not.toContain('(model as any)')
   })
 })
 

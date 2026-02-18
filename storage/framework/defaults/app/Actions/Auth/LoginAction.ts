@@ -16,7 +16,7 @@ export default new Action({
     },
   },
 
-  async handle(request: any) {
+  async handle(request: RequestInstance) {
     const email = request.get('email')
     const password = request.get('password')
 
