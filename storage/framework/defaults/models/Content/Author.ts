@@ -1,7 +1,7 @@
-import type { Model } from '@stacksjs/types'
+import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
-export default {
+export default defineModel({
   name: 'Author', // defaults to the sanitized file name
   table: 'authors', // defaults to the lowercase, plural name of the model name (or the name of the model file)
   primaryKey: 'id', // defaults to `id`
@@ -77,4 +77,4 @@ export default {
   dashboard: {
     highlight: true,
   },
-} satisfies Model
+} as const)

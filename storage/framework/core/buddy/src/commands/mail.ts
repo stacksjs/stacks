@@ -1,9 +1,9 @@
 import { log, runCommand } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
-import { CAC } from 'cac'
+import { CLI } from '@stacksjs/clapp'
 import { createHash, randomBytes } from 'crypto'
 
-export function mailCommands(buddy: CAC): void {
+export function mailCommands(buddy: CLI): void {
   buddy
     .command('mail:user:add <email>', 'Add a mail user')
     .option('--password <password>', 'User password (generated if not provided)')

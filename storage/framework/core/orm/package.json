@@ -46,7 +46,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-validation": "^0.4.7"
+    "@stacksjs/ts-validation": "^0.4.7",
+    "bun-query-builder": "link:bun-query-builder"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",

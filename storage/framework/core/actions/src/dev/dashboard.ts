@@ -5,6 +5,8 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { Glob } from 'bun'
 
 const dashboardPath = storagePath('framework/defaults/dashboard')
+const userDashboardPath = projectPath('resources/views/dashboard')
+const verbose = process.argv.includes('--verbose')
 
 // Discover models from both user and default directories
 async function discoverModels(): Promise<Array<{ name: string, icon: string, id: string }>> {
@@ -112,13 +114,13 @@ async function discoverModels(): Promise<Array<{ name: string, icon: string, id:
 // Get discovered models
 const discoveredModels = await discoverModels()
 
-log.info('Starting Stacks Dashboard...')
-log.info(`Dashboard path: ${dashboardPath}`)
+if (verbose) log.info('Starting Stacks Dashboard...')
+if (verbose) log.info(`Dashboard path: ${dashboardPath}`)
 
 // Start STX dev server for the dashboard
-const dashboardPort = 3456
+const dashboardPort = Number(process.env.PORT_ADMIN) || 3456
 
-log.info(`Starting STX dev server on http://localhost:${dashboardPort}...`)
+if (verbose) log.info(`Starting STX dev server on http://localhost:${dashboardPort}...`)
 
 let serverStarted = false
 
@@ -126,8 +128,9 @@ try {
   const { serve } = await import('bun-plugin-stx/serve')
 
   // Run serve in background - don't await since it blocks forever
+  // User views take priority over defaults (checked in order)
   const serverPromise = serve({
-    patterns: [dashboardPath],
+    patterns: [userDashboardPath, dashboardPath],
     port: dashboardPort,
     componentsDir: storagePath('framework/defaults/components/Dashboard'),
     layoutsDir: `${dashboardPath}/layouts`,
@@ -136,7 +139,7 @@ try {
 
   // Set up error handler but don't let it kill the process
   serverPromise.catch((err: Error) => {
-    if (!serverStarted) {
+    if (!serverStarted && verbose) {
       log.warn(`STX server issue: ${err.message}`)
     }
   })
@@ -144,11 +147,11 @@ try {
   // Give the server a moment to start
   await new Promise(resolve => setTimeout(resolve, 500))
   serverStarted = true
-  log.success(`STX dev server running on http://localhost:${dashboardPort}`)
+  if (verbose) log.success(`STX dev server running on http://localhost:${dashboardPort}`)
 }
 catch (err: any) {
-  log.warn(`STX server warning: ${err.message || err}`)
-  log.info('Continuing with Craft launch...')
+  if (verbose) log.warn(`STX server warning: ${err.message || err}`)
+  if (verbose) log.info('Continuing with Craft launch...')
 }
 
 // Path to the Craft binary - check common locations (craft-minimal parses CLI args)
@@ -167,7 +170,7 @@ for (const craftPath of craftPaths) {
     const file = Bun.file(craftPath)
     if (await file.exists()) {
       craftBinary = craftPath
-      log.info(`Found Craft at: ${craftPath}`)
+      if (verbose) log.info(`Found Craft at: ${craftPath}`)
       break
     }
   }
@@ -177,9 +180,11 @@ for (const craftPath of craftPaths) {
 }
 
 if (!craftBinary) {
-  log.warn('Craft binary not found. Running STX server only.')
-  log.info('To enable native macOS sidebar, build Craft: cd ~/Code/Tools/craft && zig build')
-  log.info(`Dashboard available at: http://localhost:${dashboardPort}/pages/index`)
+  if (verbose) {
+    log.warn('Craft binary not found. Running STX server only.')
+    log.info('To enable native macOS sidebar, build Craft: cd ~/Code/Tools/craft && zig build')
+    log.info(`Dashboard available at: http://localhost:${dashboardPort}/pages/index`)
+  }
 
   // Keep the process running since we're serving via STX
   await new Promise(() => {}) // Block forever
@@ -317,10 +322,12 @@ const sidebarConfig = {
 // Convert sidebar config to JSON string for CLI
 const sidebarConfigJson = JSON.stringify(sidebarConfig)
 
-log.info('Launching Craft with native macOS sidebar...')
-log.info(`Using Craft binary: ${craftBinary}`)
-log.info(`Sidebar width: 240px`)
-log.info(`Window size: 1400x900`)
+if (verbose) {
+  log.info('Launching Craft with native macOS sidebar...')
+  log.info(`Using Craft binary: ${craftBinary}`)
+  log.info(`Sidebar width: 240px`)
+  log.info(`Window size: 1400x900`)
+}
 
 // Initial URL to load - STX server handles all routing
 // Routes map to storage/framework/defaults/dashboard/pages/*.stx files
@@ -348,7 +355,7 @@ craftProcess.on('error', (err) => {
 })
 
 craftProcess.on('close', (code) => {
-  log.info(`Dashboard closed with code ${code}`)
+  if (verbose) log.info(`Dashboard closed with code ${code}`)
   process.exit(code || 0)
 })
 

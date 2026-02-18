@@ -1,7 +1,7 @@
-import type { Model } from '@stacksjs/types'
+import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
-export default {
+export default defineModel({
   name: 'Notification',
   table: 'notifications',
   primaryKey: 'id',
@@ -115,4 +115,4 @@ export default {
       factory: () => JSON.stringify({ source: 'system' }),
     },
   },
-} satisfies Model
+} as const)

@@ -15,8 +15,9 @@ import { Router } from '@stacksjs/bun-router'
 import { runWithRequest } from './request-context'
 import { createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 
-type StringHandler = string
-type StacksHandler = ActionHandler | StringHandler
+import type { StacksActionPath } from './action-paths'
+
+type StacksHandler = ActionHandler | StacksActionPath
 
 interface StacksRouterConfig {
   verbose?: boolean

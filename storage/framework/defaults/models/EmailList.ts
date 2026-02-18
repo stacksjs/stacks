@@ -1,7 +1,7 @@
-import type { Model } from '@stacksjs/types'
+import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
-export default {
+export default defineModel({
   name: 'EmailList',
   table: 'email_lists',
   primaryKey: 'id',
@@ -112,4 +112,4 @@ export default {
       factory: () => 1,
     },
   },
-} satisfies Model
+} as const)

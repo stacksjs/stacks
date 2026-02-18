@@ -1,7 +1,7 @@
-import type { Model } from '@stacksjs/types'
+import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
-export default {
+export default defineModel({
   name: 'Comment',
   table: 'comments',
   primaryKey: 'id',
@@ -96,4 +96,4 @@ export default {
       factory: faker => faker.number.int({ min: 0, max: 1 }),
     },
   },
-} satisfies Model
+} as const)

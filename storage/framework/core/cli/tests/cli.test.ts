@@ -2,7 +2,7 @@
 import { log } from '@stacksjs/logging'
 import { ExitCode } from '@stacksjs/types'
 import { afterEach, describe, expect, it, mock, spyOn } from 'bun:test'
-import { CAC } from 'cac'
+import { CLI } from '@stacksjs/clapp'
 import {
   buddyOptions,
   cli,
@@ -61,17 +61,17 @@ describe('@stacksjs/cli', () => {
   })
 
   describe('cli', () => {
-    it('creates a CAC instance', () => {
+    it('creates a CLI instance', () => {
       const instance = cli()
-      expect(instance).toBeInstanceOf(CAC)
+      expect(instance).toBeInstanceOf(CLI)
     })
 
-    it('creates a CAC instance with custom name', () => {
+    it('creates a CLI instance with custom name', () => {
       const instance = cli('custom-cli')
       expect(instance.name).toBe('custom-cli')
     })
 
-    it('creates a CAC instance with options object', () => {
+    it('creates a CLI instance with options object', () => {
       const instance = cli({ name: 'option-cli' })
       expect(instance.name).toBe('option-cli')
     })

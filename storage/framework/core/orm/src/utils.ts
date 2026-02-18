@@ -1509,6 +1509,10 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     await writeModelOrmImports(modelFiles)
     log.success('Wrote Model Orm Imports')
 
+    log.info('Generating Action Path types...')
+    await generateActionPaths()
+    log.success('Generated Action Path types')
+
     // we need to lint:fix the auto-generated code, given there is a chance that
     // the codebase has lint issues unrelating to our auto-generated code, we
     // ignore the the console output
@@ -1527,7 +1531,7 @@ async function writeModelOrmImports(modelFiles: string[]): Promise<void> {
     const modelName = getModelName(model, modelFile)
     const tableName = getTableName(model, modelFile)
 
-    ormImportString += `export { type ${modelName}JsonResponse, type ${pascalCase(tableName)}Table, type New${modelName}, type ${modelName}ModelType, type ${modelName}Update } from './types/${modelName}Type'\n\n`
+    ormImportString += `export { type ${modelName}JsonResponse, type ${pascalCase(tableName)}Table, type New${modelName}, type ${modelName}ModelType, type ${modelName}Update, type ${modelName}RelationName } from './types/${modelName}Type'\n\n`
     ormImportString += `export { default as ${modelName}, ${modelName}Model } from './models/${modelName}'\n\n`
   }
 
@@ -1629,6 +1633,11 @@ async function ensureCodeStyle(): Promise<void> {
 export function findCoreModel(modelName: string): string {
   const rootPath = path.join(path.storagePath('framework/defaults/models'), '/')
 
+  // Try direct path first (handles symlinks that glob may miss)
+  const directPath = path.join(rootPath, modelName)
+  if (fs.existsSync(directPath))
+    return directPath
+
   const matches = globSync(`${rootPath}**/${modelName}`, {
     absolute: true,
   })
@@ -1638,6 +1647,11 @@ export function findCoreModel(modelName: string): string {
 
 export function findUserModel(modelName: string): string {
   const rootPath = path.join(path.userModelsPath('/'), '/')
+
+  // Try direct path first (handles symlinks that glob may miss)
+  const directPath = path.join(rootPath, modelName)
+  if (fs.existsSync(directPath))
+    return directPath
 
   const matches = globSync(`${rootPath}**/${modelName}`, {
     absolute: true,
@@ -1685,15 +1699,21 @@ export async function generateTypeString(
   const relations = await getRelations(model, modelName)
 
   let relationImports = ``
+  const importedJsonResponseTypes = new Set<string>()
 
   for (const relation of relations) {
     const modelRelation = relation.model
     relationImports += `import type { ${modelRelation}ModelType } from './${modelRelation}Type'\n`
+    // Also import JsonResponse type for relation properties on JsonResponse interface
+    if (!importedJsonResponseTypes.has(modelRelation)) {
+      relationImports += `import type { ${modelRelation}JsonResponse } from './${modelRelation}Type'\n`
+      importedJsonResponseTypes.add(modelRelation)
+    }
   }
 
   // Generate base table interface
-  let typeString = `import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/orm'
+  let typeString = `import type { Generated, Insertable, Selectable, Updateable } from '@stacksjs/database'
+import type { BaseModelType } from '@stacksjs/orm'
 ${relationImports}
 
 export interface ${formattedTableName}Table {
@@ -1732,10 +1752,8 @@ export interface ${formattedTableName}Table {
 
   typeString += `}`
 
-  // Generate the model type interface
-  let modelTypeInterface = `export interface ${modelName}ModelType {
-  // Properties
-  readonly id: number
+  // Generate the model type using BaseModelType for shared query methods
+  let modelTypeInterface = `export type ${modelName}ModelType = BaseModelType<${formattedTableName}Table, ${modelName}JsonResponse, New${modelName}, ${modelName}Update, ${modelName}RelationName, ${modelName}ModelType> & {
 `
 
   // Add getters and setters for each attribute
@@ -1809,77 +1827,7 @@ export interface ${formattedTableName}Table {
 `
   }
 
-  // Add common getters and setters
-  modelTypeInterface += `
-  // Static methods
-  with: (relations: string[]) => ${modelName}ModelType
-  select: (params: (keyof ${modelName}JsonResponse)[] | RawBuilder<string> | string) => ${modelName}ModelType
-  find: (id: number) => Promise<${modelName}ModelType | undefined>
-  first: () => Promise<${modelName}ModelType | undefined>
-  last: () => Promise<${modelName}ModelType | undefined>
-  firstOrFail: () => Promise<${modelName}ModelType | undefined>
-  all: () => Promise<${modelName}ModelType[]>
-  findOrFail: (id: number) => Promise<${modelName}ModelType | undefined>
-  findMany: (ids: number[]) => Promise<${modelName}ModelType[]>
-  latest: (column?: keyof ${formattedTableName}Table) => Promise<${modelName}ModelType | undefined>
-  oldest: (column?: keyof ${formattedTableName}Table) => Promise<${modelName}ModelType | undefined>
-  skip: (count: number) => ${modelName}ModelType
-  take: (count: number) => ${modelName}ModelType
-  where: <V = string>(column: keyof ${formattedTableName}Table, ...args: [V] | [Operator, V]) => ${modelName}ModelType
-  orWhere: (...conditions: [string, any][]) => ${modelName}ModelType
-  whereNotIn: <V = number>(column: keyof ${formattedTableName}Table, values: V[]) => ${modelName}ModelType
-  whereBetween: <V = number>(column: keyof ${formattedTableName}Table, range: [V, V]) => ${modelName}ModelType
-  whereRef: (column: keyof ${formattedTableName}Table, ...args: string[]) => ${modelName}ModelType
-  when: (condition: boolean, callback: (query: ${modelName}ModelType) => ${modelName}ModelType) => ${modelName}ModelType
-  whereNull: (column: keyof ${formattedTableName}Table) => ${modelName}ModelType
-  whereNotNull: (column: keyof ${formattedTableName}Table) => ${modelName}ModelType
-  whereLike: (column: keyof ${formattedTableName}Table, value: string) => ${modelName}ModelType
-  orderBy: (column: keyof ${formattedTableName}Table, order: 'asc' | 'desc') => ${modelName}ModelType
-  orderByAsc: (column: keyof ${formattedTableName}Table) => ${modelName}ModelType
-  orderByDesc: (column: keyof ${formattedTableName}Table) => ${modelName}ModelType
-  groupBy: (column: keyof ${formattedTableName}Table) => ${modelName}ModelType
-  having: <V = string>(column: keyof ${formattedTableName}Table, operator: Operator, value: V) => ${modelName}ModelType
-  inRandomOrder: () => ${modelName}ModelType
-  whereColumn: (first: keyof ${formattedTableName}Table, operator: Operator, second: keyof ${formattedTableName}Table) => ${modelName}ModelType
-  max: (field: keyof ${formattedTableName}Table) => Promise<number>
-  min: (field: keyof ${formattedTableName}Table) => Promise<number>
-  avg: (field: keyof ${formattedTableName}Table) => Promise<number>
-  sum: (field: keyof ${formattedTableName}Table) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<${modelName}ModelType[]>
-  pluck: <K extends keyof ${modelName}ModelType>(field: K) => Promise<${modelName}ModelType[K][]>
-  chunk: (size: number, callback: (models: ${modelName}ModelType[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: ${modelName}ModelType[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (new${modelName}: New${modelName}) => Promise<${modelName}ModelType>
-  firstOrCreate: (search: Partial<${formattedTableName}Table>, values?: New${modelName}) => Promise<${modelName}ModelType>
-  updateOrCreate: (search: Partial<${formattedTableName}Table>, values?: New${modelName}) => Promise<${modelName}ModelType>
-  createMany: (new${modelName}: New${modelName}[]) => Promise<void>
-  forceCreate: (new${modelName}: New${modelName}) => Promise<${modelName}ModelType>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof ${formattedTableName}Table, values: V[]) => ${modelName}ModelType
-  distinct: (column: keyof ${modelName}JsonResponse) => ${modelName}ModelType
-  join: (table: string, firstCol: string, secondCol: string) => ${modelName}ModelType
-
-  // Instance methods
-  createInstance: (data: ${modelName}JsonResponse) => ${modelName}ModelType
-  update: (new${modelName}: ${modelName}Update) => Promise<${modelName}ModelType | undefined>
-  forceUpdate: (new${modelName}: ${modelName}Update) => Promise<${modelName}ModelType | undefined>
-  save: () => Promise<${modelName}ModelType>
-  delete: () => Promise<number>
-  toSearchableObject: () => Partial<${modelName}JsonResponse>
-  toJSON: () => ${modelName}JsonResponse
-  parseResult: (model: ${modelName}ModelType) => ${modelName}ModelType
-`
-
-  // Add relation methods to the interface
+  // Add relation methods to the model-specific part of the type
   for (const relation of relations) {
     const modelRelation = relation.model
     const formattedModelRelation = camelCase(modelRelation)
@@ -1922,6 +1870,66 @@ export interface ${formattedTableName}Table {
   modelTypeInterface += `
 }`
 
+  // Build explicit relation properties for JsonResponse (replaces [key: string]: any)
+  let jsonResponseRelationProps = ''
+  const relationNames: string[] = []
+
+  for (const relation of relations) {
+    const modelRelation = relation.model
+    const formattedModelRelation = camelCase(modelRelation)
+    const relationType = getRelationType(relation.relationship)
+    const relationCount = getRelationCount(relation.relationship)
+
+    if (relationType === 'hasType' && relationCount === 'many') {
+      const rName = snakeCase(relation.relationName || formattedModelRelation)
+      jsonResponseRelationProps += `  ${rName}?: ${modelRelation}JsonResponse[]\n`
+      relationNames.push(rName)
+    } else if (relationType === 'hasType' && !relationCount) {
+      const rName = snakeCase(relation.relationName || formattedModelRelation)
+      jsonResponseRelationProps += `  ${rName}?: ${modelRelation}JsonResponse\n`
+      relationNames.push(rName)
+    } else if (relationType === 'belongsType' && !relationCount) {
+      const rName = snakeCase(camelCase(relation.relationName || formattedModelRelation))
+      jsonResponseRelationProps += `  ${rName}?: ${modelRelation}JsonResponse\n`
+      relationNames.push(rName)
+    } else if (relationType === 'belongsType' && relationCount === 'many') {
+      const rName = snakeCase(relation.relationName || formattedModelName + plural(pascalCase(modelRelation)))
+      jsonResponseRelationProps += `  ${rName}?: ${modelRelation}JsonResponse[]\n`
+      relationNames.push(rName)
+    } else if (relationType === 'morphType' && relationCount === 'one') {
+      const rName = snakeCase(relation.relationName || `${formattedModelName}able`)
+      jsonResponseRelationProps += `  ${rName}?: ${modelRelation}JsonResponse\n`
+      relationNames.push(rName)
+    } else if (relationType === 'morphType' && relationCount === 'many') {
+      const rName = snakeCase(relation.relationName || `${formattedModelName}able`)
+      jsonResponseRelationProps += `  ${rName}?: ${modelRelation}JsonResponse[]\n`
+      relationNames.push(rName)
+    } else if (relationType === 'throughType') {
+      const rName = snakeCase(relation.relationName || formattedModelName + modelRelation)
+      jsonResponseRelationProps += `  ${rName}?: ${modelRelation}JsonResponse\n`
+      relationNames.push(rName)
+    }
+  }
+
+  // Add trait-based relation properties
+  if (model.traits?.taggable) {
+    jsonResponseRelationProps += `  tags?: any[]\n`
+    relationNames.push('tags')
+  }
+  if (model.traits?.categorizable) {
+    jsonResponseRelationProps += `  categories?: any[]\n`
+    relationNames.push('categories')
+  }
+  if (model.traits?.commentables) {
+    jsonResponseRelationProps += `  comments?: any[]\n`
+    relationNames.push('comments')
+  }
+
+  // Generate RelationName union type
+  const relationNameType = relationNames.length > 0
+    ? `export type ${modelName}RelationName = ${relationNames.map(n => `'${n}'`).join(' | ')}`
+    : `export type ${modelName}RelationName = never`
+
   // Generate the response types
   const responseTypes = `export type ${modelName}Read = ${formattedTableName}Table
 
@@ -1940,8 +1948,9 @@ export interface ${modelName}Response {
 }
 
 export interface ${modelName}JsonResponse extends Omit<Selectable<${modelName}Read>, 'password'> {
-  [key: string]: any
-}
+${jsonResponseRelationProps}}
+
+${relationNameType}
 
 export type New${modelName} = Insertable<${modelName}Write>
 export type ${modelName}Update = Updateable<${modelName}Write>`
@@ -1965,4 +1974,116 @@ export async function writeTypeFile(
   const typeFilePath = path.frameworkPath(`orm/src/types/${modelName}Type.ts`)
 
   await Bun.write(typeFilePath, typeString)
+}
+
+/**
+ * Generates a StacksActionPath union type by scanning the Actions and Controllers directories.
+ * This provides IDE autocomplete for route handler strings like 'Actions/Auth/LoginAction'.
+ */
+export async function generateActionPaths(): Promise<void> {
+  const { readdirSync, statSync } = await import('node:fs')
+  const { join, relative, basename, extname } = await import('node:path')
+
+  const actionPaths: string[] = []
+
+  // Scan actions directory recursively
+  const actionsDir = path.userActionsPath()
+  const defaultActionsDir = path.frameworkPath('defaults/app/Actions')
+
+  function scanDir(dir: string, prefix: string): void {
+    try {
+      const entries = readdirSync(dir)
+      for (const entry of entries) {
+        if (entry.startsWith('.')) continue
+        const full = join(dir, entry)
+        const st = statSync(full)
+        if (st.isDirectory()) {
+          scanDir(full, `${prefix}${entry}/`)
+        } else if (entry.endsWith('.ts') && !entry.endsWith('.d.ts')) {
+          const name = basename(entry, extname(entry))
+          actionPaths.push(`Actions/${prefix}${name}`)
+        }
+      }
+    } catch {
+      // Directory may not exist
+    }
+  }
+
+  // Also scan framework-level actions (Payment, Queue, Auth passkeys, etc.)
+  const frameworkActionsDir = path.frameworkPath('defaults/actions')
+
+  // Scan user actions first, then app defaults, then framework defaults
+  scanDir(actionsDir, '')
+  scanDir(defaultActionsDir, '')
+  scanDir(frameworkActionsDir, '')
+
+  // Deduplicate
+  const uniqueActions = [...new Set(actionPaths)].sort()
+
+  // Scan controllers
+  const controllerPaths: string[] = []
+  const defaultControllersDir = path.frameworkPath('defaults/app/Controllers')
+  const controllersDir = defaultControllersDir
+
+  async function scanControllers(dir: string): Promise<void> {
+    try {
+      const entries = readdirSync(dir)
+      for (const entry of entries) {
+        if (entry.startsWith('.') || !entry.endsWith('.ts') || entry.endsWith('.d.ts')) continue
+        const full = join(dir, entry)
+        const name = basename(entry, extname(entry))
+        try {
+          const mod = await import(`${full}?t=${Date.now()}`)
+          const controller = mod.default
+          if (controller && typeof controller === 'function') {
+            // Get prototype methods (instance methods)
+            const proto = controller.prototype
+            if (proto) {
+              const methods = Object.getOwnPropertyNames(proto).filter(
+                m => m !== 'constructor' && typeof proto[m] === 'function',
+              )
+              for (const method of methods) {
+                controllerPaths.push(`Controllers/${name}@${method}`)
+              }
+            }
+            // Get static methods
+            const staticMethods = Object.getOwnPropertyNames(controller).filter(
+              m => !['length', 'name', 'prototype', 'arguments', 'caller'].includes(m) && typeof controller[m] === 'function',
+            )
+            for (const method of staticMethods) {
+              controllerPaths.push(`Controllers/${name}@${method}`)
+            }
+          }
+        } catch {
+          // If we can't import the controller, just add the base name
+          controllerPaths.push(`Controllers/${name}`)
+        }
+      }
+    } catch {
+      // Directory may not exist
+    }
+  }
+
+  await scanControllers(controllersDir)
+  if (controllersDir !== defaultControllersDir) {
+    await scanControllers(defaultControllersDir)
+  }
+
+  const uniqueControllers = [...new Set(controllerPaths)].sort()
+  const allPaths = [...uniqueActions, ...uniqueControllers]
+
+  // Generate the type file
+  let output = `// Auto-generated by Stacks ORM code generator — do not edit\n`
+  output += `// Run the code generator to update this file when actions/controllers change\n\n`
+
+  if (allPaths.length > 0) {
+    output += `export type StacksActionPath =\n`
+    output += allPaths.map(p => `  | '${p}'`).join('\n')
+    output += '\n'
+  } else {
+    output += `export type StacksActionPath = string\n`
+  }
+
+  const outputPath = path.corePath('router/src/action-paths.ts')
+  await Bun.write(outputPath, output)
 }

@@ -1,6 +1,6 @@
-import type { Model } from '@stacksjs/types'
+import { defineModel } from '@stacksjs/orm'
 
-export default {
+export default defineModel({
   name: 'SampleModel',
 
   traits: {
@@ -14,4 +14,4 @@ export default {
   attributes: {
     // your attributes here
   },
-} satisfies Model
+} as const)

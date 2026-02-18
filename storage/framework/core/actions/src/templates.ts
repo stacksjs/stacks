@@ -76,10 +76,14 @@ export default new Middleware({
   },
 })`,
 
-  model: `import type { Model } from '@stacksjs/types'
+  model: `import { defineModel } from '@stacksjs/orm'
+import { schema } from '@stacksjs/validation'
 
-export default {
+export default defineModel({
   name: '{0}',
+  table: '{1}',
+  primaryKey: 'id',
+  autoIncrement: true,
 
   traits: {
     useTimestamps: true,
@@ -92,7 +96,7 @@ export default {
   attributes: {
     // your attributes here
   },
-} satisfies Model`,
+} as const)`,
 
   migration: `import type { Database } from '@stacksjs/database'
 

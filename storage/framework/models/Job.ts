@@ -1,7 +1,7 @@
-import type { Model } from '@stacksjs/types'
+import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
-export default {
+export default defineModel({
   name: 'Job',
   table: 'jobs',
   primaryKey: 'id',
@@ -60,4 +60,4 @@ export default {
       factory: () => '2024-12-23 13:32:19',
     },
   },
-} satisfies Model
+} as const)

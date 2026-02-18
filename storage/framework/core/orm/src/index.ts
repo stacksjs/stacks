@@ -19,7 +19,10 @@ export * from './generated'
 export * from './requests'
 export * from './subquery'
 export * from './transaction'
+export * from './model-types'
+export * from './types'
 export * from './utils'
+export * from './define-model'
 
 // Export User model from db package
 export { default as User } from '../../db/src/orm/Models/User'

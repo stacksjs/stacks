@@ -288,10 +288,11 @@ export async function createModel(options: MakeOptions): Promise<void> {
     throw new Error('options.name is required and cannot be empty')
 
   const name = optionName[0].toUpperCase() + optionName.slice(1)
+  const tableName = name.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '').replace(/([^s])$/, '$1s')
   const path = p.userModelsPath(`${name}.ts`)
 
   try {
-    await createFileWithTemplate(path, 'model', name)
+    await createFileWithTemplate(path, 'model', name, tableName)
 
     log.success(`Model created: ${italic(`app/Models/${name}.ts`)}`)
   }

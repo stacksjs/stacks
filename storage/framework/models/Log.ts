@@ -1,7 +1,7 @@
-import type { Model } from '@stacksjs/types'
+import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
-export default {
+export default defineModel({
   name: 'Log',
   table: 'logs',
   primaryKey: 'id',
@@ -107,4 +107,4 @@ export default {
       factory: faker => faker.system.filePath(),
     },
   },
-} satisfies Model
+} as const)

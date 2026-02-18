@@ -1,0 +1,6 @@
+export { createTaggableMethods } from './taggable'
+export { createCategorizableMethods } from './categorizable'
+export { createCommentableMethods } from './commentable'
+export { createBillableMethods } from './billable'
+export { createLikeableMethods } from './likeable'
+export { createTwoFactorMethods } from './two-factor'

@@ -1,8 +1,8 @@
-import type { Model } from '@stacksjs/types'
+import { defineModel } from '@stacksjs/orm'
 import { collect } from '@stacksjs/collections'
 import { schema } from '@stacksjs/validation'
 
-export default {
+export default defineModel({
   name: 'PersonalAccessToken',
   description: 'A personal access token for direct user authentication',
   table: 'personal_access_tokens',
@@ -144,4 +144,4 @@ export default {
       factory: () => false,
     },
   },
-} satisfies Model
+} as const)

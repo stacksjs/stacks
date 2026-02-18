@@ -133,6 +133,44 @@ async function loadAutoImports() {
       // Some files may have client-side dependencies, skip them
     }
   }
+
+  // 3. Load all defineModel()-based model instances into globalThis
+  // This enables using Post.where('title', 'test') without imports
+  // Priority: user models > framework models > default models
+  const modelDirs = [
+    path.userModelsPath(),
+    path.storagePath('framework/models'),
+    path.storagePath('framework/defaults/models'),
+  ]
+
+  const loadedModels = new Set<string>()
+
+  for (const dir of modelDirs) {
+    try {
+      for await (const file of glob.scan({
+        cwd: dir,
+        absolute: true,
+        onlyFiles: true,
+      })) {
+        if (file.endsWith('.d.ts') || file.endsWith('/index.ts')) continue
+
+        const modelName = file.split('/').pop()?.replace('.ts', '') || ''
+        if (!modelName || loadedModels.has(modelName) || protectedGlobals.has(modelName)) continue
+
+        try {
+          const module = await import(file)
+          if (module.default) {
+            (globalThis as any)[modelName] = module.default
+            loadedModels.add(modelName)
+          }
+        } catch {
+          // Model may have unresolved dependencies during bootstrap
+        }
+      }
+    } catch {
+      // Directory may not exist
+    }
+  }
 }
 
 // Load auto-imports for server/API contexts (serve, any server process)

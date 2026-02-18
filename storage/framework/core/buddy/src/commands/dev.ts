@@ -50,7 +50,7 @@ export function dev(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (server: string | undefined, options: DevOptions) => {
 
-      const perf = performance.now()
+      const perf = Bun.nanoseconds()
 
       // log.info('Ensuring web server/s running...')
 
@@ -139,7 +139,7 @@ export function dev(buddy: CLI): void {
         //   await runEmailDevServer(options)
       }
 
-      await startDevelopmentServer(options)
+      await startDevelopmentServer(options, perf)
 
       outro('Exited', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
@@ -271,30 +271,39 @@ export function dev(buddy: CLI): void {
   })
 }
 
-export async function startDevelopmentServer(options: DevOptions): Promise<void> {
+export async function startDevelopmentServer(options: DevOptions, startTime?: number): Promise<void> {
   const appUrl = process.env.APP_URL
   const frontendPort = Number(process.env.PORT) || 3000
   const apiPort = 3008
   const docsPort = Number(process.env.PORT_DOCS) || 3006
+  const dashboardPort = Number(process.env.PORT_ADMIN) || 3456
   const hasCustomDomain = appUrl && appUrl !== 'localhost' && !appUrl.includes('localhost:')
   const domain = hasCustomDomain ? appUrl.replace(/^https?:\/\//, '') : null
   const apiDomain = domain ? `api.${domain}` : null
   const docsDomain = domain ? `docs.${domain}` : null
+  const dashboardDomain = domain ? `dashboard.${domain}` : null
   const frontendUrl = domain ? `https://${domain}` : `http://localhost:${frontendPort}`
   const apiUrl = apiDomain ? `https://${apiDomain}` : `http://localhost:${apiPort}`
   const docsUrl = docsDomain ? `https://${docsDomain}` : `http://localhost:${docsPort}`
+  const dashboardUrl = dashboardDomain ? `https://${dashboardDomain}` : `http://localhost:${dashboardPort}`
 
   // Print Vite-style unified output
   console.log()
   console.log(`  ${bold(cyan('stacks'))} ${dim(`v${version}`)}`)
   console.log()
-  console.log(`  ${green('➜')}  ${bold('Frontend')}:   ${cyan(frontendUrl)}`)
-  console.log(`  ${green('➜')}  ${bold('API')}:        ${cyan(apiUrl)}`)
-  console.log(`  ${green('➜')}  ${bold('Docs')}:       ${cyan(docsUrl)}`)
+  console.log(`  ${green('➜')}  ${bold('Frontend')}:    ${cyan(frontendUrl)}`)
+  console.log(`  ${green('➜')}  ${bold('API')}:         ${cyan(apiUrl)}`)
+  console.log(`  ${green('➜')}  ${bold('Docs')}:        ${cyan(docsUrl)}`)
+  console.log(`  ${green('➜')}  ${bold('Dashboard')}:   ${cyan(dashboardUrl)}`)
+  if (startTime) {
+    const elapsedMs = (Bun.nanoseconds() - startTime) / 1_000_000
+    console.log(`\n  ${dim(`ready in ${elapsedMs.toFixed(2)} ms`)}`)
+  }
   if (options.verbose && domain) {
-    console.log(`  ${dim('➜')}  ${dim('Proxy')}:      ${dim(`localhost:${frontendPort} → ${domain}`)}`)
-    console.log(`  ${dim('➜')}  ${dim('Proxy')}:      ${dim(`localhost:${apiPort} → ${apiDomain}`)}`)
-    console.log(`  ${dim('➜')}  ${dim('Proxy')}:      ${dim(`localhost:${docsPort} → ${docsDomain}`)}`)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${frontendPort} → ${domain}`)}`)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${apiPort} → ${apiDomain}`)}`)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${docsPort} → ${docsDomain}`)}`)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${dashboardPort} → ${dashboardDomain}`)}`)
   }
   console.log()
 
@@ -324,6 +333,10 @@ export async function startDevelopmentServer(options: DevOptions): Promise<void>
       if (options.verbose)
         log.error(`Docs: ${error}`)
     }),
+    runDashboardDevServer(options).catch((error) => {
+      if (options.verbose)
+        log.error(`Dashboard: ${error}`)
+    }),
     hasCustomDomain
       ? startReverseProxy(options).catch((error) => {
         if (options.verbose)
@@ -335,7 +348,7 @@ export async function startDevelopmentServer(options: DevOptions): Promise<void>
 
 /**
  * Start the reverse proxies (rpx) to enable HTTPS with custom domains.
- * Proxies frontend, API, and docs subdomains.
+ * Proxies frontend, API, docs, and dashboard subdomains.
  * rpx wraps tlsx and handles SSL (certs, hosts, trust) automatically.
  */
 async function startReverseProxy(options: DevOptions): Promise<void> {
@@ -349,9 +362,11 @@ async function startReverseProxy(options: DevOptions): Promise<void> {
   const domain = appUrl.replace(/^https?:\/\//, '')
   const apiDomain = `api.${domain}`
   const docsDomain = `docs.${domain}`
+  const dashboardDomain = `dashboard.${domain}`
   const frontendPort = Number(process.env.PORT) || 3000
   const apiPort = 3008
   const docsPort = Number(process.env.PORT_DOCS) || 3006
+  const dashboardPort = Number(process.env.PORT_ADMIN) || 3456
   const sslBasePath = `${process.env.HOME}/.stacks/ssl`
   const verbose = options.verbose ?? false
 
@@ -364,6 +379,7 @@ async function startReverseProxy(options: DevOptions): Promise<void> {
         { from: `localhost:${frontendPort}`, to: domain, cleanUrls: false },
         { from: `localhost:${apiPort}`, to: apiDomain, cleanUrls: false },
         { from: `localhost:${docsPort}`, to: docsDomain, cleanUrls: false },
+        { from: `localhost:${dashboardPort}`, to: dashboardDomain, cleanUrls: false },
       ],
       https: {
         basePath: sslBasePath,

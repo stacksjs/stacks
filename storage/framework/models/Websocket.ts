@@ -1,7 +1,7 @@
-import type { Model } from '@stacksjs/types'
+import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
-export default {
+export default defineModel({
   name: 'Websocket',
   table: 'websockets',
   primaryKey: 'id',
@@ -74,4 +74,4 @@ export default {
       factory: faker => faker.date.recent().getTime(),
     },
   },
-} satisfies Model
+} as const)

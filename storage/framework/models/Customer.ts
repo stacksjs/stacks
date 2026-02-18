@@ -1,7 +1,8 @@
-import type { Attributes, Model } from '@stacksjs/types'
+import type { Attributes } from '@stacksjs/types'
+import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
-export default {
+export default defineModel({
   name: 'Customer',
   table: 'customers',
   primaryKey: 'id',
@@ -128,4 +129,4 @@ export default {
   dashboard: {
     highlight: true,
   },
-} satisfies Model
+} as const)

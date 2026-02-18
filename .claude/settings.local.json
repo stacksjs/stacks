@@ -128,7 +128,15 @@
       "Bash(do grep -l @stacksjs/router $f)",
       "Bash(do if cat \"$f\")",
       "Bash(then echo \"$f\")",
-      "Bash(openssl x509:*)"
+      "Bash(openssl x509:*)",
+      "Bash(git add:*)",
+      "Bash(git rebase:*)",
+      "Bash(/tmp/action_summary.txt:*)",
+      "Bash(BUN_CONFIG_FILE=\"\" bun test:*)",
+      "Bash(git -C /private/tmp log --oneline -5)",
+      "Bash(git -C /private/tmp rev-parse:*)",
+      "Bash(npx tsc:*)",
+      "Bash(BUN_TEST_COVERAGE=0 bun test:*)"
     ],
     "deny": [],
     "ask": []

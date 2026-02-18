@@ -1,8 +1,8 @@
 // soon, these will be auto-imported
-import type { Model } from '@stacksjs/types'
+import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
-export default {
+export default defineModel({
   name: 'Release', // defaults to the sanitized file name
   table: 'releases', // defaults to the lowercase, plural name of the model name (or the name of the model file)
   primaryKey: 'id', // defaults to `id`
@@ -68,4 +68,4 @@ export default {
       factory: faker => faker.number.int({ min: 0, max: 10000 }),
     },
   },
-} satisfies Model
+} as const)

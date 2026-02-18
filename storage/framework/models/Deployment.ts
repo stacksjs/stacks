@@ -1,8 +1,8 @@
-import type { Model } from '@stacksjs/types'
+import { defineModel } from '@stacksjs/orm'
 import { collect } from '@stacksjs/collections'
 import { schema } from '@stacksjs/validation'
 
-export default {
+export default defineModel({
   name: 'Deployment',
   table: 'deployments',
   traits: {
@@ -113,4 +113,4 @@ export default {
       factory: faker => faker.lorem.sentence(),
     },
   },
-} satisfies Model
+} as const)

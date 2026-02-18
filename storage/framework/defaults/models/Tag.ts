@@ -1,7 +1,7 @@
-import type { Model } from '@stacksjs/types'
+import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
-export default {
+export default defineModel({
   name: 'Tag',
   table: 'tags',
   primaryKey: 'id',
@@ -79,4 +79,4 @@ export default {
       factory: faker => faker.helpers.arrayElement(['blue', 'green', 'red', 'purple', 'yellow', 'orange', 'pink', 'gray']),
     },
   },
-} satisfies Model
+} as const)
