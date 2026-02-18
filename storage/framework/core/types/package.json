@@ -46,11 +46,11 @@
   },
   "dependencies": {
     "@stacksjs/bunpress": "^0.1.1",
-    "@stacksjs/ts-validation": "^0.4.7"
+    "@stacksjs/ts-validation": "^0.4.9"
   },
   "devDependencies": {
     "@stacksjs/validation": "workspace:*",
-    "@types/bun": "^1.3.2",
-    "typescript": "^5.9.2"
+    "@types/bun": "^1.3.9",
+    "typescript": "^5.9.3"
   }
 }
