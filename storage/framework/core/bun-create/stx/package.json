@@ -112,7 +112,7 @@
     "stacks": "workspace:*"
   },
   "lint-staged": {
-    "*": "bunx --bun eslint . --fix"
+    "*.{js,ts,json,yaml,yml,md}": "bunx --bun pickier lint --fix"
   },
   "workspaces": [
     "storage/framework",

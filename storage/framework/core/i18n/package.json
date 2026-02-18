@@ -29,8 +29,8 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "lint": "bunx --bun eslint .",
-    "lint:fix": "bunx --bun eslint . --fix",
+    "lint": "bunx --bun pickier lint .",
+    "lint:fix": "bunx --bun pickier lint . --fix",
     "typecheck": "bunx --bun tsc --noEmit"
   },
   "dependencies": {},

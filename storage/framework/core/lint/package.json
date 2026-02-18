@@ -21,8 +21,7 @@
   "keywords": [
     "linter",
     "formatter",
-    "eslint",
-    "antfu",
+    "pickier",
     "pre-configured",
     "zero-config",
     "stacks"
