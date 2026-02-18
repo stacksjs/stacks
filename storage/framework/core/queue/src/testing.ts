@@ -145,7 +145,7 @@ class FakeQueue {
    */
   assertPushedWithDelay(name: string, delay: number): void {
     const jobs = this.pushed(name)
-    const matching = jobs.filter(j => j.options.delay === delay)
+    const matching = jobs.filter(j => (j.options as any).delay === delay)
 
     if (matching.length === 0) {
       throw new Error(`Expected job "${name}" to be pushed with delay ${delay}ms, but no matching jobs were found.`)

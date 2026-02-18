@@ -256,8 +256,8 @@ declare module 'aws-cdk-lib/aws-ecs' {
   export default _default
 }
 declare module 'aws-cdk-lib/aws-elasticloadbalancingv2' {
-  export const ApplicationLoadBalancer: any
-  export const ApplicationTargetGroup: any
+  export class ApplicationLoadBalancer { constructor(...args: any[]); [key: string]: any }
+  export class ApplicationTargetGroup { constructor(...args: any[]); [key: string]: any }
   export const ListenerAction: any
   export const Protocol: any
   export const ApplicationProtocol: any
@@ -471,7 +471,9 @@ declare module 'ts-broadcasting' {
   // Functions
   export function createServer(config?: any): any
   export function broadcast(event: any, data?: any): any
+  export function broadcastToUser(user: any, event: any, data?: any): any
   export function broadcastToUsers(users: any, event: any, data?: any): any
+  export const BroadcastClient: any
   export function channel(name: string): any
   export function createEvent(name: string, data?: any): any
   export function createHelpers(server?: any): any
@@ -665,6 +667,11 @@ declare module 'bun-query-builder' {
       coalesce(...args: any[]): any
     }
     schema: any
+    selectFrom(table: string): any
+    insertInto(table: string): any
+    updateTable(table: string): any
+    deleteFrom(table: string): any
+    [key: string]: any
   }
 
   // Missing exports in type declarations

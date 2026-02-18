@@ -1,6 +1,7 @@
 import type { QueueOption } from '@stacksjs/types'
 import process from 'node:process'
 import { path } from '@stacksjs/path'
+// @ts-ignore - Job model path resolved at build time
 import Job from '../../../orm/src/models/Job'
 
 export async function storeJob(name: string, options: QueueOption): Promise<void> {

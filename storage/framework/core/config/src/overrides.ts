@@ -72,6 +72,6 @@ export const overrides: StacksConfig = {
   filesystems: filesystems || {},
   team: team || {},
   ui: ui || {},
-}
+} as any
 
 export default overrides

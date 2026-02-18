@@ -1,4 +1,5 @@
 import type { AuthToken } from '@stacksjs/types'
+export type { AuthToken } from '@stacksjs/types'
 import { Buffer } from 'node:buffer'
 import { randomBytes } from 'node:crypto'
 import { db, sql } from '@stacksjs/database'
@@ -25,7 +26,7 @@ export class TokenManager {
     if (!result?.insertId)
       throw new HttpError(500, 'Failed to create access token')
 
-    return token
+    return token as any
   }
 
   static async validateToken(token: string): Promise<boolean> {
@@ -92,7 +93,7 @@ export class TokenManager {
       .where('id', '=', accessToken.id)
       .execute()
 
-    return newToken
+    return newToken as any
   }
 
   static async revokeToken(token: string): Promise<void> {

@@ -5,9 +5,9 @@ import { log } from '@stacksjs/logging'
 // first, reset the database, if it exists
 const result = await createPersonalAccessClient()
 
-if (result?.isErr) {
-  console.error(result.error)
-  log.error('createPersonalAccessClient failed', result.error)
+if ((result as any)?.isErr) {
+  console.error((result as any).error)
+  log.error('createPersonalAccessClient failed', (result as any).error)
   process.exit(1)
 }
 

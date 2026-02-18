@@ -19,5 +19,5 @@ export async function createPersonalAccessClient(): Promise<Ok<string, never>> {
   if (!insertId)
     throw new HttpError(500, 'Failed to create personal access client')
 
-  return ok(secret)
+  return ok(secret) as any
 }

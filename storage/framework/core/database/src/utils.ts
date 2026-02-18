@@ -151,7 +151,7 @@ function updateQueryBuilderConfig(): void {
 
   setConfig({
     dialect,
-    database: dbConfigForQb,
+    database: dbConfigForQb as any,
     verbose: getEnv() !== 'production',
     timestamps: {
       createdAt: 'created_at',

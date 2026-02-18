@@ -11,7 +11,7 @@ export interface PhoneNumberConfig {
   notifyOnCall?: string[] // team member emails/phones
 }
 
-export interface NotificationConfig {
+export interface PhoneNotificationConfig {
   enabled: boolean
   channels: ('email' | 'sms' | 'slack' | 'webhook')[]
   webhookUrl?: string
@@ -43,9 +43,9 @@ export interface PhoneInstanceConfig {
 }
 
 export interface PhoneNotificationsConfig {
-  incomingCall?: NotificationConfig
-  missedCall?: NotificationConfig
-  voicemail?: NotificationConfig
+  incomingCall?: PhoneNotificationConfig
+  missedCall?: PhoneNotificationConfig
+  voicemail?: PhoneNotificationConfig
 }
 
 export interface PhoneOptions {

@@ -28,7 +28,7 @@ export function generateComponentMeta(): void {
 
     // Exclude global props
     const props: ComponentApiProps[] = []
-    meta.props.forEach((prop) => {
+    meta.props.forEach((prop: any) => {
       if (prop?.global)
         return
 

@@ -1,10 +1,12 @@
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
-import { notification as config } from '@stacksjs/config'
+import { notification as _notification } from '@stacksjs/config'
 import { err } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
 import { chat, email, sms } from './drivers'
 import { DatabaseNotificationDriver } from './drivers/database'
+
+const config: any = _notification
 
 export function useChat(driver = 'slack'): any {
   return chat[driver as keyof typeof chat]

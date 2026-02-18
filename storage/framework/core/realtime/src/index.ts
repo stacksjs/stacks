@@ -8,68 +8,8 @@
 // Re-export everything from ts-broadcasting
 export * from 'ts-broadcasting'
 
-// Re-export specific commonly used classes and functions
-export {
-  BroadcastServer,
-  type ServerConfig,
-  Broadcaster,
-  AnonymousEvent,
-  createEvent,
-  ChannelManager,
-  BroadcastClient,
-  Client,
-  Echo,
-  BroadcastHelpers,
-  createHelpers,
-  RedisAdapter,
-  // Facade and global helpers (Laravel-style API)
-  Broadcast,
-  broadcast as broadcastEvent,
-  broadcastToUser,
-  broadcastToUsers,
-  channel as defineChannel,
-  // Middleware
-  AuthenticationManager,
-  RateLimiter,
-  SecurityManager,
-  MessageValidationManager,
-  MonitoringManager,
-  // Advanced features
-  EncryptionManager,
-  WebhookManager,
-  PersistenceManager,
-  PresenceHeartbeatManager,
-  AcknowledgmentManager,
-  BatchOperationsManager,
-  CircuitBreaker,
-  CircuitBreakerError,
-  CircuitBreakerManager,
-  LoadManager,
-  MessageDeduplicator,
-  PrometheusExporter,
-  BroadcastQueueManager,
-  BroadcastJob,
-  DelayedBroadcastJob,
-  RecurringBroadcastJob,
-} from 'ts-broadcasting'
-
-// Re-export types
-export type {
-  BroadcastConfig,
-  ConnectionConfig,
-  ConnectionOptions,
-  WebSocketData,
-  User,
-  ChannelType,
-  Channel,
-  PrivateChannel as PrivateChannelType,
-  PresenceChannel as PresenceChannelType,
-  PresenceMember,
-  BroadcastEvent,
-  BroadcastMessage,
-  QueueConfig,
-  ChannelAuthCallback,
-} from 'ts-broadcasting'
+// Note: all exports are already provided by `export * from 'ts-broadcasting'` above.
+// Aliases are provided below for convenience.
 
 // Server instance management
 export { getServer, setServer, createServer, stopServer } from './server-instance'

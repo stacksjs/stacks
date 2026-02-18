@@ -29,19 +29,19 @@ export async function unzip(paths: string | string[]): Promise<Result<Subprocess
 }
 
 export function archive(paths: string | string[]): Promise<Result<Subprocess, CommandError>> {
-  return zip(paths)
+  return zip(paths) as any
 }
 
 export function unarchive(paths: string | string[]): Promise<Result<Subprocess, CommandError>> {
-  return unzip(paths)
+  return unzip(paths) as any
 }
 
 export function compress(paths: string[]): Promise<Result<Subprocess, CommandError>> {
-  return zip(paths)
+  return zip(paths) as any
 }
 
 export function decompress(paths: string | string[]): Promise<Result<Subprocess, CommandError>> {
-  return unzip(paths)
+  return unzip(paths) as any
 }
 
 export function gzipSync(data: Uint8Array, options?: ZlibCompressionOptions): Uint8Array {

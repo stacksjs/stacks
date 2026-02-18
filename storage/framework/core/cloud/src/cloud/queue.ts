@@ -27,9 +27,9 @@ export class QueueStack {
     const actionsDir = path.appPath('Actions')
     const ormActionDir = path.builtUserActionsPath('src')
 
-    const jobFiles = await fs.readdir(jobsDir)
-    const actionFiles = await fs.readdir(actionsDir)
-    const ormActionFiles = await fs.readdir(ormActionDir)
+    const jobFiles = await (fs as any).readdir(jobsDir)
+    const actionFiles = await (fs as any).readdir(actionsDir)
+    const ormActionFiles = await (fs as any).readdir(ormActionDir)
     const jobs = []
 
     // then, need to loop through all app/Jobs/*.ts and create a rule for each, potentially overwriting the Schedule.ts jobs

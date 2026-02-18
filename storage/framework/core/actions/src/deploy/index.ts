@@ -47,7 +47,7 @@ if (storage.hasFiles(docsDir) && !docsDistExists) {
     docsSpinner.succeed('Documentation built with BunPress')
   } catch (docsError: any) {
     // BunPress might not be installed - skip gracefully
-    docsSpinner.warn(`Documentation build skipped: ${docsError.message}`)
+    ;(docsSpinner as any).warn(`Documentation build skipped: ${docsError.message}`)
     if (isVerbose) log.debug('To build docs manually: cd ~/Code/bunpress && bun bin/cli.ts build --dir /path/to/docs --outdir /path/to/dist/docs')
   }
 } else if (docsDistExists) {
@@ -329,7 +329,7 @@ try {
   } catch (migrationError: any) {
     // Don't fail the entire deployment if migrations fail
     // The database might not be accessible from the deploy machine
-    migrateSpinner.warn(`Database migrations skipped: ${migrationError.message}`)
+    ;(migrateSpinner as any).warn(`Database migrations skipped: ${migrationError.message}`)
     if (isVerbose) log.debug(`Migration error: ${migrationError.stack}`)
   }
 
@@ -513,7 +513,7 @@ try {
       const docsBucketName = outputs.DocsBucketName
 
       if (!docsBucketName) {
-        docsDeploySpinner.warn('Docs bucket not found in stack outputs (infrastructure may not be updated yet)')
+        ;(docsDeploySpinner as any).warn('Docs bucket not found in stack outputs (infrastructure may not be updated yet)')
       } else {
         // MIME type helper
         const getMimeType = (filePath: string): string => {
@@ -803,7 +803,7 @@ try {
 
     errorPageSpinner.succeed('404 error page configured')
   } catch (errorPageError: any) {
-    errorPageSpinner.warn(`404 page configuration skipped: ${errorPageError.message}`)
+    ;(errorPageSpinner as any).warn(`404 page configuration skipped: ${errorPageError.message}`)
     if (isVerbose) log.debug(`Error page config error: ${errorPageError.stack}`)
   }
 

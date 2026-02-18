@@ -6,6 +6,7 @@
 
 import { log } from '@stacksjs/logging'
 import { Job } from '@stacksjs/orm'
+// @ts-ignore - FailedJob model path resolved at build time
 import { FailedJob } from '../../../orm/src/models/FailedJob'
 
 /**

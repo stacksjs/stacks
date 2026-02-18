@@ -29,8 +29,8 @@ if (await storage.exists(source)) {
     log.info(`Source: ${source}`) // TODO: should be debug
     log.info(`Destination: ${destination}`) // TODO: should be debug
 
-    await fs.ensureDir(destinationDir) // Ensure the destination directory exists
-    await fs.move(source, destination, { overwrite: true })
+    await (fs as any).ensureDir(destinationDir)
+    await (fs as any).move(source, destination, { overwrite: true })
 
     log.success('Binary Latest Version Is Used')
   }

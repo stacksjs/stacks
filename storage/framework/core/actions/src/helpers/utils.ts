@@ -1,6 +1,6 @@
 import type { Action as ActionType } from '@stacksjs/actions'
-import type { Err, Ok, Result } from '@stacksjs/error-handling'
-import type { ActionOptions, CliOptions, CommandError, Readable, Subprocess, Writable } from '@stacksjs/types'
+import type { Result } from '@stacksjs/error-handling'
+import type { ActionOptions, CliOptions, CommandError, Subprocess } from '@stacksjs/types'
 import process from 'node:process'
 import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import { err } from '@stacksjs/error-handling'
@@ -39,7 +39,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
 
       // This will never return since serve runs forever
       // eslint-disable-next-line no-unreachable
-      return { ok: true, value: {} as Subprocess }
+      return { ok: true, value: {} as Subprocess } as any
     }
     catch (error) {
       return err(`Failed to start dev server: ${error}`)
@@ -118,7 +118,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
 export async function runActions(
   actions: Action[],
   options?: ActionOptions,
-): Promise<Ok<Subprocess<Writable, Readable, Readable>, Error>[] | Err<never, string>> {
+): Promise<any> {
   if (!actions.length)
     return err('No actions were specified')
 

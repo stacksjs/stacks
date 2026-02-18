@@ -1,13 +1,13 @@
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { listRoutes } from '@stacksjs/router'
 
-// first, reset the database, if it exists
+const listRoutes: any = (await import('@stacksjs/router') as any).listRoutes
+
 const result = await listRoutes()
 
-if (result?.isErr) {
-  console.error(result.error)
-  log.error('Route lists failed', result.error)
+if ((result as any)?.isErr) {
+  console.error((result as any).error)
+  log.error('Route lists failed', (result as any).error)
   process.exit(1)
 }
 

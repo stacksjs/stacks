@@ -48,7 +48,6 @@ declare module 'bun' {
             type = 'number'
           }
           else if (envEnum[key]) {
-            // @ts-expect-error envEnum[key] is defined
             type = envEnum[key].map(item => `'${item}'`).join(' | ')
           }
         }

@@ -7,4 +7,4 @@ import { setEnvValue } from '@stacksjs/utils'
 if (!(await fs.exists('.env')))
   await runCommand('cp .env.example .env', { cwd: projectPath() })
 
-await setEnvValue('APP_KEY', generateAppKey())
+await setEnvValue('APP_KEY', generateAppKey() as any)

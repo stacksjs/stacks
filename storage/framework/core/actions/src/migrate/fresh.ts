@@ -5,27 +5,27 @@ import { log } from '@stacksjs/logging'
 // First, reset the database
 const resetResult = await resetDatabase()
 
-if (resetResult?.isErr) {
-  console.error(resetResult.error)
-  log.error('resetDatabase failed', resetResult.error)
+if ((resetResult as any)?.isErr) {
+  console.error((resetResult as any).error)
+  log.error('resetDatabase failed', (resetResult as any).error)
   process.exit(1)
 }
 
 // Then generate fresh migrations
 const genResult = await generateMigrations()
 
-if (genResult?.isErr) {
-  console.error(genResult.error)
-  log.error('generateMigrations failed', genResult.error)
+if ((genResult as any)?.isErr) {
+  console.error((genResult as any).error)
+  log.error('generateMigrations failed', (genResult as any).error)
   process.exit(1)
 }
 
 // Finally, migrate the database
 const migrateResult = await runDatabaseMigration()
 
-if (migrateResult.isErr) {
+if ((migrateResult as any).isErr) {
   log.error('runDatabaseMigration failed')
-  log.error(migrateResult.error)
+  log.error((migrateResult as any).error)
   process.exit(1)
 }
 

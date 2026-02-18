@@ -354,9 +354,9 @@ export class QueueMetrics {
    * Get current metrics
    */
   getMetrics(): {
-    counts: typeof this.jobCounts
+    counts: { added: number, completed: number, failed: number, processing: number }
     averageDuration: number
-    recentErrors: typeof this.errors
+    recentErrors: Array<{ error: Error; timestamp: number }>
     throughput: number
   } {
     const averageDuration = this.durations.length > 0

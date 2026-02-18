@@ -1,4 +1,6 @@
-import type { Request, ResponseData } from '@stacksjs/types'
+import type { ResponseData } from '@stacksjs/types'
+
+type Request = any
 import { log } from '@stacksjs/logging'
 import { response } from '@stacksjs/router'
 /**

@@ -28,21 +28,21 @@ export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
   await deleteMigrationFiles()
   await dropSqliteTables()
 
-  return ok('All tables dropped successfully!')
+  return ok('All tables dropped successfully!') as any
 }
 
 export async function dropSqliteTables(): Promise<void> {
   const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
   const tables = await fetchTables()
 
-  for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
+  for (const table of tables) await (db as any).schema.dropTable(table).ifExists().execute()
   await dropCommonTables()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
     const pivotTables = await getPivotTables(userModelPath, userModel)
 
-    for (const pivotTable of pivotTables) await db.schema.dropTable(pivotTable.table).ifExists().execute()
+    for (const pivotTable of pivotTables) await (db as any).schema.dropTable(pivotTable.table).ifExists().execute()
   }
 }
 
@@ -177,7 +177,7 @@ async function createTableMigration(modelPath: string) {
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
-  migrationContent += `  await db.schema\n`
+  migrationContent += `  await (db as any).schema\n`
   migrationContent += `    .createTable('${tableName}')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
 
@@ -283,7 +283,7 @@ async function createTableMigration(modelPath: string) {
     const upvoteTable = getUpvoteTableName(model, tableName)
     if (upvoteTable) {
       migrationContent += `\n  // Create upvote table\n`
-      migrationContent += `  await db.schema\n`
+      migrationContent += `  await (db as any).schema\n`
       migrationContent += `    .createTable('${upvoteTable}')\n`
       migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
       migrationContent += `    .addColumn('${tableName}_id', 'integer', col => col.notNull())\n`
@@ -292,9 +292,9 @@ async function createTableMigration(modelPath: string) {
       migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
       migrationContent += `    .execute()\n\n`
       migrationContent += `  // Add indexes for upvote table\n`
-      migrationContent += `  await db.schema.createIndex('${upvoteTable}_${tableName}_id_index').on('${upvoteTable}').column('${tableName}_id').execute()\n`
-      migrationContent += `  await db.schema.createIndex('${upvoteTable}_user_id_index').on('${upvoteTable}').column('user_id').execute()\n`
-      migrationContent += `  await db.schema.createIndex('${upvoteTable}_id_index').on('${upvoteTable}').column('id').execute()\n`
+      migrationContent += `  await (db as any).schema.createIndex('${upvoteTable}_${tableName}_id_index').on('${upvoteTable}').column('${tableName}_id').execute()\n`
+      migrationContent += `  await (db as any).schema.createIndex('${upvoteTable}_user_id_index').on('${upvoteTable}').column('user_id').execute()\n`
+      migrationContent += `  await (db as any).schema.createIndex('${upvoteTable}_id_index').on('${upvoteTable}').column('id').execute()\n`
     }
   }
 
@@ -324,7 +324,7 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`
     migrationContent += `import { sql } from '@stacksjs/database'\n\n`
     migrationContent += `export async function up(db: Database<any>) {\n`
-    migrationContent += `  await db.schema\n`
+    migrationContent += `  await (db as any).schema\n`
     migrationContent += `    .createTable('${pivotTable.table}')\n`
     migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
     migrationContent += `    .addColumn('${pivotTable.firstForeignKey}', 'integer')\n`
@@ -370,7 +370,7 @@ async function createAlterTableMigration(modelPath: string) {
 
   if (fieldsToAdd.length || fieldsToRemove.length) {
     hasChanged = true
-    migrationContent += `  await db.schema.alterTable('${tableName}')\n`
+    migrationContent += `  await (db as any).schema.alterTable('${tableName}')\n`
   }
 
   const fieldValidations = findDifferingKeys(lastFields, currentFields)
@@ -436,7 +436,7 @@ async function createAlterTableMigration(modelPath: string) {
   for (const oldIndex of oldIndexes) {
     if (!newIndexes.find(newIndex => newIndex.name === oldIndex.name)) {
       hasChanged = true
-      migrationContent += `  await db.schema.dropIndex('${oldIndex.name}').execute()\n`
+      migrationContent += `  await (db as any).schema.dropIndex('${oldIndex.name}').execute()\n`
     }
   }
 
@@ -483,13 +483,13 @@ function reArrangeColumns(attributes: AttributesElements | undefined, tableName:
 
 function generateIndexCreationSQL(tableName: string, indexName: string, columns: string[]): string {
   const columnsStr = columns.map(col => `\`${snakeCase(col)}\``).join(', ')
-  return `  await db.schema.createIndex('${indexName}').on('${tableName}').columns([${columnsStr}]).execute()\n`
+  return `  await (db as any).schema.createIndex('${indexName}').on('${tableName}').columns([${columnsStr}]).execute()\n`
 }
 
 function generatePrimaryKeyIndexSQL(tableName: string): string {
-  return `  await db.schema.createIndex('${tableName}_id_index').on('${tableName}').column('id').execute()\n`
+  return `  await (db as any).schema.createIndex('${tableName}_id_index').on('${tableName}').column('id').execute()\n`
 }
 
 function generateForeignKeyIndexSQL(tableName: string, foreignKey: string): string {
-  return `  await db.schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column(\`${foreignKey}\`).execute()\n\n`
+  return `  await (db as any).schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column(\`${foreignKey}\`).execute()\n\n`
 }

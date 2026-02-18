@@ -19,6 +19,7 @@ import {
   getQueueManager,
   QueueManager,
   setQueueManager,
+  // @ts-ignore - bun-queue resolved by Bun's module resolver
 } from 'bun-queue'
 import { log } from '@stacksjs/logging'
 

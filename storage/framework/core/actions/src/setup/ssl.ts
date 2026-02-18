@@ -301,7 +301,9 @@ export async function trustCertificate(domain: string, verbose?: boolean): Promi
  */
 export async function generateCertificates(domain: string, verbose?: boolean): Promise<boolean> {
   try {
-    const { generateCertificate, httpsConfig, createRootCA } = await import('@stacksjs/tlsx')
+    const tlsxModule = await import('@stacksjs/tlsx')
+    const { generateCertificate, createRootCA } = tlsxModule
+    const httpsConfig = (tlsxModule as any).httpsConfig
 
     // Ensure SSL directory exists
     if (!fs.existsSync(SSL_DIR)) {

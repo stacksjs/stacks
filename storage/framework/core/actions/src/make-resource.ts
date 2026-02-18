@@ -1,13 +1,14 @@
-import type { MakeOptions } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 import { doesExist, writeFile } from '@stacksjs/storage'
 
-export interface MakeResourceOptions extends MakeOptions {
+export interface MakeResourceOptions {
+  name?: string
   /** The model this resource is for */
   model?: string
   /** Create a collection resource */
   collection?: boolean
+  [key: string]: any
 }
 
 /**

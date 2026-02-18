@@ -27,7 +27,7 @@ export interface EmailVerificationResult {
  */
 function generateVerificationToken(userId: number): { token: string, hash: string } {
   const nonce = randomBytes(32).toString('hex')
-  const appKey = config.app.key || config.security?.appKey || 'stacks-default-key'
+  const appKey = config.app.key || (config.security as any)?.appKey || 'stacks-default-key'
   const payload = `${userId}:${nonce}`
   const hash = createHmac('sha256', appKey).update(payload).digest('hex')
   return { token: nonce, hash }
@@ -37,7 +37,7 @@ function generateVerificationToken(userId: number): { token: string, hash: strin
  * Verify a token matches the stored hash
  */
 function verifyToken(userId: number, token: string, storedHash: string): boolean {
-  const appKey = config.app.key || config.security?.appKey || 'stacks-default-key'
+  const appKey = config.app.key || (config.security as any)?.appKey || 'stacks-default-key'
   const payload = `${userId}:${token}`
   const hash = createHmac('sha256', appKey).update(payload).digest('hex')
   return hash === storedHash
@@ -47,7 +47,7 @@ function verifyToken(userId: number, token: string, storedHash: string): boolean
  * Get verification expiry minutes from config (default: 60)
  */
 function getExpiryMinutes(): number {
-  return config.auth?.emailVerification?.expire ?? 60
+  return (config.auth as any)?.emailVerification?.expire ?? 60
 }
 
 /**

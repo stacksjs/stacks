@@ -522,14 +522,13 @@ export const defaults: StacksOptions = {
         driver: 'database',
         table: 'jobs',
         queue: 'default',
-        retry_after: 90,
+        retryAfter: 90,
       },
 
       redis: {
         driver: 'redis',
-        connection: 'default',
         queue: 'default',
-        retry_after: 90,
+        retryAfter: 90,
       },
 
       sqs: {
@@ -542,7 +541,7 @@ export const defaults: StacksOptions = {
         region: 'us-east-1',
       },
     },
-  },
+  } as any,
 
   saas: {
     plans: [

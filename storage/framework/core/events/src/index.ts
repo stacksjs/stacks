@@ -1,7 +1,7 @@
 // thanks to mitt for the base of this wonderful functional event emitter
 
-import type { ModelEvents } from '@stacksjs/types'
-import type { UserModel } from '../../../orm/src/models/User'
+type ModelEvents = any
+type UserModel = any
 
 export type EventType = string | symbol
 

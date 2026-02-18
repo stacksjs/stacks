@@ -235,10 +235,10 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
       log.info('No changes detected')
     }
 
-    return ok('Migrations generated')
+    return ok('Migrations generated') as any
   }
   catch (error) {
-    return err(error)
+    return err(error) as any
   }
 }
 
@@ -258,10 +258,10 @@ export async function generateMigrations2(): Promise<Ok<string, never> | Err<str
     await qbGenerateMigration(modelsDir, { dialect, full: true })
 
     log.success('Migrations generated')
-    return ok('Migrations generated')
+    return ok('Migrations generated') as any
   }
   catch (error) {
-    return err(error)
+    return err(error) as any
   }
 }
 

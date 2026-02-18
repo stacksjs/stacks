@@ -138,10 +138,10 @@ export class Database {
     // Configure bun-query-builder
     setConfig({
       dialect: this._options.driver,
-      database: this._options.connection,
+      database: this._options.connection as any,
       verbose: this._options.verbose,
-      timestamps: this._options.timestamps,
-      softDeletes: this._options.softDeletes,
+      timestamps: this._options.timestamps as any,
+      softDeletes: this._options.softDeletes as any,
       hooks: this._options.hooks,
     })
 

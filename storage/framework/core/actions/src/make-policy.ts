@@ -1,13 +1,14 @@
-import type { MakeOptions } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 import { doesExist, get, writeFile } from '@stacksjs/storage'
 
-export interface MakePolicyOptions extends MakeOptions {
+export interface MakePolicyOptions {
+  name?: string
   /** The model this policy is for */
   model?: string
   /** Whether to register the policy in Gates.ts */
   register?: boolean
+  [key: string]: any
 }
 
 /**

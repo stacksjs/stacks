@@ -18,7 +18,7 @@ export async function makeJob(options: MakeOptions): Promise<boolean> {
   const jobName = name.endsWith('Job') ? name : `${name}Job`
 
   // Determine job type
-  const isClassBased = options.class ?? false
+  const isClassBased = (options as any).class ?? false
 
   // Generate job content
   const content = isClassBased
@@ -43,9 +43,9 @@ export async function makeJob(options: MakeOptions): Promise<boolean> {
  * Generate function-based job content
  */
 function generateFunctionBasedJob(name: string, options: MakeOptions): string {
-  const queue = options.queue || 'default'
-  const tries = options.tries || 3
-  const backoff = options.backoff || 3
+  const queue = (options as any).queue || 'default'
+  const tries = (options as any).tries || 3
+  const backoff = (options as any).backoff || 3
 
   return `import { Job } from '@stacksjs/queue'
 
@@ -113,8 +113,8 @@ export default new Job({
  * Generate class-based job content
  */
 function generateClassBasedJob(name: string, options: MakeOptions): string {
-  const queue = options.queue || 'default'
-  const tries = options.tries || 3
+  const queue = (options as any).queue || 'default'
+  const tries = (options as any).tries || 3
 
   return `import { log } from '@stacksjs/logging'
 

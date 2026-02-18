@@ -58,7 +58,7 @@ async function jobsTableExists(): Promise<boolean> {
   if (driver !== 'sqlite') {
     try {
       const { db } = await import('../utils')
-      await db.selectFrom('jobs').select('id').limit(1).execute()
+      await (db as any).selectFrom('jobs').select('id').limit(1).execute()
       return true
     }
     catch {
@@ -209,7 +209,7 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
         }
         else if (driver === 'mysql') {
           const { db } = await import('../utils')
-          await db.unsafe(`CREATE TABLE IF NOT EXISTS jobs (
+          await (db as any).unsafe(`CREATE TABLE IF NOT EXISTS jobs (
             id INT AUTO_INCREMENT PRIMARY KEY,
             queue VARCHAR(255) NOT NULL DEFAULT 'default',
             payload LONGTEXT NOT NULL,
@@ -220,7 +220,7 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
             updated_at TIMESTAMP NULL
           )`).execute()
 
-          await db.unsafe(`CREATE TABLE IF NOT EXISTS failed_jobs (
+          await (db as any).unsafe(`CREATE TABLE IF NOT EXISTS failed_jobs (
             id INT AUTO_INCREMENT PRIMARY KEY,
             uuid VARCHAR(255) NOT NULL,
             connection VARCHAR(255) NOT NULL,
@@ -232,7 +232,7 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
         }
         else if (driver === 'postgres') {
           const { db } = await import('../utils')
-          await db.unsafe(`CREATE TABLE IF NOT EXISTS jobs (
+          await (db as any).unsafe(`CREATE TABLE IF NOT EXISTS jobs (
             id SERIAL PRIMARY KEY,
             queue VARCHAR(255) NOT NULL DEFAULT 'default',
             payload TEXT NOT NULL,
@@ -243,7 +243,7 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
             updated_at TIMESTAMP
           )`).execute()
 
-          await db.unsafe(`CREATE TABLE IF NOT EXISTS failed_jobs (
+          await (db as any).unsafe(`CREATE TABLE IF NOT EXISTS failed_jobs (
             id SERIAL PRIMARY KEY,
             uuid VARCHAR(255) NOT NULL,
             connection VARCHAR(255) NOT NULL,
@@ -261,7 +261,7 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
       }
     }
 
-    return ok('Migration created and executed.')
+    return ok('Migration created and executed.') as any
   }
   catch (error) {
     return err(error instanceof Error ? error : new Error(String(error)))

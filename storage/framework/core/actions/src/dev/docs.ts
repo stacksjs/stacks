@@ -9,4 +9,4 @@ await startServer({
   root: projectPath('docs'),
   watch: true,
   quiet: true,
-})
+} as any)
