@@ -14,6 +14,11 @@ const config: PickierConfig = {
     '**/benchmarks/**',
     '**/.claude/**',
     '**/.zed/**',
+    '**/storage/framework/requests/**',
+    '**/storage/framework/types/**',
+    '**/bun-queue/**',
+    '**/temp/**',
+    '**/*.d.ts',
   ],
 
   lint: {
@@ -36,15 +41,20 @@ const config: PickierConfig = {
   rules: {
     noDebugger: 'error',
     noConsole: 'off',
+    indent: 'off',
   },
 
   pluginRules: {
     'ts/no-explicit-any': 'off',
     'ts/no-unused-vars': 'warn',
+    'ts/no-top-level-await': 'off',
+
+    'indent': 'off',
 
     'regexp/no-unused-capturing-group': 'off',
     'regexp/no-super-linear-backtracking': 'off',
     'style/brace-style': 'off',
+    'style/indent': 'off',
     'style/max-statements-per-line': 'off',
 
     'markdown/heading-increment': 'error',
