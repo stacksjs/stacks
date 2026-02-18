@@ -47,7 +47,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stripe/stripe-js": "^8.1.0"
+    "@stripe/stripe-js": "^8.7.0"
   },
   "devDependencies": {
     "better-dx": "^0.2.5",

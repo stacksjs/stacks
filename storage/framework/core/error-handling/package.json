@@ -47,7 +47,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "ts-error-handling": "^0.1.0"
+    "ts-error-handling": "^0.1.1"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
