@@ -49,5 +49,8 @@
     "@stacksjs/database": "workspace:*",
     "better-dx": "^0.2.5",
     "@stacksjs/types": "workspace:*"
+  },
+  "dependencies": {
+    "bun-query-builder": "^0.1.11"
   }
 }

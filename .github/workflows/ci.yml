@@ -44,7 +44,7 @@ jobs:
         run: bun install
 
       - name: Lint
-        run: bunx --bun eslint . --config ./config/lint.ts
+        run: bunx --bun pickier lint . --config pickier.config.ts --max-warnings 9999
 
   typecheck:
     runs-on: ${{ matrix.os }}

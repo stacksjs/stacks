@@ -55,7 +55,8 @@
     "test:coverage": "./buddy test:coverage",
     "test:types": "./buddy test:types",
     "bud": "./buddy",
-    "stx": "./buddy"
+    "stx": "./buddy",
+    "postinstall": "mkdir -p node_modules/bun-query-builder/src && echo 'export * from \"../dist/index.js\"' > node_modules/bun-query-builder/src/index.ts"
   },
   "dependencies": {
     "stacks": "workspace:*"
