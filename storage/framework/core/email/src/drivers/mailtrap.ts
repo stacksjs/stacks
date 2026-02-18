@@ -41,7 +41,7 @@ export class MailtrapDriver extends BaseEmailDriver {
       this.validateMessage(message)
       let templ
       if (message.template)
-        templ = await template(message.template, options)
+        templ = await template(message.template, options as any)
 
       // Use template HTML if available, otherwise use direct HTML from message
       const htmlContent = templ?.html || message.html

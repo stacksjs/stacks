@@ -41,7 +41,7 @@ export function upgrade(buddy: CLI): void {
       const perf = await intro('buddy upgrade')
 
       if (hasNoOptions(options)) {
-        const answers = await prompts({
+        const answers = await (prompts as any)({
           type: 'multiselect',
           name: 'value',
           message: descriptions.select,

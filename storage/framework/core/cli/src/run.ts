@@ -108,7 +108,7 @@ export async function runCommands(
       process.exit(ExitCode.FatalError)
     }
 
-    results.push(result)
+    results.push(result as any)
   }
 
   return results

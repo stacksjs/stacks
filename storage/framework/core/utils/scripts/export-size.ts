@@ -59,22 +59,22 @@ async function run() {
   md += '\n\n'
 
   for (const pkg of [...packages.slice(2), packages[1]]) {
-    const { exports, packageJSON } = await getExportsSize({
+    const { exports, packageJSON } = await (getExportsSize as any)({
       pkg: `./packages/${pkg?.name}/dist`,
       output: false,
       bundler: 'rollup',
       external: ['vue-demi', ...(pkg?.external || [])],
       includes: ['@vueuse/shared'],
-    })
+    } as any)
 
-    md += `<kbd>${packageJSON.name}</kbd>\n\n`
+    md += `<kbd>${(packageJSON as any).name}</kbd>\n\n`
 
     md += markdownTable([
       ['Function', 'min+gzipped'],
-      ...exports.map((i) => {
-        mdJSON[i.name] = filesize(i.minzipped)
+      ...(exports as any[]).map((i: any) => {
+        mdJSON[i.name] = filesize(i.minzipped) as string
 
-        return [`\`${i.name}\``, filesize(i.minzipped)]
+        return [`\`${i.name}\``, filesize(i.minzipped) as string]
       }),
     ])
 
@@ -82,8 +82,8 @@ async function run() {
   }
   // await fs.remove(join(packagesRoot, 'shared/index.mjs'))
   // await fs.remove(join(packagesRoot, 'src/index.mjs'))
-  await fs.writeFile('../export-size.md', md, 'utf-8')
-  await fs.writeJSON('../export-size.json', mdJSON, { spaces: 2 })
+  await (fs as any).writeFile('../export-size.md', md, 'utf-8')
+  await (fs as any).writeJSON('../export-size.json', mdJSON, { spaces: 2 })
 }
 
 await run()

@@ -45,9 +45,9 @@ export async function fetchPrintJobStats(
     .where('timestamp', '<=', endDate)
     .select([
       db.fn.count('id').as('total'),
-      db.fn.count('id').filterWhere('status', '=', 'success').as('success'),
-      db.fn.count('id').filterWhere('status', '=', 'failed').as('failed'),
-      db.fn.count('id').filterWhere('status', '=', 'warning').as('warning'),
+      (db.fn.count('id') as any).filterWhere('status', '=', 'success').as('success'),
+      (db.fn.count('id') as any).filterWhere('status', '=', 'failed').as('failed'),
+      (db.fn.count('id') as any).filterWhere('status', '=', 'warning').as('warning'),
       db.fn.avg('size').as('averageSize'),
       db.fn.avg('pages').as('averagePages'),
       db.fn.avg('duration').as('averageDuration'),
@@ -88,9 +88,9 @@ export async function fetchSuccessRate(
     .where('timestamp', '<=', formatDate(endDate))
     .select([
       db.fn.count('id').as('total'),
-      db.fn.count('id').filterWhere('status', '=', 'success').as('success'),
-      db.fn.count('id').filterWhere('status', '=', 'failed').as('failed'),
-      db.fn.count('id').filterWhere('status', '=', 'warning').as('warning'),
+      (db.fn.count('id') as any).filterWhere('status', '=', 'success').as('success'),
+      (db.fn.count('id') as any).filterWhere('status', '=', 'failed').as('failed'),
+      (db.fn.count('id') as any).filterWhere('status', '=', 'warning').as('warning'),
     ])
     .executeTakeFirst()
 

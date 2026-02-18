@@ -35,7 +35,7 @@ export function telemetryCommand(buddy: CLI): void {
 
       try {
         // Handle enable
-        if (options.enable) {
+        if ((options as any).enable) {
           await telemetry.enable()
           log.success('Telemetry enabled')
           log.info('')
@@ -49,7 +49,7 @@ export function telemetryCommand(buddy: CLI): void {
         }
 
         // Handle disable
-        if (options.disable) {
+        if ((options as any).disable) {
           await telemetry.disable()
           log.success('Telemetry disabled')
           log.info('')

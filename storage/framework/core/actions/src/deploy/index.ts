@@ -188,7 +188,7 @@ try {
     repoSpinner.start()
 
     try {
-      const { ECRClient } = await import('ts-cloud/aws')
+      const { ECRClient } = await import('ts-cloud/aws') as any
       const ecr = new ECRClient(region)
       const repoName = `${projectName}-${environment}-api`
 
@@ -221,7 +221,7 @@ try {
     authSpinner.start()
 
     try {
-      const { ECRClient } = await import('ts-cloud/aws')
+      const { ECRClient } = await import('ts-cloud/aws') as any
       const ecr = new ECRClient(region)
 
       // Get ECR authorization token
@@ -289,7 +289,7 @@ try {
   // Helper function to get AWS account ID using ts-cloud SDK
   async function getAwsAccountId(region: string): Promise<string> {
     try {
-      const { STSClient } = await import('ts-cloud/aws')
+      const { STSClient } = await import('ts-cloud/aws') as any
       const sts = new STSClient(region)
       const identity = await sts.getCallerIdentity()
       const accountId = identity.Account || process.env.AWS_ACCOUNT_ID || ''
@@ -338,7 +338,7 @@ try {
   frontendSpinner.start()
 
   try {
-    const { S3Client, CloudFormationClient } = await import('ts-cloud/aws')
+    const { S3Client, CloudFormationClient } = await import('ts-cloud/aws') as any
     const { existsSync, readdirSync, statSync, readFileSync, copyFileSync, mkdirSync, rmSync } = await import('node:fs')
     const { join, extname, relative } = await import('node:path')
 
@@ -461,7 +461,7 @@ try {
       const distributionId = outputs.CloudFrontDistributionId
       if (distributionId) {
         if (isVerbose) log.debug('  Invalidating CloudFront cache...')
-        const { AWSClient } = await import('ts-cloud/aws')
+        const { AWSClient } = await import('ts-cloud/aws') as any
         const client = new AWSClient()
         await client.request({
           service: 'cloudfront',
@@ -500,7 +500,7 @@ try {
     docsDeploySpinner.start()
 
     try {
-      const { S3Client, CloudFormationClient } = await import('ts-cloud/aws')
+      const { S3Client, CloudFormationClient } = await import('ts-cloud/aws') as any
       const { readdirSync, statSync, readFileSync } = await import('node:fs')
       const { join, extname } = await import('node:path')
 
@@ -573,7 +573,7 @@ try {
         const distributionId = outputs.CloudFrontDistributionId
         if (distributionId) {
           if (isVerbose) log.debug('  Invalidating CloudFront cache for /docs...')
-          const { AWSClient } = await import('ts-cloud/aws')
+          const { AWSClient } = await import('ts-cloud/aws') as any
           const client = new AWSClient()
           await client.request({
             service: 'cloudfront',
@@ -612,7 +612,7 @@ try {
   errorPageSpinner.start()
 
   try {
-    const { S3Client, CloudFormationClient, AWSClient } = await import('ts-cloud/aws')
+    const { S3Client, CloudFormationClient, AWSClient } = await import('ts-cloud/aws') as any
     const { existsSync: exists404, readFileSync: read404 } = await import('node:fs')
 
     const s3 = new S3Client(region)

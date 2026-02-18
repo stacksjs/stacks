@@ -46,8 +46,8 @@ export async function fetchFeatured(limit: number = 10): Promise<ManufacturerJso
  */
 export async function fetchByCountry(country: string, options: FetchManufacturersOptions = {}): Promise<ManufacturerResponse> {
   // Set default values
-  const page = options.page || 1
-  const limit = options.limit || 10
+  const page = (options as any).page || 1
+  const limit = (options as any).limit || 10
 
   // Start building the query
   const query = db.selectFrom('manufacturers')

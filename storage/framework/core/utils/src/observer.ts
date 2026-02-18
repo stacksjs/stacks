@@ -35,7 +35,7 @@ export function isResizeObserverSupported(): boolean {
  *
  * Modern browsers all support ResizeObserver, but this provides a fallback
  */
-export function getResizeObserver(): typeof ResizeObserver {
+export function getResizeObserver(): any {
   if (isResizeObserverSupported()) {
     return window.ResizeObserver
   }
@@ -176,5 +176,5 @@ export function observeElementSize(
 }
 
 // Export the native ResizeObserver if available, or the polyfill
-export const ResizeObserver = getResizeObserver()
+export const ResizeObserver: any = getResizeObserver()
 export default ResizeObserver

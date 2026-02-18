@@ -96,7 +96,7 @@ export function partition<T>(
 export function partition<T>(array: readonly T[], ...filters: PartitionFilter<T>[]): any {
   const result: T[][] = Array.from({ length: filters.length + 1 })
     .fill(null)
-    .map(() => [])
+    .map((): any[] => [])
 
   array.forEach((e, idx, arr) => {
     let i = 0

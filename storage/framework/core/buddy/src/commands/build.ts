@@ -83,7 +83,7 @@ export function build(buddy: CLI): void {
       // TODO: uncomment this when prompt is available
       if (hasNoOptions(options)) {
         console.log('has no')
-        const answers = await prompts({
+        const answers = await (prompts as any)({
           type: 'multiselect',
           name: 'build',
           message: descriptions.select,

@@ -120,7 +120,7 @@ export class DiscordDriver extends BaseChatDriver {
   private async sendViaWebhook(message: ChatMessage): Promise<{ id?: string }> {
     const payload: DiscordMessage = {
       content: message.content,
-      username: message.from,
+      username: message.from as any,
     }
 
     // Add embeds if template or subject provided

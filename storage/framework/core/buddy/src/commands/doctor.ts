@@ -68,11 +68,11 @@ export function doctor(buddy: CLI): void {
       // Check package.json exists
       try {
         const pkg = await storage.readPackageJson('./package.json')
-        if (pkg.name) {
+        if ((pkg as any).name) {
           checks.push({
             name: 'package.json',
             status: 'pass',
-            message: `Found: ${pkg.name}`,
+            message: `Found: ${(pkg as any).name}`,
           })
         }
       }

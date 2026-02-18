@@ -60,16 +60,16 @@ export function getCurrentRequest(): EnhancedRequest | undefined {
  * - tokenCant(ability) - Check if token doesn't have an ability (async)
  */
 export const request = new Proxy({} as EnhancedRequest, {
-  get(_target, prop: string) {
+  get(_target, prop: string): any {
     const currentRequest = getCurrentRequest()
 
     if (!currentRequest) {
       // Return safe defaults when no request context
       if (prop === 'bearerToken') {
-        return () => null
+        return (): any => null
       }
       if (prop === 'user' || prop === 'userToken') {
-        return async () => undefined
+        return async (): Promise<any> => undefined
       }
       if (prop === 'tokenCan' || prop === 'tokenCant') {
         return async () => false

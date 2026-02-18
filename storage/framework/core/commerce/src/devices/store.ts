@@ -56,7 +56,7 @@ export async function bulkStore(data: NewPrintDevice[]): Promise<number> {
 
   try {
     // Process each print device
-    await db.transaction().execute(async (trx) => {
+    await db.transaction().execute(async (trx: any) => {
       for (const device of data) {
         // Prepare print device data
         const deviceData: NewPrintDevice = {

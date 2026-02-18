@@ -63,7 +63,7 @@ export async function calculateErrorRate(): Promise<number> {
     .selectFrom('receipts')
     .select([
       db.fn.count('id').as('total'),
-      db.fn.count('id')
+      (db.fn.count('id') as any)
         .filterWhere('status', '=', 'error')
         .as('error_count'),
     ])
@@ -96,7 +96,7 @@ export async function calculatePrinterHealth(): Promise<number> {
     .selectFrom('print_devices')
     .select([
       db.fn.count('id').as('total'),
-      db.fn.count('id')
+      (db.fn.count('id') as any)
         .filterWhere('status', '=', 'online')
         .as('online_count'),
     ])

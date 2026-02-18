@@ -72,7 +72,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
     const result = await validator.validate(params)
 
     if (!result.valid) {
-      reportError(result.errors)
+      reportError(result.errors as any)
       throw new HttpError(422, JSON.stringify(result.errors))
     }
 

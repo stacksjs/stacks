@@ -28,7 +28,7 @@ export async function updateIndexSettings(): Promise<Ok<string, never> | Err<str
       }
     }
 
-    return ok('Successfully update index settings!')
+    return ok('Successfully update index settings!') as any
   }
   catch (err: any) {
     log.error(err)

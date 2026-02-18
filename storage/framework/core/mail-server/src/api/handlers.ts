@@ -127,7 +127,7 @@ export async function listMailboxes(userEmail: string): Promise<MailboxInfo[]> {
   // Count messages in INBOX
   try {
     const objects = await s3.listAllObjects({ bucket: BUCKET, prefix: 'incoming/' })
-    const userMessages = objects.filter(obj => !obj.Key.includes('AMAZON_SES_SETUP'))
+    const userMessages = objects.filter((obj: any) => !obj.Key.includes('AMAZON_SES_SETUP'))
     mailboxes[0].messages = userMessages.length
     mailboxes[0].unseen = userMessages.length // All unseen for now
     mailboxes[0].uidNext = userMessages.length + 1

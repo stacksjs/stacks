@@ -18,7 +18,7 @@ export async function setupDatabase(): Promise<void> {
   const dbName = `${database.connections?.mysql?.name ?? 'stacks'}_testing`
 
   if (driver === 'mysql') {
-    await sql`CREATE DATABASE IF NOT EXISTS ${sql.raw(dbName)}`.execute(db)
+    await (sql`CREATE DATABASE IF NOT EXISTS ${sql.raw(dbName)}` as any).execute(db)
     // TODO: Remove all log.info
     await runDatabaseMigration()
   }
@@ -37,7 +37,7 @@ export async function truncateMysql(): Promise<void> {
   const tables = await fetchTables()
 
   for (const table of tables) {
-    await sql`TRUNCATE TABLE ${sql.raw(table)}`.execute(db)
+    await (sql`TRUNCATE TABLE ${sql.raw(table)}` as any).execute(db)
   }
 }
 

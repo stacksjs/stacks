@@ -289,7 +289,7 @@ export class SocksClient {
 
       const status = data[1]
       if (status !== 0x00) {
-        const errors: { [key: number]: string } = {
+        const errors: Record<number, string> = {
           0x01: 'General SOCKS server failure',
           0x02: 'Connection not allowed by ruleset',
           0x03: 'Network unreachable',
@@ -299,7 +299,7 @@ export class SocksClient {
           0x07: 'Command not supported',
           0x08: 'Address type not supported',
         }
-        const errorMsg = errors[status] || `Unknown error (${status})`
+        const errorMsg = (errors as any)[status] || `Unknown error (${status})`
         callback(new Error(`SOCKS5 connection failed: ${errorMsg}`))
         return
       }
@@ -328,5 +328,3 @@ export class SocksClient {
   }
 }
 
-// Backward compatibility exports
-export type { SocksClientOptions, SocksClientEstablishedEvent }

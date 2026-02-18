@@ -58,7 +58,7 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
       .where('id', 'in', ids)
       .execute()
 
-    const existingIds = existingPosts.map(post => post.id)
+    const existingIds = existingPosts.map((post: any) => post.id)
 
     if (!existingIds.length)
       return 0

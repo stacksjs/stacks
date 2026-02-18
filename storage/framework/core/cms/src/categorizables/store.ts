@@ -31,7 +31,7 @@ export async function store(data: CategoryData): Promise<CategorizableTable> {
     }
 
     // Start a transaction to ensure both inserts succeed or fail together
-    const result = await db.transaction().execute(async (trx) => {
+    const result = await db.transaction().execute(async (trx: any) => {
       // Insert into categorizable table first
       const category = await trx
         .insertInto('categorizables')
@@ -96,7 +96,7 @@ export async function storeCategorizableModel(data: CategorizableModelData): Pro
 export async function bulkStore(data: CategoryData[]): Promise<CategorizableTable[]> {
   try {
     // Start a transaction to ensure all inserts succeed or fail together
-    const results = await db.transaction().execute(async (trx) => {
+    const results = await db.transaction().execute(async (trx: any) => {
       const categories: CategorizableTable[] = []
 
       for (const item of data) {

@@ -48,7 +48,7 @@ export async function bulkStore(data: NewProductVariant[]): Promise<number> {
   let createdCount = 0
 
   try {
-    await db.transaction().execute(async (trx) => {
+    await db.transaction().execute(async (trx: any) => {
       for (const variant of data) {
         const variantData = {
           ...variant,

@@ -89,7 +89,7 @@ export function dev(buddy: CLI): void {
       }
 
       if (wantsInteractive(options)) {
-        const answer = await prompts({
+        const answer = await (prompts as any)({
           type: 'select',
           name: 'value',
           message: descriptions.select,
@@ -129,7 +129,7 @@ export function dev(buddy: CLI): void {
       else {
         if (options.components)
           await runComponentsDevServer(options)
-        else if (options.dashboard)
+        else if ((options as any).dashboard)
           await runDashboardDevServer(options)
         else if (options.docs)
           await runDocsDevServer(options)

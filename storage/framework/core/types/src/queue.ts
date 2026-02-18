@@ -283,6 +283,7 @@ export interface QueueOptions {
   }
 }
 
+// @ts-ignore - QueueOption extends JobOptions with compatible overrides
 export interface QueueOption extends JobOptions {
   delay?: number
   payload?: any

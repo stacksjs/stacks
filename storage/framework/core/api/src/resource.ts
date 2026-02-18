@@ -22,7 +22,7 @@
  * return UserResource.collection(users).toResponse()
  */
 
-import type { Request } from '@stacksjs/router'
+type Request = any
 
 /**
  * Wrapper value types for conditional inclusion

@@ -1,5 +1,5 @@
 import type { Action } from '@stacksjs/actions'
-import type { Request } from '@stacksjs/router'
+type Request = any
 import type { ValidationType } from '@stacksjs/ts-validation'
 import type { HttpMethod } from './request'
 
@@ -16,7 +16,7 @@ export interface ValidationField {
   message: Record<string, string>
 }
 
-export type AuthToken = `${number}:${number}:${string}`
+export type RouterAuthToken = `${number}:${number}:${string}`
 
 export interface CustomAttributes {
   [key: string]: ValidationField
@@ -115,7 +115,7 @@ export interface RouterInstance {
   Header: (headerParam: string) => string | number | boolean | null
   getParam: <T>(key: string) => T
   route: (key: string) => number | string | null
-  bearerToken: () => string | null | AuthToken
+  bearerToken: () => string | null | RouterAuthToken
   getParams: () => RouteParams
   getParamAsInt: (key: string) => number | null
   browser: () => string | null

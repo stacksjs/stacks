@@ -8,9 +8,9 @@
 
 import type { Dispatchable, QueueOption, RedisConnectionConfig } from '@stacksjs/types'
 import {
-  Queue as BunQueue,
-  type Job as BunJob,
-  type JobOptions as BunJobOptions,
+  BunQueue,
+  type BunJob,
+  type BunJobOptions,
   batch,
   chain,
   dispatch,

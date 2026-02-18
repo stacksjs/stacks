@@ -1,4 +1,4 @@
-import type { CategoryJsonResponse, CategoryRequestType } from '@stacksjs/orm'
+import type { CategorizableRequestType, CategoryJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
@@ -10,7 +10,7 @@ import { fetchById } from './fetch'
  * @param request The updated category data
  * @returns The updated category record
  */
-export async function update(id: number, request: CategoryRequestType): Promise<CategoryJsonResponse | undefined> {
+export async function update(id: number, request: CategorizableRequestType): Promise<CategoryJsonResponse | undefined> {
   // Validate the request data
   await request.validate()
 

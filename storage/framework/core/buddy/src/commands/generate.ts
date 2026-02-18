@@ -113,7 +113,7 @@ export function generate(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:vscode-custom-data` ...', options)
-      await generateVsCodeCustomData(options)
+      await (generateVsCodeCustomData as any)(options)
     })
 
   buddy
@@ -131,7 +131,7 @@ export function generate(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:component-meta` ...', options)
-      await generateComponentMeta()
+      await (generateComponentMeta as any)()
     })
 
   buddy

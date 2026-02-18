@@ -59,7 +59,7 @@ async function fetchAllWithDetails(): Promise<OrderWithTotals[] | []> {
     ])
     .execute()
 
-  const orderItemsMap = allOrderItems.reduce<Record<number, { totalItems: number, totalPrice: number }>>(
+  const orderItemsMap = allOrderItems.reduce(
     (acc: any, item: any) => {
       if (!item.order_id)
         return acc // Skip items without order_id
@@ -112,7 +112,7 @@ function prepareOrdersForExport(orders: OrderWithTotals[]) {
   const data = orders.map((order: any) => {
     // Convert items to a readable string
     const itemsString = order.order_items
-      ?.map(item => `${item.product?.name} (Qty: ${item.quantity}, Price: $${item.price})`)
+      ?.map((item: any) => `${item.product?.name} (Qty: ${item.quantity}, Price: $${item.price})`)
       .join(' | ') || 'No Items'
 
     return [

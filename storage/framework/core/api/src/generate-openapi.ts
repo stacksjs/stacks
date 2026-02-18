@@ -2,7 +2,7 @@ import { path } from '@stacksjs/path'
 import { route } from '@stacksjs/router'
 
 export async function generateOpenApi(): Promise<void> {
-  const routeLists: any[] = await route.getRoutes()
+  const routeLists: any[] = await (route as any).routes()
 
   const openAPISpec = {
     openapi: '3.0.0',

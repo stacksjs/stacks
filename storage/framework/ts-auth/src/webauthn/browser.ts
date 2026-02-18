@@ -113,14 +113,13 @@ export function browserSupportsWebAuthn(): boolean {
 /**
  * Check if browser supports conditional UI
  */
-export async function browserSupportsWebAuthnAutofill(): boolean {
+export async function browserSupportsWebAuthnAutofill(): Promise<boolean> {
   if (!window.PublicKeyCredential) {
     return false
   }
 
   try {
-    // @ts-expect-error - conditional mediation is experimental
-    return await PublicKeyCredential.isConditionalMediationAvailable?.()
+    return await (PublicKeyCredential as any).isConditionalMediationAvailable?.()
   }
   catch {
     return false

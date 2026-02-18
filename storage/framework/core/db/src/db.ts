@@ -15,7 +15,7 @@ for (const userModelFile of userModelFiles) {
 
 const schema = buildDatabaseSchema(defineModels(models))
 const meta = buildSchemaMeta(defineModels(models))
-const db2 = createQueryBuilder<typeof schema>({ schema, meta })
+const db2 = createQueryBuilder({ schema, meta })
 
 export {
   db2,

@@ -11,8 +11,8 @@ import { createBrowserModel } from 'bun-query-builder'
 
 // Dynamically import all model definitions from app/Models/
 // Uses import.meta.glob in Vite context (build time), or empty map in Bun/Node context
-const modelModules: Record<string, { default: any }> = typeof import.meta.glob === 'function'
-  ? import.meta.glob<{ default: any }>('~/app/Models/*.ts', { eager: true })
+const modelModules: Record<string, { default: any }> = typeof (import.meta as any).glob === 'function'
+  ? (import.meta as any).glob('~/app/Models/*.ts', { eager: true })
   : {}
 
 /**

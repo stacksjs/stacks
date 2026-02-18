@@ -175,7 +175,7 @@ export async function tcpWhois(
         })
 
         socket.on('data', (data) => {
-          resolve(decoder.decode(data))
+          resolve(decoder.decode(data as any))
         })
 
         socket.on('error', (error) => {
@@ -209,7 +209,7 @@ export async function tcpWhois(
   }
 
   return new Promise((resolve, reject) => {
-    SocksClient.createConnection(options, (err, info) => {
+    SocksClient.createConnection(options, (err: any, info: any) => {
       if (err) {
         reject(err)
       }
@@ -224,8 +224,8 @@ export async function tcpWhois(
           info?.socket.write(encoder.encode(`${domain}\r\n`))
         }
 
-        info?.socket.on('data', (data) => {
-          resolve(decoder.decode(data))
+        info?.socket.on('data', (data: any) => {
+          resolve(decoder.decode(data as any))
         })
 
         info?.socket.resume()

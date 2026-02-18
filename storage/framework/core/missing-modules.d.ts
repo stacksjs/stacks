@@ -3,7 +3,24 @@
 // Explicit bodies are only used where code references types from modules (TS2709/TS2694).
 
 // Cloud infrastructure (shorthand - accept any import)
-declare module 'ts-cloud/aws'
+declare module 'ts-cloud/aws' {
+  export class S3Client { constructor(...args: any[]); [key: string]: any }
+  export class SESClient { constructor(...args: any[]); [key: string]: any }
+  export class DynamoDBClient { constructor(...args: any[]); [key: string]: any }
+  export class Route53Client { constructor(...args: any[]); [key: string]: any }
+  export class Route53DomainsClient { constructor(...args: any[]); [key: string]: any }
+  export class AWSClient { constructor(...args: any[]); [key: string]: any }
+  export class ACMClient { constructor(...args: any[]); [key: string]: any }
+  export class CloudFormationClient { constructor(...args: any[]); [key: string]: any }
+  export class CloudFrontClient { constructor(...args: any[]); [key: string]: any }
+  export class CloudWatchLogsClient { constructor(...args: any[]); [key: string]: any }
+  export class ConnectClient { constructor(...args: any[]); [key: string]: any }
+  export class PinpointClient { constructor(...args: any[]); [key: string]: any }
+  export type HostedZone = any
+  export type CreateHostedZoneResult = any
+  const _default: any
+  export default _default
+}
 declare module 'ts-cloud/src/generators/infrastructure'
 declare module 'ts-cloud/src/aws/cloudformation'
 declare module 'ts-cloud/src/aws/cloudfront'
@@ -23,7 +40,7 @@ declare module '@ts-cloud/types' {
 declare module 'aws-cdk-lib' {
   // Top-level classes
   export class Stack { constructor(scope: any, id: string, props?: any); static of(scope: any): any; [key: string]: any }
-  export class App { constructor(props?: any) }
+  export class App { constructor(props?: any); [key: string]: any }
   export const Duration: any
   export const CfnOutput: any
   export class CfnResource { [key: string]: any }
@@ -493,8 +510,16 @@ declare module 'ts-pantry'
 
 // Vue ecosystem (shorthand)
 declare module '@headlessui/vue'
-declare module 'vite-plugin-inspect'
-declare module 'vite-plugin-pwa'
+declare module 'vite-plugin-inspect' {
+  export type Options = any
+  const _default: any
+  export default _default
+}
+declare module 'vite-plugin-pwa' {
+  export type Options = any
+  const _default: any
+  export default _default
+}
 declare module 'vue-router'
 declare module 'vue-router/auto-routes'
 
@@ -570,8 +595,8 @@ declare module 'bun-plugin-dtsx' {
 // Queue - needs explicit types for TS2709 + all exports used via re-export
 declare module 'bun-queue' {
   // Types needed in type-position
-  export class BunQueue { constructor(...args: any[]); [key: string]: any }
-  export class BunJob { [key: string]: any }
+  export class BunQueue<T = any> { constructor(...args: any[]); [key: string]: any }
+  export class BunJob<T = any> { [key: string]: any }
   export type BunJobOptions = any
   export type JobOptions = any
   export type QueueOptions = any

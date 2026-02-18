@@ -19,7 +19,7 @@ export default {
    * - 's3': AWS S3 or S3-compatible storage
    * - 'memory': In-memory storage (for testing)
    */
-  driver: process.env.STORAGE_DRIVER || 'bun',
+  driver: (process.env.STORAGE_DRIVER || 'bun') as any,
 
   /**
    * Root directory for local/bun drivers

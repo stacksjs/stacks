@@ -65,7 +65,7 @@ export {
   QueueObservable,
 
   // Events
-  JobEvents,
+  type JobEvents,
 
   // Middleware
   middleware,

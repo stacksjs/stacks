@@ -26,7 +26,7 @@ export async function listIndexSettings(modelName: string): Promise<Ok<string, n
       console.table({ displayedAttributes, filterableAttributes, sortableAttributes, searchableAttributes })
     }
 
-    return ok('Successfully update index settings!')
+    return ok('Successfully update index settings!') as any
   }
   catch (err: any) {
     log.error(err)

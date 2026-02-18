@@ -47,7 +47,7 @@ export async function bulkUpdate(data: ProductVariantUpdate[]): Promise<number> 
   let updatedCount = 0
 
   try {
-    await db.transaction().execute(async (trx) => {
+    await db.transaction().execute(async (trx: any) => {
       for (const variant of data) {
         if (!variant.id)
           continue

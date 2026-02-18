@@ -86,7 +86,7 @@ export const log: Log = {
 
   warn: async (message: string, options?: Record<string, any>) => {
     const logger = await getLogger()
-    await logger.warn(message, options)
+    await logger.warn(message, options as any)
   },
 
   warning: async (message: string) => {

@@ -10,8 +10,8 @@ export class Controller {
   /**
    * Create a JSON response
    */
-  protected json(data: any, status: number = 200): ResponseData {
-    return response.json(data, status)
+  protected json(data: any, status: number = 200): any {
+    return (response as any).json(data, status)
   }
 
   /**
@@ -31,7 +31,7 @@ export class Controller {
   /**
    * Return a no content response
    */
-  protected noContent(): ResponseData {
+  protected noContent(): any {
     return response.noContent()
   }
 

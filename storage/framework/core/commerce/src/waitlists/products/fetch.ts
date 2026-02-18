@@ -365,6 +365,6 @@ export async function fetchCountByDateGrouped(
 
   // Convert to array and sort by date
   return Object.entries(dateCounts)
-    .map(([date, count]) => ({ date, count }))
+    .map(([date, count]) => ({ date, count: count as number }))
     .sort((a, b) => a.date.localeCompare(b.date))
 }

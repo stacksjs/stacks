@@ -78,7 +78,7 @@ async function listAllIndexes(): Promise<IndexesResults<Index[]>> {
 }
 
 async function getFilterableAttributes(index: string): Promise<string[]> {
-  return client().index(index).getFilterableAttributes()
+  return client().index(index).getFilterableAttributes() as any
 }
 
 async function updateFilterableAttributes(index: string, filterableAttributes: string[] | null): Promise<EnqueuedTask> {

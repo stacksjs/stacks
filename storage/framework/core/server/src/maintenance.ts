@@ -120,7 +120,7 @@ export async function down(options: Partial<MaintenancePayload> = {}): Promise<v
  * Bring the application out of maintenance mode
  */
 export async function up(): Promise<void> {
-  const { unlinkSync, existsSync } = await import('@stacksjs/storage')
+  const { unlinkSync, existsSync } = await import('node:fs')
   const filePath = maintenanceFilePath()
 
   if (existsSync(filePath)) {

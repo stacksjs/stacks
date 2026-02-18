@@ -81,7 +81,7 @@ export const manageProduct: ProductManager = (() => {
    */
   async function search(
     query: string,
-    params: Stripe.ProductSearchParams = {},
+    params: Stripe.ProductSearchParams = { query: '' },
   ): Promise<Stripe.Response<Stripe.ApiSearchResult<Stripe.Product>>> {
     return await stripe.products.search({
       query,
@@ -160,7 +160,7 @@ export const managePriceExtended: ExtendedPriceManager = (() => {
    */
   async function search(
     query: string,
-    params: Stripe.PriceSearchParams = {},
+    params: Stripe.PriceSearchParams = { query: '' },
   ): Promise<Stripe.Response<Stripe.ApiSearchResult<Stripe.Price>>> {
     return await stripe.prices.search({
       query,

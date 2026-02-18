@@ -175,8 +175,8 @@ export class StacksCache implements CacheDriver {
       hits: stats.hits,
       misses: stats.misses,
       keys: stats.keys,
-      size: stats.size,
-      hitRate: stats.hitRate,
+      size: (stats as any).size,
+      hitRate: (stats as any).hitRate,
     }
   }
 

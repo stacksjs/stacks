@@ -222,7 +222,7 @@ ensureConfigLoaded()
  * Lazy proxy for the query builder - connection is only made when first used.
  * This is the main entry point for database operations.
  */
-export const db = new Proxy({} as ReturnType<typeof createQueryBuilder<AnySchema>>, {
+export const db = new Proxy({} as ReturnType<typeof createQueryBuilder>, {
   get(_target, prop) {
     const instance = getDb()
     const value = (instance as any)[prop]

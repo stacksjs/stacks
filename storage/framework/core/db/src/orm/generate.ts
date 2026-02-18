@@ -1,5 +1,5 @@
 import { path } from '@stacksjs/path'
-import { fs } from '@stacksjs/storage'
+import { fs, globSync } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'
 import type { Model } from '@stacksjs/types'
 

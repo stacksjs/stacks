@@ -254,7 +254,7 @@ export class BaseOrm<T, C, J> {
     const currentIds = existing.map((r: any) => r[relatedKey] as number)
 
     const toAttach = relatedIds.filter(id => !currentIds.includes(id))
-    const toDetach = currentIds.filter(id => !relatedIds.includes(id))
+    const toDetach = currentIds.filter((id: any) => !relatedIds.includes(id))
 
     if (toDetach.length > 0) {
       await this.detach(pivotTable, foreignKey, foreignId, relatedKey, toDetach)

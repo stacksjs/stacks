@@ -21,10 +21,10 @@ if (process.env.QUEUE_WORKER) {
 
   if (typeof jobModule.default.handle === 'function') {
     retry(await jobModule.default.handle(), {
-      backoffFactor: process.env.JOB_BACKOFF_FACTOR,
-      retries: process.env.JOB_RETRIES,
-      initialDelay: process.env.JOB_INITIAL_DELAY,
-      jitter: process.env.JOB_JITTER,
+      backoffFactor: Number(process.env.JOB_BACKOFF_FACTOR),
+      retries: Number(process.env.JOB_RETRIES),
+      initialDelay: Number(process.env.JOB_INITIAL_DELAY),
+      jitter: Boolean(process.env.JOB_JITTER),
     })
   } else {
     throw new TypeError('`handle()` function is undefined')
@@ -39,7 +39,7 @@ const server = Bun.serve({
   port: 3000,
   development,
 
-  async fetch(request: Request, server: Server): Promise<Response | undefined> {
+  async fetch(request: Request, server: Server<any>): Promise<Response | undefined> {
     if (server.upgrade(request)) {
       console.log('WebSocket upgraded')
       return

@@ -242,8 +242,8 @@ export async function fetchMonthlyPaymentTrends(): Promise<Array<{
   const monthlyData = await db
     .selectFrom('payments')
     .select([
-      sql`strftime('%Y', created_at)`.as('year'),
-      sql`strftime('%m', created_at)`.as('month'),
+      (sql as any)`strftime('%Y', created_at)`.as('year'),
+      (sql as any)`strftime('%m', created_at)`.as('month'),
       db.fn.count('id').as('transactions'),
       db.fn.sum('amount').as('revenue'),
     ])

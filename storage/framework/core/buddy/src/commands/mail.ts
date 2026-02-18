@@ -174,6 +174,7 @@ export function mailCommands(buddy: CAC): void {
         process.env.IMAP_PORT = options.port
 
         // Dynamic import of the proxy
+        // @ts-ignore
         const { ImapProxy } = await import('../../mail-server/src/proxy/imap-proxy')
         const proxy = new ImapProxy(parseInt(options.port), apiUrl)
         await proxy.start()

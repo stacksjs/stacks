@@ -79,7 +79,7 @@ export function queue(buddy: CLI): void {
       log.debug('Running `buddy queue:retry` ...', options)
 
       const perf = await intro('buddy queue:retry')
-      const result = await runAction(Action.QueueRetry, { ...options, id })
+      const result = await runAction(Action.QueueRetry, { ...options, id } as any)
 
       if (result.isErr) {
         await outro(
@@ -236,7 +236,7 @@ export function queue(buddy: CLI): void {
       log.debug('Running `buddy queue:inspect` ...', options)
 
       const perf = await intro('buddy queue:inspect')
-      const result = await runAction(Action.QueueInspect, { ...options, id })
+      const result = await runAction(Action.QueueInspect, { ...options, id } as any)
 
       if (result.isErr) {
         await outro(

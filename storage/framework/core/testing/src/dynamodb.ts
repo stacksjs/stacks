@@ -7,7 +7,7 @@ import {
   ScalarAttributeType,
 } from '@aws-sdk/client-dynamodb'
 
-import { dynamoDbTool } from '@stacksjs/cache'
+const dynamoDbTool: any = await import('@stacksjs/cache').then((m: any) => m.dynamoDbTool)
 
 const client = new DynamoDBClient({
   endpoint: 'http://localhost:8000',

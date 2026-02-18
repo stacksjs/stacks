@@ -42,7 +42,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
       return { ok: true, value: {} as Subprocess } as any
     }
     catch (error) {
-      return err(`Failed to start dev server: ${error}`)
+      return err(`Failed to start dev server: ${error}`) as any
     }
   }
 

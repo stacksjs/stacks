@@ -86,13 +86,13 @@ export * from './auth-tables'
 // Re-export bun-query-builder functions and types
 export {
   createQueryBuilder,
-  Seeder,
   setConfig,
 } from 'bun-query-builder'
 
 export type {
   QueryBuilder,
   QueryBuilderConfig,
+  Seeder,
   SupportedDialect,
 } from 'bun-query-builder'
 

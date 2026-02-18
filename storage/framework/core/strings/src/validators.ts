@@ -349,7 +349,7 @@ export function isHash(hash: string, algorithm: HashAlgorithm): boolean {
     'sha256': 64,
     'sha384': 96,
     'sha512': 128,
-  }
+  } as any
 
   const expectedLength = hashLengths[algorithm]
   if (!expectedLength) return false

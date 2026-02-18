@@ -47,7 +47,7 @@ export async function bulkUpdate(data: CartUpdate[]): Promise<number> {
   let updatedCount = 0
 
   try {
-    await db.transaction().execute(async (trx) => {
+    await db.transaction().execute(async (trx: any) => {
       for (const cart of data) {
         if (!cart.id)
           continue

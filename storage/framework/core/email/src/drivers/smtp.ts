@@ -62,7 +62,7 @@ export class SMTPDriver extends BaseEmailDriver {
       // Only attempt to render template if one is provided
       let htmlContent: string | undefined
       if (message.template) {
-        const templ = await template(message.template, options)
+        const templ = await template(message.template, options as any)
         if (templ && 'html' in templ) {
           htmlContent = templ.html
         }

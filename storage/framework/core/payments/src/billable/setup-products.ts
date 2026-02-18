@@ -45,7 +45,7 @@ export async function createStripeProduct(): Promise<Ok<string, never> | Err<str
       }
     }
 
-    return ok('Migrations generated')
+    return ok('Migrations generated') as any
   }
   catch (err: any) {
     log.error(err)

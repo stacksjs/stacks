@@ -39,7 +39,7 @@ export function merge<T extends Record<string, any>>(...objects: DeepPartial<T>[
  */
 export function createMerger<T extends Record<string, any>>(defaults: T) {
   return (...objects: DeepPartial<T>[]): T => {
-    return merge(defaults, ...objects)
+    return merge(defaults as any, ...objects)
   }
 }
 
@@ -50,7 +50,7 @@ export function mergeDefaults<T extends Record<string, any>>(
   obj: DeepPartial<T>,
   ...defaults: DeepPartial<T>[]
 ): T {
-  return merge({} as T, ...defaults, obj)
+  return merge({} as any, ...defaults, obj)
 }
 
 /**

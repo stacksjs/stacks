@@ -27,11 +27,13 @@ export function doesFolderExist(path: string): boolean {
 
 export function createFolder(dir: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    fs.mkdirs(dir, (err: any) => {
-      if (err)
-        reject(err)
-      else resolve()
-    })
+    try {
+      fs.mkdirSync(dir, { recursive: true })
+      resolve()
+    }
+    catch (err: any) {
+      reject(err)
+    }
   })
 }
 

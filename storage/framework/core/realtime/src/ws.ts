@@ -31,7 +31,7 @@ export async function storeWebSocketEvent(
  *
  * @deprecated Use BroadcastServer from ts-broadcasting instead
  */
-export async function handleWebSocketRequest(req: Request, server: Server): Promise<Response | undefined> {
+export async function handleWebSocketRequest(req: Request, server: Server<any>): Promise<Response | undefined> {
   const broadcastServer = getServer()
 
   if (!broadcastServer) {

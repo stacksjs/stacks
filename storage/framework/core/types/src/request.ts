@@ -2,6 +2,7 @@ import type { UserModelType } from '@stacksjs/orm'
 import type { UploadedFile } from '@stacksjs/storage'
 import type { AuthToken, RouteParam } from '@stacksjs/types'
 
+// @ts-ignore - requests.d.ts may not be a module
 export type * from '../../../types/requests'
 
 interface RequestData {

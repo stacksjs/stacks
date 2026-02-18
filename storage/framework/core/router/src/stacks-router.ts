@@ -112,7 +112,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Acti
 
     // Run the entire request handling within the request context
     // This allows Auth and other services to access the current request
-    return runWithRequest(enhancedReq as any, async () => {
+    return (runWithRequest as any)(enhancedReq as any, async () => {
       const middlewareEntries = routeMiddlewareRegistry.get(routeKey) || []
 
       // Run middleware in order
@@ -144,7 +144,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Acti
       }
 
       // Call the actual handler with the enhanced request
-      return wrappedBase(enhancedReq)
+      return (wrappedBase as any)(enhancedReq)
     })
   }
 }
@@ -633,7 +633,7 @@ function wrapHandler(handler: StacksHandler, skipParsing = false): ActionHandler
 
         const resolvedHandler = await resolveStringHandler(handlerPath)
         // Must await to catch async errors in try-catch
-        return await resolvedHandler(req)
+        return await (resolvedHandler as any)(req)
       }
       catch (error) {
         log.error(`[Router] Error handling request for '${handlerPath}':`, error)
@@ -826,12 +826,12 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     use(middleware: ActionHandler) {
       // bunRouter.use() is async, so we need to call it properly
       // For synchronous chaining, we push directly to globalMiddleware
-      bunRouter.globalMiddleware.push(middleware)
+      bunRouter.globalMiddleware.push(middleware as any)
       return stacksRouter
     },
 
     // Serve the router
-    async serve(options: ServerOptions = {}): Promise<Server> {
+    async serve(options: ServerOptions = {}): Promise<Server<any>> {
       return bunRouter.serve(options)
     },
 
@@ -873,7 +873,7 @@ export interface StacksRouterInstance {
   group: (options: GroupOptions, callback: () => void | Promise<void>) => StacksRouterInstance | Promise<StacksRouterInstance>
   health: () => StacksRouterInstance
   use: (middleware: ActionHandler) => StacksRouterInstance
-  serve: (options?: ServerOptions) => Promise<Server>
+  serve: (options?: ServerOptions) => Promise<Server<any>>
   handleRequest: (req: Request) => Promise<Response>
   importRoutes: () => Promise<void>
 }
@@ -899,6 +899,6 @@ export async function serverResponse(request: Request, _body?: string): Promise<
 }
 
 // Export serve function that uses the default router
-export async function serve(options: ServerOptions = {}): Promise<Server> {
+export async function serve(options: ServerOptions = {}): Promise<Server<any>> {
   return route.serve(options)
 }

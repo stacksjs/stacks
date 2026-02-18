@@ -105,7 +105,7 @@ async function watchFolders() {
     const actionPath = path.appPath(`Actions/${filename}`)
     if (invalidateModuleCache(actionPath)) {
       // Update the global cache buster to force fresh imports
-      Router.updateCacheBuster()
+      ;(Router as any).updateCacheBuster()
       log.success(`Hot reloaded Action: ${filename}`)
     }
   })
@@ -121,7 +121,7 @@ async function watchFolders() {
     const actionPath = path.appPath(`Actions/${filename}`)
     if (invalidateModuleCache(actionPath)) {
       // Update the global cache buster to force fresh imports
-      Router.updateCacheBuster()
+      ;(Router as any).updateCacheBuster()
       log.success(`Hot reloaded Action: ${filename}`)
     }
   })
@@ -137,7 +137,7 @@ async function watchFolders() {
     const controllerPath = path.appPath(`Controllers/${filename}`)
     if (invalidateModuleCache(controllerPath)) {
       // Update the global cache buster to force fresh imports
-      Router.updateCacheBuster()
+      ;(Router as any).updateCacheBuster()
       log.success(`Hot reloaded Controller: ${filename}`)
     }
   })
@@ -153,7 +153,7 @@ async function watchFolders() {
     const middlewarePath = path.appPath(`Middleware/${filename}`)
     if (invalidateModuleCache(middlewarePath)) {
       // Update the global cache buster to force fresh imports
-      Router.updateCacheBuster()
+      ;(Router as any).updateCacheBuster()
       log.success(`Hot reloaded Middleware: ${filename}`)
     }
   })
@@ -182,7 +182,7 @@ else log.debug(`Skipping watching folders`)
 serve({
   port: ports.api || 3008,
   timezone: app.timezone || 'UTC',
-})
+} as any)
 
 handleEvents()
 

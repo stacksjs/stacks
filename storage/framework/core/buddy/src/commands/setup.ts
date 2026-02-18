@@ -99,7 +99,7 @@ async function installPantry(): Promise<void> {
   if (result.isOk)
     return
 
-  handleError(result.error)
+  handleError((result as any).error)
   process.exit(ExitCode.FatalError)
 }
 

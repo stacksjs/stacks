@@ -125,7 +125,7 @@ export class SlackDriver extends BaseChatDriver {
   private async sendViaWebhook(message: ChatMessage): Promise<{ ts?: string }> {
     const payload: SlackMessage = {
       text: message.content || message.subject,
-      username: message.from,
+      username: message.from as any,
       mrkdwn: true,
     }
 

@@ -39,7 +39,7 @@ loadRoutes(routeRegistry)
         port: config.server.port,
         host: config.server.host,
         router: route,
-      })
+      } as any)
       console.log('[START] serve() called successfully')
     } catch (error) {
       console.error('[START] ERROR calling serve():', error)

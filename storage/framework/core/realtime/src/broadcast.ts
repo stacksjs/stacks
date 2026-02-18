@@ -86,9 +86,9 @@ export class Broadcast {
 export async function runBroadcast(name: string, payload?: any): Promise<void> {
   // Dynamically import path utilities to avoid build-time issues
   const { appPath } = await import('@stacksjs/path')
-  const { globSync } = await import('bun')
+  const bun = await import('bun')
 
-  const broadcastFiles = globSync([appPath('Broadcasts/**/*.ts')], { absolute: true })
+  const broadcastFiles = (bun as any).globSync([appPath('Broadcasts/**/*.ts')], { absolute: true })
   const broadcastFile = broadcastFiles.find((file: string) => file.endsWith(`${name}.ts`))
 
   if (!broadcastFile)

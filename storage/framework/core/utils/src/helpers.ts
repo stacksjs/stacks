@@ -30,7 +30,7 @@ export async function initProject(): Promise<Result<Subprocess, Error>> {
 
   log.info('Application key generated.')
 
-  return ok(result.value)
+  return ok((result as any).value)
 }
 
 export async function ensureProjectIsInitialized(): Promise<boolean> {
@@ -171,4 +171,5 @@ export function isIpv6(address: AddressInfo): boolean {
   )
 }
 
+// @ts-expect-error
 export { dump as dumpYaml, load as loadYaml } from 'js-yaml'

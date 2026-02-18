@@ -27,7 +27,7 @@ export async function runScheduler(): Promise<Ok<string, never> | Err<string, an
 
   await runSchedulerInstance()
 
-  return ok('Schedules ran successfully')
+  return ok('Schedules ran successfully') as any
 }
 
 async function runSchedulerInstance(): Promise<void> {

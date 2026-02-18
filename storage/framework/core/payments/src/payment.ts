@@ -123,7 +123,7 @@ export async function cancelSubscription(
   return manageSubscription.cancel(subscriptionId, {
     prorate: !immediately,
     invoice_now: immediately,
-  })
+  } as any)
 }
 
 /**
@@ -144,7 +144,7 @@ export async function changeSubscription(
   newLookupKey: string,
   type = 'default',
 ): Promise<Stripe.Subscription> {
-  return manageSubscription.update(user, type, newLookupKey)
+  return manageSubscription.update(user, type, newLookupKey, {} as any)
 }
 
 // =============================================================================

@@ -105,7 +105,7 @@ export function getVerificationDriver(provider?: SmsProvider): SmsVerificationDr
     throw new Error(`Provider does not support verification: ${provider || smsConfig.provider}`)
   }
 
-  return driver as SmsVerificationDriver
+  return driver as unknown as SmsVerificationDriver
 }
 
 /**

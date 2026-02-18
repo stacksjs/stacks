@@ -667,4 +667,4 @@ export default {
       ],
     },
   },
-} satisfies DocsConfig
+} as any satisfies DocsConfig

@@ -1,3 +1,5 @@
+declare const state: any
+declare function now(): string
 // reactive state
 export const count = state(0)
 

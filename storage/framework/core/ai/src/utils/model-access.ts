@@ -2,6 +2,7 @@ import process from 'node:process'
 import { defaultProvider } from '@aws-sdk/credential-provider-node'
 import { log } from '@stacksjs/cli'
 import { ai } from '@stacksjs/config'
+// @ts-ignore - no declaration file
 import AWS4 from 'aws4'
 
 export async function requestModelAccess(): Promise<void> {

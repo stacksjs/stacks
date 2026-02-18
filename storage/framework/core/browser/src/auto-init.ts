@@ -74,7 +74,7 @@ function autoInit(): void {
     },
 
     // Transform Stacks API response format { data: ... }
-    transformResponse: (data) => {
+    transformResponse: (data: any) => {
       return data?.data ?? data
     },
   })

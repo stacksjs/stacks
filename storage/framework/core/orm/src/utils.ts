@@ -989,7 +989,7 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
       required: requiredValue,
       fieldArray: parseRule(rule),
     }
-  }) as ModelElement[]
+  }) as unknown as ModelElement[]
 
   return input
 }
@@ -1385,7 +1385,7 @@ export function extractImports(filePath: string): string[] {
   const imports: string[] = []
 
   traverse(ast, {
-    ImportDeclaration(path) {
+    ImportDeclaration(path: any) {
       // Convert the import node back to code
       const generated = generator(path.node, {}, content)
       imports.push(generated.code)
@@ -1571,7 +1571,7 @@ export async function extractAttributesFromModel(filePath: string): Promise<Attr
 
   let fields: AttributesElements | undefined
   traverse(ast, {
-    ObjectExpression(path) {
+    ObjectExpression(path: any) {
       // Look for the `attributes` key in the object
       const fieldsProperty = path.node.properties.find(
         (property: any) =>

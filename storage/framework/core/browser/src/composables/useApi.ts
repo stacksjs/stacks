@@ -56,7 +56,7 @@ export function initApi(options?: {
         window.location.href = '/login'
       }
     }),
-    transformResponse: (data) => {
+    transformResponse: (data: any) => {
       // Handle Stacks API response format { data: ... }
       return data?.data ?? data
     },

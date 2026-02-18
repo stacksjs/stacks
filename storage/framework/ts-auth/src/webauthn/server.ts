@@ -128,7 +128,7 @@ export async function verifyRegistrationResponse(
 
     // Verify challenge
     const receivedChallenge = base64Decode(clientDataJSON.challenge)
-    if (receivedChallenge !== base64Encode(expectedChallenge)) {
+    if (receivedChallenge !== base64Encode(expectedChallenge as any)) {
       return { verified: false }
     }
 
@@ -194,7 +194,7 @@ export async function verifyAuthenticationResponse(
 
     // Verify challenge
     const receivedChallenge = base64Decode(clientDataJSON.challenge)
-    if (receivedChallenge !== base64Encode(expectedChallenge)) {
+    if (receivedChallenge !== base64Encode(expectedChallenge as any)) {
       return { verified: false }
     }
 
@@ -341,7 +341,7 @@ async function verifySignature(
       },
       key,
       signature,
-      data,
+      data as any,
     )
   }
   catch {

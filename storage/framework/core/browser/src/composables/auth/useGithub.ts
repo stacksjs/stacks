@@ -12,13 +12,10 @@ interface GitHubTokenResponse {
   access_token: string
 }
 
+// @ts-ignore - Window.location override
 declare global {
-  interface Window {
-    location: {
-      href: string
-      search: string
-    }
-  }
+  // eslint-disable-next-line ts/no-empty-object-type
+  interface Window {}
 }
 
 export function useGitHubOAuth(): GitHubOAuthReturn {
