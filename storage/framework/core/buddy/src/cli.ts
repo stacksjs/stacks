@@ -8,6 +8,7 @@ const args = process.argv.slice(2)
 const requestedCommand = args[0] || 'help'
 // Minimal commands that don't need full project setup
 const isMinimalCommand = ['--version', '-v', '--help', '-h', 'help', 'version'].includes(requestedCommand)
+const skipAppKeyCheck = ['build', 'lint', 'lint:fix', 'test', 'test:types', 'test:unit', 'test:feature', 'typecheck', 'types:fix', 'types:generate', 'clean', 'fresh', 'about', 'doctor'].some(cmd => requestedCommand.startsWith(cmd))
 const needsFullSetup = !isMinimalCommand
 
 // Setup global error handlers (skip for minimal commands for performance)
@@ -53,19 +54,22 @@ async function main() {
     key(buddy as any)
 
     // Before running any commands, ensure the project is already initialized
-    const { runAction } = await import('@stacksjs/actions')
-    const { Action } = await import('@stacksjs/enums')
-    const { ensureProjectIsInitialized } = await import('@stacksjs/utils')
+    // Skip APP_KEY check for commands that don't need it (build, lint, test, etc.)
+    if (!skipAppKeyCheck) {
+      const { runAction } = await import('@stacksjs/actions')
+      const { Action } = await import('@stacksjs/enums')
+      const { ensureProjectIsInitialized } = await import('@stacksjs/utils')
 
-    const isAppKeySet = await ensureProjectIsInitialized()
-    if (!isAppKeySet) {
-      log.info('Your `APP_KEY` is not yet set')
-      log.info('Generating application key...')
-      const result = await runAction(Action.KeyGenerate)
+      const isAppKeySet = await ensureProjectIsInitialized()
+      if (!isAppKeySet) {
+        log.info('Your `APP_KEY` is not yet set')
+        log.info('Generating application key...')
+        const result = await runAction(Action.KeyGenerate)
 
-      if (result.isErr) {
-        log.error('Failed to set random application key.', result.error)
-        process.exit()
+        if (result.isErr) {
+          log.error('Failed to set random application key.', result.error)
+          process.exit()
+        }
       }
     }
 
