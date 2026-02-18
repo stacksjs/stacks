@@ -1,10 +1,17 @@
 import { runCommands } from '@stacksjs/cli'
-import { frameworkPath } from '@stacksjs/path'
+import { projectPath } from '@stacksjs/path'
+
+// Build the CLI first, then build all core packages
+await runCommands(
+  [
+    'bun storage/framework/core/actions/src/build/cli.ts',
+  ],
+  { verbose: true, cwd: projectPath() },
+)
 
 await runCommands(
   [
-    'bun build:cli', // command to build the Buddy CLI
-    'bun build:core', // command to build the Stacks Core
+    'bun storage/framework/core/actions/src/build/core.ts',
   ],
-  { verbose: true, cwd: frameworkPath() },
+  { verbose: true, cwd: projectPath() },
 )

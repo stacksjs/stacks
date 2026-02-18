@@ -4,4 +4,5 @@ import { buddyPath } from '@stacksjs/path'
 
 log.info('Building CLI...')
 
-await $`bun ${buddyPath('compile.ts')}`
+$.cwd(buddyPath())
+await $`bun ${buddyPath('build.ts')}`

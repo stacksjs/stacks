@@ -1,7 +1,7 @@
 import type { BuildOptions, CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, log, outro, prompts } from '@stacksjs/cli'
+import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 
@@ -78,31 +78,9 @@ export function build(buddy: CLI): void {
           break
       }
 
-      console.log('server', server, options)
-
-      // TODO: uncomment this when prompt is available
       if (hasNoOptions(options)) {
-        console.log('has no')
-        const answers = await (prompts as any)({
-          type: 'multiselect',
-          name: 'build',
-          message: descriptions.select,
-          choices: [
-            { title: 'Components', value: 'components' },
-            // { label: 'Vue Components', value: 'vue-components' },
-            { title: 'Web Components', value: 'web-components' },
-            { title: 'Functions', value: 'functions' },
-            { title: 'Views', value: 'views' },
-            { title: 'Documentation', value: 'docs' },
-          ],
-        })
-
-        console.log('answers', answers)
-        if (answers !== null)
-          process.exit(ExitCode.InvalidArgument)
-      }
-      else {
-        console.log('has op')
+        // Default to building stacks when no specific option is provided
+        options.stacks = true
       }
 
       if (options.docs)
@@ -295,5 +273,6 @@ function hasNoOptions(options: BuildOptions) {
     && !options.docs
     && !options.stacks
     && !options.buddy
+    && !options.server
   )
 }
