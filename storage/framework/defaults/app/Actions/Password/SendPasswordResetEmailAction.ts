@@ -9,13 +9,13 @@ export default new Action({
   name: 'SendPasswordResetEmailAction',
   description: 'Send Password Reset Email',
   method: 'POST',
-  model: 'PasswordResets',
+  model: PasswordResets,
   validations: {
     email: {
       rule: schema.string().email().required(),
     },
   },
-  async handle(request: RequestInstance) {
+  async handle(request) {
     console.log('[Action] SendPasswordResetEmailAction.handle() called')
 
     const email = request.get('email')

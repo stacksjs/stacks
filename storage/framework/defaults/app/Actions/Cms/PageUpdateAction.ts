@@ -7,8 +7,8 @@ export default new Action({
   name: 'Page Update',
   description: 'Page Update ORM Action',
   method: 'PATCH',
-  model: 'Page',
-  async handle(request: RequestInstance) {
+  model: Page,
+  async handle(request) {
     await request.validate()
 
     const id = request.getParam('id')

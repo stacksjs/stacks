@@ -6,8 +6,8 @@ export default new Action({
   name: 'Page Store',
   description: 'Page Store ORM Action',
   method: 'POST',
-  model: 'Page',
-  async handle(request: RequestInstance) {
+  model: Page,
+  async handle(request) {
     await request.validate()
 
     const author = await authors.findOrCreate({

@@ -9,8 +9,8 @@ export default new Action({
   name: 'Customer Store',
   description: 'Customer Store ORM Action',
   method: 'POST',
-  model: 'Customer',
-  async handle(request: RequestInstance) {
+  model: Customer,
+  async handle(request) {
     await request.validate()
 
     const data = {

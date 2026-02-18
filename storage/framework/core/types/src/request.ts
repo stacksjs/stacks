@@ -9,19 +9,6 @@ interface RequestData {
 
 type RouteParams = { [key: string]: string | number } | null
 
-interface ValidationRule {
-  validate: (value: unknown) => { valid: boolean, errors?: Array<{ message: string }> }
-}
-
-interface ValidationField {
-  rule: ValidationRule
-  message: Record<string, string>
-}
-
-interface CustomAttributes {
-  [key: string]: ValidationField
-}
-
 type NumericField = 'id' | 'age' | 'count' | 'quantity' | 'amount' | 'price' | 'total' | 'score' | 'rating' | 'duration' | 'size' | 'weight' | 'height' | 'width' | 'length' | 'distance' | 'speed' | 'temperature' | 'volume' | 'capacity' | 'density' | 'pressure' | 'force' | 'energy' | 'power' | 'frequency' | 'voltage' | 'current' | 'resistance' | 'time' | 'date' | 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' | 'millisecond' | 'microsecond' | 'nanosecond'
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS' | 'CONNECT' | 'TRACE'
@@ -59,7 +46,7 @@ export interface Collection<T> {
 /**
  * Safe validated data wrapper (Laravel-style)
  */
-export interface SafeData<T extends Record<string, unknown> = Record<string, unknown>> {
+export interface SafeData<T extends Record<string, any> = Record<string, any>> {
   only: <K extends keyof T>(keys: K[]) => Pick<T, K>
   except: <K extends keyof T>(keys: K[]) => Omit<T, K>
   merge: <U extends Record<string, unknown>>(data: U) => T & U
@@ -69,18 +56,40 @@ export interface SafeData<T extends Record<string, unknown> = Record<string, unk
 }
 
 /**
- * RequestInstance - Enhanced request interface with Laravel-style methods
+ * RequestInstance - Generic, model-aware request interface with Laravel-style methods.
  *
- * This interface extends the native Request with additional helper methods
- * for input handling, validation, and data manipulation.
+ * When used bare (`RequestInstance`), all methods accept any string keys (backward compatible).
+ * When parameterized with model fields (`RequestInstance<{ title: string, views: number }>`),
+ * all input methods narrow to those fields with full autocomplete and type inference.
+ *
+ * The global type alias connects this to models:
+ *   `RequestInstance<typeof Post>` → narrows to Post's fields automatically.
+ *
+ * @example
+ * // Untyped (accepts any key)
+ * function handle(request: RequestInstance) {
+ *   request.get('anything') // returns any
+ * }
+ *
+ * @example
+ * // Model-aware (narrows to Post's fields)
+ * function handle(request: RequestInstance<typeof Post>) {
+ *   request.get('title')   // autocompletes, returns string
+ *   request.get('views')   // autocompletes, returns number
+ *   request.get('invalid') // TS error!
+ *   const data = await request.validate() // returns typed Post fields
+ * }
  */
-export interface RequestInstance {
+export interface RequestInstance<TFields extends Record<string, any> = Record<string, any>> {
+  // ==========================================================================
   // Native Request properties
+  // ==========================================================================
+
   url: string
   method: string
   headers: Headers
 
-  // Query, body, params
+  // Raw data access (always untyped — use get()/input() for typed access)
   query: RequestData
   params: RouteParams
   jsonBody?: any
@@ -88,184 +97,188 @@ export interface RequestInstance {
   files: Record<string, File | File[]>
 
   // ==========================================================================
-  // Laravel-style Input Methods
+  // Model-aware Input Methods
+  //
+  // Keys narrow to `keyof TFields` when a model type is provided.
+  // Return types narrow to the field's actual type.
   // ==========================================================================
 
   /**
-   * Get input value from any source (query, body, params) - Laravel style
-   * @example request.get('name')
-   * @example request.get('name', 'default')
+   * Get input value from any source (query, body, params)
+   * @example request.get('title')           // returns string (when model-aware)
+   * @example request.get('views', 0)        // returns number with default
    */
-  get: <T = string>(key: string, defaultValue?: T) => T
+  get: <K extends keyof TFields & string>(key: K, defaultValue?: TFields[K]) => TFields[K]
 
   /**
    * Alias for get() - Laravel compatibility
    */
-  input: <T = any>(key: string, defaultValue?: T) => T
+  input: <K extends keyof TFields & string>(key: K, defaultValue?: TFields[K]) => TFields[K]
 
   /**
-   * Get all input data
+   * Get all input data (typed to model fields when model-aware)
    */
-  all: () => RequestData
+  all: () => TFields
 
   /**
-   * Get only specified keys
-   * @example request.only(['name', 'email'])
+   * Get only specified keys — returns a precisely picked type
+   * @example request.only(['title', 'views']) // { title: string, views: number }
    */
-  only: <T extends Record<string, unknown> = Record<string, unknown>>(keys: string[]) => T
+  only: <K extends keyof TFields & string>(keys: K[]) => Pick<TFields, K>
 
   /**
-   * Get all except specified keys
-   * @example request.except(['password', 'token'])
+   * Get all except specified keys — returns a precisely omitted type
+   * @example request.except(['id', 'created_at']) // omits those fields
    */
-  except: <T extends Record<string, unknown> = Record<string, unknown>>(keys: string[]) => T
+  except: <K extends keyof TFields & string>(keys: K[]) => Omit<TFields, K>
 
   /**
-   * Check if input has a key (or all keys if array)
-   * @example request.has('name')
-   * @example request.has(['name', 'email'])
+   * Check if input has a key (or all keys if array) — keys narrowed to model fields
+   * @example request.has('title')
+   * @example request.has(['title', 'views'])
    */
-  has: (key: string | string[]) => boolean
+  has: (key: (keyof TFields & string) | (keyof TFields & string)[]) => boolean
 
   /**
-   * Check if input has any of the keys
-   * @example request.hasAny(['name', 'email'])
+   * Check if input has any of the specified keys
+   * @example request.hasAny(['title', 'views'])
    */
-  hasAny: (keys: string[]) => boolean
+  hasAny: (keys: (keyof TFields & string)[]) => boolean
 
   /**
-   * Check if input is filled (not empty)
-   * @example request.filled('name')
+   * Check if input is filled (present and not empty)
+   * @example request.filled('title')
    */
-  filled: (key: string | string[]) => boolean
+  filled: (key: (keyof TFields & string) | (keyof TFields & string)[]) => boolean
 
   /**
    * Check if input is missing
-   * @example request.missing('name')
+   * @example request.missing('title')
    */
-  missing: (key: string | string[]) => boolean
+  missing: (key: (keyof TFields & string) | (keyof TFields & string)[]) => boolean
 
   /**
-   * Merge additional data into input
+   * Merge additional data into input — accepts partial model fields
    */
-  merge: (data: Record<string, unknown>) => void
+  merge: (data: Partial<TFields>) => void
+
+  /**
+   * Get all input keys — returns model field names when model-aware
+   */
+  keys: () => (keyof TFields & string)[]
 
   // ==========================================================================
-  // Type-casting Methods
+  // Type-casting Methods — keys narrowed to model fields
   // ==========================================================================
 
   /**
    * Get string input
-   * @example request.string('name')
+   * @example request.string('title')
    */
-  string: (key: string, defaultValue?: string) => string
+  string: (key: keyof TFields & string, defaultValue?: string) => string
 
   /**
    * Get integer input
-   * @example request.integer('page', 1)
+   * @example request.integer('views', 0)
    */
-  integer: (key: string, defaultValue?: number) => number
+  integer: (key: keyof TFields & string, defaultValue?: number) => number
 
   /**
    * Get float input
    * @example request.float('price', 0.0)
    */
-  float: (key: string, defaultValue?: number) => number
+  float: (key: keyof TFields & string, defaultValue?: number) => number
 
   /**
    * Get boolean input
-   * @example request.boolean('active', false)
+   * @example request.boolean('is_active', false)
    */
-  boolean: (key: string, defaultValue?: boolean) => boolean
+  boolean: (key: keyof TFields & string, defaultValue?: boolean) => boolean
 
   /**
    * Get input as array
    * @example request.array('tags')
    */
-  array: <T = unknown>(key: string) => T[]
+  array: <T = unknown>(key: keyof TFields & string) => T[]
 
   /**
    * Parse date input
-   * @example request.date('birthday')
+   * @example request.date('published_at')
    */
-  date: (key: string, format?: string) => Date | null
+  date: (key: keyof TFields & string, format?: string) => Date | null
 
   /**
    * Parse enum input
    * @example request.enum('status', StatusEnum)
    */
-  enum: <T extends Record<string, string | number>>(key: string, enumType: T) => T[keyof T] | null
+  enum: <T extends Record<string, string | number>>(key: keyof TFields & string, enumType: T) => T[keyof T] | null
 
   /**
    * Get input as collection
    * @example request.collect('items')
    */
-  collect: <T = unknown>(key: string) => Collection<T>
-
-  /**
-   * Get all input keys
-   */
-  keys: () => string[]
+  collect: <T = unknown>(key: keyof TFields & string) => Collection<T>
 
   // ==========================================================================
-  // Validation Methods
+  // Validation Methods — returns typed model fields when model-aware
   // ==========================================================================
 
   /**
-   * Validate the request data
-   * @example await request.validate({ name: 'required|string', email: 'required|email' })
+   * Validate the request data.
+   * When model-aware, rules are optional (uses model's attribute validation).
+   * Returns the validated data typed to model fields.
+   *
+   * @example await request.validate()                    // uses model rules
+   * @example await request.validate({ name: 'required' }) // custom rules
    */
-  validate: <T extends Record<string, unknown> = Record<string, unknown>>(
-    rules: Record<string, string>,
-    messages?: Record<string, string>,
-  ) => Promise<T>
+  validate: (rules?: Record<string, string>, messages?: Record<string, string>) => Promise<TFields>
 
   /**
-   * Get validated data as typed object
+   * Get previously validated data, typed to model fields
    */
-  getValidated: <T extends Record<string, unknown> = Record<string, unknown>>() => T
+  getValidated: () => TFields
 
   /**
-   * Get safe validated data wrapper
+   * Get safe validated data wrapper with typed access
+   * @example request.safe().only(['title', 'views']) // Pick<TFields, 'title' | 'views'>
+   * @example request.safe().get('title')              // string
    */
-  safe: <T extends Record<string, unknown> = Record<string, unknown>>() => SafeData<T>
+  safe: () => SafeData<TFields>
 
   // ==========================================================================
-  // Conditional Methods
+  // Conditional Methods — keys narrowed to model fields
   // ==========================================================================
 
   /**
    * Execute callback when input has a value
-   * @example request.whenHas('name', (value) => console.log(value))
+   * @example request.whenHas('title', (value) => console.log(value))
    */
-  whenHas: <T>(key: string, callback: (value: T) => void, defaultCallback?: () => void) => void
+  whenHas: <T>(key: keyof TFields & string, callback: (value: T) => void, defaultCallback?: () => void) => void
 
   /**
    * Execute callback when input is filled
-   * @example request.whenFilled('name', (value) => console.log(value))
+   * @example request.whenFilled('title', (value) => console.log(value))
    */
-  whenFilled: <T>(key: string, callback: (value: T) => void, defaultCallback?: () => void) => void
+  whenFilled: <T>(key: keyof TFields & string, callback: (value: T) => void, defaultCallback?: () => void) => void
 
   /**
    * Check if input matches a value
    */
-  isValue: (key: string, value: unknown) => boolean
+  isValue: (key: keyof TFields & string, value: unknown) => boolean
 
   // ==========================================================================
-  // File Methods - Returns UploadedFile with store/storeAs methods
+  // File Methods — not narrowed to model fields (files are independent)
   // ==========================================================================
 
   /**
    * Get an uploaded file by key
    * @example const avatar = request.file('avatar')
-   * @example await avatar?.store('avatars') // stores to storage/app/avatars
-   * @example await avatar?.storePublicly('avatars') // stores to public/avatars
+   * @example await avatar?.store('avatars')
    */
   file: (key: string) => UploadedFile | null
 
   /**
    * Get all uploaded files for a key (for multiple file inputs)
-   * @example const photos = request.getFiles('photos')
    */
   getFiles: (key: string) => UploadedFile[]
 
@@ -287,7 +300,7 @@ export interface RequestInstance {
   bearerToken: () => string | null | AuthToken
 
   // ==========================================================================
-  // Route & Param Methods
+  // Route & Param Methods — not narrowed to model fields
   // ==========================================================================
 
   getParam: <K extends string>(key: K) => K extends NumericField ? number : string
@@ -296,28 +309,28 @@ export interface RequestInstance {
   getParamAsInt: (key: string) => number | null
 
   // ==========================================================================
-  // Session/Flash Methods
+  // Session/Flash Methods — keys narrowed to model fields
   // ==========================================================================
 
   /**
    * Get old input (for form repopulation)
    */
-  old: <T = unknown>(key: string, defaultValue?: T) => T
+  old: <T = unknown>(key: keyof TFields & string, defaultValue?: T) => T
 
   /**
    * Flash input to session for form repopulation
    */
-  flashInput: (keys?: string[]) => void
+  flashInput: (keys?: (keyof TFields & string)[]) => void
 
   /**
    * Flash only specific keys
    */
-  flashInputOnly: (keys: string[]) => void
+  flashInputOnly: (keys: (keyof TFields & string)[]) => void
 
   /**
    * Flash except specific keys
    */
-  flashInputExcept: (keys: string[]) => void
+  flashInputExcept: (keys: (keyof TFields & string)[]) => void
 
   // ==========================================================================
   // Utility Methods

@@ -8,8 +8,8 @@ export default new Action({
   name: 'Coupon Store',
   description: 'Coupon Store ORM Action',
   method: 'POST',
-  model: 'Coupon',
-  async handle(request: RequestInstance) {
+  model: Coupon,
+  async handle(request) {
     await request.validate()
 
     const data = request.all()

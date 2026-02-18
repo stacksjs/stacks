@@ -9,7 +9,7 @@ import { fetchById } from './fetch'
  * @param request The updated category data
  * @returns The updated category record
  */
-export async function update(id: number, request: RequestInstance): Promise<Record<string, any> | undefined> {
+export async function update(id: number, request: RequestInstance<typeof Category>): Promise<Record<string, any> | undefined> {
   // Validate the request data
   await request.validate()
 

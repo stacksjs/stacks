@@ -8,8 +8,8 @@ export default new Action({
   name: 'Post Store',
   description: 'Post Store ORM Action',
   method: 'POST',
-  model: 'Post',
-  async handle(request: RequestInstance) {
+  model: Post,
+  async handle(request) {
     await request.validate()
 
     const categoryName = request.get('category')

@@ -63,7 +63,7 @@ export const gates = {
  * // Or with config:
  * 'Post': {
  *   policy: 'PostPolicy',
- *   model: 'Post',
+ *   model: Post,
  * },
  */
 export const policies: Record<string, string | { policy: string, model?: string }> = {

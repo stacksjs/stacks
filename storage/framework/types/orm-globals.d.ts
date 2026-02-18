@@ -2,13 +2,21 @@
  * Global type declarations for ORM utilities and request types.
  *
  * These types are available globally without imports in all Stacks application code.
- * They are derived dynamically from defineModel() definitions.
+ * Model types are derived dynamically from defineModel() definitions via `as const`.
  *
  * @example
- * // No imports needed - these are global:
+ * // No imports needed — all of these are global:
  * type PostRow = ModelRow<typeof Post>
  * type NewPost = NewModelData<typeof Post>
- * async function handle(request: RequestInstance) { ... }
+ *
+ * // Actions with model: Post get fully typed requests automatically:
+ * new Action({
+ *   model: Post,
+ *   async handle(request) {
+ *     request.get('title')   // autocompletes to Post fields, returns string
+ *     request.get('invalid') // TS error!
+ *   }
+ * })
  */
 
 import type { ModelRow as _ModelRow, NewModelData as _NewModelData, UpdateModelData as _UpdateModelData } from '@stacksjs/orm'
@@ -23,7 +31,6 @@ declare global {
    *
    * @example
    * type PostRow = ModelRow<typeof Post>
-   * const post: ModelRow<typeof Post> = await Post.find(1)
    */
   type ModelRow<T> = _ModelRow<T>
 
@@ -33,7 +40,6 @@ declare global {
    *
    * @example
    * type NewPost = NewModelData<typeof Post>
-   * const data: NewModelData<typeof Post> = { title: 'Hello' }
    */
   type NewModelData<T> = _NewModelData<T>
 
@@ -43,19 +49,26 @@ declare global {
    *
    * @example
    * type PostUpdate = UpdateModelData<typeof Post>
-   * const data: UpdateModelData<typeof Post> = { title: 'Updated' }
    */
   type UpdateModelData<T> = _UpdateModelData<T>
 
   /**
-   * Enhanced request interface with Laravel-style methods.
-   * Provides typed input handling, validation, file uploads, and more.
+   * Model-aware request interface.
+   *
+   * When parameterized with a model type, all input methods narrow to that model's
+   * field names and types. Automatically inferred in Action handlers via `model: Post`.
    *
    * @example
-   * async function handle(request: RequestInstance) {
-   *   const name = request.get('name')
-   *   await request.validate({ name: 'required|string' })
+   * // Bare — accepts any key:
+   * function handle(request: RequestInstance) { ... }
+   *
+   * @example
+   * // Model-aware — full narrowing:
+   * function handle(request: RequestInstance<typeof Post>) {
+   *   request.get('title') // autocompletes, typed return
    * }
    */
-  type RequestInstance = _RequestInstance
+  type RequestInstance<TModel = never> = [TModel] extends [never]
+    ? _RequestInstance
+    : _RequestInstance<_ModelRow<TModel>>
 }

@@ -9,8 +9,8 @@ export default new Action({
   name: 'Post Update',
   description: 'Post Update ORM Action',
   method: 'PATCH',
-  model: 'Post',
-  async handle(request: RequestInstance) {
+  model: Post,
+  async handle(request) {
     await request.validate()
 
     const id = request.getParam('id')
