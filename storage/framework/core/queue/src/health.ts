@@ -5,9 +5,6 @@
  */
 
 import { log } from '@stacksjs/logging'
-import { Job } from '@stacksjs/orm'
-// @ts-ignore - FailedJob model path resolved at build time
-import { FailedJob } from '../../../orm/src/models/FailedJob'
 
 /**
  * Health status
@@ -148,9 +145,10 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
   const nowTimestamp = Math.floor(now.getTime() / 1000)
 
   try {
-    // Get all jobs and failed jobs
-    const jobs = await Job.all()
-    const failedJobs = await FailedJob.all()
+    // Get all jobs and failed jobs from database
+    const { db } = await import('@stacksjs/database')
+    const jobs = await db.selectFrom('jobs').selectAll().execute() as any[]
+    const failedJobs = await db.selectFrom('failed_jobs').selectAll().execute() as any[]
 
     // Group jobs by queue
     const queueMap = new Map<string, { pending: number, processing: number, delayed: number, oldestAge?: number }>()

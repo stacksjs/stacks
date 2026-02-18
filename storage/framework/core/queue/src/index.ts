@@ -2,90 +2,9 @@
  * @stacksjs/queue
  *
  * A thin wrapper around bun-queue that integrates with Stacks conventions.
- * Re-exports bun-queue functionality with Stacks-specific additions.
+ * Core Stacks queue exports are always available. For advanced bun-queue
+ * features (Queue, Worker, dispatch, etc.), import from '@stacksjs/queue/bun-queue'.
  */
-
-// =============================================================================
-// Core bun-queue exports
-// =============================================================================
-
-export {
-  // Queue and Job classes
-  Queue,
-  Job as BunJob,
-  JobBase,
-  Worker,
-  QueueManager,
-  getQueueManager,
-  setQueueManager,
-  closeQueueManager,
-
-  // Dispatch functions
-  dispatch,
-  dispatchSync,
-  dispatchIf,
-  dispatchUnless,
-  dispatchAfter,
-  dispatchChain,
-  dispatchFunction,
-  chain,
-  batch,
-
-  // Processing
-  JobProcessor,
-  createJobProcessor,
-  getGlobalJobProcessor,
-  setGlobalJobProcessor,
-
-  // Batch processing
-  BatchProcessor,
-
-  // Priority queue
-  PriorityQueue,
-
-  // Dead letter queue
-  DeadLetterQueue,
-
-  // Rate limiting
-  RateLimiter,
-
-  // Distributed locking
-  DistributedLock,
-
-  // Leader election (horizontal scaling)
-  LeaderElection,
-
-  // Work coordination
-  WorkCoordinator,
-
-  // Queue groups
-  QueueGroup,
-
-  // Observable
-  QueueObservable,
-
-  // Events
-  type JobEvents,
-
-  // Middleware
-  middleware,
-  RateLimitMiddleware,
-  UniqueJobMiddleware,
-  ThrottleMiddleware,
-  WithoutOverlappingMiddleware,
-  SkipIfMiddleware,
-  FailureMiddleware,
-
-  // Worker management
-  QueueWorker,
-  WorkerManager,
-  type WorkerOptions,
-
-  // Failed job management
-  FailedJobManager,
-  type FailedJob,
-  // @ts-ignore - bun-queue resolved by Bun's module resolver
-} from 'bun-queue'
 
 // =============================================================================
 // Stacks Job class for file-based jobs (app/Jobs/*.ts)
