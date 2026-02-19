@@ -67,7 +67,8 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
     : definition
 
   // Create the base model from bun-query-builder (provides all typed query methods)
-  const baseModel = createModel(defWithHooks as TDef & BQBModelDefinition)
+  // Note: createModel's return type is declared as void in .d.ts but actually returns an object at runtime
+  const baseModel = createModel(defWithHooks as TDef & BQBModelDefinition) as unknown as Record<string, unknown>
 
   // Build trait methods based on model config
   const traitMethods = buildTraitMethods(definition as unknown as BQBModelDefinition)

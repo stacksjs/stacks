@@ -40,7 +40,7 @@ async function getStats() {
     if (job.reserved_at) {
       processing++
     }
-    else if (job.available_at && job.available_at > now) {
+    else if (job.available_at && Number(job.available_at) > now) {
       delayed++
     }
     else {

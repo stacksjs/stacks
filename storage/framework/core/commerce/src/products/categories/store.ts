@@ -72,7 +72,7 @@ export async function findOrCreateByName(data: Partial<CategorizableTable>): Pro
     .executeTakeFirst()
 
   if (existingCategory)
-    return existingCategory
+    return existingCategory as CategoryJsonResponse
 
   const categoryData = {
     name: data.name,

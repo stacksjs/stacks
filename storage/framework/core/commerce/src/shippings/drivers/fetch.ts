@@ -9,12 +9,12 @@ export async function fetchById(id: number): Promise<DriverJsonResponse | undefi
     .selectFrom('drivers')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as DriverJsonResponse | undefined
 }
 
 /**
  * Fetch all drivers
  */
 export async function fetchAll(): Promise<DriverJsonResponse[]> {
-  return await db.selectFrom('drivers').selectAll().execute()
+  return await db.selectFrom('drivers').selectAll().execute() as DriverJsonResponse[]
 }

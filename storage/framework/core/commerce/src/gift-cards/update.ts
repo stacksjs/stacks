@@ -61,12 +61,12 @@ export async function updateBalance(id: number, amount: number): Promise<GiftCar
     throw new Error(`Gift card with ID ${id} not found`)
   }
 
-  if (!giftCard.is_active || giftCard.status !== 'ACTIVE') {
+  if (!giftCard.isActive || giftCard.status !== 'ACTIVE') {
     throw new Error(`Gift card is not active`)
   }
 
   // Calculate new balance
-  const newBalance = giftCard.current_balance + amount
+  const newBalance = giftCard.currentBalance + amount
 
   // Make sure balance doesn't go below zero
   if (newBalance < 0) {

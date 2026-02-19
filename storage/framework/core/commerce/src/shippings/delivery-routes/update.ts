@@ -28,7 +28,7 @@ export async function update(id: number, data: DeliveryRouteUpdate): Promise<Del
     if (!result)
       throw new Error('Failed to update delivery route')
 
-    return result
+    return result as DeliveryRouteJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -64,7 +64,7 @@ export async function updateStops(
     if (!result)
       throw new Error('Failed to update delivery route stops')
 
-    return result
+    return result as DeliveryRouteJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -108,7 +108,7 @@ export async function updateMetrics(
     if (!result)
       throw new Error('Failed to update delivery metrics')
 
-    return result
+    return result as DeliveryRouteJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

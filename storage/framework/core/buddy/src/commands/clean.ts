@@ -20,7 +20,7 @@ export function clean(buddy: CLI): void {
       log.debug('Running `buddy clean` ...', options)
 
       // Check if confirmation is needed (not forced and not no-interaction mode)
-      if (!buddy.isForce && !buddy.isNoInteraction) {
+      if (!(buddy as unknown as Record<string, unknown>).isForce && !(buddy as unknown as Record<string, unknown>).isNoInteraction) {
         const { confirm } = await import('@stacksjs/cli')
         const confirmed = await confirm({
           message: 'This will remove all node_modules and lock files. Continue?',

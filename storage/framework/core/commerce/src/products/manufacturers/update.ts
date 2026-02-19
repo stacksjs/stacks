@@ -28,7 +28,7 @@ export async function update(id: number, data: ManufacturerUpdate): Promise<Manu
     if (!result)
       throw new Error('Failed to update manufacturer')
 
-    return result
+    return result as ManufacturerJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -68,7 +68,7 @@ export async function updateFeaturedStatus(
     if (!result)
       throw new Error('Failed to update manufacturer featured status')
 
-    return result
+    return result as ManufacturerJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -101,7 +101,7 @@ export async function updateByUuid(uuid: string, data: Omit<ManufacturerUpdate, 
     if (!result)
       throw new Error('Failed to update manufacturer')
 
-    return result
+    return result as ManufacturerJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

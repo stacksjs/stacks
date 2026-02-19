@@ -55,7 +55,7 @@ const defaultOptions: PurchaseOptions = {
   privacyAdmin: c.privacyAdmin || c.privacy || true,
   privacyTech: c.privacyTech || c.privacy || true,
   privacyRegistrant: c.privacyRegistrant || c.privacy || true,
-  contactType: ContactType.PERSON,
+  contactType: ContactType.PERSON as string,
   verbose: false,
 }
 

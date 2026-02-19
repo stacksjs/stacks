@@ -28,7 +28,7 @@ export async function update(id: number, data: ShippingMethodUpdate): Promise<Sh
     if (!result)
       throw new Error('Failed to update shipping method')
 
-    return result
+    return result as ShippingMethodJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -64,7 +64,7 @@ export async function updateStatus(
     if (!result)
       throw new Error('Failed to update shipping method status')
 
-    return result
+    return result as ShippingMethodJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -108,7 +108,7 @@ export async function updatePricing(
     if (!result)
       throw new Error('Failed to update pricing information')
 
-    return result
+    return result as ShippingMethodJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

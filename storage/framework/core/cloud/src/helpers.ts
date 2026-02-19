@@ -90,7 +90,7 @@ export interface PurchaseOptions {
   privacyAdmin: boolean
   privacyTech: boolean
   privacyRegistrant: boolean
-  contactType: typeof ContactType
+  contactType: string
   verbose: boolean
 }
 
@@ -99,7 +99,7 @@ export function purchaseDomain(
   options: PurchaseOptions,
 ): Result<Promise<RegisterDomainCommandOutput>, Error> {
   const route53domains = new Route53Domains({ region: 'us-east-1' })
-  const contactType = options.contactType.toUpperCase() as typeof ContactType
+  const contactType = options.contactType.toUpperCase()
 
   const params = {
     DomainName: domain,

@@ -29,7 +29,7 @@ export async function update(id: number, data: DigitalDeliveryUpdate): Promise<D
     if (!result)
       throw new Error('Failed to update digital delivery')
 
-    return result
+    return result as DigitalDeliveryJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -65,7 +65,7 @@ export async function updateStatus(
     if (!result)
       throw new Error('Failed to update digital delivery status')
 
-    return result
+    return result as DigitalDeliveryJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -117,7 +117,7 @@ export async function updateDeliverySettings(
     if (!result)
       throw new Error('Failed to update delivery settings')
 
-    return result
+    return result as DigitalDeliveryJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

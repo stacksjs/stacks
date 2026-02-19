@@ -9,14 +9,14 @@ export async function fetchById(id: number): Promise<DeliveryRouteJsonResponse |
     .selectFrom('delivery_routes')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as DeliveryRouteJsonResponse | undefined
 }
 
 /**
  * Fetch all delivery routes
  */
 export async function fetchAll(): Promise<DeliveryRouteJsonResponse[]> {
-  return await db.selectFrom('delivery_routes').selectAll().execute()
+  return await db.selectFrom('delivery_routes').selectAll().execute() as DeliveryRouteJsonResponse[]
 }
 
 /**
@@ -27,7 +27,7 @@ export async function fetchActive(): Promise<DeliveryRouteJsonResponse[]> {
     .selectFrom('delivery_routes')
     .where('last_active', '<=', new Date(Date.now() - 24 * 60 * 60 * 1000)) // Last 24 hours
     .selectAll()
-    .execute()
+    .execute() as DeliveryRouteJsonResponse[]
 }
 
 /**
@@ -38,5 +38,5 @@ export async function fetchByDriver(driver: string): Promise<DeliveryRouteJsonRe
     .selectFrom('delivery_routes')
     .where('driver', '=', driver)
     .selectAll()
-    .execute()
+    .execute() as DeliveryRouteJsonResponse[]
 }

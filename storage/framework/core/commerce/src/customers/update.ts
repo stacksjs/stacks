@@ -28,7 +28,7 @@ export async function update(id: number, data: Omit<CustomerUpdate, 'id'>): Prom
     if (!result)
       throw new Error('Failed to update customer')
 
-    return result
+    return result as CustomerJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

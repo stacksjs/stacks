@@ -20,7 +20,7 @@ try {
     deletedCount = failedJobs.length
 
     for (const job of failedJobs) {
-      await job.delete()
+      await (job as unknown as { delete: () => Promise<void> }).delete()
     }
   }
   else {
@@ -29,7 +29,7 @@ try {
     deletedCount = failedJobs.length
 
     for (const job of failedJobs) {
-      await job.delete()
+      await (job as unknown as { delete: () => Promise<void> }).delete()
     }
   }
 

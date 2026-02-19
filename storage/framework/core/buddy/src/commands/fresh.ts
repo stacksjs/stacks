@@ -20,7 +20,7 @@ export function fresh(buddy: CLI): void {
       log.debug('Running `buddy fresh` ...', options)
 
       // Check if confirmation is needed (not forced and not no-interaction mode)
-      if (!buddy.isForce && !buddy.isNoInteraction) {
+      if (!(buddy as unknown as Record<string, unknown>).isForce && !(buddy as unknown as Record<string, unknown>).isNoInteraction) {
         const { confirm } = await import('@stacksjs/cli')
         const confirmed = await confirm({
           message: 'This will remove and reinstall all dependencies. Continue?',

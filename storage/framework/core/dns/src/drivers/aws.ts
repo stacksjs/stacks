@@ -135,7 +135,7 @@ export async function createHostedZone(
 
   // if the hosted zone already exists, then return it
   if (existingHostedZone)
-    return ok(existingHostedZone)
+    return ok(existingHostedZone as HostedZone | CreateHostedZoneResult | string | null)
 
   // Create the hosted zone
   const createHostedZoneOutput = await route53.createHostedZone({
@@ -146,7 +146,7 @@ export async function createHostedZone(
   if (!createHostedZoneOutput.HostedZone)
     return err(handleError('Failed to create hosted zone'))
 
-  return ok(createHostedZoneOutput)
+  return ok(createHostedZoneOutput as HostedZone | CreateHostedZoneResult | string | null)
 }
 
 export function writeNameserversToConfig(nameservers: string[]): void {

@@ -35,7 +35,7 @@ export async function fetchById(id: number): Promise<ShippingRateJsonResponse | 
       ...model,
       shipping_zone: shippingZone,
       shipping_method: shippingMethod,
-    }
+    } as unknown as ShippingRateJsonResponse
   }
 
   return undefined
@@ -52,8 +52,8 @@ export async function fetchAll(): Promise<ShippingRateJsonResponse[]> {
   const shippingZoneIds = models.map((model: any) => model.shipping_zone_id).filter((id: any) => id !== null && id !== undefined)
   const shippingMethodIds = models.map((model: any) => model.shipping_method_id).filter((id: any) => id !== null && id !== undefined)
 
-  let shippingZonesQuery = db.selectFrom('shipping_zones')
-  let shippingMethodsQuery = db.selectFrom('shipping_methods')
+  let shippingZonesQuery = db.selectFrom('shipping_zones') as any
+  let shippingMethodsQuery = db.selectFrom('shipping_methods') as any
 
   if (shippingZoneIds.length > 0) {
     shippingZonesQuery = shippingZonesQuery.where('id', 'in', shippingZoneIds)
@@ -101,7 +101,7 @@ export async function getRatesByZone(zoneId: number): Promise<ShippingRateJsonRe
       .orderBy('weight_from')
       .execute()
 
-    return rates
+    return rates as ShippingRateJsonResponse[]
   }
   catch (error) {
     if (error instanceof Error) {
@@ -129,7 +129,7 @@ export async function getRateByWeightAndZone(weight: number, zoneId: number): Pr
       .where('weight_to', '>=', weight)
       .executeTakeFirst()
 
-    return rate
+    return rate as ShippingRateJsonResponse | undefined
   }
   catch (error) {
     if (error instanceof Error) {
@@ -185,7 +185,7 @@ export async function getShippingRatesByMethod(methodId: number): Promise<Shippi
       .orderBy('weight_from')
       .execute()
 
-    return rates
+    return rates as ShippingRateJsonResponse[]
   }
   catch (error) {
     if (error instanceof Error) {

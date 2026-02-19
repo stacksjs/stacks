@@ -26,7 +26,7 @@ export async function store(data: NewWaitlistProduct): Promise<WaitlistProductJs
     if (!result)
       throw new Error('Failed to create waitlist product')
 
-    return result
+    return result as WaitlistProductJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

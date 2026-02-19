@@ -25,7 +25,7 @@ export async function store(data: NewDriver): Promise<DriverJsonResponse> {
     if (!result)
       throw new Error('Failed to create driver')
 
-    return result
+    return result as DriverJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

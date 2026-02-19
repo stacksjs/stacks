@@ -83,7 +83,7 @@ export function formatShippingOptions(): Promise<{ id: number, name: string, sta
       .selectFrom('shipping_methods')
       .select(['id', 'name', 'status', 'base_rate'])
       .orderBy('name')
-      .execute()
+      .execute() as any
   }
   catch (error) {
     if (error instanceof Error) {
@@ -106,7 +106,7 @@ export async function getActiveShippingMethods(): Promise<ShippingMethodJsonResp
       .selectAll()
       .where('status', '=', 'active')
       .orderBy('name')
-      .execute()
+      .execute() as ShippingMethodJsonResponse[]
   }
   catch (error) {
     if (error instanceof Error) {

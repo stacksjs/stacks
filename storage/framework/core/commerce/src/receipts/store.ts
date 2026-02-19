@@ -25,7 +25,7 @@ export async function store(data: NewReceipt): Promise<ReceiptJsonResponse> {
     if (!result)
       throw new Error('Failed to create receipt')
 
-    return result
+    return result as ReceiptJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

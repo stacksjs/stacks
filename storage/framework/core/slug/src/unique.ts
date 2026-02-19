@@ -20,7 +20,7 @@ export async function uniqueSlug(value: string, options?: SlugifyOptions): Promi
     // Using dynamic table query approach
     const exists = await db
       .selectFrom(options.table)
-      .select('id')
+      .select(['id'])
       .where(options.column, '=', slug)
       .executeTakeFirst()
 

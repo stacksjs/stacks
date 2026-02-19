@@ -40,7 +40,7 @@ export async function fetchById(id: number): Promise<ErrorRecord | undefined> {
     .selectFrom('errors')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst() as ErrorRecord | undefined
+    .executeTakeFirst() as unknown as ErrorRecord | undefined
 }
 
 /**
@@ -51,7 +51,7 @@ export async function fetchAll(): Promise<ErrorRecord[]> {
     .selectFrom('errors')
     .selectAll()
     .orderBy('created_at', 'desc')
-    .execute() as ErrorRecord[]
+    .execute() as unknown as ErrorRecord[]
 }
 
 /**
@@ -63,7 +63,7 @@ export async function fetchGrouped(): Promise<GroupedError[]> {
     .selectFrom('errors')
     .selectAll()
     .orderBy('created_at', 'desc')
-    .execute() as ErrorRecord[]
+    .execute() as unknown as ErrorRecord[]
 
   // Group errors by type + message combination
   const groupMap = new Map<string, {
@@ -135,7 +135,7 @@ export async function fetchByGroup(type: string, message: string): Promise<Error
     .where('message', '=', message)
     .selectAll()
     .orderBy('created_at', 'desc')
-    .execute() as ErrorRecord[]
+    .execute() as unknown as ErrorRecord[]
 }
 
 /**

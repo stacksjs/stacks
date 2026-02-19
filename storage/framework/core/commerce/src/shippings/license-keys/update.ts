@@ -29,7 +29,7 @@ export async function update(id: number, data: LicenseKeyUpdate): Promise<Licens
     if (!result)
       throw new Error('Failed to update license key')
 
-    return result
+    return result as LicenseKeyJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -65,7 +65,7 @@ export async function updateStatus(
     if (!result)
       throw new Error('Failed to update license key status')
 
-    return result
+    return result as LicenseKeyJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -105,7 +105,7 @@ export async function updateExpiration(
     if (!result)
       throw new Error('Failed to update expiration information')
 
-    return result
+    return result as LicenseKeyJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

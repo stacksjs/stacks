@@ -9,7 +9,7 @@ export function createCategorizableMethods(tableName: string) {
       .selectAll()
       .execute()
 
-    return categoryLinks.map((link: { category_id: number }) => link.category_id)
+    return categoryLinks.map((link) => (link as unknown as { category_id: number }).category_id)
   }
 
   return {

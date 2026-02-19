@@ -17,7 +17,7 @@ export async function fetchById(id: number): Promise<ShippingMethodJsonResponse 
     return {
       ...model,
       shippingZones,
-    }
+    } as unknown as ShippingMethodJsonResponse
   }
 
   return undefined
@@ -33,7 +33,7 @@ export async function fetchAll(): Promise<ShippingMethodJsonResponse[]> {
   // Get the IDs of all shipping methods
   const shippingMethodIds = models.map((model: any) => model.id)
 
-  let shippingQuery = db.selectFrom('shipping_zones')
+  let shippingQuery = db.selectFrom('shipping_zones') as any
 
   if (shippingMethodIds.length > 0) {
     shippingQuery = shippingQuery.where('shipping_method_id', 'in', shippingMethodIds)

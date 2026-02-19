@@ -63,14 +63,14 @@ function prepareRestaurantWaitlistForExport(waitlistEntries: WaitlistRestaurantJ
       entry.id,
       entry.name,
       entry.phone || 'N/A',
-      entry.party_size,
-      entry.table_preference,
+      entry.partySize,
+      entry.tablePreference,
       entry.status,
-      entry.quoted_wait_time || 'N/A',
-      entry.actual_wait_time || 'N/A',
-      entry.check_in_time || 'N/A',
+      (entry as any).quoted_wait_time || 'N/A',
+      (entry as any).actual_wait_time || 'N/A',
+      entry.checkInTime || 'N/A',
       entry.created_at,
-      entry.notes || 'N/A',
+      (entry as any).notes || 'N/A',
     ]
   })
 

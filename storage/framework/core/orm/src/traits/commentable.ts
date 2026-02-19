@@ -14,7 +14,7 @@ export function createCommentableMethods(tableName: string) {
     async commentCount(id: number): Promise<number> {
       const result = await db
         .selectFrom('comments')
-        .select(sql`count(*) as count`)
+        .select(sql`count(*) as count` as unknown as string[])
         .where('commentables_id', '=', id)
         .where('commentables_type', '=', tableName)
         .executeTakeFirst()

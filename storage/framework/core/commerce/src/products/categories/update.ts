@@ -25,10 +25,10 @@ export async function update(id: number, request: RequestInstance<typeof Categor
   const updateData = {
     name: request.get('name'),
     description: request.get('description'),
-    image_url: request.get('image_url'),
-    is_active: request.get('is_active'),
-    parent_category_id: request.get('parent_category_id'),
-    display_order: request.get('display_order'),
+    imageUrl: request.get('imageUrl'),
+    isActive: request.get('isActive'),
+    parentCategoryId: request.get('parentCategoryId'),
+    displayOrder: request.get('displayOrder'),
     updated_at: formatDate(new Date()),
   }
 
@@ -239,12 +239,12 @@ async function wouldCreateCircularReference(categoryId: number, newParentId: str
 
     // Get the parent's parent
     const parent = await fetchById(currentParentId)
-    if (!parent || !parent.parent_category_id) {
+    if (!parent || !parent.parentCategoryId) {
       // We've reached a root category, no cycle
       return false
     }
 
-    currentParentId = Number(parent.parent_category_id)
+    currentParentId = Number(parent.parentCategoryId)
   }
 
   return false

@@ -259,7 +259,7 @@ export async function deleteMessage(userEmail: string, messageId: string, perman
     } else {
       // Move to trash
       const trashKey = message.s3Key.replace('incoming/', 'trash/')
-      await s3.copyObject(BUCKET, message.s3Key, BUCKET, trashKey)
+      await s3.copyObject({ sourceBucket: BUCKET, sourceKey: message.s3Key, destinationBucket: BUCKET, destinationKey: trashKey })
       await s3.deleteObject(BUCKET, message.s3Key)
     }
     

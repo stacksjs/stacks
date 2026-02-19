@@ -25,7 +25,7 @@ export async function store(data: NewCoupon): Promise<CouponJsonResponse | undef
         .selectAll()
         .executeTakeFirst()
 
-      return coupon
+      return coupon as CouponJsonResponse
     }
 
     return undefined

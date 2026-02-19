@@ -14,7 +14,7 @@ export function createTaggableMethods(tableName: string) {
     async tagCount(id: number): Promise<number> {
       const result = await db
         .selectFrom('taggable')
-        .select(sql`count(*) as count`)
+        .select(sql`count(*) as count` as unknown as string[])
         .where('taggable_id', '=', id)
         .where('taggable_type', '=', tableName)
         .executeTakeFirst()

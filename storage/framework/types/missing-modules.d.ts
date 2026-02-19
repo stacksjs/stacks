@@ -8,7 +8,7 @@
 
 declare module 'aws-cdk-lib' {
   import { Construct } from 'constructs'
-  export class Stack extends Construct { constructor(scope?: Construct | any, id?: string, props?: any); [key: string]: any }
+  export class Stack extends Construct { constructor(scope?: Construct | any, id?: string, props?: any); static of(scope: any): Stack; [key: string]: any }
   export const App: any
   export const Duration: any
   export const RemovalPolicy: any
@@ -61,13 +61,13 @@ declare module 'aws-cdk-lib' {
     class Vpc { constructor(...args: any[]); [key: string]: any }
     class SecurityGroup { constructor(...args: any[]); [key: string]: any }
     class Instance { constructor(...args: any[]); [key: string]: any }
-    class KeyPair { constructor(...args: any[]); [key: string]: any }
+    class KeyPair { constructor(...args: any[]); static fromKeyPairName(scope: any, id: string, keyPairName: string): KeyPair; [key: string]: any }
     class CfnEIP { constructor(...args: any[]); [key: string]: any }
     const IpAddresses: any
     const SubnetType: any
     const Peer: any
     const Port: any
-    class InstanceType { constructor(...args: any[]); [key: string]: any }
+    class InstanceType { constructor(...args: any[]); static of(instanceClass: any, instanceSize: any): InstanceType; [key: string]: any }
     const InstanceClass: any
     const InstanceSize: any
     const AmazonLinuxImage: any
@@ -75,7 +75,7 @@ declare module 'aws-cdk-lib' {
     const AmazonLinuxCpuType: any
     const EbsDeviceVolumeType: any
     const BlockDeviceVolume: any
-    class UserData { static forLinux(options?: any): UserData; static forWindows(options?: any): UserData; addCommands(...commands: string[]): void; addS3DownloadCommand(params: any): string; render(): string; [key: string]: any }
+    class UserData { static forLinux(options?: any): UserData; static forWindows(options?: any): UserData; static custom(content: string): UserData; addCommands(...commands: string[]): void; addS3DownloadCommand(params: any): string; render(): string; [key: string]: any }
     type IMachineImage = any
   }
 
@@ -128,7 +128,7 @@ declare module 'aws-cdk-lib' {
   }
 
   export namespace aws_route53 {
-    class PublicHostedZone { constructor(...args: any[]); [key: string]: any }
+    class PublicHostedZone { constructor(...args: any[]); static fromLookup(scope: any, id: string, props: any): any; [key: string]: any }
     class ARecord { constructor(...args: any[]); [key: string]: any }
     class CnameRecord { constructor(...args: any[]); [key: string]: any }
     class MxRecord { constructor(...args: any[]); [key: string]: any }
@@ -152,6 +152,9 @@ declare module 'aws-cdk-lib' {
 
   export namespace aws_wafv2 {
     class CfnWebACL { constructor(...args: any[]); [key: string]: any }
+    namespace CfnWebACL {
+      type RuleProperty = any
+    }
     class CfnIPSet { constructor(...args: any[]); [key: string]: any }
   }
 
@@ -171,8 +174,8 @@ declare module 'aws-cdk-lib' {
 
   export namespace aws_backup {
     class BackupVault { constructor(...args: any[]); [key: string]: any }
-    class BackupPlan { constructor(...args: any[]); [key: string]: any }
-    class BackupResource { constructor(...args: any[]); [key: string]: any }
+    class BackupPlan { constructor(...args: any[]); static daily35DayRetention(scope: any, id: string, vault?: any): BackupPlan; [key: string]: any }
+    class BackupResource { constructor(...args: any[]); static fromTag(key: string, value: string): BackupResource; [key: string]: any }
   }
 
   export namespace aws_dynamodb {
@@ -230,12 +233,13 @@ declare module 'constructs' {
 // ============================================================================
 
 declare module '@aws-sdk/client-route-53-domains' {
+  export class Route53Domains { constructor(config?: any); registerDomain(input?: any): Promise<any>; [key: string]: any }
   export class Route53DomainsClient { constructor(config?: any); send(command: any): Promise<any> }
   export class CheckDomainAvailabilityCommand { constructor(input: any) }
   export class RegisterDomainCommand { constructor(input: any) }
   export class GetDomainDetailCommand { constructor(input: any) }
   export const ContactType: { [key: string]: string }
-  export class CountryCode { static readonly [key: string]: CountryCode; readonly [key: string]: string }
+  export type CountryCode = string
   export type RegisterDomainCommandOutput = any
 }
 
@@ -255,6 +259,10 @@ declare module '@aws-sdk/client-bedrock' {
   export class GetModelCustomizationJobCommand { constructor(input: any) }
   export type ListFoundationModelsCommandInput = any
   export type ListFoundationModelsCommandOutput = any
+  export type CreateModelCustomizationJobCommandInput = any
+  export type CreateModelCustomizationJobCommandOutput = any
+  export type GetModelCustomizationJobCommandInput = any
+  export type GetModelCustomizationJobCommandOutput = any
 }
 
 declare module '@aws-sdk/client-bedrock-runtime' {
@@ -263,20 +271,25 @@ declare module '@aws-sdk/client-bedrock-runtime' {
   export class InvokeModelWithResponseStreamCommand { constructor(input: any) }
   export type InvokeModelCommandInput = any
   export type InvokeModelCommandOutput = any
+  export type InvokeModelWithResponseStreamCommandInput = any
+  export type InvokeModelWithResponseStreamCommandOutput = any
 }
 
 declare module '@aws-sdk/client-ssm' {
+  export class SSM { constructor(config?: any); getParameter(input?: any): Promise<any>; putParameter(input?: any): Promise<any>; describeParameters(input?: any): Promise<any>; deleteParameter(input?: any): Promise<any>; [key: string]: any }
   export class SSMClient { constructor(config?: any); send(command: any): Promise<any> }
   export class GetParameterCommand { constructor(input: any) }
   export class PutParameterCommand { constructor(input: any) }
 }
 
 declare module '@aws-sdk/client-lambda' {
+  export class Lambda { constructor(config?: any); listFunctions(input?: any): Promise<any>; deleteFunction(input?: any): Promise<any>; [key: string]: any }
   export class LambdaClient { constructor(config?: any); send(command: any): Promise<any> }
   export class InvokeCommand { constructor(input: any) }
 }
 
 declare module '@aws-sdk/client-iam' {
+  export class IAM { constructor(config?: any); listUsers(input?: any): Promise<any>; listAttachedUserPolicies(input?: any): Promise<any>; detachUserPolicy(input?: any): Promise<any>; listAccessKeys(input?: any): Promise<any>; deleteAccessKey(input?: any): Promise<any>; deleteUser(input?: any): Promise<any>; listInstanceProfiles(input?: any): Promise<any>; [key: string]: any }
   export class IAMClient { constructor(config?: any); send(command: any): Promise<any> }
 }
 
@@ -286,6 +299,7 @@ declare module '@aws-sdk/client-efs' {
 }
 
 declare module '@aws-sdk/client-ec2' {
+  export class EC2 { constructor(config?: any); describeSecurityGroups(input?: any): Promise<any>; describeInstances(input?: any): Promise<any>; terminateInstances(input?: any): Promise<any>; runInstances(input?: any): Promise<any>; [key: string]: any }
   export class EC2Client { constructor(config?: any); send(command: any): Promise<any> }
   export class DescribeRegionsCommand { constructor(input?: any) }
   export class DescribeVpcsCommand { constructor(input?: any) }
@@ -300,6 +314,7 @@ declare module '@aws-sdk/client-ec2' {
 }
 
 declare module '@aws-sdk/client-cloudformation' {
+  export class CloudFormation { constructor(config?: any); listStacks(input?: any): Promise<any>; describeStacks(input?: any): Promise<any>; [key: string]: any }
   export class CloudFormationClient { constructor(config?: any); send(command: any): Promise<any> }
   export class DescribeStacksCommand { constructor(input: any) }
 }
@@ -380,8 +395,8 @@ declare module '@stacksjs/headwind' {
 // ============================================================================
 
 declare module 'ts-security-crypto' {
-  export function encrypt(data: string, key?: string): string
-  export function decrypt(data: string, key?: string): string
+  export function encrypt(data: string, key?: string): Promise<{ encrypted: string }>
+  export function decrypt(data: string, key?: string): Promise<string>
   export function hash(data: string, algorithm?: string): string
   export function verifyHash(data: string, hash: string): boolean
   export function generateKey(length?: number): string
@@ -390,6 +405,19 @@ declare module 'ts-security-crypto' {
   export function hashPassword(password: string, options?: any): Promise<string>
   export function verifyPassword(password: string, hash: string): Promise<boolean>
   export function md5(data: string): string
+}
+
+// ============================================================================
+// Auto-imports (augment bun-plugin-auto-imports with missing exports)
+// ============================================================================
+
+declare module 'bun-plugin-auto-imports' {
+  export function autoImports(options: any): any
+  export const GENERATED_COMMENT: string
+  export function generateESLintGlobals(options: any): any
+  export function generateRuntimeIndex(dirs: string[], outputPath: string): Promise<void>
+  export function generateGlobalsScript(dirs: string[], outputPath: string, indexPath: string): Promise<void>
+  export type AutoImportsOptions = any
 }
 
 // ============================================================================
@@ -443,6 +471,7 @@ declare module 'unplugin-auto-import/types' {
 declare module 'vue-component-meta' {
   export function createComponentMetaChecker(tsConfigPath: string, options?: any): any
   export type ComponentMeta = any
+  export type MetaCheckerOptions = any
 }
 
 declare module 'vue-docgen-web-types/types/config' {
@@ -480,7 +509,7 @@ declare module 'crypto-js/md5' {
 
 declare module 'bun-queue' {
   import type { Faker } from 'ts-mocker'
-  export class Queue<T = any> { constructor(name: string, options?: any); add(data: T, options?: any): Promise<any>; process(handler: (job: Job<T>) => Promise<any>): void; on(event: string, handler: (...args: any[]) => void): void; [key: string]: any }
+  export class Queue<T = any> { constructor(name: string, options?: any); add(data: T, options?: any): Promise<any>; process(handler: (job: Job<T>) => Promise<any>): void; process(concurrency: number, handler: (job: Job<T>) => Promise<any>): void; on(event: string, handler: (...args: any[]) => void): void; [key: string]: any }
   export class QueueManager { constructor(options?: any); [key: string]: any }
   export class QueueWorker { constructor(options?: any); [key: string]: any }
   export class Worker { constructor(options?: any); [key: string]: any }

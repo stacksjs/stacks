@@ -62,7 +62,7 @@ export async function bulkUpdate(data: ProductUnitUpdate[]): Promise<number> {
   let updatedCount = 0
 
   try {
-    await db.transaction().execute(async (trx: any) => {
+    await (db as any).transaction().execute(async (trx: any) => {
       for (const unit of data) {
         if (!(unit as any).id)
           continue

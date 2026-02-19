@@ -9,12 +9,12 @@ export async function fetchById(id: number): Promise<ProductVariantJsonResponse 
     .selectFrom('product_variants')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as ProductVariantJsonResponse | undefined
 }
 
 /**
  * Fetch all product variants
  */
 export async function fetchAll(): Promise<ProductVariantJsonResponse[]> {
-  return await db.selectFrom('product_variants').selectAll().execute()
+  return await db.selectFrom('product_variants').selectAll().execute() as ProductVariantJsonResponse[]
 }

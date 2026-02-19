@@ -9,12 +9,12 @@ export async function fetchById(id: number): Promise<TaxRateJsonResponse | undef
     .selectFrom('tax_rates')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as TaxRateJsonResponse | undefined
 }
 
 /**
  * Fetch all tax rates
  */
 export async function fetchAll(): Promise<TaxRateJsonResponse[]> {
-  return await db.selectFrom('tax_rates').selectAll().execute()
+  return await db.selectFrom('tax_rates').selectAll().execute() as TaxRateJsonResponse[]
 }

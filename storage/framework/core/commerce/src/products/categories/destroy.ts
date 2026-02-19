@@ -99,5 +99,5 @@ export async function deactivateChildCategories(parentId: string): Promise<numbe
     .where('parent_category_id', '=', parentId)
     .execute()
 
-  return Number(result.length) || 0
+  return Number((result as any).length) || 0
 }

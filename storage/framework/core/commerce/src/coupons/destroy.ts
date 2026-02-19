@@ -30,7 +30,7 @@ export async function deleteCoupons(ids: number[]): Promise<number> {
     .where('id', 'in', ids)
     .execute()
 
-  return result.length || 0
+  return (result as any).length || 0
 }
 
 /**

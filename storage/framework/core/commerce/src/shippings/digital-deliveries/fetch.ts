@@ -9,12 +9,12 @@ export async function fetchById(id: number): Promise<DigitalDeliveryJsonResponse
     .selectFrom('digital_deliveries')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as DigitalDeliveryJsonResponse | undefined
 }
 
 /**
  * Fetch all digital deliveries
  */
 export async function fetchAll(): Promise<DigitalDeliveryJsonResponse[]> {
-  return await db.selectFrom('digital_deliveries').selectAll().execute()
+  return await db.selectFrom('digital_deliveries').selectAll().execute() as DigitalDeliveryJsonResponse[]
 }

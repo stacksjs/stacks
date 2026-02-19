@@ -33,7 +33,7 @@ try {
     if (job.reserved_at) {
       stats.processing++
     }
-    else if (job.available_at && job.available_at > now) {
+    else if (job.available_at && Number(job.available_at) > now) {
       stats.delayed++
     }
     else {

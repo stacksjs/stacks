@@ -25,7 +25,7 @@ export async function destroy(id: number): Promise<WaitlistRestaurantJsonRespons
       .where('id', '=', id)
       .execute()
 
-    return waitlistEntry
+    return waitlistEntry as WaitlistRestaurantJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -53,7 +53,7 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
       .where('id', 'in', ids)
       .execute()
 
-    return result.length || 0
+    return (result as any).length || 0
   }
   catch (error) {
     if (error instanceof Error) {

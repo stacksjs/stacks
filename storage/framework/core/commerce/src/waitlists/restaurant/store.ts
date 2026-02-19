@@ -15,7 +15,7 @@ export async function store(data: NewWaitlistRestaurant): Promise<WaitlistRestau
       ...data,
       uuid: randomUUIDv7(),
       status: data.status || 'waiting',
-      check_in_time: data.check_in_time ? Math.floor(new Date(data.check_in_time).getTime() / 1000) : undefined,
+      checkInTime: data.checkInTime ? Math.floor(new Date(data.checkInTime).getTime() / 1000) : undefined,
     }
 
     const result = await db
@@ -27,7 +27,7 @@ export async function store(data: NewWaitlistRestaurant): Promise<WaitlistRestau
     if (!result)
       throw new Error('Failed to create restaurant waitlist entry')
 
-    return result
+    return result as WaitlistRestaurantJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -53,7 +53,7 @@ export async function bulkStore(data: NewWaitlistRestaurant[]): Promise<number> 
       ...item,
       uuid: randomUUIDv7(),
       status: item.status || 'waiting',
-      check_in_time: item.check_in_time ? Math.floor(new Date(item.check_in_time).getTime() / 1000) : undefined,
+      checkInTime: item.checkInTime ? Math.floor(new Date(item.checkInTime).getTime() / 1000) : undefined,
     }))
 
     const result = await db

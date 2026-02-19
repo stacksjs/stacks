@@ -9,12 +9,12 @@ export async function fetchById(id: number): Promise<LicenseKeyJsonResponse | un
     .selectFrom('license_keys')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as LicenseKeyJsonResponse | undefined
 }
 
 /**
  * Fetch all digital deliveries
  */
 export async function fetchAll(): Promise<LicenseKeyJsonResponse[]> {
-  return await db.selectFrom('license_keys').selectAll().execute()
+  return await db.selectFrom('license_keys').selectAll().execute() as LicenseKeyJsonResponse[]
 }

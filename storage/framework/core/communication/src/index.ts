@@ -66,8 +66,13 @@ export class SmsSDK {
    */
   async send(options: SmsSendOptions): Promise<SmsSendResult> {
     try {
-      const { PinpointClient } = await import('@stacksjs/ts-cloud/aws')
-      const pinpoint = new PinpointClient(this.region)
+      // PinpointClient may not be available in all ts-cloud versions
+      const tsCloud = await import('@stacksjs/ts-cloud/aws') as unknown as Record<string, unknown>
+      const PinpointClientClass = tsCloud.PinpointClient as (new (region: string) => { listApps: (opts: Record<string, unknown>) => Promise<{ Item?: Array<{ Name?: string, Id?: string }> }>, sendSms: (opts: Record<string, unknown>) => Promise<{ DeliveryStatus?: string, MessageId?: string }> }) | undefined
+      if (!PinpointClientClass) {
+        return { success: false, error: 'PinpointClient not available in ts-cloud' }
+      }
+      const pinpoint = new PinpointClientClass(this.region)
 
       // Get app ID if not provided
       let appId = this.appId

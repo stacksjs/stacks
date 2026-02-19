@@ -66,7 +66,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
 
       if (relativePath === action || file.endsWith(`${action}.ts`) || file.endsWith(`${action}.js`)) {
         // Direct filename match - import and execute immediately
-        return ((await import(file)).default as ActionType).handle()
+        return ((await import(file)).default as ActionType).handle(undefined as unknown as Parameters<ActionType['handle']>[0])
       }
       // Collect all files for potential name matching (only if direct match fails)
       matchingFiles.push(file)

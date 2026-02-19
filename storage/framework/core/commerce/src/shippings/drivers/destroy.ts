@@ -49,7 +49,7 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
 
   try {
     // Process each driver deletion in a transaction
-    await db.transaction().execute(async (trx: any) => {
+    await (db as any).transaction().execute(async (trx: any) => {
       for (const id of ids) {
         // Check if driver exists
         const driver = await fetchById(id)

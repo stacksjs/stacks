@@ -26,7 +26,7 @@ export async function store(data: NewManufacturer): Promise<ManufacturerJsonResp
     if (!result)
       throw new Error('Failed to create manufacturer')
 
-    return result
+    return result as ManufacturerJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -54,7 +54,7 @@ export async function bulkStore(data: NewManufacturer[]): Promise<number> {
   let createdCount = 0
 
   try {
-    await db.transaction().execute(async (trx: any) => {
+    await (db as any).transaction().execute(async (trx: any) => {
       for (const manufacturer of data) {
         const manufacturerData = {
           ...manufacturer,

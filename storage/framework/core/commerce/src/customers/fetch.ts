@@ -9,12 +9,12 @@ export async function fetchById(id: number): Promise<CustomerJsonResponse | unde
     .selectFrom('customers')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as CustomerJsonResponse | undefined
 }
 
 /**
  * Fetch all customers
  */
 export async function fetchAll(): Promise<CustomerJsonResponse[]> {
-  return await db.selectFrom('customers').selectAll().execute()
+  return await db.selectFrom('customers').selectAll().execute() as CustomerJsonResponse[]
 }

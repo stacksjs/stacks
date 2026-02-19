@@ -28,7 +28,7 @@ export async function update(id: number, data: ShippingZoneUpdate): Promise<Ship
     if (!result)
       throw new Error('Failed to update shipping zone')
 
-    return result
+    return result as ShippingZoneJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -64,7 +64,7 @@ export async function updateStatus(
     if (!result)
       throw new Error('Failed to update shipping zone status')
 
-    return result
+    return result as ShippingZoneJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -100,7 +100,7 @@ export async function updateCountries(
     if (!result)
       throw new Error('Failed to update shipping zone countries')
 
-    return result
+    return result as ShippingZoneJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -144,7 +144,7 @@ export async function updateRegionsAndPostalCodes(
     if (!result)
       throw new Error('Failed to update regions and postal codes')
 
-    return result
+    return result as ShippingZoneJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

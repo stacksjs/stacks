@@ -5,7 +5,7 @@ import { db } from '@stacksjs/database'
  * Fetch all shipping zones
  */
 export async function fetchAll(): Promise<ShippingZoneJsonResponse[]> {
-  return await db.selectFrom('shipping_zones').selectAll().execute()
+  return await db.selectFrom('shipping_zones').selectAll().execute() as ShippingZoneJsonResponse[]
 }
 
 /**
@@ -16,7 +16,7 @@ export async function fetchById(id: number): Promise<ShippingZoneJsonResponse | 
     .selectFrom('shipping_zones')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as ShippingZoneJsonResponse | undefined
 }
 
 /**
@@ -30,7 +30,7 @@ export function formatZoneOptions(): Promise<{ id: number, name: string, status:
       .selectFrom('shipping_zones')
       .select(['id', 'name', 'status', 'countries'])
       .orderBy('name')
-      .execute()
+      .execute() as any
   }
   catch (error) {
     if (error instanceof Error) {
@@ -55,7 +55,7 @@ export async function getActiveShippingZones(): Promise<ShippingZoneJsonResponse
       .orderBy('name')
       .execute()
 
-    return activeZones
+    return activeZones as ShippingZoneJsonResponse[]
   }
   catch (error) {
     if (error instanceof Error) {
@@ -84,7 +84,7 @@ export async function getZonesByCountry(countryCode: string): Promise<ShippingZo
       .orderBy('name')
       .execute()
 
-    return zones
+    return zones as ShippingZoneJsonResponse[]
   }
   catch (error) {
     if (error instanceof Error) {

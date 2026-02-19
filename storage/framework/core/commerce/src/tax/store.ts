@@ -25,7 +25,7 @@ export async function store(data: NewTaxRate): Promise<TaxRateJsonResponse> {
     if (!result)
       throw new Error('Failed to create tax rate')
 
-    return result
+    return result as TaxRateJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

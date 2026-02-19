@@ -28,7 +28,7 @@ export async function update(id: number, data: ShippingRateUpdate): Promise<Ship
     if (!result)
       throw new Error('Failed to update shipping rate')
 
-    return result
+    return result as ShippingRateJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

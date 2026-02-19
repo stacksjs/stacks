@@ -16,7 +16,7 @@ export function createLikeableMethods(tableName: string, options?: { table?: str
     async likeCount(id: number): Promise<number> {
       const result = await db
         .selectFrom(likeTable as any)
-        .select(sql`count(*) as count`)
+        .select(sql`count(*) as count` as unknown as string[])
         .where(foreignKey, '=', id)
         .executeTakeFirst()
 

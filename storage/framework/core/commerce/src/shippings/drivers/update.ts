@@ -29,7 +29,7 @@ export async function update(id: number, data: DriverUpdate): Promise<DriverJson
     if (!result)
       throw new Error('Failed to update driver')
 
-    return result
+    return result as DriverJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -65,7 +65,7 @@ export async function updateStatus(
     if (!result)
       throw new Error('Failed to update driver status')
 
-    return result
+    return result as DriverJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -105,7 +105,7 @@ export async function updateContact(
     if (!result)
       throw new Error('Failed to update contact information')
 
-    return result
+    return result as DriverJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
