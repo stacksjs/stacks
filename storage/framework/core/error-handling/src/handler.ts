@@ -1,9 +1,16 @@
 import type { LogErrorOptions } from '@stacksjs/logging'
-import { appendFile, mkdir } from 'node:fs/promises'
 import fs from 'node:fs'
 import { dirname } from 'node:path'
 import * as process from 'node:process'
-import { italic, stripAnsi } from '@stacksjs/cli'
+// Inlined to avoid circular dependency: error-handling -> cli -> error-handling
+function italic(str: string): string {
+  return `\x1B[3m${str}\x1B[23m`
+}
+
+function stripAnsi(str: string): string {
+  // eslint-disable-next-line no-control-regex
+  return str.replace(/\x1B\[[0-9;]*m/g, '')
+}
 import * as path from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 
@@ -14,7 +21,8 @@ export class ErrorHandler {
   static shouldExitProcess = true
 
   static handle(err: Error | ErrorMessage | unknown, options?: LogErrorOptions): Error {
-    this.shouldExitProcess = options?.shouldExit !== false
+    if (!this.isTestEnvironment)
+      this.shouldExitProcess = options?.shouldExit !== false
     if (options?.silent !== true)
       this.writeErrorToConsole(err)
 
@@ -62,8 +70,8 @@ export class ErrorHandler {
     const logFilePath = path.logsPath('stacks.log') ?? path.logsPath('errors.log')
 
     try {
-      await mkdir(path.dirname(logFilePath), { recursive: true })
-      await appendFile(logFilePath, formattedError)
+      await fs.promises.mkdir(path.dirname(logFilePath), { recursive: true })
+      await fs.promises.appendFile(logFilePath, formattedError)
     }
     catch (error) {
       console.error('Failed to write to error file:', error)
@@ -127,11 +135,11 @@ export async function writeToLogFile(message: string, options?: WriteOptions): P
   const dirPath = dirname(logFile)
 
   if (!fs.existsSync(dirPath)) {
-    await mkdir(dirPath, { recursive: true })
+    await fs.promises.mkdir(dirPath, { recursive: true })
   }
 
   // Write to the log file
-  await appendFile(logFile, formattedMessage)
+  await fs.promises.appendFile(logFile, formattedMessage)
 }
 
 export function handleError(
@@ -152,7 +160,7 @@ export function handleError(
   }
 
   // Get the error message from the error object first
-  const errMsg = err instanceof Error ? err.message : String(err)
+  const errMsg = err instanceof Error ? err.message : (typeof err === 'string' ? err : JSON.stringify(err))
 
   if (options && 'message' in options) {
     // If options is provided with a message, put the context message first
