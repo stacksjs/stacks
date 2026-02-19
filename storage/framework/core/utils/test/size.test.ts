@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { join } from 'node:path'
 import { estimateBrotliSize, estimateGzipSize, formatExportSizes, getExportsSize, getFileSize } from '../src/size'
 
 describe('getFileSize', () => {
@@ -8,8 +9,9 @@ describe('getFileSize', () => {
   })
 
   it('should return file size for existing file', async () => {
-    // Test with package.json which should exist
-    const size = await getFileSize('/Users/chrisbreuer/Code/stacks/storage/framework/core/utils/package.json')
+    // Test with package.json which should exist relative to this test file
+    const packageJsonPath = join(import.meta.dir, '..', 'package.json')
+    const size = await getFileSize(packageJsonPath)
     expect(size).toBeGreaterThan(0)
   })
 })

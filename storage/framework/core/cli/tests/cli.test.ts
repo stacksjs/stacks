@@ -38,7 +38,7 @@ mock.module('@stacksjs/logging', () => ({
 }))
 
 // Create mock functions
-const mockExec = mock(() => Promise.resolve({ stdout: 'test', stderr: '', isOk: () => true, isErr: () => false }))
+const mockExec = mock(() => Promise.resolve({ stdout: 'test', stderr: '', isOk: true, isErr: false }))
 const mockExecSync = mock(() => 'test')
 
 const mockedModule = {
@@ -47,7 +47,7 @@ const mockedModule = {
   execSync: mockExecSync,
   runCommand: async (...args: any[]) => {
     const result = await mockExec(...args)
-    return { ...result, isOk: () => true, isErr: () => false }
+    return { ...result, isOk: true, isErr: false }
   },
   runCommandSync: (...args: any[]) => mockExecSync(...args),
 }

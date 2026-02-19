@@ -171,12 +171,13 @@ export class StacksCache implements CacheDriver {
 
   async getStats(): Promise<CacheStats> {
     const stats = await this.manager.getStats()
+    const total = stats.hits + stats.misses
     return {
       hits: stats.hits,
       misses: stats.misses,
       keys: stats.keys,
-      size: (stats as any).size,
-      hitRate: (stats as any).hitRate,
+      size: stats.ksize + stats.vsize,
+      hitRate: total > 0 ? stats.hits / total : 0,
     }
   }
 
