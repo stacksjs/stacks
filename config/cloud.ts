@@ -1,5 +1,5 @@
 import type { CloudConfig } from '@stacksjs/types'
-import type { CloudConfig as TsCloudConfig } from '@ts-cloud/types'
+import type { CloudConfig as TsCloudConfig } from '@stacksjs/ts-cloud-types'
 
 /**
  * Stacks Cloud Configuration
@@ -24,6 +24,14 @@ export const tsCloud: TsCloudConfig = {
     slug: 'stacks',
     region: 'us-east-1', // Default AWS region
   },
+
+  /**
+   * Deployment Mode
+   *
+   * - 'server': Traditional EC2-based deployment (Forge-style)
+   * - 'serverless': Container + static site deployment (Vapor-style)
+   */
+  mode: 'serverless',
 
   /**
    * Environment configurations
@@ -65,21 +73,6 @@ export const tsCloud: TsCloudConfig = {
    * Define your cloud resources here
    */
   infrastructure: {
-    /**
-     * Deployment Mode
-     *
-     * - 'server': Traditional EC2-based deployment (Forge-style)
-     *   - EC2 instances running your full-stack Bun app
-     *   - Application Load Balancer for traffic distribution
-     *   - Suitable for monolithic applications
-     *
-     * - 'serverless': Container + static site deployment (Vapor-style)
-     *   - ECS Fargate for API (Bun running in containers)
-     *   - S3 + CloudFront for frontend (static assets)
-     *   - Better cost optimization and auto-scaling
-     */
-    mode: 'serverless', // 'server' | 'serverless'
-
     /**
      * Compute Configuration
      *

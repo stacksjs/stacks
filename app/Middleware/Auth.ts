@@ -6,7 +6,8 @@ export default new Middleware({
   name: 'Auth',
   priority: 1,
   async handle(request: Request) {
-    const bearerToken = request.bearerToken()
+    const authHeader = request.headers.get('Authorization')
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
 
     if (!bearerToken)
       throw new HttpError(401, 'Unauthorized. No token provided.')
