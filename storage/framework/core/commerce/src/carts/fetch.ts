@@ -9,12 +9,12 @@ export async function fetchById(id: number): Promise<CartJsonResponse | undefine
     .selectFrom('carts')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as CartJsonResponse | undefined
 }
 
 /**
  * Fetch all carts
  */
 export async function fetchAll(): Promise<CartJsonResponse[]> {
-  return await db.selectFrom('carts').selectAll().execute()
+  return await db.selectFrom('carts').selectAll().execute() as CartJsonResponse[]
 }

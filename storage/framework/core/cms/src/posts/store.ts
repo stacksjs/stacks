@@ -23,9 +23,9 @@ export async function store(data: NewPost): Promise<PostJsonResponse> {
       poster: data.poster,
       content: data.content,
       excerpt: data.excerpt,
-      is_featured: data.is_featured ? Date.now() : undefined,
+      isFeatured: data.isFeatured ? Date.now() : undefined,
       views: data.views || 0,
-      published_at: data.published_at || Date.now(),
+      publishedAt: data.publishedAt || Date.now(),
       status: data.status || POST_STATUS_DRAFT,
     }
 
@@ -38,7 +38,7 @@ export async function store(data: NewPost): Promise<PostJsonResponse> {
     if (!result)
       throw new Error('Failed to create post')
 
-    return result
+    return result as PostJsonResponse
   }
   catch (error) {
     if (error instanceof Error)
@@ -111,12 +111,16 @@ export async function detach(
     const postTypeField = tableName === 'categorizable_models' ? 'categorizable_type' : 'taggable_type'
 
     // Build the delete query
-    await db
+    let query = db
       .deleteFrom(tableName)
       .where(postForeignKey, '=', postId)
       .where(postTypeField, '=', 'posts')
-      .where('id', 'in', ids)
-      .execute()
+
+    if (ids) {
+      query = query.where('id', 'in', ids)
+    }
+
+    await query.execute()
   }
   catch (error) {
     if (error instanceof Error)
@@ -148,12 +152,12 @@ export async function sync(
     // Get existing relationships
     const existingRelations = await db
       .selectFrom(tableName)
-      .select('id')
+      .select(['id'])
       .where(postForeignKey, '=', postId)
       .where(postTypeField, '=', 'posts')
       .execute()
 
-    const existingIds = existingRelations.map((rel: { id: number }) => rel.id)
+    const existingIds = existingRelations.map((rel: Record<string, unknown>) => rel.id as number)
 
     // Find IDs to remove (in existing but not in new set)
     const idsToRemove = existingIds.filter((id: number) => !ids.includes(id))

@@ -31,7 +31,7 @@ export async function store(data: CategoryData): Promise<CategorizableTable> {
     }
 
     // Start a transaction to ensure both inserts succeed or fail together
-    const result = await db.transaction().execute(async (trx: any) => {
+    const result = await db.transaction(async (trx: any) => {
       // Insert into categorizable table first
       const category = await trx
         .insertInto('categorizables')
@@ -45,7 +45,7 @@ export async function store(data: CategoryData): Promise<CategorizableTable> {
       return category
     })
 
-    return result
+    return result as CategorizableTable
   }
   catch (error) {
     if (error instanceof Error)
@@ -77,7 +77,7 @@ export async function storeCategorizableModel(data: CategorizableModelData): Pro
     if (!result)
       throw new Error('Failed to create categorizable model relationship')
 
-    return result
+    return result as unknown as CategorizableModelsTable
   }
   catch (error) {
     if (error instanceof Error)
@@ -96,7 +96,7 @@ export async function storeCategorizableModel(data: CategorizableModelData): Pro
 export async function bulkStore(data: CategoryData[]): Promise<CategorizableTable[]> {
   try {
     // Start a transaction to ensure all inserts succeed or fail together
-    const results = await db.transaction().execute(async (trx: any) => {
+    const results = await db.transaction(async (trx: any) => {
       const categories: CategorizableTable[] = []
 
       for (const item of data) {
@@ -118,7 +118,7 @@ export async function bulkStore(data: CategoryData[]): Promise<CategorizableTabl
         if (!category)
           throw new Error(`Failed to create category: ${item.name}`)
 
-        categories.push(category)
+        categories.push(category as CategorizableTable)
       }
 
       return categories

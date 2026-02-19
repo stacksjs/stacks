@@ -1,8 +1,8 @@
 import type { Selectable } from '@stacksjs/database'
 
-type PaymentMethodModel = typeof PaymentMethod
+type PaymentMethodInstance = NonNullable<Awaited<ReturnType<typeof PaymentMethod.find>>>
 type PaymentMethodsTable = ModelRow<typeof PaymentMethod>
-type UserModel = typeof User
+import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { db } from '@stacksjs/database'
 import { PaymentMethod } from '@stacksjs/orm'
@@ -13,10 +13,10 @@ export interface ManagePaymentMethod {
   updatePaymentMethod: (user: UserModel, paymentMethodId: string, updateParams?: Stripe.PaymentMethodUpdateParams) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   setUserDefaultPayment: (user: UserModel, paymentMethodId: string) => Promise<Stripe.Response<Stripe.Customer>>
   setDefaultPaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<Stripe.Response<Stripe.Customer>>
-  storePaymentMethod: (user: UserModel, paymentMethodId: Stripe.PaymentMethod) => Promise<PaymentMethodModel>
+  storePaymentMethod: (user: UserModel, paymentMethodId: Stripe.PaymentMethod) => Promise<PaymentMethodInstance>
   deletePaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<Stripe.Response<Stripe.PaymentMethod>>
-  retrievePaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<PaymentMethodModel | undefined>
-  retrieveDefaultPaymentMethod: (user: UserModel) => Promise<PaymentMethodModel | undefined>
+  retrievePaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<PaymentMethodInstance | undefined>
+  retrieveDefaultPaymentMethod: (user: UserModel) => Promise<PaymentMethodInstance | undefined>
   listPaymentMethods: (user: UserModel, cardType?: string) => Promise<Selectable<PaymentMethodsTable>[]>
 }
 
@@ -67,7 +67,9 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       },
     })
 
-    updateDefault(paymentMethodModel as PaymentMethodModel)
+    if (paymentMethodModel) {
+      updateDefault(paymentMethodModel as unknown as PaymentMethodInstance)
+    }
 
     return updatedCustomer
   }
@@ -100,7 +102,7 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
     return updatedCustomer
   }
 
-  async function storePaymentMethod(user: UserModel, paymentMethod: Stripe.PaymentMethod): Promise<PaymentMethodModel> {
+  async function storePaymentMethod(user: UserModel, paymentMethod: Stripe.PaymentMethod): Promise<PaymentMethodInstance> {
     if (!user.hasStripeId()) {
       throw new Error('Customer does not exist in Stripe')
     }
@@ -127,13 +129,13 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
 
     const model = await PaymentMethod.create(method)
 
-    return model
+    return model as unknown as PaymentMethodInstance
   }
 
-  async function updateDefault(paymentMethodModel: PaymentMethodModel): Promise<PaymentMethodModel> {
+  async function updateDefault(paymentMethodModel: PaymentMethodInstance): Promise<PaymentMethodInstance> {
     const paymentMethod = await paymentMethodModel.update({ is_default: true })
 
-    return paymentMethod as PaymentMethodModel
+    return paymentMethod as unknown as PaymentMethodInstance
   }
 
   async function deletePaymentMethod(user: UserModel, paymentMethodId: number): Promise<Stripe.Response<Stripe.PaymentMethod>> {
@@ -175,25 +177,22 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       throw new Error('Customer does not exist in Stripe')
     }
 
-    const paymentMethods = await db.selectFrom('payment_methods').selectAll().where((eb: any) => eb.or([
-      eb('is_default', 'is', null),
-      eb('is_default', '=', false),
-    ])).where('user_id', '=', user.id).execute()
+    const paymentMethods = await db.selectFrom('payment_methods').selectAll().where('is_default', '=', false).where('user_id', '=', user.id).execute()
 
-    return paymentMethods
+    return paymentMethods as unknown as Selectable<PaymentMethodsTable>[]
   }
 
-  async function retrievePaymentMethod(user: UserModel, paymentMethodId: number): Promise<PaymentMethodModel | undefined> {
+  async function retrievePaymentMethod(user: UserModel, paymentMethodId: number): Promise<PaymentMethodInstance | undefined> {
     if (!user.hasStripeId()) {
       throw new Error('Customer does not exist in Stripe')
     }
 
     const paymentMethod = await db.selectFrom('payment_methods').where('id', '=', paymentMethodId).selectAll().executeTakeFirst()
 
-    return paymentMethod
+    return paymentMethod as unknown as PaymentMethodInstance | undefined
   }
 
-  async function retrieveDefaultPaymentMethod(user: UserModel): Promise<PaymentMethodModel | undefined> {
+  async function retrieveDefaultPaymentMethod(user: UserModel): Promise<PaymentMethodInstance | undefined> {
     if (!user.hasStripeId()) {
       throw new Error('Customer does not exist in Stripe')
     }
@@ -202,7 +201,7 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       .where('is_default', true)
       .first()
 
-    return paymentMethod
+    return paymentMethod as unknown as PaymentMethodInstance | undefined
   }
 
   return { addPaymentMethod, deletePaymentMethod, retrieveDefaultPaymentMethod, updatePaymentMethod, listPaymentMethods, setDefaultPaymentMethod, storePaymentMethod, retrievePaymentMethod, setUserDefaultPayment }

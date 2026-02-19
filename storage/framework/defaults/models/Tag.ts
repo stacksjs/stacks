@@ -45,8 +45,8 @@ export default defineModel({
       validation: {
         rule: schema.string().min(2).max(50),
       },
-      factory: (faker, attributes) => {
-        const name = attributes?.name || faker.lorem.word()
+      factory: (faker) => {
+        const name = faker.lorem.word()
         return name.toLowerCase().replace(/\s+/g, '-')
       },
     },

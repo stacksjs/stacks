@@ -16,15 +16,15 @@ import { fetchById } from './fetch'
 export async function store(data: NewShippingRate): Promise<ShippingRateJsonResponse> {
   try {
     // Validate that the shipping method and zone exist
-    const method = await fetchShippingMethodById(Number(data.shipping_method_id))
-    const zone = await fetchShippingZoneById(Number(data.shipping_zone_id))
+    const method = await fetchShippingMethodById(Number(data.shippingmethod_id))
+    const zone = await fetchShippingZoneById(Number(data.shippingzone_id))
 
     const rateData = {
-      weight_from: data.weight_from,
-      weight_to: data.weight_to,
+      weightFrom: data.weightFrom,
+      weightTo: data.weightTo,
       rate: data.rate,
-      shipping_method_id: method?.id,
-      shipping_zone_id: zone?.id,
+      shippingmethod_id: method?.id,
+      shippingzone_id: zone?.id,
       uuid: randomUUIDv7(),
     }
 
@@ -64,24 +64,24 @@ export async function bulkStore(data: NewShippingRate[]): Promise<number> {
   try {
     // Validate all methods and zones before bulk insert
     for (const item of data) {
-      const method = await fetchShippingMethodById(Number(item.shipping_method_id))
-      const zone = await fetchShippingZoneById(Number(item.shipping_zone_id))
+      const method = await fetchShippingMethodById(Number(item.shippingmethod_id))
+      const zone = await fetchShippingZoneById(Number(item.shippingzone_id))
 
       if (!method) {
-        console.warn(`Shipping method with ID "${item.shipping_method_id}" not found for bulk insert`)
+        console.warn(`Shipping method with ID "${item.shippingmethod_id}" not found for bulk insert`)
       }
 
       if (!zone) {
-        console.warn(`Shipping zone with ID "${item.shipping_zone_id}" not found for bulk insert`)
+        console.warn(`Shipping zone with ID "${item.shippingzone_id}" not found for bulk insert`)
       }
     }
 
     const rateDataArray = data.map(item => ({
-      weight_from: item.weight_from,
-      weight_to: item.weight_to,
+      weightFrom: item.weightFrom,
+      weightTo: item.weightTo,
       rate: item.rate,
-      shipping_method_id: item.shipping_method_id,
-      shipping_zone_id: item.shipping_zone_id,
+      shippingmethod_id: item.shippingmethod_id,
+      shippingzone_id: item.shippingzone_id,
       uuid: randomUUIDv7(),
     }))
 

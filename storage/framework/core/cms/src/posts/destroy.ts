@@ -29,7 +29,7 @@ export async function destroy(id: number): Promise<boolean> {
       .where('id', '=', id)
       .executeTakeFirst()
 
-    return result.numDeletedRows > 0
+    return (result as { numDeletedRows?: number })?.numDeletedRows ? (result as { numDeletedRows: number }).numDeletedRows > 0 : false
   }
   catch (error) {
     if (error instanceof Error) {
@@ -54,11 +54,11 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
     // First verify which posts actually exist
     const existingPosts = await db
       .selectFrom('posts')
-      .select('id')
+      .select(['id'])
       .where('id', 'in', ids)
       .execute()
 
-    const existingIds = existingPosts.map((post: any) => post.id)
+    const existingIds = existingPosts.map((post: Record<string, unknown>) => post.id as number)
 
     if (!existingIds.length)
       return 0
@@ -76,7 +76,7 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
       .where('id', 'in', existingIds)
       .executeTakeFirst()
 
-    return Number(result.numDeletedRows) || 0
+    return Number((result as { numDeletedRows?: number })?.numDeletedRows) || 0
   }
   catch (error) {
     if (error instanceof Error) {

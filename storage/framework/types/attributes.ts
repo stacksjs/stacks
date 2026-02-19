@@ -103,7 +103,7 @@ export interface Attributes {
       mac_address: string
       location: string
       terminal: string
-      last_ping: unix
+      last_ping: number
       print_count: number
       is_active: boolean
       parent_category_id: string
@@ -121,9 +121,9 @@ export interface Attributes {
       vehicle_number: string
       license: string
       notification_preference: string | string[]
-      notified_at: unix
-      purchased_at: unix
-      cancelled_at: unix
+      notified_at: number
+      purchased_at: number
+      cancelled_at: number
       download_limit: number
       expiry_days: number
       requires_login: boolean

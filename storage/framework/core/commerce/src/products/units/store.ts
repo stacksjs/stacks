@@ -27,16 +27,16 @@ export async function store(data: NewProductUnit): Promise<ProductUnitJsonRespon
       throw new Error('Failed to create product unit')
 
     // If this unit is set as default, update all other units of the same type
-    if (unitData.is_default) {
+    if (unitData.isDefault) {
       await db
         .updateTable('product_units')
-        .set({ is_default: false })
+        .set({ isDefault: false })
         .where('type', '=', unitData.type)
         .where('id', '!=', result.id)
         .execute()
     }
 
-    return result
+    return result as ProductUnitJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -74,10 +74,10 @@ export async function bulkStore(data: NewProductUnit[]): Promise<number> {
           .executeTakeFirst()
 
         // If this unit is set as default, update all other units of the same type
-        if (unitData.is_default && result) {
+        if (unitData.isDefault && result) {
           await trx
             .updateTable('product_units')
-            .set({ is_default: false })
+            .set({ isDefault: false })
             .where('type', '=', unitData.type)
             .where('id', '!=', result.id)
             .execute()
@@ -110,8 +110,8 @@ export function formatUnitOptions(
   try {
     let query = db
       .selectFrom('product_units')
-      .select(['id', 'name', 'abbreviation', 'is_default'])
-      .orderBy('name')
+      .select(['id', 'name', 'abbreviation', 'is_default'] as any)
+      .orderBy('name') as any
 
     // Filter by type if provided
     if (type)
@@ -151,7 +151,7 @@ export async function getDefaultUnit(type: string): Promise<ProductUnitJsonRespo
       .where('is_default', '=', true)
       .executeTakeFirst()
 
-    return defaultUnit
+    return defaultUnit as ProductUnitJsonResponse | undefined
   }
   catch (error) {
     if (error instanceof Error) {

@@ -56,7 +56,7 @@ export function phone(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        const { ConnectClient } = await import('ts-cloud/aws')
+        const { ConnectClient } = await import('@stacksjs/ts-cloud/aws')
         const connect = new ConnectClient(process.env.AWS_REGION || 'us-east-1')
 
         const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
@@ -116,7 +116,7 @@ export function phone(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        const { ConnectClient } = await import('ts-cloud/aws')
+        const { ConnectClient } = await import('@stacksjs/ts-cloud/aws')
         const connect = new ConnectClient(process.env.AWS_REGION || 'us-east-1')
 
         const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
@@ -170,7 +170,7 @@ export function phone(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        const { ConnectClient } = await import('ts-cloud/aws')
+        const { ConnectClient } = await import('@stacksjs/ts-cloud/aws')
         const connect = new ConnectClient(process.env.AWS_REGION || 'us-east-1')
 
         const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')

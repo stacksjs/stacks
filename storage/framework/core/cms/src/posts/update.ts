@@ -21,7 +21,7 @@ export async function update(id: number, data: Partial<PostUpdate>): Promise<Pos
     if (!result)
       throw new Error('Failed to update post')
 
-    return result
+    return result as PostJsonResponse
   }
   catch (error) {
     if (error instanceof Error)

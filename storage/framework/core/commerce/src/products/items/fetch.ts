@@ -35,7 +35,7 @@ export async function fetchById(id: number): Promise<ProductJsonResponse | undef
       ...model,
       manufacturer,
       category,
-    }
+    } as unknown as ProductJsonResponse
   }
 
   return undefined
@@ -52,8 +52,8 @@ export async function fetchAll(): Promise<ProductJsonResponse[]> {
   const manufacturerIds = models.map((model: any) => model.manufacturer_id).filter((id: any) => id !== null && id !== undefined)
   const categoryIds = models.map((model: any) => model.category_id).filter((id: any) => id !== null && id !== undefined)
 
-  let manufacturersQuery = db.selectFrom('manufacturers')
-  let categoriesQuery = db.selectFrom('categories')
+  let manufacturersQuery = db.selectFrom('manufacturers') as any
+  let categoriesQuery = db.selectFrom('categories') as any
 
   if (manufacturerIds.length > 0) {
     manufacturersQuery = manufacturersQuery.where('id', 'in', manufacturerIds)
@@ -101,7 +101,7 @@ export async function getProductsByManufacturer(manufacturerId: number): Promise
       .orderBy('name')
       .execute()
 
-    return products
+    return products as ProductJsonResponse[]
   }
   catch (error) {
     if (error instanceof Error) {
@@ -127,7 +127,7 @@ export async function getProductsByCategory(categoryId: number): Promise<Product
       .orderBy('name')
       .execute()
 
-    return products
+    return products as ProductJsonResponse[]
   }
   catch (error) {
     if (error instanceof Error) {
@@ -152,7 +152,7 @@ export async function getProductByUuid(uuid: string): Promise<ProductJsonRespons
       .where('uuid', '=', uuid)
       .executeTakeFirst()
 
-    return product
+    return product as ProductJsonResponse | undefined
   }
   catch (error) {
     if (error instanceof Error) {
@@ -212,7 +212,7 @@ export async function getProductsByPriceRange(minPrice: number, maxPrice: number
       .orderBy('price')
       .execute()
 
-    return products
+    return products as ProductJsonResponse[]
   }
   catch (error) {
     if (error instanceof Error) {

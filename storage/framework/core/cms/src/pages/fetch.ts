@@ -9,14 +9,14 @@ export async function fetchById(id: number): Promise<PageJsonResponse | undefine
     .selectFrom('pages')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as PageJsonResponse | undefined
 }
 
 /**
  * Fetch all pages
  */
 export async function fetchAll(): Promise<PageJsonResponse[]> {
-  return await db.selectFrom('pages').selectAll().execute()
+  return await db.selectFrom('pages').selectAll().execute() as PageJsonResponse[]
 }
 
 /**
@@ -27,7 +27,7 @@ export async function fetchByTemplate(template: string): Promise<PageJsonRespons
     .selectFrom('pages')
     .where('template', '=', template)
     .selectAll()
-    .execute()
+    .execute() as PageJsonResponse[]
 }
 
 /**
@@ -38,7 +38,7 @@ export async function fetchByAuthor(authorId: number): Promise<PageJsonResponse[
     .selectFrom('pages')
     .where('author_id', '=', authorId)
     .selectAll()
-    .execute()
+    .execute() as PageJsonResponse[]
 }
 
 /**
@@ -49,7 +49,7 @@ export async function fetchByMinViews(minViews: number): Promise<PageJsonRespons
     .selectFrom('pages')
     .where('views', '>=', minViews)
     .selectAll()
-    .execute()
+    .execute() as PageJsonResponse[]
 }
 
 /**
@@ -60,7 +60,7 @@ export async function fetchByMinConversions(minConversions: number): Promise<Pag
     .selectFrom('pages')
     .where('conversions', '>=', minConversions)
     .selectAll()
-    .execute()
+    .execute() as PageJsonResponse[]
 }
 
 /**
@@ -71,5 +71,5 @@ export async function fetchPublishedAfter(timestamp: number): Promise<PageJsonRe
     .selectFrom('pages')
     .where('published_at', '>', timestamp)
     .selectAll()
-    .execute()
+    .execute() as PageJsonResponse[]
 }

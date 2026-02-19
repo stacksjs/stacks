@@ -317,7 +317,7 @@ function generateOptimizationSuggestions(explainResult: any, logRecord: QueryLog
 async function storeQueryLog(logRecord: QueryLogRecord): Promise<void> {
   try {
     // Use bun-query-builder's table().insert() syntax
-    await db.table('query_logs').insert(logRecord).execute()
+    await db.table('query_logs').insert(logRecord as unknown as Record<string, unknown>).execute()
   }
   catch (error) {
     log.error('Failed to store query log:', error)

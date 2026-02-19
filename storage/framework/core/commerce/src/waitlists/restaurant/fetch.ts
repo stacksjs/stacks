@@ -10,14 +10,14 @@ export async function fetchById(id: number): Promise<WaitlistRestaurantJsonRespo
     .selectFrom('waitlist_restaurants')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as WaitlistRestaurantJsonResponse | undefined
 }
 
 /**
  * Fetch all restaurant waitlist entries
  */
 export async function fetchAll(): Promise<WaitlistRestaurantJsonResponse[]> {
-  return await db.selectFrom('waitlist_restaurants').selectAll().execute()
+  return await db.selectFrom('waitlist_restaurants').selectAll().execute() as WaitlistRestaurantJsonResponse[]
 }
 
 /**
@@ -27,14 +27,11 @@ export async function fetchAll(): Promise<WaitlistRestaurantJsonResponse[]> {
 export async function fetchCountByTablePreference(): Promise<Record<string, number>> {
   const results = await db
     .selectFrom('waitlist_restaurants')
-    .select([
-      'table_preference',
-      (eb: any) => eb.fn.count('id').as('count'),
-    ])
+    .select(['table_preference', (eb: any) => eb.fn.count('id').as('count')] as any)
     .groupBy('table_preference')
-    .execute()
+    .execute() as { table_preference: string, count: number }[]
 
-  return results.reduce((acc: any, { table_preference, count }: any) => {
+  return results.reduce((acc: Record<string, number>, { table_preference, count }) => {
     acc[table_preference as string] = count
     return acc
   }, {} as Record<string, number>)
@@ -57,10 +54,10 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
 
   const result = await db
     .selectFrom('waitlist_restaurants')
-    .select((eb: any) => eb.fn.count('id').as('count'))
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
     .where('created_at', '>=', startDateStr)
     .where('created_at', '<=', endDateStr)
-    .executeTakeFirst()
+    .executeTakeFirst() as { count: number } | undefined
 
   return result?.count ?? 0
 }
@@ -73,9 +70,9 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
 export async function fetchCountByPartySize(partySize: number): Promise<number> {
   const result = await db
     .selectFrom('waitlist_restaurants')
-    .select((eb: any) => eb.fn.count('id').as('count'))
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
     .where('party_size', '=', partySize)
-    .executeTakeFirst()
+    .executeTakeFirst() as { count: number } | undefined
 
   return result?.count ?? 0
 }
@@ -87,14 +84,11 @@ export async function fetchCountByPartySize(partySize: number): Promise<number> 
 export async function fetchCountByAllPartySizes(): Promise<Record<number, number>> {
   const results = await db
     .selectFrom('waitlist_restaurants')
-    .select([
-      'party_size',
-      (eb: any) => eb.fn.count('id').as('count'),
-    ])
+    .select(['party_size', (eb: any) => eb.fn.count('id').as('count')] as any)
     .groupBy('party_size')
-    .execute()
+    .execute() as { party_size: number, count: number }[]
 
-  return results.reduce((acc: any, { party_size, count }: any) => {
+  return results.reduce((acc: Record<number, number>, { party_size, count }) => {
     acc[party_size] = count
     return acc
   }, {} as Record<number, number>)
@@ -118,7 +112,7 @@ export async function fetchBetweenDates(
     .selectAll()
     .where('created_at', '>=', startDateStr)
     .where('created_at', '<=', endDateStr)
-    .execute()
+    .execute() as WaitlistRestaurantJsonResponse[]
 }
 
 /**
@@ -140,7 +134,7 @@ export async function fetchSeatedBetweenDates(
     .where('check_in_time', '>=', startDateStr)
     .where('check_in_time', '<=', endDateStr)
     .where('status', '=', 'seated')
-    .execute()
+    .execute() as WaitlistRestaurantJsonResponse[]
 }
 
 /**
@@ -152,7 +146,7 @@ export async function fetchWaiting(): Promise<WaitlistRestaurantJsonResponse[]> 
     .selectFrom('waitlist_restaurants')
     .selectAll()
     .where('status', '=', 'waiting')
-    .execute()
+    .execute() as WaitlistRestaurantJsonResponse[]
 }
 
 /**
@@ -165,19 +159,16 @@ export async function fetchConversionRates(): Promise<{
 }> {
   const results = await db
     .selectFrom('waitlist_restaurants')
-    .select([
-      'status',
-      (eb: any) => eb.fn.count('id').as('count'),
-    ])
+    .select(['status', (eb: any) => eb.fn.count('id').as('count')] as any)
     .groupBy('status')
-    .execute()
+    .execute() as { status: string, count: number }[]
 
-  const totalCount = results.reduce((sum: any, { count }: any) => sum + count, 0)
-  const seatedCount = results.find((r: any) => r.status === 'seated')?.count ?? 0
+  const totalCount = results.reduce((sum: number, { count }) => sum + count, 0)
+  const seatedCount = results.find((r) => r.status === 'seated')?.count ?? 0
 
-  const totalConversionRate = totalCount > 0 ? (seatedCount / totalCount) * 100 : 0
+  const totalConversionRate = totalCount > 0 ? (Number(seatedCount) / totalCount) * 100 : 0
 
-  const statusBreakdown = results.reduce((acc: any, { status, count }: any) => {
+  const statusBreakdown = results.reduce((acc: Record<string, { count: number, percentage: number }>, { status, count }) => {
     acc[status as string] = {
       count,
       percentage: totalCount > 0 ? (count / totalCount) * 100 : 0,
@@ -201,15 +192,12 @@ export async function fetchAverageWaitTimes(): Promise<{
 }> {
   const result = await db
     .selectFrom('waitlist_restaurants')
-    .select([
-      (eb: any) => eb.fn.avg('quoted_wait_time').as('avg_quoted_wait_time'),
-      (eb: any) => eb.fn.avg('actual_wait_time').as('avg_actual_wait_time'),
-    ])
-    .executeTakeFirst()
+    .select([(eb: any) => eb.fn.avg('quoted_wait_time').as('avg_quoted_wait_time'), (eb: any) => eb.fn.avg('actual_wait_time').as('avg_actual_wait_time')] as any)
+    .executeTakeFirst() as { avg_quoted_wait_time: number, avg_actual_wait_time: number } | undefined
 
   return {
-    averageQuotedWaitTime: (result as any)?.avg_quoted_wait_time ?? 0,
-    averageActualWaitTime: (result as any)?.avg_actual_wait_time ?? 0,
+    averageQuotedWaitTime: result?.avg_quoted_wait_time ?? 0,
+    averageActualWaitTime: result?.avg_actual_wait_time ?? 0,
   }
 }
 
@@ -226,7 +214,7 @@ export async function fetchWaitingWithQuotedTimes(): Promise<{
     .selectFrom('waitlist_restaurants')
     .selectAll()
     .where('status', '=', 'waiting')
-    .execute()
+    .execute() as WaitlistRestaurantJsonResponse[]
 
   const totalQuotedWaitTime = waitingEntries.reduce((sum: any, entry: any) => sum + (entry.quoted_wait_time ?? 0), 0)
   const averageQuotedWaitTime = waitingEntries.length > 0 ? totalQuotedWaitTime / waitingEntries.length : 0
@@ -252,7 +240,7 @@ export async function fetchWaitingWithPartySizes(): Promise<{
     .selectFrom('waitlist_restaurants')
     .selectAll()
     .where('status', '=', 'waiting')
-    .execute()
+    .execute() as WaitlistRestaurantJsonResponse[]
 
   const totalPartySize = waitingEntries.reduce((sum: any, entry: any) => sum + entry.party_size, 0)
   const averagePartySize = waitingEntries.length > 0 ? totalPartySize / waitingEntries.length : 0
@@ -264,7 +252,7 @@ export async function fetchWaitingWithPartySizes(): Promise<{
   }, {} as Record<number, number>)
 
   return {
-    entries: waitingEntries,
+    entries: waitingEntries as WaitlistRestaurantJsonResponse[],
     totalPartySize,
     averagePartySize,
     partySizeBreakdown,
@@ -350,21 +338,18 @@ export async function fetchSeatingRate(
 
   const results = await db
     .selectFrom('waitlist_restaurants')
-    .select([
-      'status',
-      (eb: any) => eb.fn.count('id').as('count'),
-    ])
+    .select(['status', (eb: any) => eb.fn.count('id').as('count')] as any)
     .where('check_in_time', '>=', startDateStr)
     .where('check_in_time', '<=', endDateStr)
     .groupBy('status')
-    .execute()
+    .execute() as { status: string, count: number }[]
 
-  const totalEntries = results.reduce((sum: any, { count }: any) => sum + count, 0)
-  const seatedCount = results.find((r: any) => r.status === 'seated')?.count ?? 0
+  const totalEntries = results.reduce((sum: number, { count }) => sum + count, 0)
+  const seatedCount = results.find((r) => r.status === 'seated')?.count ?? 0
 
-  const seatingRate = totalEntries > 0 ? (seatedCount / totalEntries) * 100 : 0
+  const seatingRate = totalEntries > 0 ? (Number(seatedCount) / totalEntries) * 100 : 0
 
-  const statusBreakdown = results.reduce((acc: any, { status, count }: any) => {
+  const statusBreakdown = results.reduce((acc: Record<string, { count: number, percentage: number }>, { status, count }) => {
     acc[status as string] = {
       count,
       percentage: totalEntries > 0 ? (count / totalEntries) * 100 : 0,
@@ -408,21 +393,21 @@ export async function fetchNoShowStats(
     .where('check_in_time', '>=', startDateStr)
     .where('check_in_time', '<=', endDateStr)
 
-  // Build base query for total entries
-  const totalQuery = db
+  // Build base query for total entries - use expression builder for count
+  const totalResult = await db
     .selectFrom('waitlist_restaurants')
-    .select((eb: any) => eb.fn.count('id').as('count'))
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
     .where('check_in_time', '>=', startDateStr)
     .where('check_in_time', '<=', endDateStr)
+    .executeTakeFirst() as { count: number } | undefined
 
   // Execute queries
   const noShowEntries = await noShowQuery.execute()
-  const totalEntries = await totalQuery.executeTakeFirst()
 
   const totalNoShows = noShowEntries.length
 
-  const noShowRate = (totalEntries as any)?.count && (totalEntries as any).count > 0
-    ? (totalNoShows / (totalEntries as any).count) * 100
+  const noShowRate = totalResult?.count && totalResult.count > 0
+    ? (totalNoShows / totalResult.count) * 100
     : 0
 
   // Calculate average quoted wait time for no-shows

@@ -31,11 +31,10 @@ let revokedCount = 0
 if (pruneExpired) {
   log.info('Removing expired tokens...')
 
-  const expiredResult = await db.deleteFrom('personal_access_tokens')
+  expiredCount = await db.deleteFrom('personal_access_tokens')
     .where('expires_at', '<', sql.raw('NOW()'))
     .execute()
 
-  expiredCount = Number(expiredResult.numDeletedRows || 0)
   log.success(`Removed ${expiredCount} expired token(s)`)
 }
 
@@ -46,12 +45,11 @@ if (pruneRevoked) {
   const cutoffDate = new Date()
   cutoffDate.setDate(cutoffDate.getDate() - daysOld)
 
-  const revokedResult = await db.deleteFrom('personal_access_tokens')
+  revokedCount = await db.deleteFrom('personal_access_tokens')
     .where('revoked_at', 'is not', null)
     .where('revoked_at', '<', cutoffDate.toISOString())
     .execute()
 
-  revokedCount = Number(revokedResult.numDeletedRows || 0)
   log.success(`Removed ${revokedCount} revoked token(s)`)
 }
 

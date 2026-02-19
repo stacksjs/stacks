@@ -11,16 +11,16 @@ function processCouponData(coupon: CouponJsonResponse): CouponJsonResponse {
   // Create a copy to avoid modifying the original object
   const processed = { ...coupon }
 
-  if (processed.end_date) {
-    processed.end_date = extractDate(new Date(processed.end_date))
+  if (processed.endDate) {
+    processed.endDate = extractDate(new Date(processed.endDate))
   }
-  if (processed.start_date) {
-    processed.start_date = extractDate(new Date(processed.start_date))
+  if (processed.startDate) {
+    processed.startDate = extractDate(new Date(processed.startDate))
   }
 
-  // Convert is_active to boolean if needed
-  if (processed.is_active !== undefined) {
-    processed.is_active = Boolean(processed.is_active)
+  // Convert isActive to boolean if needed
+  if (processed.isActive !== undefined) {
+    processed.isActive = Boolean(processed.isActive)
   }
 
   return processed
@@ -35,7 +35,7 @@ export async function fetchAll(): Promise<CouponJsonResponse[]> {
     .selectAll()
     .execute()
 
-  return coupons.map(processCouponData)
+  return (coupons as CouponJsonResponse[]).map(processCouponData)
 }
 
 /**
@@ -49,7 +49,7 @@ export async function fetchById(id: number): Promise<CouponJsonResponse | undefi
     .executeTakeFirst()
 
   if (coupon) {
-    return processCouponData(coupon)
+    return processCouponData(coupon as CouponJsonResponse)
   }
 
   return undefined
@@ -66,7 +66,7 @@ export async function fetchByCode(code: string): Promise<CouponJsonResponse | un
     .executeTakeFirst()
 
   if (coupon) {
-    return processCouponData(coupon)
+    return processCouponData(coupon as CouponJsonResponse)
   }
 
   return undefined
@@ -86,7 +86,7 @@ export async function fetchActive(): Promise<CouponJsonResponse[]> {
     .selectAll()
     .execute()
 
-  return coupons.map(processCouponData)
+  return (coupons as CouponJsonResponse[]).map(processCouponData)
 }
 
 /**
@@ -96,8 +96,8 @@ export async function fetchStats(): Promise<CouponStats> {
   // Total coupons
   const totalCoupons = await db
     .selectFrom('coupons')
-    .select((eb: any) => eb.fn.count('id').as('count'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   // Active coupons
   const currentDate = formatDate(new Date())
@@ -106,15 +106,15 @@ export async function fetchStats(): Promise<CouponStats> {
     .where('is_active', '=', true)
     .where('start_date', '<=', currentDate)
     .where('end_date', '>=', currentDate)
-    .select((eb: any) => eb.fn.count('id').as('count'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   // Coupons by discount type
   const couponsByType = await db
     .selectFrom('coupons')
-    .select(['discount_type', (eb: any) => eb.fn.count('id').as('count')])
+    .select(['discount_type', (eb: any) => eb.fn.count('id').as('count')] as any)
     .groupBy('discount_type')
-    .execute()
+    .execute() as { discount_type: string, count: number }[]
 
   // Most used coupons
   const mostUsedCoupons = await db
@@ -122,7 +122,7 @@ export async function fetchStats(): Promise<CouponStats> {
     .select(['id', 'code', 'discount_type', 'discount_value', 'usage_count'])
     .orderBy('usage_count', 'desc')
     .limit(5)
-    .execute()
+    .execute() as { id: number, code: string, discount_type: string, discount_value: number, usage_count: number }[]
 
   // Upcoming coupons (active but not yet started)
   const upcomingCoupons = await db
@@ -132,7 +132,7 @@ export async function fetchStats(): Promise<CouponStats> {
     .select(['id', 'code', 'discount_type', 'discount_value', 'start_date', 'end_date'])
     .orderBy('start_date', 'asc')
     .limit(5)
-    .execute()
+    .execute() as { id: number, code: string, discount_type: string, discount_value: number, start_date: string | Date, end_date: string | Date }[]
 
   return {
     total: Number(totalCoupons?.count || 0),
@@ -191,7 +191,7 @@ async function fetchCountsForPeriod(
   endDate: Date | null,
   currentDate: Date,
 ): Promise<CouponCountStats> {
-  let query = db.selectFrom('coupons')
+  let query = db.selectFrom('coupons') as any
 
   // Apply date filter if startDate is provided
   if (startDate) {
@@ -205,12 +205,12 @@ async function fetchCountsForPeriod(
 
   // Get total count
   const totalResult = await query
-    .select(db.fn.count('id').as('count'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   // Get active count (is_active = true, start_date <= current date, end_date >= current date)
   // Create a new query instead of cloning
-  let activeQuery = db.selectFrom('coupons')
+  let activeQuery = db.selectFrom('coupons') as any
 
   // Apply the same date filters as the total query if needed
   if (startDate) {
@@ -228,8 +228,8 @@ async function fetchCountsForPeriod(
     .where('end_date', '>=', currentDate)
 
   const activeResult = await activeQuery
-    .select(db.fn.count('id').as('count'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   // Calculate counts
   const total = Number(totalResult?.count || 0)
@@ -252,23 +252,20 @@ export async function fetchCouponCountsByType(): Promise<Record<string, CouponCo
   // Get all discount types
   const discountTypes = await db
     .selectFrom('coupons')
-    .select('discount_type')
+    .select('discount_type' as any)
     .distinct()
-    .execute()
+    .execute() as { discount_type: string }[]
 
   const result: Record<string, CouponCountStats> = {}
 
   // For each discount type, get the counts
   for (const { discount_type } of discountTypes) {
-    // Base query for this discount type
-    const query = db
+    // Total count for this type
+    const totalResult = await db
       .selectFrom('coupons')
       .where('discount_type', '=', discount_type)
-
-    // Total count for this type
-    const totalResult = await query
-      .select(db.fn.count('id').as('count'))
-      .executeTakeFirst()
+      .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+      .executeTakeFirst() as { count: number } | undefined
 
     // Active count for this type - create a new query instead of cloning
     const activeResult = await db
@@ -277,8 +274,8 @@ export async function fetchCouponCountsByType(): Promise<Record<string, CouponCo
       .where('is_active', '=', true)
       .where('start_date', '<=', currentDate)
       .where('end_date', '>=', currentDate)
-      .select(db.fn.count('id').as('count'))
-      .executeTakeFirst()
+      .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+      .executeTakeFirst() as { count: number } | undefined
 
     const total = Number(totalResult?.count || 0)
     const active = Number(activeResult?.count || 0)
@@ -300,8 +297,8 @@ export async function fetchRedemptionStats(): Promise<CouponRedemptionStats> {
   // Total redemptions (sum of all usage_count)
   const totalResult = await db
     .selectFrom('coupons')
-    .select(db.fn.sum('usage_count').as('total'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.sum('usage_count').as('total')) as any)
+    .executeTakeFirst() as { total: number } | undefined
 
   const currentDate = new Date()
 
@@ -319,29 +316,29 @@ export async function fetchRedemptionStats(): Promise<CouponRedemptionStats> {
   const weekResult = await db
     .selectFrom('coupons')
     .where('updated_at', '>=', weekStart.toISOString())
-    .select(db.fn.sum('usage_count').as('total'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.sum('usage_count').as('total')) as any)
+    .executeTakeFirst() as { total: number } | undefined
 
   // Monthly redemptions
   const monthResult = await db
     .selectFrom('coupons')
     .where('updated_at', '>=', monthStart.toISOString())
-    .select(db.fn.sum('usage_count').as('total'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.sum('usage_count').as('total')) as any)
+    .executeTakeFirst() as { total: number } | undefined
 
   // Yearly redemptions
   const yearResult = await db
     .selectFrom('coupons')
     .where('updated_at', '>=', yearStart.toISOString())
-    .select(db.fn.sum('usage_count').as('total'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.sum('usage_count').as('total')) as any)
+    .executeTakeFirst() as { total: number } | undefined
 
   // Redemptions by discount type
   const byTypeResults = await db
     .selectFrom('coupons')
-    .select(['discount_type', db.fn.sum('usage_count').as('total')])
+    .select(['discount_type', (eb: any) => eb.fn.sum('usage_count').as('total')] as any)
     .groupBy('discount_type')
-    .execute()
+    .execute() as { discount_type: string, total: number }[]
 
   const byType: Record<string, number> = {}
   byTypeResults.forEach((item: any) => {
@@ -435,15 +432,15 @@ export async function fetchConversionRate(): Promise<{
     .where('is_active', '=', true)
     .where('start_date', '<=', currentDate)
     .where('end_date', '>=', currentDate)
-    .select(db.fn.count('id').as('count'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   // Get count of coupons with usage > 0
   const redeemedResult = await db
     .selectFrom('coupons')
     .where('usage_count', '>', 0)
-    .select(db.fn.count('id').as('count'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   const totalActive = Number(activeResult?.count || 0)
   const totalRedeemed = Number(redeemedResult?.count || 0)
@@ -479,20 +476,20 @@ export async function getActiveCouponsMoMChange(): Promise<{
   // Get active coupons for current month
   const currentMonthActive = await db
     .selectFrom('coupons')
-    .select(db.fn.count('id').as('count'))
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
     .where('is_active', '=', true)
     .where('start_date', '<=', today)
     .where('end_date', '>=', currentMonthStart)
-    .executeTakeFirst()
+    .executeTakeFirst() as { count: number } | undefined
 
   // Get active coupons for previous month
   const previousMonthActive = await db
     .selectFrom('coupons')
-    .select(db.fn.count('id').as('count'))
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
     .where('is_active', '=', true)
     .where('start_date', '<=', previousMonthEnd)
     .where('end_date', '>=', previousMonthStart)
-    .executeTakeFirst()
+    .executeTakeFirst() as { count: number } | undefined
 
   const currentCount = Number(currentMonthActive?.count || 0)
   const previousCount = Number(previousMonthActive?.count || 0)

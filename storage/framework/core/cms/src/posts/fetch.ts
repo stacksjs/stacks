@@ -9,14 +9,14 @@ export async function fetchById(id: number): Promise<PostJsonResponse | undefine
     .selectFrom('posts')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as PostJsonResponse | undefined
 }
 
 /**
  * Fetch all posts
  */
 export async function fetchAll(): Promise<PostJsonResponse[]> {
-  return await db.selectFrom('posts').selectAll().execute()
+  return await db.selectFrom('posts').selectAll().execute() as PostJsonResponse[]
 }
 
 /**
@@ -27,7 +27,7 @@ export async function fetchByStatus(status: 'published' | 'draft' | 'archived'):
     .selectFrom('posts')
     .where('status', '=', status)
     .selectAll()
-    .execute()
+    .execute() as PostJsonResponse[]
 }
 
 /**
@@ -38,7 +38,7 @@ export async function fetchByCategory(category: string): Promise<PostJsonRespons
     .selectFrom('posts')
     .where('category', '=', category)
     .selectAll()
-    .execute()
+    .execute() as PostJsonResponse[]
 }
 
 /**
@@ -49,7 +49,7 @@ export async function fetchByAuthor(author: string): Promise<PostJsonResponse[]>
     .selectFrom('posts')
     .where('author', '=', author)
     .selectAll()
-    .execute()
+    .execute() as PostJsonResponse[]
 }
 
 /**
@@ -60,7 +60,7 @@ export async function fetchByMinViews(minViews: number): Promise<PostJsonRespons
     .selectFrom('posts')
     .where('views', '>=', minViews)
     .selectAll()
-    .execute()
+    .execute() as PostJsonResponse[]
 }
 
 /**
@@ -71,5 +71,5 @@ export async function fetchPublishedAfter(timestamp: number): Promise<PostJsonRe
     .selectFrom('posts')
     .where('published_at', '>', timestamp)
     .selectAll()
-    .execute()
+    .execute() as PostJsonResponse[]
 }

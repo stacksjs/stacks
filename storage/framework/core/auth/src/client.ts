@@ -10,10 +10,10 @@ export async function createPersonalAccessClient(): Promise<Ok<string, never>> {
   const result = await db.unsafe(`
     INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
-  `, ['Personal Access Client', secret, 'local', 'http://localhost', 1, 0, 0]).execute()
+  `, ['Personal Access Client', secret, 'local', 'http://localhost', 1, 0, 0])
 
   // Get the last inserted row ID
-  const lastId = await db.unsafe('SELECT last_insert_rowid() as id').execute()
+  const lastId = await db.unsafe('SELECT last_insert_rowid() as id')
   const insertId = (lastId as any)?.[0]?.id || 1
 
   if (!insertId)

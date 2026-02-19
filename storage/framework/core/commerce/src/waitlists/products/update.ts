@@ -22,15 +22,15 @@ export async function update(id: number, data: WaitlistProductUpdate): Promise<W
         email: data.email,
         phone: data.phone,
         quantity: data.quantity,
-        notification_preference: data.notification_preference,
+        notificationPreference: data.notificationPreference,
         source: data.source,
         notes: data.notes,
         status: data.status,
         product_id: data.product_id,
         customer_id: data.customer_id,
-        notified_at: data.notified_at,
-        purchased_at: data.purchased_at,
-        cancelled_at: data.cancelled_at,
+        notifiedAt: data.notifiedAt,
+        purchasedAt: data.purchasedAt,
+        cancelledAt: data.cancelledAt,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
@@ -40,7 +40,7 @@ export async function update(id: number, data: WaitlistProductUpdate): Promise<W
     if (!result)
       throw new Error('Failed to update waitlist product')
 
-    return result
+    return result as WaitlistProductJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -76,7 +76,7 @@ export async function updateStatus(
     if (!result)
       throw new Error('Failed to update waitlist product status')
 
-    return result
+    return result as WaitlistProductJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -112,7 +112,7 @@ export async function updatePartySize(
     if (!result)
       throw new Error('Failed to update party size')
 
-    return result
+    return result as WaitlistProductJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

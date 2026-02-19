@@ -12,7 +12,7 @@ type NewOrder = NewModelData<typeof Order>
  * @returns The newly created order record
  */
 export async function store(data: NewOrder): Promise<OrderJsonResponse | undefined> {
-  const orderData: NewOrder = {
+  const orderData = {
     ...data,
     status: data.status || 'PENDING',
     uuid: randomUUIDv7(),
@@ -24,7 +24,7 @@ export async function store(data: NewOrder): Promise<OrderJsonResponse | undefin
     // Insert the order record
     const createdOrder = await db
       .insertInto('orders')
-      .values(orderData)
+      .values(orderData as NewOrder)
       .executeTakeFirst()
 
     const insertId = Number(createdOrder?.insertId) || Number(createdOrder?.numInsertedOrUpdatedRows)
@@ -37,7 +37,7 @@ export async function store(data: NewOrder): Promise<OrderJsonResponse | undefin
         .selectAll()
         .executeTakeFirst()
 
-      return order
+      return order as OrderJsonResponse | undefined
     }
 
     return undefined

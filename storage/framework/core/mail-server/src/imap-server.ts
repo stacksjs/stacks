@@ -7,7 +7,7 @@
 import { createServer, type Socket } from 'net'
 import { createServer as createTlsServer } from 'tls'
 import { readFileSync, existsSync } from 'fs'
-import { S3Client } from 'ts-cloud/aws'
+import { S3Client } from '@stacksjs/ts-cloud/aws'
 import { createHash } from 'crypto'
 
 interface User {

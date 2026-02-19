@@ -25,7 +25,7 @@ export async function store(data: NewProductVariant): Promise<ProductVariantJson
     if (!result)
       throw new Error('Failed to create product variant')
 
-    return result
+    return result as ProductVariantJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -49,7 +49,7 @@ export async function bulkStore(data: NewProductVariant[]): Promise<number> {
   let createdCount = 0
 
   try {
-    await db.transaction().execute(async (trx: any) => {
+    await (db as any).transaction().execute(async (trx: any) => {
       for (const variant of data) {
         const variantData = {
           ...variant,

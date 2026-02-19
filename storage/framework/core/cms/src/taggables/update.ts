@@ -28,7 +28,7 @@ export async function update(id: number, data: UpdateTagData): Promise<TaggableT
 
     const result = await db
       .updateTable('taggables')
-      .set(data)
+      .set(data as unknown as Record<string, unknown>)
       .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
@@ -36,7 +36,7 @@ export async function update(id: number, data: UpdateTagData): Promise<TaggableT
     if (!result)
       throw new Error('Failed to update tag')
 
-    return result
+    return result as unknown as TaggableTable
   }
   catch (error) {
     if (error instanceof Error)

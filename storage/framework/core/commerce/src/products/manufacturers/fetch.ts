@@ -3,7 +3,7 @@ import type { FetchManufacturersOptions, ManufacturerResponse } from '../../type
 import { db } from '@stacksjs/database'
 
 export function fetchAll(): Promise<ManufacturerJsonResponse[]> {
-  return db.selectFrom('manufacturers').selectAll().execute()
+  return db.selectFrom('manufacturers').selectAll().execute() as Promise<ManufacturerJsonResponse[]>
 }
 
 /**
@@ -14,7 +14,7 @@ export async function fetchById(id: number): Promise<ManufacturerJsonResponse | 
     .selectFrom('manufacturers')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as ManufacturerJsonResponse | undefined
 }
 
 /**
@@ -25,7 +25,7 @@ export async function fetchByUuid(uuid: string): Promise<ManufacturerJsonRespons
     .selectFrom('manufacturers')
     .where('uuid', '=', uuid)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as ManufacturerJsonResponse | undefined
 }
 
 /**
@@ -38,7 +38,7 @@ export async function fetchFeatured(limit: number = 10): Promise<ManufacturerJso
     .selectAll()
     .orderBy('manufacturer', 'asc')
     .limit(limit)
-    .execute()
+    .execute() as ManufacturerJsonResponse[]
 }
 
 /**
@@ -58,8 +58,8 @@ export async function fetchByCountry(country: string, options: FetchManufacturer
 
   // Get total count for pagination
   const countResult = await countQuery
-    .select((eb: any) => eb.fn.count('id').as('total'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.count('id').as('total')) as any)
+    .executeTakeFirst() as { total: number } | undefined
 
   const total = Number(countResult?.total || 0)
 
@@ -74,7 +74,7 @@ export async function fetchByCountry(country: string, options: FetchManufacturer
   const totalPages = Math.ceil(total / limit)
 
   return {
-    data: manufacturers,
+    data: manufacturers as ManufacturerJsonResponse[],
     paging: {
       total_records: total,
       page,
@@ -90,7 +90,7 @@ export async function fetchByCountry(country: string, options: FetchManufacturer
 export async function fetchWithProductCount(options: FetchManufacturersOptions = {}): Promise<ManufacturerJsonResponse[]> {
   // Start building the query
   const query = db.selectFrom('manufacturers as m')
-    .leftJoin('products as p', 'p.manufacturer_id', 'm.id')
+    .leftJoin('products as p', 'p.manufacturer_id', '=', 'm.id')
     .select([
       'm.id',
       'm.uuid',
@@ -101,8 +101,8 @@ export async function fetchWithProductCount(options: FetchManufacturersOptions =
       'm.created_at',
       'm.updated_at',
       (eb: any) => eb.fn.count('p.id').as('product_count'),
-    ])
-    .groupBy('m.id')
+    ] as any)
+    .groupBy('m.id') as any
 
   // Apply filters if provided
   if (options.country)
@@ -112,5 +112,5 @@ export async function fetchWithProductCount(options: FetchManufacturersOptions =
     query.where('m.featured', '=', options.featured)
 
   // Return all manufacturers
-  return query.execute()
+  return query.execute() as Promise<ManufacturerJsonResponse[]>
 }

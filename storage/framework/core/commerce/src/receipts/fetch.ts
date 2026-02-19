@@ -10,14 +10,14 @@ export async function fetchById(id: number): Promise<ReceiptJsonResponse | undef
     .selectFrom('receipts')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as ReceiptJsonResponse | undefined
 }
 
 /**
  * Fetch all print logs
  */
 export async function fetchAll(): Promise<ReceiptJsonResponse[]> {
-  return await db.selectFrom('receipts').selectAll().execute()
+  return await db.selectFrom('receipts').selectAll().execute() as ReceiptJsonResponse[]
 }
 
 /**
@@ -43,15 +43,15 @@ export async function fetchPrintJobStats(
     .selectFrom('receipts')
     .where('timestamp', '>=', formatDate(startDate))
     .where('timestamp', '<=', endDate)
-    .select([
-      db.fn.count('id').as('total'),
-      (db.fn.count('id') as any).filterWhere('status', '=', 'success').as('success'),
-      (db.fn.count('id') as any).filterWhere('status', '=', 'failed').as('failed'),
-      (db.fn.count('id') as any).filterWhere('status', '=', 'warning').as('warning'),
-      db.fn.avg('size').as('averageSize'),
-      db.fn.avg('pages').as('averagePages'),
-      db.fn.avg('duration').as('averageDuration'),
-    ])
+    .select(((eb: any) => [
+      eb.fn.count('id').as('total'),
+      eb.fn.count('id').filterWhere('status', '=', 'success').as('success'),
+      eb.fn.count('id').filterWhere('status', '=', 'failed').as('failed'),
+      eb.fn.count('id').filterWhere('status', '=', 'warning').as('warning'),
+      eb.fn.avg('size').as('averageSize'),
+      eb.fn.avg('pages').as('averagePages'),
+      eb.fn.avg('duration').as('averageDuration'),
+    ]) as any)
     .executeTakeFirst()
 
   return {
@@ -86,12 +86,12 @@ export async function fetchSuccessRate(
     .selectFrom('receipts')
     .where('timestamp', '>=', formatDate(startDate))
     .where('timestamp', '<=', formatDate(endDate))
-    .select([
-      db.fn.count('id').as('total'),
-      (db.fn.count('id') as any).filterWhere('status', '=', 'success').as('success'),
-      (db.fn.count('id') as any).filterWhere('status', '=', 'failed').as('failed'),
-      (db.fn.count('id') as any).filterWhere('status', '=', 'warning').as('warning'),
-    ])
+    .select(((eb: any) => [
+      eb.fn.count('id').as('total'),
+      eb.fn.count('id').filterWhere('status', '=', 'success').as('success'),
+      eb.fn.count('id').filterWhere('status', '=', 'failed').as('failed'),
+      eb.fn.count('id').filterWhere('status', '=', 'warning').as('warning'),
+    ]) as any)
     .executeTakeFirst()
 
   const total = (stats as any)?.total || 0
@@ -130,11 +130,11 @@ export async function fetchPageStats(
     .selectFrom('receipts')
     .where('timestamp', '>=', formatDate(startDate))
     .where('timestamp', '<=', formatDate(endDate))
-    .select([
-      db.fn.count('id').as('totalReceipts'),
-      db.fn.sum('pages').as('totalPages'),
-      db.fn.avg('pages').as('averagePagesPerReceipt'),
-    ])
+    .select(((eb: any) => [
+      eb.fn.count('id').as('totalReceipts'),
+      eb.fn.sum('pages').as('totalPages'),
+      eb.fn.avg('pages').as('averagePagesPerReceipt'),
+    ]) as any)
     .executeTakeFirst()
 
   return {
@@ -164,12 +164,12 @@ export async function fetchPrintTimeStats(
     .selectFrom('receipts')
     .where('timestamp', '>=', formatDate(startDate))
     .where('timestamp', '<=', formatDate(endDate))
-    .select([
-      db.fn.count('id').as('totalJobs'),
-      db.fn.avg('duration').as('averageDuration'),
-      db.fn.min('duration').as('minDuration'),
-      db.fn.max('duration').as('maxDuration'),
-    ])
+    .select(((eb: any) => [
+      eb.fn.count('id').as('totalJobs'),
+      eb.fn.avg('duration').as('averageDuration'),
+      eb.fn.min('duration').as('minDuration'),
+      eb.fn.max('duration').as('maxDuration'),
+    ]) as any)
     .executeTakeFirst()
 
   return {

@@ -11,21 +11,21 @@ import { db } from '@stacksjs/database'
  */
 export async function store(data: NewCart): Promise<CartJsonResponse> {
   try {
-    const cartData: NewCart = {
+    const cartData = {
       ...data,
       uuid: randomUUIDv7(),
     }
 
     const result = await db
       .insertInto('carts')
-      .values(cartData)
+      .values(cartData as NewCart)
       .returningAll()
       .executeTakeFirst()
 
     if (!result)
       throw new Error('Failed to create cart')
 
-    return result
+    return result as CartJsonResponse
   }
   catch (error) {
     if (error instanceof Error)
@@ -48,16 +48,16 @@ export async function bulkStore(data: NewCart[]): Promise<number> {
   let createdCount = 0
 
   try {
-    await db.transaction().execute(async (trx: any) => {
+    await (db as any).transaction().execute(async (trx: any) => {
       for (const cart of data) {
-        const cartData: NewCart = {
+        const cartData = {
           ...cart,
           uuid: randomUUIDv7(),
         }
 
         await trx
           .insertInto('carts')
-          .values(cartData)
+          .values(cartData as NewCart)
           .execute()
 
         createdCount++

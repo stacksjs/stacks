@@ -10,7 +10,7 @@ import { db } from '@stacksjs/database'
  * @returns The newly created payment record
  */
 export async function store(data: NewPayment): Promise<PaymentJsonResponse | undefined> {
-  const paymentData: NewPayment = {
+  const paymentData = {
     ...data,
     status: data.status || 'PENDING',
     currency: data.currency || 'USD',
@@ -21,7 +21,7 @@ export async function store(data: NewPayment): Promise<PaymentJsonResponse | und
     // Insert the payment record
     const createdPayment = await db
       .insertInto('payments')
-      .values(paymentData)
+      .values(paymentData as NewPayment)
       .executeTakeFirst()
 
     const insertId = Number(createdPayment.insertId) || Number(createdPayment.numInsertedOrUpdatedRows)
@@ -34,7 +34,7 @@ export async function store(data: NewPayment): Promise<PaymentJsonResponse | und
         .selectAll()
         .executeTakeFirst()
 
-      return payment
+      return payment as PaymentJsonResponse | undefined
     }
 
     return undefined

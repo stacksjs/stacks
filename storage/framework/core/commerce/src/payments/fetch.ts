@@ -33,7 +33,7 @@ export async function fetchAll(): Promise<PaymentJsonResponse[]> {
   return await db
     .selectFrom('payments')
     .selectAll()
-    .execute()
+    .execute() as PaymentJsonResponse[]
 }
 
 export async function fetchById(id: number): Promise<PaymentJsonResponse | undefined> {
@@ -41,7 +41,7 @@ export async function fetchById(id: number): Promise<PaymentJsonResponse | undef
     .selectFrom('payments')
     .selectAll()
     .where('id', '=', id)
-    .executeTakeFirst()
+    .executeTakeFirst() as PaymentJsonResponse | undefined
 }
 
 /**
@@ -66,34 +66,34 @@ export async function fetchPaymentStats(daysRange: number = 30): Promise<Payment
   // Get current period stats for completed payments
   const currentStats = await db
     .selectFrom('payments')
-    .select([
-      db.fn.count('id').as('transaction_count'),
-      db.fn.sum('amount').as('total_revenue'),
-    ])
+    .select(((eb: any) => [
+      eb.fn.count('id').as('transaction_count'),
+      eb.fn.sum('amount').as('total_revenue'),
+    ]) as any)
     .where('created_at', '>=', formatDate(currentPeriodStart))
     .where('created_at', '<=', formatDate(today))
     .where('status', '=', 'completed')
-    .executeTakeFirst()
+    .executeTakeFirst() as { transaction_count: number, total_revenue: number } | undefined
 
   // Get previous period stats for completed payments
   const previousStats = await db
     .selectFrom('payments')
-    .select([
-      db.fn.count('id').as('transaction_count'),
-      db.fn.sum('amount').as('total_revenue'),
-    ])
+    .select(((eb: any) => [
+      eb.fn.count('id').as('transaction_count'),
+      eb.fn.sum('amount').as('total_revenue'),
+    ]) as any)
     .where('created_at', '>=', formatDate(previousPeriodStart))
     .where('created_at', '<=', formatDate(previousPeriodEnd))
     .where('status', '=', 'completed')
-    .executeTakeFirst()
+    .executeTakeFirst() as { transaction_count: number, total_revenue: number } | undefined
 
   // Get total transactions count (including non-completed ones) for calculating success rate
   const totalTransactions = await db
     .selectFrom('payments')
-    .select(db.fn.count('id').as('count'))
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
     .where('created_at', '>=', formatDate(currentPeriodStart))
     .where('created_at', '<=', formatDate(today))
-    .executeTakeFirst()
+    .executeTakeFirst() as { count: number } | undefined
 
   // Calculate current period stats
   const currentTransactions = Number(currentStats?.transaction_count || 0)
@@ -172,14 +172,14 @@ export async function fetchPaymentStatsByMethod(daysRange: number = 30): Promise
   // Get total stats for the period
   const totalStats = await db
     .selectFrom('payments')
-    .select([
-      db.fn.count('id').as('total_count'),
-      db.fn.sum('amount').as('total_revenue'),
-    ])
+    .select(((eb: any) => [
+      eb.fn.count('id').as('total_count'),
+      eb.fn.sum('amount').as('total_revenue'),
+    ]) as any)
     .where('created_at', '>=', formatDate(startDate))
     .where('created_at', '<=', formatDate(today))
     .where('status', '=', 'completed')
-    .executeTakeFirst()
+    .executeTakeFirst() as { total_count: number, total_revenue: number } | undefined
 
   const totalCount = Number(totalStats?.total_count || 0)
 
@@ -188,14 +188,14 @@ export async function fetchPaymentStatsByMethod(daysRange: number = 30): Promise
     .selectFrom('payments')
     .select([
       'method',
-      db.fn.count('id').as('count'),
-      db.fn.sum('amount').as('revenue'),
-    ])
+      (eb: any) => eb.fn.count('id').as('count'),
+      (eb: any) => eb.fn.sum('amount').as('revenue'),
+    ] as any)
     .where('created_at', '>=', formatDate(startDate))
     .where('created_at', '<=', formatDate(today))
     .where('status', '=', 'completed')
     .groupBy('method')
-    .execute()
+    .execute() as { method: string, count: number, revenue: number }[]
 
   // Format the results
   const result: Record<string, {
@@ -242,18 +242,18 @@ export async function fetchMonthlyPaymentTrends(): Promise<Array<{
   const monthlyData = await db
     .selectFrom('payments')
     .select([
-      (sql as any)`strftime('%Y', created_at)`.as('year'),
-      (sql as any)`strftime('%m', created_at)`.as('month'),
-      db.fn.count('id').as('transactions'),
-      db.fn.sum('amount').as('revenue'),
-    ])
+      (sql`strftime('%Y', created_at)` as any).as('year'),
+      (sql`strftime('%m', created_at)` as any).as('month'),
+      (eb: any) => eb.fn.count('id').as('transactions'),
+      (eb: any) => eb.fn.sum('amount').as('revenue'),
+    ] as any)
     .where('created_at', '>=', formatDate(twelveMonthsAgo))
     .where('status', '=', 'completed')
-    .groupBy(sql`strftime('%Y', created_at)`)
-    .groupBy(sql`strftime('%m', created_at)`)
-    .orderBy('year', 'asc')
-    .orderBy('month', 'asc')
-    .execute()
+    .groupBy(sql`strftime('%Y', created_at)` as any)
+    .groupBy(sql`strftime('%m', created_at)` as any)
+    .orderBy('year' as any, 'asc')
+    .orderBy('month' as any, 'asc')
+    .execute() as { year: string, month: string, transactions: number, revenue: number }[]
 
   // Format the results
   return monthlyData.map((item: any) => {

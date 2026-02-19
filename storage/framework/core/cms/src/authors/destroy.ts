@@ -15,7 +15,7 @@ export async function destroy(id: number): Promise<AuthorJsonResponse | undefine
       .returningAll()
       .executeTakeFirst()
 
-    return result
+    return result as AuthorJsonResponse | undefined
   }
   catch (error) {
     if (error instanceof Error)
@@ -38,7 +38,7 @@ export async function destroyMany(ids: number[]): Promise<number> {
       .where('id', 'in', ids)
       .execute()
 
-    return result.length
+    return Number(result) || 0
   }
   catch (error) {
     if (error instanceof Error)

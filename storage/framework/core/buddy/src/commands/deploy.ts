@@ -117,8 +117,8 @@ async function setupEmailDnsRecords(emailDomain: string, region: string, logger:
   logger.info('Setting up email DNS records...')
 
   try {
-    const { SESClient } = await import('ts-cloud/aws')
-    const { Route53Client } = await import('ts-cloud/aws')
+    const { SESClient } = await import('@stacksjs/ts-cloud/aws')
+    const { Route53Client } = await import('@stacksjs/ts-cloud/aws')
 
     const ses = new SESClient(region)
     const route53 = new Route53Client(region)
@@ -264,7 +264,7 @@ async function setupEmailDnsRecords(emailDomain: string, region: string, logger:
  */
 async function createDefaultMailUser(appName: string, emailDomain: string, region: string, logger: typeof log): Promise<void> {
   try {
-    const { DynamoDBClient } = await import('ts-cloud/aws')
+    const { DynamoDBClient } = await import('@stacksjs/ts-cloud/aws')
     const crypto = await import('crypto')
 
     const dynamodb = new DynamoDBClient(region)
@@ -707,7 +707,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     const stackName = `${appName}-cloud`
 
     // Use ts-cloud's CloudFormation client
-    const { CloudFormationClient } = await import('ts-cloud/aws')
+    const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
 
     // Don't pass AWS_PROFILE when we have static credentials to avoid conflicts
     const cfnClient = new CloudFormationClient(
@@ -2233,7 +2233,7 @@ echo "Mail server setup complete at $(date)"
 
       // Upload mail server code to S3 (if bucket exists)
       try {
-        const { S3Client: S3 } = await import('ts-cloud/aws')
+        const { S3Client: S3 } = await import('@stacksjs/ts-cloud/aws')
         const s3Client = new S3(region)
 
         if (mailServerMode === 'serverless') {
@@ -2332,7 +2332,7 @@ echo "Mail server setup complete at $(date)"
 
           // Upload mail server code to S3 now that bucket exists
           try {
-            const { S3Client: S3 } = await import('ts-cloud/aws')
+            const { S3Client: S3 } = await import('@stacksjs/ts-cloud/aws')
             const s3Client = new S3(region)
             const serverMode = emailConfig?.server?.mode || 'serverless'
 

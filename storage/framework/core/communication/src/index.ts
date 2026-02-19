@@ -66,7 +66,7 @@ export class SmsSDK {
    */
   async send(options: SmsSendOptions): Promise<SmsSendResult> {
     try {
-      const { PinpointClient } = await import('ts-cloud/aws')
+      const { PinpointClient } = await import('@stacksjs/ts-cloud/aws')
       const pinpoint = new PinpointClient(this.region)
 
       // Get app ID if not provided

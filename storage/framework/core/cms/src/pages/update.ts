@@ -27,7 +27,7 @@ export async function update(id: number, data: Partial<PageUpdate>): Promise<Pag
     if (!result)
       throw new Error('Failed to update page')
 
-    return result
+    return result as PageJsonResponse
   }
   catch (error) {
     if (error instanceof Error)

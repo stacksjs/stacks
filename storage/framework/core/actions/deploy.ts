@@ -5,7 +5,7 @@
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
-import type { CloudConfig } from '@ts-cloud/types'
+import type { CloudConfig } from '@stacksjs/ts-cloud-types'
 
 // Load cloud config lazily to avoid import issues
 async function getCloudConfig(): Promise<CloudConfig | null> {
@@ -63,7 +63,7 @@ function mapDiskTypeToAwsVolumeType(diskType: string): string {
  */
 async function getAwsAccountId(region: string): Promise<string> {
   try {
-    const { AWSClient } = await import('ts-cloud/aws')
+    const { AWSClient } = await import('@stacksjs/ts-cloud/aws')
     const client = new AWSClient()
 
     const params = new URLSearchParams({
@@ -876,23 +876,24 @@ async function generateServerlessTemplate(options: {
   const cloudConfig = await getCloudConfig()
   const siteDomain = domain || cloudConfig?.infrastructure?.dns?.domain || 'stacksjs.com'
   const sslConfig = cloudConfig?.infrastructure?.ssl || { enabled: true, provider: 'acm' }
-  const containerConfig = cloudConfig?.infrastructure?.containers?.api || {
+  const computeConfig = cloudConfig?.infrastructure?.compute
+  const serverlessConfig = computeConfig?.serverless || {
     cpu: 512,
     memory: 1024,
-    port: 3000,
     desiredCount: 2,
   }
 
   // Container configuration
-  const cpu = containerConfig.cpu || 512
-  const memory = containerConfig.memory || 1024
-  const port = containerConfig.port || 3000
-  const desiredCount = containerConfig.desiredCount || 2
-  const healthCheckPath = containerConfig.healthCheck || '/health'
-  const autoScalingConfig = containerConfig.autoScaling || {
-    min: 1,
-    max: 10,
-    targetCpuUtilization: 70,
+  const cpu = serverlessConfig.cpu || 512
+  const memory = serverlessConfig.memory || 1024
+  const port = 3000
+  const desiredCount = serverlessConfig.desiredCount || 2
+  const healthCheckPath = '/health'
+  const rawAutoScaling = computeConfig?.autoScaling
+  const autoScalingConfig = {
+    min: rawAutoScaling?.min ?? 1,
+    max: rawAutoScaling?.max ?? 10,
+    targetCpuUtilization: rawAutoScaling?.scaleUpThreshold ?? 70,
     targetMemoryUtilization: 80,
   }
 
@@ -1657,7 +1658,7 @@ async function setupDnsAndSsl(options: {
   console.log('Setting up SSL certificate...')
 
   try {
-    const { Route53Client, ACMClient, AWSClient } = await import('ts-cloud/aws')
+    const { Route53Client, ACMClient, AWSClient } = await import('@stacksjs/ts-cloud/aws')
     const r53 = new Route53Client(region)
     const acm = new ACMClient(region)
     const client = new AWSClient()
@@ -1708,7 +1709,7 @@ async function setupDnsAndSsl(options: {
         console.log('✓ Certificate issued!')
 
         // 6. Get ALB and Target Group ARN from stack
-        const { CloudFormationClient } = await import('ts-cloud/aws')
+        const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
         const cf = new CloudFormationClient(region)
         const resources = await cf.listStackResources(stackName)
         const albArn = resources.StackResourceSummaries.find((r: any) => r.LogicalResourceId === 'ApplicationLoadBalancer')?.PhysicalResourceId
@@ -1954,12 +1955,12 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
   if (verbose) console.log(`Deploying ${stackName} to ${region}...`)
 
   try {
-    const { CloudFormationClient } = await import('ts-cloud/aws')
+    const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
     const cf = new CloudFormationClient(region)
 
     // Check deployment mode from cloud config
     const cloudConfig = await getCloudConfig()
-    const deploymentMode = cloudConfig?.infrastructure?.mode || 'server'
+    const deploymentMode = cloudConfig?.infrastructure?.compute?.mode || cloudConfig?.mode || 'server'
 
     // Generate the template based on deployment mode
     if (verbose) console.log(`Generating CloudFormation template (${deploymentMode} mode)...`)
@@ -2000,7 +2001,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
           // Clean up any retained resources (S3 buckets with DeletionPolicy: Retain)
           console.log('Cleaning up retained resources...')
           try {
-            const { S3Client } = await import('ts-cloud/aws')
+            const { S3Client } = await import('@stacksjs/ts-cloud/aws')
             const s3 = new S3Client(region)
 
             // Calculate the bucket names that would have been created
@@ -2082,7 +2083,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
       // Before creating a new stack, clean up any retained resources from previous failed deployments
       console.log('Checking for retained resources...')
       try {
-        const { S3Client } = await import('ts-cloud/aws')
+        const { S3Client } = await import('@stacksjs/ts-cloud/aws')
         const s3 = new S3Client(region)
 
         // Calculate the bucket names that would be created
@@ -2128,7 +2129,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
         if (hostedZoneId) {
           if (verbose) console.log(`  Checking DNS records in hosted zone: ${hostedZoneId}`)
 
-          const { Route53Client } = await import('ts-cloud/aws')
+          const { Route53Client } = await import('@stacksjs/ts-cloud/aws')
           const route53 = new Route53Client(region)
 
           // List and delete existing A records for stacksjs.com and www.stacksjs.com
@@ -2142,7 +2143,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
               if (verbose) console.log(`  Found ${aRecords.length} existing DNS records to delete`)
 
               const changes = aRecords.map((record: any) => ({
-                Action: 'DELETE',
+                Action: 'DELETE' as const,
                 ResourceRecordSet: record
               }))
 
@@ -2260,8 +2261,8 @@ export async function deployFrontend(options: DeployFrontendOptions): Promise<vo
   log.info(`Deploying frontend from ${buildDir} to ${environment} in ${region}...`)
 
   try {
-    const { S3Client } = await import('ts-cloud/aws')
-    const { CloudFormationClient } = await import('ts-cloud/aws')
+    const { S3Client } = await import('@stacksjs/ts-cloud/aws')
+    const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
 
     const s3 = new S3Client(region)
     const cf = new CloudFormationClient(region)
@@ -2302,7 +2303,7 @@ export async function getDeploymentStatus(options: { environment: string, region
   const { environment, region } = options
   const stackName = `stacks-cloud-${environment}`
 
-  const { CloudFormationClient } = await import('ts-cloud/aws')
+  const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
   const cf = new CloudFormationClient(region)
 
   const result = await cf.describeStacks({ stackName })
@@ -2338,7 +2339,7 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
   console.log('')
 
   try {
-    const { CloudFormationClient, AWSClient } = await import('ts-cloud/aws')
+    const { CloudFormationClient, AWSClient } = await import('@stacksjs/ts-cloud/aws')
     const cf = new CloudFormationClient(region)
 
     // Check if stack exists
@@ -2442,7 +2443,7 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
 
     // Clean up any retained resources (S3 buckets with DeletionPolicy: Retain)
     try {
-      const { S3Client } = await import('ts-cloud/aws')
+      const { S3Client } = await import('@stacksjs/ts-cloud/aws')
       const s3 = new S3Client(region)
 
       // Calculate the bucket names that would have been created
@@ -2509,7 +2510,7 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
       console.log('Some resources could not be deleted automatically')
       console.log('Identifying resources to retain...')
 
-      const { CloudFormationClient } = await import('ts-cloud/aws')
+      const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
       const cf = new CloudFormationClient(region)
 
       try {

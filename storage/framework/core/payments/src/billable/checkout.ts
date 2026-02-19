@@ -1,5 +1,5 @@
 
-type UserModel = typeof User
+import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { stripe } from '..'
 
@@ -14,7 +14,7 @@ export const manageCheckout: Checkout = (() => {
     }
 
     const defaultParams: Partial<Stripe.Checkout.SessionCreateParams> = {
-      customer: user.stripeId(),
+      customer: user.stripe_id || '',
       mode: 'payment',
       success_url: params.success_url,
       cancel_url: params.cancel_url,

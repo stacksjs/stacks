@@ -7,7 +7,7 @@
 import type { VerifiedRegistrationResponse } from 'ts-auth'
 import type { Insertable } from '@stacksjs/database'
 
-type UserModel = typeof User
+type UserModel = InstanceType<typeof User>
 import { db } from '@stacksjs/database'
 
 // Re-export WebAuthn functions from ts-auth
@@ -54,16 +54,18 @@ export interface PasskeyAttribute {
 }
 
 export async function getUserPasskeys(userId: number): Promise<PasskeyAttribute[]> {
-  return await db.selectFrom('passkeys').selectAll().where('user_id', '=', userId).execute()
+  const rows = await db.selectFrom('passkeys').selectAll().where('user_id', '=', userId).execute()
+  return rows as unknown as PasskeyAttribute[]
 }
 
 export async function getUserPasskey(userId: number, passkeyId: string): Promise<PasskeyAttribute | undefined> {
-  return await db
+  const row = await db
     .selectFrom('passkeys')
     .selectAll()
     .where('id', '=', passkeyId)
     .where('user_id', '=', userId)
     .executeTakeFirst()
+  return row as unknown as PasskeyAttribute | undefined
 }
 
 export async function setCurrentRegistrationOptions(

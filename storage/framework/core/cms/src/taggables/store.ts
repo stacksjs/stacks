@@ -43,7 +43,7 @@ export async function findOrCreate(data: TagData): Promise<TaggableTable> {
       .executeTakeFirst()
 
     if (existingTag)
-      return existingTag
+      return existingTag as unknown as TaggableTable
 
     // If not found, create new tag
     return await store(data)
@@ -82,7 +82,7 @@ export async function store(data: TagData): Promise<TaggableTable> {
       throw new Error('Failed to create tag')
     }
 
-    return result
+    return result as unknown as TaggableTable
   }
   catch (error) {
     if (error instanceof Error) {

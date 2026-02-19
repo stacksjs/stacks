@@ -20,7 +20,7 @@ export function mailCommands(buddy: CLI): void {
         const tableName = `${appName}-mail-users`
 
         // Use ts-cloud DynamoDB client
-        const { DynamoDBClient } = await import('ts-cloud/aws')
+        const { DynamoDBClient } = await import('@stacksjs/ts-cloud/aws')
         const dynamodb = new DynamoDBClient(process.env.AWS_REGION || 'us-east-1')
 
         await dynamodb.putItem({
@@ -65,7 +65,7 @@ export function mailCommands(buddy: CLI): void {
         const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
         const tableName = `${appName}-mail-users`
 
-        const { DynamoDBClient } = await import('ts-cloud/aws')
+        const { DynamoDBClient } = await import('@stacksjs/ts-cloud/aws')
         const dynamodb = new DynamoDBClient(process.env.AWS_REGION || 'us-east-1')
 
         const result = await dynamodb.scan({ TableName: tableName })
@@ -100,7 +100,7 @@ export function mailCommands(buddy: CLI): void {
         const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
         const tableName = `${appName}-mail-users`
 
-        const { DynamoDBClient } = await import('ts-cloud/aws')
+        const { DynamoDBClient } = await import('@stacksjs/ts-cloud/aws')
         const dynamodb = new DynamoDBClient(process.env.AWS_REGION || 'us-east-1')
 
         await dynamodb.deleteItem({
@@ -128,7 +128,7 @@ export function mailCommands(buddy: CLI): void {
         let apiUrl = options.api
 
         if (!apiUrl) {
-          const { CloudFormationClient } = await import('ts-cloud/aws')
+          const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
           const cfn = new CloudFormationClient(process.env.AWS_REGION || 'us-east-1')
           const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
           const stackName = `${appName}-cloud`
@@ -195,7 +195,7 @@ export function mailCommands(buddy: CLI): void {
     .command('mail:test', 'Test mail API connection')
     .action(async () => {
       try {
-        const { CloudFormationClient } = await import('ts-cloud/aws')
+        const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
         const cfn = new CloudFormationClient(process.env.AWS_REGION || 'us-east-1')
         const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
         const stackName = `${appName}-cloud`

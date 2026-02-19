@@ -9,14 +9,14 @@ export async function fetchById(id: number): Promise<AuthorJsonResponse | undefi
     .selectFrom('authors')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as AuthorJsonResponse | undefined
 }
 
 /**
  * Fetch all authors
  */
 export async function fetchAll(): Promise<AuthorJsonResponse[]> {
-  return await db.selectFrom('authors').selectAll().execute()
+  return await db.selectFrom('authors').selectAll().execute() as AuthorJsonResponse[]
 }
 
 /**
@@ -27,7 +27,7 @@ export async function findByName(name: string): Promise<AuthorJsonResponse | und
     .selectFrom('authors')
     .where('name', '=', name)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as AuthorJsonResponse | undefined
 }
 
 /**
@@ -38,7 +38,7 @@ export async function findByEmail(email: string): Promise<AuthorJsonResponse | u
     .selectFrom('authors')
     .where('email', '=', email)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as AuthorJsonResponse | undefined
 }
 
 /**
@@ -49,7 +49,7 @@ export async function findByUuid(uuid: string): Promise<AuthorJsonResponse | und
     .selectFrom('authors')
     .where('uuid', '=', uuid)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as AuthorJsonResponse | undefined
 }
 
 /**
@@ -60,5 +60,5 @@ export async function findByUserId(userId: number): Promise<AuthorJsonResponse |
     .selectFrom('authors')
     .where('user_id', '=', userId)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as AuthorJsonResponse | undefined
 }

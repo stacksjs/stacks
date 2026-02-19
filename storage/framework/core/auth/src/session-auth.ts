@@ -1,5 +1,5 @@
 
-type UserModel = typeof User
+type UserModel = InstanceType<typeof User>
 import { HttpError } from '@stacksjs/error-handling'
 import { User } from '@stacksjs/orm'
 import { verifyHash } from '@stacksjs/security'

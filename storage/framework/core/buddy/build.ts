@@ -39,7 +39,7 @@ const result = await Bun.build({
     '@stacksjs/types',
     '@stacksjs/utils',
     '@stacksjs/validation',
-    'ts-cloud/aws',
+    '@stacksjs/ts-cloud/aws',
     'ts-security-crypto',
     'bun-query-builder',
     'cac',

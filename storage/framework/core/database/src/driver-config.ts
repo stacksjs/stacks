@@ -122,7 +122,7 @@ export interface FullDatabaseConfig {
 /**
  * Default configuration values for each driver
  */
-export const driverDefaults: Record<SupportedDialect, Partial<DatabaseConnections[keyof DatabaseConnections]>> = {
+export const driverDefaults: Record<SupportedDialect, Partial<SqliteConfig | MysqlConfig | PostgresConfig | DynamoDbConfig>> = {
   sqlite: {
     database: 'database/stacks.sqlite',
     prefix: '',
@@ -146,6 +146,7 @@ export const driverDefaults: Record<SupportedDialect, Partial<DatabaseConnection
     prefix: '',
     schema: 'public',
   },
+  browser: {},
 }
 
 /**
@@ -222,11 +223,11 @@ export function validateDriverConfig(driver: SupportedDialect, config: DatabaseC
 /**
  * Merge user configuration with defaults
  */
-export function mergeWithDefaults<T extends SupportedDialect>(
+export function mergeWithDefaults<T extends keyof DatabaseConnections>(
   driver: T,
   config: Partial<DatabaseConnections[T]>,
 ): DatabaseConnections[T] {
-  const defaults = driverDefaults[driver]
+  const defaults = driverDefaults[driver as SupportedDialect]
   return { ...defaults, ...config } as DatabaseConnections[T]
 }
 

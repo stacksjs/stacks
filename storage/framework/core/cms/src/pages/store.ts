@@ -30,7 +30,7 @@ export async function store(data: NewPage): Promise<PageJsonResponse> {
     if (!result)
       throw new Error('Failed to create page')
 
-    return result
+    return result as PageJsonResponse
   }
   catch (error) {
     if (error instanceof Error)

@@ -69,5 +69,5 @@
     "!**/docs/deps/**",
     "!storage/framework/server/storage/**",
     "!storage/framework/cache/**"
-  ]
+  ],
 }

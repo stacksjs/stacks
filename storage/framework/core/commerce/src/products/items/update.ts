@@ -29,7 +29,7 @@ export async function update(id: number, data: Omit<ProductUpdate, 'id'>): Promi
     if (!result)
       throw new Error('Failed to update product item')
 
-    return result
+    return result as ProductJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -53,9 +53,9 @@ export async function bulkUpdate(data: ProductUpdate[]): Promise<number> {
   let updatedCount = 0
 
   try {
-    await db.transaction().execute(async (trx: any) => {
+    await (db as any).transaction().execute(async (trx: any) => {
       for (const item of data) {
-        if (!item.id)
+        if (!(item as Record<string, unknown>).id)
           continue
 
         const result = await trx
@@ -64,7 +64,7 @@ export async function bulkUpdate(data: ProductUpdate[]): Promise<number> {
             ...item,
             updated_at: formatDate(new Date()),
           })
-          .where('id', '=', item.id)
+          .where('id', '=', (item as Record<string, unknown>).id)
           .executeTakeFirst()
 
         if (Number(result.numUpdatedRows) > 0)

@@ -1,5 +1,5 @@
 
-type UserModel = typeof User
+import type { UserModel } from '@stacksjs/orm'
 import type { StripeCustomerOptions } from '@stacksjs/types'
 import type Stripe from 'stripe'
 import { stripe } from '..'

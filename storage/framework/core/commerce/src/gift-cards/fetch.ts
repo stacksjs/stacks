@@ -12,7 +12,7 @@ export async function fetchAll(): Promise<GiftCardJsonResponse[]> {
     .selectAll()
     .execute()
 
-  return giftCards
+  return giftCards as GiftCardJsonResponse[]
 }
 
 /**
@@ -23,7 +23,7 @@ export async function fetchById(id: number): Promise<GiftCardJsonResponse | unde
     .selectFrom('gift_cards')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as GiftCardJsonResponse | undefined
 }
 
 /**
@@ -34,20 +34,20 @@ export async function fetchByCode(code: string): Promise<GiftCardJsonResponse | 
     .selectFrom('gift_cards')
     .where('code', '=', code)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as GiftCardJsonResponse | undefined
 }
 
 /**
  * Fetch active gift cards (is_active = true and not expired)
  */
-export async function fetchActive(): Promise<GiftCardJsonResponse> {
+export async function fetchActive(): Promise<GiftCardJsonResponse[]> {
   const giftCards = await db
     .selectFrom('gift_cards')
     .where('is_active', '=', true)
     .selectAll()
     .execute()
 
-  return giftCards
+  return giftCards as GiftCardJsonResponse[]
 }
 
 /**
@@ -57,8 +57,8 @@ export async function fetchStats(): Promise<GiftCardStats> {
   // Total gift cards
   const totalGiftCards = await db
     .selectFrom('gift_cards')
-    .select((eb: any) => eb.fn.count('id').as('count'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   // Active gift cards
   const currentDate = toTimestamp(new Date())
@@ -67,46 +67,46 @@ export async function fetchStats(): Promise<GiftCardStats> {
     .selectFrom('gift_cards')
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where((eb: any) => eb.or([
+    .where(((eb: any) => eb.or([
       eb('expiry_date', '>=', currentDate),
       eb('expiry_date', 'is', null),
-    ]))
-    .select((eb: any) => eb.fn.count('id').as('count'))
-    .executeTakeFirst()
+    ])) as any)
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   // Gift cards by status
   const giftCardsByStatus = await db
     .selectFrom('gift_cards')
-    .select(['status', (eb: any) => eb.fn.count('id').as('count')])
+    .select(['status', (eb: any) => eb.fn.count('id').as('count')] as any)
     .groupBy('status')
-    .execute()
+    .execute() as { status: string, count: number }[]
 
   // Calculate balance distribution counts - separate queries for better reliability
   const lowBalanceCount = await db
     .selectFrom('gift_cards')
-    .where((eb: any) => {
+    .where(((eb: any) => {
       return sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} < 0.25`
-    })
-    .select((eb: any) => eb.fn.count('id').as('count'))
-    .executeTakeFirst()
+    }) as any)
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   const mediumBalanceCount = await db
     .selectFrom('gift_cards')
-    .where((eb: any) => {
+    .where(((eb: any) => {
       // Using a raw expression inside the expression builder
       return sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} >= 0.25 AND ${eb.ref('current_balance')} / ${eb.ref('initial_balance')} <= 0.75`
-    })
-    .select((eb: any) => eb.fn.count('id').as('count'))
-    .executeTakeFirst()
+    }) as any)
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   const highBalanceCount = await db
     .selectFrom('gift_cards')
-    .where((eb: any) => {
+    .where(((eb: any) => {
       // Using a raw expression inside the expression builder
       return sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} > 0.75`
-    })
-    .select((eb: any) => eb.fn.count('id').as('count'))
-    .executeTakeFirst()
+    }) as any)
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   // Expiring soon gift cards (next 30 days)
   const thirtyDaysFromNow = new Date()
@@ -142,8 +142,8 @@ export async function fetchStats(): Promise<GiftCardStats> {
       medium: Number(mediumBalanceCount?.count || 0),
       high: Number(highBalanceCount?.count || 0),
     },
-    expiring_soon: expiringGiftCards,
-    recently_used: recentlyUsedGiftCards,
+    expiring_soon: expiringGiftCards as GiftCardJsonResponse[],
+    recently_used: recentlyUsedGiftCards as GiftCardJsonResponse[],
   }
 }
 
@@ -157,24 +157,24 @@ export async function checkBalance(code: string): Promise<{ valid: boolean, bala
     return { valid: false, message: 'Gift card not found' }
   }
 
-  if (!giftCard.is_active || giftCard.status !== 'ACTIVE') {
+  if (!giftCard.isActive || giftCard.status !== 'ACTIVE') {
     return {
       valid: false,
-      balance: giftCard.current_balance,
+      balance: giftCard.currentBalance,
       currency: giftCard.currency,
       message: `Gift card is ${giftCard.status.toLowerCase()}`,
     }
   }
 
   // Check if expired
-  if (giftCard.expiry_date) {
-    const expiryDate = new Date(giftCard.expiry_date)
+  if (giftCard.expiryDate) {
+    const expiryDate = new Date(giftCard.expiryDate)
     const currentDate = new Date()
 
     if (expiryDate < currentDate) {
       return {
         valid: false,
-        balance: giftCard.current_balance,
+        balance: giftCard.currentBalance,
         currency: giftCard.currency,
         message: 'Gift card has expired',
       }
@@ -183,7 +183,7 @@ export async function checkBalance(code: string): Promise<{ valid: boolean, bala
 
   return {
     valid: true,
-    balance: giftCard.current_balance,
+    balance: giftCard.currentBalance,
     currency: giftCard.currency,
   }
 }
@@ -215,30 +215,30 @@ export async function compareActiveGiftCards(daysRange: number = 30): Promise<{
   // Get active gift cards for current period
   const currentPeriodActive = await db
     .selectFrom('gift_cards')
-    .select(db.fn.count('id').as('count'))
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where((eb: any) => eb.or([
+    .where(((eb: any) => eb.or([
       eb('expiry_date', '>=', toTimestamp(today)),
       eb('expiry_date', 'is', null),
-    ]))
+    ])) as any)
     .where('created_at', '>=', formatDate(currentPeriodStart))
     .where('created_at', '<=', formatDate(today))
-    .executeTakeFirst()
+    .executeTakeFirst() as { count: number } | undefined
 
   // Get active gift cards for previous period
   const previousPeriodActive = await db
     .selectFrom('gift_cards')
-    .select(db.fn.count('id').as('count'))
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where((eb: any) => eb.or([
+    .where(((eb: any) => eb.or([
       eb('expiry_date', '>=', toTimestamp(previousPeriodStart)),
       eb('expiry_date', 'is', null),
-    ]))
+    ])) as any)
     .where('created_at', '>=', formatDate(previousPeriodStart))
     .where('created_at', '<=', formatDate(previousPeriodEnd))
-    .executeTakeFirst()
+    .executeTakeFirst() as { count: number } | undefined
 
   const currentCount = Number(currentPeriodActive?.count || 0)
   const previousCount = Number(previousPeriodActive?.count || 0)
@@ -313,38 +313,38 @@ export async function calculateGiftCardValues(daysRange: number = 30): Promise<{
   // Get values for current period
   const currentPeriodValues = await db
     .selectFrom('gift_cards')
-    .select([
-      db.fn.sum('initial_balance').as('total_initial'),
-      db.fn.sum('current_balance').as('total_balance'),
-      db.fn.count('id').as('card_count'),
-    ])
+    .select(((eb: any) => [
+      eb.fn.sum('initial_balance').as('total_initial'),
+      eb.fn.sum('current_balance').as('total_balance'),
+      eb.fn.count('id').as('card_count'),
+    ]) as any)
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where((eb: any) => eb.or([
+    .where(((eb: any) => eb.or([
       eb('expiry_date', '>=', toTimestamp(today)),
       eb('expiry_date', 'is', null),
-    ]))
+    ])) as any)
     .where('created_at', '>=', formatDate(currentPeriodStart))
     .where('created_at', '<=', formatDate(today))
-    .executeTakeFirst()
+    .executeTakeFirst() as { total_initial: number, total_balance: number, card_count: number } | undefined
 
   // Get values for previous period
   const previousPeriodValues = await db
     .selectFrom('gift_cards')
-    .select([
-      db.fn.sum('initial_balance').as('total_initial'),
-      db.fn.sum('current_balance').as('total_balance'),
-      db.fn.count('id').as('card_count'),
-    ])
+    .select(((eb: any) => [
+      eb.fn.sum('initial_balance').as('total_initial'),
+      eb.fn.sum('current_balance').as('total_balance'),
+      eb.fn.count('id').as('card_count'),
+    ]) as any)
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where((eb: any) => eb.or([
+    .where(((eb: any) => eb.or([
       eb('expiry_date', '>=', toTimestamp(previousPeriodStart)),
       eb('expiry_date', 'is', null),
-    ]))
+    ])) as any)
     .where('created_at', '>=', formatDate(previousPeriodStart))
     .where('created_at', '<=', formatDate(previousPeriodEnd))
-    .executeTakeFirst()
+    .executeTakeFirst() as { total_initial: number, total_balance: number, card_count: number } | undefined
 
   // Calculate values for current period
   const currentInitialValue = Number(currentPeriodValues?.total_initial || 0)
@@ -431,8 +431,8 @@ export async function fetchTotalValue(): Promise<{
 }> {
   const totalValue = await db
     .selectFrom('gift_cards')
-    .select(db.fn.sum('initial_balance').as('total_value'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.sum('initial_balance').as('total_value')) as any)
+    .executeTakeFirst() as { total_value: number } | undefined
 
   return {
     total_value: Number(totalValue?.total_value || 0),
@@ -447,8 +447,8 @@ export async function fetchTotalCurrentBalance(): Promise<{
 }> {
   const totalBalance = await db
     .selectFrom('gift_cards')
-    .select(db.fn.sum('current_balance').as('total_balance'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.sum('current_balance').as('total_balance')) as any)
+    .executeTakeFirst() as { total_balance: number } | undefined
 
   return {
     total_balance: Number(totalBalance?.total_balance || 0),

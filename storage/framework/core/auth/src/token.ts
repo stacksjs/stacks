@@ -39,7 +39,7 @@ export class TokenManager {
       return false
 
     // Check if token is expired
-    if (accessToken.expires_at && new Date(accessToken.expires_at) < new Date()) {
+    if (accessToken.expires_at && new Date(String(accessToken.expires_at)) < new Date()) {
       // Automatically delete expired tokens
       await db.deleteFrom('oauth_access_tokens')
         .where('id', '=', accessToken.id)
@@ -52,7 +52,7 @@ export class TokenManager {
       return false
 
     // Rotate token if it's been used for more than 24 hours
-    const lastUsed = accessToken.updated_at ? new Date(accessToken.updated_at) : new Date()
+    const lastUsed = accessToken.updated_at ? new Date(String(accessToken.updated_at)) : new Date()
     const now = new Date()
     const hoursSinceLastUse = (now.getTime() - lastUsed.getTime()) / (1000 * 60 * 60)
 

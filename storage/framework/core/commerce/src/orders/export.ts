@@ -37,8 +37,8 @@ export async function exportOrders(format: 'csv' | 'excel' = 'csv'): Promise<Spr
 async function fetchAllWithDetails(): Promise<OrderWithTotals[] | []> {
   const ordersWithCustomers = await db
     .selectFrom('orders')
-    .leftJoin('customers', 'customers.id', 'orders.customer_id')
-    .selectAll('orders')
+    .leftJoin('customers', 'customers.id', '=', 'orders.customer_id')
+    .selectAll()
     .select(['customers.name as customer_name', 'customers.email as customer_email'])
     .execute()
 

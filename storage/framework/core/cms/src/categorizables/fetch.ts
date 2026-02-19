@@ -11,14 +11,14 @@ export async function fetchById(id: number): Promise<CategorizableTable | undefi
     .where('id', '=', id)
     .where('is_active', '=', true)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as unknown as CategorizableTable | undefined
 }
 
 /**
  * Fetch all categories
  */
 export async function fetchAll(): Promise<CategorizableTable[]> {
-  return await db.selectFrom('categorizables').selectAll().execute()
+  return await db.selectFrom('categorizables').selectAll().execute() as unknown as CategorizableTable[]
 }
 
 /**
@@ -30,7 +30,7 @@ export async function fetchByName(name: string): Promise<CategorizableTable[]> {
     .where('name', '=', name)
     .where('is_active', '=', true)
     .selectAll()
-    .execute()
+    .execute() as unknown as CategorizableTable[]
 }
 
 /**
@@ -42,7 +42,7 @@ export async function fetchBySlug(slug: string): Promise<CategorizableTable | un
     .where('slug', '=', slug)
     .where('is_active', '=', true)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as unknown as CategorizableTable | undefined
 }
 
 /**
@@ -54,7 +54,7 @@ export async function fetchWithPosts(id: number): Promise<CategorizableTable | u
     .where('id', '=', id)
     .where('is_active', '=', true)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as unknown as CategorizableTable | undefined
 }
 
 /**
@@ -79,7 +79,7 @@ export async function firstOrCreate(
       .executeTakeFirst()
 
     if (existingCategory) {
-      return existingCategory
+      return existingCategory as unknown as CategorizableTable
     }
 
     // If category doesn't exist, create it
@@ -103,7 +103,7 @@ export async function firstOrCreate(
       throw new Error('Failed to create category')
     }
 
-    return result
+    return result as unknown as CategorizableTable
   }
   catch (error) {
     if (error instanceof Error) {

@@ -7,7 +7,7 @@
 import { createServer, type Socket } from 'net'
 import { createServer as createTlsServer } from 'tls'
 import { readFileSync, existsSync } from 'fs'
-import { SESClient } from 'ts-cloud/aws'
+import { SESClient } from '@stacksjs/ts-cloud/aws'
 import { createHash } from 'crypto'
 
 interface SmtpSession {

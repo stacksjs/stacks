@@ -39,7 +39,7 @@ export async function update(id: number, data: CommentUpdate): Promise<Commentab
         .selectFrom('commentables')
         .where('id', '=', id)
         .selectAll()
-        .executeTakeFirst()
+        .executeTakeFirst() as unknown as CommentablesTable | undefined
     }
 
     // Update the comment record
@@ -55,7 +55,7 @@ export async function update(id: number, data: CommentUpdate): Promise<Commentab
       .selectAll()
       .executeTakeFirst()
 
-    return updatedComment
+    return updatedComment as unknown as CommentablesTable | undefined
   }
   catch (error) {
     if (error instanceof Error) {

@@ -10,25 +10,25 @@ export async function fetchById(id: number): Promise<PrintDeviceJsonResponse | u
     .selectFrom('print_devices')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as PrintDeviceJsonResponse | undefined
 }
 
 /**
  * Fetch all print devices
  */
 export async function fetchAll(): Promise<PrintDeviceJsonResponse[]> {
-  return await db.selectFrom('print_devices').selectAll().execute()
+  return await db.selectFrom('print_devices').selectAll().execute() as PrintDeviceJsonResponse[]
 }
 
 /**
  * Count all print devices
  */
 export async function countAll(): Promise<number> {
-  return await db
+  const result = await db
     .selectFrom('print_devices')
-    .select(db.fn.count('id').as('count'))
-    .executeTakeFirst()
-    .then((result: any) => result?.count ?? 0)
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
+  return result?.count ?? 0
 }
 
 /**
@@ -37,7 +37,7 @@ export async function countAll(): Promise<number> {
 export async function countTotalPrints(): Promise<number> {
   const result = await db
     .selectFrom('print_devices')
-    .select('print_count')
+    .select('print_count' as any)
     .executeTakeFirst()
 
   return (result as any)?.print_count ?? 0
@@ -49,7 +49,7 @@ export async function countTotalPrints(): Promise<number> {
 export async function countPrintsByDeviceId(printDeviceId: number): Promise<number> {
   const result = await db
     .selectFrom('print_devices')
-    .select('print_count')
+    .select('print_count' as any)
     .where('id', '=', printDeviceId)
     .executeTakeFirst()
 
@@ -62,12 +62,10 @@ export async function countPrintsByDeviceId(printDeviceId: number): Promise<numb
 export async function calculateErrorRate(): Promise<number> {
   const result = await db
     .selectFrom('receipts')
-    .select([
-      db.fn.count('id').as('total'),
-      (db.fn.count('id') as any)
-        .filterWhere('status', '=', 'error')
-        .as('error_count'),
-    ])
+    .select(((eb: any) => [
+      eb.fn.count('id').as('total'),
+      eb.fn.count('id').filterWhere('status', '=', 'error').as('error_count'),
+    ]) as any)
     .executeTakeFirst()
 
   if (!(result as any)?.total || (result as any).total === 0) {
@@ -86,7 +84,7 @@ export async function fetchErrorsByDeviceId(printDeviceId: number): Promise<Rece
     .where('print_device_id', '=', printDeviceId)
     .where('status', '=', 'error')
     .selectAll()
-    .execute()
+    .execute() as ReceiptJsonResponse[]
 }
 
 /**
@@ -95,12 +93,10 @@ export async function fetchErrorsByDeviceId(printDeviceId: number): Promise<Rece
 export async function calculatePrinterHealth(): Promise<number> {
   const result = await db
     .selectFrom('print_devices')
-    .select([
-      db.fn.count('id').as('total'),
-      (db.fn.count('id') as any)
-        .filterWhere('status', '=', 'online')
-        .as('online_count'),
-    ])
+    .select(((eb: any) => [
+      eb.fn.count('id').as('total'),
+      eb.fn.count('id').filterWhere('status', '=', 'online').as('online_count'),
+    ]) as any)
     .executeTakeFirst()
 
   if (!(result as any)?.total || (result as any).total === 0) {
@@ -116,12 +112,9 @@ export async function calculatePrinterHealth(): Promise<number> {
 export async function getPrinterStatusCounts(): Promise<Record<string, number>> {
   const result = await db
     .selectFrom('print_devices')
-    .select([
-      'status',
-      db.fn.count('id').as('count'),
-    ])
+    .select(['status', (eb: any) => eb.fn.count('id').as('count')] as any)
     .groupBy('status')
-    .execute()
+    .execute() as { status: string, count: number }[]
 
   // Convert array to object with status as key and count as value
   return result.reduce((acc: any, curr: any) => {

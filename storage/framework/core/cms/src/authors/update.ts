@@ -24,7 +24,7 @@ export async function update(id: number, data: Partial<NewAuthor>): Promise<Auth
       .returningAll()
       .executeTakeFirst()
 
-    return result
+    return result as AuthorJsonResponse | undefined
   }
   catch (error) {
     if (error instanceof Error)

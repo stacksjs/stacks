@@ -25,7 +25,7 @@ export async function update(id: number, data: UpdateCategoryData): Promise<Cate
 
     const result = await db
       .updateTable('categorizables')
-      .set(data)
+      .set(data as unknown as Record<string, unknown>)
       .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()
@@ -33,7 +33,7 @@ export async function update(id: number, data: UpdateCategoryData): Promise<Cate
     if (!result)
       throw new Error('Failed to update category')
 
-    return result
+    return result as unknown as CategorizableTable
   }
   catch (error) {
     if (error instanceof Error)

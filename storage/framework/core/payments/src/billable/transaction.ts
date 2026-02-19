@@ -1,6 +1,6 @@
 
 type PaymentTransactionsTable = ModelRow<typeof PaymentTransaction>
-type UserModel = typeof User
+import type { UserModel } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 export interface ManageTransaction {
@@ -26,13 +26,13 @@ export const manageTransaction: ManageTransaction = (() => {
 
     const transaction = await db.selectFrom('payment_transactions').where('id', '=', Number(createdTransaction.insertId)).selectAll().executeTakeFirst()
 
-    return transaction
+    return transaction as unknown as PaymentTransactionsTable | undefined
   }
 
   async function list(user: UserModel): Promise<PaymentTransactionsTable[]> {
     const transaction = await db.selectFrom('payment_transactions').where('user_id', '=', user.id).selectAll().execute()
 
-    return transaction
+    return transaction as unknown as PaymentTransactionsTable[]
   }
 
   return { store, list }

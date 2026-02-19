@@ -113,7 +113,7 @@ export async function tokens(userId: number): Promise<AccessToken[]> {
     WHERE t.user_id = ${param(1)}
     AND t.revoked = ${boolFalse}
     ORDER BY t.created_at DESC
-  `, [userId]).execute()
+  `, [userId])
 
   return (rows as any[]).map(row => ({
     id: row.id,
@@ -145,7 +145,7 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
     AND revoked = ${boolFalse}
     AND (expires_at IS NULL OR expires_at > ${now})
     LIMIT 1
-  `, [hashedToken]).execute()
+  `, [hashedToken])
 
   const row = (rows as any[])[0]
   if (!row) return null
@@ -327,7 +327,7 @@ export async function createToken(
   // Get the personal access client
   const clients = await db.unsafe(`
     SELECT id FROM oauth_clients WHERE personal_access_client = ${boolTrue} LIMIT 1
-  `).execute()
+  `)
 
   const client = (clients as any[])[0]
   if (!client) {
@@ -347,18 +347,18 @@ export async function createToken(
     await db.unsafe(`
       INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, false, $6, NOW(), NOW())
-    `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), expiresAt.toISOString()]).execute()
+    `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), expiresAt.toISOString()])
   } else {
     await db.unsafe(`
       INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, 0, ?, ${now}, ${now})
-    `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), expiresAt.toISOString()]).execute()
+    `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), expiresAt.toISOString()])
   }
 
   // Get the inserted token
   const inserted = await db.unsafe(`
     SELECT * FROM oauth_access_tokens WHERE token = ${param(1)} LIMIT 1
-  `, [hashedToken]).execute()
+  `, [hashedToken])
 
   const row = (inserted as any[])[0]
 
@@ -387,12 +387,12 @@ export async function createToken(
       await db.unsafe(`
         INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
         VALUES ($1, $2, false, $3, NOW())
-      `, [accessToken.id, hashedRefreshToken, refreshExpiresAt.toISOString()]).execute()
+      `, [accessToken.id, hashedRefreshToken, refreshExpiresAt.toISOString()])
     } else {
       await db.unsafe(`
         INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
         VALUES (?, ?, 0, ?, ${now})
-      `, [accessToken.id, hashedRefreshToken, refreshExpiresAt.toISOString()]).execute()
+      `, [accessToken.id, hashedRefreshToken, refreshExpiresAt.toISOString()])
     }
   }
 
@@ -445,7 +445,7 @@ export async function refreshToken(
     AND r.revoked = ${boolFalse}
     AND (r.expires_at IS NULL OR r.expires_at > ${now})
     LIMIT 1
-  `, [hashedRefreshToken]).execute()
+  `, [hashedRefreshToken])
 
   const refreshRow = (refreshRows as any[])[0]
   if (!refreshRow) {
@@ -457,7 +457,7 @@ export async function refreshToken(
     UPDATE oauth_refresh_tokens
     SET revoked = ${boolTrue}
     WHERE id = ${param(1)}
-  `, [refreshRow.id]).execute()
+  `, [refreshRow.id])
 
   // Create new access token
   const plainTextToken = generateSecureToken(40)
@@ -470,18 +470,18 @@ export async function refreshToken(
     await db.unsafe(`
       INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, false, $6, NOW(), NOW())
-    `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, expiresAt.toISOString()]).execute()
+    `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, expiresAt.toISOString()])
   } else {
     await db.unsafe(`
       INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, 0, ?, ${now}, ${now})
-    `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, expiresAt.toISOString()]).execute()
+    `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, expiresAt.toISOString()])
   }
 
   // Get the new access token
   const inserted = await db.unsafe(`
     SELECT * FROM oauth_access_tokens WHERE token = ${param(1)} LIMIT 1
-  `, [hashedToken]).execute()
+  `, [hashedToken])
 
   const row = (inserted as any[])[0]
 
@@ -508,12 +508,12 @@ export async function refreshToken(
     await db.unsafe(`
       INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
       VALUES ($1, $2, false, $3, NOW())
-    `, [accessToken.id, newHashedRefreshToken, refreshExpiresAt.toISOString()]).execute()
+    `, [accessToken.id, newHashedRefreshToken, refreshExpiresAt.toISOString()])
   } else {
     await db.unsafe(`
       INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
       VALUES (?, ?, 0, ?, ${now})
-    `, [accessToken.id, newHashedRefreshToken, refreshExpiresAt.toISOString()]).execute()
+    `, [accessToken.id, newHashedRefreshToken, refreshExpiresAt.toISOString()])
   }
 
   return {
@@ -540,7 +540,7 @@ export async function validateRefreshToken(refreshTokenPlain: string): Promise<b
     AND revoked = ${boolFalse}
     AND (expires_at IS NULL OR expires_at > ${now})
     LIMIT 1
-  `, [hashedRefreshToken]).execute()
+  `, [hashedRefreshToken])
 
   return (rows as any[]).length > 0
 }
@@ -559,7 +559,7 @@ export async function revokeRefreshToken(refreshTokenPlain: string): Promise<voi
     UPDATE oauth_refresh_tokens
     SET revoked = ${boolTrue}
     WHERE token = ${param(1)}
-  `, [hashedRefreshToken]).execute()
+  `, [hashedRefreshToken])
 }
 
 /**
@@ -576,7 +576,7 @@ export async function revokeAllRefreshTokens(userId: number): Promise<void> {
     WHERE access_token_id IN (
       SELECT id FROM oauth_access_tokens WHERE user_id = ${param(1)}
     )
-  `, [userId]).execute()
+  `, [userId])
 }
 
 /**
@@ -590,7 +590,7 @@ export async function deleteExpiredRefreshTokens(): Promise<number> {
   const result = await db.unsafe(`
     DELETE FROM oauth_refresh_tokens
     WHERE expires_at < ${now}
-  `).execute()
+  `)
 
   return (result as any)?.changes || (result as any)?.rowCount || 0
 }
@@ -609,7 +609,7 @@ export async function deleteRevokedRefreshTokens(daysOld: number = 7): Promise<n
   const result = await db.unsafe(`
     DELETE FROM oauth_refresh_tokens
     WHERE revoked = ${boolTrue} AND created_at < ${param(1)}
-  `, [cutoffDate.toISOString()]).execute()
+  `, [cutoffDate.toISOString()])
 
   return (result as any)?.changes || (result as any)?.rowCount || 0
 }
@@ -635,13 +635,13 @@ export async function revokeToken(plainTextToken: string): Promise<void> {
     WHERE access_token_id IN (
       SELECT id FROM oauth_access_tokens WHERE token = ${param(1)}
     )
-  `, [hashedToken]).execute()
+  `, [hashedToken])
 
   await db.unsafe(`
     UPDATE oauth_access_tokens
     SET revoked = ${boolTrue}, updated_at = ${now}
     WHERE token = ${param(1)}
-  `, [hashedToken]).execute()
+  `, [hashedToken])
 }
 
 /**
@@ -657,13 +657,13 @@ export async function revokeTokenById(tokenId: number): Promise<void> {
     UPDATE oauth_refresh_tokens
     SET revoked = ${boolTrue}
     WHERE access_token_id = ${param(1)}
-  `, [tokenId]).execute()
+  `, [tokenId])
 
   await db.unsafe(`
     UPDATE oauth_access_tokens
     SET revoked = ${boolTrue}, updated_at = ${now}
     WHERE id = ${param(1)}
-  `, [tokenId]).execute()
+  `, [tokenId])
 }
 
 /**
@@ -681,7 +681,7 @@ export async function revokeAllTokens(userId: number): Promise<void> {
     UPDATE oauth_access_tokens
     SET revoked = ${boolTrue}, updated_at = ${now}
     WHERE user_id = ${param(1)}
-  `, [userId]).execute()
+  `, [userId])
 }
 
 /**
@@ -705,13 +705,13 @@ export async function revokeOtherTokens(userId: number): Promise<void> {
       WHERE access_token_id IN (
         SELECT id FROM oauth_access_tokens WHERE user_id = $1 AND id != $2
       )
-    `, [userId, current.id]).execute()
+    `, [userId, current.id])
 
     await db.unsafe(`
       UPDATE oauth_access_tokens
       SET revoked = true, updated_at = NOW()
       WHERE user_id = $1 AND id != $2
-    `, [userId, current.id]).execute()
+    `, [userId, current.id])
   } else {
     await db.unsafe(`
       UPDATE oauth_refresh_tokens
@@ -719,13 +719,13 @@ export async function revokeOtherTokens(userId: number): Promise<void> {
       WHERE access_token_id IN (
         SELECT id FROM oauth_access_tokens WHERE user_id = ? AND id != ?
       )
-    `, [userId, current.id]).execute()
+    `, [userId, current.id])
 
     await db.unsafe(`
       UPDATE oauth_access_tokens
       SET revoked = 1, updated_at = ${now}
       WHERE user_id = ? AND id != ?
-    `, [userId, current.id]).execute()
+    `, [userId, current.id])
   }
 }
 
@@ -743,12 +743,12 @@ export async function deleteExpiredTokens(): Promise<number> {
     WHERE access_token_id IN (
       SELECT id FROM oauth_access_tokens WHERE expires_at < ${now}
     )
-  `).execute()
+  `)
 
   const result = await db.unsafe(`
     DELETE FROM oauth_access_tokens
     WHERE expires_at < ${now}
-  `).execute()
+  `)
 
   return (result as any)?.changes || (result as any)?.rowCount || 0
 }
@@ -770,12 +770,12 @@ export async function deleteRevokedTokens(daysOld: number = 7): Promise<number> 
     WHERE access_token_id IN (
       SELECT id FROM oauth_access_tokens WHERE revoked = ${boolTrue} AND updated_at < ${param(1)}
     )
-  `, [cutoffDate.toISOString()]).execute()
+  `, [cutoffDate.toISOString()])
 
   const result = await db.unsafe(`
     DELETE FROM oauth_access_tokens
     WHERE revoked = ${boolTrue} AND updated_at < ${param(1)}
-  `, [cutoffDate.toISOString()]).execute()
+  `, [cutoffDate.toISOString()])
 
   return (result as any)?.changes || (result as any)?.rowCount || 0
 }
@@ -796,7 +796,7 @@ export async function clients(userId: number): Promise<OAuthClient[]> {
     SELECT * FROM oauth_clients
     WHERE user_id = ${param(1)} AND revoked = ${boolFalse}
     ORDER BY created_at DESC
-  `, [userId]).execute()
+  `, [userId])
 
   return (rows as any[]).map(mapToOAuthClient)
 }
@@ -811,7 +811,7 @@ export async function clients(userId: number): Promise<OAuthClient[]> {
 export async function findClient(clientId: number): Promise<OAuthClient | null> {
   const rows = await db.unsafe(`
     SELECT * FROM oauth_clients WHERE id = ${param(1)} LIMIT 1
-  `, [clientId]).execute()
+  `, [clientId])
 
   const row = (rows as any[])[0]
   return row ? mapToOAuthClient(row) : null
@@ -840,7 +840,7 @@ export async function createClient(options: CreateClientOptions): Promise<Create
       options.redirect,
       options.personalAccessClient || false,
       options.passwordClient || false,
-    ]).execute()
+    ])
   } else {
     await db.unsafe(`
       INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
@@ -851,12 +851,12 @@ export async function createClient(options: CreateClientOptions): Promise<Create
       options.redirect,
       options.personalAccessClient ? 1 : 0,
       options.passwordClient ? 1 : 0,
-    ]).execute()
+    ])
   }
 
   const inserted = await db.unsafe(`
     SELECT * FROM oauth_clients WHERE secret = ${param(1)} LIMIT 1
-  `, [secret]).execute()
+  `, [secret])
 
   return {
     client: mapToOAuthClient((inserted as any[])[0]),
@@ -876,7 +876,7 @@ export async function revokeClient(clientId: number): Promise<void> {
     UPDATE oauth_clients
     SET revoked = ${boolTrue}, updated_at = ${now}
     WHERE id = ${param(1)}
-  `, [clientId]).execute()
+  `, [clientId])
 }
 
 // ============================================================================

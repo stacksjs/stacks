@@ -6,7 +6,7 @@
  */
 
 
-type UserModel = typeof User
+import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { stripe } from './drivers/stripe'
 import { manageCharge } from './billable/charge'

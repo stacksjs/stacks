@@ -83,7 +83,7 @@ export class EmailSDK {
    */
   async send(message: EmailMessage): Promise<SendResult> {
     try {
-      const { SESClient } = await import('ts-cloud/aws')
+      const { SESClient } = await import('@stacksjs/ts-cloud/aws')
       const ses = new SESClient(this.region)
 
       // Normalize from address
@@ -169,23 +169,20 @@ export class EmailSDK {
    */
   async getInbox(mailbox: string, options?: { limit?: number; offset?: number }): Promise<InboxEmail[]> {
     try {
-      const { S3Client } = await import('ts-cloud/aws')
+      const { S3Client } = await import('@stacksjs/ts-cloud/aws')
       const s3 = new S3Client(this.region)
 
       const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
 
       const indexKey = `mailboxes/${domain}/${localPart}/inbox.json`
 
-      const result = await s3.getObject({
-        Bucket: this.bucket,
-        Key: indexKey,
-      })
+      const result = await s3.getObject(this.bucket, indexKey)
 
-      if (!result.Body) {
+      if (!result) {
         return []
       }
 
-      let inbox: InboxEmail[] = JSON.parse(result.Body)
+      let inbox: InboxEmail[] = JSON.parse(result)
 
       // Apply pagination
       const offset = options?.offset || 0
@@ -211,7 +208,7 @@ export class EmailSDK {
     raw?: string
   } | null> {
     try {
-      const { S3Client } = await import('ts-cloud/aws')
+      const { S3Client } = await import('@stacksjs/ts-cloud/aws')
       const s3 = new S3Client(this.region)
 
       const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
@@ -227,21 +224,14 @@ export class EmailSDK {
       const basePath = email.path
 
       // Get metadata
-      const metaResult = await s3.getObject({
-        Bucket: this.bucket,
-        Key: `${basePath}/metadata.json`,
-      })
-
-      const metadata = metaResult.Body ? JSON.parse(metaResult.Body) : {}
+      const metaResult = await s3.getObject(this.bucket, `${basePath}/metadata.json`)
+      const metadata = metaResult ? JSON.parse(metaResult) : {}
 
       // Try to get HTML body
       let html: string | undefined
       try {
-        const htmlResult = await s3.getObject({
-          Bucket: this.bucket,
-          Key: `${basePath}/body.html`,
-        })
-        html = htmlResult.Body
+        const htmlResult = await s3.getObject(this.bucket, `${basePath}/body.html`)
+        html = htmlResult || undefined
       }
       catch {
         // No HTML version
@@ -250,11 +240,8 @@ export class EmailSDK {
       // Try to get text body
       let text: string | undefined
       try {
-        const textResult = await s3.getObject({
-          Bucket: this.bucket,
-          Key: `${basePath}/body.txt`,
-        })
-        text = textResult.Body
+        const textResult = await s3.getObject(this.bucket, `${basePath}/body.txt`)
+        text = textResult || undefined
       }
       catch {
         // No text version
@@ -312,7 +299,7 @@ export class EmailSDK {
    */
   async delete(mailbox: string, messageId: string): Promise<boolean> {
     try {
-      const { S3Client } = await import('ts-cloud/aws')
+      const { S3Client } = await import('@stacksjs/ts-cloud/aws')
       const s3 = new S3Client(this.region)
 
       const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
@@ -340,10 +327,7 @@ export class EmailSDK {
 
       for (const key of keysToDelete) {
         try {
-          await s3.deleteObject({
-            Bucket: this.bucket,
-            Key: key,
-          })
+          await s3.deleteObject(this.bucket, key)
         }
         catch {
           // Ignore errors for files that don't exist
@@ -354,10 +338,10 @@ export class EmailSDK {
       inbox.splice(emailIndex, 1)
 
       await s3.putObject({
-        Bucket: this.bucket,
-        Key: `mailboxes/${domain}/${localPart}/inbox.json`,
-        Body: JSON.stringify(inbox, null, 2),
-        ContentType: 'application/json',
+        bucket: this.bucket,
+        key: `mailboxes/${domain}/${localPart}/inbox.json`,
+        body: JSON.stringify(inbox, null, 2),
+        contentType: 'application/json',
       })
 
       return true
@@ -383,7 +367,7 @@ export class EmailSDK {
 
   private async updateEmailStatus(mailbox: string, messageId: string, updates: Partial<InboxEmail>): Promise<boolean> {
     try {
-      const { S3Client } = await import('ts-cloud/aws')
+      const { S3Client } = await import('@stacksjs/ts-cloud/aws')
       const s3 = new S3Client(this.region)
 
       const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
@@ -398,10 +382,10 @@ export class EmailSDK {
       Object.assign(inbox[emailIndex], updates)
 
       await s3.putObject({
-        Bucket: this.bucket,
-        Key: `mailboxes/${domain}/${localPart}/inbox.json`,
-        Body: JSON.stringify(inbox, null, 2),
-        ContentType: 'application/json',
+        bucket: this.bucket,
+        key: `mailboxes/${domain}/${localPart}/inbox.json`,
+        body: JSON.stringify(inbox, null, 2),
+        contentType: 'application/json',
       })
 
       return true

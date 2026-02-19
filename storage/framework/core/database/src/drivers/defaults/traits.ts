@@ -3,8 +3,7 @@ import { path } from '@stacksjs/path'
 import { db } from '../../utils'
 import { hasMigrationBeenCreated } from '../index'
 
-// Import sql from bun-query-builder
-import { sql } from 'bun-query-builder'
+// bun-query-builder utilities are used via db.unsafe() for raw SQL
 
 export function getTraitTables(): string[] {
   return [
@@ -402,28 +401,28 @@ export async function createPostgresCommentsTable(): Promise<void> {
 }
 
 export async function dropCommonTables(): Promise<void> {
-  await db.schema.dropTable('passkeys').ifExists().execute()
-  await db.schema.dropTable('password_resets').ifExists().execute()
-  await db.schema.dropTable('query_logs').ifExists().execute()
-  await db.schema.dropTable('categorizables').ifExists().execute()
-  await db.schema.dropTable('commenteable_upvotes').ifExists().execute()
-  await db.schema.dropTable('tags').ifExists().execute()
-  await db.schema.dropTable('taggables').ifExists().execute()
-  await db.schema.dropTable('categorizable_models').ifExists().execute()
-  await db.schema.dropTable('commentables').ifExists().execute()
-  await db.schema.dropTable('comments').ifExists().execute()
-  await db.schema.dropTable('categories_models').ifExists().execute()
-  await db.schema.dropTable('activities').ifExists().execute()
+  await db.unsafe('DROP TABLE IF EXISTS passkeys')
+  await db.unsafe('DROP TABLE IF EXISTS password_resets')
+  await db.unsafe('DROP TABLE IF EXISTS query_logs')
+  await db.unsafe('DROP TABLE IF EXISTS categorizables')
+  await db.unsafe('DROP TABLE IF EXISTS commenteable_upvotes')
+  await db.unsafe('DROP TABLE IF EXISTS tags')
+  await db.unsafe('DROP TABLE IF EXISTS taggables')
+  await db.unsafe('DROP TABLE IF EXISTS categorizable_models')
+  await db.unsafe('DROP TABLE IF EXISTS commentables')
+  await db.unsafe('DROP TABLE IF EXISTS comments')
+  await db.unsafe('DROP TABLE IF EXISTS categories_models')
+  await db.unsafe('DROP TABLE IF EXISTS activities')
 }
 
 export async function truncateMigrationTables(): Promise<void> {
-  await sql`TRUNCATE TABLE migrations`.execute(db)
-  await sql`TRUNCATE TABLE migration_locks`.execute(db)
+  await db.unsafe('DELETE FROM migrations')
+  await db.unsafe('DELETE FROM migration_locks')
 }
 
 export async function dropMigrationTables(): Promise<void> {
-  await db.schema.dropTable('migrations').ifExists().execute()
-  await db.schema.dropTable('migration_locks').ifExists().execute()
+  await db.unsafe('DROP TABLE IF EXISTS migrations')
+  await db.unsafe('DROP TABLE IF EXISTS migration_locks')
 }
 
 export async function createCommentUpvoteMigration(): Promise<void> {

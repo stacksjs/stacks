@@ -11,5 +11,7 @@
       "import": "./index.ts"
     }
   },
-  "dependencies": {}
+  "dependencies": {
+    "@stacksjs/ts-cloud": "^0.1.7"
+  }
 }

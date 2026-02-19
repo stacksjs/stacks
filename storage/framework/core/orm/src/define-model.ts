@@ -1,4 +1,26 @@
-import { createModel, type ModelDefinition, type InferRelationNames } from 'bun-query-builder'
+import { createModel, type ModelDefinition as BQBModelDefinition } from 'bun-query-builder'
+import type { InferRelationNames } from 'bun-query-builder'
+
+// Extended model definition that provides proper contextual typing for factory callbacks.
+// BrowserModelDefinition from bun-query-builder uses BrowserTypedAttribute<unknown> which
+// prevents TypeScript from providing contextual types for callback parameters.
+interface StacksModelDefinition {
+  name: string
+  table: string
+  primaryKey?: string
+  autoIncrement?: boolean
+  traits?: Record<string, unknown>
+  indexes?: Array<{ name: string, columns: string[] }>
+  attributes: {
+    [key: string]: {
+      factory?: (faker: any) => any
+      [key: string]: any
+    }
+  }
+  [key: string]: any
+}
+
+type ModelDefinition = StacksModelDefinition
 import { createTaggableMethods } from './traits/taggable'
 import { createCategorizableMethods } from './traits/categorizable'
 import { createCommentableMethods } from './traits/commentable'
@@ -37,18 +59,18 @@ import { createTwoFactorMethods } from './traits/two-factor'
  */
 export function defineModel<const TDef extends ModelDefinition>(definition: TDef) {
   // Build event hooks from observer configuration
-  const hooks = buildEventHooks(definition)
+  const hooks = buildEventHooks(definition as unknown as BQBModelDefinition)
 
   // Merge hooks into definition
   const defWithHooks = hooks
-    ? { ...definition, hooks: { ...definition.hooks, ...hooks } }
+    ? { ...definition, hooks: { ...(definition as any).hooks, ...hooks } }
     : definition
 
   // Create the base model from bun-query-builder (provides all typed query methods)
-  const baseModel = createModel(defWithHooks as TDef)
+  const baseModel = createModel(defWithHooks as TDef & BQBModelDefinition)
 
   // Build trait methods based on model config
-  const traitMethods = buildTraitMethods(definition)
+  const traitMethods = buildTraitMethods(definition as unknown as BQBModelDefinition)
 
   // Merge: base model + trait methods + raw definition properties (for generators)
   // Spreading `definition` ensures `.name`, `.table`, `.attributes`, `.traits` etc.
@@ -61,7 +83,7 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   })
 }
 
-function buildEventHooks(definition: ModelDefinition): ModelDefinition['hooks'] | undefined {
+function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['hooks'] | undefined {
   const observe = definition.traits?.observe
   if (!observe) return undefined
 
@@ -82,7 +104,7 @@ function buildEventHooks(definition: ModelDefinition): ModelDefinition['hooks'] 
     ? ['create', 'update', 'delete']
     : Array.isArray(observe) ? observe : []
 
-  const hooks: NonNullable<ModelDefinition['hooks']> = {}
+  const hooks: NonNullable<BQBModelDefinition['hooks']> = {}
 
   if (events.includes('create')) {
     hooks.afterCreate = (model: any) => dispatchEvent(`${modelName}:created`, model)
@@ -106,7 +128,7 @@ interface TraitMethods {
   _twoFactor?: ReturnType<typeof createTwoFactorMethods>
 }
 
-function buildTraitMethods(definition: ModelDefinition): TraitMethods {
+function buildTraitMethods(definition: BQBModelDefinition): TraitMethods {
   const methods: TraitMethods = {}
   const tableName = definition.table
   const traits = definition.traits
@@ -143,15 +165,4 @@ function buildTraitMethods(definition: ModelDefinition): TraitMethods {
 }
 
 // Re-export types from bun-query-builder for convenience
-export type { ModelDefinition, InferRelationNames } from 'bun-query-builder'
-export type {
-  ModelInstance,
-  ModelQueryBuilder,
-  ModelAttributes,
-  InferModelAttributes,
-  SystemFields,
-  ColumnName,
-  AttributeKeys,
-  FillableKeys,
-  HiddenKeys,
-} from 'bun-query-builder'
+export type { ModelDefinition, InferRelationNames, ModelAttributes, InferModelAttributes, SystemFields, ColumnName, AttributeKeys, FillableKeys, HiddenKeys, ModelInstance, ModelQueryBuilder } from 'bun-query-builder'

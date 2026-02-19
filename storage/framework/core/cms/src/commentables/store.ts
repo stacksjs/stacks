@@ -11,7 +11,7 @@ export interface CreateCommentInput {
 export interface UpdateCommentInput {
   title?: string
   body?: string
-  status?: CommentablesTable['status']
+  status?: string
 }
 
 export async function createComment(data: CreateCommentInput): Promise<CommentablesTable> {
@@ -30,7 +30,7 @@ export async function createComment(data: CreateCommentInput): Promise<Commentab
     .insertInto('commentables')
     .values(commentData)
     .returningAll()
-    .executeTakeFirstOrThrow()
+    .executeTakeFirstOrThrow() as unknown as Promise<CommentablesTable>
 }
 
 export async function updateComment(
@@ -45,7 +45,7 @@ export async function updateComment(
     })
     .where('id', '=', id)
     .returningAll()
-    .executeTakeFirstOrThrow()
+    .executeTakeFirstOrThrow() as unknown as Promise<CommentablesTable>
 }
 
 export async function approveComment(id: number): Promise<CommentablesTable> {
@@ -58,7 +58,7 @@ export async function approveComment(id: number): Promise<CommentablesTable> {
     })
     .where('id', '=', id)
     .returningAll()
-    .executeTakeFirstOrThrow()
+    .executeTakeFirstOrThrow() as unknown as Promise<CommentablesTable>
 }
 
 export async function rejectComment(id: number): Promise<CommentablesTable> {
@@ -71,7 +71,7 @@ export async function rejectComment(id: number): Promise<CommentablesTable> {
     })
     .where('id', '=', id)
     .returningAll()
-    .executeTakeFirstOrThrow()
+    .executeTakeFirstOrThrow() as unknown as Promise<CommentablesTable>
 }
 
 export async function deleteComment(id: number): Promise<void> {
@@ -121,7 +121,7 @@ export async function store(data: CommentStore): Promise<CommentablesTable> {
       throw new Error('Failed to create comment')
     }
 
-    return result
+    return result as unknown as CommentablesTable
   }
   catch (error) {
     if (error instanceof Error) {

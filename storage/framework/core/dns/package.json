@@ -50,6 +50,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "@stacksjs/ts-cloud": "^0.1.7"
+  },
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",
     "better-dx": "^0.2.5",

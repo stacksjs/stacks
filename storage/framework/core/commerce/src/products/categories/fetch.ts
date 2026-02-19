@@ -12,7 +12,7 @@ export async function fetchAll(): Promise<CategoryJsonResponse[]> {
     .selectAll()
     .execute()
 
-  return categories
+  return categories as CategoryJsonResponse[]
 }
 
 /**
@@ -23,7 +23,7 @@ export async function fetchById(id: number): Promise<CategoryJsonResponse | unde
     .selectFrom('categories')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as CategoryJsonResponse | undefined
 }
 
 /**
@@ -34,7 +34,7 @@ export async function fetchByName(name: string): Promise<CategoryJsonResponse | 
     .selectFrom('categories')
     .where('name', '=', name)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as CategoryJsonResponse | undefined
 }
 
 /**
@@ -47,7 +47,7 @@ export async function fetchActive(): Promise<CategoryJsonResponse[]> {
     .selectAll()
     .execute()
 
-  return categories
+  return categories as CategoryJsonResponse[]
 }
 
 /**
@@ -61,7 +61,7 @@ export async function fetchRootCategories(): Promise<CategoryJsonResponse[]> {
     .selectAll()
     .execute()
 
-  return categories
+  return categories as CategoryJsonResponse[]
 }
 
 /**
@@ -75,7 +75,7 @@ export async function fetchChildCategories(parentId: string): Promise<CategoryJs
     .selectAll()
     .execute()
 
-  return categories
+  return categories as CategoryJsonResponse[]
 }
 
 /**
@@ -88,10 +88,10 @@ export async function fetchByDisplayOrder(ascending: boolean = true): Promise<Ca
     .selectAll()
 
   if (ascending) {
-    return await query.orderBy('display_order', 'asc').execute()
+    return await query.orderBy('display_order', 'asc').execute() as CategoryJsonResponse[]
   }
   else {
-    return await query.orderBy('display_order', 'desc').execute()
+    return await query.orderBy('display_order', 'desc').execute() as CategoryJsonResponse[]
   }
 }
 
@@ -102,29 +102,29 @@ export async function fetchStats(): Promise<CategoryStats> {
   // Total categories
   const totalCategories = await db
     .selectFrom('categories')
-    .select((eb: any) => eb.fn.count('id').as('count'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   // Active categories
   const activeCategories = await db
     .selectFrom('categories')
     .where('is_active', '=', true)
-    .select((eb: any) => eb.fn.count('id').as('count'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   // Root vs child categories
   const rootCategories = await db
     .selectFrom('categories')
     .where('parent_category_id', 'is', null)
-    .select((eb: any) => eb.fn.count('id').as('count'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   // Categories with images
   const categoriesWithImages = await db
     .selectFrom('categories')
     .where('image_url', 'is not', null)
-    .select((eb: any) => eb.fn.count('id').as('count'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   // Recently added categories (last 30 days)
   const thirtyDaysAgo = new Date()
@@ -141,17 +141,17 @@ export async function fetchStats(): Promise<CategoryStats> {
   // Categories by parent (top 5 parents with most children)
   const categoriesByParent = await db
     .selectFrom('categories as c')
-    .leftJoin('categories as parent', 'c.parent_category_id', 'parent.id')
+    .leftJoin('categories as parent', 'c.parent_category_id', '=', 'parent.id')
     .where('c.parent_category_id', 'is not', null)
     .select([
       'c.parent_category_id',
       'parent.name as parent_name',
       (eb: any) => eb.fn.count('c.id').as('child_count'),
-    ])
-    .groupBy(['c.parent_category_id', 'parent.name'])
+    ] as any)
+    .groupBy(['c.parent_category_id', 'parent.name'] as any)
     .orderBy('child_count', 'desc')
     .limit(5)
-    .execute()
+    .execute() as { parent_category_id: string, parent_name: string, child_count: number }[]
 
   return {
     total: Number(totalCategories?.count || 0),
@@ -199,18 +199,18 @@ export async function compareCategoryGrowth(daysRange: number = 30): Promise<{
   // Get categories for current period
   const currentPeriodCategories = await db
     .selectFrom('categories')
-    .select(db.fn.count('id').as('count'))
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
     .where('created_at', '>=', currentPeriodStartStr)
     .where('created_at', '<=', todayStr)
-    .executeTakeFirst()
+    .executeTakeFirst() as { count: number } | undefined
 
   // Get categories for previous period
   const previousPeriodCategories = await db
     .selectFrom('categories')
-    .select(db.fn.count('id').as('count'))
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
     .where('created_at', '>=', previousPeriodStartStr)
     .where('created_at', '<=', previousPeriodEndStr)
-    .executeTakeFirst()
+    .executeTakeFirst() as { count: number } | undefined
 
   const currentCount = Number(currentPeriodCategories?.count || 0)
   const previousCount = Number(previousPeriodCategories?.count || 0)

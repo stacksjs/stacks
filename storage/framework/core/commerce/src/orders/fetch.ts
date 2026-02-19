@@ -55,7 +55,7 @@ export async function fetchById(id: number): Promise<OrderJsonResponse | undefin
     .selectAll()
     .executeTakeFirst()
 
-  return order
+  return order as OrderJsonResponse | undefined
 }
 
 /**
@@ -65,22 +65,22 @@ export async function fetchStats(): Promise<OrderStats> {
   // Total orders
   const totalOrders = await db
     .selectFrom('orders')
-    .select((eb: any) => eb.fn.count('id').as('count'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .executeTakeFirst() as { count: number } | undefined
 
   // Orders by status
   const ordersByStatus = await db
     .selectFrom('orders')
-    .select(['status', (eb: any) => eb.fn.count('id').as('count')])
+    .select(['status', (eb: any) => eb.fn.count('id').as('count')] as any)
     .groupBy('status')
-    .execute() as StatusCount[]
+    .execute() as unknown as StatusCount[]
 
   // Orders by type
   const ordersByType = await db
     .selectFrom('orders')
-    .select(['order_type', (eb: any) => eb.fn.count('id').as('count')])
+    .select(['order_type', (eb: any) => eb.fn.count('id').as('count')] as any)
     .groupBy('order_type')
-    .execute() as OrderTypeCount[]
+    .execute() as unknown as OrderTypeCount[]
 
   // Recent orders with their items
   const recentOrdersRaw = await db
@@ -107,8 +107,8 @@ export async function fetchStats(): Promise<OrderStats> {
   // Total revenue
   const revenue = await db
     .selectFrom('orders')
-    .select((eb: any) => eb.fn.sum('total_amount').as('total'))
-    .executeTakeFirst()
+    .select(((eb: any) => eb.fn.sum('total_amount').as('total')) as any)
+    .executeTakeFirst() as { total: number } | undefined
 
   return {
     total: Number(totalOrders?.count || 0),
@@ -146,18 +146,18 @@ export async function compareOrdersByPeriod(daysRange: number = 30): Promise<{
   // Get orders for current period
   const currentPeriodOrders = await db
     .selectFrom('orders')
-    .select(db.fn.count('id').as('count'))
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
     .where('created_at', '>=', currentPeriodStart.toISOString())
     .where('created_at', '<=', today.toISOString())
-    .executeTakeFirst()
+    .executeTakeFirst() as { count: number } | undefined
 
   // Get orders for previous period
   const previousPeriodOrders = await db
     .selectFrom('orders')
-    .select(db.fn.count('id').as('count'))
+    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
     .where('created_at', '>=', previousPeriodStart.toISOString())
     .where('created_at', '<=', previousPeriodEnd.toISOString())
-    .executeTakeFirst()
+    .executeTakeFirst() as { count: number } | undefined
 
   const currentCount = Number(currentPeriodOrders?.count || 0)
   const previousCount = Number(previousPeriodOrders?.count || 0)
@@ -229,42 +229,42 @@ export async function calculateOrderMetrics(daysRange: number = 30): Promise<{
   // Get values for current period
   const currentPeriodValues = await db
     .selectFrom('orders')
-    .select([
-      db.fn.count('id').as('total_orders'),
-      db.fn.sum('total_amount').as('total_revenue'),
-    ])
+    .select(((eb: any) => [
+      eb.fn.count('id').as('total_orders'),
+      eb.fn.sum('total_amount').as('total_revenue'),
+    ]) as any)
     .where('created_at', '>=', currentPeriodStart.toISOString())
     .where('created_at', '<=', today.toISOString())
-    .executeTakeFirst()
+    .executeTakeFirst() as { total_orders: number, total_revenue: number } | undefined
 
   // Get values for previous period
   const previousPeriodValues = await db
     .selectFrom('orders')
-    .select([
-      db.fn.count('id').as('total_orders'),
-      db.fn.sum('total_amount').as('total_revenue'),
-    ])
+    .select(((eb: any) => [
+      eb.fn.count('id').as('total_orders'),
+      eb.fn.sum('total_amount').as('total_revenue'),
+    ]) as any)
     .where('created_at', '>=', previousPeriodStart.toISOString())
     .where('created_at', '<=', previousPeriodEnd.toISOString())
-    .executeTakeFirst()
+    .executeTakeFirst() as { total_orders: number, total_revenue: number } | undefined
 
   // Get orders by status for current period
   const ordersByStatus = await db
     .selectFrom('orders')
-    .select(['status', db.fn.count('id').as('count')])
+    .select(['status', (eb: any) => eb.fn.count('id').as('count')] as any)
     .where('created_at', '>=', currentPeriodStart.toISOString())
     .where('created_at', '<=', today.toISOString())
     .groupBy('status')
-    .execute()
+    .execute() as { status: string, count: number }[]
 
   // Get orders by type for current period
   const ordersByType = await db
     .selectFrom('orders')
-    .select(['order_type', db.fn.count('id').as('count')])
+    .select(['order_type', (eb: any) => eb.fn.count('id').as('count')] as any)
     .where('created_at', '>=', currentPeriodStart.toISOString())
     .where('created_at', '<=', today.toISOString())
     .groupBy('order_type')
-    .execute()
+    .execute() as { order_type: string, count: number }[]
 
   // Calculate values for current period
   const currentTotalOrders = Number(currentPeriodValues?.total_orders || 0)
@@ -355,16 +355,16 @@ export async function fetchDailyOrderTrends(daysRange: number = 30): Promise<{
   const dailyOrders = await db
     .selectFrom('orders')
     .select([
-      db.fn.count('id').as('order_count'),
-      db.fn.sum('total_amount').as('revenue'),
+      (eb: any) => eb.fn.count('id').as('order_count'),
+      (eb: any) => eb.fn.sum('total_amount').as('revenue'),
       // Extract just the date part in ISO format (YYYY-MM-DD)
       'created_at',
-    ])
+    ] as any)
     .where('created_at', '>=', startDate.toISOString())
     .where('created_at', '<=', today.toISOString())
     .groupBy('created_at')
     .orderBy('created_at', 'asc')
-    .execute()
+    .execute() as { created_at: string, order_count: number, revenue: number }[]
 
   return dailyOrders.map((day: any) => ({
     date: day.created_at!,

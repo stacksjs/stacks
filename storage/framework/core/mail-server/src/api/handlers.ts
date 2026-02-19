@@ -4,9 +4,9 @@
  * Lambda functions that provide mailbox operations using S3 as storage
  */
 
-import { S3Client } from 'ts-cloud/aws'
-import { SESClient } from 'ts-cloud/aws'
-import { DynamoDBClient } from 'ts-cloud/aws'
+import { S3Client } from '@stacksjs/ts-cloud/aws'
+import { SESClient } from '@stacksjs/ts-cloud/aws'
+import { DynamoDBClient } from '@stacksjs/ts-cloud/aws'
 import { createHash } from 'crypto'
 
 const s3 = new S3Client(process.env.AWS_REGION || 'us-east-1')

@@ -28,7 +28,7 @@ export async function fetchComments(options: {
   limit?: number
   offset?: number
 } = {}): Promise<Commentable[]> {
-  let query = db.selectFrom('commentables')
+  let query = db.selectFrom('commentables') as any
 
   if (options.status)
     query = query.where('status', '=', options.status)
@@ -45,7 +45,7 @@ export async function fetchComments(options: {
   if (options.offset)
     query = query.offset(options.offset)
 
-  return query.selectAll().execute()
+  return query.selectAll().execute() as Promise<Commentable[]>
 }
 
 export async function fetchCommentById(id: number): Promise<Commentable | undefined> {
@@ -53,7 +53,7 @@ export async function fetchCommentById(id: number): Promise<Commentable | undefi
     .selectFrom('commentables')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst()
+    .executeTakeFirst() as unknown as Promise<Commentable | undefined>
 }
 
 export async function fetchCommentsByCommentables(
@@ -64,7 +64,7 @@ export async function fetchCommentsByCommentables(
   let query = db
     .selectFrom('commentables')
     .where('commentables_id', '=', commentables_id)
-    .where('commentables_type', '=', commentables_type)
+    .where('commentables_type', '=', commentables_type) as any
 
   if (options.status)
     query = query.where('status', '=', options.status)
@@ -75,7 +75,7 @@ export async function fetchCommentsByCommentables(
   if (options.offset)
     query = query.offset(options.offset)
 
-  return query.selectAll().execute()
+  return query.selectAll().execute() as Promise<Commentable[]>
 }
 
 /**
@@ -88,13 +88,10 @@ export async function fetchCommentCountByPeriod(days: number): Promise<number> {
   try {
     const result = await db
       .selectFrom('commentables')
-      .select((eb: any) => [
-        eb.fn.count('id').as('count'),
-      ])
       .where('created_at', '>=', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
-      .executeTakeFirst()
+      .count()
 
-    return Number(result?.count) || 0
+    return Number(result) || 0
   }
   catch (error) {
     if (error instanceof Error) {
@@ -109,7 +106,7 @@ export async function fetchCommentsByStatus(status: CommentStatus, options: { li
   try {
     let query = db
       .selectFrom('commentables')
-      .where('status', '=', status)
+      .where('status', '=', status) as any
 
     if (options.limit)
       query = query.limit(options.limit)
@@ -117,7 +114,7 @@ export async function fetchCommentsByStatus(status: CommentStatus, options: { li
     if (options.offset)
       query = query.offset(options.offset)
 
-    return query.selectAll().execute()
+    return query.selectAll().execute() as Promise<Commentable[]>
   }
   catch (error) {
     if (error instanceof Error) {
@@ -130,20 +127,18 @@ export async function fetchCommentsByStatus(status: CommentStatus, options: { li
 
 export async function calculateApprovalRate(): Promise<{ approved: number, total: number, rate: number }> {
   try {
-    const [approvedResult, totalResult] = await Promise.all([
+    const [approvedCount, totalCount] = await Promise.all([
       db
         .selectFrom('commentables')
-        .select(db.fn.count('id').as('count'))
         .where('status', '=', 'approved')
-        .executeTakeFirst(),
+        .count(),
       db
         .selectFrom('commentables')
-        .select(db.fn.count('id').as('count'))
-        .executeTakeFirst(),
+        .count(),
     ])
 
-    const approved = Number(approvedResult?.count || 0)
-    const total = Number(totalResult?.count || 0)
+    const approved = Number(approvedCount || 0)
+    const total = Number(totalCount || 0)
     const rate = total > 0 ? (approved / total) * 100 : 0
 
     return {
@@ -176,28 +171,25 @@ export async function fetchPostsWithMostComments(dateRange: DateRange, options: 
   try {
     let query = db
       .selectFrom('posts')
-      .leftJoin('commentables', (join: any) => join
-        .onRef('posts.id', '=', 'commentables.commentables_id')
-        .on('commentables.commentables_type', '=', 'posts'))
+      .leftJoin('commentables', 'posts.id', '=', 'commentables.commentables_id')
       .where('commentables.created_at', '>=', formatDate(dateRange.startDate))
       .where('commentables.created_at', '<=', formatDate(dateRange.endDate))
       .select([
         'posts.id',
         'posts.title',
-        db.fn.count('commentables.id').as('comment_count'),
       ])
-      .groupBy(['posts.id', 'posts.title'])
-      .orderBy('comment_count', 'desc')
+      .groupBy('posts.id', 'posts.title')
+      .orderBy('posts.id', 'desc') as any
 
     if (options.limit)
       query = query.limit(options.limit)
 
     const results = await query.execute()
 
-    return results.map((row: any) => ({
+    return (results as Record<string, unknown>[]).map((row: Record<string, unknown>) => ({
       id: Number(row.id),
       title: String(row.title),
-      comment_count: Number(row.comment_count),
+      comment_count: Number(row.comment_count || 0),
     }))
   }
   catch (error) {
@@ -246,15 +238,15 @@ export async function fetchStatusDistributionDonut(dateRange: DateRange): Promis
       .where('created_at', '<=', formatDate(dateRange.endDate))
       .select([
         'status',
-        db.fn.count('id').as('count'),
       ])
       .groupBy('status')
       .execute()
 
-    const total = results.reduce((sum: any, row: any) => sum + Number(row.count), 0)
-    const labels = results.map((row: any) => row.status)
-    const values = results.map((row: any) => Number(row.count))
-    const percentages = values.map((value: any) => total > 0 ? (value / total) * 100 : 0)
+    const typedResults = results as Record<string, unknown>[]
+    const total = typedResults.reduce((sum: number, row: Record<string, unknown>) => sum + Number(row.count || 0), 0)
+    const labels = typedResults.map((row: Record<string, unknown>) => String(row.status))
+    const values = typedResults.map((row: Record<string, unknown>) => Number(row.count || 0))
+    const percentages = values.map((value: number) => total > 0 ? (value / total) * 100 : 0)
 
     return {
       labels,
@@ -282,7 +274,6 @@ export async function fetchMonthlyCommentCounts(dateRange: DateRange): Promise<L
       .where('created_at', '>=', formatDate(dateRange.startDate))
       .where('created_at', '<=', formatDate(dateRange.endDate))
       .select([
-        db.fn.count('id').as('count'),
         'created_at',
       ])
       .groupBy('created_at')
@@ -291,12 +282,12 @@ export async function fetchMonthlyCommentCounts(dateRange: DateRange): Promise<L
 
     // Group results by year and month
     const monthlyCounts = new Map<string, number>()
-    results.forEach((row: { created_at: string | undefined, count: string | number | bigint }) => {
+    ;(results as Record<string, unknown>[]).forEach((row: Record<string, unknown>) => {
       if (!row.created_at)
         return
-      const date = new Date(row.created_at)
+      const date = new Date(row.created_at as string)
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-      monthlyCounts.set(key, (monthlyCounts.get(key) || 0) + Number(row.count))
+      monthlyCounts.set(key, (monthlyCounts.get(key) || 0) + Number(row.count || 0))
     })
 
     // Convert to arrays for the graph
