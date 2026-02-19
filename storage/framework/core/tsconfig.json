@@ -90,6 +90,7 @@
     "../../../config/**",
     "../views/**",
     "../auto-imports/**",
-    "../requests/**"
+    "../requests/**",
+    "../**/build.ts"
   ]
 }
