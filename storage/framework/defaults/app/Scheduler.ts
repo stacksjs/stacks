@@ -4,14 +4,23 @@ import { schedule } from '@stacksjs/scheduler'
 /**
  * **Scheduler**
  *
- * This is your Scheduler. Because Stacks is fully-typed, you may hover any of the
- * options below and the definitions will be provided. In case you have any
- * questions, feel free to reach out via Discord or GitHub Discussions.
+ * Define your scheduled tasks here. Jobs, actions, and shell commands
+ * can all be scheduled with a fluent, expressive API.
+ *
+ * @see https://docs.stacksjs.com/scheduling
  */
 export default function () {
-  schedule.job('name').everyMinute().setTimeZone('America/Los_Angeles')
-  schedule.action('name').everyFiveMinutes()
-  schedule.command('echo "Hello, world!"').daily()
+  // Run the Inspire job every hour
+  schedule
+    .job('Inspire')
+    .hourly()
+    .setTimeZone('America/Los_Angeles')
+
+  // Run a custom action every five minutes
+  // schedule.action('CleanupTempFiles').everyFiveMinutes()
+
+  // Run a shell command daily at midnight
+  // schedule.command('echo "Daily maintenance complete"').daily()
 }
 
 process.on('SIGINT', () => {

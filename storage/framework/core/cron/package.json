@@ -20,7 +20,7 @@
   },
   "keywords": [
     "cron",
-    "croner",
+    "bun-cron",
     "jobs",
     "bun",
     "stacks"
@@ -48,7 +48,6 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "better-dx": "^0.2.5",
-    "croner": "^9.1.0"
+    "better-dx": "^0.2.5"
   }
 }

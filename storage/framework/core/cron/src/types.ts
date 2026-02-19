@@ -1,10 +1,5 @@
-import type { CatchCallbackFn, CronOptions, ProtectCallbackFn } from 'croner'
-
-export type {
-  CatchCallbackFn,
-  CronOptions,
-  ProtectCallbackFn,
-}
+export type CatchCallbackFn = (error: Error) => void
+export type ProtectCallbackFn = () => void
 
 export type IntRange<Min extends number, Max extends number> = number extends Min | Max
   ? never

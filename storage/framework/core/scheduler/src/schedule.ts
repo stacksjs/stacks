@@ -1,41 +1,33 @@
-import type { CatchCallbackFn, CronOptions } from '@stacksjs/cron'
-import type { TimedSchedule, Timezone, UntimedSchedule } from './types'
+import type { CatchCallbackFn } from '@stacksjs/cron'
+import type { ScheduledJob, TimedSchedule, Timezone, UntimedSchedule } from './types'
 import { spawn } from 'node:child_process'
 import { existsSync, mkdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { runAction } from '@stacksjs/actions'
 import { log, runCommand } from '@stacksjs/cli'
-import { Cron } from '@stacksjs/cron'
+import { parse } from '@stacksjs/cron'
 import { runJob } from '@stacksjs/queue'
 
 /**
- * This class is used to create and manage scheduled jobs. It provides methods for
- * defining the schedule pattern, timezone, error handling, and job protection.
- * @class Schedule
- * @implements {UntimedSchedule}
+ * Schedule class for creating and managing scheduled tasks.
+ *
+ * Uses standard 5-field cron patterns (minute hour day month weekday)
+ * powered by `@stacksjs/cron` — auto-upgrades to native `Bun.cron.parse()`
+ * when available.
+ *
  * @example
- * ```typescript
+ * ```ts
  * import { schedule } from '@stacksjs/scheduler'
  *
- * schedule
- *   .job('my-job')
- *   .everyMinute()
- *   .withErrorHandler((error) => {
- *     console.error('Job failed:', error)
- *   })
- *   .withMaxRuns(10)
- *   .withProtection((job) => {
- *     console.log('Job is protected:', job)
- *   })
- *   .withName('my-job')
- *   .withContext({ key: 'value' })
- *   .withInterval(60)
- *   .between('2024-01-01', '2024-12-31')
+ * schedule.job('Inspire').hourly().setTimeZone('America/Los_Angeles')
+ * schedule.action('CleanupTempFiles').everyFiveMinutes()
+ * schedule.command('echo "maintenance"').daily()
  * ```
  */
 export class Schedule implements UntimedSchedule {
-  private static jobs = new Map<string, Cron>()
+  private static jobs = new Map<string, ScheduledJob>()
   private cronPattern = ''
+  private intervalMs: number | null = null
   private timezone: Timezone = 'America/Los_Angeles'
   private readonly task: () => void
   private static lockDir = join(process.cwd(), 'storage', 'framework', 'locks')
@@ -48,7 +40,7 @@ export class Schedule implements UntimedSchedule {
     timezone?: string
     catch?: CatchCallbackFn
     maxRuns?: number
-    protect?: boolean | ((job: Cron) => void)
+    protect?: boolean | ((job: ScheduledJob) => void)
     name?: string
     context?: any
     interval?: number
@@ -58,23 +50,37 @@ export class Schedule implements UntimedSchedule {
 
   constructor(task: () => void) {
     this.task = task
-    // Start job automatically when constructor is called
-    // We need to use setTimeout to ensure all chain methods are called first
-    setTimeout(() => this.start(), 0)
+    // Start job automatically after all chain methods are called
+    setTimeout(() => {
+      try {
+        this.start()
+      }
+      catch (error) {
+        log.error(`Failed to start scheduled task: ${error}`)
+      }
+    }, 0)
   }
 
+  /** Expose the resolved cron pattern (useful for testing/debugging) */
+  get pattern(): string {
+    return this.cronPattern
+  }
+
+  // --- Timing methods (standard 5-field cron patterns) ---
+
   everySecond(): TimedSchedule {
-    this.cronPattern = '* * * * * *'
+    this.intervalMs = 1000
+    this.cronPattern = '@every_second'
     return this as TimedSchedule
   }
 
   everyMinute(): TimedSchedule {
-    this.cronPattern = '0 * * * * *'
+    this.cronPattern = '* * * * *'
     return this as TimedSchedule
   }
 
   everyTwoMinutes(): TimedSchedule {
-    this.cronPattern = '*/2 * * * * *'
+    this.cronPattern = '*/2 * * * *'
     return this as TimedSchedule
   }
 
@@ -94,57 +100,57 @@ export class Schedule implements UntimedSchedule {
   }
 
   everyHour(): TimedSchedule {
-    this.cronPattern = '0 0 * * * *'
+    this.cronPattern = '0 * * * *'
     return this as TimedSchedule
   }
 
   everyDay(): TimedSchedule {
-    this.cronPattern = '0 0 0 * * *'
+    this.cronPattern = '0 0 * * *'
     return this as TimedSchedule
   }
 
   hourly(): TimedSchedule {
-    this.cronPattern = '0 0 * * * *'
+    this.cronPattern = '0 * * * *'
     return this as TimedSchedule
   }
 
   daily(): TimedSchedule {
-    this.cronPattern = '0 0 0 * * *'
+    this.cronPattern = '0 0 * * *'
     return this as TimedSchedule
   }
 
   weekly(): TimedSchedule {
-    this.cronPattern = '0 0 0 * * 0'
+    this.cronPattern = '0 0 * * 0'
     return this as TimedSchedule
   }
 
   monthly(): TimedSchedule {
-    this.cronPattern = '0 0 0 1 * *'
+    this.cronPattern = '0 0 1 * *'
     return this as TimedSchedule
   }
 
   yearly(): TimedSchedule {
-    this.cronPattern = '0 0 0 1 1 *'
+    this.cronPattern = '0 0 1 1 *'
     return this as TimedSchedule
   }
 
   annually(): TimedSchedule {
-    this.cronPattern = '0 0 0 1 1 *'
+    this.cronPattern = '0 0 1 1 *'
     return this as TimedSchedule
   }
 
   onDays(days: number[]): TimedSchedule {
-    const dayPattern = days.join(',')
-    this.cronPattern = `0 0 0 * * ${dayPattern}`
+    this.cronPattern = `0 0 * * ${days.join(',')}`
     return this as TimedSchedule
   }
 
   at(time: string): TimedSchedule {
-    // Assuming time is in "HH:MM" format
     const [hour, minute] = time.split(':').map(Number)
     this.cronPattern = `${minute} ${hour} * * *`
     return this as TimedSchedule
   }
+
+  // --- Configuration methods ---
 
   setTimeZone(timezone: Timezone): this {
     this.timezone = timezone
@@ -162,7 +168,7 @@ export class Schedule implements UntimedSchedule {
     return this
   }
 
-  withProtection(callback?: (job: Cron) => void): this {
+  withProtection(callback?: (job: ScheduledJob) => void): this {
     this.options.protect = callback || true
     return this
   }
@@ -205,6 +211,8 @@ export class Schedule implements UntimedSchedule {
     return this
   }
 
+  // --- Lock management ---
+
   private acquireLock(name: string): boolean {
     const lockFile = join(Schedule.lockDir, `${name}.lock`)
 
@@ -213,7 +221,6 @@ export class Schedule implements UntimedSchedule {
     }
 
     if (Schedule.activeLocks.has(name)) {
-      // Check if the lock has expired
       if (existsSync(lockFile)) {
         try {
           const stats = statSync(lockFile)
@@ -233,7 +240,6 @@ export class Schedule implements UntimedSchedule {
       writeFileSync(lockFile, String(Date.now()), { flag: 'wx' })
     }
     catch {
-      // File exists — check if expired
       try {
         const stats = statSync(lockFile)
         const ageMs = Date.now() - stats.mtimeMs
@@ -241,7 +247,6 @@ export class Schedule implements UntimedSchedule {
         if (ageMs < expiryMs) {
           return false
         }
-        // Expired lock — overwrite
         writeFileSync(lockFile, String(Date.now()))
       }
       catch {
@@ -263,6 +268,8 @@ export class Schedule implements UntimedSchedule {
       // Lock file already removed
     }
   }
+
+  // --- Task wrapping ---
 
   private wrapTask(originalTask: () => void): () => void {
     const taskName = this.options.name || 'unnamed-task'
@@ -307,16 +314,92 @@ export class Schedule implements UntimedSchedule {
     return wrappedTask
   }
 
-  private start(): Cron {
+  // --- Scheduling engine (powered by @stacksjs/cron parse) ---
+
+  private getNextRunTime(): Date | null {
+    if (!this.cronPattern || this.intervalMs !== null) return null
+
+    if (!this.timezone || this.timezone === 'UTC') {
+      return parse(this.cronPattern)
+    }
+
+    // Timezone-aware scheduling:
+    // 1. Get "now" in the configured timezone
+    // 2. Parse for next match from that local time
+    // 3. Compute delay and add to real now
+    const now = new Date()
+    const localNow = new Date(now.toLocaleString('en-US', { timeZone: this.timezone }))
+    const nextLocal = parse(this.cronPattern, localNow)
+    if (!nextLocal) return null
+
+    const delayMs = nextLocal.getTime() - localNow.getTime()
+    return new Date(now.getTime() + delayMs)
+  }
+
+  private start(): ScheduledJob {
     const task = this.wrapTask(this.task)
-    const job = new Cron(
-      this.cronPattern,
-      {
-        ...this.options,
-        timezone: this.timezone,
-      } as CronOptions,
-      task,
-    )
+    let stopped = false
+    let timer: ReturnType<typeof setTimeout> | ReturnType<typeof setInterval> | null = null
+    let runCount = 0
+
+    const stop = () => {
+      stopped = true
+      if (timer !== null) {
+        if (this.intervalMs !== null)
+          clearInterval(timer)
+        else
+          clearTimeout(timer)
+        timer = null
+      }
+    }
+
+    const nextRun = (): Date | null => {
+      return this.getNextRunTime()
+    }
+
+    const job: ScheduledJob = { stop, nextRun }
+
+    const executeTask = () => {
+      if (this.options.maxRuns && runCount >= this.options.maxRuns) {
+        stop()
+        return
+      }
+      runCount++
+      try {
+        task()
+      }
+      catch (error) {
+        if (this.options.catch) {
+          this.options.catch(error as Error)
+        }
+      }
+    }
+
+    if (this.intervalMs !== null) {
+      // Sub-minute scheduling (everySecond): use setInterval
+      timer = setInterval(() => {
+        if (stopped) return
+        executeTask()
+      }, this.intervalMs)
+    }
+    else if (this.cronPattern) {
+      // Minute+ scheduling: parse() + setTimeout loop
+      const scheduleNext = () => {
+        if (stopped) return
+        if (this.options.maxRuns && runCount >= this.options.maxRuns) return
+
+        const nextTime = this.getNextRunTime()
+        if (!nextTime) return
+
+        const delay = Math.max(nextTime.getTime() - Date.now(), 0)
+        timer = setTimeout(() => {
+          if (stopped) return
+          executeTask()
+          scheduleNext()
+        }, delay)
+      }
+      scheduleNext()
+    }
 
     if (this.options.name) {
       Schedule.jobs.set(this.options.name, job)
@@ -326,7 +409,8 @@ export class Schedule implements UntimedSchedule {
     return job
   }
 
-  // job and action methods need to be added and they accept a path string param
+  // --- Static factory methods ---
+
   static job(name: string): UntimedSchedule {
     return new Schedule(async () => {
       log.info(`Running job: ${name}`)
@@ -335,7 +419,7 @@ export class Schedule implements UntimedSchedule {
       }
       catch (error) {
         log.error(`Job ${name} failed:`, error)
-        throw error // This will be caught by the error handler if one is set
+        throw error
       }
     }).withName(name) as UntimedSchedule
   }
@@ -373,54 +457,45 @@ export class Schedule implements UntimedSchedule {
 
   /**
    * Gracefully shutdown all scheduled jobs.
-   * This method should be called when the application is shutting down.
-   * It will stop all running jobs and clear the jobs map.
-   * @returns Promise<void>
-   * @static
-   * @memberof Schedule
-   * @example
-   * ```typescript
-   * process.on('SIGINT', () => {
-   *  schedule.gracefulShutdown().then(() => process.exit(0))
-   * })
    */
   static async gracefulShutdown(): Promise<void> {
     log.info('Gracefully shutting down scheduled jobs...')
 
-    const shutdownPromises = []
-
     for (const [name, job] of Schedule.jobs) {
       log.info(`Stopping job: ${name}`)
-      shutdownPromises.push(
-        new Promise<void>((resolve) => {
-          job.stop()
-          resolve()
-        }),
-      )
+      job.stop()
     }
 
-    await Promise.all(shutdownPromises)
     Schedule.jobs.clear()
-
     log.info('All jobs have been stopped')
   }
 }
 
 export class Queue extends Schedule { }
 
-export function sendAt(cronTime: string | Date): Date | null {
-  const cron = new Cron(cronTime)
-  return cron.nextRun()
+/**
+ * Get the next run time for a cron expression.
+ *
+ * @param cronExpression - Standard 5-field cron expression or nickname
+ * @returns The next Date the expression matches, or null
+ */
+export function sendAt(cronExpression: string | Date): Date | null {
+  if (cronExpression instanceof Date) {
+    return cronExpression > new Date() ? cronExpression : null
+  }
+  return parse(cronExpression)
 }
 
-export function timeout(cronTime: string | Date): number {
-  const cron = new Cron(cronTime)
-  const nextDate = cron.nextRun()
-
-  if (!nextDate)
-    return -1
-
-  return nextDate.getTime() - Date.now()
+/**
+ * Get the number of milliseconds until the next run of a cron expression.
+ *
+ * @param cronExpression - Standard 5-field cron expression or nickname
+ * @returns Milliseconds until next run, or -1 if no upcoming run
+ */
+export function timeout(cronExpression: string | Date): number {
+  const next = sendAt(cronExpression)
+  if (!next) return -1
+  return next.getTime() - Date.now()
 }
 
 export type Scheduler = typeof Schedule

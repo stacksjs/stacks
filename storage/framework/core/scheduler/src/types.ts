@@ -1,4 +1,4 @@
-import type { CatchCallbackFn, Cron } from '@stacksjs/cron'
+import type { CatchCallbackFn } from '@stacksjs/cron'
 
 // IANA Timezone
 export type Timezone =
@@ -68,11 +68,16 @@ export type Timezone =
   | 'Pacific/Honolulu'
   | 'UTC'
 
+export interface ScheduledJob {
+  stop: () => void
+  nextRun: () => Date | null
+}
+
 // Base interface for common methods
 export interface BaseSchedule {
   withErrorHandler: (handler: CatchCallbackFn) => this
   withMaxRuns: (runs: number) => this
-  withProtection: (callback?: (job: Cron) => void) => this
+  withProtection: (callback?: (job: ScheduledJob) => void) => this
   withName: (name: string) => this
   withContext: (context: any) => this
   withInterval: (seconds: number) => this
