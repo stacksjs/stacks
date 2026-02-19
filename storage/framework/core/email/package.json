@@ -58,8 +58,6 @@
     "@stacksjs/config": "workspace:*",
     "better-dx": "^0.2.5",
     "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "aws-sdk": "^2.1692.0",
-    "vue-email": "^0.8.11"
+    "@stacksjs/types": "workspace:*"
   }
 }
