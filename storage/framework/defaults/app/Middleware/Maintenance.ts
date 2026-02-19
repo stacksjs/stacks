@@ -1,5 +1,3 @@
-import type { Request } from '@stacksjs/router'
-
 import { Middleware } from '@stacksjs/router'
 
 /**
@@ -19,7 +17,7 @@ export default new Middleware({
   name: 'maintenance',
   priority: 0, // Run first, before all other middleware
 
-  async handle(request: Request) {
+  async handle(request) {
     const {
       isDownForMaintenance,
       maintenancePayload,

@@ -1,5 +1,3 @@
-import type { Request } from '@stacksjs/router'
-
 import { AuthorizationException, authorize } from '@stacksjs/auth'
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
@@ -23,7 +21,7 @@ export default new Middleware({
   name: 'can',
   priority: 3, // Run after auth and abilities middleware
 
-  async handle(request: Request) {
+  async handle(request) {
     // Get the ability and optional model parameter from middleware params
     // Format: 'can:ability' or 'can:ability,modelParam'
     const params = (request as any)._middlewareParams?.can?.split(',') || []

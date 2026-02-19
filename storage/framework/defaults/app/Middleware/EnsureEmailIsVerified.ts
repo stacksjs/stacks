@@ -1,5 +1,3 @@
-import type { Request } from '@stacksjs/router'
-
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
 
@@ -16,7 +14,7 @@ export default new Middleware({
   name: 'verified',
   priority: 4,
 
-  async handle(request: Request) {
+  async handle(request) {
     const user = (request as any).user || (request as any)._user || null
 
     if (!user) {

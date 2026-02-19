@@ -9,9 +9,7 @@ export default new Action({
   name: 'SendWelcomeEmail',
   description: 'Sends a welcome email to newly registered users',
 
-  async handle(request) {
-    const to = request.get('to')
-    const name = request.get('name')
+  async handle({ to, name }: WelcomeEmailParams) {
     const appName = 'Stacks'
 
     // TODO: integrate with @stacksjs/email when configured

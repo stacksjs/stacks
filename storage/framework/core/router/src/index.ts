@@ -18,7 +18,7 @@ export { getCurrentRequest, request, runWithRequest, setCurrentRequest } from '.
 
 // Export Middleware class for defining route middleware
 export { Middleware } from './middleware'
-export type { MiddlewareConfig } from './middleware'
+export type { MiddlewareConfig, Request } from './middleware'
 
 // Export route loader
 export { loadRoutes } from './route-loader'

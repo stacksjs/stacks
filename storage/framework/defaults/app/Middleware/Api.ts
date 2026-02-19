@@ -1,5 +1,3 @@
-import type { Request } from '@stacksjs/router'
-
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
 
@@ -18,7 +16,7 @@ export default new Middleware({
   name: 'api',
   priority: 1,
 
-  async handle(request: Request) {
+  async handle(request) {
     // Ensure the request accepts JSON
     const accept = request.headers.get('accept') || ''
     if (!accept.includes('application/json') && !accept.includes('*/*')) {

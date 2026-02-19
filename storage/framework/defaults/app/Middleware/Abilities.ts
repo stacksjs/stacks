@@ -1,5 +1,3 @@
-import type { Request } from '@stacksjs/router'
-
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
 
@@ -21,7 +19,7 @@ export default new Middleware({
   name: 'abilities',
   priority: 2, // Run after auth middleware
 
-  async handle(request: Request) {
+  async handle(request) {
     // Get the required abilities from middleware parameters
     // This would be passed like 'abilities:read,write'
     const requiredAbilities = (request as any)._middlewareParams?.abilities?.split(',') || []

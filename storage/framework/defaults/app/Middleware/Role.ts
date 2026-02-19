@@ -1,5 +1,3 @@
-import type { Request } from '@stacksjs/router'
-
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
 
@@ -21,7 +19,7 @@ export default new Middleware({
   name: 'role',
   priority: 3,
 
-  async handle(request: Request) {
+  async handle(request) {
     const requiredRoles = (request as any)._middlewareParams?.role?.split(',').map((r: string) => r.trim()) || []
 
     if (requiredRoles.length === 0) return

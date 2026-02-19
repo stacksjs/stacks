@@ -1,5 +1,3 @@
-import type { Request } from '@stacksjs/router'
-
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
 
@@ -17,7 +15,7 @@ export default new Middleware({
   name: 'guest',
   priority: 1,
 
-  async handle(request: Request) {
+  async handle(request) {
     const token = (request as any)._currentAccessToken || (request as any)._authenticatedUser
 
     if (token) {

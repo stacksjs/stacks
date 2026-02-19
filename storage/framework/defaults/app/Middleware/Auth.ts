@@ -1,5 +1,3 @@
-import type { Request } from '@stacksjs/router'
-
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
 
@@ -17,11 +15,10 @@ export default new Middleware({
   name: 'Auth',
   priority: 1,
 
-  async handle(request: Request) {
+  async handle(request) {
     const { Auth } = await import('@stacksjs/auth')
 
-    const bearerToken = (request as any).bearerToken?.()
-      || request.headers.get('authorization')?.replace('Bearer ', '')
+    const bearerToken = request.bearerToken()
 
     if (!bearerToken) {
       throw new HttpError(401, 'Unauthorized. No token provided.')

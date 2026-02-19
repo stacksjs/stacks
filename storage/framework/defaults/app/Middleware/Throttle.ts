@@ -1,4 +1,3 @@
-import type { Request } from '@stacksjs/router'
 import { createRateLimitMiddleware, Middleware, parseThrottleString } from '@stacksjs/router'
 
 // Cache for rate limiters to avoid creating new instances for each request
@@ -40,7 +39,7 @@ export default new Middleware({
   name: 'throttle',
   priority: 1, // Run early, after maintenance but before auth
 
-  async handle(request: Request) {
+  async handle(request) {
     // Get throttle params from middleware params (e.g., '60,1' from 'throttle:60,1')
     const params = (request as any)._middlewareParams?.throttle || '60,1'
 
