@@ -49,6 +49,6 @@
   },
   "devDependencies": {
     "better-dx": "^0.2.5",
-    "croner": "^9.1.0"
+    "croner": "^10.0.1"
   }
 }
