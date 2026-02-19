@@ -145,7 +145,11 @@
       "Bash(__NEW_LINE_db9c67b134c4d290__ echo \"=== Checking for any remaining _Post, _Author, _Page references ===\")",
       "Bash(__NEW_LINE_db9c67b134c4d290__ echo \"\")",
       "Bash(/usr/bin/sed -i '' 's/request: RequestInstance\\):/request: RequestInstance<typeof Category>\\):/g' /Users/chrisbreuer/Code/stacks/storage/framework/core/commerce/src/products/categories/update.ts)",
-      "Bash(node --version:*)"
+      "Bash(node --version:*)",
+      "Bash(/usr/bin/tail:*)",
+      "Bash(/usr/bin/awk:*)",
+      "Bash(/usr/bin/tee:*)",
+      "Bash(/usr/bin/head:*)"
     ],
     "deny": [],
     "ask": []
