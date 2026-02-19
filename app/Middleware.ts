@@ -24,6 +24,9 @@ export default {
   'env:staging': 'EnvStaging',
   'env:production': 'EnvProduction',
   'env:prod': 'EnvProduction',
+  'role': 'Role',
+  'permission': 'Permission',
+  'verified': 'EnsureEmailIsVerified',
   // Add more middleware aliases here
   // Note: Use ! prefix for negation (e.g., '!auth', '!env:development')
 } satisfies Middleware

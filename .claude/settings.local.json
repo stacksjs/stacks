@@ -149,7 +149,10 @@
       "Bash(/usr/bin/tail:*)",
       "Bash(/usr/bin/awk:*)",
       "Bash(/usr/bin/tee:*)",
-      "Bash(/usr/bin/head:*)"
+      "Bash(/usr/bin/head:*)",
+      "Bash(BUN_CONFIG_COVERAGE= bun test:*)",
+      "Bash(/usr/bin/wc:*)",
+      "Bash(script -q /tmp/mw-full.txt bun test storage/framework/core/router/tests/middleware.test.ts)"
     ],
     "deny": [],
     "ask": []

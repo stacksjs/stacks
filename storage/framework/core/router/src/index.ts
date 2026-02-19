@@ -16,6 +16,10 @@ export { createStacksRouter, route, serve, serverResponse } from './stacks-route
 // Export request context helpers
 export { getCurrentRequest, request, runWithRequest, setCurrentRequest } from './request-context'
 
+// Export Middleware class for defining route middleware
+export { Middleware } from './middleware'
+export type { MiddlewareConfig } from './middleware'
+
 // Export route loader
 export { loadRoutes } from './route-loader'
 

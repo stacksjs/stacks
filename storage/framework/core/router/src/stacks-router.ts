@@ -42,6 +42,46 @@ interface ChainableRoute {
 const middlewareCache = new Map<string, any>()
 
 /**
+ * Cache for the middleware alias map (loaded once from app/Middleware.ts)
+ */
+let middlewareAliases: Record<string, string> | null = null
+
+/**
+ * Load the middleware alias map from app/Middleware.ts
+ * Maps short names (e.g., 'auth') to class names (e.g., 'Auth')
+ */
+async function getMiddlewareAliases(): Promise<Record<string, string>> {
+  if (middlewareAliases) return middlewareAliases
+
+  try {
+    const aliasModule = await import(p.appPath('Middleware.ts'))
+    middlewareAliases = aliasModule.default || {}
+  }
+  catch {
+    // Fall back to defaults
+    try {
+      const defaultModule = await import(p.storagePath('framework/defaults/app/Middleware.ts'))
+      middlewareAliases = defaultModule.default || {}
+    }
+    catch {
+      middlewareAliases = {}
+    }
+  }
+
+  return middlewareAliases!
+}
+
+/**
+ * Resolve a middleware alias to its class name
+ * e.g., 'auth' → 'Auth', 'verified' → 'EnsureEmailIsVerified'
+ */
+async function resolveMiddlewareName(name: string): Promise<string> {
+  const aliases = await getMiddlewareAliases()
+  // If there's an alias mapping, use it; otherwise capitalize the first letter
+  return aliases[name] || (name.charAt(0).toUpperCase() + name.slice(1))
+}
+
+/**
  * Load a middleware by name
  */
 async function loadMiddleware(name: string): Promise<any> {
@@ -49,31 +89,25 @@ async function loadMiddleware(name: string): Promise<any> {
     return middlewareCache.get(name)
   }
 
-  // Built-in 'auth' middleware - directly uses @stacksjs/auth
-  if (name === 'auth') {
-    const { authMiddlewareHandler } = await import('@stacksjs/auth')
-    middlewareCache.set(name, authMiddlewareHandler)
-    return authMiddlewareHandler
-  }
+  const className = await resolveMiddlewareName(name)
 
-  // For other middleware, try loading from files
+  // Try loading from app/Middleware first (user overrides)
   try {
-    // Try loading from app/Middleware
-    const userPath = p.appPath(`Middleware/${name.charAt(0).toUpperCase() + name.slice(1)}.ts`)
+    const userPath = p.appPath(`Middleware/${className}.ts`)
     const middleware = await import(userPath)
     middlewareCache.set(name, middleware.default)
     return middleware.default
   }
   catch {
+    // Fall back to framework defaults
     try {
-      // Fall back to defaults
-      const defaultPath = p.storagePath(`framework/defaults/middleware/${name.charAt(0).toUpperCase() + name.slice(1)}.ts`)
+      const defaultPath = p.storagePath(`framework/defaults/app/Middleware/${className}.ts`)
       const middleware = await import(defaultPath)
       middlewareCache.set(name, middleware.default)
       return middleware.default
     }
     catch (err) {
-      log.error(`[Router] Failed to load middleware '${name}':`, err)
+      log.error(`[Router] Failed to load middleware '${name}' (resolved to '${className}'):`, err)
       return null
     }
   }

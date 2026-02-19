@@ -8,9 +8,8 @@
 
 import type { Dispatchable, QueueOption, RedisConnectionConfig } from '@stacksjs/types'
 import {
-  BunQueue,
-  type BunJob,
-  type BunJobOptions,
+  Queue as BunQueue,
+  type Job as BunJob,
   batch,
   chain,
   dispatch,
@@ -19,7 +18,6 @@ import {
   getQueueManager,
   QueueManager,
   setQueueManager,
-  // @ts-ignore - bun-queue resolved by Bun's module resolver
 } from 'bun-queue'
 import { log } from '@stacksjs/logging'
 
@@ -35,7 +33,22 @@ export {
   setQueueManager,
 }
 
-export type { BunJob, BunJobOptions }
+export type { BunJob }
+
+interface BunJobOptions {
+  delay?: number
+  attempts?: number
+  backoff?: { type: 'fixed' | 'exponential', delay: number }
+  removeOnComplete?: boolean | number
+  removeOnFail?: boolean | number
+  priority?: number
+  lifo?: boolean
+  timeout?: number
+  jobId?: string
+  dependsOn?: string | string[]
+  keepJobs?: boolean
+  deadLetter?: boolean
+}
 
 /**
  * Redis Queue Driver class

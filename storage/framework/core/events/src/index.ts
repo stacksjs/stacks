@@ -1,7 +1,6 @@
 // thanks to mitt for the base of this wonderful functional event emitter
 
-type ModelEvents = any
-type UserModel = any
+import type { ModelEvents } from '@stacksjs/types'
 
 export type EventType = string | symbol
 
@@ -145,13 +144,12 @@ export default function mitt<Events extends Record<EventType, unknown>>(
  * ```
  */
 
-// TODO: need to create an action that auto generates this Events type from the ./app/Events
 export interface StacksEvents extends ModelEvents, Record<EventType, unknown> {
-  'user:registered': Partial<UserModel>
-  'user:logged-in': Partial<UserModel>
-  'user:logged-out': Partial<UserModel>
-  'user:password-reset': Partial<UserModel>
-  'user:password-changed': Partial<UserModel>
+  'user:registered': Record<string, any>
+  'user:logged-in': Record<string, any>
+  'user:logged-out': Record<string, any>
+  'user:password-reset': Record<string, any>
+  'user:password-changed': Record<string, any>
 }
 
 const events: Emitter<StacksEvents> = mitt<StacksEvents>()
