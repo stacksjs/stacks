@@ -120,7 +120,7 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
   return hooks
 }
 
-interface TraitMethods {
+export interface TraitMethods {
   _taggable?: ReturnType<typeof createTaggableMethods>
   _categorizable?: ReturnType<typeof createCategorizableMethods>
   _commentable?: ReturnType<typeof createCommentableMethods>

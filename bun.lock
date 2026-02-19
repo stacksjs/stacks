@@ -101,6 +101,9 @@
     "storage/framework/core/actions": {
       "name": "@stacksjs/actions",
       "version": "0.70.23",
+      "dependencies": {
+        "@stacksjs/ts-cloud": "^0.1.7",
+      },
       "devDependencies": {
         "@stacksjs/api": "workspace:*",
         "@stacksjs/cli": "workspace:*",
@@ -236,6 +239,7 @@
         "@stacksjs/storage": "^0.70.23",
         "@stacksjs/strings": "^0.70.23",
         "@stacksjs/testing": "^0.70.23",
+        "@stacksjs/ts-cloud": "^0.1.7",
         "@stacksjs/tunnel": "^0.70.23",
         "@stacksjs/types": "^0.70.23",
         "@stacksjs/ui": "^0.70.23",
@@ -567,6 +571,9 @@
     "storage/framework/core/deploy": {
       "name": "@stacksjs/deploy",
       "version": "0.0.0",
+      "dependencies": {
+        "@stacksjs/ts-cloud": "^0.1.7",
+      },
     },
     "storage/framework/core/desktop": {
       "name": "@stacksjs/desktop",
@@ -587,6 +594,9 @@
     "storage/framework/core/dns": {
       "name": "@stacksjs/dns",
       "version": "0.70.23",
+      "dependencies": {
+        "@stacksjs/ts-cloud": "^0.1.7",
+      },
       "devDependencies": {
         "@stacksjs/actions": "workspace:*",
         "@stacksjs/dnsx": "^0.2.2",
@@ -618,6 +628,7 @@
       "version": "0.70.23",
       "dependencies": {
         "@aws-sdk/client-ses": "^3.911.0",
+        "@stacksjs/ts-cloud": "^0.1.7",
       },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
@@ -739,6 +750,7 @@
         "@aws-sdk/client-dynamodb": "^3.0.0",
         "@aws-sdk/client-s3": "^3.0.0",
         "@aws-sdk/client-sesv2": "^3.0.0",
+        "@stacksjs/ts-cloud": "^0.1.7",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -1200,9 +1212,6 @@
         "@vueuse/head": "^2.0.0",
       },
     },
-  },
-  "patchedDependencies": {
-    "bun-query-builder@0.1.11": "patches/bun-query-builder@0.1.11.patch",
   },
   "packages": {
     "@acemir/cssom": ["@acemir/cssom@0.9.31", "", {}, "sha512-ZnR3GSaH+/vJ0YlHau21FjfLYjMpYVIzTD8M8vIEQvIGxeOXyXdzCI140rrCY862p/C/BbzWsjc1dgnM9mkoTA=="],
