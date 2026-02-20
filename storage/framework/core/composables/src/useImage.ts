@@ -38,7 +38,15 @@ export function useImage(options: UseImageOptions): UseImageReturn {
 
   img.onerror = (e) => {
     isLoading.value = false
-    error.value = typeof e === 'string' ? e : 'Failed to load image'
+    if (typeof e === 'string') {
+      error.value = e
+    }
+    else if (e instanceof Event && e.type === 'error') {
+      error.value = `Failed to load image: ${options.src}`
+    }
+    else {
+      error.value = 'Failed to load image'
+    }
   }
 
   if (options.crossorigin)

@@ -65,10 +65,20 @@ export function useFetch(url: string): FetchBuilder {
       const error = ref<any>(null)
       const isFetching = ref(true)
 
+      let parsedBody: any
+      if (body) {
+        try {
+          parsedBody = JSON.parse(body)
+        }
+        catch {
+          parsedBody = body
+        }
+      }
+
       const fetchPromise = client.request(url, {
         method,
         json: method !== 'GET' && method !== 'DELETE',
-        body: body ? JSON.parse(body) : undefined,
+        body: parsedBody,
         headers: {
           Accept: 'application/json',
         },
