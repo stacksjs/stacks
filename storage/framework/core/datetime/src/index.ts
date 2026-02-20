@@ -1,7 +1,15 @@
-// Import directly from @vueuse/core to avoid circular dependency with @stacksjs/browser
-import { useDateFormat, useNow } from '@vueuse/core'
+export { DateTime, now } from './now'
+export { format } from './format'
+export { parse } from './parse'
 
-export const now: typeof useNow = useNow
-export const dateFormat: typeof useDateFormat = useDateFormat
-
-export { format, parse } from '@formkit/tempo'
+/**
+ * Format a date using a token-based format string.
+ * This is a convenience alias for `format()`.
+ *
+ * @example
+ * ```ts
+ * dateFormat(new Date(), 'YYYY-MM-DD HH:mm:ss')
+ * dateFormat('2024-03-15', 'MMMM D, YYYY')
+ * ```
+ */
+export { format as dateFormat } from './format'

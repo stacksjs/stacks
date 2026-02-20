@@ -220,6 +220,7 @@
         "@stacksjs/database": "^0.70.23",
         "@stacksjs/desktop": "^0.70.23",
         "@stacksjs/dns": "^0.70.23",
+        "@stacksjs/dnsx": "^0.2.2",
         "@stacksjs/docs": "^0.70.23",
         "@stacksjs/email": "^0.70.23",
         "@stacksjs/enums": "^0.70.23",
@@ -227,6 +228,7 @@
         "@stacksjs/events": "^0.70.23",
         "@stacksjs/git": "^0.70.23",
         "@stacksjs/health": "^0.70.23",
+        "@stacksjs/httx": "^0.1.5",
         "@stacksjs/lint": "^0.70.23",
         "@stacksjs/logging": "^0.70.23",
         "@stacksjs/notifications": "^0.70.23",
@@ -445,7 +447,6 @@
       "name": "@stacksjs/datetime",
       "version": "0.70.23",
       "devDependencies": {
-        "@formkit/tempo": "^1.0.0",
         "@stacksjs/utils": "workspace:*",
         "better-dx": "^0.2.5",
       },
@@ -506,11 +507,11 @@
       "name": "@stacksjs/dns",
       "version": "0.70.23",
       "dependencies": {
+        "@stacksjs/dnsx": "^0.2.2",
         "@stacksjs/ts-cloud": "^0.1.11",
       },
       "devDependencies": {
         "@stacksjs/actions": "workspace:*",
-        "@stacksjs/dnsx": "^0.2.2",
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/storage": "workspace:*",
@@ -1362,8 +1363,6 @@
 
     "@exodus/bytes": ["@exodus/bytes@1.14.1", "", { "peerDependencies": { "@noble/hashes": "^1.8.0 || ^2.0.0" }, "optionalPeers": ["@noble/hashes"] }, "sha512-OhkBFWI6GcRMUroChZiopRiSp2iAMvEBK47NhJooDqz1RERO4QuZIZnjP63TXX8GAiLABkYmX+fuQsdJ1dd2QQ=="],
 
-    "@formkit/tempo": ["@formkit/tempo@1.0.0", "", {}, "sha512-2jhR8jnWFt4ajtbpHL2ZvJJ+ofj/XpAumb1OLmsY7U5iwCjGKuk0wqLR7dGsZfyvJeivfWLD9vzj9cdkUUWzyg=="],
-
     "@img/sharp-darwin-arm64": ["@img/sharp-darwin-arm64@0.34.5", "", { "optionalDependencies": { "@img/sharp-libvips-darwin-arm64": "1.2.4" }, "os": "darwin", "cpu": "arm64" }, "sha512-imtQ3WMJXbMY4fxb/Ndp6HBTNVtWCUI0WdobyheGf5+ad6xX8VIDO8u2xE4qc/fr08CKG/7dDseFtn6M6g/r3w=="],
 
     "@img/sharp-darwin-x64": ["@img/sharp-darwin-x64@0.34.5", "", { "optionalDependencies": { "@img/sharp-libvips-darwin-x64": "1.2.4" }, "os": "darwin", "cpu": "x64" }, "sha512-YNEFAF/4KQ/PeW0N+r+aVVsoIY0/qxxikF2SWdp+NRkmMB7y9LBZAVqQ4yhGCm/H3H270OSykqmQMKLBhBJDEw=="],
@@ -1659,6 +1658,8 @@
     "@stacksjs/hello-world-vue": ["@stacksjs/hello-world-vue@workspace:storage/framework/libs/components/vue"],
 
     "@stacksjs/http": ["@stacksjs/http@workspace:storage/framework/core/http"],
+
+    "@stacksjs/httx": ["@stacksjs/httx@0.1.5", "", { "bin": { "http": "dist/bin/cli.js", "httx": "dist/bin/cli.js", "https": "dist/bin/cli.js" } }, "sha512-H9bUDDFQ6Wajy7l9oiiDG6kpwu7o8sylIqZduJj8iCpYL2NK4Ri/ovdxzB8NuvyD3K56m12pgjfYcJUbOQfRYw=="],
 
     "@stacksjs/i18n": ["@stacksjs/i18n@workspace:storage/framework/core/i18n"],
 

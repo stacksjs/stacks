@@ -156,7 +156,8 @@
       "WebFetch(domain:github.com)",
       "Bash(gh pr view:*)",
       "Bash(gh pr diff:*)",
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []
