@@ -1,5 +1,5 @@
 import type { Coupons, NewCoupon } from '../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent coupons array using VueUse's useStorage
 const coupons = useStorage<Coupons[]>('coupons', [])

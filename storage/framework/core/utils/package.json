@@ -62,11 +62,6 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@vueuse/core": "^14.2.1",
-    "@vueuse/head": "^2.0.0",
-    "@vueuse/math": "^14.2.1",
-    "@vueuse/shared": "^14.2.1",
-    "magic-regexp": "^0.10.0",
-    "yaml": "^2.8.2"
+    "magic-regexp": "^0.10.0"
   }
 }

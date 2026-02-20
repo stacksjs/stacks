@@ -1,4 +1,4 @@
-import type { Ref } from 'vue'
+import type { Ref } from '@stacksjs/stx'
 
 export interface CalendarStore {
   day: number

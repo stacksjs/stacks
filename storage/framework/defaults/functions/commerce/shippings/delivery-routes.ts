@@ -1,5 +1,5 @@
 import type { DeliveryRoutes, NewDeliveryRoute } from '../../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent delivery routes array using VueUse's useStorage
 const deliveryRoutes = useStorage<DeliveryRoutes[]>('deliveryRoutes', [])

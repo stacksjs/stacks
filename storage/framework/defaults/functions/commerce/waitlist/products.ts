@@ -1,5 +1,5 @@
 import type { WaitlistProduct } from '../../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent waitlist products array using VueUse's useStorage
 const waitlistProducts = useStorage<WaitlistProduct[]>('waitlist_products', [])

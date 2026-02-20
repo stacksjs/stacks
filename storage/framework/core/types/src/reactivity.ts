@@ -1,1 +1,1 @@
-export type { Ref } from 'vue'
+export type { Ref } from '@stacksjs/stx'

@@ -1,5 +1,5 @@
 import type { Posts, StorePost } from '../../types/defaults'
-import { useFetch, useStorage } from '@vueuse/core'
+import { useFetch, useStorage } from '@stacksjs/browser'
 
 // Create a persistent posts array using VueUse's useStorage
 const posts = useStorage<Posts[]>('posts', [])

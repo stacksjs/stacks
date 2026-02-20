@@ -1,5 +1,5 @@
 import type { CalendarLink } from '../types'
-import { useDateFormat } from '@stacksjs/browser'
+import { format } from '@stacksjs/datetime'
 
 const dateFormat = 'YYYYMMDD'
 const timeFormat = 'YYYYMMDDThhmmss'
@@ -12,8 +12,8 @@ export function generateGoogle(link: CalendarLink): string {
   const utcEndDateTime = convertTZ(link.to, 'UTC') // set timezone to UTC
   const dateTimeFormat = link.allDay ? dateFormat : timeFormat
 
-  url = `${url}&dates=${useDateFormat(utcStartDateTime, dateTimeFormat).value}/${
-    useDateFormat(utcEndDateTime, dateTimeFormat).value
+  url = `${url}&dates=${format(utcStartDateTime, dateTimeFormat)}/${
+    format(utcEndDateTime, dateTimeFormat)
   }`
 
   if (link.timezone)

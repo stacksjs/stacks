@@ -1,5 +1,5 @@
 import type { Manufacturers } from '../../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent manufacturers array using VueUse's useStorage
 const manufacturers = useStorage<Manufacturers[]>('manufacturers', [])

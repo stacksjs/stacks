@@ -1,5 +1,5 @@
 import type { LicenseKeys, NewLicenseKey } from '../../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent license keys array using VueUse's useStorage
 const licenseKeys = useStorage<LicenseKeys[]>('licenseKeys', [])

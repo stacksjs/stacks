@@ -1,0 +1,57 @@
+{
+  "name": "@stacksjs/composables",
+  "type": "module",
+  "version": "0.70.23",
+  "description": "Stacks composables powered by stx reactivity.",
+  "author": "Chris Breuer",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.com>"
+  ],
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/composables#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/composables"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "composables",
+    "reactivity",
+    "stx",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "@stacksjs/stx": "^0.2.0",
+    "@stacksjs/httx": "^0.1.5",
+    "@stacksjs/datetime": "workspace:*"
+  },
+  "devDependencies": {
+    "better-dx": "^0.2.5"
+  }
+}

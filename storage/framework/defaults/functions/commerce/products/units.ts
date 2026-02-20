@@ -1,5 +1,5 @@
 import type { Units } from '../../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent units array using VueUse's useStorage
 const units = useStorage<Units[]>('units', [])

@@ -1,5 +1,5 @@
 import type { NewShippingRate, ShippingRates } from '../../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent shipping rates array using VueUse's useStorage
 const shippingRates = useStorage<ShippingRates[]>('shippingRates', [])

@@ -1,5 +1,5 @@
 import type { Categorizables } from '../../types/defaults'
-import { useFetch, useStorage } from '@vueuse/core'
+import { useFetch, useStorage } from '@stacksjs/browser'
 
 // Create a persistent categories array using VueUse's useStorage
 const categorizables = useStorage<Categorizables[]>('categorizables', [])

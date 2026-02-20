@@ -1,5 +1,5 @@
 import type { Drivers, NewDriver } from '../../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent drivers array using VueUse's useStorage
 const drivers = useStorage<Drivers[]>('drivers', [])

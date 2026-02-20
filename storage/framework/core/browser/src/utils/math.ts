@@ -6,11 +6,9 @@ export function rand(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
-// not, -> exported as well in ../regex
+// Re-export reactive math utilities from @stacksjs/composables
 export {
   and,
-  createGenericProjection,
-  createProjection,
   logicNot,
   logicOr,
   or,
@@ -19,12 +17,10 @@ export {
   useCeil,
   useClamp,
   useFloor,
-  useMath,
   useMax,
   useMin,
   usePrecision,
-  useProjection,
   useRound,
   useSum,
   useTrunc,
-} from '@vueuse/math'
+} from '@stacksjs/composables'

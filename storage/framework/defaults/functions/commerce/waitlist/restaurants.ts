@@ -1,5 +1,5 @@
 import type { WaitlistRestaurant } from '../../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent waitlist restaurants array using VueUse's useStorage
 const waitlistRestaurants = useStorage<WaitlistRestaurant[]>('waitlist_restaurants', [])

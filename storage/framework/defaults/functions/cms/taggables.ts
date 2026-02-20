@@ -1,5 +1,5 @@
 import type { Taggables } from '../../types/defaults'
-import { useFetch, useStorage } from '@vueuse/core'
+import { useFetch, useStorage } from '@stacksjs/browser'
 
 // Create a persistent tags array using VueUse's useStorage
 const taggables = useStorage<Taggables[]>('taggables', [])

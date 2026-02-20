@@ -1,7 +1,4 @@
-// Only re-export composables that are actually used in the codebase.
-// The full set of 240+ composables was causing excessive type resolution
-// that crashed Bun's JSC engine on CI runners (SIGILL / OOM at ~1GB RSS).
-// useDateFormat and useNow are also exported from ./date.ts.
+// Re-export composables from @stacksjs/composables
 export {
   useDark,
   useDateFormat,
@@ -11,7 +8,7 @@ export {
   usePreferredDark,
   useStorage,
   useToggle,
-} from '@vueuse/core'
+} from '@stacksjs/composables'
 
 export type {
   HeadObject,

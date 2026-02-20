@@ -1,5 +1,5 @@
 import type { Reviews } from '../../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent reviews array using VueUse's useStorage
 const reviews = useStorage<Reviews[]>('reviews', [])

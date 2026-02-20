@@ -1,4 +1,4 @@
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 export interface GroupedError {
   id: number

@@ -1,5 +1,5 @@
 import type { NewShippingMethod, ShippingMethods } from '../../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent shipping methods array using VueUse's useStorage
 const shippingMethods = useStorage<ShippingMethods[]>('shippingMethods', [])

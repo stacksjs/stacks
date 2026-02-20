@@ -1,5 +1,5 @@
 import type { Products } from '../../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent items array using VueUse's useStorage
 const products = useStorage<Products[]>('products', [])

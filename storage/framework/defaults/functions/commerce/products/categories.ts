@@ -1,5 +1,5 @@
 import type { Categories } from '../../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent categories array using VueUse's useStorage
 const categories = useStorage<Categories[]>('categories', [])

@@ -1,7 +1,7 @@
 import type { AuthComposable, AuthUser, ErrorResponse, LoginError, LoginResponse, MeResponse, RegisterError, RegisterResponse, UserData } from '../types/dashboard'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/composables'
 /// <reference lib="dom" />
-import { ref } from 'vue'
+import { ref } from '@stacksjs/stx'
 
 const token = useStorage('token', '')
 

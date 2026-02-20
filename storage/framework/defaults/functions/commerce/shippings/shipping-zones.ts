@@ -1,5 +1,5 @@
 import type { NewShippingZone, ShippingZones } from '../../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent shipping zones array using VueUse's useStorage
 const shippingZones = useStorage<ShippingZones[]>('shippingZones', [])

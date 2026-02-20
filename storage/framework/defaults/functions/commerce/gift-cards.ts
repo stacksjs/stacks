@@ -1,5 +1,5 @@
 import type { GiftCards } from '../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent gift cards array using VueUse's useStorage
 const giftCards = useStorage<GiftCards[]>('giftCards', [])

@@ -1,5 +1,5 @@
 import type { Payments } from '../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent payments array using VueUse's useStorage
 const payments = useStorage<Payments[]>('payments', [])

@@ -1,5 +1,5 @@
 import type { Customers } from '../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent customers array using VueUse's useStorage
 const customers = useStorage<Customers[]>('customers', [])

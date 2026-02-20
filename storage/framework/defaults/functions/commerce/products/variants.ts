@@ -1,5 +1,5 @@
 import type { ProductVariants } from '../../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent variants array using VueUse's useStorage
 const variants = useStorage<ProductVariants[]>('variants', [])

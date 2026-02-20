@@ -1,5 +1,5 @@
 import type { CalendarLink } from '../types'
-import { useDateFormat, useMax } from '@stacksjs/browser'
+import { format } from '@stacksjs/datetime'
 import md5 from 'crypto-js/md5'
 
 export function generateIcs(link: CalendarLink): string {
@@ -23,14 +23,14 @@ export function generateIcs(link: CalendarLink): string {
   const dateTimeFormat = link.allDay ? dateFormat : formatTime
 
   if (link.allDay) {
-    url.push(`DTSTAMP;TZID=${useDateFormat(link.from, dateTimeFormat).value}`)
-    url.push(`DTSTART:${useDateFormat(link.from, dateTimeFormat).value}`)
-    url.push(`DURATION:P${useMax(1, dateDiffInDays(link.from, link.to)).value}D`)
+    url.push(`DTSTAMP;TZID=${format(link.from, dateTimeFormat)}`)
+    url.push(`DTSTART:${format(link.from, dateTimeFormat)}`)
+    url.push(`DURATION:P${Math.max(1, dateDiffInDays(link.from, link.to))}D`)
   }
   else {
-    url.push(`DTSTAMP;TZID=${useDateFormat(link.from, dateTimeFormat).value}`)
-    url.push(`DTSTART;TZID=${useDateFormat(link.from, dateTimeFormat).value}`)
-    url.push(`DTEND;TZID=${useDateFormat(link.to, dateTimeFormat).value}`)
+    url.push(`DTSTAMP;TZID=${format(link.from, dateTimeFormat)}`)
+    url.push(`DTSTART;TZID=${format(link.from, dateTimeFormat)}`)
+    url.push(`DTEND;TZID=${format(link.to, dateTimeFormat)}`)
   }
 
   if (link.description)
@@ -61,12 +61,8 @@ function dateDiffInDays(from: Date, to: Date): number {
 
 function generateEventUid(link: any): string {
   const atomicFormat = 'YYYY-MM-DDThh:mm:ss+00:00'
-  const from = useDateFormat(link.from, atomicFormat).value
-  const to = useDateFormat(link.to, atomicFormat).value
+  const from = format(link.from, atomicFormat)
+  const to = format(link.to, atomicFormat)
 
   return md5(`${from}${to}${link.title}`).toString()
 }
-
-// function escapeString(field: string): string {
-//   return addcslashes(field, '\r\n,;')
-// }

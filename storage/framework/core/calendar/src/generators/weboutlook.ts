@@ -1,5 +1,5 @@
 import type { CalendarLink } from '../types'
-import { useDateFormat } from '@stacksjs/browser'
+import { format } from '@stacksjs/datetime'
 
 export function generateOutlook(link: CalendarLink): string {
   const dateFormat = 'YYYY-MM-DD'
@@ -14,11 +14,11 @@ export function generateOutlook(link: CalendarLink): string {
   const dateTimeFormat = link.allDay ? dateFormat : timeFormat
 
   url = link.allDay
-    ? `${url}&startdt=${useDateFormat(utcStartDateTime, dateTimeFormat).value}`
-    : `${url}&startdt=${useDateFormat(utcStartDateTime, dateTimeFormat).value}Z`
+    ? `${url}&startdt=${format(utcStartDateTime, dateTimeFormat)}`
+    : `${url}&startdt=${format(utcStartDateTime, dateTimeFormat)}Z`
   url = link.allDay
-    ? `${url}&enddt=${useDateFormat(utcEndDateTime, dateTimeFormat).value}`
-    : `${url}&enddt=${useDateFormat(utcEndDateTime, dateTimeFormat).value}Z`
+    ? `${url}&enddt=${format(utcEndDateTime, dateTimeFormat)}`
+    : `${url}&enddt=${format(utcEndDateTime, dateTimeFormat)}Z`
 
   if (link.allDay)
     url = `${url}&allday=true`

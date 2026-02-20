@@ -1,5 +1,5 @@
 import type { CalendarLink } from '../types'
-import { useDateFormat } from '@stacksjs/browser'
+import { format } from '@stacksjs/datetime'
 
 export function generateYahoo(link: CalendarLink): string {
   const dateFormat = 'YYYYMMDD'
@@ -11,13 +11,13 @@ export function generateYahoo(link: CalendarLink): string {
   const dateTimeFormat = link.allDay ? dateFormat : timeFormat
 
   if (link.allDay) {
-    url = `${url}&ST=${useDateFormat(link.from, dateTimeFormat).value}`
+    url = `${url}&ST=${format(link.from, dateTimeFormat)}`
     url = `${url}&DUR=allday`
-    url = `${url}&ET=${useDateFormat(link.to, dateTimeFormat).value}`
+    url = `${url}&ET=${format(link.to, dateTimeFormat)}`
   }
   else {
-    url = `${url}&ST=${useDateFormat(utcStartDateTime, dateTimeFormat).value}Z`
-    url = `${url}&ET=${useDateFormat(utcEndDateTime, dateTimeFormat).value}Z`
+    url = `${url}&ST=${format(utcStartDateTime, dateTimeFormat)}Z`
+    url = `${url}&ET=${format(utcEndDateTime, dateTimeFormat)}Z`
   }
 
   url = `${url}&TITLE=${encodeURIComponent(link.title)}`

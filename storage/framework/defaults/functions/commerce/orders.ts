@@ -1,5 +1,5 @@
 import type { Orders } from '../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent orders array using VueUse's useStorage
 const orders = useStorage<Orders[]>('orders', [])

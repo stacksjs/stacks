@@ -1,5 +1,5 @@
 import type { DigitalDeliveries } from '../../../types/defaults'
-import { useStorage } from '@vueuse/core'
+import { useStorage } from '@stacksjs/browser'
 
 // Create a persistent digital deliveries array using VueUse's useStorage
 const digitalDeliveries = useStorage<DigitalDeliveries[]>('digitalDeliveries', [])
