@@ -1,27 +1,9 @@
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
-// import { path } from '@stacksjs/path'
-import { log, runCommandSync } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
-
+import { HttxClient } from '@stacksjs/httx'
 import { ExitCode } from '@stacksjs/types'
-
-// function runCommand(command: string): Promise<string> {
-//   return new Promise((resolve, reject) => {
-//     exec(command, { shell: true, cwd: path.projectPath() }, (error, stdout, stderr) => {
-//       if (error) {
-//         console.error(`exec error: ${error}`)
-//         reject(error)
-//       } else {
-//         console.log(error, stdout, stderr)
-//         resolve(stdout)
-//       }
-//     })
-//   })
-// }
-
-// import { Action } from '@stacksjs/enums'
-// import { runAction } from '@stacksjs/actions'
 
 interface HttpOptions {
   verbose?: boolean
@@ -37,20 +19,28 @@ export function http(buddy: CLI): void {
   buddy
     .command('http [domain]', descriptions.http)
     .option('-p, --project [project]', descriptions.project, { default: false })
-    // .option('--verbose', descriptions.verbose, { default: false })
+    .option('-v, --verbose', descriptions.verbose, { default: false })
     .action(async (domain: string | undefined, options: HttpOptions) => {
       log.debug('Running `buddy http [domain]` ...', options)
 
-      // Convert options object to command-line options string
-      const optionsString = Object.entries(options)
-        .filter(([key, value]) => key !== '--' && key.length > 1 && value !== false) // filter out '--' key and short options
-        .map(([key, value]) => `--${key} ${value}`)
-        .join(' ')
+      const url = domain || config.app.url
+      const client = new HttxClient({ verbose: options.verbose })
 
-      const command = `http GET ${domain || config.app.url} ${optionsString}`
+      log.info(`GET ${url}`)
 
-      log.info(`Running command: ${command}`)
-      await runCommandSync(command)
+      const result = await client.request(url.startsWith('http') ? url : `https://${url}`, {
+        method: 'GET',
+      })
+
+      if (result.isOk) {
+        const response = result.value
+        log.info(`${response.status} ${response.statusText} (${response.timings.duration.toFixed(0)}ms)`)
+        console.log(typeof response.data === 'string' ? response.data : JSON.stringify(response.data, null, 2))
+      }
+      else {
+        log.error(`Request failed: ${result.error.message}`)
+        process.exit(ExitCode.FatalError)
+      }
 
       process.exit(ExitCode.Success)
     })

@@ -17,5 +17,4 @@
 // }
 
 export * from './drivers/aws'
-// @ts-ignore - no declaration file
 export * from '@stacksjs/dnsx'

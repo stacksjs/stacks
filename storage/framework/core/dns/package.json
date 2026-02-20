@@ -51,12 +51,12 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/dnsx": "^0.2.2",
     "@stacksjs/ts-cloud": "^0.1.11"
   },
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",
     "better-dx": "^0.2.5",
-    "@stacksjs/dnsx": "^0.2.2",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",

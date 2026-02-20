@@ -1,11 +1,9 @@
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
-import { log, runCommand } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
+import { DnsClient, formatOutput } from '@stacksjs/dnsx'
 import { ExitCode } from '@stacksjs/types'
-
-// import { Action } from '@stacksjs/enums'
-// import { runAction } from '@stacksjs/actions'
 
 interface DnsOptions {
   query?: string
@@ -18,8 +16,6 @@ interface DnsOptions {
   https?: boolean
   short?: boolean
   json?: boolean
-  pretty?: boolean
-  p?: boolean // short for pretty
   verbose?: boolean
 }
 
@@ -36,7 +32,6 @@ export function dns(buddy: CLI): void {
     https: 'Use the DNS-over-HTTPS protocol',
     short: 'Short mode: display nothing but the first result',
     json: 'Display the output as JSON',
-    pretty: 'Display the output as JSON in a pretty format',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
@@ -44,9 +39,9 @@ export function dns(buddy: CLI): void {
   buddy
     .command('dns [domain]', descriptions.dns)
     .option('-q, --query <query>', descriptions.query)
-    .option('-t, --type <type>', descriptions.type, { default: 'ANY' })
+    .option('-t, --type <type>', descriptions.type, { default: 'A' })
     .option('-n, --nameserver <nameserver>', descriptions.nameserver)
-    .option('--class <class>', descriptions.nameserver)
+    .option('--class <class>', descriptions.class)
     // transport options
     .option('-U, --udp', descriptions.udp)
     .option('-T, --tcp', descriptions.tcp)
@@ -55,26 +50,46 @@ export function dns(buddy: CLI): void {
     // output options
     .option('-1, --short', descriptions.short, { default: false })
     .option('-J, --json', descriptions.json, { default: false })
-    .option('-p, --pretty', descriptions.pretty, { default: true })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (domain: string | undefined, options: DnsOptions) => {
       log.debug('Running `buddy dns [domain]` ...', options)
-      // let prettyOutput = false
 
-      // if (options.json && options.pretty)
-      //   prettyOutput = true
+      const targetDomain = domain || config.app.url
 
-      options.pretty = undefined
-      options.p = undefined
+      try {
+        const client = new DnsClient({
+          domains: [targetDomain],
+          type: options.type,
+          nameserver: options.nameserver,
+          class: options.class,
+          udp: options.udp,
+          tcp: options.tcp,
+          tls: options.tls,
+          https: options.https,
+          short: options.short,
+          json: options.json,
+          verbose: options.verbose,
+        })
 
-      // Convert options object to command-line options string
-      const optionsString = Object.entries(options)
-        .filter(([key, value]) => key !== '--' && key.length > 1 && value !== false) // filter out '--' key and short options
-        .map(([key, value]) => `--${key} ${value}`)
-        .join(' ')
+        const startTime = performance.now()
+        const responses = await client.query()
+        const duration = performance.now() - startTime
 
-      await runCommand(`dog ${domain || config.app.url} ${optionsString}`)
+        const output = formatOutput(responses, {
+          json: options.json ?? false,
+          short: options.short ?? false,
+          showDuration: duration,
+          colors: { enabled: true },
+          rawSeconds: false,
+        })
+
+        console.log(output)
+      }
+      catch (error) {
+        log.error(`DNS query failed: ${error instanceof Error ? error.message : String(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
 
       process.exit(ExitCode.Success)
     })

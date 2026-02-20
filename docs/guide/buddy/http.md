@@ -1,6 +1,6 @@
 # HTTP Command
 
-The `buddy http` command provides a powerful HTTP client for testing and debugging API endpoints, proxying the httpie tool for a developer-friendly experience.
+The `buddy http` command provides a powerful HTTP client for testing and debugging API endpoints, powered by [httx](https://github.com/stacksjs/httx) for a developer-friendly experience.
 
 ## Basic Usage
 
@@ -9,7 +9,7 @@ The `buddy http` command provides a powerful HTTP client for testing and debuggi
 buddy http
 
 # GET request to specific URL
-buddy http httpie.io/hello
+buddy http example.com/api/hello
 ```
 
 ## Command Syntax
@@ -63,7 +63,7 @@ buddy http DELETE https://api.example.com/users/1
 ### Basic GET Request
 
 ```bash
-buddy http httpie.io/hello
+buddy http example.com/api/hello
 ```
 
 ### POST with JSON Data
@@ -149,25 +149,25 @@ buddy http localhost:8000 Host:example.com
 Shows response headers and body:
 
 ```bash
-buddy http httpie.io/json
+buddy http example.com/api/json
 ```
 
 ### Headers Only
 
 ```bash
-buddy http --headers httpie.io/json
+buddy http --headers example.com/api/json
 ```
 
 ### Body Only
 
 ```bash
-buddy http --body httpie.io/json
+buddy http --body example.com/api/json
 ```
 
 ### JSON Output
 
 ```bash
-buddy http --json httpie.io/json
+buddy http --json example.com/api/json
 ```
 
 ## Testing Your API
@@ -202,13 +202,13 @@ buddy http POST localhost:3000/api/users \
 ### HTTPS Request
 
 ```bash
-buddy https httpie.io/hello
+buddy https example.com/api/hello
 ```
 
 This is equivalent to:
 
 ```bash
-buddy http https://httpie.io/hello
+buddy http https://example.com/api/hello
 ```
 
 ## Common Patterns

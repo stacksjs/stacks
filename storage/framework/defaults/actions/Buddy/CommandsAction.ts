@@ -512,7 +512,7 @@ export default new Action({
           options: [
             {
               name: 'type',
-              description: 'Proxies dog',
+              description: 'Filter by DNS record type (A, MX, NS, etc.)',
               value_required: false,
             },
           ],
