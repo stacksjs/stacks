@@ -347,6 +347,6 @@
     "@stacksjs/ui": "^0.70.23",
     "@stacksjs/utils": "^0.70.23",
     "@stacksjs/validation": "^0.70.23",
-    "bun-query-builder": "^0.1.11"
+    "bun-query-builder": "^0.1.12"
   }
 }
