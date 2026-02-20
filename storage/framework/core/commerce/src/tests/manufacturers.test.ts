@@ -238,7 +238,7 @@ describe('Manufacturer Module', () => {
       expect(result.next_cursor).toBe(2)
 
       // Fetch the second page
-      const page2 = await fetchByCountry(country)
+      const page2 = await fetchByCountry(country, { page: 2 })
       expect(page2.data.length).toBeGreaterThanOrEqual(1)
       expect(page2.paging.page).toBe(2)
     })

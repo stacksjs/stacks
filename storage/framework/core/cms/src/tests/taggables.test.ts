@@ -201,14 +201,14 @@ describe('Tag Module', () => {
     })
 
     it('should enforce unique slugs on update', async () => {
-      // Create two tags
-    //   const firstTag = await store({
-    //     name: 'First Tag',
-    //     description: 'First tag content',
-    //     taggable_id: 1,
-    //     taggable_type: 'posts',
-    //     is_active: true,
-    //   })
+      // Create two tags with different names
+      await store({
+        name: 'First Tag',
+        description: 'First tag content',
+        taggable_id: 1,
+        taggable_type: 'posts',
+        is_active: true,
+      })
 
       const secondTag = await store({
         name: 'Second Tag',
@@ -218,19 +218,17 @@ describe('Tag Module', () => {
         is_active: true,
       })
 
-      // Try to update second tag to have same name as first (which would generate same slug)
-      try {
-        await update({
-          id: Number(secondTag?.id),
-          name: 'First Tag',
-        })
-        expect(true).toBe(false) // This line should not be reached
-      }
-      catch (error) {
-        expect(error).toBeDefined()
-        expect(error instanceof Error).toBe(true)
-        expect((error as Error).message).toContain('unique')
-      }
+      // Update second tag to have same name as first — uniqueSlug should generate a suffixed slug
+      const updatedTag = await update({
+        id: Number(secondTag?.id),
+        name: 'First Tag',
+      })
+
+      expect(updatedTag).toBeDefined()
+      expect(updatedTag?.name).toBe('First Tag')
+      // The slug should be suffixed since 'first-tag' is already taken
+      expect(updatedTag?.slug).not.toBe('first-tag')
+      expect(updatedTag?.slug?.startsWith('first-tag')).toBe(true)
     })
   })
 

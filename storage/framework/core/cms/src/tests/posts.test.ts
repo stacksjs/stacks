@@ -283,11 +283,12 @@ describe('Post Module', () => {
       const post = await store(postData)
       expect(post).toBeDefined()
 
-      // Create multiple tags
+      // Create multiple tags using unique slugs to avoid collisions with seeded data
+      const uniqueSuffix = Date.now()
       const tagData = [
-        { name: 'JavaScript', description: 'JavaScript content', slug: 'javascript' },
-        { name: 'TypeScript', description: 'TypeScript content', slug: 'typescript' },
-        { name: 'Web Development', description: 'Web dev content', slug: 'web-development' },
+        { name: `JavaScript ${uniqueSuffix}`, description: 'JavaScript content', slug: `javascript-${uniqueSuffix}` },
+        { name: `TypeScript ${uniqueSuffix}`, description: 'TypeScript content', slug: `typescript-${uniqueSuffix}` },
+        { name: `Web Development ${uniqueSuffix}`, description: 'Web dev content', slug: `web-development-${uniqueSuffix}` },
       ]
 
       // Insert tags
@@ -313,21 +314,24 @@ describe('Post Module', () => {
 
       expect(tags).toHaveLength(3)
 
-      // Verify all tags were created with correct associations
-      const postTags = await db
-        .selectFrom('taggable')
-        .selectAll()
-        .where('taggable_type', '=', 'posts')
-        .execute()
+      // Verify all created tags can be fetched by their specific slugs
+      const createdSlugs = tagData.map(t => t.slug)
+      for (const slug of createdSlugs) {
+        const fetched = await db
+          .selectFrom('taggable')
+          .selectAll()
+          .where('slug', '=', slug)
+          .executeTakeFirst()
 
-      expect(postTags).toHaveLength(3)
-      expect(postTags.every(tag => tag.taggable_type === 'posts')).toBe(true)
+        expect(fetched).toBeDefined()
+        expect(fetched?.taggable_type).toBe('posts')
+      }
 
       // Verify tag names
-      const tagNames = postTags.map(tag => tag.name)
-      expect(tagNames).toContain('JavaScript')
-      expect(tagNames).toContain('TypeScript')
-      expect(tagNames).toContain('Web Development')
+      const tagNames = tags.map(tag => tag?.name)
+      expect(tagNames).toContain(`JavaScript ${uniqueSuffix}`)
+      expect(tagNames).toContain(`TypeScript ${uniqueSuffix}`)
+      expect(tagNames).toContain(`Web Development ${uniqueSuffix}`)
     })
   })
 

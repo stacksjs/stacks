@@ -1,5 +1,5 @@
 import { db } from '@stacksjs/database'
-import { formatDate, toTimestamp } from '@stacksjs/orm'
+import { formatDate } from '@stacksjs/orm'
 type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>
 
 /**
@@ -276,8 +276,8 @@ export async function fetchTablesTurnedToday(): Promise<{
   const endOfDay = new Date(today)
   endOfDay.setHours(23, 59, 59, 999)
 
-  const startDateStr = toTimestamp(startOfDay)
-  const endDateStr = toTimestamp(endOfDay)
+  const startDateStr = formatDate(startOfDay)
+  const endDateStr = formatDate(endOfDay)
 
   // Fetch all seated entries for today
   const seatedEntries = await db
@@ -333,8 +333,8 @@ export async function fetchSeatingRate(
     seatingRate: number
     statusBreakdown: Record<string, { count: number, percentage: number }>
   }> {
-  const startDateStr = toTimestamp(startDate)
-  const endDateStr = toTimestamp(endDate)
+  const startDateStr = formatDate(startDate)
+  const endDateStr = formatDate(endDate)
 
   const results = await db
     .selectFrom('waitlist_restaurants')
@@ -382,8 +382,8 @@ export async function fetchNoShowStats(
     breakdownByTablePreference: Record<string, number>
     breakdownByPartySize: Record<number, number>
   }> {
-  const startDateStr = toTimestamp(startDate)
-  const endDateStr = toTimestamp(endDate)
+  const startDateStr = formatDate(startDate)
+  const endDateStr = formatDate(endDate)
 
   // Build base query for no-show entries
   const noShowQuery = db
