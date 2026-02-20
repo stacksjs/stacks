@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS "customers" (
   "last_order" TEXT,
   "status" TEXT default 'Active',
   "avatar" TEXT,
+  "user_id" INTEGER,
   "created_at" TEXT not null default CURRENT_TIMESTAMP,
   "updated_at" TEXT
 );

@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS "gift_cards" (
   "expiry_date" TEXT,
   "last_used_date" TEXT,
   "template_id" TEXT,
+  "customer_id" INTEGER,
+  "uuid" TEXT,
   "created_at" TEXT not null default CURRENT_TIMESTAMP,
   "updated_at" TEXT
 );

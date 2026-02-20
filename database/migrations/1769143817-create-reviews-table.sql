@@ -10,6 +10,9 @@ CREATE TABLE IF NOT EXISTS "reviews" (
   "unhelpful_votes" REAL default 0,
   "purchase_date" TEXT,
   "images" TEXT,
+  "product_id" INTEGER,
+  "customer_id" INTEGER,
+  "uuid" TEXT,
   "created_at" TEXT not null default CURRENT_TIMESTAMP,
   "updated_at" TEXT
 );

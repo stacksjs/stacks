@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS "coupons" (
   "min_order_amount" REAL,
   "max_discount_amount" REAL,
   "free_product_id" TEXT,
+  "product_id" INTEGER,
   "usage_limit" REAL,
   "usage_count" REAL,
   "start_date" TEXT,

@@ -12,6 +12,9 @@ CREATE TABLE IF NOT EXISTS "payments" (
   "payment_provider" TEXT,
   "refund_amount" REAL,
   "notes" TEXT,
+  "order_id" INTEGER,
+  "customer_id" INTEGER,
+  "uuid" TEXT,
   "created_at" TEXT not null default CURRENT_TIMESTAMP,
   "updated_at" TEXT
 );
