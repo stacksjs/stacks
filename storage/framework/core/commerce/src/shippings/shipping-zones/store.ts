@@ -16,7 +16,6 @@ export async function store(data: NewShippingZone): Promise<ShippingZoneJsonResp
     const zoneData = {
       ...data,
       uuid: randomUUIDv7(),
-      shipping_method_id: 1,
     }
 
     const result = await db

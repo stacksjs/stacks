@@ -12,10 +12,18 @@ import { db } from '@stacksjs/database'
 export async function store(data: NewWaitlistRestaurant): Promise<WaitlistRestaurantJsonResponse> {
   try {
     const waitlistData = {
-      ...data,
-      uuid: randomUUIDv7(),
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      party_size: data.party_size,
+      check_in_time: data.check_in_time,
+      table_preference: data.table_preference,
       status: data.status || 'waiting',
-      checkInTime: data.checkInTime ? Math.floor(new Date(data.checkInTime).getTime() / 1000) : undefined,
+      quoted_wait_time: data.quoted_wait_time,
+      actual_wait_time: data.actual_wait_time,
+      queue_position: data.queue_position,
+      customer_id: data.customer_id,
+      uuid: randomUUIDv7(),
     }
 
     const result = await db
@@ -50,10 +58,18 @@ export async function bulkStore(data: NewWaitlistRestaurant[]): Promise<number> 
 
   try {
     const waitlistDataArray = data.map(item => ({
-      ...item,
-      uuid: randomUUIDv7(),
+      name: item.name,
+      email: item.email,
+      phone: item.phone,
+      party_size: item.party_size,
+      check_in_time: item.check_in_time,
+      table_preference: item.table_preference,
       status: item.status || 'waiting',
-      checkInTime: item.checkInTime ? Math.floor(new Date(item.checkInTime).getTime() / 1000) : undefined,
+      quoted_wait_time: item.quoted_wait_time,
+      actual_wait_time: item.actual_wait_time,
+      queue_position: item.queue_position,
+      customer_id: item.customer_id,
+      uuid: randomUUIDv7(),
     }))
 
     const result = await db

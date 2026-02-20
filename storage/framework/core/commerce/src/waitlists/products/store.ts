@@ -12,7 +12,15 @@ import { db } from '@stacksjs/database'
 export async function store(data: NewWaitlistProduct): Promise<WaitlistProductJsonResponse> {
   try {
     const waitlistData = {
-      ...data,
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      quantity: data.quantity,
+      notification_preference: data.notification_preference,
+      source: data.source,
+      notes: data.notes,
+      product_id: data.product_id,
+      customer_id: data.customer_id,
       uuid: randomUUIDv7(),
       status: data.status || 'waiting',
     }
@@ -49,7 +57,15 @@ export async function bulkStore(data: NewWaitlistProduct[]): Promise<number> {
 
   try {
     const waitlistDataArray = data.map(item => ({
-      ...item,
+      name: item.name,
+      email: item.email,
+      phone: item.phone,
+      quantity: item.quantity,
+      notification_preference: item.notification_preference,
+      source: item.source,
+      notes: item.notes,
+      product_id: item.product_id,
+      customer_id: item.customer_id,
       uuid: randomUUIDv7(),
       status: item.status || 'waiting',
     }))

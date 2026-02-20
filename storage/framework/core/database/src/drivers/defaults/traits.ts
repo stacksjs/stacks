@@ -405,28 +405,28 @@ export async function createPostgresCommentsTable(): Promise<void> {
 }
 
 export async function dropCommonTables(): Promise<void> {
-  await db.unsafe('DROP TABLE IF EXISTS passkeys')
-  await db.unsafe('DROP TABLE IF EXISTS password_resets')
-  await db.unsafe('DROP TABLE IF EXISTS query_logs')
-  await db.unsafe('DROP TABLE IF EXISTS categorizables')
-  await db.unsafe('DROP TABLE IF EXISTS commenteable_upvotes')
-  await db.unsafe('DROP TABLE IF EXISTS tags')
-  await db.unsafe('DROP TABLE IF EXISTS taggables')
-  await db.unsafe('DROP TABLE IF EXISTS categorizable_models')
-  await db.unsafe('DROP TABLE IF EXISTS commentables')
-  await db.unsafe('DROP TABLE IF EXISTS comments')
-  await db.unsafe('DROP TABLE IF EXISTS categories_models')
-  await db.unsafe('DROP TABLE IF EXISTS activities')
+  await db.unsafe('DROP TABLE IF EXISTS passkeys').execute()
+  await db.unsafe('DROP TABLE IF EXISTS password_resets').execute()
+  await db.unsafe('DROP TABLE IF EXISTS query_logs').execute()
+  await db.unsafe('DROP TABLE IF EXISTS categorizables').execute()
+  await db.unsafe('DROP TABLE IF EXISTS commenteable_upvotes').execute()
+  await db.unsafe('DROP TABLE IF EXISTS tags').execute()
+  await db.unsafe('DROP TABLE IF EXISTS taggables').execute()
+  await db.unsafe('DROP TABLE IF EXISTS categorizable_models').execute()
+  await db.unsafe('DROP TABLE IF EXISTS commentables').execute()
+  await db.unsafe('DROP TABLE IF EXISTS comments').execute()
+  await db.unsafe('DROP TABLE IF EXISTS categories_models').execute()
+  await db.unsafe('DROP TABLE IF EXISTS activities').execute()
 }
 
 export async function truncateMigrationTables(): Promise<void> {
-  await db.unsafe('DELETE FROM migrations')
-  await db.unsafe('DELETE FROM migration_locks')
+  await db.unsafe('DELETE FROM migrations').execute()
+  await db.unsafe('DELETE FROM migration_locks').execute()
 }
 
 export async function dropMigrationTables(): Promise<void> {
-  await db.unsafe('DROP TABLE IF EXISTS migrations')
-  await db.unsafe('DROP TABLE IF EXISTS migration_locks')
+  await db.unsafe('DROP TABLE IF EXISTS migrations').execute()
+  await db.unsafe('DROP TABLE IF EXISTS migration_locks').execute()
 }
 
 export async function createCommentUpvoteMigration(): Promise<void> {

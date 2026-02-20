@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX IF NOT EXISTS "subscriber_emails_subscriber_emails_email_unique" ON "subscriber_emails" ("email");

@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS "waitlist_restaurants" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "name" TEXT,
+  "email" TEXT,
+  "phone" TEXT,
+  "party_size" REAL,
+  "check_in_time" TEXT,
+  "table_preference" TEXT,
+  "status" TEXT default 'waiting',
+  "quoted_wait_time" REAL,
+  "actual_wait_time" REAL,
+  "queue_position" REAL,
+  "seated_at" TEXT,
+  "no_show_at" TEXT,
+  "cancelled_at" TEXT,
+  "created_at" TEXT not null default CURRENT_TIMESTAMP,
+  "updated_at" TEXT,
+  "uuid" TEXT,
+  "customer_id" INTEGER REFERENCES "customers"("id")
+);

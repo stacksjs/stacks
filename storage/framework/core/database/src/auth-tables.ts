@@ -52,7 +52,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP
         )
-      `)
+      `).execute()
     }
     else if (isMysql) {
       await db.unsafe(`
@@ -68,7 +68,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP NULL
         )
-      `)
+      `).execute()
     }
     else {
       await db.unsafe(`
@@ -84,7 +84,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP
         )
-      `)
+      `).execute()
     }
 
     // Create oauth_access_tokens table
@@ -104,7 +104,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP
         )
-      `)
+      `).execute()
     }
     else if (isMysql) {
       await db.unsafe(`
@@ -120,7 +120,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP NULL
         )
-      `)
+      `).execute()
     }
     else {
       await db.unsafe(`
@@ -136,21 +136,21 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP
         )
-      `)
+      `).execute()
     }
 
     // Create index on access token
     try {
       await db.unsafe(`
         CREATE INDEX IF NOT EXISTS idx_oauth_access_tokens_token ON oauth_access_tokens(token(255))
-      `)
+      `).execute()
     }
     catch {
       // Some databases don't support prefix indexes, try without prefix
       try {
         await db.unsafe(`
           CREATE INDEX IF NOT EXISTS idx_oauth_access_tokens_token ON oauth_access_tokens(token)
-        `)
+        `).execute()
       }
       catch {
         // Index might already exist or not supported
@@ -170,7 +170,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
           expires_at TIMESTAMP,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-      `)
+      `).execute()
     }
     else if (isMysql) {
       await db.unsafe(`
@@ -182,7 +182,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
           expires_at TIMESTAMP NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-      `)
+      `).execute()
     }
     else {
       await db.unsafe(`
@@ -194,20 +194,20 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
           expires_at TIMESTAMP,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-      `)
+      `).execute()
     }
 
     // Create index on refresh token
     try {
       await db.unsafe(`
         CREATE INDEX IF NOT EXISTS idx_oauth_refresh_tokens_token ON oauth_refresh_tokens(token(255))
-      `)
+      `).execute()
     }
     catch {
       try {
         await db.unsafe(`
           CREATE INDEX IF NOT EXISTS idx_oauth_refresh_tokens_token ON oauth_refresh_tokens(token)
-        `)
+        `).execute()
       }
       catch {
         // Index might already exist or not supported
@@ -225,7 +225,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
           token VARCHAR(255) NOT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-      `)
+      `).execute()
     }
     else if (isMysql) {
       await db.unsafe(`
@@ -235,7 +235,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
           token VARCHAR(255) NOT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-      `)
+      `).execute()
     }
     else {
       await db.unsafe(`
@@ -245,14 +245,14 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
           token VARCHAR(255) NOT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-      `)
+      `).execute()
     }
 
     // Create index on password_resets email
     try {
       await db.unsafe(`
         CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email)
-      `)
+      `).execute()
     }
     catch {
       // Index might already exist
@@ -263,7 +263,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
 
     const existing = await db.unsafe(`
       SELECT id FROM oauth_clients WHERE personal_access_client = ${boolTrue} LIMIT 1
-    `)
+    `).execute()
 
     if ((existing as any[])?.length === 0) {
       const secret = randomBytes(40).toString('hex')
@@ -272,13 +272,13 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         await db.unsafe(`
           INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
           VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-        `, ['Personal Access Client', secret, 'local', 'http://localhost', true, false, false])
+        `, ['Personal Access Client', secret, 'local', 'http://localhost', true, false, false]).execute()
       }
       else {
         await db.unsafe(`
           INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ${now})
-        `, ['Personal Access Client', secret, 'local', 'http://localhost', 1, 0, 0])
+        `, ['Personal Access Client', secret, 'local', 'http://localhost', 1, 0, 0]).execute()
       }
 
       if (options.verbose) log.success('Personal access client created')

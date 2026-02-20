@@ -21,9 +21,9 @@ export async function update(id: number, data: WaitlistRestaurantUpdate): Promis
         name: data.name,
         email: data.email,
         phone: data.phone,
-        partySize: data.partySize,
-        checkInTime: data.checkInTime ? Math.floor(new Date(data.checkInTime).getTime() / 1000) : undefined,
-        tablePreference: data.tablePreference,
+        party_size: data.party_size,
+        check_in_time: data.check_in_time ? Math.floor(new Date(data.check_in_time).getTime() / 1000) : undefined,
+        table_preference: data.table_preference,
         status: data.status,
         quoted_wait_time: data.quoted_wait_time,
         actual_wait_time: data.actual_wait_time,
@@ -100,7 +100,7 @@ export async function updatePartySize(
     const result = await db
       .updateTable('waitlist_restaurants')
       .set({
-        partySize,
+        party_size: partySize,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)

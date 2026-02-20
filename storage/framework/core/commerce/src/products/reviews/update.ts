@@ -53,20 +53,24 @@ export async function updateVotes(
   increment: boolean = true,
 ): Promise<ReviewJsonResponse> {
   try {
-    const result = await db
-      .updateTable('reviews')
-      .set({
-        [voteType === 'helpful' ? 'helpful_votes' : 'unhelpful_votes']: increment ? 1 : -1,
-        updated_at: formatDate(new Date()),
-      })
-      .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst()
+    const column = voteType === 'helpful' ? 'helpful_votes' : 'unhelpful_votes'
+    const expr = increment
+      ? `COALESCE("${column}", 0) + 1`
+      : `MAX(COALESCE("${column}", 0) - 1, 0)`
 
-    if (!result)
+    const result = await db
+      .unsafe(
+        `UPDATE "reviews" SET "${column}" = ${expr}, "updated_at" = ? WHERE "id" = ? RETURNING *`,
+        [formatDate(new Date()), id],
+      )
+      .execute()
+
+    const row = Array.isArray(result) ? result[0] : result
+
+    if (!row)
       throw new Error('Failed to update review votes')
 
-    return result
+    return row
   }
   catch (error) {
     if (error instanceof Error) {

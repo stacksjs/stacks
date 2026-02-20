@@ -22,15 +22,15 @@ export async function update(id: number, data: WaitlistProductUpdate): Promise<W
         email: data.email,
         phone: data.phone,
         quantity: data.quantity,
-        notificationPreference: data.notificationPreference,
+        notification_preference: data.notification_preference,
         source: data.source,
         notes: data.notes,
         status: data.status,
         product_id: data.product_id,
         customer_id: data.customer_id,
-        notifiedAt: data.notifiedAt,
-        purchasedAt: data.purchasedAt,
-        cancelledAt: data.cancelledAt,
+        notified_at: data.notified_at,
+        purchased_at: data.purchased_at,
+        cancelled_at: data.cancelled_at,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
@@ -102,7 +102,7 @@ export async function updatePartySize(
     const result = await db
       .updateTable('waitlist_products')
       .set({
-        party_size: partySize,
+        quantity: partySize,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)

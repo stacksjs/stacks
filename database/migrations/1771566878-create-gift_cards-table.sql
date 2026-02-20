@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS "gift_cards" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "code" TEXT,
+  "initial_balance" REAL,
+  "current_balance" REAL,
+  "currency" TEXT,
+  "status" TEXT,
+  "purchaser_id" TEXT,
+  "recipient_email" TEXT,
+  "recipient_name" TEXT,
+  "personal_message" TEXT,
+  "is_digital" INTEGER,
+  "is_reloadable" INTEGER,
+  "is_active" INTEGER default 1,
+  "expiry_date" TEXT,
+  "last_used_date" TEXT,
+  "template_id" TEXT,
+  "created_at" TEXT not null default CURRENT_TIMESTAMP,
+  "updated_at" TEXT,
+  "uuid" TEXT,
+  "customer_id" INTEGER REFERENCES "customers"("id")
+);

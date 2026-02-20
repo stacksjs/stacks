@@ -23,9 +23,9 @@ export async function store(data: NewPost): Promise<PostJsonResponse> {
       poster: data.poster,
       content: data.content,
       excerpt: data.excerpt,
-      isFeatured: data.isFeatured ? Date.now() : undefined,
+      is_featured: data.is_featured ? Date.now() : undefined,
       views: data.views || 0,
-      publishedAt: data.publishedAt || Date.now(),
+      published_at: data.published_at || Date.now(),
       status: data.status || POST_STATUS_DRAFT,
     }
 

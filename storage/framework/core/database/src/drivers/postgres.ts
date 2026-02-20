@@ -44,26 +44,26 @@ export async function dropPostgresTables(): Promise<void> {
 
   await dropMigrationTables()
 
-  for (const table of tables) await db.unsafe(`DROP TABLE IF EXISTS "${table}" CASCADE`)
+  for (const table of tables) await db.unsafe(`DROP TABLE IF EXISTS "${table}" CASCADE`).execute()
   await dropCommonPostgresTables()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
     const pivotTables = await getPivotTables(userModelPath, userModel)
-    for (const pivotTable of pivotTables) await db.unsafe(`DROP TABLE IF EXISTS "${pivotTable.table}" CASCADE`)
+    for (const pivotTable of pivotTables) await db.unsafe(`DROP TABLE IF EXISTS "${pivotTable.table}" CASCADE`).execute()
   }
 }
 
 async function dropCommonPostgresTables(): Promise<void> {
-  await db.unsafe('DROP TABLE IF EXISTS "passkeys" CASCADE')
-  await db.unsafe('DROP TABLE IF EXISTS "password_resets" CASCADE')
-  await db.unsafe('DROP TABLE IF EXISTS "query_logs" CASCADE')
-  await db.unsafe('DROP TABLE IF EXISTS "categorizables" CASCADE')
-  await db.unsafe('DROP TABLE IF EXISTS "commentables" CASCADE')
-  await db.unsafe('DROP TABLE IF EXISTS "comments" CASCADE')
-  await db.unsafe('DROP TABLE IF EXISTS "tags" CASCADE')
-  await db.unsafe('DROP TABLE IF EXISTS "taggables" CASCADE')
-  await db.unsafe('DROP TABLE IF EXISTS "commenteable_upvotes" CASCADE')
+  await db.unsafe('DROP TABLE IF EXISTS "passkeys" CASCADE').execute()
+  await db.unsafe('DROP TABLE IF EXISTS "password_resets" CASCADE').execute()
+  await db.unsafe('DROP TABLE IF EXISTS "query_logs" CASCADE').execute()
+  await db.unsafe('DROP TABLE IF EXISTS "categorizables" CASCADE').execute()
+  await db.unsafe('DROP TABLE IF EXISTS "commentables" CASCADE').execute()
+  await db.unsafe('DROP TABLE IF EXISTS "comments" CASCADE').execute()
+  await db.unsafe('DROP TABLE IF EXISTS "tags" CASCADE').execute()
+  await db.unsafe('DROP TABLE IF EXISTS "taggables" CASCADE').execute()
+  await db.unsafe('DROP TABLE IF EXISTS "commenteable_upvotes" CASCADE').execute()
 }
 
 export async function generatePostgresTraitMigrations(): Promise<void> {
@@ -83,9 +83,9 @@ export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   await deleteFrameworkModels()
   await deleteMigrationFiles()
 
-  await db.unsafe('CREATE TABLE IF NOT EXISTS "migrations" (id SERIAL PRIMARY KEY)')
-  await db.unsafe('CREATE TABLE IF NOT EXISTS "migration_locks" (id SERIAL PRIMARY KEY)')
-  await db.unsafe('CREATE TABLE IF NOT EXISTS "activities" (id SERIAL PRIMARY KEY)')
+  await db.unsafe('CREATE TABLE IF NOT EXISTS "migrations" (id SERIAL PRIMARY KEY)').execute()
+  await db.unsafe('CREATE TABLE IF NOT EXISTS "migration_locks" (id SERIAL PRIMARY KEY)').execute()
+  await db.unsafe('CREATE TABLE IF NOT EXISTS "activities" (id SERIAL PRIMARY KEY)').execute()
 
   return ok('All tables dropped successfully!') as any
 }

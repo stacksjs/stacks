@@ -24,7 +24,7 @@ export async function update(id: number, data: TaxRateUpdate): Promise<TaxRateJs
         country: data.country,
         region: data.region,
         status: data.status,
-        isDefault: data.isDefault,
+        is_default: data.is_default,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)

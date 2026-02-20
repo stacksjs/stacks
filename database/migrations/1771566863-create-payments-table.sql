@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS "payments" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "amount" REAL,
+  "method" TEXT,
+  "status" TEXT,
+  "currency" TEXT,
+  "reference_number" TEXT,
+  "card_last_four" TEXT,
+  "card_brand" TEXT,
+  "billing_email" TEXT,
+  "transaction_id" TEXT REFERENCES "transactions"("id"),
+  "payment_provider" TEXT,
+  "refund_amount" REAL,
+  "notes" TEXT,
+  "created_at" TEXT not null default CURRENT_TIMESTAMP,
+  "updated_at" TEXT,
+  "uuid" TEXT,
+  "order_id" INTEGER REFERENCES "orders"("id"),
+  "customer_id" INTEGER REFERENCES "customers"("id")
+);

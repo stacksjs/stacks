@@ -26,7 +26,7 @@ export async function update(id: number, data: ManufacturerUpdate): Promise<Manu
       .executeTakeFirst()
 
     if (!result)
-      throw new Error('Failed to update manufacturer')
+      throw new Error(`Manufacturer with ID ${id} not found`)
 
     return result as ManufacturerJsonResponse
   }
@@ -36,7 +36,7 @@ export async function update(id: number, data: ManufacturerUpdate): Promise<Manu
         throw new Error('A manufacturer with this name already exists')
       }
 
-      throw new Error(`Failed to update manufacturer: ${error.message}`)
+      throw new Error(error.message)
     }
 
     throw error

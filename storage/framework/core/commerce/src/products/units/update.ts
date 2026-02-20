@@ -29,10 +29,10 @@ export async function update(id: number, data: ProductUnitUpdate): Promise<Produ
       throw new Error('Failed to update product unit')
 
     // If this unit is set as default, update all other units of the same type
-    if (data.isDefault === true && data.type) {
+    if (data.is_default === true && data.type) {
       await db
         .updateTable('product_units')
-        .set({ isDefault: false })
+        .set({ is_default: false })
         .where('type', '=', data.type)
         .where('id', '!=', id)
         .execute()
@@ -77,10 +77,10 @@ export async function bulkUpdate(data: ProductUnitUpdate[]): Promise<number> {
           .executeTakeFirst()
 
         // If this unit is set as default, update all other units of the same type
-        if (unit.isDefault === true && unit.type) {
+        if (unit.is_default === true && unit.type) {
           await trx
             .updateTable('product_units')
-            .set({ isDefault: false })
+            .set({ is_default: false })
             .where('type', '=', unit.type)
             .where('id', '!=', (unit as any).id)
             .execute()
@@ -124,7 +124,7 @@ export async function updateDefaultStatus(id: number, isDefault: boolean): Promi
     const result = await db
       .updateTable('product_units')
       .set({
-        isDefault,
+        is_default: isDefault,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
@@ -134,7 +134,7 @@ export async function updateDefaultStatus(id: number, isDefault: boolean): Promi
     if (isDefault && unit.type) {
       await db
         .updateTable('product_units')
-        .set({ isDefault: false })
+        .set({ is_default: false })
         .where('type', '=', unit.type)
         .where('id', '!=', id)
         .execute()

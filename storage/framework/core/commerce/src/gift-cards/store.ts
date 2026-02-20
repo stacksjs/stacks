@@ -12,9 +12,9 @@ import { db } from '@stacksjs/database'
 export async function store(data: NewGiftCard): Promise<GiftCardJsonResponse | undefined> {
   const giftCardData = {
     ...data,
-    currentBalance: data.initialBalance, // Initially set to same as initial balance
+    current_balance: data.current_balance ?? data.initial_balance,
     status: data.status || 'ACTIVE',
-    isActive: data.isActive ?? true,
+    is_active: data.is_active ?? true,
     uuid: randomUUIDv7(),
   }
 

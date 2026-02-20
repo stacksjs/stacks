@@ -39,14 +39,15 @@ export async function dropSqliteTables(): Promise<void> {
   const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
   const tables = await fetchTables()
 
-  for (const table of tables) await db.unsafe(`DROP TABLE IF EXISTS "${table}"`)
+  for (const table of tables) await db.unsafe(`DROP TABLE IF EXISTS "${table}"`).execute()
+  await db.unsafe('DROP TABLE IF EXISTS "migrations"').execute()
   await dropCommonTables()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
     const pivotTables = await getPivotTables(userModelPath, userModel)
 
-    for (const pivotTable of pivotTables) await db.unsafe(`DROP TABLE IF EXISTS "${pivotTable.table}"`)
+    for (const pivotTable of pivotTables) await db.unsafe(`DROP TABLE IF EXISTS "${pivotTable.table}"`).execute()
   }
 }
 
