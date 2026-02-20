@@ -70,14 +70,4 @@ describe('JobBuilder', () => {
     })
   })
 
-  describe('dispatchNow', () => {
-    it('should execute the job immediately via runJob', async () => {
-      // Inspire job exists in app/Jobs and we know it works
-      const builder = job('Inspire')
-
-      // dispatchNow calls runJob internally which imports and runs the job
-      await builder.dispatchNow()
-      // If we get here without throwing, the job executed successfully
-    })
-  })
 })

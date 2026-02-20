@@ -384,6 +384,8 @@ export class Schedule implements UntimedSchedule {
     }
     else if (this.cronPattern) {
       // Minute+ scheduling: parse() + setTimeout loop
+      // setTimeout max is 2^31-1 ms (~24.8 days). For longer delays, chain shorter timeouts.
+      const MAX_TIMEOUT = 2147483647
       const scheduleNext = () => {
         if (stopped) return
         if (this.options.maxRuns && runCount >= this.options.maxRuns) return
@@ -392,11 +394,20 @@ export class Schedule implements UntimedSchedule {
         if (!nextTime) return
 
         const delay = Math.max(nextTime.getTime() - Date.now(), 0)
-        timer = setTimeout(() => {
-          if (stopped) return
-          executeTask()
-          scheduleNext()
-        }, delay)
+        if (delay > MAX_TIMEOUT) {
+          // Delay exceeds setTimeout max — wait the max then re-check
+          timer = setTimeout(() => {
+            if (stopped) return
+            scheduleNext()
+          }, MAX_TIMEOUT)
+        }
+        else {
+          timer = setTimeout(() => {
+            if (stopped) return
+            executeTask()
+            scheduleNext()
+          }, delay)
+        }
       }
       scheduleNext()
     }

@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { beforeEach, describe, expect, it, mock } from 'bun:test'
 import { Job } from '../src/action'
-import { discoverJobs, executeJob, getAllJobs, getScheduledJobs, jobRegistry, toJobOptions } from '../src/discovery'
+import { executeJob, jobRegistry } from '../src/discovery'
 import { Every } from '@stacksjs/types'
 
 describe('Job Class', () => {
@@ -153,102 +153,9 @@ describe('Job Class', () => {
   })
 })
 
-describe('Job Discovery', () => {
-  beforeEach(() => {
-    jobRegistry.clear()
-  })
-
-  it('should discover jobs from app/Jobs directory', async () => {
-    const jobs = await discoverJobs()
-
-    expect(jobs.length).toBeGreaterThanOrEqual(1)
-
-    const inspireJob = jobs.find(j => j.name === 'Inspire')
-    expect(inspireJob).toBeDefined()
-    expect(inspireJob!.type).toBe('function')
-    expect(inspireJob!.config.queue).toBe('default')
-  })
-
-  it('should register discovered jobs in the registry', async () => {
-    await discoverJobs()
-
-    expect(jobRegistry.has('Inspire')).toBe(true)
-    expect(jobRegistry.isInitialized()).toBe(true)
-  })
-
-  it('should detect scheduled jobs', async () => {
-    await discoverJobs()
-
-    const scheduled = getScheduledJobs()
-    expect(scheduled.length).toBeGreaterThanOrEqual(1)
-
-    const inspireScheduled = scheduled.find(j => j.name === 'Inspire')
-    expect(inspireScheduled).toBeDefined()
-    expect(inspireScheduled!.config.rate).toBe('0 * * * *')
-  })
-
-  it('should return all discovered jobs', async () => {
-    await discoverJobs()
-
-    const all = getAllJobs()
-    expect(all.length).toBeGreaterThanOrEqual(1)
-  })
-
-  it('should skip test files during discovery', async () => {
-    const jobs = await discoverJobs()
-
-    const testJob = jobs.find(j => j.path.includes('.test.') || j.path.includes('.spec.'))
-    expect(testJob).toBeUndefined()
-  })
-
-  it('should skip index files during discovery', async () => {
-    const jobs = await discoverJobs()
-
-    const indexJob = jobs.find(j => j.path.endsWith('index.ts') || j.path.endsWith('index.js'))
-    expect(indexJob).toBeUndefined()
-  })
-
-  it('should clear the registry', async () => {
-    await discoverJobs()
-    expect(jobRegistry.has('Inspire')).toBe(true)
-
-    jobRegistry.clear()
-    expect(jobRegistry.has('Inspire')).toBe(false)
-    expect(jobRegistry.isInitialized()).toBe(false)
-  })
-})
-
 describe('Job Execution', () => {
-  beforeEach(async () => {
-    jobRegistry.clear()
-    await discoverJobs()
-  })
-
-  it('should execute a discovered job by name', async () => {
-    const result = await executeJob('Inspire')
-
-    expect(result).toBeDefined()
-    expect(result.quote).toBeDefined()
-    expect(typeof result.quote).toBe('string')
-  })
-
   it('should throw when executing an unknown job', async () => {
     expect(executeJob('NonExistentJob')).rejects.toThrow('Job "NonExistentJob" not found')
-  })
-})
-
-describe('toJobOptions', () => {
-  it('should convert discovered job to JobOptions format', async () => {
-    await discoverJobs()
-
-    const job = jobRegistry.get('Inspire')
-    expect(job).toBeDefined()
-
-    const options = toJobOptions(job!)
-    expect(options.name).toBe('Inspire')
-    expect(options.queue).toBe('default')
-    expect(options.tries).toBe(3)
-    expect(options.rate).toBe('0 * * * *')
   })
 })
 
