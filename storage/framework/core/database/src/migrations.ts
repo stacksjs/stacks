@@ -6,7 +6,14 @@
  */
 
 import type { Err, Ok, Result } from '@stacksjs/error-handling'
-import { log } from '@stacksjs/cli'
+import { log as _log } from '@stacksjs/logging'
+
+// Defensive log wrapper to handle cases where log methods might not be initialized
+const log = {
+  info: (...args: any[]) => typeof _log?.info === 'function' ? _log.info(...args) : console.log(...args),
+  success: (msg: string) => typeof _log?.success === 'function' ? _log.success(msg) : console.log(msg),
+  warn: (msg: string) => typeof _log?.warn === 'function' ? _log.warn(msg) : console.warn(msg),
+}
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import {

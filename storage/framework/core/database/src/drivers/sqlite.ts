@@ -1,6 +1,10 @@
 import type { Ok } from '@stacksjs/error-handling'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
-import { italic, log } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
+
+function italic(str: string): string {
+  return `\x1B[3m${str}\x1B[23m`
+}
 import { app } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
@@ -35,14 +39,14 @@ export async function dropSqliteTables(): Promise<void> {
   const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
   const tables = await fetchTables()
 
-  for (const table of tables) await (db as any).schema.dropTable(table).ifExists().execute()
+  for (const table of tables) await db.unsafe(`DROP TABLE IF EXISTS "${table}"`)
   await dropCommonTables()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
     const pivotTables = await getPivotTables(userModelPath, userModel)
 
-    for (const pivotTable of pivotTables) await (db as any).schema.dropTable(pivotTable.table).ifExists().execute()
+    for (const pivotTable of pivotTables) await db.unsafe(`DROP TABLE IF EXISTS "${pivotTable.table}"`)
   }
 }
 

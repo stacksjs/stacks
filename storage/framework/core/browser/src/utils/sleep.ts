@@ -80,7 +80,7 @@ export function waitUntil(condition: () => boolean, options: WaitOptions = {}): 
 
 function normalizeOptions(options: WaitOptions): { interval: number, timeout: number } {
   if (typeof options === 'number') {
-    return { interval: 100, timeout: options }
+    return { interval: options, timeout: 0 }
   }
   return {
     interval: options.interval ?? 100,

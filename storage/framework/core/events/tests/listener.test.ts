@@ -56,7 +56,8 @@ describe('Event Listener System', () => {
 
     it('SendWelcomeEmail should return a success result', async () => {
       const mod = await import(appPath('Actions/SendWelcomeEmail.ts'))
-      const result = await mod.default.handle({ to: 'test@example.com', name: 'Test' })
+      const data: Record<string, any> = { to: 'test@example.com', name: 'Test' }
+      const result = await mod.default.handle({ get: (key: string) => data[key] })
 
       expect(result).toBeDefined()
       expect(result.success).toBe(true)
@@ -64,7 +65,8 @@ describe('Event Listener System', () => {
 
     it('NotifyUser should return a success result', async () => {
       const mod = await import(appPath('Actions/NotifyUser.ts'))
-      const result = await mod.default.handle({ id: 1, name: 'Test' })
+      const data: Record<string, any> = { id: 1, name: 'Test' }
+      const result = await mod.default.handle({ get: (key: string) => data[key] })
 
       expect(result).toBeDefined()
       expect(result.success).toBe(true)

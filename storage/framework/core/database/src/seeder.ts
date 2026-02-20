@@ -8,7 +8,7 @@
  */
 
 import type { Attribute, Model, SeedOptions } from '@stacksjs/types'
-import { log } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import { db } from '@stacksjs/database'
 import { faker } from '@stacksjs/faker'
 import { path } from '@stacksjs/path'

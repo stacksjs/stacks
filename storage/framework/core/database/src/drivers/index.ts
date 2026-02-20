@@ -1,6 +1,6 @@
 import type { DateValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, ValidationType } from '@stacksjs/ts-validation'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
-import { log } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
@@ -20,10 +20,10 @@ interface Range {
 }
 
 export async function deleteMigrationFiles(): Promise<void> {
-  const files = await (fs.readdir as any)(path.userMigrationsPath())
+  const files = await fs.promises.readdir(path.userMigrationsPath())
 
-  if ((files as any).length) {
-    for (const file of files as any) {
+  if (files.length) {
+    for (const file of files) {
       if (file.endsWith('.ts')) {
         const migrationPath = path.userMigrationsPath(`${file}`)
 
@@ -35,10 +35,10 @@ export async function deleteMigrationFiles(): Promise<void> {
 }
 
 export async function deleteFrameworkModels(): Promise<void> {
-  const modelFiles = await (fs.readdir as any)(path.frameworkPath('models'))
+  const modelFiles = await fs.promises.readdir(path.frameworkPath('models'))
 
-  if ((modelFiles as any).length) {
-    for (const modelFile of modelFiles as any) {
+  if (modelFiles.length) {
+    for (const modelFile of modelFiles) {
       if (modelFile.endsWith('.ts')) {
         const modelPath = path.frameworkPath(`models/${modelFile}`)
 

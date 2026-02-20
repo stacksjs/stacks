@@ -10,7 +10,7 @@
 
 import process from 'node:process'
 import { randomBytes } from 'node:crypto'
-import { log } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import { db } from './utils'
 
 // Detect database driver from environment

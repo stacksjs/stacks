@@ -1,4 +1,8 @@
-import { italic, log } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
+
+function italic(str: string): string {
+  return `\x1B[3m${str}\x1B[23m`
+}
 import { path } from '@stacksjs/path'
 import { db } from '../../utils'
 import { hasMigrationBeenCreated } from '../index'

@@ -1,7 +1,11 @@
 import type { Ok } from '@stacksjs/error-handling'
 import type { Validator } from '@stacksjs/ts-validation'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
-import { italic, log } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
+
+function italic(str: string): string {
+  return `\x1B[3m${str}\x1B[23m`
+}
 import { createPasswordResetsTable, db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
 import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '@stacksjs/orm'
@@ -40,26 +44,26 @@ export async function dropPostgresTables(): Promise<void> {
 
   await dropMigrationTables()
 
-  for (const table of tables) await (db as any).schema.dropTable(table).cascade().ifExists().execute()
+  for (const table of tables) await db.unsafe(`DROP TABLE IF EXISTS "${table}" CASCADE`)
   await dropCommonPostgresTables()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
     const pivotTables = await getPivotTables(userModelPath, userModel)
-    for (const pivotTable of pivotTables) await (db as any).schema.dropTable(pivotTable.table).cascade().ifExists().execute()
+    for (const pivotTable of pivotTables) await db.unsafe(`DROP TABLE IF EXISTS "${pivotTable.table}" CASCADE`)
   }
 }
 
 async function dropCommonPostgresTables(): Promise<void> {
-  await (db as any).schema.dropTable('passkeys').cascade().ifExists().execute()
-  await (db as any).schema.dropTable('password_resets').cascade().ifExists().execute()
-  await (db as any).schema.dropTable('query_logs').cascade().ifExists().execute()
-  await (db as any).schema.dropTable('categorizables').cascade().ifExists().execute()
-  await (db as any).schema.dropTable('commentables').cascade().ifExists().execute()
-  await (db as any).schema.dropTable('comments').cascade().ifExists().execute()
-  await (db as any).schema.dropTable('tags').cascade().ifExists().execute()
-  await (db as any).schema.dropTable('taggables').cascade().ifExists().execute()
-  await (db as any).schema.dropTable('commenteable_upvotes').cascade().ifExists().execute()
+  await db.unsafe('DROP TABLE IF EXISTS "passkeys" CASCADE')
+  await db.unsafe('DROP TABLE IF EXISTS "password_resets" CASCADE')
+  await db.unsafe('DROP TABLE IF EXISTS "query_logs" CASCADE')
+  await db.unsafe('DROP TABLE IF EXISTS "categorizables" CASCADE')
+  await db.unsafe('DROP TABLE IF EXISTS "commentables" CASCADE')
+  await db.unsafe('DROP TABLE IF EXISTS "comments" CASCADE')
+  await db.unsafe('DROP TABLE IF EXISTS "tags" CASCADE')
+  await db.unsafe('DROP TABLE IF EXISTS "taggables" CASCADE')
+  await db.unsafe('DROP TABLE IF EXISTS "commenteable_upvotes" CASCADE')
 }
 
 export async function generatePostgresTraitMigrations(): Promise<void> {
@@ -79,9 +83,9 @@ export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   await deleteFrameworkModels()
   await deleteMigrationFiles()
 
-  await (db as any).schema.createTable('migrations').ifNotExists().execute()
-  await (db as any).schema.createTable('migration_locks').ifNotExists().execute()
-  await (db as any).schema.createTable('activities').ifNotExists().execute()
+  await db.unsafe('CREATE TABLE IF NOT EXISTS "migrations" (id SERIAL PRIMARY KEY)')
+  await db.unsafe('CREATE TABLE IF NOT EXISTS "migration_locks" (id SERIAL PRIMARY KEY)')
+  await db.unsafe('CREATE TABLE IF NOT EXISTS "activities" (id SERIAL PRIMARY KEY)')
 
   return ok('All tables dropped successfully!') as any
 }

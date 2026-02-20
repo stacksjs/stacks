@@ -159,7 +159,7 @@ HOST=\${DB_HOST:-localhost}
 PORT=\${DB_PORT:-5432}
     `.trim()
 
-    const { parsed } = parse(src)
+    const { parsed } = parse(src, { processEnv: {} })
 
     expect(parsed.HOST).toBe('localhost')
     expect(parsed.PORT).toBe('5432')

@@ -1,4 +1,4 @@
-import { log } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 import { database } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
 import { hasTableBeenMigrated } from '../drivers'

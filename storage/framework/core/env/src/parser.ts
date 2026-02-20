@@ -71,7 +71,7 @@ export function parse(src: string, options: ParseOptions = {}): ParseResult {
     }
 
     // Handle variable expansion ${VAR}
-    value = expandVariables(value, { ...parsed, ...(options.processEnv || process.env) })
+    value = expandVariables(value, { ...(options.processEnv || process.env), ...parsed })
 
     // Handle command substitution $(command)
     value = expandCommands(value)
