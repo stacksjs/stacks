@@ -33,7 +33,6 @@
     "lint:fix": "bunx --bun pickier lint . --fix",
     "typecheck": "bunx --bun tsc --noEmit"
   },
-  "dependencies": {},
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
   }
