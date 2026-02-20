@@ -62,34 +62,40 @@ export async function bulkUpdate(data: ProductUnitUpdate[]): Promise<number> {
   let updatedCount = 0
 
   try {
-    await (db as any).transaction().execute(async (trx: any) => {
-      for (const unit of data) {
-        if (!(unit as any).id)
-          continue
+    for (const unit of data) {
+      const unitRecord = unit as Record<string, unknown>
+      if (!unitRecord.id)
+        continue
 
-        const result = await trx
+      // Support both flat format and { id, data: { ... } } format
+      const updateFields = unitRecord.data && typeof unitRecord.data === 'object'
+        ? unitRecord.data as Record<string, unknown>
+        : { ...unitRecord }
+      delete (updateFields as Record<string, unknown>).id
+
+      const result = await db
+        .updateTable('product_units')
+        .set({
+          ...updateFields,
+          updated_at: formatDate(new Date()),
+        })
+        .where('id', '=', unitRecord.id)
+        .executeTakeFirst()
+
+      // If this unit is set as default, update all other units of the same type
+      const fields = updateFields as Record<string, unknown>
+      if (fields.is_default === true && fields.type) {
+        await db
           .updateTable('product_units')
-          .set({
-            ...unit,
-            updated_at: formatDate(new Date()),
-          })
-          .where('id', '=', (unit as any).id)
-          .executeTakeFirst()
-
-        // If this unit is set as default, update all other units of the same type
-        if (unit.is_default === true && unit.type) {
-          await trx
-            .updateTable('product_units')
-            .set({ is_default: false })
-            .where('type', '=', unit.type)
-            .where('id', '!=', (unit as any).id)
-            .execute()
-        }
-
-        if (Number(result.numUpdatedRows) > 0)
-          updatedCount++
+          .set({ is_default: false })
+          .where('type', '=', fields.type as string)
+          .where('id', '!=', unitRecord.id)
+          .execute()
       }
-    })
+
+      if (Number(result.numUpdatedRows) > 0)
+        updatedCount++
+    }
 
     return updatedCount
   }

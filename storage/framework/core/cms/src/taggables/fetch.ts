@@ -8,17 +8,16 @@ import { findOrCreate } from './store'
  * @param id The ID of the tag to fetch
  * @returns The tag record if found
  */
-export async function fetchTagById(id: number): Promise<TaggableTable> {
+export async function fetchTagById(id: number): Promise<TaggableTable | undefined> {
   try {
     const result = await db
       .selectFrom('taggables')
       .where('id', '=', id)
-      .where('is_active', '=', true)
       .selectAll()
       .executeTakeFirst()
 
     if (!result) {
-      throw new Error(`Tag with ID ${id} not found`)
+      return undefined
     }
 
     return result as unknown as TaggableTable

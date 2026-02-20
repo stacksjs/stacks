@@ -27,10 +27,10 @@ export async function store(data: NewProductUnit): Promise<ProductUnitJsonRespon
       throw new Error('Failed to create product unit')
 
     // If this unit is set as default, update all other units of the same type
-    if (unitData.isDefault) {
+    if ((unitData as Record<string, unknown>).is_default) {
       await db
         .updateTable('product_units')
-        .set({ isDefault: false })
+        .set({ is_default: false })
         .where('type', '=', unitData.type)
         .where('id', '!=', result.id)
         .execute()
@@ -60,32 +60,30 @@ export async function bulkStore(data: NewProductUnit[]): Promise<number> {
   let createdCount = 0
 
   try {
-    await (db as any).transaction().execute(async (trx: any) => {
-      for (const unit of data) {
-        const unitData = {
-          ...unit,
-          uuid: randomUUIDv7(),
-        }
-
-        const result = await trx
-          .insertInto('product_units')
-          .values(unitData)
-          .returningAll()
-          .executeTakeFirst()
-
-        // If this unit is set as default, update all other units of the same type
-        if (unitData.isDefault && result) {
-          await trx
-            .updateTable('product_units')
-            .set({ isDefault: false })
-            .where('type', '=', unitData.type)
-            .where('id', '!=', result.id)
-            .execute()
-        }
-
-        createdCount++
+    for (const unit of data) {
+      const unitData = {
+        ...unit,
+        uuid: randomUUIDv7(),
       }
-    })
+
+      const result = await db
+        .insertInto('product_units')
+        .values(unitData)
+        .returningAll()
+        .executeTakeFirst()
+
+      // If this unit is set as default, update all other units of the same type
+      if ((unitData as Record<string, unknown>).is_default && result) {
+        await db
+          .updateTable('product_units')
+          .set({ is_default: false })
+          .where('type', '=', unitData.type)
+          .where('id', '!=', result.id)
+          .execute()
+      }
+
+      createdCount++
+    }
 
     return createdCount
   }
@@ -110,12 +108,13 @@ export function formatUnitOptions(
   try {
     let query = db
       .selectFrom('product_units')
-      .select(['id', 'name', 'abbreviation', 'is_default'] as any)
-      .orderBy('name') as any
+      .select(['id', 'name', 'abbreviation', 'is_default'] as any) as any
 
     // Filter by type if provided
     if (type)
       query = query.where('type', '=', type)
+
+    query = query.orderBy('name')
 
     // Convert db results to ensure id is string and handle potentially undefined is_default
     return query.execute().then((results: any) =>

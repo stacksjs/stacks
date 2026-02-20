@@ -7,23 +7,21 @@ import { db } from '@stacksjs/database'
  * @returns void
  */
 export async function destroy(id: number): Promise<void> {
-  try {
-    const result = await db
-      .deleteFrom('taggables')
-      .where('id', '=', id)
-      .executeTakeFirst()
+  // First check if the tag exists
+  const tag = await db
+    .selectFrom('taggables')
+    .where('id', '=', id)
+    .selectAll()
+    .executeTakeFirst()
 
-    if (!result) {
-      throw new Error(`Tag with ID ${id} not found`)
-    }
+  if (!tag) {
+    throw new Error(`Tag with ID ${id} not found`)
   }
-  catch (error) {
-    if (error instanceof Error) {
-      throw new TypeError(`Failed to delete tag: ${error.message}`)
-    }
 
-    throw error
-  }
+  await db
+    .deleteFrom('taggables')
+    .where('id', '=', id)
+    .executeTakeFirst()
 }
 
 /**

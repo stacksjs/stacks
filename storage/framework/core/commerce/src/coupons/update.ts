@@ -30,7 +30,14 @@ export async function update(id: number, data: Omit<CouponUpdate, 'id'>): Promis
       .execute()
 
     // Fetch and return the updated coupon
-    return await fetchById(id)
+    const updatedCoupon = await fetchById(id)
+
+    if (updatedCoupon) {
+      // Convert SQLite integer boolean to actual boolean
+      updatedCoupon.is_active = Boolean(updatedCoupon.is_active) as any
+    }
+
+    return updatedCoupon
   }
   catch (error) {
     if (error instanceof Error) {

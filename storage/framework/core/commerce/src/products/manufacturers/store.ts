@@ -54,22 +54,20 @@ export async function bulkStore(data: NewManufacturer[]): Promise<number> {
   let createdCount = 0
 
   try {
-    await (db as any).transaction().execute(async (trx: any) => {
-      for (const manufacturer of data) {
-        const manufacturerData = {
-          ...manufacturer,
-          uuid: randomUUIDv7(),
-          featured: manufacturer.featured ?? false,
-        }
-
-        await trx
-          .insertInto('manufacturers')
-          .values(manufacturerData)
-          .execute()
-
-        createdCount++
+    for (const manufacturer of data) {
+      const manufacturerData = {
+        ...manufacturer,
+        uuid: randomUUIDv7(),
+        featured: manufacturer.featured ?? false,
       }
-    })
+
+      await db
+        .insertInto('manufacturers')
+        .values(manufacturerData)
+        .execute()
+
+      createdCount++
+    }
 
     return createdCount
   }

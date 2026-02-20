@@ -11,9 +11,14 @@ import { fetchById } from './fetch'
  */
 export async function store(data: NewCustomer): Promise<CustomerJsonResponse> {
   try {
+    const customerData = {
+      ...data,
+      avatar: data.avatar ?? 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&fit=crop&q=60',
+    }
+
     const result = await db
       .insertInto('customers')
-      .values(data)
+      .values(customerData)
       .executeTakeFirst()
 
     if (!result)

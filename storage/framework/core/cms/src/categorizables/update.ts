@@ -3,6 +3,7 @@ import { db } from '@stacksjs/database'
 import { slugify } from 'ts-slug'
 
 interface UpdateCategoryData {
+  id: number
   name?: string
   description?: string
   categorizable_type?: string
@@ -13,19 +14,30 @@ interface UpdateCategoryData {
 /**
  * Update a category
  *
- * @param id The category id to update
- * @param data The category data to update
+ * @param data The category data to update (must include id)
  * @returns The updated category record
  */
-export async function update(id: number, data: UpdateCategoryData): Promise<CategorizableTable> {
+export async function update(data: UpdateCategoryData): Promise<CategorizableTable> {
   try {
+    const id = data.id
+
+    if (!id) {
+      throw new Error('Category ID is required for update')
+    }
+
     if (data.name !== undefined) {
+      if (data.name.trim() === '') {
+        throw new Error('Category name cannot be empty')
+      }
       data.slug = slugify(data.name)
     }
 
+    // Remove id from the data to avoid updating it
+    const { id: _id, ...updateData } = data
+
     const result = await db
       .updateTable('categorizables')
-      .set(data as unknown as Record<string, unknown>)
+      .set(updateData as unknown as Record<string, unknown>)
       .where('id', '=', id)
       .returningAll()
       .executeTakeFirst()

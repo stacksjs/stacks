@@ -56,24 +56,19 @@ export async function bulkStore(data: NewPrintDevice[]): Promise<number> {
   let createdCount = 0
 
   try {
-    // Process each print device
-    await (db as any).transaction().execute(async (trx: any) => {
-      for (const device of data) {
-        // Prepare print device data
-        const deviceData = {
-          ...device,
-          uuid: randomUUIDv7(),
-        }
-
-        // Insert the print device
-        await trx
-          .insertInto('print_devices')
-          .values(deviceData as NewPrintDevice)
-          .execute()
-
-        createdCount++
+    for (const device of data) {
+      const deviceData = {
+        ...device,
+        uuid: randomUUIDv7(),
       }
-    })
+
+      await db
+        .insertInto('print_devices')
+        .values(deviceData as NewPrintDevice)
+        .execute()
+
+      createdCount++
+    }
 
     return createdCount
   }

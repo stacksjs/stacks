@@ -656,8 +656,9 @@ export function findUserModel(modelName: string): string {
   return matches[0] ?? ''
 }
 
-export function formatDate(date: Date): string {
-  return date.toISOString().replace('T', ' ').split('.')[0]
+export function formatDate(date: Date | number | string): string {
+  const d = typeof date === 'number' ? new Date(date) : typeof date === 'string' ? new Date(date) : date
+  return d.toISOString().replace('T', ' ').split('.')[0]
 }
 
 export function extractDate(date: Date): string {

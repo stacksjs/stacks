@@ -6,6 +6,7 @@ interface TagData {
   name: string
   description?: string
   is_active?: boolean
+  taggable_id?: number
   taggable_type: string
 }
 
@@ -64,12 +65,37 @@ export async function findOrCreate(data: TagData): Promise<TaggableTable> {
  */
 export async function store(data: TagData): Promise<TaggableTable> {
   try {
-    const tagData = {
+    if (!data.name || data.name.trim() === '') {
+      throw new Error('Tag name is required')
+    }
+
+    if (!data.taggable_type || data.taggable_type.trim() === '') {
+      throw new Error('Tag taggable_type is required')
+    }
+
+    const slug = slugify(data.name)
+
+    // Enforce unique slugs
+    const existingSlug = await db
+      .selectFrom('taggables')
+      .selectAll()
+      .where('slug', '=', slug)
+      .executeTakeFirst()
+
+    if (existingSlug) {
+      throw new Error(`Tag with unique slug "${slug}" already exists`)
+    }
+
+    const tagData: Record<string, unknown> = {
       name: data.name,
-      slug: slugify(data.name),
+      slug,
       description: data.description,
       is_active: data.is_active ?? true,
       taggable_type: data.taggable_type,
+    }
+
+    if (data.taggable_id !== undefined) {
+      tagData.taggable_id = data.taggable_id
     }
 
     const result = await db

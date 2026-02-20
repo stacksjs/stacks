@@ -1,5 +1,5 @@
 import { db } from '@stacksjs/database'
-import { formatDate, toTimestamp } from '@stacksjs/orm'
+import { formatDate } from '@stacksjs/orm'
 type WaitlistProductJsonResponse = ModelRow<typeof WaitlistProduct>
 
 /**
@@ -85,7 +85,7 @@ export async function fetchCountByQuantity(quantity: number): Promise<number> {
   const result = await db
     .selectFrom('waitlist_products')
     .select(((eb: any) => eb.fn.count('id').as('count')) as any)
-    .where('party_size', '=', quantity)
+    .where('quantity', '=', quantity)
     .executeTakeFirst() as { count: number } | undefined
 
   return result?.count ?? 0
@@ -153,8 +153,8 @@ export async function fetchNotifiedBetweenDates(
   startDate: Date,
   endDate: Date,
 ): Promise<WaitlistProductJsonResponse[]> {
-  const startDateStr = toTimestamp(startDate)
-  const endDateStr = toTimestamp(endDate)
+  const startDateStr = formatDate(startDate)
+  const endDateStr = formatDate(endDate)
 
   return await db
     .selectFrom('waitlist_products')
@@ -175,8 +175,8 @@ export async function fetchPurchasedBetweenDates(
   startDate: Date,
   endDate: Date,
 ): Promise<WaitlistProductJsonResponse[]> {
-  const startDateStr = toTimestamp(startDate)
-  const endDateStr = toTimestamp(endDate)
+  const startDateStr = formatDate(startDate)
+  const endDateStr = formatDate(endDate)
 
   return await db
     .selectFrom('waitlist_products')
@@ -197,8 +197,8 @@ export async function fetchCancelledBetweenDates(
   startDate: Date,
   endDate: Date,
 ): Promise<WaitlistProductJsonResponse[]> {
-  const startDateStr = toTimestamp(startDate)
-  const endDateStr = toTimestamp(endDate)
+  const startDateStr = formatDate(startDate)
+  const endDateStr = formatDate(endDate)
 
   return await db
     .selectFrom('waitlist_products')

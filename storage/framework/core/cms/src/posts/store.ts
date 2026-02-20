@@ -14,14 +14,22 @@ export const POST_STATUS_ARCHIVED = 'Archived'
  * @param data The post data to create
  * @returns The created post record
  */
-export async function store(data: NewPost): Promise<PostJsonResponse> {
+export async function store(data: NewPost & { body?: string, category?: string }): Promise<PostJsonResponse & { body?: string, category?: string }> {
   try {
+    if (!data.title || (typeof data.title === 'string' && data.title.trim() === '')) {
+      throw new Error('Post title is required')
+    }
+
+    // Map body -> content if body is provided and content is not
+    const content = data.content || data.body
+    const category = data.category
+
     const postData = {
       author_id: data.author_id,
       uuid: randomUUIDv7(),
       title: data.title,
       poster: data.poster,
-      content: data.content,
+      content,
       excerpt: data.excerpt,
       is_featured: data.is_featured ? Date.now() : undefined,
       views: data.views || 0,
@@ -38,7 +46,16 @@ export async function store(data: NewPost): Promise<PostJsonResponse> {
     if (!result)
       throw new Error('Failed to create post')
 
-    return result as PostJsonResponse
+    // Add body and category aliases to the result
+    const postResult = result as Record<string, unknown>
+    if (data.body !== undefined) {
+      postResult.body = data.body
+    }
+    if (category !== undefined) {
+      postResult.category = category
+    }
+
+    return postResult as PostJsonResponse & { body?: string, category?: string }
   }
   catch (error) {
     if (error instanceof Error)

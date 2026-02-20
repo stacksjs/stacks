@@ -21,7 +21,7 @@ export async function update(id: number, data: WaitlistProductUpdate): Promise<W
         name: data.name,
         email: data.email,
         phone: data.phone,
-        quantity: data.quantity,
+        quantity: data.quantity ?? (data as any).party_size,
         notification_preference: data.notification_preference,
         source: data.source,
         notes: data.notes,

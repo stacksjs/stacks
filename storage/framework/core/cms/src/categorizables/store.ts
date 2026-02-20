@@ -22,6 +22,14 @@ interface CategorizableModelData {
  */
 export async function store(data: CategoryData): Promise<CategorizableTable> {
   try {
+    if (!data.name || data.name.trim() === '') {
+      throw new Error('Category name is required')
+    }
+
+    if (!data.categorizable_type || data.categorizable_type.trim() === '') {
+      throw new Error('Category categorizable_type is required')
+    }
+
     const categoryData = {
       name: data.name,
       slug: slugify(data.name),
@@ -30,22 +38,16 @@ export async function store(data: CategoryData): Promise<CategorizableTable> {
       is_active: data.is_active ?? true,
     }
 
-    // Start a transaction to ensure both inserts succeed or fail together
-    const result = await db.transaction(async (trx: any) => {
-      // Insert into categorizable table first
-      const category = await trx
-        .insertInto('categorizables')
-        .values(categoryData)
-        .returningAll()
-        .executeTakeFirst()
+    const category = await db
+      .insertInto('categorizables')
+      .values(categoryData)
+      .returningAll()
+      .executeTakeFirst()
 
-      if (!category)
-        throw new Error('Failed to create category')
+    if (!category)
+      throw new Error('Failed to create category')
 
-      return category
-    })
-
-    return result as CategorizableTable
+    return category as CategorizableTable
   }
   catch (error) {
     if (error instanceof Error)

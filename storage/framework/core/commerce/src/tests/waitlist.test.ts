@@ -31,14 +31,13 @@ describe('Waitlist Product Module', () => {
         name: 'John Doe',
         email: 'john@example.com',
         phone: '+1234567890',
-        party_size: 4,
+        quantity: 4,
         notification_preference: 'email',
         source: 'website',
         notes: 'Special request for window seat',
         status: 'waiting',
         product_id: 1,
         customer_id: 1,
-        quantity: 1,
       }
 
       const waitlistProduct = await store(requestData)
@@ -47,7 +46,7 @@ describe('Waitlist Product Module', () => {
       expect(waitlistProduct?.name).toBe('John Doe')
       expect(waitlistProduct?.email).toBe('john@example.com')
       expect(waitlistProduct?.phone).toBe('+1234567890')
-      expect(waitlistProduct?.party_size).toBe(4)
+      expect(waitlistProduct?.quantity).toBe(4)
       expect(waitlistProduct?.notification_preference).toBe('email')
       expect(waitlistProduct?.source).toBe('website')
       expect(waitlistProduct?.notes).toBe('Special request for window seat')
@@ -71,11 +70,10 @@ describe('Waitlist Product Module', () => {
       const minimalRequestData = {
         name: 'Jane Smith',
         email: 'jane@example.com',
-        party_size: 2,
+        quantity: 2,
         notification_preference: 'sms',
         source: 'app',
         product_id: 1,
-        quantity: 1,
         customer_id: 1,
         status: 'waiting',
       }
@@ -85,7 +83,7 @@ describe('Waitlist Product Module', () => {
       expect(waitlistProduct).toBeDefined()
       expect(waitlistProduct?.name).toBe('Jane Smith')
       expect(waitlistProduct?.email).toBe('jane@example.com')
-      expect(waitlistProduct?.party_size).toBe(2)
+      expect(waitlistProduct?.quantity).toBe(2)
       expect(waitlistProduct?.notification_preference).toBe('sms')
       expect(waitlistProduct?.source).toBe('app')
       expect(waitlistProduct?.status).toBe('waiting') // Default value
@@ -100,36 +98,33 @@ describe('Waitlist Product Module', () => {
           name: 'John Doe',
           email: 'john@example.com',
           phone: '+1234567890',
-          party_size: 4,
+          quantity: 4,
           notification_preference: 'email',
           source: 'website',
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-          quantity: 1,
         },
         {
           name: 'Jane Smith',
           email: 'jane@example.com',
           phone: '+0987654321',
-          party_size: 2,
+          quantity: 2,
           notification_preference: 'sms',
           source: 'app',
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-          quantity: 1,
         },
         {
           name: 'Bob Wilson',
           email: 'bob@example.com',
-          party_size: 6,
+          quantity: 6,
           notification_preference: 'both',
           source: 'social_media',
           status: 'waiting',
           product_id: 3,
           customer_id: 3,
-          quantity: 1,
         },
       ]
 
@@ -154,13 +149,12 @@ describe('Waitlist Product Module', () => {
         name: 'John Doe',
         email: 'john@example.com',
         phone: '+1234567890',
-        party_size: 4,
+        quantity: 4,
         notification_preference: 'email',
         source: 'website',
         status: 'waiting',
         product_id: 1,
         customer_id: 1,
-        quantity: 1,
       }
 
       // Create the waitlist product
@@ -178,13 +172,12 @@ describe('Waitlist Product Module', () => {
         name: 'John Doe Jr',
         email: 'john.jr@example.com',
         phone: '+1234567891',
-        party_size: 5,
+        quantity: 5,
         notification_preference: 'both',
         source: 'app',
         status: 'waiting',
         product_id: 1,
         customer_id: 1,
-        quantity: 1,
       }
 
       const updatedWaitlist = await update(waitlistId, updateData)
@@ -195,7 +188,7 @@ describe('Waitlist Product Module', () => {
       expect(updatedWaitlist?.name).toBe('John Doe Jr')
       expect(updatedWaitlist?.email).toBe('john.jr@example.com')
       expect(updatedWaitlist?.phone).toBe('+1234567891')
-      expect(updatedWaitlist?.party_size).toBe(5)
+      expect(updatedWaitlist?.quantity).toBe(5)
       expect(updatedWaitlist?.notification_preference).toBe('both')
       expect(updatedWaitlist?.source).toBe('app')
       expect(updatedWaitlist?.status).toBe('waiting')
@@ -206,13 +199,12 @@ describe('Waitlist Product Module', () => {
       const requestData = {
         name: 'John Doe',
         email: 'john@example.com',
-        party_size: 4,
+        quantity: 4,
         notification_preference: 'email',
         source: 'website',
         status: 'waiting',
         product_id: 1,
         customer_id: 1,
-        quantity: 1,
       }
 
       const waitlistProduct = await store(requestData)
@@ -240,13 +232,12 @@ describe('Waitlist Product Module', () => {
       const requestData = {
         name: 'John Doe',
         email: 'john@example.com',
-        party_size: 4,
+        quantity: 4,
         notification_preference: 'email',
         source: 'website',
         status: 'waiting',
         product_id: 1,
         customer_id: 1,
-        quantity: 1,
       }
 
       const waitlistProduct = await store(requestData)
@@ -261,7 +252,7 @@ describe('Waitlist Product Module', () => {
       const updatedWaitlist = await updatePartySize(waitlistId, 6)
 
       expect(updatedWaitlist).toBeDefined()
-      expect(updatedWaitlist?.party_size).toBe(6)
+      expect(updatedWaitlist?.quantity).toBe(6)
     })
   })
 
@@ -271,13 +262,12 @@ describe('Waitlist Product Module', () => {
       const requestData = {
         name: 'John Doe',
         email: 'john@example.com',
-        party_size: 4,
+        quantity: 4,
         notification_preference: 'email',
         source: 'website',
         status: 'waiting',
         product_id: 1,
         customer_id: 1,
-        quantity: 1,
       }
 
       // Create the waitlist product
@@ -318,46 +308,42 @@ describe('Waitlist Product Module', () => {
         {
           name: 'John Doe',
           email: 'john@example.com',
-          party_size: 4,
+          quantity: 4,
           notification_preference: 'email',
           source: 'website',
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-          quantity: 1,
         },
         {
           name: 'Jane Smith',
           email: 'jane@example.com',
-          party_size: 2,
+          quantity: 2,
           notification_preference: 'sms',
           source: 'website',
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-          quantity: 1,
         },
         {
           name: 'Bob Wilson',
           email: 'bob@example.com',
-          party_size: 6,
+          quantity: 6,
           notification_preference: 'both',
           source: 'app',
           status: 'waiting',
           product_id: 3,
           customer_id: 3,
-          quantity: 1,
         },
         {
           name: 'Alice Brown',
           email: 'alice@example.com',
-          party_size: 3,
+          quantity: 3,
           notification_preference: 'email',
           source: 'social_media',
           status: 'waiting',
           product_id: 4,
           customer_id: 4,
-          quantity: 1,
         },
       ]
 
@@ -383,24 +369,22 @@ describe('Waitlist Product Module', () => {
         {
           name: 'John Doe',
           email: 'john@example.com',
-          party_size: 4,
+          quantity: 4,
           notification_preference: 'email',
           source: 'website',
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-          quantity: 1,
         },
         {
           name: 'Jane Smith',
           email: 'jane@example.com',
-          party_size: 2,
+          quantity: 2,
           notification_preference: 'sms',
           source: 'website',
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-          quantity: 1,
         },
       ]
 
@@ -429,24 +413,22 @@ describe('Waitlist Product Module', () => {
         {
           name: 'John Doe',
           email: 'john@example.com',
-          party_size: 4,
+          quantity: 4,
           notification_preference: 'email',
           source: 'website',
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-          quantity: 1,
         },
         {
           name: 'Jane Smith',
           email: 'jane@example.com',
-          party_size: 2,
+          quantity: 2,
           notification_preference: 'sms',
           source: 'website',
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-          quantity: 1,
         },
       ]
 
@@ -467,50 +449,47 @@ describe('Waitlist Product Module', () => {
         {
           name: 'John Doe',
           email: 'john@example.com',
-          party_size: 4,
+          quantity: 4,
           notification_preference: 'email',
           source: 'website',
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-          quantity: 1,
         },
         {
           name: 'Jane Smith',
           email: 'jane@example.com',
-          party_size: 4,
+          quantity: 4,
           notification_preference: 'sms',
           source: 'website',
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-          quantity: 1,
         },
         {
           name: 'Bob Wilson',
           email: 'bob@example.com',
-          party_size: 2,
+          quantity: 2,
           notification_preference: 'both',
           source: 'app',
           status: 'waiting',
           product_id: 3,
           customer_id: 3,
-          quantity: 1,
         },
       ]
 
       // Create the waitlist products
       await bulkStore(requests)
 
-      // Test fetching count for party_size = 4
+      // Test fetching count for quantity = 4
       const countOfFour = await fetchCountByQuantity(4)
       expect(countOfFour).toBe(2)
 
-      // Test fetching count for party_size = 2
+      // Test fetching count for quantity = 2
       const countOfTwo = await fetchCountByQuantity(2)
       expect(countOfTwo).toBe(1)
 
-      // Test fetching count for non-existent party_size
+      // Test fetching count for non-existent quantity
       const countOfFive = await fetchCountByQuantity(5)
       expect(countOfFive).toBe(0)
     })
@@ -521,35 +500,32 @@ describe('Waitlist Product Module', () => {
         {
           name: 'John Doe',
           email: 'john@example.com',
-          party_size: 4,
+          quantity: 4,
           notification_preference: 'email',
           source: 'website',
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-          quantity: 1,
         },
         {
           name: 'Jane Smith',
           email: 'jane@example.com',
-          party_size: 4,
+          quantity: 4,
           notification_preference: 'sms',
           source: 'website',
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-          quantity: 1,
         },
         {
           name: 'Bob Wilson',
           email: 'bob@example.com',
-          party_size: 2,
+          quantity: 2,
           notification_preference: 'both',
           source: 'app',
           status: 'waiting',
           product_id: 3,
           customer_id: 3,
-          quantity: 1,
         },
       ]
 
@@ -585,34 +561,31 @@ describe('Waitlist Product Module', () => {
         {
           name: 'John Doe',
           email: 'john@example.com',
-          party_size: 4,
+          quantity: 4,
           notification_preference: 'email',
           source: 'website',
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-          quantity: 1,
         },
         {
           name: 'Jane Smith',
           email: 'jane@example.com',
-          party_size: 2,
+          quantity: 2,
           notification_preference: 'sms',
           source: 'website',
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-          quantity: 1,
         },
         {
           name: 'Bob Wilson',
           email: 'bob@example.com',
-          party_size: 6,
+          quantity: 6,
           notification_preference: 'both',
           source: 'app',
           status: 'waiting',
           product_id: 3,
-          quantity: 1,
           customer_id: 3,
         },
       ]
@@ -640,37 +613,34 @@ describe('Waitlist Product Module', () => {
         {
           name: 'John Doe',
           email: 'john@example.com',
-          party_size: 4,
+          quantity: 4,
           notification_preference: 'email',
           source: 'website',
           status: 'notified',
           product_id: 1,
           customer_id: 1,
           notified_at: formatDate(startDate),
-          quantity: 1,
         },
         {
           name: 'Jane Smith',
           email: 'jane@example.com',
-          party_size: 2,
+          quantity: 2,
           notification_preference: 'sms',
           source: 'website',
           status: 'notified',
           product_id: 2,
           customer_id: 2,
           notified_at: formatDate(endDate),
-          quantity: 1,
         },
         {
           name: 'Bob Wilson',
           email: 'bob@example.com',
-          party_size: 6,
+          quantity: 6,
           notification_preference: 'both',
           source: 'app',
           status: 'waiting',
           product_id: 3,
           customer_id: 3,
-          quantity: 1,
         },
       ]
 
@@ -696,37 +666,34 @@ describe('Waitlist Product Module', () => {
         {
           name: 'John Doe',
           email: 'john@example.com',
-          party_size: 4,
+          quantity: 4,
           notification_preference: 'email',
           source: 'website',
           status: 'purchased',
           product_id: 1,
           customer_id: 1,
           purchased_at: startDate.getTime(),
-          quantity: 1,
         },
         {
           name: 'Jane Smith',
           email: 'jane@example.com',
-          party_size: 2,
+          quantity: 2,
           notification_preference: 'sms',
           source: 'website',
           status: 'purchased',
           product_id: 2,
           customer_id: 2,
           purchased_at: endDate.getTime(),
-          quantity: 1,
         },
         {
           name: 'Bob Wilson',
           email: 'bob@example.com',
-          party_size: 6,
+          quantity: 6,
           notification_preference: 'both',
           source: 'app',
           status: 'waiting',
           product_id: 3,
           customer_id: 3,
-          quantity: 1,
         },
       ]
 
@@ -752,37 +719,34 @@ describe('Waitlist Product Module', () => {
         {
           name: 'John Doe',
           email: 'john@example.com',
-          party_size: 4,
+          quantity: 4,
           notification_preference: 'email',
           source: 'website',
           status: 'cancelled',
           product_id: 1,
           customer_id: 1,
           cancelled_at: formatDate(startDate),
-          quantity: 1,
         },
         {
           name: 'Jane Smith',
           email: 'jane@example.com',
-          party_size: 2,
+          quantity: 2,
           notification_preference: 'sms',
           source: 'website',
           status: 'cancelled',
           product_id: 2,
           customer_id: 2,
           cancelled_at: formatDate(endDate),
-          quantity: 1,
         },
         {
           name: 'Bob Wilson',
           email: 'bob@example.com',
-          party_size: 6,
+          quantity: 6,
           notification_preference: 'both',
           source: 'app',
           status: 'waiting',
           product_id: 3,
           customer_id: 3,
-          quantity: 1,
         },
       ]
 
@@ -803,46 +767,42 @@ describe('Waitlist Product Module', () => {
         {
           name: 'John Doe',
           email: 'john@example.com',
-          party_size: 4,
+          quantity: 4,
           notification_preference: 'email',
           source: 'website',
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-          quantity: 1,
         },
         {
           name: 'Jane Smith',
           email: 'jane@example.com',
-          party_size: 2,
+          quantity: 2,
           notification_preference: 'sms',
           source: 'website',
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-          quantity: 1,
         },
         {
           name: 'Bob Wilson',
           email: 'bob@example.com',
-          party_size: 6,
+          quantity: 6,
           notification_preference: 'both',
           source: 'app',
           status: 'notified',
           product_id: 3,
           customer_id: 3,
-          quantity: 1,
         },
         {
           name: 'Alice Brown',
           email: 'alice@example.com',
-          party_size: 3,
+          quantity: 3,
           notification_preference: 'email',
           source: 'social_media',
           status: 'purchased',
           product_id: 4,
           customer_id: 4,
-          quantity: 1,
         },
       ]
 
@@ -863,35 +823,32 @@ describe('Waitlist Product Module', () => {
         {
           name: 'John Doe',
           email: 'john@example.com',
-          party_size: 4,
+          quantity: 4,
           notification_preference: 'email',
           source: 'website',
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-          quantity: 1,
         },
         {
           name: 'Jane Smith',
           email: 'jane@example.com',
-          party_size: 2,
+          quantity: 2,
           notification_preference: 'sms',
           source: 'website',
           status: 'purchased',
           product_id: 2,
           customer_id: 2,
-          quantity: 1,
         },
         {
           name: 'Bob Wilson',
           email: 'bob@example.com',
-          party_size: 6,
+          quantity: 6,
           notification_preference: 'both',
           source: 'app',
           status: 'cancelled',
           product_id: 3,
           customer_id: 3,
-          quantity: 1,
         },
       ]
 

@@ -48,24 +48,22 @@ export async function bulkUpdate(data: ProductVariantUpdate[]): Promise<number> 
   let updatedCount = 0
 
   try {
-    await (db as any).transaction().execute(async (trx: any) => {
-      for (const variant of data) {
-        if (!(variant as Record<string, unknown>).id)
-          continue
+    for (const variant of data) {
+      if (!(variant as Record<string, unknown>).id)
+        continue
 
-        const result = await trx
-          .updateTable('product_variants')
-          .set({
-            ...variant,
-            updated_at: formatDate(new Date()),
-          })
-          .where('id', '=', (variant as Record<string, unknown>).id)
-          .executeTakeFirst()
+      const result = await db
+        .updateTable('product_variants')
+        .set({
+          ...variant,
+          updated_at: formatDate(new Date()),
+        })
+        .where('id', '=', (variant as Record<string, unknown>).id)
+        .executeTakeFirst()
 
-        if (Number(result.numUpdatedRows) > 0)
-          updatedCount++
-      }
-    })
+      if (Number(result.numUpdatedRows) > 0)
+        updatedCount++
+    }
 
     return updatedCount
   }

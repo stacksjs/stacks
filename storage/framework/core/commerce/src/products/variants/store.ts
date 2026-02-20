@@ -49,21 +49,19 @@ export async function bulkStore(data: NewProductVariant[]): Promise<number> {
   let createdCount = 0
 
   try {
-    await (db as any).transaction().execute(async (trx: any) => {
-      for (const variant of data) {
-        const variantData = {
-          ...variant,
-          uuid: randomUUIDv7(),
-        }
-
-        await trx
-          .insertInto('product_variants')
-          .values(variantData)
-          .execute()
-
-        createdCount++
+    for (const variant of data) {
+      const variantData = {
+        ...variant,
+        uuid: randomUUIDv7(),
       }
-    })
+
+      await db
+        .insertInto('product_variants')
+        .values(variantData)
+        .execute()
+
+      createdCount++
+    }
 
     return createdCount
   }
