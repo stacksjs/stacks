@@ -58,7 +58,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/archiver": "^6.0.4",
+    "@types/archiver": "^7.0.0",
     "archiver": "^7.0.1"
   }
 }
