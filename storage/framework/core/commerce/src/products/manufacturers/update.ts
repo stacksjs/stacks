@@ -32,11 +32,11 @@ export async function update(id: number, data: ManufacturerUpdate): Promise<Manu
   }
   catch (error) {
     if (error instanceof Error) {
-      if (error.message.includes('Duplicate entry') && error.message.includes('manufacturer')) {
+      if ((error.message.includes('Duplicate entry') || error.message.includes('UNIQUE constraint failed')) && error.message.includes('manufacturer')) {
         throw new Error('A manufacturer with this name already exists')
       }
 
-      throw new Error(error.message)
+      throw new Error(`Failed to update manufacturer: ${error.message}`)
     }
 
     throw error

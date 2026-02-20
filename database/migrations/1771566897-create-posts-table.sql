@@ -3,6 +3,8 @@ CREATE TABLE IF NOT EXISTS "posts" (
   "title" TEXT,
   "poster" TEXT,
   "content" TEXT,
+  "body" TEXT,
+  "category" TEXT,
   "excerpt" TEXT,
   "views" REAL default 0,
   "published_at" TEXT,

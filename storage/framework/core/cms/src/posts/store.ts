@@ -22,14 +22,15 @@ export async function store(data: NewPost & { body?: string, category?: string }
 
     // Map body -> content if body is provided and content is not
     const content = data.content || data.body
-    const category = data.category
 
-    const postData = {
+    const postData: Record<string, unknown> = {
       author_id: data.author_id,
       uuid: randomUUIDv7(),
       title: data.title,
       poster: data.poster,
       content,
+      body: data.body,
+      category: data.category,
       excerpt: data.excerpt,
       is_featured: data.is_featured ? Date.now() : undefined,
       views: data.views || 0,
@@ -46,16 +47,7 @@ export async function store(data: NewPost & { body?: string, category?: string }
     if (!result)
       throw new Error('Failed to create post')
 
-    // Add body and category aliases to the result
-    const postResult = result as Record<string, unknown>
-    if (data.body !== undefined) {
-      postResult.body = data.body
-    }
-    if (category !== undefined) {
-      postResult.category = category
-    }
-
-    return postResult as PostJsonResponse & { body?: string, category?: string }
+    return result as PostJsonResponse & { body?: string, category?: string }
   }
   catch (error) {
     if (error instanceof Error)

@@ -101,6 +101,23 @@ interface CommentStore {
  */
 export async function store(data: CommentStore): Promise<CommentablesTable> {
   try {
+    if (!data.title || data.title.trim() === '') {
+      throw new Error('Comment title is required')
+    }
+
+    if (!data.body || data.body.trim() === '') {
+      throw new Error('Comment body is required')
+    }
+
+    if (!data.commentables_type || data.commentables_type.trim() === '') {
+      throw new Error('Comment commentables_type is required')
+    }
+
+    const validStatuses = ['pending', 'approved', 'rejected']
+    if (data.status && !validStatuses.includes(data.status)) {
+      throw new Error(`Invalid comment status: ${data.status}`)
+    }
+
     const commentData = {
       title: data.title,
       body: data.body,

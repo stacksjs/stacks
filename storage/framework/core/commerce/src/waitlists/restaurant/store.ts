@@ -2,6 +2,7 @@ type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>
 type NewWaitlistRestaurant = NewModelData<typeof WaitlistRestaurant>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { formatDate } from '@stacksjs/orm'
 
 /**
  * Create a new restaurant waitlist entry
@@ -16,7 +17,7 @@ export async function store(data: NewWaitlistRestaurant): Promise<WaitlistRestau
       email: data.email,
       phone: data.phone,
       party_size: data.party_size,
-      check_in_time: data.check_in_time,
+      check_in_time: typeof data.check_in_time === 'number' ? formatDate(data.check_in_time) : data.check_in_time,
       table_preference: data.table_preference,
       status: data.status || 'waiting',
       quoted_wait_time: data.quoted_wait_time,
@@ -26,16 +27,31 @@ export async function store(data: NewWaitlistRestaurant): Promise<WaitlistRestau
       uuid: randomUUIDv7(),
     }
 
+    // Filter out undefined values to avoid storing explicit nulls
+    const filteredData: Record<string, any> = {}
+    for (const [key, value] of Object.entries(waitlistData)) {
+      if (value !== undefined) {
+        filteredData[key] = value
+      }
+    }
+
     const result = await db
       .insertInto('waitlist_restaurants')
-      .values(waitlistData)
+      .values(filteredData)
       .returningAll()
       .executeTakeFirst()
 
     if (!result)
       throw new Error('Failed to create restaurant waitlist entry')
 
-    return result as WaitlistRestaurantJsonResponse
+    // Convert null values to undefined for nullable fields
+    const cleaned: any = { ...result }
+    for (const key of Object.keys(cleaned)) {
+      if (cleaned[key] === null)
+        cleaned[key] = undefined
+    }
+
+    return cleaned as WaitlistRestaurantJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -62,7 +78,7 @@ export async function bulkStore(data: NewWaitlistRestaurant[]): Promise<number> 
       email: item.email,
       phone: item.phone,
       party_size: item.party_size,
-      check_in_time: item.check_in_time,
+      check_in_time: typeof item.check_in_time === 'number' ? formatDate(item.check_in_time) : item.check_in_time,
       table_preference: item.table_preference,
       status: item.status || 'waiting',
       quoted_wait_time: item.quoted_wait_time,

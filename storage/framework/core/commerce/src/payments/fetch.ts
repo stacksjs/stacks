@@ -1,4 +1,4 @@
-import { db, sql } from '@stacksjs/database'
+import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 type PaymentJsonResponse = ModelRow<typeof Payment>
 
@@ -238,37 +238,47 @@ export async function fetchMonthlyPaymentTrends(): Promise<Array<{
   // Set to first day of that month
   twelveMonthsAgo.setDate(1)
 
-  // Use SQLite's strftime function for date extraction
-  const monthlyData = await db
+  // Fetch all completed payments within the date range
+  const payments = await db
     .selectFrom('payments')
-    .select([
-      sql`strftime('%Y', created_at) as year` as any,
-      sql`strftime('%m', created_at) as month` as any,
-      (eb: any) => eb.fn.count('id').as('transactions'),
-      (eb: any) => eb.fn.sum('amount').as('revenue'),
-    ] as any)
+    .selectAll()
     .where('created_at', '>=', formatDate(twelveMonthsAgo))
     .where('status', '=', 'completed')
-    .groupBy(sql`strftime('%Y', created_at)` as any)
-    .groupBy(sql`strftime('%m', created_at)` as any)
-    .orderBy('year' as any, 'asc')
-    .orderBy('month' as any, 'asc')
-    .execute() as { year: string, month: string, transactions: number, revenue: number }[]
+    .execute() as any[]
 
-  // Format the results
-  return monthlyData.map((item: any) => {
-    const transactions = Number(item.transactions || 0)
-    const revenue = Number(item.revenue || 0)
+  // Group by year-month in JavaScript
+  const monthlyMap: Record<string, { year: number, month: number, transactions: number, revenue: number }> = {}
+
+  for (const payment of payments) {
+    const createdAt = payment.created_at ? new Date(payment.created_at) : new Date()
+    const year = createdAt.getFullYear()
+    const month = createdAt.getMonth() + 1 // 1-indexed
+    const key = `${year}-${String(month).padStart(2, '0')}`
+
+    if (!monthlyMap[key]) {
+      monthlyMap[key] = { year, month, transactions: 0, revenue: 0 }
+    }
+
+    monthlyMap[key].transactions++
+    monthlyMap[key].revenue += Number(payment.amount || 0)
+  }
+
+  // Convert to array and sort by year-month
+  const sortedKeys = Object.keys(monthlyMap).sort()
+
+  return sortedKeys.map((key) => {
+    const item = monthlyMap[key]!
+    const transactions = item.transactions
+    const revenue = item.revenue
     const average = transactions > 0 ? revenue / transactions : 0
 
     // Format month name
-    const monthIndex = Number(item.month) - 1 // Convert month to 0-based index
-    const monthDate = new Date(Number(item.year), monthIndex, 1)
+    const monthDate = new Date(item.year, item.month - 1, 1)
     const monthName = monthDate.toLocaleString('default', { month: 'short' })
 
     return {
       month: monthName,
-      year: Number(item.year),
+      year: item.year,
       transactions,
       revenue,
       average,
