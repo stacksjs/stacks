@@ -181,7 +181,6 @@ declare global {
   const renderHeadToString: typeof import('../core/browser/src/utils/vendors')['renderHeadToString']
   const resolveComponent: typeof import('vue')['resolveComponent']
   const resolveRef: typeof import('../core/browser/src/utils/vendors')['resolveRef']
-  const resolveUnref: typeof import('../core/browser/src/utils/vendors')['resolveUnref']
   const retry: typeof import('../core/browser/src/utils/retry')['retry']
   const saas: typeof import('../core/browser/src/utils/plans')['saas']
   const setActivePinia: typeof import('pinia')['setActivePinia']

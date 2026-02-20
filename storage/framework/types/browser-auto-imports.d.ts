@@ -181,7 +181,6 @@ declare global {
   const renderHeadToString: typeof import('../core/browser/src/utils/vendors')['renderHeadToString']
   const resolveComponent: typeof import('vue')['resolveComponent']
   const resolveRef: typeof import('../core/browser/src/utils/vendors')['resolveRef']
-  const resolveUnref: typeof import('../core/browser/src/utils/vendors')['resolveUnref']
   const retry: typeof import('../core/browser/src/utils/retry')['retry']
   const saas: typeof import('../core/browser/src/utils/plans')['saas']
   const setActivePinia: typeof import('pinia')['setActivePinia']
@@ -633,7 +632,6 @@ declare module 'vue' {
     readonly renderHeadToString: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['renderHeadToString']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['resolveRef']>
-    readonly resolveUnref: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['resolveUnref']>
     readonly retry: UnwrapRef<typeof import('../core/browser/src/utils/retry')['retry']>
     readonly saas: UnwrapRef<typeof import('../core/browser/src/utils/plans')['saas']>
     readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>

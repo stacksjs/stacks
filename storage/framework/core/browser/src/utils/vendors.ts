@@ -61,7 +61,6 @@ export {
   refThrottled,
   refWithControl,
   resolveRef,
-  resolveUnref,
   setSSRHandler,
   syncRef,
   syncRefs,
