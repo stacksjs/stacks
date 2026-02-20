@@ -52,6 +52,6 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "better-dx": "^0.2.5",
-    "ts-mocker": "^0.1.4"
+    "ts-mocker": "^0.1.6"
   }
 }

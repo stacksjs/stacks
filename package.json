@@ -60,7 +60,7 @@
     "postinstall": "bun scripts/postinstall.ts"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "0.1.9",
+    "@stacksjs/ts-cloud": "0.1.11",
     "@stacksjs/ts-cloud-types": "0.1.9",
     "bun-query-builder": "^0.1.12",
     "stacks": "workspace:*"
