@@ -29,7 +29,8 @@ export async function update(id: number, data: ProductUnitUpdate): Promise<Produ
       throw new Error('Failed to update product unit')
 
     // If this unit is set as default, update all other units of the same type
-    if (data.is_default === true && data.type) {
+    const d = data as Record<string, unknown>
+    if (d.is_default === true && data.type) {
       await db
         .updateTable('product_units')
         .set({ is_default: false })

@@ -23,8 +23,9 @@ export async function store(data: NewPost & { body?: string, category?: string }
     // Map body -> content if body is provided and content is not
     const content = data.content || data.body
 
+    const d = data as Record<string, unknown>
     const postData: Record<string, unknown> = {
-      author_id: data.author_id,
+      author_id: d.author_id,
       uuid: randomUUIDv7(),
       title: data.title,
       poster: data.poster,
@@ -32,9 +33,9 @@ export async function store(data: NewPost & { body?: string, category?: string }
       body: data.body,
       category: data.category,
       excerpt: data.excerpt,
-      is_featured: data.is_featured ? Date.now() : undefined,
+      is_featured: d.is_featured ? Date.now() : undefined,
       views: data.views || 0,
-      published_at: data.published_at || Date.now(),
+      published_at: d.published_at || Date.now(),
       status: data.status || POST_STATUS_DRAFT,
     }
 

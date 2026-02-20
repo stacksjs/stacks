@@ -47,7 +47,7 @@ export async function store(data: CategoryData): Promise<CategorizableTable> {
     if (!category)
       throw new Error('Failed to create category')
 
-    return category as CategorizableTable
+    return category as unknown as CategorizableTable
   }
   catch (error) {
     if (error instanceof Error)

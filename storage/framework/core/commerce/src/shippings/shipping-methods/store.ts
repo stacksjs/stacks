@@ -12,11 +12,12 @@ import { fetchById } from './fetch'
  */
 export async function store(data: NewShippingMethod): Promise<ShippingMethodJsonResponse> {
   try {
+    const d = data as Record<string, unknown>
     const shippingData = {
       name: data.name,
       description: data.description,
-      base_rate: data.base_rate,
-      free_shipping: data.free_shipping,
+      base_rate: d.base_rate,
+      free_shipping: d.free_shipping,
       status: data.status,
       uuid: randomUUIDv7(),
     }

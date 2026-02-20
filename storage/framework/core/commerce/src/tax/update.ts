@@ -15,6 +15,7 @@ export async function update(id: number, data: TaxRateUpdate): Promise<TaxRateJs
     if (!id)
       throw new Error('Tax rate ID is required for update')
 
+    const d = data as Record<string, unknown>
     const result = await db
       .updateTable('tax_rates')
       .set({
@@ -24,7 +25,7 @@ export async function update(id: number, data: TaxRateUpdate): Promise<TaxRateJs
         country: data.country,
         region: data.region,
         status: data.status,
-        is_default: data.is_default,
+        is_default: d.is_default,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)

@@ -15,22 +15,23 @@ export async function update(id: number, data: WaitlistProductUpdate): Promise<W
     if (!id)
       throw new Error('Waitlist product ID is required for update')
 
+    const d = data as Record<string, unknown>
     const result = await db
       .updateTable('waitlist_products')
       .set({
         name: data.name,
         email: data.email,
         phone: data.phone,
-        quantity: data.quantity ?? (data as any).party_size,
-        notification_preference: data.notification_preference,
+        quantity: data.quantity ?? d.party_size,
+        notification_preference: d.notification_preference,
         source: data.source,
         notes: data.notes,
         status: data.status,
         product_id: data.product_id,
         customer_id: data.customer_id,
-        notified_at: data.notified_at,
-        purchased_at: data.purchased_at,
-        cancelled_at: data.cancelled_at,
+        notified_at: d.notified_at,
+        purchased_at: d.purchased_at,
+        cancelled_at: d.cancelled_at,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)

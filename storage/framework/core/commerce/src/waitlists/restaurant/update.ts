@@ -15,15 +15,16 @@ export async function update(id: number, data: WaitlistRestaurantUpdate): Promis
     if (!id)
       throw new Error('Restaurant waitlist entry ID is required for update')
 
+    const d = data as Record<string, unknown>
     const result = await db
       .updateTable('waitlist_restaurants')
       .set({
         name: data.name,
         email: data.email,
         phone: data.phone,
-        party_size: data.party_size,
-        check_in_time: data.check_in_time ? Math.floor(new Date(data.check_in_time).getTime() / 1000) : undefined,
-        table_preference: data.table_preference,
+        party_size: d.party_size,
+        check_in_time: d.check_in_time ? Math.floor(new Date(d.check_in_time as string).getTime() / 1000) : undefined,
+        table_preference: d.table_preference,
         status: data.status,
         quoted_wait_time: data.quoted_wait_time,
         actual_wait_time: data.actual_wait_time,

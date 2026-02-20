@@ -34,7 +34,8 @@ export async function update(id: number, data: Omit<CouponUpdate, 'id'>): Promis
 
     if (updatedCoupon) {
       // Convert SQLite integer boolean to actual boolean
-      updatedCoupon.is_active = Boolean(updatedCoupon.is_active) as any
+      const c = updatedCoupon as Record<string, unknown>
+      c.is_active = Boolean(c.is_active)
     }
 
     return updatedCoupon

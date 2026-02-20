@@ -12,13 +12,14 @@ import { formatDate } from '@stacksjs/orm'
  */
 export async function store(data: NewWaitlistRestaurant): Promise<WaitlistRestaurantJsonResponse> {
   try {
+    const d = data as Record<string, unknown>
     const waitlistData = {
       name: data.name,
       email: data.email,
       phone: data.phone,
-      party_size: data.party_size,
-      check_in_time: typeof data.check_in_time === 'number' ? formatDate(data.check_in_time) : data.check_in_time,
-      table_preference: data.table_preference,
+      party_size: d.party_size,
+      check_in_time: typeof d.check_in_time === 'number' ? formatDate(d.check_in_time) : d.check_in_time,
+      table_preference: d.table_preference,
       status: data.status || 'waiting',
       quoted_wait_time: data.quoted_wait_time,
       actual_wait_time: data.actual_wait_time,
@@ -73,20 +74,23 @@ export async function bulkStore(data: NewWaitlistRestaurant[]): Promise<number> 
     return 0
 
   try {
-    const waitlistDataArray = data.map(item => ({
+    const waitlistDataArray = data.map((item) => {
+      const i = item as Record<string, unknown>
+      return {
       name: item.name,
       email: item.email,
       phone: item.phone,
-      party_size: item.party_size,
-      check_in_time: typeof item.check_in_time === 'number' ? formatDate(item.check_in_time) : item.check_in_time,
-      table_preference: item.table_preference,
+      party_size: i.party_size,
+      check_in_time: typeof i.check_in_time === 'number' ? formatDate(i.check_in_time as number) : i.check_in_time,
+      table_preference: i.table_preference,
       status: item.status || 'waiting',
       quoted_wait_time: item.quoted_wait_time,
       actual_wait_time: item.actual_wait_time,
       queue_position: item.queue_position,
       customer_id: item.customer_id,
       uuid: randomUUIDv7(),
-    }))
+    }
+    })
 
     const result = await db
       .insertInto('waitlist_restaurants')

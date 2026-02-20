@@ -48,7 +48,7 @@
     "release": "./buddy release",
     "changelog": "./buddy changelog",
     "generate": "./buddy generate",
-    "typecheck": "npx tsc --noEmit",
+    "typecheck": "bun tsc --noEmit",
     "types:check": "bun tsc --noEmit",
     "types:fix": "./buddy types:fix",
     "test": "./buddy test",

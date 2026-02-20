@@ -218,11 +218,19 @@ function getDb(): ReturnType<typeof createQueryBuilder> {
 // Initialize config asynchronously in the background
 ensureConfigLoaded()
 
+// The bun-query-builder types `unsafe()` as returning `Promise<any>`, but at
+// runtime it returns a Bun SQL Statement that has `.execute()`. This interface
+// corrects the return type so callers can chain `.execute()` without type errors.
+type UnsafeReturn = Promise<any> & { execute: () => Promise<any> }
+interface Db extends Omit<ReturnType<typeof createQueryBuilder>, 'unsafe'> {
+  unsafe: (query: string, params?: any[]) => UnsafeReturn
+}
+
 /**
  * Lazy proxy for the query builder - connection is only made when first used.
  * This is the main entry point for database operations.
  */
-export const db = new Proxy({} as ReturnType<typeof createQueryBuilder>, {
+export const db = new Proxy({} as Db, {
   get(_target, prop) {
     const instance = getDb()
     const value = (instance as any)[prop]

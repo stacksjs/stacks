@@ -12,12 +12,13 @@ import { formatDate } from '@stacksjs/orm'
  */
 export async function store(data: NewWaitlistProduct): Promise<WaitlistProductJsonResponse> {
   try {
+    const d = data as Record<string, unknown>
     const waitlistData: Record<string, any> = {
       name: data.name,
       email: data.email,
       phone: data.phone,
-      quantity: data.quantity ?? (data as any).party_size,
-      notification_preference: data.notification_preference,
+      quantity: data.quantity ?? d.party_size,
+      notification_preference: d.notification_preference,
       source: data.source,
       notes: data.notes,
       product_id: data.product_id,
@@ -67,12 +68,13 @@ export async function bulkStore(data: NewWaitlistProduct[]): Promise<number> {
 
   try {
     const waitlistDataArray = data.map((item) => {
+      const i = item as Record<string, unknown>
       const entry: Record<string, any> = {
         name: item.name,
         email: item.email,
         phone: item.phone,
-        quantity: item.quantity ?? (item as any).party_size,
-        notification_preference: item.notification_preference,
+        quantity: item.quantity ?? i.party_size,
+        notification_preference: i.notification_preference,
         source: item.source,
         notes: item.notes,
         product_id: item.product_id,

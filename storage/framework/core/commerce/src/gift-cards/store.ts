@@ -10,11 +10,12 @@ import { db } from '@stacksjs/database'
  * @returns The newly created gift card record
  */
 export async function store(data: NewGiftCard): Promise<GiftCardJsonResponse | undefined> {
+  const d = data as Record<string, unknown>
   const giftCardData = {
     ...data,
-    current_balance: data.current_balance ?? data.initial_balance,
+    current_balance: d.current_balance ?? d.initial_balance,
     status: data.status || 'ACTIVE',
-    is_active: data.is_active ?? true,
+    is_active: d.is_active ?? true,
     uuid: randomUUIDv7(),
   }
 
