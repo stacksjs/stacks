@@ -47,7 +47,7 @@ export async function fetchFeatured(limit: number = 10): Promise<ManufacturerJso
 export async function fetchByCountry(country: string, options: FetchManufacturersOptions = {}): Promise<ManufacturerResponse> {
   // Set default values
   const page = (options as any).page || 1
-  const limit = (options as any).limit || 10
+  const limit = (options as any).limit || 2
 
   // Start building the query
   const query = db.selectFrom('manufacturers')
@@ -89,7 +89,7 @@ export async function fetchByCountry(country: string, options: FetchManufacturer
  */
 export async function fetchWithProductCount(options: FetchManufacturersOptions = {}): Promise<ManufacturerJsonResponse[]> {
   // Start building the query
-  const query = db.selectFrom('manufacturers as m')
+  let query = db.selectFrom('manufacturers as m')
     .leftJoin('products as p', 'p.manufacturer_id', '=', 'm.id')
     .select([
       'm.id',
@@ -106,10 +106,10 @@ export async function fetchWithProductCount(options: FetchManufacturersOptions =
 
   // Apply filters if provided
   if (options.country)
-    query.where('m.country', '=', options.country)
+    query = query.where('m.country', '=', options.country)
 
   if (options.featured !== undefined)
-    query.where('m.featured', '=', options.featured)
+    query = query.where('m.featured', '=', options.featured)
 
   // Return all manufacturers
   return query.execute() as Promise<ManufacturerJsonResponse[]>
