@@ -50,14 +50,14 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.994.0",
-    "@aws-sdk/lib-dynamodb": "^3.994.0",
+    "@aws-sdk/client-dynamodb": "^3.995.0",
+    "@aws-sdk/lib-dynamodb": "^3.995.0",
     "bun-query-builder": "^0.1.12",
     "dynamodb-toolbox": "^2.8.0",
     "pg": "^8.18.0"
   },
   "optionalDependencies": {
-    "mysql2": "^3.17.3"
+    "mysql2": "^3.17.4"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",

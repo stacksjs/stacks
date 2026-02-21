@@ -9,9 +9,9 @@
     "dev": "bun --watch run src/index.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.994.0",
-    "@aws-sdk/client-sesv2": "^3.994.0",
-    "@aws-sdk/client-dynamodb": "^3.994.0",
+    "@aws-sdk/client-s3": "^3.995.0",
+    "@aws-sdk/client-sesv2": "^3.995.0",
+    "@aws-sdk/client-dynamodb": "^3.995.0",
     "@stacksjs/ts-cloud": "^0.1.11"
   },
   "devDependencies": {
