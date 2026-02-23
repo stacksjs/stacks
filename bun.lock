@@ -946,7 +946,6 @@
       "version": "0.70.23",
       "dependencies": {
         "@stacksjs/ts-validation": "^0.4.9",
-        "validator": "^13.15.26",
       },
       "devDependencies": {
         "@stacksjs/strings": "workspace:*",
@@ -958,15 +957,6 @@
       "name": "@stacksjs/whois",
       "version": "0.70.23",
       "devDependencies": {
-        "better-dx": "^0.2.5",
-      },
-    },
-    "storage/framework/core/x-ray": {
-      "name": "@stacksjs/x-ray",
-      "version": "0.70.23",
-      "devDependencies": {
-        "@stacksjs/desktop": "workspace:*",
-        "@stacksjs/logging": "workspace:*",
         "better-dx": "^0.2.5",
       },
     },
@@ -1679,8 +1669,6 @@
     "@stacksjs/validation": ["@stacksjs/validation@workspace:storage/framework/core/validation"],
 
     "@stacksjs/whois": ["@stacksjs/whois@workspace:storage/framework/core/whois"],
-
-    "@stacksjs/x-ray": ["@stacksjs/x-ray@workspace:storage/framework/core/x-ray"],
 
     "@stripe/stripe-js": ["@stripe/stripe-js@8.7.0", "", {}, "sha512-tNUerSstwNC1KuHgX4CASGO0Md3CB26IJzSXmVlSuFvhsBP4ZaEPpY4jxWOn9tfdDscuVT4Kqb8cZ2o9nLCgRQ=="],
 
@@ -2669,8 +2657,6 @@
     "uuid": ["uuid@8.3.2", "", { "bin": { "uuid": "dist/bin/uuid" } }, "sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg=="],
 
     "validate-npm-package-license": ["validate-npm-package-license@3.0.4", "", { "dependencies": { "spdx-correct": "^3.0.0", "spdx-expression-parse": "^3.0.0" } }, "sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew=="],
-
-    "validator": ["validator@13.15.26", "", {}, "sha512-spH26xU080ydGggxRyR1Yhcbgx+j3y5jbNXk/8L+iRvdIEQ4uTRH2Sgf2dokud6Q4oAtsbNvJ1Ft+9xmm6IZcA=="],
 
     "version-range": ["version-range@4.15.0", "", {}, "sha512-Ck0EJbAGxHwprkzFO966t4/5QkRuzh+/I1RxhLgUKKwEn+Cd8NwM60mE3AqBZg5gYODoXW0EFsQvbZjRlvdqbg=="],
 
