@@ -55,8 +55,6 @@
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "better-dx": "^0.2.5",
-    "@stacksjs/env": "workspace:*",
-    "source-map-support": "^0.5.21"
-  },
-  "workspaces": ["core/*"]
+    "@stacksjs/env": "workspace:*"
+  }
 }
