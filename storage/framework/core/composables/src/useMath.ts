@@ -15,9 +15,9 @@ export function useAbs(value: MaybeRef<number>): Ref<number> {
 }
 
 export function useAverage(...args: MaybeRef<number>[]): Ref<number> {
-  return computed(() => {
-    const values = args.map(unref)
-    return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0
+  return computed((): number => {
+    const values = args.map(unref) as number[]
+    return values.length ? values.reduce((a: number, b: number) => a + b, 0) / values.length : 0
   })
 }
 
@@ -34,15 +34,15 @@ export function useFloor(value: MaybeRef<number>): Ref<number> {
 }
 
 export function useMax(...args: MaybeRef<number>[]): Ref<number> {
-  return computed(() => Math.max(...args.map(unref)))
+  return computed((): number => Math.max(...args.map(unref) as number[]))
 }
 
 export function useMin(...args: MaybeRef<number>[]): Ref<number> {
-  return computed(() => Math.min(...args.map(unref)))
+  return computed((): number => Math.min(...args.map(unref) as number[]))
 }
 
 export function usePrecision(value: MaybeRef<number>, digits: MaybeRef<number> = 0): Ref<number> {
-  return computed(() => Number(unref(value).toFixed(unref(digits))))
+  return computed((): number => Number((unref(value) as number).toFixed(unref(digits) as number)))
 }
 
 export function useRound(value: MaybeRef<number>): Ref<number> {
@@ -50,7 +50,7 @@ export function useRound(value: MaybeRef<number>): Ref<number> {
 }
 
 export function useSum(...args: MaybeRef<number>[]): Ref<number> {
-  return computed(() => args.map(unref).reduce((a, b) => a + b, 0))
+  return computed((): number => (args.map(unref) as number[]).reduce((a: number, b: number) => a + b, 0))
 }
 
 export function useTrunc(value: MaybeRef<number>): Ref<number> {

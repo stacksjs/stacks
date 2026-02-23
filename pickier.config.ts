@@ -16,6 +16,7 @@ const config: PickierConfig & { rules?: any } = {
     '**/.zed/**',
     '**/storage/framework/requests/**',
     '**/storage/framework/types/**',
+    '**/error-handling/src/error-page.ts',
     '**/bun-queue/**',
     '**/temp/**',
     '**/*.d.ts',

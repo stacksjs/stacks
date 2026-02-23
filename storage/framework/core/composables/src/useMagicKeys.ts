@@ -3,7 +3,7 @@ import { onUnmounted, ref } from '@stacksjs/stx'
 
 export interface UseMagicKeysReturn {
   /** Check if a key is currently pressed */
-  [key: string]: Ref<boolean>
+  [key: string]: Ref<boolean> | Ref<Set<string>>
   current: Ref<Set<string>>
 }
 

@@ -354,7 +354,7 @@ export async function createPromoCode(
   options: Partial<Stripe.PromotionCodeCreateParams> = {},
 ): Promise<Stripe.PromotionCode> {
   return manageCoupon.createPromotionCode({
-    coupon: couponId,
+    promotion: { type: 'coupon', coupon: couponId },
     code,
     ...options,
   })

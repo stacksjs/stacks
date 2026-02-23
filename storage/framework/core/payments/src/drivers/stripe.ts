@@ -4,5 +4,5 @@ import Stripe from 'stripe'
 const apiKey = services?.stripe?.secretKey || 'abcd'
 
 export const stripe: Stripe = new Stripe(apiKey, {
-  apiVersion: '2025-02-24.acacia',
+  apiVersion: '2026-01-28.clover',
 })

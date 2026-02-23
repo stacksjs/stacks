@@ -48,7 +48,6 @@
   },
   "dependencies": {
     "@stacksjs/stx": "^0.2.0",
-    "@stacksjs/httx": "^0.1.5",
     "@stacksjs/datetime": "workspace:*"
   },
   "devDependencies": {

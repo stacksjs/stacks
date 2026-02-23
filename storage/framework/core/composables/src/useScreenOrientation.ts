@@ -1,11 +1,13 @@
 import type { Ref } from '@stacksjs/stx'
 import { onUnmounted, ref } from '@stacksjs/stx'
 
+type ScreenOrientationLockType = 'any' | 'natural' | 'landscape' | 'portrait' | 'portrait-primary' | 'portrait-secondary' | 'landscape-primary' | 'landscape-secondary'
+
 export interface UseScreenOrientationReturn {
   isSupported: Ref<boolean>
-  orientation: Ref<OrientationType | undefined>
+  orientation: Ref<string | undefined>
   angle: Ref<number>
-  lockOrientation: (type: OrientationLockType) => Promise<void>
+  lockOrientation: (type: ScreenOrientationLockType) => Promise<void>
   unlockOrientation: () => void
 }
 
@@ -14,7 +16,7 @@ export interface UseScreenOrientationReturn {
  */
 export function useScreenOrientation(): UseScreenOrientationReturn {
   const isSupported = ref(typeof screen !== 'undefined' && 'orientation' in screen)
-  const orientation = ref<OrientationType | undefined>(undefined)
+  const orientation = ref<string | undefined>(undefined)
   const angle = ref(0)
 
   if (isSupported.value) {
@@ -38,9 +40,11 @@ export function useScreenOrientation(): UseScreenOrientationReturn {
     }
   }
 
-  async function lockOrientation(type: OrientationLockType): Promise<void> {
-    if (isSupported.value)
-      await screen.orientation.lock(type)
+  async function lockOrientation(type: ScreenOrientationLockType): Promise<void> {
+    if (isSupported.value) {
+      const orient = screen.orientation as ScreenOrientation & { lock: (type: string) => Promise<void> }
+      await orient.lock(type)
+    }
   }
 
   function unlockOrientation(): void {

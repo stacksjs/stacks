@@ -169,9 +169,9 @@ export const manageSubscription: SubscriptionManager = (() => {
       provider_price_id: options.items.data[0].price.id,
       quantity: options.items.data[0].quantity,
       trial_ends_at: options.trial_end != null ? String(options.trial_end) : undefined,
-      ends_at: options.current_period_end != null ? String(options.current_period_end) : undefined,
+      ends_at: (options as unknown as Record<string, unknown>).current_period_end != null ? String((options as unknown as Record<string, unknown>).current_period_end) : undefined,
       provider_type: 'stripe',
-      last_used_at: options.current_period_end != null ? String(options.current_period_end) : undefined,
+      last_used_at: (options as unknown as Record<string, unknown>).current_period_end != null ? String((options as unknown as Record<string, unknown>).current_period_end) : undefined,
     })
 
     const subscriptionModelCreated = await db.insertInto('subscriptions').values(data).executeTakeFirst()

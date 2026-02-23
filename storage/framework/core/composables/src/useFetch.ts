@@ -1,15 +1,14 @@
 import type { Ref } from '@stacksjs/stx'
-import { HttxClient } from '@stacksjs/httx'
 import { ref } from '@stacksjs/stx'
 
 interface UseFetchResult {
   data: Ref<any>
   error: Ref<any>
   isFetching: Ref<boolean>
-  then: (resolve: (value: { data: Ref<any>, error: Ref<any> }) => void) => Promise<{ data: Ref<any>, error: Ref<any> }>
+  then: (resolve: (value: { data: Ref<any>, error: Ref<any> }) => void) => Promise<void>
 }
 
-interface FetchBuilder {
+export interface FetchBuilder {
   get: () => FetchBuilder
   post: (body?: string) => FetchBuilder
   patch: (body?: string) => FetchBuilder
@@ -18,10 +17,8 @@ interface FetchBuilder {
   json: () => UseFetchResult
 }
 
-const client = new HttxClient()
-
 /**
- * Chainable reactive fetch composable backed by @stacksjs/httx.
+ * Chainable reactive fetch composable.
  *
  * @example
  * ```ts
@@ -65,30 +62,25 @@ export function useFetch(url: string): FetchBuilder {
       const error = ref<any>(null)
       const isFetching = ref(true)
 
-      let parsedBody: any
-      if (body) {
-        try {
-          parsedBody = JSON.parse(body)
-        }
-        catch {
-          parsedBody = body
-        }
+      const init: RequestInit = {
+        method,
+        headers: { Accept: 'application/json' },
       }
 
-      const fetchPromise = client.request(url, {
-        method,
-        json: method !== 'GET' && method !== 'DELETE',
-        body: parsedBody,
-        headers: {
-          Accept: 'application/json',
-        },
-      })
-        .then((result) => {
-          if (result.isOk) {
-            data.value = result.value.data
+      if (body && method !== 'GET' && method !== 'DELETE') {
+        init.headers = { ...init.headers, 'Content-Type': 'application/json' }
+        init.body = body
+      }
+
+      const result = { data, error }
+      const fetchPromise = fetch(url, init)
+        .then(async (response) => {
+          const json = await response.json()
+          if (response.ok) {
+            data.value = json
           }
           else {
-            error.value = result.error
+            error.value = json
           }
         })
         .catch((e) => {
@@ -103,7 +95,7 @@ export function useFetch(url: string): FetchBuilder {
         error,
         isFetching,
         then(resolve) {
-          return fetchPromise.then(() => resolve({ data, error }))
+          return fetchPromise.then(() => resolve(result))
         },
       }
     },

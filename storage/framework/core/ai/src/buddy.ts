@@ -99,9 +99,9 @@ When the user gives you a command:
 2. Identify the files that need to be modified
 3. Generate the exact code changes needed
 4. Respond with a structured format showing:
-   - Summary of changes
-   - Files to modify/create with full content
-   - Any additional notes
+  - Summary of changes
+  - Files to modify/create with full content
+  - Any additional notes
 
 Format file changes as:
 FILE: path/to/file.ts

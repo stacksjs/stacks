@@ -26,14 +26,14 @@ const isAuthenticated = ref(false)
 
 export interface AuthComposable {
   isAuthenticated: Ref<boolean>
-  user: Ref<UserData | null>
+  user: { value: UserData | null }
   login: (user: AuthUser) => Promise<LoginResponse | LoginError>
   register: (user: AuthUser) => Promise<RegisterResponse | RegisterError>
   fetchAuthUser: () => Promise<UserData | null>
   checkAuthentication: () => Promise<boolean>
   logout: () => void
   getToken: () => string | null
-  token: Ref<string | null>
+  token: { value: string | null }
 }
 
 export function useAuth(): AuthComposable {

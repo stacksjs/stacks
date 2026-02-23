@@ -9,6 +9,9 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "paths": {
+      "ts-mocker": ["../types/ts-mocker.d.ts"],
+      "@stacksjs/dnsx": ["../types/dnsx.d.ts"],
+      "@stacksjs/httx": ["../types/httx.d.ts"],
       "@stacksjs/*": ["./*/src"],
       "@stacksjs/utils/*": ["./utils/src/*"],
       "stacks/*": ["./*/src"],
@@ -66,6 +69,8 @@
   "exclude": [
     "../../../dist",
     "../../../dist/**",
+    "../../../node_modules",
+    "../../../node_modules/**",
     "../**/cdk.out",
     "../**/dist",
     "../**/fixtures",

@@ -57,6 +57,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "@tauri-apps/api": "^2.0.0"
+  },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
     "better-dx": "^0.2.5",

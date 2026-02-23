@@ -29,3 +29,18 @@ export const desktop: Desktop = {
   webviewWindow,
   window,
 }
+
+export interface OpenDevWindowOptions {
+  title?: string
+  width?: number
+  height?: number
+  darkMode?: boolean
+  hotReload?: boolean
+  nativeSidebar?: boolean
+  sidebarWidth?: number
+  sidebarConfig?: unknown
+}
+
+export async function openDevWindow(_port: number, _options?: OpenDevWindowOptions): Promise<boolean> {
+  return false
+}

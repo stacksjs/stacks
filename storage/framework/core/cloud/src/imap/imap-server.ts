@@ -1780,7 +1780,7 @@ export class ImapServer {
   }
 
   /**
-   * Load all messages from all folders for the "All Mail" virtual folder
+   * Load all messages from all folders for the 'All Mail' virtual folder
    * Uses persistent UIDs for stable message identification across sessions
    */
   private async loadAllMailFolder(email: string, persistedFlags: Record<string, string[]>): Promise<void> {
@@ -2344,7 +2344,7 @@ export class ImapServer {
   }
 
   /**
-   * Parse IMAP sequence set (e.g., "1:*", "1,3,5", "1:10")
+   * Parse IMAP sequence set (e.g., '1:*', '1,3,5', '1:10')
    */
   private parseSequenceSet(set: string, max: number): number[] {
     const results: number[] = []
@@ -2445,7 +2445,7 @@ export class ImapServer {
   }
 
   /**
-   * Check if a folder is the virtual "All Mail" folder
+   * Check if a folder is the virtual 'All Mail' folder
    */
   private isAllMailFolder(folder: string): boolean {
     return folder.toUpperCase() === 'ALL MAIL'
