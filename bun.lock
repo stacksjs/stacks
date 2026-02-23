@@ -227,7 +227,7 @@
         "@stacksjs/events": "^0.70.23",
         "@stacksjs/git": "^0.70.23",
         "@stacksjs/health": "^0.70.23",
-        "@stacksjs/httx": "^0.1.5",
+        "@stacksjs/httx": "^0.1.6",
         "@stacksjs/lint": "^0.70.23",
         "@stacksjs/logging": "^0.70.23",
         "@stacksjs/notifications": "^0.70.23",
@@ -1669,7 +1669,7 @@
 
     "@stacksjs/http": ["@stacksjs/http@workspace:storage/framework/core/http"],
 
-    "@stacksjs/httx": ["@stacksjs/httx@0.1.5", "", { "bin": { "http": "dist/bin/cli.js", "httx": "dist/bin/cli.js", "https": "dist/bin/cli.js" } }, "sha512-H9bUDDFQ6Wajy7l9oiiDG6kpwu7o8sylIqZduJj8iCpYL2NK4Ri/ovdxzB8NuvyD3K56m12pgjfYcJUbOQfRYw=="],
+    "@stacksjs/httx": ["@stacksjs/httx@0.1.6", "", { "dependencies": { "ts-error-handling": "^0.1.0" }, "bin": { "httx": "./dist/bin/cli.js", "http": "./dist/bin/cli.js", "https": "./dist/bin/cli.js" } }, "sha512-WIHC7K2zYuxqZo2K5BcR96QJj/B5GHe9PaF/9DpKBUWpXF65JUoK6hl7mL5qUkyF8FKJ8OWTK+lg/fuPUu62Pg=="],
 
     "@stacksjs/i18n": ["@stacksjs/i18n@workspace:storage/framework/core/i18n"],
 
