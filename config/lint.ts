@@ -1,16 +1,11 @@
-import type { PickierConfig } from 'pickier'
+import type { PickierOptions } from 'pickier'
 
-const config: PickierConfig = {
-  lint: {
-    extensions: ['ts', 'js', 'vue', 'json', 'yaml', 'md'],
-  },
-
+const config: PickierOptions = {
   format: {
-    extensions: ['ts', 'js', 'vue', 'json', 'yaml', 'md'],
+    extensions: ['ts', 'js', 'stx', 'json', 'yaml', 'md'],
     indent: 2,
     quotes: 'single',
     semi: false,
-    trailingComma: true,
   },
 
   rules: {
@@ -40,24 +35,9 @@ const config: PickierConfig = {
   },
 
   ignores: [
-    '**/node_modules/**',
-    '**/dist/**',
     '**/fixtures/**',
     '**/coverage/**',
-    '**/cdk.out/**',
-    '**/.git/**',
-    '**/storage/framework/cache/**',
-    '**/storage/framework/server/storage/**',
-    // Generated ORM model files
-    '**/storage/framework/orm/src/models/**',
-    '**/storage/framework/orm/src/routes/**',
-    // Generated actions and requests
-    '**/storage/framework/actions/**',
-    '**/storage/framework/requests/**',
-    '**/storage/framework/defaults/actions/**',
-    // Temp and generated type files
     '**/temp/**',
-    '**/storage/framework/types/**',
   ],
 }
 
