@@ -50,7 +50,6 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.994.0",
     "@stacksjs/ts-cloud": "^0.1.11"
   },
   "devDependencies": {

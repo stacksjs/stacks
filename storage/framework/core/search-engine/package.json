@@ -54,9 +54,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@opensearch-project/opensearch": "^3.5.1",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.5",
-    "meilisearch": "^0.55.0"
+    "better-dx": "^0.2.5"
   }
 }

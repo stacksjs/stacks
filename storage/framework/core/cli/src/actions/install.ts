@@ -1,29 +1,52 @@
-import { installPackage as installPkg } from '@antfu/install-pkg'
+import process from 'node:process'
 
 interface InstallPackageOptions {
   cwd?: string
   dev?: boolean
   silent?: boolean
   packageManager?: string
-  packageManagerVersion?: string
   preferOffline?: boolean
   additionalArgs?: string[]
 }
 
-// TODO: improve return types here
+async function runInstall(name: string, options: InstallPackageOptions = { silent: true }): Promise<void> {
+  const pm = options.packageManager ?? 'bun'
+  const args: string[] = [pm === 'npm' ? 'install' : 'add']
+
+  if (options.dev)
+    args.push('-D')
+
+  if (options.preferOffline && pm !== 'bun')
+    args.push('--prefer-offline')
+
+  if (options.additionalArgs)
+    args.push(...options.additionalArgs)
+
+  args.push(name)
+
+  const proc = Bun.spawn([pm, ...args], {
+    cwd: options.cwd ?? process.cwd(),
+    stdout: options.silent ? 'ignore' : 'inherit',
+    stderr: options.silent ? 'ignore' : 'inherit',
+    stdin: 'ignore',
+    env: process.env,
+  })
+
+  const exitCode = await proc.exited
+
+  if (exitCode !== 0)
+    throw new Error(`Failed to install ${name} (exit code ${exitCode})`)
+}
 
 /**
  * Install an npm package.
  *
  * @param name - The package name to install.
- * @param options - The options to pass to the install.The options to pass to the install.
+ * @param options - The options to pass to the install.
  * @returns The result of the install.
  */
-export async function installPackage(name: string, options?: InstallPackageOptions): Promise<any> {
-  if (options)
-    return await installPkg(name, options)
-
-  return await installPkg(name, { silent: true })
+export async function installPackage(name: string, options?: InstallPackageOptions): Promise<void> {
+  return runInstall(name, options ?? { silent: true })
 }
 
 /**
@@ -33,9 +56,6 @@ export async function installPackage(name: string, options?: InstallPackageOptio
  * @param options - The options to pass to the install.
  * @returns The result of the install.
  */
-export async function installStack(name: string, options?: InstallPackageOptions): Promise<any> {
-  if (options)
-    return await installPkg(`@stacksjs/${name}`, options)
-
-  return await installPkg(`@stacksjs/${name}`, { silent: true })
+export async function installStack(name: string, options?: InstallPackageOptions): Promise<void> {
+  return runInstall(`@stacksjs/${name}`, options ?? { silent: true })
 }

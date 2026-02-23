@@ -58,7 +58,6 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@antfu/install-pkg": "^1.1.0",
     "@stacksjs/clapp": "^0.2.0"
   },
   "devDependencies": {
