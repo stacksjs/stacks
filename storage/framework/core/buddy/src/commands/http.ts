@@ -32,16 +32,16 @@ export function http(buddy: CLI): void {
         method: 'GET',
       })
 
-      if (result.isOk) {
-        const response = result.value
-        log.info(`${response.status} ${response.statusText} (${response.timings.duration.toFixed(0)}ms)`)
-        console.log(typeof response.data === 'string' ? response.data : JSON.stringify(response.data, null, 2))
-      }
-      else {
-        log.error(`Request failed: ${result.error.message}`)
-        process.exit(ExitCode.FatalError)
-      }
-
-      process.exit(ExitCode.Success)
+      result.match({
+        ok: (response) => {
+          log.info(`${response.status} ${response.statusText} (${response.timings.duration.toFixed(0)}ms)`)
+          console.log(typeof response.data === 'string' ? response.data : JSON.stringify(response.data, null, 2))
+          process.exit(ExitCode.Success)
+        },
+        err: (error) => {
+          log.error(`Request failed: ${error.message}`)
+          process.exit(ExitCode.FatalError)
+        },
+      })
     })
 }

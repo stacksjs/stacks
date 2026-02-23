@@ -106,7 +106,7 @@
     "@stacksjs/git": "^0.70.23",
     "@stacksjs/health": "^0.70.23",
     "@stacksjs/dnsx": "^0.2.2",
-    "@stacksjs/httx": "^0.1.6",
+    "@stacksjs/httx": "^0.1.7",
     "@stacksjs/lint": "^0.70.23",
     "@stacksjs/logging": "^0.70.23",
     "@stacksjs/notifications": "^0.70.23",
