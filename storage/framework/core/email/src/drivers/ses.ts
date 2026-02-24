@@ -1,25 +1,19 @@
 import type { EmailMessage, EmailResult } from '@stacksjs/types'
 import type { RenderOptions } from '@vue-email/compiler'
-import { SendEmailCommand, SES } from '@aws-sdk/client-ses'
+import { SESClient } from '@stacksjs/ts-cloud'
 import { config } from '@stacksjs/config'
 import { template } from '../template'
 import { BaseEmailDriver } from './base'
 
 export class SESDriver extends BaseEmailDriver {
   public name = 'ses'
-  private client: SES | null = null
+  private client: SESClient | null = null
 
-  private getClient(): SES {
+  private getClient(): SESClient {
     if (!this.client) {
-      const credentials = {
-        accessKeyId: config?.services?.ses?.credentials?.accessKeyId ?? '',
-        secretAccessKey: config?.services?.ses?.credentials?.secretAccessKey ?? '',
-      }
-
-      this.client = new SES({
-        region: config?.services?.ses?.region || 'us-east-1',
-        credentials,
-      })
+      this.client = new SESClient(
+        config?.services?.ses?.region || 'us-east-1',
+      )
     }
 
     return this.client
@@ -41,11 +35,14 @@ export class SESDriver extends BaseEmailDriver {
       // Use template HTML if available, otherwise use direct HTML from message
       const finalHtml = htmlContent || message.html
 
-      const messageBody: any = {}
+      const body: {
+        Text?: { Data: string, Charset?: string }
+        Html?: { Data: string, Charset?: string }
+      } = {}
 
       // Add HTML content if available
       if (finalHtml) {
-        messageBody.Html = {
+        body.Html = {
           Charset: config.email.charset || 'UTF-8',
           Data: finalHtml,
         }
@@ -53,19 +50,19 @@ export class SESDriver extends BaseEmailDriver {
 
       // Add text content if available
       if (message.text) {
-        messageBody.Text = {
+        body.Text = {
           Charset: config.email.charset || 'UTF-8',
           Data: message.text,
         }
       }
 
       // If no content was added, throw an error
-      if (Object.keys(messageBody).length === 0) {
+      if (Object.keys(body).length === 0) {
         throw new Error('Email must have either HTML or text content')
       }
 
-      const params = {
-        Source: this.formatSourceAddress({
+      const result = await this.getClient().sendEmail({
+        FromEmailAddress: this.formatSourceAddress({
           address: message.from?.address || config.email.from?.address || '',
           name: message.from?.name || config.email.from?.name,
         }),
@@ -76,17 +73,18 @@ export class SESDriver extends BaseEmailDriver {
           BccAddresses: this.formatAddresses(message.bcc),
         },
 
-        Message: {
-          Body: messageBody,
-          Subject: {
-            Charset: config.email.charset || 'UTF-8',
-            Data: message.subject,
+        Content: {
+          Simple: {
+            Subject: {
+              Charset: config.email.charset || 'UTF-8',
+              Data: message.subject,
+            },
+            Body: body,
           },
         },
-      }
+      })
 
-      const response = await this.getClient().send(new SendEmailCommand(params))
-      return this.handleSuccess(message, response.MessageId)
+      return this.handleSuccess(message, result.MessageId)
     }
     catch (error) {
       return this.handleError(error, message)

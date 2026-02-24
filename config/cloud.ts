@@ -1,5 +1,6 @@
 import type { CloudConfig } from '@stacksjs/types'
 import type { CloudConfig as TsCloudConfig } from '@stacksjs/ts-cloud-types'
+import { servers } from '~/cloud/servers'
 
 /**
  * Stacks Cloud Configuration
@@ -31,7 +32,7 @@ export const tsCloud: TsCloudConfig = {
    * - 'server': Traditional EC2-based deployment (Forge-style)
    * - 'serverless': Container + static site deployment (Vapor-style)
    */
-  mode: 'serverless',
+  mode: 'server',
 
   /**
    * Environment configurations
@@ -134,6 +135,17 @@ export const tsCloud: TsCloudConfig = {
       //   onDemandPercentage: 50,
       //   strategy: 'capacity-optimized',
       // },
+    },
+
+    /**
+     * Server Definitions
+     * EC2 instances for server mode deployment
+     */
+    servers: {
+      app: servers.app,
+      app2: servers.app2,
+      web: servers.web,
+      cache: servers.cache,
     },
 
     /**

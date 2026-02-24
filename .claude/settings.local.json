@@ -157,7 +157,8 @@
       "Bash(gh pr view:*)",
       "Bash(gh pr diff:*)",
       "Bash(gh api:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(git -C /Users/chrisbreuer/Code/stacks status --short | head -20)"
     ],
     "deny": [],
     "ask": []

@@ -1,137 +1,63 @@
-import type { Construct } from 'constructs'
-import type { CloudOptions } from '../types'
-import {
-  AiStack,
-  CdnStack,
-  CliStack,
-  ComputeStack,
-  DeploymentStack,
-  DnsStack,
-  DocsStack,
-  EmailStack,
-  FileSystemStack,
-  JumpBoxStack,
-  NetworkStack,
-  PermissionsStack,
-  QueueStack,
-  RedirectsStack,
-  SecurityStack,
-  StorageStack,
-} from '@stacksjs/cloud'
+import type { CloudConfig } from '@stacksjs/ts-cloud'
 import { config } from '@stacksjs/config'
-import { Stack } from 'aws-cdk-lib'
+import { InfrastructureGenerator } from '@stacksjs/ts-cloud'
+import { tsCloud } from '~/config/cloud'
 
-// import { DashboardStack } from './dashboard'
+/**
+ * Stacks Cloud (Serverless Mode)
+ *
+ * This file configures the serverless deployment for your Stacks application.
+ * It uses ts-cloud to generate and manage AWS CloudFormation infrastructure.
+ *
+ * The infrastructure includes:
+ * - DNS (Route53 hosted zone & records)
+ * - SSL/TLS (ACM certificates)
+ * - Storage (S3 buckets for frontend, docs, logs, assets)
+ * - Network (VPC, subnets, security groups - when deploying containers)
+ * - Compute (ECS Fargate containers for the API)
+ * - CDN (CloudFront distributions)
+ * - Email (SES configuration)
+ * - Queue (SQS for background jobs)
+ * - Load Balancer (ALB for API traffic)
+ *
+ * Customize by editing config/cloud.ts (the tsCloud config object).
+ *
+ * @see https://github.com/stacksjs/ts-cloud
+ */
+export class Cloud {
+  private generator: InfrastructureGenerator
+  private cloudConfig: CloudConfig
 
-export class Cloud extends Stack {
-  dns: DnsStack
-  security: SecurityStack
-  storage: StorageStack
-  network: NetworkStack
-  fileSystem: FileSystemStack
-  jumpBox: JumpBoxStack
-  docs: DocsStack
-  email: EmailStack
-  redirects: RedirectsStack
-  permissions: PermissionsStack
-  ai: AiStack
-  cli: CliStack
-  api!: ComputeStack
-  cdn!: CdnStack
-  queue!: QueueStack
-  deployment!: DeploymentStack
-  scope: Construct
-  props: CloudOptions
+  constructor(cloudConfig?: CloudConfig) {
+    this.cloudConfig = cloudConfig || tsCloud as CloudConfig
+    const environment = (config.app.env === 'local' ? 'development' : config.app.env) || 'production'
 
-  constructor(scope: Construct, id: string, props: CloudOptions) {
-    super(scope, id, props)
-    this.scope = scope
-    this.props = props
-
-    // please beware: be careful changing the order of the stack creations below
-    this.dns = new DnsStack(this, props)
-    this.security = new SecurityStack(this, {
-      ...props,
-      zone: this.dns.zone,
+    this.generator = new InfrastructureGenerator({
+      config: this.cloudConfig,
+      environment: environment as any,
     })
-
-    this.storage = new StorageStack(this, {
-      ...props,
-      kmsKey: this.security.kmsKey,
-    })
-
-    this.network = new NetworkStack(this, props)
-
-    this.fileSystem = new FileSystemStack(this, {
-      ...props,
-      vpc: this.network.vpc,
-    })
-
-    this.jumpBox = new JumpBoxStack(this, {
-      ...props,
-      vpc: this.network.vpc,
-      fileSystem: this.fileSystem.fileSystem,
-    })
-
-    this.docs = new DocsStack(this, props)
-
-    this.email = new EmailStack(this, {
-      ...props,
-      zone: this.dns.zone,
-    })
-
-    this.redirects = new RedirectsStack(this, props)
-
-    this.permissions = new PermissionsStack(this)
-
-    // new DashboardStack(this)
-
-    this.ai = new AiStack(this, props)
-
-    this.cli = new CliStack(this, props)
   }
 
-  // we use an async init() method here because we need to wait for the
+  /**
+   * Generate the CloudFormation template for the current configuration
+   */
+  generate(): string {
+    return this.generator.generate().toJSON()
+  }
 
-  async init() {
-    if (config.api?.deploy) {
-      const props = this.props
-      this.api = new ComputeStack(this, {
-        ...props,
-        vpc: this.network.vpc,
-        fileSystem: this.fileSystem.fileSystem,
-        zone: this.dns.zone,
-        certificate: this.security.certificate,
-      })
+  /**
+   * Whether the API should be deployed (ECS Fargate containers)
+   */
+  shouldDeployApi(): boolean {
+    return config.cloud.api?.deploy ?? false
+  }
 
-      this.queue = new QueueStack(this, {
-        ...props,
-        cluster: this.api.cluster,
-        taskDefinition: this.api.taskDefinition,
-      })
-
-      await this.queue.init()
-
-      this.cdn = new CdnStack(this, {
-        ...props,
-        publicBucket: this.storage.publicBucket,
-        logBucket: this.storage.logBucket,
-        certificate: this.security.certificate,
-        firewall: this.security.firewall,
-        originRequestFunction: this.docs.originRequestFunction,
-        zone: this.dns.zone,
-        lb: this.api?.lb,
-      })
-
-      this.deployment = new DeploymentStack(this, {
-        ...props,
-        publicBucket: this.storage.publicBucket,
-        privateBucket: this.storage.privateBucket,
-        appBucket: this.storage.publicBucket,
-        docsBucket: this.storage.docsBucket,
-        mainDistribution: this.cdn.mainDistribution,
-        docsDistribution: this.cdn.docsDistribution,
-      })
-    }
+  /**
+   * Get the cloud configuration
+   */
+  getConfig(): CloudConfig {
+    return this.cloudConfig
   }
 }
+
+export default Cloud

@@ -130,7 +130,7 @@ try {
 
   // Check deployment mode - use relative import from project root
   const cloudConfigModule = await import(p.projectPath('config/cloud'))
-  const deploymentMode = cloudConfigModule?.tsCloud?.infrastructure?.mode || 'server'
+  const deploymentMode = cloudConfigModule?.tsCloud?.mode || 'server'
 
   // For serverless mode, build and push container image before deploying infrastructure
   if (deploymentMode === 'serverless') {
@@ -284,6 +284,11 @@ try {
     console.log('')
     console.log('Container image ready in ECR. CloudFormation will use this image.')
     console.log('')
+  } else {
+    console.log('')
+    console.log('Server deployment mode detected')
+    console.log('Deploying EC2 infrastructure via CloudFormation...')
+    console.log('')
   }
 
   // Helper function to get AWS account ID using ts-cloud SDK
@@ -333,6 +338,36 @@ try {
     if (isVerbose) log.debug(`Migration error: ${migrationError.stack}`)
   }
 
+  if (deploymentMode === 'server') {
+    // Server mode: show instance IPs from stack outputs
+    const serverOutputSpinner = spinner('Retrieving server instance details...')
+    serverOutputSpinner.start()
+
+    try {
+      const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws') as any
+      const cf = new CloudFormationClient(region)
+      const stackName = `stacks-cloud-${environment}`
+      const outputs = await cf.getStackOutputs(stackName)
+
+      serverOutputSpinner.succeed('Server instances deployed')
+      console.log('')
+      console.log('Server instances:')
+      for (const [key, value] of Object.entries(outputs)) {
+        if ((key as string).endsWith('PublicIp')) {
+          console.log(`  ${key}: ${value}`)
+        }
+        if ((key as string).endsWith('InstanceId')) {
+          console.log(`  ${key}: ${value}`)
+        }
+      }
+      console.log('')
+    } catch (outputError: any) {
+      ;(serverOutputSpinner as any).warn(`Could not retrieve server details: ${outputError.message}`)
+      if (isVerbose) log.debug(`Output retrieval error: ${outputError.stack}`)
+    }
+  }
+
+  if (deploymentMode === 'serverless') {
   // Deploy frontend to S3
   const frontendSpinner = spinner('Deploying frontend to S3...')
   frontendSpinner.start()
@@ -806,6 +841,7 @@ try {
     ;(errorPageSpinner as any).warn(`404 page configuration skipped: ${errorPageError.message}`)
     if (isVerbose) log.debug(`Error page config error: ${errorPageError.stack}`)
   }
+  } // end serverless-only block
 
   console.log('')
   log.success('Deployment completed successfully!')

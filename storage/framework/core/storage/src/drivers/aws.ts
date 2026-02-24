@@ -1,10 +1,9 @@
 import type { StorageDriver } from '@stacksjs/types'
 import type { StorageAdapter } from '../types'
-import { S3Client } from '@aws-sdk/client-s3'
+import { S3Client } from '@stacksjs/ts-cloud'
 import { createS3Storage } from '../adapters/s3'
 
 let _adapter: StorageAdapter | null = null
-let _client: S3Client | null = null
 let _configLoaded = false
 
 async function loadConfig() {
@@ -15,18 +14,9 @@ async function loadConfig() {
     const { filesystems } = await import('@stacksjs/config')
     const s3Config = filesystems.s3
 
-    _client = new S3Client({
-      region: s3Config?.region || 'us-east-1',
-      credentials: s3Config?.credentials
-        ? {
-            accessKeyId: s3Config.credentials.accessKeyId,
-            secretAccessKey: s3Config.credentials.secretAccessKey,
-          }
-        : undefined,
-      endpoint: s3Config?.endpoint,
-    })
+    const client = new S3Client(s3Config?.region || 'us-east-1')
 
-    _adapter = createS3Storage(_client, {
+    _adapter = createS3Storage(client, {
       bucket: s3Config?.bucket || 'stacks',
       prefix: s3Config?.prefix || 'stx',
       region: s3Config?.region || 'us-east-1',
@@ -36,18 +26,9 @@ async function loadConfig() {
     // Config not available, use defaults from env
     const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
 
-    _client = new S3Client({
-      region: envVars.AWS_REGION || 'us-east-1',
-      credentials: envVars.AWS_ACCESS_KEY_ID && envVars.AWS_SECRET_ACCESS_KEY
-        ? {
-            accessKeyId: envVars.AWS_ACCESS_KEY_ID,
-            secretAccessKey: envVars.AWS_SECRET_ACCESS_KEY,
-          }
-        : undefined,
-      endpoint: envVars.AWS_ENDPOINT,
-    })
+    const client = new S3Client(envVars.AWS_REGION || 'us-east-1')
 
-    _adapter = createS3Storage(_client, {
+    _adapter = createS3Storage(client, {
       bucket: envVars.AWS_S3_BUCKET || 'stacks',
       prefix: envVars.AWS_S3_PREFIX || 'stx',
       region: envVars.AWS_REGION || 'us-east-1',
@@ -96,8 +77,6 @@ export const aws: StorageDriver = {
   },
 
   list(path: string, options: { deep: boolean } = { deep: false }) {
-    // For list, we need to handle this differently since it returns an async iterable
-    // We'll create an async generator that loads config first
     return (async function* () {
       const adapter = await getAdapter()
       yield* adapter.list(path, options)

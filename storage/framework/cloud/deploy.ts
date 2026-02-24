@@ -1,26 +1,19 @@
-import type { CloudOptions } from '../core/cloud/src/types'
+import type { CloudConfig, EnvironmentType } from '@stacksjs/ts-cloud'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { config, determineAppEnv } from '@stacksjs/config'
 import { env } from '@stacksjs/env'
 import { slug as slugify } from '@stacksjs/strings'
 import { ExitCode } from '@stacksjs/types'
-import { App } from 'aws-cdk-lib'
-import { Cloud } from '../core/cloud/src/cloud'
-import { getOrCreateTimestamp } from '../core/cloud/src/helpers'
-import 'source-map-support/register'
+import { AWSCloudFormationClient as CloudFormationClient, InfrastructureGenerator } from '@stacksjs/ts-cloud'
+import { tsCloud } from '~/config/cloud'
 
-const app = new App()
 const appEnv = determineAppEnv()
 const appKey = config.app.key
 const domain = config.app.url
 const appName = config.app.name?.toLowerCase() ?? 'stacks'
 const slug = slugify(appName)
-const name = `${slug}-cloud`
-const account = env.AWS_ACCOUNT_ID || undefined
-// const region = env.AWS_DEFAULT_REGION
-const region = env.AWS_REGION || 'us-east-1' // currently, us-east-1 is the only fully-supported region
-let timestamp
+const region = env.AWS_REGION || 'us-east-1'
 
 if (!appKey) {
   log.info('Please set an application key. You may need to run `buddy key:generate`.')
@@ -34,7 +27,6 @@ if (parts && parts.length < 2) {
   )
 }
 
-// AWS Account ID is optional - CDK will use current credentials if not specified
 if (!region) {
   throw new Error('Stacks is missing AWS region. Please ensure AWS_REGION is set in your .env file')
 }
@@ -51,36 +43,68 @@ if (!config.team || Object.keys(config.team).length === 0) {
   )
 }
 
-const usEnv = {
-  account,
-  region,
-}
+const environment = (appEnv === 'local' ? 'development' : appEnv) || 'production'
+const cloudConfig = tsCloud as CloudConfig
 
-try {
-  // eslint-disable-next-line antfu/no-top-level-await
-  timestamp = await getOrCreateTimestamp()
-}
-catch (error) {
-  console.error('Error fetching timestamp', error)
-  process.exit(ExitCode.FatalError)
-}
-
-export const options = {
-  env: usEnv,
-  name,
-  slug,
-  appEnv: appEnv ?? 'dev',
-  appName,
-  domain,
-  timestamp,
-} satisfies CloudOptions
-
-const cloud = new Cloud(app, name, {
-  ...options,
-  description: `The Stacks Cloud`,
+// Generate CloudFormation template using ts-cloud
+const generator = new InfrastructureGenerator({
+  config: cloudConfig,
+  environment: environment as EnvironmentType,
 })
 
-// eslint-disable-next-line antfu/no-top-level-await
-await cloud.init()
+const template = generator.generate().toJSON()
+const stackName = `${slug}-cloud`
 
-app.synth()
+log.info(`Deploying ${stackName} to ${region} (${environment})...`)
+
+const cfn = new CloudFormationClient(region)
+
+// Check if stack exists and create/update accordingly
+let stackExists = false
+try {
+  const stacks = await cfn.describeStacks({ stackName })
+  stackExists = stacks.length > 0
+}
+catch {
+  stackExists = false
+}
+
+if (stackExists) {
+  log.info('Stack exists, updating...')
+  try {
+    await cfn.updateStack({
+      stackName,
+      templateBody: template,
+      capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
+      tags: [
+        { Key: 'Environment', Value: environment },
+        { Key: 'Project', Value: appName },
+        { Key: 'ManagedBy', Value: 'ts-cloud' },
+      ],
+    })
+    log.info('Stack update initiated.')
+  }
+  catch (error: any) {
+    if (error.message?.includes('No updates are to be performed')) {
+      log.info('No changes detected - stack is up to date.')
+    }
+    else {
+      throw error
+    }
+  }
+}
+else {
+  log.info('Creating new stack...')
+  await cfn.createStack({
+    stackName,
+    templateBody: template,
+    capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
+    tags: [
+      { Key: 'Environment', Value: environment },
+      { Key: 'Project', Value: appName },
+      { Key: 'ManagedBy', Value: 'ts-cloud' },
+    ],
+    onFailure: 'ROLLBACK',
+  })
+  log.info('Stack creation initiated.')
+}

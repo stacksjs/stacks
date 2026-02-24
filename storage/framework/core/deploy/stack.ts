@@ -5,9 +5,8 @@
  * Generates and deploys infrastructure based on cloud.config.ts
  */
 
-import { CloudFormationClient } from '@stacksjs/ts-cloud/src/aws/cloudformation'
-import { InfrastructureGenerator } from '@stacksjs/ts-cloud/src/generators/infrastructure'
-import type { CloudConfig, EnvironmentType } from '@stacksjs/ts-cloud-types'
+import type { CloudConfig, EnvironmentType } from '@stacksjs/ts-cloud'
+import { AWSCloudFormationClient as CloudFormationClient, InfrastructureGenerator } from '@stacksjs/ts-cloud'
 
 // Import tsCloud config from Stacks config system
 import { tsCloud as config } from '~/config/cloud'

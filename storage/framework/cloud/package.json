@@ -37,8 +37,7 @@
   "types": "dist/index.d.ts",
   "files": ["README.md", "dist"],
   "scripts": {
-    "bootstrap": "bunx --bun cdk bootstrap",
-    "deploy": "cd .. && bun run build && cd ./docs && bun run build && cd ../cloud && bunx --bun cdk deploy --require-approval never",
+    "deploy": "bun deploy.ts",
     "dev": "./dev local"
   },
   "dependencies": {

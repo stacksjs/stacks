@@ -1,21 +1,10 @@
 import process from 'node:process'
-import {
-  CreateTableCommand,
-  DeleteTableCommand,
-  DynamoDBClient,
-  KeyType,
-  ScalarAttributeType,
-} from '@aws-sdk/client-dynamodb'
+import { DynamoDBClient } from '@stacksjs/ts-cloud'
 
 const dynamoDbTool: any = await import('@stacksjs/cache').then((m: any) => m.dynamoDbTool)
 
-const client = new DynamoDBClient({
+const client = new DynamoDBClient('us-east-1', {
   endpoint: 'http://localhost:8000',
-  region: 'us-east-1', // You can use any valid region name
-  credentials: {
-    accessKeyId: 'dummy',
-    secretAccessKey: 'dummy',
-  },
 })
 
 export async function launchServer(): Promise<void> {
@@ -33,22 +22,20 @@ async function delay(ms: number): Promise<void> {
 }
 
 export async function createStacksTable(): Promise<void> {
-  const params = {
-    TableName: 'stacks',
-    KeySchema: [
-      { AttributeName: 'key', KeyType: KeyType.HASH }, // Partition key
-    ],
-    AttributeDefinitions: [
-      { AttributeName: 'key', AttributeType: ScalarAttributeType.S }, // S for String
-    ],
-    ProvisionedThroughput: {
-      ReadCapacityUnits: 5,
-      WriteCapacityUnits: 5,
-    },
-  }
-
   try {
-    await client.send(new CreateTableCommand(params))
+    await client.createTable({
+      TableName: 'stacks',
+      KeySchema: [
+        { AttributeName: 'key', KeyType: 'HASH' },
+      ],
+      AttributeDefinitions: [
+        { AttributeName: 'key', AttributeType: 'S' },
+      ],
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 5,
+        WriteCapacityUnits: 5,
+      },
+    })
   }
   catch (err) {
     console.error('Error Creating Table', err)
@@ -56,12 +43,10 @@ export async function createStacksTable(): Promise<void> {
 }
 
 export async function deleteStacksTable(): Promise<void> {
-  const params = {
-    TableName: 'stacks',
-  }
-
   try {
-    await client.send(new DeleteTableCommand(params))
+    await client.deleteTable({
+      TableName: 'stacks',
+    })
   }
   catch (err) {
     console.error('Error deleting table:', err)

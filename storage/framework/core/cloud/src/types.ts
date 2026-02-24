@@ -1,7 +1,6 @@
 import type { AppEnvType } from '@stacksjs/types'
-import type { StackProps } from 'aws-cdk-lib'
 
-export interface CloudOptions extends StackProps {
+export interface CloudOptions {
   name: string
   env: {
     account: string

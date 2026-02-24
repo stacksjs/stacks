@@ -20,7 +20,7 @@
 import { resolve } from 'node:path'
 import process from 'node:process'
 import { filesystems, app as appConfig } from '@stacksjs/config'
-import { S3Client } from '@aws-sdk/client-s3'
+import { S3Client } from '@stacksjs/ts-cloud'
 import type { StorageAdapter } from './types'
 import { createLocalStorage } from './adapters/local'
 import { S3StorageAdapter } from './adapters/s3'
@@ -169,23 +169,7 @@ class StorageManager {
     let client = this.s3Clients.get(name)
 
     if (!client) {
-      const clientConfig: any = {
-        region: config.region || 'us-east-1',
-      }
-
-      if (config.endpoint) {
-        clientConfig.endpoint = config.endpoint
-        clientConfig.forcePathStyle = config.usePathStyleEndpoint ?? true
-      }
-
-      if (config.credentials) {
-        clientConfig.credentials = {
-          accessKeyId: config.credentials.key,
-          secretAccessKey: config.credentials.secret,
-        }
-      }
-
-      client = new S3Client(clientConfig)
+      client = new S3Client(config.region || 'us-east-1')
       this.s3Clients.set(name, client)
     }
 

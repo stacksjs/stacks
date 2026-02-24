@@ -1,28 +1,16 @@
-import type { DescribeLogGroupsCommandOutput } from '@aws-sdk/client-cloudwatch-logs'
-import type { CountryCode, RegisterDomainCommandOutput } from '@aws-sdk/client-route-53-domains'
+import type { CountryCode } from '@stacksjs/ts-cloud'
 import type { Result } from '@stacksjs/error-handling'
-import { CloudFormation } from '@aws-sdk/client-cloudformation'
-import { CloudWatchLogsClient, DeleteLogGroupCommand, DescribeLogGroupsCommand } from '@aws-sdk/client-cloudwatch-logs'
 import {
-  DeleteNetworkInterfaceCommand,
-  DeleteSubnetCommand,
-  DeleteVpcCommand,
-  DescribeNetworkInterfacesCommand,
-  DescribeRegionsCommand,
-  DescribeSubnetsCommand,
-  DescribeVpcsCommand,
-  DetachNetworkInterfaceCommand,
-  EC2,
+  AWSCloudFormationClient as CloudFormationClient,
+  CloudWatchLogsClient,
   EC2Client,
-  _InstanceType as InstanceType,
-  TerminateInstancesCommand,
-} from '@aws-sdk/client-ec2'
-import { DescribeFileSystemsCommand, EFSClient } from '@aws-sdk/client-efs'
-import { IAM } from '@aws-sdk/client-iam'
-import { Lambda } from '@aws-sdk/client-lambda'
-import { ContactType, Route53Domains } from '@aws-sdk/client-route-53-domains'
-import { ListBucketsCommand, S3 } from '@aws-sdk/client-s3'
-import { SSM } from '@aws-sdk/client-ssm'
+  EFSClient,
+  IAMClient,
+  LambdaClient,
+  Route53DomainsClient,
+  S3Client,
+  SSMClient,
+} from '@stacksjs/ts-cloud'
 import { config } from '@stacksjs/config'
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
@@ -32,10 +20,8 @@ import { slug } from '@stacksjs/strings'
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
 const cloudName = `stacks-cloud-${appEnv}`
 
-export { InstanceType }
-
 export async function getSecurityGroupId(securityGroupName: string): Promise<Result<string | undefined, string>> {
-  const ec2 = new EC2({ region: 'us-east-1' })
+  const ec2 = new EC2Client('us-east-1')
   const { SecurityGroups } = await ec2.describeSecurityGroups({
     Filters: [{ Name: 'group-name', Values: [securityGroupName] }],
   })
@@ -90,76 +76,71 @@ export interface PurchaseOptions {
   privacyAdmin: boolean
   privacyTech: boolean
   privacyRegistrant: boolean
-  contactType: string
+  contactType: 'PERSON' | 'COMPANY' | 'ASSOCIATION' | 'PUBLIC_BODY' | 'RESELLER'
   verbose: boolean
 }
 
 export function purchaseDomain(
   domain: string,
   options: PurchaseOptions,
-): Result<Promise<RegisterDomainCommandOutput>, Error> {
-  const route53domains = new Route53Domains({ region: 'us-east-1' })
-  const contactType = options.contactType.toUpperCase()
+): Result<Promise<{ OperationId: string }>, Error> {
+  const route53domains = new Route53DomainsClient('us-east-1')
+  const contactType = (options.contactType.toUpperCase() || 'PERSON') as 'PERSON' | 'COMPANY' | 'ASSOCIATION' | 'PUBLIC_BODY' | 'RESELLER'
 
-  const params = {
-    DomainName: domain,
-    DurationInYears: options.years || 1,
-    AutoRenew: options.autoRenew || true,
-    AdminContact: {
-      FirstName: options.adminFirstName,
-      LastName: options.adminLastName,
-      ContactType: contactType || ContactType.PERSON,
-      OrganizationName: options.adminOrganization,
-      AddressLine1: options.adminAddressLine1,
-      AddressLine2: options.adminAddressLine2,
-      City: options.adminCity,
-      State: options.adminState,
-      CountryCode: options.adminCountry,
-      ZipCode: options.adminZip.toString(),
-      PhoneNumber: options.adminPhone.toString().includes('+')
-        ? options.adminPhone.toString()
-        : `+${options.adminPhone.toString()}`,
-      Email: options.adminEmail,
-    },
-    RegistrantContact: {
-      FirstName: options.registrantFirstName,
-      LastName: options.registrantLastName,
-      ContactType: contactType || ContactType.PERSON,
-      OrganizationName: options.registrantOrganization,
-      AddressLine1: options.registrantAddressLine1,
-      AddressLine2: options.registrantAddressLine2,
-      City: options.registrantCity,
-      State: options.registrantState,
-      CountryCode: options.registrantCountry,
-      ZipCode: options.registrantZip.toString(),
-      PhoneNumber: options.registrantPhone.toString().includes('+')
-        ? options.registrantPhone.toString()
-        : `+${options.registrantPhone.toString()}`,
-      Email: options.registrantEmail,
-    },
-    TechContact: {
-      FirstName: options.techFirstName,
-      LastName: options.techLastName,
-      ContactType: contactType || ContactType.PERSON,
-      OrganizationName: options.techOrganization,
-      AddressLine1: options.techAddressLine1,
-      AddressLine2: options.techAddressLine2,
-      City: options.techCity,
-      State: options.techState,
-      CountryCode: options.techCountry,
-      ZipCode: options.techZip.toString(),
-      PhoneNumber: options.techPhone.toString().includes('+')
-        ? options.techPhone.toString()
-        : `+${options.techPhone.toString()}`,
-      Email: options.techEmail,
-    },
-    PrivacyProtectAdminContact: options.privacyAdmin || options.privacy || true,
-    PrivacyProtectRegistrantContact: options.privacyRegistrant || options.privacy || true,
-    PrivacyProtectTechContact: options.privacyTech || options.privacy || true,
-  }
+  const formatPhone = (phone: string) =>
+    phone.toString().includes('+') ? phone.toString() : `+${phone.toString()}`
 
   try {
-    return ok(route53domains.registerDomain(params))
+    return ok(route53domains.registerDomain({
+      DomainName: domain,
+      DurationInYears: options.years || 1,
+      AutoRenew: options.autoRenew || true,
+      AdminContact: {
+        FirstName: options.adminFirstName,
+        LastName: options.adminLastName,
+        ContactType: contactType,
+        OrganizationName: options.adminOrganization,
+        AddressLine1: options.adminAddressLine1,
+        AddressLine2: options.adminAddressLine2,
+        City: options.adminCity,
+        State: options.adminState,
+        CountryCode: options.adminCountry,
+        ZipCode: options.adminZip.toString(),
+        PhoneNumber: formatPhone(options.adminPhone),
+        Email: options.adminEmail,
+      },
+      RegistrantContact: {
+        FirstName: options.registrantFirstName,
+        LastName: options.registrantLastName,
+        ContactType: contactType,
+        OrganizationName: options.registrantOrganization,
+        AddressLine1: options.registrantAddressLine1,
+        AddressLine2: options.registrantAddressLine2,
+        City: options.registrantCity,
+        State: options.registrantState,
+        CountryCode: options.registrantCountry,
+        ZipCode: options.registrantZip.toString(),
+        PhoneNumber: formatPhone(options.registrantPhone),
+        Email: options.registrantEmail,
+      },
+      TechContact: {
+        FirstName: options.techFirstName,
+        LastName: options.techLastName,
+        ContactType: contactType,
+        OrganizationName: options.techOrganization,
+        AddressLine1: options.techAddressLine1,
+        AddressLine2: options.techAddressLine2,
+        City: options.techCity,
+        State: options.techState,
+        CountryCode: options.techCountry,
+        ZipCode: options.techZip.toString(),
+        PhoneNumber: formatPhone(options.techPhone),
+        Email: options.techEmail,
+      },
+      PrivacyProtectAdminContact: options.privacyAdmin || options.privacy || true,
+      PrivacyProtectRegistrantContact: options.privacyRegistrant || options.privacy || true,
+      PrivacyProtectTechContact: options.privacyTech || options.privacy || true,
+    }))
   }
   catch (error: any) {
     return err(error)
@@ -170,7 +151,7 @@ export async function getJumpBoxInstanceId(name?: string): Promise<string | unde
   if (!name)
     name = `${cloudName}/JumpBox`
 
-  const ec2 = new EC2({ region: 'us-east-1' })
+  const ec2 = new EC2Client('us-east-1')
   const data = await ec2.describeInstances({
     Filters: [
       {
@@ -193,8 +174,8 @@ export async function deleteEc2Instance(id: string, stackName?: string): Promise
   if (!id)
     return err(`Instance ${id} not found`)
 
-  const ec2 = new EC2({ region: 'us-east-1' })
-  await ec2.terminateInstances({ InstanceIds: [id] })
+  const ec2 = new EC2Client('us-east-1')
+  await ec2.terminateInstances([id])
 
   return ok(`Instance ${id} is being terminated`)
 }
@@ -214,8 +195,8 @@ export async function deleteJumpBox(stackName?: string): Promise<Result<string, 
 }
 
 export async function deleteIamUsers(): Promise<Result<string, string>> {
-  const iam = new IAM({ region: 'us-east-1' })
-  const data = await iam.listUsers({})
+  const iam = new IAMClient('us-east-1')
+  const data = await iam.listUsers()
   const teamName = slug(config.team.name)
   const users
     = data.Users?.filter((user: any) => {
@@ -275,8 +256,8 @@ export async function deleteIamUsers(): Promise<Result<string, string>> {
 
 export async function deleteStacksBuckets(): Promise<Result<string, string | Error>> {
   try {
-    const s3 = new S3({ region: 'us-east-1' })
-    const data = await s3.listBuckets({})
+    const s3 = new S3Client('us-east-1')
+    const data = await s3.listBuckets()
     const stacksBuckets = data.Buckets?.filter(bucket => bucket.Name?.includes('stacks'))
 
     if (!stacksBuckets)
@@ -285,7 +266,6 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
     const promises = stacksBuckets.map(async (bucket) => {
       const bucketName = bucket.Name || ''
 
-      // Delete the bucket
       log.info(`Deleting bucket ${bucketName}...`)
 
       // List and delete all objects in the bucket with pagination
@@ -293,7 +273,7 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
       let hasMoreObjects = true
 
       while (hasMoreObjects) {
-        const objects = await s3.listObjectsV2({
+        const objects = await s3.listObjects({
           Bucket: bucketName,
           ContinuationToken: continuationToken,
         })
@@ -366,7 +346,7 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
 
         log.info(`Finished deleting all versions from bucket ${bucketName}`)
 
-        // If the bucket has uncompleted multipart uploads, you need to abort them
+        // If the bucket has uncompleted multipart uploads, abort them
         const uploads = await s3.listMultipartUploads({ Bucket: bucketName })
         if (uploads.Uploads) {
           log.info('Aborting bucket multipart uploads...')
@@ -406,8 +386,8 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
 }
 
 export async function deleteStacksFunctions(): Promise<Result<string, string>> {
-  const lambda = new Lambda({ region: 'us-east-1' })
-  const data = await lambda.listFunctions({})
+  const lambda = new LambdaClient('us-east-1')
+  const data = await lambda.listFunctions()
   const stacksFunctions = data.Functions?.filter((func: any) => func.FunctionName?.includes('stacks')) || []
 
   if (!stacksFunctions || stacksFunctions.length === 0)
@@ -430,19 +410,19 @@ export async function deleteStacksFunctions(): Promise<Result<string, string>> {
 
 export async function deleteLogGroups(): Promise<Result<string, Error>> {
   try {
-    const ec2Client = new EC2Client({ region: 'us-east-1' })
-    const { Regions } = await ec2Client.send(new DescribeRegionsCommand({}))
+    const ec2 = new EC2Client('us-east-1')
+    const { Regions } = await ec2.describeRegions()
     const regions = Regions?.map((region: any) => region.RegionName) || []
 
     for (const region of regions) {
-      const client = new CloudWatchLogsClient({ region })
-      const logGroups: DescribeLogGroupsCommandOutput = await client.send(new DescribeLogGroupsCommand({}))
+      const client = new CloudWatchLogsClient(region)
+      const logGroups = await client.describeLogGroups()
 
       if (logGroups?.logGroups) {
         for (const group of logGroups.logGroups) {
           const appName = config.app.name?.toLocaleLowerCase() || 'stacks'
           if (group.logGroupName?.includes(appName))
-            await client.send(new DeleteLogGroupCommand({ logGroupName: group.logGroupName }))
+            await client.deleteLogGroup(group.logGroupName)
         }
       }
     }
@@ -455,8 +435,8 @@ export async function deleteLogGroups(): Promise<Result<string, Error>> {
 }
 
 export async function deleteParameterStore(): Promise<Result<string, string>> {
-  const ssm = new SSM({ region: 'us-east-1' })
-  const data = await ssm.describeParameters({})
+  const ssm = new SSMClient('us-east-1')
+  const data = await ssm.describeParameters()
 
   if (!data.Parameters)
     return ok('No parameters found')
@@ -477,13 +457,11 @@ export async function deleteParameterStore(): Promise<Result<string, string>> {
 }
 
 export async function deleteVpcs(): Promise<Result<string, Error>> {
-  const ec2Client = new EC2Client({ region: 'us-east-1' })
+  const ec2 = new EC2Client('us-east-1')
   const vpcNamePattern = config.app.name ? `${config.app.name.toLowerCase()}-` : 'stacks-'
 
   try {
-    // Describe all VPCs
-    const describeVpcsCommand = new DescribeVpcsCommand({})
-    const { Vpcs } = await ec2Client.send(describeVpcsCommand)
+    const { Vpcs } = await ec2.describeVpcs()
 
     if (!Vpcs || Vpcs.length === 0) {
       return ok('No VPCs found')
@@ -499,8 +477,7 @@ export async function deleteVpcs(): Promise<Result<string, Error>> {
     // Delete each matching VPC
     for (const vpc of vpcsToDel) {
       if (vpc.VpcId) {
-        const deleteVpcCommand = new DeleteVpcCommand({ VpcId: vpc.VpcId })
-        await ec2Client.send(deleteVpcCommand)
+        await ec2.deleteVpc(vpc.VpcId)
         log.info(`Deleted VPC: ${vpc.VpcId} (${vpcNamePattern})`)
       }
     }
@@ -523,13 +500,11 @@ export async function deleteCdkRemnants(): Promise<Result<string, Error>> {
 }
 
 export async function deleteSubnets(): Promise<Result<string, Error>> {
-  const ec2Client = new EC2Client({ region: 'us-east-1' })
+  const ec2 = new EC2Client('us-east-1')
   const subnetNamePattern = config.app.name ? `${config.app.name.toLowerCase()}-` : 'stacks-'
 
   try {
-    // Describe all subnets
-    const describeSubnetsCommand = new DescribeSubnetsCommand({})
-    const { Subnets } = await ec2Client.send(describeSubnetsCommand)
+    const { Subnets } = await ec2.describeSubnets()
 
     if (!Subnets || Subnets.length === 0) {
       return ok('No subnets found')
@@ -548,51 +523,39 @@ export async function deleteSubnets(): Promise<Result<string, Error>> {
     for (const subnet of subnetsToDel) {
       if (subnet.SubnetId) {
         // Describe network interfaces in the subnet
-        const describeNIsCommand = new DescribeNetworkInterfacesCommand({
+        const { NetworkInterfaces } = await ec2.describeNetworkInterfaces({
           Filters: [{ Name: 'subnet-id', Values: [subnet.SubnetId] }],
         })
-        const { NetworkInterfaces } = await ec2Client.send(describeNIsCommand)
 
         // Delete network interfaces
         for (const ni of NetworkInterfaces || []) {
           if (ni.NetworkInterfaceId) {
             // If the network interface is attached to an instance, terminate the instance
             if (ni.Attachment?.InstanceId) {
-              const terminateInstanceCommand = new TerminateInstancesCommand({
-                InstanceIds: [ni.Attachment.InstanceId],
-              })
-              await ec2Client.send(terminateInstanceCommand)
+              await ec2.terminateInstances([ni.Attachment.InstanceId])
               log.info(`Terminated instance: ${ni.Attachment.InstanceId}`)
 
               // Wait for the instance to terminate
-              await new Promise(resolve => setTimeout(resolve, 60000)) // Wait for 60 seconds
+              await new Promise(resolve => setTimeout(resolve, 60000))
             }
 
             // Detach the network interface if it's attached
             if (ni.Attachment?.AttachmentId) {
-              const detachCommand = new DetachNetworkInterfaceCommand({
-                AttachmentId: ni.Attachment.AttachmentId,
-                Force: true,
-              })
-              await ec2Client.send(detachCommand)
+              await ec2.detachNetworkInterface(ni.Attachment.AttachmentId, true)
               log.info(`Detached network interface: ${ni.NetworkInterfaceId}`)
 
               // Wait for the detachment to complete
-              await new Promise(resolve => setTimeout(resolve, 10000)) // Wait for 10 seconds
+              await new Promise(resolve => setTimeout(resolve, 10000))
             }
 
             // Delete the network interface
-            const deleteNICommand = new DeleteNetworkInterfaceCommand({
-              NetworkInterfaceId: ni.NetworkInterfaceId,
-            })
-            await ec2Client.send(deleteNICommand)
+            await ec2.deleteNetworkInterface(ni.NetworkInterfaceId)
             log.info(`Deleted network interface: ${ni.NetworkInterfaceId}`)
           }
         }
 
         // Delete the subnet
-        const deleteSubnetCommand = new DeleteSubnetCommand({ SubnetId: subnet.SubnetId })
-        await ec2Client.send(deleteSubnetCommand)
+        await ec2.deleteSubnet(subnet.SubnetId)
         log.info(`Deleted subnet: ${subnet.SubnetId} (${subnet.Tags?.find((tag: any) => tag.Key === 'Name')?.Value})`)
       }
     }
@@ -605,10 +568,10 @@ export async function deleteSubnets(): Promise<Result<string, Error>> {
 }
 
 export async function hasBeenDeployed(): Promise<Result<boolean, Error>> {
-  const s3 = new S3({ region: 'us-east-1' })
+  const s3 = new S3Client('us-east-1')
 
   try {
-    const response = await s3.send(new ListBucketsCommand({}))
+    const response = await s3.listBuckets()
 
     return ok(
       response.Buckets?.some(bucket => bucket.Name?.includes(config.app.name?.toLocaleLowerCase() || 'stacks'))
@@ -622,8 +585,8 @@ export async function hasBeenDeployed(): Promise<Result<boolean, Error>> {
 }
 
 export async function getJumpBoxInstanceProfileName(): Promise<Result<string | undefined, string>> {
-  const iam = new IAM({ region: 'us-east-1' })
-  const data = await iam.listInstanceProfiles({})
+  const iam = new IAMClient('us-east-1')
+  const data = await iam.listInstanceProfiles()
   const instanceProfile = data.InstanceProfiles?.find((profile: any) => profile.InstanceProfileName?.includes('JumpBox'))
 
   if (!instanceProfile)
@@ -642,7 +605,7 @@ export async function addJumpBox(stackName?: string): Promise<Result<string, str
     )
   }
 
-  const ec2 = new EC2({ region: 'us-east-1' })
+  const ec2 = new EC2Client('us-east-1')
   const r = await getJumpBoxSecurityGroupName()
 
   if (r.isErr)
@@ -658,9 +621,8 @@ export async function addJumpBox(stackName?: string): Promise<Result<string, str
   if (!sgId)
     return err('Security group not found when adding jump-box')
 
-  const client = new EFSClient({ region: 'us-east-1' })
-  const command = new DescribeFileSystemsCommand({})
-  const data = await client.send(command)
+  const efsClient = new EFSClient('us-east-1')
+  const data = await efsClient.describeFileSystems()
   const fileSystemName = `stacks-${config.app.env}-efs`
   const fileSystem = data.FileSystems?.find((fs: any) => fs.Name === fileSystemName)
   const fileSystemId = fileSystem?.FileSystemId
@@ -691,8 +653,7 @@ git clone https://github.com/stacksjs/stacks.git /mnt/efs
 
   const instance = await ec2.runInstances({
     ImageId: 'ami-03a6eaae9938c858c', // Amazon Linux 2023 AMI
-    // ImageId: new ec2.AmazonLinuxImage(),
-    InstanceType: InstanceType.t2_micro,
+    InstanceType: 't2.micro',
     MaxCount: 1,
     MinCount: 1,
     SecurityGroupIds: [sgId],
@@ -725,7 +686,7 @@ export async function getJumpBoxSecurityGroupName(): Promise<Result<string | und
   if (!jumpBoxId)
     return err('Jump-box not found')
 
-  const ec2 = new EC2({ region: 'us-east-1' })
+  const ec2 = new EC2Client('us-east-1')
   const data = await ec2.describeInstances({ InstanceIds: [jumpBoxId] })
 
   if (data.Reservations?.[0]?.Instances?.[0]) {
@@ -740,7 +701,7 @@ export async function getJumpBoxSecurityGroupName(): Promise<Result<string | und
 }
 
 export async function getSecurityGroupFromInstanceId(instanceId: string): Promise<string | undefined> {
-  const ec2 = new EC2({ region: 'us-east-1' })
+  const ec2 = new EC2Client('us-east-1')
   const data = await ec2.describeInstances({ InstanceIds: [instanceId] })
 
   if (data.Reservations?.[0]?.Instances?.[0]) {
@@ -748,7 +709,7 @@ export async function getSecurityGroupFromInstanceId(instanceId: string): Promis
     const securityGroups = instance.SecurityGroups
 
     if (securityGroups?.[0])
-      return securityGroups[0].GroupId // Returns the ID of the first security group
+      return securityGroups[0].GroupId
   }
 
   return undefined
@@ -756,20 +717,16 @@ export async function getSecurityGroupFromInstanceId(instanceId: string): Promis
 
 export async function isFirstDeployment(): Promise<boolean> {
   const stackName = cloudName
-  const cloudFormation = new CloudFormation()
-  const data = await cloudFormation.listStacks({
-    StackStatusFilter: ['CREATE_COMPLETE', 'UPDATE_COMPLETE'],
-  })
+  const cloudFormation = new CloudFormationClient('us-east-1')
+  const data = await cloudFormation.listStacks(['CREATE_COMPLETE', 'UPDATE_COMPLETE'])
   const isStacksCloudPresent = data.StackSummaries?.some((stack: any) => stack.StackName === stackName)
 
   return !isStacksCloudPresent
 }
 
 export async function isFailedState(): Promise<boolean> {
-  const cloudFormation = new CloudFormation()
-  const data = await cloudFormation.listStacks({
-    StackStatusFilter: ['CREATE_FAILED', 'UPDATE_FAILED', 'ROLLBACK_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'],
-  })
+  const cloudFormation = new CloudFormationClient('us-east-1')
+  const data = await cloudFormation.listStacks(['CREATE_FAILED', 'UPDATE_FAILED', 'ROLLBACK_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'])
   const isStacksCloudPresent = data.StackSummaries?.some((stack: any) => stack.StackName === cloudName)
 
   return !isStacksCloudPresent
@@ -777,7 +734,7 @@ export async function isFailedState(): Promise<boolean> {
 
 export async function getOrCreateTimestamp(): Promise<string> {
   const parameterName = `/stacks/timestamp`
-  const ssm = new SSM({ region: 'us-east-1' })
+  const ssm = new SSMClient('us-east-1')
 
   try {
     const response = await ssm.getParameter({ Name: parameterName })
@@ -805,24 +762,4 @@ export async function getOrCreateTimestamp(): Promise<string> {
 // get the CloudFront distribution ID of the current stack
 export async function getCloudFrontDistributionId(): Promise<string> {
   return ''
-  //   return await runCommand(`aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='${config.app.url}'].Id"`)
 }
-
-// function isProductionEnv(env: string) {
-//   return env === 'production' || env === 'prod'
-// }
-
-// export async function getExistingBucketNameByPrefix(prefix: string): Promise<string | undefined | null> {
-//   const s3 = new S3({ region: 'us-east-1' })
-
-//   try {
-//     const response = await s3.send(new ListBucketsCommand({}))
-//     const bucket = response.Buckets?.find(bucket => bucket.Name?.startsWith(prefix))
-
-//     return bucket ? bucket.Name : null
-//   }
-//   catch (error) {
-//     console.error('Error fetching buckets', error)
-//     return `${prefix}-${timestamp}`
-// }
-// }

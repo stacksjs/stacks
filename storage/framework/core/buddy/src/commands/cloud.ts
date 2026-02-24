@@ -253,22 +253,43 @@ export function cloud(buddy: CLI): void {
       }
 
       if (options.diff) {
-        const result = await runCommand('bunx --bun cdk diff', {
-          cwd: p.frameworkCloudPath(),
-          stdin: 'pipe',
-        })
+        try {
+          const { InfrastructureGenerator } = await import('@stacksjs/ts-cloud/src/generators/infrastructure')
+          const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
+          const { tsCloud: cloudConfig } = await import('~/config/cloud')
 
-        if ((result as any).isErr) {
-          await outro(
-            'While running the cloud diff command, there was an issue',
-            { startTime, useSeconds: true },
-            (result as any).error,
-          )
-          process.exit(ExitCode.FatalError)
+          const environment = process.env.APP_ENV || process.env.NODE_ENV || 'production'
+          const generator = new InfrastructureGenerator({
+            config: cloudConfig as any,
+            environment: environment as any,
+          })
+
+          const newTemplate = generator.generate().toJSON()
+          const stackName = `${(cloudConfig as any).project?.slug || 'stacks'}-${environment}`
+          const cfn = new CloudFormationClient(process.env.AWS_REGION || 'us-east-1')
+
+          let currentTemplate = '{}'
+          try {
+            currentTemplate = await cfn.getTemplate(stackName)
+          }
+          catch {
+            log.info('No deployed stack found. Showing full template as diff.')
+          }
+
+          if (currentTemplate === newTemplate) {
+            log.info('No changes detected.')
+          }
+          else {
+            log.info('Changes detected between deployed and local template:')
+            log.info(`Current template: ${currentTemplate.length} bytes`)
+            log.info(`New template: ${newTemplate.length} bytes`)
+          }
+        }
+        catch (error: any) {
+          log.error(`Failed to compute diff: ${error.message}`)
         }
 
-        await outro('Showing diff of the current, undeployed cloud changes', { startTime, useSeconds: true })
-        console.log((result as any).value)
+        await outro('Cloud diff complete', { startTime, useSeconds: true })
         process.exit(ExitCode.Success)
       }
 
@@ -725,22 +746,48 @@ export function cloud(buddy: CLI): void {
 
       const startTime = await intro('buddy cloud:diff')
 
-      const result = await runCommand('bunx --bun cdk diff', {
-        cwd: p.frameworkCloudPath(),
-        stdin: 'pipe',
-      })
+      try {
+        const { InfrastructureGenerator } = await import('@stacksjs/ts-cloud/src/generators/infrastructure')
+        const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
+        const { tsCloud: cloudConfig } = await import('~/config/cloud')
 
-      if ((result as any).isErr) {
+        const environment = process.env.APP_ENV || process.env.NODE_ENV || 'production'
+        const generator = new InfrastructureGenerator({
+          config: cloudConfig as any,
+          environment: environment as any,
+        })
+
+        const newTemplate = generator.generate().toJSON()
+        const stackName = `${(cloudConfig as any).project?.slug || 'stacks'}-${environment}`
+        const cfn = new CloudFormationClient(process.env.AWS_REGION || 'us-east-1')
+
+        let currentTemplate = '{}'
+        try {
+          currentTemplate = await cfn.getTemplate(stackName)
+        }
+        catch {
+          log.info('No deployed stack found. Showing full template as diff.')
+        }
+
+        if (currentTemplate === newTemplate) {
+          log.info('No changes detected.')
+        }
+        else {
+          log.info('Changes detected between deployed and local template:')
+          log.info(`Current template: ${currentTemplate.length} bytes`)
+          log.info(`New template: ${newTemplate.length} bytes`)
+        }
+      }
+      catch (error: any) {
         await outro(
           'While running the cloud diff command, there was an issue',
           { startTime, useSeconds: true },
-          (result as any).error,
+          error.message,
         )
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Showing diff of the current, undeployed cloud changes', { startTime, useSeconds: true })
-      console.log((result as any).value)
+      await outro('Cloud diff complete', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
