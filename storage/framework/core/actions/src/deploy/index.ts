@@ -307,6 +307,16 @@ try {
     }
   }
 
+  // Run custom deploy script: beforeDeploy hook
+  try {
+    const deployScript = await import(p.projectPath('cloud/deploy-script'))
+    if (typeof deployScript.beforeDeploy === 'function') {
+      await deployScript.beforeDeploy({ environment, region })
+    }
+  } catch (hookError: any) {
+    if (isVerbose) log.debug(`beforeDeploy hook skipped: ${hookError.message}`)
+  }
+
   // Deploy infrastructure stack
   // Note: For serverless mode, the Docker image is already pushed to ECR above
   // Note: deployStack outputs its own progress table, so we don't use a spinner here
@@ -316,6 +326,23 @@ try {
     waitForCompletion: true,
     verbose: isVerbose,
   })
+
+  // Run custom deploy script: afterDeploy hook
+  try {
+    const deployScript = await import(p.projectPath('cloud/deploy-script'))
+    if (typeof deployScript.afterDeploy === 'function') {
+      const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws') as any
+      const cf = new CloudFormationClient(region)
+      const stackName = `stacks-cloud-${environment}`
+      let stackOutputs: Record<string, string> = {}
+      try {
+        stackOutputs = await cf.getStackOutputs(stackName)
+      } catch {}
+      await deployScript.afterDeploy({ environment, region, outputs: stackOutputs })
+    }
+  } catch (hookError: any) {
+    if (isVerbose) log.debug(`afterDeploy hook skipped: ${hookError.message}`)
+  }
 
   // Run database migrations after infrastructure is deployed
   // This ensures the RDS database is available before we try to migrate
