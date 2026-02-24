@@ -1,49 +1,39 @@
-import { handleError } from '@stacksjs/error-handling'
-import { generate, generateQRCodeDataURL, generateSecret, keyuri, QRErrorCorrection, verify } from 'ts-auth'
+import { generateTOTP, generateTOTPSecret, totpKeyUri, verifyTOTP } from '@stacksjs/ts-auth'
 
 export function generateTwoFactorSecret(): string {
-  return generateSecret()
+  return generateTOTPSecret()
 }
 
 export type Token = string
 export type Secret = string
 
-export function generateTwoFactorToken(secret: Secret): Token {
-  return generate({ secret })
+export async function generateTwoFactorToken(secret: Secret): Promise<Token> {
+  return generateTOTP({ secret })
 }
 
-export function verifyTwoFactorCode(token: Token, secret: Secret): boolean {
-  return verify(token, { secret })
+export async function verifyTwoFactorCode(token: Token, secret: Secret): Promise<boolean> {
+  return verifyTOTP(token, { secret })
 }
 
 /**
- * Generate a QR code for two-factor authentication
+ * Generate an otpauth:// URI for two-factor authentication
+ *
+ * This URI can be used with any QR code library to generate a scannable
+ * QR code for authenticator apps.
  *
  * @param user - User identifier (email or username)
  * @param service - Service name (e.g., 'StacksJS 2FA')
  * @param secret - Optional secret (will be generated if not provided)
- * @returns Promise resolving to the data URL of the QR code
+ * @returns The otpauth:// URI string
  */
-export async function generateQrCode(
+export function generateTwoFactorUri(
   user?: string,
   service?: string,
-  secret?: Secret
-): Promise<string> {
+  secret?: Secret,
+): string {
   const userIdentifier = user || 'johndoe@example.com'
   const serviceName = service || 'StacksJS 2fa'
   const otpSecret = secret || generateTwoFactorSecret()
-  const otpauth = keyuri(userIdentifier, serviceName, otpSecret)
 
-  try {
-    return await generateQRCodeDataURL({
-      text: otpauth,
-      width: 256,
-      height: 256,
-      correctLevel: QRErrorCorrection.H,
-    })
-  }
-  catch (error) {
-    handleError('Error generating QR code', error)
-    throw error
-  }
+  return totpKeyUri(userIdentifier, serviceName, otpSecret)
 }

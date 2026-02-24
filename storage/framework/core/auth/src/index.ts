@@ -36,9 +36,4 @@ export {
   verifyTOTP,
   generateTOTPSecret,
   totpKeyUri,
-  // QR Code generation
-  generateQRCodeSVG,
-  generateQRCodeDataURL,
-  createQRCode,
-  QRErrorCorrection,
-} from 'ts-auth'
+} from '@stacksjs/ts-auth'

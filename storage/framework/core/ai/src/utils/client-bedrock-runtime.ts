@@ -3,11 +3,11 @@ import type {
   InvokeModelCommandOutput,
   InvokeModelWithResponseStreamCommandInput,
   InvokeModelWithResponseStreamCommandOutput,
-} from '@stacksjs/ts-cloud'
+} from '@stacksjs/ts-cloud/aws'
 import process from 'node:process'
-import { BedrockRuntimeClient } from '@stacksjs/ts-cloud'
+import { BedrockRuntimeClient } from '@stacksjs/ts-cloud/aws'
 
-export const client: BedrockRuntimeClient = new BedrockRuntimeClient(
+export const client = new BedrockRuntimeClient(
   process.env.REGION || 'us-east-1',
 )
 

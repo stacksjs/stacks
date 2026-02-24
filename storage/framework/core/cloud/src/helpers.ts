@@ -1,10 +1,9 @@
-import type { CountryCode } from '@stacksjs/ts-cloud'
 import type { Result } from '@stacksjs/error-handling'
 import {
+  AWSClient,
   AWSCloudFormationClient as CloudFormationClient,
   CloudWatchLogsClient,
   EC2Client,
-  EFSClient,
   IAMClient,
   LambdaClient,
   Route53DomainsClient,
@@ -19,6 +18,59 @@ import { slug } from '@stacksjs/strings'
 
 const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
 const cloudName = `stacks-cloud-${appEnv}`
+
+/**
+ * Helper to make raw EC2 API calls for actions not available on EC2Client
+ */
+async function ec2Request(action: string, params: Record<string, string> = {}): Promise<Record<string, unknown>> {
+  const client = new AWSClient()
+  const queryParams: Record<string, string> = {
+    Action: action,
+    Version: '2016-11-15',
+    ...params,
+  }
+  const result = await client.request({
+    service: 'ec2',
+    region: 'us-east-1',
+    method: 'POST',
+    path: '/',
+    queryParams,
+  })
+  return result as Record<string, unknown>
+}
+
+/**
+ * Helper to make raw CloudWatch Logs API calls for actions not available on CloudWatchLogsClient
+ */
+async function cwlRequest(region: string, action: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const client = new AWSClient()
+  const result = await client.request({
+    service: 'logs',
+    region,
+    method: 'POST',
+    path: '/',
+    headers: {
+      'Content-Type': 'application/x-amz-json-1.1',
+      'X-Amz-Target': `Logs_20140328.${action}`,
+    },
+    body: JSON.stringify(payload),
+  })
+  return result as Record<string, unknown>
+}
+
+/**
+ * Helper to make raw EFS API calls since EFSClient is not available
+ */
+async function efsRequest(action: string, method: string, path: string): Promise<Record<string, unknown>> {
+  const client = new AWSClient()
+  const result = await client.request({
+    service: 'elasticfilesystem',
+    region: 'us-east-1',
+    method,
+    path,
+  })
+  return result as Record<string, unknown>
+}
 
 export async function getSecurityGroupId(securityGroupName: string): Promise<Result<string | undefined, string>> {
   const ec2 = new EC2Client('us-east-1')
@@ -47,7 +99,7 @@ export interface PurchaseOptions {
   adminAddressLine2: string
   adminCity: string
   adminState: string
-  adminCountry: CountryCode
+  adminCountry: string
   adminZip: string
   adminPhone: string
   adminEmail: string
@@ -58,7 +110,7 @@ export interface PurchaseOptions {
   techAddressLine2: string
   techCity: string
   techState: string
-  techCountry: CountryCode
+  techCountry: string
   techZip: string
   techPhone: string
   techEmail: string
@@ -69,7 +121,7 @@ export interface PurchaseOptions {
   registrantAddressLine2: string
   registrantCity: string
   registrantState: string
-  registrantCountry: CountryCode
+  registrantCountry: string
   registrantZip: string
   registrantPhone: string
   registrantEmail: string
@@ -84,7 +136,7 @@ export function purchaseDomain(
   domain: string,
   options: PurchaseOptions,
 ): Result<Promise<{ OperationId: string }>, Error> {
-  const route53domains = new Route53DomainsClient('us-east-1')
+  const route53domains = new Route53DomainsClient()
   const contactType = (options.contactType.toUpperCase() || 'PERSON') as 'PERSON' | 'COMPANY' | 'ASSOCIATION' | 'PUBLIC_BODY' | 'RESELLER'
 
   const formatPhone = (phone: string) =>
@@ -142,8 +194,8 @@ export function purchaseDomain(
       PrivacyProtectTechContact: options.privacyTech || options.privacy || true,
     }))
   }
-  catch (error: any) {
-    return err(error)
+  catch (error: unknown) {
+    return err(error as Error)
   }
 }
 
@@ -199,8 +251,9 @@ export async function deleteIamUsers(): Promise<Result<string, string>> {
   const data = await iam.listUsers()
   const teamName = slug(config.team.name)
   const users
-    = data.Users?.filter((user: any) => {
-      const userNameLower = user.UserName?.toLowerCase()
+    = data.Users?.filter((user: unknown) => {
+      const u = user as Record<string, unknown>
+      const userNameLower = (u.UserName as string | undefined)?.toLowerCase()
       return (
         userNameLower !== 'stacks'
         && userNameLower !== teamName.toLowerCase()
@@ -211,8 +264,9 @@ export async function deleteIamUsers(): Promise<Result<string, string>> {
   if (!users || users.length === 0)
     return ok(`No Stacks IAM users found for team ${teamName}`)
 
-  const promises = users.map(async (user: any) => {
-    const userName = user.UserName || ''
+  const promises = users.map(async (user: unknown) => {
+    const u = user as Record<string, unknown>
+    const userName = (u.UserName as string) || ''
 
     log.info(`Deleting IAM user: ${userName}`)
 
@@ -221,12 +275,13 @@ export async function deleteIamUsers(): Promise<Result<string, string>> {
 
     // Detach each policy
     await Promise.all(
-      policies.AttachedPolicies?.map((policy: any) =>
-        iam.detachUserPolicy({
+      policies.AttachedPolicies?.map((policy: unknown) => {
+        const p = policy as Record<string, unknown>
+        return iam.detachUserPolicy({
           UserName: userName,
-          PolicyArn: policy.PolicyArn || '',
-        }),
-      ) || [],
+          PolicyArn: (p.PolicyArn as string) || '',
+        })
+      }) || [],
     )
 
     // Get the list of access keys for the user
@@ -234,12 +289,13 @@ export async function deleteIamUsers(): Promise<Result<string, string>> {
 
     // Delete each access key
     await Promise.all(
-      accessKeys.AccessKeyMetadata?.map((key: any) =>
-        iam.deleteAccessKey({
+      accessKeys.AccessKeyMetadata?.map((key: unknown) => {
+        const k = key as Record<string, unknown>
+        return iam.deleteAccessKey({
           UserName: userName,
-          AccessKeyId: key.AccessKeyId || '',
-        }),
-      ) || [],
+          AccessKeyId: (k.AccessKeyId as string) || '',
+        })
+      }) || [],
     )
 
     // Now delete the user
@@ -261,7 +317,7 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
     const stacksBuckets = data.Buckets?.filter(bucket => bucket.Name?.includes('stacks'))
 
     if (!stacksBuckets)
-      return err('No stacks buckets found') as any
+      return err('No stacks buckets found') as unknown as Result<string, string | Error>
 
     const promises = stacksBuckets.map(async (bucket) => {
       const bucketName = bucket.Name || ''
@@ -274,24 +330,25 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
 
       while (hasMoreObjects) {
         const objects = await s3.listObjects({
-          Bucket: bucketName,
-          ContinuationToken: continuationToken,
+          bucket: bucketName,
+          continuationToken,
         })
 
         // Delete all objects in this batch
-        if (objects.Contents && objects.Contents.length > 0) {
-          log.info(`Deleting ${objects.Contents.length} objects from bucket ${bucketName}...`)
+        if (objects.objects && objects.objects.length > 0) {
+          log.info(`Deleting ${objects.objects.length} objects from bucket ${bucketName}...`)
 
           await Promise.all(
-            objects.Contents.map((object: any) =>
-              s3.deleteObject({ Bucket: bucketName, Key: object.Key || '' }).catch((error: any) => handleError(error)),
-            ),
+            objects.objects.map((object: unknown) => {
+              const o = object as Record<string, unknown>
+              return s3.deleteObject(bucketName, (o.Key as string) || '').catch((error: unknown) => handleError(error as Error))
+            }),
           )
         }
 
         // Check if there are more objects
-        hasMoreObjects = objects.IsTruncated === true
-        continuationToken = objects.NextContinuationToken
+        hasMoreObjects = !!objects.nextContinuationToken
+        continuationToken = objects.nextContinuationToken
       }
 
       log.info(`Finished deleting objects from bucket ${bucketName}`)
@@ -305,66 +362,61 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
 
         while (hasMore) {
           const versions = await s3.listObjectVersions({
-            Bucket: bucketName,
-            KeyMarker: keyMarker,
-            VersionIdMarker: versionIdMarker,
+            bucket: bucketName,
+            keyMarker,
+            versionIdMarker,
           })
 
           // Delete versions in this batch
-          if (versions.Versions && versions.Versions.length > 0) {
+          if (versions.versions && versions.versions.length > 0) {
             await Promise.all(
-              versions.Versions.map((version: any) =>
-                s3.deleteObject({
-                  Bucket: bucketName,
-                  Key: version.Key || '',
-                  VersionId: version.VersionId,
-                }),
-              ),
-            ).catch((error: any) => handleError(error))
-            log.info(`Deleted ${versions.Versions.length} versions from bucket ${bucketName}`)
+              versions.versions.map((version: unknown) => {
+                const v = version as Record<string, unknown>
+                return s3.deleteObject(bucketName, (v.Key as string) || '')
+              }),
+            ).catch((error: unknown) => handleError(error as Error))
+            log.info(`Deleted ${versions.versions.length} versions from bucket ${bucketName}`)
           }
 
           // Delete delete markers in this batch
-          if (versions.DeleteMarkers && versions.DeleteMarkers.length > 0) {
+          if (versions.deleteMarkers && versions.deleteMarkers.length > 0) {
             await Promise.all(
-              versions.DeleteMarkers.map((marker: any) =>
-                s3.deleteObject({
-                  Bucket: bucketName,
-                  Key: marker.Key || '',
-                  VersionId: marker.VersionId,
-                }),
-              ),
-            ).catch((error: any) => handleError(error))
-            log.info(`Deleted ${versions.DeleteMarkers.length} delete markers from bucket ${bucketName}`)
+              versions.deleteMarkers.map((marker: unknown) => {
+                const m = marker as Record<string, unknown>
+                return s3.deleteObject(bucketName, (m.Key as string) || '')
+              }),
+            ).catch((error: unknown) => handleError(error as Error))
+            log.info(`Deleted ${versions.deleteMarkers.length} delete markers from bucket ${bucketName}`)
           }
 
           // Check if there are more items
-          hasMore = versions.IsTruncated === true
-          keyMarker = versions.NextKeyMarker
-          versionIdMarker = versions.NextVersionIdMarker
+          hasMore = !!versions.nextKeyMarker
+          keyMarker = versions.nextKeyMarker
+          versionIdMarker = versions.nextVersionIdMarker
         }
 
         log.info(`Finished deleting all versions from bucket ${bucketName}`)
 
         // If the bucket has uncompleted multipart uploads, abort them
-        const uploads = await s3.listMultipartUploads({ Bucket: bucketName })
-        if (uploads.Uploads) {
+        const uploads = await s3.listMultipartUploads(bucketName)
+        if (uploads && uploads.length > 0) {
           log.info('Aborting bucket multipart uploads...')
 
           await Promise.all(
-            uploads.Uploads.map((upload: any) =>
-              s3.abortMultipartUpload({
-                Bucket: bucketName,
-                Key: upload.Key || '',
-                UploadId: upload.UploadId,
-              }),
-            ),
-          ).catch((error: any) => handleError(error))
+            uploads.map((upload: unknown) => {
+              const u = upload as Record<string, unknown>
+              return s3.abortMultipartUpload(
+                bucketName,
+                (u.Key as string) || '',
+                (u.UploadId as string) || '',
+              )
+            }),
+          ).catch((error: unknown) => handleError(error as Error))
 
           log.info(`Finished aborting multipart uploads from bucket ${bucketName}`)
         }
 
-        await s3.deleteBucket({ Bucket: bucketName }).catch((error: any) => handleError(error))
+        await s3.deleteBucket(bucketName).catch((error: unknown) => handleError(error as Error))
 
         log.info(`Bucket ${bucketName} deleted`)
       }
@@ -381,19 +433,25 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
     return ok('Stacks buckets deleted')
   }
   catch (error) {
-    return err(handleError('Error deleting stacks buckets', error)) as any
+    return err(handleError('Error deleting stacks buckets', error)) as unknown as Result<string, string | Error>
   }
 }
 
 export async function deleteStacksFunctions(): Promise<Result<string, string>> {
   const lambda = new LambdaClient('us-east-1')
   const data = await lambda.listFunctions()
-  const stacksFunctions = data.Functions?.filter((func: any) => func.FunctionName?.includes('stacks')) || []
+  const stacksFunctions = data.Functions?.filter((func: unknown) => {
+    const f = func as Record<string, unknown>
+    return (f.FunctionName as string | undefined)?.includes('stacks')
+  }) || []
 
   if (!stacksFunctions || stacksFunctions.length === 0)
     return ok('No stacks functions found')
 
-  const promises = stacksFunctions.map((func: any) => lambda.deleteFunction({ FunctionName: func.FunctionName || '' }))
+  const promises = stacksFunctions.map((func: unknown) => {
+    const f = func as Record<string, unknown>
+    return lambda.deleteFunction((f.FunctionName as string) || '')
+  })
 
   await Promise.all(promises).catch((error: Error) => {
     if (error.message.includes('it is a replicated function')) {
@@ -410,9 +468,19 @@ export async function deleteStacksFunctions(): Promise<Result<string, string>> {
 
 export async function deleteLogGroups(): Promise<Result<string, Error>> {
   try {
-    const ec2 = new EC2Client('us-east-1')
-    const { Regions } = await ec2.describeRegions()
-    const regions = Regions?.map((region: any) => region.RegionName) || []
+    // Use raw EC2 API call for describeRegions since EC2Client doesn't expose it
+    const regionsResult = await ec2Request('DescribeRegions')
+    const regionSet = regionsResult.regionInfo as unknown as Record<string, unknown>
+    const regionItems = (regionSet?.item ?? regionsResult.Regions ?? regionsResult.regionSet ?? []) as unknown as Array<Record<string, unknown>>
+    // Extract region names - the XML response structure may vary
+    const regions: string[] = []
+    if (Array.isArray(regionItems)) {
+      for (const r of regionItems) {
+        const name = (r.regionName ?? r.RegionName) as string | undefined
+        if (name)
+          regions.push(name)
+      }
+    }
 
     for (const region of regions) {
       const client = new CloudWatchLogsClient(region)
@@ -421,8 +489,10 @@ export async function deleteLogGroups(): Promise<Result<string, Error>> {
       if (logGroups?.logGroups) {
         for (const group of logGroups.logGroups) {
           const appName = config.app.name?.toLocaleLowerCase() || 'stacks'
-          if (group.logGroupName?.includes(appName))
-            await client.deleteLogGroup(group.logGroupName)
+          if (group.logGroupName?.includes(appName)) {
+            // Use raw CloudWatch Logs API call for deleteLogGroup since CloudWatchLogsClient doesn't expose it
+            await cwlRequest(region, 'DeleteLogGroup', { logGroupName: group.logGroupName })
+          }
         }
       }
     }
@@ -442,12 +512,18 @@ export async function deleteParameterStore(): Promise<Result<string, string>> {
     return ok('No parameters found')
 
   const appName = config.app.name?.toLocaleLowerCase() || 'stacks'
-  const stacksParameters = data.Parameters.filter((param: any) => param.Name?.includes(appName)) || []
+  const stacksParameters = data.Parameters.filter((param: unknown) => {
+    const p = param as Record<string, unknown>
+    return (p.Name as string | undefined)?.includes(appName)
+  }) || []
 
   if (!stacksParameters || stacksParameters.length === 0)
     return ok('No stacks parameters found')
 
-  const promises = stacksParameters.map((param: any) => ssm.deleteParameter({ Name: param.Name || '' }))
+  const promises = stacksParameters.map((param: unknown) => {
+    const p = param as Record<string, unknown>
+    return ssm.deleteParameter({ Name: (p.Name as string) || '' })
+  })
 
   await Promise.all(promises).catch((error: Error) => {
     return err(handleError('Error deleting parameter store', error))
@@ -468,16 +544,20 @@ export async function deleteVpcs(): Promise<Result<string, Error>> {
     }
 
     // Filter VPCs based on the name pattern
-    const vpcsToDel = Vpcs.filter((vpc: any) => vpc.Tags?.some((tag: any) => tag.Key === 'Name' && tag.Value === vpcNamePattern))
+    const vpcsToDel = Vpcs.filter((vpc: unknown) => {
+      const v = vpc as Record<string, unknown>
+      const tags = v.Tags as Array<Record<string, unknown>> | undefined
+      return tags?.some((tag: Record<string, unknown>) => tag.Key === 'Name' && tag.Value === vpcNamePattern)
+    })
 
     if (vpcsToDel.length === 0) {
       return ok(`No VPCs found matching the pattern: ${vpcNamePattern}`)
     }
 
-    // Delete each matching VPC
+    // Delete each matching VPC using raw EC2 API call
     for (const vpc of vpcsToDel) {
       if (vpc.VpcId) {
-        await ec2.deleteVpc(vpc.VpcId)
+        await ec2Request('DeleteVpc', { VpcId: vpc.VpcId })
         log.info(`Deleted VPC: ${vpc.VpcId} (${vpcNamePattern})`)
       }
     }
@@ -511,9 +591,11 @@ export async function deleteSubnets(): Promise<Result<string, Error>> {
     }
 
     // Filter subnets based on the name pattern
-    const subnetsToDel = Subnets.filter((subnet: any) =>
-      subnet.Tags?.some((tag: any) => tag.Key === 'Name' && tag.Value?.startsWith(subnetNamePattern)),
-    )
+    const subnetsToDel = Subnets.filter((subnet: unknown) => {
+      const s = subnet as Record<string, unknown>
+      const tags = s.Tags as Array<Record<string, unknown>> | undefined
+      return tags?.some((tag: Record<string, unknown>) => tag.Key === 'Name' && (tag.Value as string)?.startsWith(subnetNamePattern))
+    })
 
     if (subnetsToDel.length === 0) {
       return ok(`No subnets found matching the pattern: ${subnetNamePattern}`)
@@ -522,41 +604,49 @@ export async function deleteSubnets(): Promise<Result<string, Error>> {
     // Delete dependencies and subnets
     for (const subnet of subnetsToDel) {
       if (subnet.SubnetId) {
-        // Describe network interfaces in the subnet
-        const { NetworkInterfaces } = await ec2.describeNetworkInterfaces({
-          Filters: [{ Name: 'subnet-id', Values: [subnet.SubnetId] }],
+        // Describe network interfaces in the subnet using raw EC2 API call
+        const niResult = await ec2Request('DescribeNetworkInterfaces', {
+          'Filter.1.Name': 'subnet-id',
+          'Filter.1.Value.1': subnet.SubnetId,
         })
+        const niSet = niResult.networkInterfaceSet as unknown as Record<string, unknown> | undefined
+        const networkInterfaces = (niSet?.item ?? []) as unknown as Array<Record<string, unknown>>
 
         // Delete network interfaces
-        for (const ni of NetworkInterfaces || []) {
-          if (ni.NetworkInterfaceId) {
+        for (const ni of Array.isArray(networkInterfaces) ? networkInterfaces : []) {
+          const niId = ni.networkInterfaceId as string | undefined
+          if (niId) {
+            const attachment = ni.attachment as Record<string, unknown> | undefined
             // If the network interface is attached to an instance, terminate the instance
-            if (ni.Attachment?.InstanceId) {
-              await ec2.terminateInstances([ni.Attachment.InstanceId])
-              log.info(`Terminated instance: ${ni.Attachment.InstanceId}`)
+            if (attachment?.instanceId) {
+              await ec2.terminateInstances([attachment.instanceId as string])
+              log.info(`Terminated instance: ${attachment.instanceId}`)
 
               // Wait for the instance to terminate
               await new Promise(resolve => setTimeout(resolve, 60000))
             }
 
             // Detach the network interface if it's attached
-            if (ni.Attachment?.AttachmentId) {
-              await ec2.detachNetworkInterface(ni.Attachment.AttachmentId, true)
-              log.info(`Detached network interface: ${ni.NetworkInterfaceId}`)
+            if (attachment?.attachmentId) {
+              await ec2Request('DetachNetworkInterface', {
+                AttachmentId: attachment.attachmentId as string,
+                Force: 'true',
+              })
+              log.info(`Detached network interface: ${niId}`)
 
               // Wait for the detachment to complete
               await new Promise(resolve => setTimeout(resolve, 10000))
             }
 
             // Delete the network interface
-            await ec2.deleteNetworkInterface(ni.NetworkInterfaceId)
-            log.info(`Deleted network interface: ${ni.NetworkInterfaceId}`)
+            await ec2Request('DeleteNetworkInterface', { NetworkInterfaceId: niId })
+            log.info(`Deleted network interface: ${niId}`)
           }
         }
 
-        // Delete the subnet
-        await ec2.deleteSubnet(subnet.SubnetId)
-        log.info(`Deleted subnet: ${subnet.SubnetId} (${subnet.Tags?.find((tag: any) => tag.Key === 'Name')?.Value})`)
+        // Delete the subnet using raw EC2 API call
+        await ec2Request('DeleteSubnet', { SubnetId: subnet.SubnetId })
+        log.info(`Deleted subnet: ${subnet.SubnetId} (${subnet.Tags?.find((tag: unknown) => (tag as Record<string, unknown>).Key === 'Name')?.Value})`)
       }
     }
 
@@ -587,7 +677,10 @@ export async function hasBeenDeployed(): Promise<Result<boolean, Error>> {
 export async function getJumpBoxInstanceProfileName(): Promise<Result<string | undefined, string>> {
   const iam = new IAMClient('us-east-1')
   const data = await iam.listInstanceProfiles()
-  const instanceProfile = data.InstanceProfiles?.find((profile: any) => profile.InstanceProfileName?.includes('JumpBox'))
+  const instanceProfile = data.InstanceProfiles?.find((profile: unknown) => {
+    const p = profile as Record<string, unknown>
+    return (p.InstanceProfileName as string | undefined)?.includes('JumpBox')
+  })
 
   if (!instanceProfile)
     return err('Jump-box IAM instance profile not found')
@@ -601,7 +694,7 @@ export async function addJumpBox(stackName?: string): Promise<Result<string, str
 
   if (await getJumpBoxInstanceId()) {
     return err(
-      'The jump–box you are trying to add already exists. Please remove it & wait until it finished terminating.',
+      'The jump-box you are trying to add already exists. Please remove it & wait until it finished terminating.',
     )
   }
 
@@ -610,22 +703,23 @@ export async function addJumpBox(stackName?: string): Promise<Result<string, str
 
   if (r.isErr)
     return err(r.error)
-  if (!(r as any).value)
+  if (!(r as unknown as Record<string, unknown>).value)
     return err('Security group not found when adding jump-box')
 
-  const result = await getSecurityGroupId((r as any).value)
+  const result = await getSecurityGroupId((r as unknown as Record<string, unknown>).value as string)
   if (result.isErr)
     return err(result.error)
-  const sgId = (result as any).value
+  const sgId = (result as unknown as Record<string, unknown>).value as string | undefined
 
   if (!sgId)
     return err('Security group not found when adding jump-box')
 
-  const efsClient = new EFSClient('us-east-1')
-  const data = await efsClient.describeFileSystems()
+  // Use raw EFS API call since EFSClient is not available
+  const efsData = await efsRequest('DescribeFileSystems', 'GET', '/2015-02-01/file-systems')
+  const fileSystems = (efsData.FileSystems ?? []) as unknown as Array<Record<string, unknown>>
   const fileSystemName = `stacks-${config.app.env}-efs`
-  const fileSystem = data.FileSystems?.find((fs: any) => fs.Name === fileSystemName)
-  const fileSystemId = fileSystem?.FileSystemId
+  const fileSystem = fileSystems.find((fs: Record<string, unknown>) => fs.Name === fileSystemName)
+  const fileSystemId = fileSystem?.FileSystemId as string | undefined
 
   if (!fileSystem || !fileSystemId)
     return err(`EFS file system ${fileSystemName} not found`)
@@ -647,36 +741,31 @@ git clone https://github.com/stacksjs/stacks.git /mnt/efs
   if (res.isErr)
     return err(res.error)
 
-  const jumpBoxInstanceProfileName: string | undefined = (res as any).value
+  const jumpBoxInstanceProfileName: string | undefined = (res as unknown as Record<string, unknown>).value as string | undefined
   if (!jumpBoxInstanceProfileName)
     return err('Jump-box IAM instance profile not found')
 
-  const instance = await ec2.runInstances({
-    ImageId: 'ami-03a6eaae9938c858c', // Amazon Linux 2023 AMI
-    InstanceType: 't2.micro',
-    MaxCount: 1,
-    MinCount: 1,
-    SecurityGroupIds: [sgId],
-    SubnetId: 'subnet-004c5f196358b00f0',
-    TagSpecifications: [
-      {
-        ResourceType: 'instance',
-        Tags: [
-          {
-            Key: 'Name',
-            Value: `${cloudName}-jump-box`,
-          },
-        ],
-      },
-    ],
-    UserData: base64UserData,
-    IamInstanceProfile: {
-      Name: jumpBoxInstanceProfileName,
-    },
+  // Use raw EC2 API call for RunInstances since EC2Client doesn't expose it
+  const instance = await ec2Request('RunInstances', {
+    'ImageId': 'ami-03a6eaae9938c858c',
+    'InstanceType': 't2.micro',
+    'MaxCount': '1',
+    'MinCount': '1',
+    'SecurityGroupId.1': sgId,
+    'SubnetId': 'subnet-004c5f196358b00f0',
+    'TagSpecification.1.ResourceType': 'instance',
+    'TagSpecification.1.Tag.1.Key': 'Name',
+    'TagSpecification.1.Tag.1.Value': `${cloudName}-jump-box`,
+    'UserData': base64UserData,
+    'IamInstanceProfile.Name': jumpBoxInstanceProfileName,
   })
 
-  return instance.Instances?.[0]
-    ? ok(`Jump-box created with id ${instance.Instances[0].InstanceId}`)
+  const instancesSet = instance.instancesSet as unknown as Record<string, unknown> | undefined
+  const items = (instancesSet?.item ?? []) as unknown as Array<Record<string, unknown>>
+  const firstInstance = Array.isArray(items) ? items[0] : undefined
+
+  return firstInstance
+    ? ok(`Jump-box created with id ${firstInstance.instanceId as string}`)
     : err('Jump-box creation failed')
 }
 
@@ -719,7 +808,10 @@ export async function isFirstDeployment(): Promise<boolean> {
   const stackName = cloudName
   const cloudFormation = new CloudFormationClient('us-east-1')
   const data = await cloudFormation.listStacks(['CREATE_COMPLETE', 'UPDATE_COMPLETE'])
-  const isStacksCloudPresent = data.StackSummaries?.some((stack: any) => stack.StackName === stackName)
+  const isStacksCloudPresent = data.StackSummaries?.some((stack: unknown) => {
+    const s = stack as Record<string, unknown>
+    return s.StackName === stackName
+  })
 
   return !isStacksCloudPresent
 }
@@ -727,7 +819,10 @@ export async function isFirstDeployment(): Promise<boolean> {
 export async function isFailedState(): Promise<boolean> {
   const cloudFormation = new CloudFormationClient('us-east-1')
   const data = await cloudFormation.listStacks(['CREATE_FAILED', 'UPDATE_FAILED', 'ROLLBACK_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'])
-  const isStacksCloudPresent = data.StackSummaries?.some((stack: any) => stack.StackName === cloudName)
+  const isStacksCloudPresent = data.StackSummaries?.some((stack: unknown) => {
+    const s = stack as Record<string, unknown>
+    return s.StackName === cloudName
+  })
 
   return !isStacksCloudPresent
 }
@@ -745,7 +840,7 @@ export async function getOrCreateTimestamp(): Promise<string> {
 
     return timestamp
   }
-  catch (error: any) {
+  catch (error: unknown) {
     const timestamp = new Date().getTime().toString()
     log.debug(`Creating timestamp parameter ${parameterName} with value ${timestamp}`, error)
 

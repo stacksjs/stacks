@@ -146,7 +146,7 @@ export const tsCloud: TsCloudConfig = {
       app2: servers.app2,
       web: servers.web,
       cache: servers.cache,
-    },
+    } as Record<string, unknown>,
 
     /**
      * Jump Box / Bastion Host
@@ -157,7 +157,7 @@ export const tsCloud: TsCloudConfig = {
      * Connect via: buddy cloud:ssh
      * Or via SSM: aws ssm start-session --target <instance-id>
      */
-    jumpBox: true,
+    // jumpBox: true,
     // jumpBox: {
     //   enabled: true,
     //   size: 'micro',
@@ -399,17 +399,17 @@ export const tsCloud: TsCloudConfig = {
      * Domain redirects create S3 redirect buckets.
      * Path redirects create CloudFront Functions.
      */
-    redirects: {
-      // Redirect these domains to your primary domain
-      // domains: ['www.stacksjs.com', 'stacks.dev'],
-      // target: 'stacksjs.com',
-
-      // Path-level redirects (source -> target)
-      // paths: {
-      //   '/old-page': '/new-page',
-      //   '/blog/old-post': '/blog/new-post',
-      // },
-    },
+    // redirects: {
+    //   // Redirect these domains to your primary domain
+    //   // domains: ['www.stacksjs.com', 'stacks.dev'],
+    //   // target: 'stacksjs.com',
+    //
+    //   // Path-level redirects (source -> target)
+    //   // paths: {
+    //   //   '/old-page': '/new-page',
+    //   //   '/blog/old-post': '/blog/new-post',
+    //   // },
+    // },
 
     /**
      * Cache Configuration (ElastiCache)
@@ -433,11 +433,11 @@ export const tsCloud: TsCloudConfig = {
      * Domain is auto-detected from dns.domain if not specified.
      * DNS records (SPF, DKIM, DMARC) are auto-created when hostedZoneId is available.
      */
-    email: {
-      domain: 'stacksjs.com',
-      configurationSet: true,
-      enableDkim: true,
-    },
+    // email: {
+    //   domain: 'stacksjs.com',
+    //   configurationSet: true,
+    //   enableDkim: true,
+    // },
 
     /**
      * Search Configuration (OpenSearch)

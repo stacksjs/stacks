@@ -62,8 +62,8 @@ const cfn = new CloudFormationClient(region)
 // Check if stack exists and create/update accordingly
 let stackExists = false
 try {
-  const stacks = await cfn.describeStacks({ stackName })
-  stackExists = stacks.length > 0
+  const result = await cfn.describeStacks({ stackName })
+  stackExists = (result as Record<string, unknown[]>).Stacks?.length > 0
 }
 catch {
   stackExists = false

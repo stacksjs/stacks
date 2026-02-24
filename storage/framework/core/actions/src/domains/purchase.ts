@@ -1,4 +1,4 @@
-import type { CountryCode } from '@stacksjs/ts-cloud'
+type CountryCode = string
 import type { PurchaseOptions } from '@stacksjs/cloud'
 import process from 'node:process'
 import { log, parseOptions } from '@stacksjs/cli'

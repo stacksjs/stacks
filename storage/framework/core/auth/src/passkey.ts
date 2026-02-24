@@ -4,7 +4,7 @@
  * Uses ts-auth for native WebAuthn implementation (no external dependencies)
  */
 
-import type { VerifiedRegistrationResponse } from 'ts-auth'
+import type { VerifiedRegistrationResponse } from '@stacksjs/ts-auth'
 import type { Insertable } from '@stacksjs/database'
 
 type UserModel = InstanceType<typeof User>
@@ -22,7 +22,7 @@ export {
   browserSupportsWebAuthn,
   browserSupportsWebAuthnAutofill,
   platformAuthenticatorIsAvailable,
-} from 'ts-auth'
+} from '@stacksjs/ts-auth'
 
 // Re-export WebAuthn types from ts-auth
 export type {
@@ -34,7 +34,7 @@ export type {
   PublicKeyCredentialRequestOptions,
   RegistrationOptions,
   AuthenticationOptions,
-} from 'ts-auth'
+} from '@stacksjs/ts-auth'
 
 type PasskeyInsertable = Insertable<PasskeyAttribute>
 

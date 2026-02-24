@@ -3,9 +3,7 @@ import { DynamoDBClient } from '@stacksjs/ts-cloud'
 
 const dynamoDbTool: any = await import('@stacksjs/cache').then((m: any) => m.dynamoDbTool)
 
-const client = new DynamoDBClient('us-east-1', {
-  endpoint: 'http://localhost:8000',
-})
+const client = new DynamoDBClient('us-east-1')
 
 export async function launchServer(): Promise<void> {
   if (!process.env.GITHUB_ACTIONS) {

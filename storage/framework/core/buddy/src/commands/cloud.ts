@@ -254,23 +254,24 @@ export function cloud(buddy: CLI): void {
 
       if (options.diff) {
         try {
-          const { InfrastructureGenerator } = await import('@stacksjs/ts-cloud/src/generators/infrastructure')
+          const { InfrastructureGenerator } = await import('@stacksjs/ts-cloud')
           const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
           const { tsCloud: cloudConfig } = await import('~/config/cloud')
 
-          const environment = process.env.APP_ENV || process.env.NODE_ENV || 'production'
+          const environment = (process.env.APP_ENV || process.env.NODE_ENV || 'production') as 'production' | 'staging' | 'development'
           const generator = new InfrastructureGenerator({
-            config: cloudConfig as any,
-            environment: environment as any,
+            config: cloudConfig,
+            environment,
           })
 
           const newTemplate = generator.generate().toJSON()
-          const stackName = `${(cloudConfig as any).project?.slug || 'stacks'}-${environment}`
+          const stackName = `${cloudConfig.project?.slug || 'stacks'}-${environment}`
           const cfn = new CloudFormationClient(process.env.AWS_REGION || 'us-east-1')
 
           let currentTemplate = '{}'
           try {
-            currentTemplate = await cfn.getTemplate(stackName)
+            const result = await cfn.getTemplate(stackName)
+            currentTemplate = result.TemplateBody
           }
           catch {
             log.info('No deployed stack found. Showing full template as diff.')
@@ -747,23 +748,24 @@ export function cloud(buddy: CLI): void {
       const startTime = await intro('buddy cloud:diff')
 
       try {
-        const { InfrastructureGenerator } = await import('@stacksjs/ts-cloud/src/generators/infrastructure')
+        const { InfrastructureGenerator } = await import('@stacksjs/ts-cloud')
         const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
         const { tsCloud: cloudConfig } = await import('~/config/cloud')
 
-        const environment = process.env.APP_ENV || process.env.NODE_ENV || 'production'
+        const environment = (process.env.APP_ENV || process.env.NODE_ENV || 'production') as 'production' | 'staging' | 'development'
         const generator = new InfrastructureGenerator({
-          config: cloudConfig as any,
-          environment: environment as any,
+          config: cloudConfig,
+          environment,
         })
 
         const newTemplate = generator.generate().toJSON()
-        const stackName = `${(cloudConfig as any).project?.slug || 'stacks'}-${environment}`
+        const stackName = `${cloudConfig.project?.slug || 'stacks'}-${environment}`
         const cfn = new CloudFormationClient(process.env.AWS_REGION || 'us-east-1')
 
         let currentTemplate = '{}'
         try {
-          currentTemplate = await cfn.getTemplate(stackName)
+          const result = await cfn.getTemplate(stackName)
+          currentTemplate = result.TemplateBody
         }
         catch {
           log.info('No deployed stack found. Showing full template as diff.')

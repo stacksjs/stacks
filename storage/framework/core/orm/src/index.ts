@@ -12,8 +12,6 @@ export * from './define-model'
 export type { InferAttributes, InferPrimaryKey, InferTableName, ModelDefinition } from 'bun-query-builder'
 export type { InferRelationNames } from 'bun-query-builder'
 
-// Export User model from db package
-export { default as User } from '../../db/src/orm/Models/User'
 
 // ---------------------------------------------------------------------------
 // Stub exports for generated model types.
@@ -46,6 +44,28 @@ export interface NewUser {
   password: string
   name: string
   [key: string]: unknown
+}
+
+/** Stub model class for the users table. */
+export declare class User {
+  id: number
+  email: string
+  name: string
+  password: string
+  uuid: string
+  two_factor_secret: string | null
+  public_key: string | null
+  stripe_id: string | null
+  created_at: string
+  updated_at: string | null
+  deleted_at: string | null
+  [key: string]: unknown
+  hasStripeId(): boolean
+  update(data: Record<string, unknown>): Promise<unknown>
+  static where(column: string, ...args: unknown[]): { first: () => Promise<User | undefined>, get: () => Promise<User[]>, [key: string]: unknown }
+  static find(id: number): Promise<User | undefined>
+  static create(data: Record<string, unknown>): Promise<User>
+  static all(): Promise<User[]>
 }
 
 /** Stub model class for the jobs table. */

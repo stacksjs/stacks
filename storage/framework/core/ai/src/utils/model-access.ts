@@ -1,4 +1,4 @@
-import { BedrockClient } from '@stacksjs/ts-cloud'
+import { BedrockClient } from '@stacksjs/ts-cloud/aws'
 import { log } from '@stacksjs/cli'
 import { ai } from '@stacksjs/config'
 

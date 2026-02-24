@@ -6,8 +6,8 @@ export function createTwoFactorMethods() {
       await model.update({ two_factor_secret: secret })
     },
 
-    verifyTwoFactorCode(model: any, code: string): boolean {
-      const { verifyTwoFactorCode } = require('@stacksjs/auth')
+    async verifyTwoFactorCode(model: any, code: string): Promise<boolean> {
+      const { verifyTwoFactorCode } = await import('@stacksjs/auth')
       const modelTwoFactorSecret = model.get('two_factor_secret')
 
       if (typeof modelTwoFactorSecret === 'string') {

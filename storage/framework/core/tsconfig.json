@@ -11,6 +11,7 @@
     "paths": {
       "ts-mocker": ["../types/ts-mocker.d.ts"],
       "@stacksjs/dnsx": ["../types/dnsx.d.ts"],
+      "ts-cloud-core": ["../types/ts-cloud-core.d.ts"],
       "@stacksjs/*": ["./*/src"],
       "@stacksjs/utils/*": ["./utils/src/*"],
       "stacks/*": ["./*/src"],

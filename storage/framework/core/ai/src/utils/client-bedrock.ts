@@ -5,9 +5,9 @@ import type {
   GetModelCustomizationJobCommandOutput,
   ListFoundationModelsCommandInput,
   ListFoundationModelsCommandOutput,
-} from '@stacksjs/ts-cloud'
+} from '@stacksjs/ts-cloud/aws'
 import process from 'node:process'
-import { BedrockClient } from '@stacksjs/ts-cloud'
+import { BedrockClient } from '@stacksjs/ts-cloud/aws'
 
 const client = new BedrockClient(process.env.REGION || 'us-east-1')
 const logger = console // import your own logger
