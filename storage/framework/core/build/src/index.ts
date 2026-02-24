@@ -1,5 +1,4 @@
 import { stat } from 'node:fs/promises'
-import process from 'node:process'
 import { bold, dim, green, italic, log } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { glob } from '@stacksjs/storage'
@@ -19,13 +18,13 @@ export async function outro(options: {
     // esbuild format
     // eslint-disable-next-line no-console
     console.error('Build errors:', options.result.errors)
-    process.exit(1)
+    throw new Error(`Build failed with errors: ${JSON.stringify(options.result.errors)}`)
   }
   else if (options.result.success !== undefined && !options.result.success) {
     // Bun.build format
     // eslint-disable-next-line no-console
     console.log(options.result.logs[0])
-    process.exit(1)
+    throw new Error(`Build failed: ${options.result.logs[0]}`)
   }
 
   // loop over all the files in the dist directory and log them and their size

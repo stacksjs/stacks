@@ -1,8 +1,6 @@
 import type { Ok, Result } from '@stacksjs/error-handling'
 import type { CliOptions, CommandError, Readable, Subprocess, Writable } from '@stacksjs/types'
-import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
-import { ExitCode } from '@stacksjs/types'
 import { exec, execSync } from './exec'
 import { log } from '@stacksjs/logging'
 
@@ -105,7 +103,7 @@ export async function runCommands(
 
     if (result.isErr) {
       handleError('Error during runCommands', result.error)
-      process.exit(ExitCode.FatalError)
+      throw result.error
     }
 
     results.push(result as any)

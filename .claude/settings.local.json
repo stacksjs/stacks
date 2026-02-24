@@ -178,7 +178,10 @@
       "Bash(cp -r /Users/chrisbreuer/Code/Libraries/ts-cloud/packages/ts-cloud/dist/* /Users/chrisbreuer/.bun/install/cache/@stacksjs/ts-cloud@0.1.11@@@1/dist/ && cp -r /Users/chrisbreuer/Code/Libraries/ts-cloud/packages/core/dist/* /Users/chrisbreuer/.bun/install/cache/ts-cloud-core@0.1.11@@@1/dist/ && echo \"Copied\")",
       "Bash(cp -r /Users/chrisbreuer/Code/Libraries/ts-cloud/packages/ts-cloud/dist/* /Users/chrisbreuer/Code/stacks/node_modules/@stacksjs/ts-cloud/dist/ && echo \"Copied to node_modules\")",
       "Bash(aws cloudformation describe-stacks --stack-name stacks-cloud 2>&1 | head -5; echo \"---\"; aws cloudformation describe-stacks --stack-name stacks-cloud-development 2>&1 | head -5)",
-      "Bash(aws cloudformation describe-stacks --stack-name stacks-cloud 2>&1 | python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d['Stacks'][0]['StackStatus']\\)\")"
+      "Bash(aws cloudformation describe-stacks --stack-name stacks-cloud 2>&1 | python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d['Stacks'][0]['StackStatus']\\)\")",
+      "WebFetch(domain:stacksjs.com)",
+      "WebFetch(domain:docs.stacksjs.com)",
+      "WebFetch(domain:api.stacksjs.com)"
     ],
     "deny": [],
     "ask": []

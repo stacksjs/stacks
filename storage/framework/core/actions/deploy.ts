@@ -380,7 +380,9 @@ const server = Bun.serve({
           if (await file.exists()) {
             return new Response(file, { headers: { 'Content-Type': 'image/x-icon', 'Cache-Control': 'public, max-age=86400' } })
           }
-        } catch {}
+        } catch {
+          // file not found at this path, try next
+        }
       }
       return new Response('', { status: 204 })
     }
@@ -425,7 +427,9 @@ const server = Bun.serve({
               }
             })
           }
-        } catch {}
+        } catch {
+          // file not found at this path, try next
+        }
       }
       // Asset not found
       return new Response('Not Found', { status: 404, headers: { 'Content-Type': 'text/plain' } })
@@ -445,7 +449,9 @@ const server = Bun.serve({
           if (await file.exists()) {
             return new Response(file, { headers: { 'Content-Type': 'text/html; charset=utf-8' } })
           }
-        } catch {}
+        } catch {
+          // file not found at this path, try next
+        }
       }
     }
 

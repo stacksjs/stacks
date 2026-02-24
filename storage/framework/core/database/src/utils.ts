@@ -16,6 +16,7 @@ type AnySchema = DatabaseSchema<any> & Record<string, { columns: Record<string, 
 // These can be overridden later once config is fully loaded
 // Read from environment variables first
 import { env as envVars } from '@stacksjs/env'
+import { getConnectionDefaults } from './defaults'
 
 interface DbConnectionConfig {
   database?: string
@@ -35,30 +36,17 @@ interface DbConfig {
   }
 }
 
+const sqliteDefaults = getConnectionDefaults('sqlite', envVars)
+const mysqlDefaults = getConnectionDefaults('mysql', envVars)
+const postgresDefaults = getConnectionDefaults('postgres', envVars)
+
 let appEnv: string = envVars.APP_ENV || 'local'
 let dbDriver: string = envVars.DB_CONNECTION || 'sqlite'
 let dbConfig: DbConfig = {
   connections: {
-    sqlite: {
-      database: 'database/stacks.sqlite', // SQLite uses file path, not env DB_DATABASE
-      prefix: '',
-    },
-    mysql: {
-      name: envVars.DB_DATABASE || 'stacks',
-      host: envVars.DB_HOST || '127.0.0.1',
-      username: envVars.DB_USERNAME || 'root',
-      password: envVars.DB_PASSWORD || '',
-      port: envVars.DB_PORT ||3306,
-      prefix: '',
-    },
-    postgres: {
-      name: envVars.DB_DATABASE || 'stacks',
-      host: envVars.DB_HOST || '127.0.0.1',
-      username: envVars.DB_USERNAME || '',
-      password: envVars.DB_PASSWORD || '',
-      port: envVars.DB_PORT ||5432,
-      prefix: '',
-    },
+    sqlite: { database: sqliteDefaults.database, prefix: '' },
+    mysql: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: mysqlDefaults.port, prefix: '' },
+    postgres: { name: postgresDefaults.database, host: postgresDefaults.host, username: postgresDefaults.username, password: postgresDefaults.password, port: postgresDefaults.port, prefix: '' },
   },
 }
 

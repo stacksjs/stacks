@@ -1,4 +1,5 @@
 import type { BroadcastEvent, ChannelType } from 'ts-broadcasting'
+import { log } from '@stacksjs/logging'
 import { getServer } from './server-instance'
 
 export interface BroadcastInstance {
@@ -36,7 +37,7 @@ export class Broadcast {
   subscribe(channel: string, callback: (data: any) => void): void {
     // Subscription is client-side, not server-side
     // This is handled by BroadcastClient
-    console.warn('Broadcast.subscribe() is a client-side operation. Use BroadcastClient instead.')
+    log.warn('Broadcast.subscribe() is a client-side operation. Use BroadcastClient instead.')
   }
 
   /**
@@ -44,7 +45,7 @@ export class Broadcast {
    */
   unsubscribe(channel: string): void {
     // Unsubscription is client-side, not server-side
-    console.warn('Broadcast.unsubscribe() is a client-side operation. Use BroadcastClient instead.')
+    log.warn('Broadcast.unsubscribe() is a client-side operation. Use BroadcastClient instead.')
   }
 
   /**
@@ -54,7 +55,7 @@ export class Broadcast {
     const server = getServer()
 
     if (!server) {
-      console.warn('Broadcast server not initialized')
+      log.warn('Broadcast server not initialized')
       return
     }
 

@@ -4,10 +4,8 @@
  * Full-featured Algolia integration for search functionality.
  */
 
-import process from 'node:process'
 import { searchEngine } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
-import { ExitCode } from '@stacksjs/types'
 
 export interface AlgoliaConfig {
   appId: string
@@ -104,7 +102,7 @@ function getConfig(): AlgoliaConfig {
 
     if (!appId || !apiKey) {
       log.error('Algolia credentials not configured. Set ALGOLIA_APP_ID and ALGOLIA_API_KEY.')
-      process.exit(ExitCode.FatalError)
+      throw new Error('Algolia credentials not configured. Set ALGOLIA_APP_ID and ALGOLIA_API_KEY.')
     }
 
     config = { appId, apiKey }

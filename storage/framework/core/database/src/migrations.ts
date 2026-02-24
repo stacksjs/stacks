@@ -27,32 +27,20 @@ import { db } from './utils'
 
 // Use environment variables via @stacksjs/env for proper type coercion
 import { env as envVars } from '@stacksjs/env'
+import { getConnectionDefaults } from './defaults'
 
 // Build database config from environment variables
 const dbDriver = envVars.DB_CONNECTION || 'sqlite'
+const sqliteDefaults = getConnectionDefaults('sqlite', envVars)
+const mysqlDefaults = getConnectionDefaults('mysql', envVars)
+const postgresDefaults = getConnectionDefaults('postgres', envVars)
+
 const dbConfig = {
   default: dbDriver,
   connections: {
-    sqlite: {
-      database: 'database/stacks.sqlite',
-      prefix: '',
-    },
-    mysql: {
-      name: envVars.DB_DATABASE || 'stacks',
-      host: envVars.DB_HOST || '127.0.0.1',
-      username: envVars.DB_USERNAME || 'root',
-      password: envVars.DB_PASSWORD || '',
-      port: envVars.DB_PORT ||3306,
-      prefix: '',
-    },
-    postgres: {
-      name: envVars.DB_DATABASE || 'stacks',
-      host: envVars.DB_HOST || '127.0.0.1',
-      username: envVars.DB_USERNAME || '',
-      password: envVars.DB_PASSWORD || '',
-      port: envVars.DB_PORT ||5432,
-      prefix: '',
-    },
+    sqlite: { database: sqliteDefaults.database, prefix: '' },
+    mysql: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: mysqlDefaults.port, prefix: '' },
+    postgres: { name: postgresDefaults.database, host: postgresDefaults.host, username: postgresDefaults.username, password: postgresDefaults.password, port: postgresDefaults.port, prefix: '' },
   },
 }
 

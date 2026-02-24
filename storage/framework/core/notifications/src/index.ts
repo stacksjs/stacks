@@ -1,8 +1,6 @@
-import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { notification as _notification } from '@stacksjs/config'
 import { err } from '@stacksjs/error-handling'
-import { ExitCode } from '@stacksjs/types'
 import { chat, email, sms } from './drivers'
 import { DatabaseNotificationDriver } from './drivers/database'
 
@@ -27,7 +25,7 @@ export function useDatabase(): typeof DatabaseNotificationDriver {
 export function useNotification(typeParam = 'email', driverParam = 'mailtrap'): any {
   if (!config.default) {
     log.error('No default notification type set in config/notification.ts')
-    return process.exit(ExitCode.InvalidArgument)
+    throw new Error('No default notification type set in config/notification.ts')
   }
 
   const type = typeParam || config.default

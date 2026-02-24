@@ -737,7 +737,7 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
   }
   catch (e) {
     // Body parsing failed - log it for debugging
-    console.error('[stacks-router] Body parsing failed:', e)
+    log.debug('[stacks-router] Body parsing failed:', e)
   }
 }
 

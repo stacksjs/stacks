@@ -15,6 +15,7 @@ import { db } from './utils'
 
 // Detect database driver from environment
 import { env as envVars } from '@stacksjs/env'
+import { sqlHelpers } from './sql-helpers'
 
 function getDbDriver(): string {
   return envVars.DB_CONNECTION || 'sqlite'
@@ -25,10 +26,8 @@ function getDbDriver(): string {
  */
 export async function migrateAuthTables(options: { verbose?: boolean } = {}): Promise<{ success: boolean, error?: string }> {
   const dbDriver = getDbDriver()
-  const isPostgres = dbDriver === 'postgres'
-  const isMysql = dbDriver === 'mysql'
-  const boolTrue = isPostgres ? 'true' : '1'
-  const now = isPostgres || isMysql ? 'NOW()' : `datetime('now')`
+  const sql = sqlHelpers(dbDriver)
+  const { isPostgres, isMysql, boolTrue, now } = sql
 
   if (options.verbose) {
     log.info(`Creating auth tables for ${dbDriver}...`)

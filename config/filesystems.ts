@@ -1,4 +1,5 @@
 import type { FilesystemsConfig } from '@stacksjs/types'
+import { env } from '@stacksjs/env'
 
 /**
  * **Filesystem Configuration**
@@ -19,26 +20,26 @@ export default {
    * - 's3': AWS S3 or S3-compatible storage
    * - 'memory': In-memory storage (for testing)
    */
-  driver: (process.env.STORAGE_DRIVER || 'bun') as any,
+  driver: (env.STORAGE_DRIVER || 'bun') as any,
 
   /**
    * Root directory for local/bun drivers
    *
    * @default process.cwd()
    */
-  root: process.env.STORAGE_ROOT || process.cwd(),
+  root: env.STORAGE_ROOT || process.cwd(),
 
   /**
    * S3 Configuration (when driver is 's3')
    */
   s3: {
-    bucket: process.env.AWS_S3_BUCKET || '',
-    region: process.env.AWS_REGION || 'us-east-1',
-    prefix: process.env.AWS_S3_PREFIX || '',
-    credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+    bucket: env.AWS_S3_BUCKET || '',
+    region: env.AWS_REGION || 'us-east-1',
+    prefix: env.AWS_S3_PREFIX || '',
+    credentials: env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY
       ? {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+          accessKeyId: env.AWS_ACCESS_KEY_ID,
+          secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
         }
       : undefined,
     // endpoint: 'https://s3-compatible-service.com', // For S3-compatible services
@@ -48,7 +49,7 @@ export default {
    * Public URL configuration
    */
   publicUrl: {
-    domain: process.env.STORAGE_PUBLIC_URL || process.env.APP_URL || 'http://localhost',
+    domain: env.STORAGE_PUBLIC_URL || env.APP_URL || 'http://localhost',
   },
 
   /**

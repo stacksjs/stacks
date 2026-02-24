@@ -1,10 +1,7 @@
 import type { SearchEngineDriver } from '@stacksjs/types'
 import type { Dictionary, DocumentOptions, EnqueuedTask, Faceting, Index, IndexesResults, IndexOptions, PaginationSettings, SearchResponse, Settings, Synonyms, TypoTolerance } from 'meilisearch'
-import process from 'node:process'
-
 import { searchEngine } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
-import { ExitCode } from '@stacksjs/types'
 import { Meilisearch } from 'meilisearch'
 
 function client(): Meilisearch {
@@ -13,7 +10,7 @@ function client(): Meilisearch {
 
   if (!host) {
     log.error('Please specify a search engine host.')
-    process.exit(ExitCode.FatalError)
+    throw new Error('Meilisearch host is not configured. Please specify a search engine host.')
   }
 
   return new Meilisearch({ host, apiKey })

@@ -5,17 +5,8 @@
  * Uses AsyncLocalStorage for proper request isolation in async contexts.
  */
 
+import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { AsyncLocalStorage } from 'node:async_hooks'
-
-// Type for enhanced request with all our added methods
-interface EnhancedRequest extends Request {
-  bearerToken: () => string | null
-  user: () => Promise<any>
-  userToken: () => Promise<any>
-  tokenCan: (ability: string) => Promise<boolean>
-  tokenCant: (ability: string) => Promise<boolean>
-  [key: string]: any
-}
 
 // AsyncLocalStorage for request context
 const requestStorage = new AsyncLocalStorage<EnhancedRequest>()

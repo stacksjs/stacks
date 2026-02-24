@@ -7,6 +7,7 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
+import { log } from '@stacksjs/logging'
 import type { TranslationMessages, Translations } from './types'
 import { addTranslations, loadTranslations } from './translator'
 
@@ -49,7 +50,7 @@ export async function loadFromDirectory(options: LoaderOptions): Promise<Transla
   const translations: Translations = {}
 
   if (!existsSync(directory)) {
-    console.warn(`[i18n] Translation directory not found: ${directory}`)
+    log.warn(`[i18n] Translation directory not found: ${directory}`)
     return translations
   }
 

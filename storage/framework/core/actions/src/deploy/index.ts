@@ -346,7 +346,9 @@ try {
       let stackOutputs: Record<string, string> = {}
       try {
         stackOutputs = await cf.getStackOutputs(stackName)
-      } catch {}
+      } catch (e) {
+        if (isVerbose) log.debug(`Failed to get stack outputs: ${e instanceof Error ? e.message : String(e)}`)
+      }
       await deployScript.afterDeploy({ environment, region, outputs: stackOutputs })
     }
   } catch (hookError: any) {

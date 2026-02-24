@@ -33,45 +33,18 @@ import { getCurrentRequest } from '@stacksjs/router'
 // ============================================================================
 
 import { env } from '@stacksjs/env'
+import { sqlHelpers } from '@stacksjs/database'
 
 /** Current database driver */
 const dbDriver: DatabaseDriver = (env.DB_CONNECTION as DatabaseDriver) || 'sqlite'
 
-/** Check if using PostgreSQL */
-const isPostgres: boolean = dbDriver === 'postgres'
+/** Cross-database SQL helpers */
+const sql = sqlHelpers(dbDriver)
+const { isPostgres, isMysql, now, boolTrue, boolFalse } = sql
 
-/** Check if using MySQL */
-const isMysql: boolean = dbDriver === 'mysql'
-
-/**
- * SQL syntax helpers for cross-database compatibility
- * - PostgreSQL uses NOW() and true/false
- * - MySQL uses NOW() and 1/0
- * - SQLite uses datetime('now') and 1/0
- */
-const now: string = isPostgres || isMysql ? 'NOW()' : `datetime('now')`
-const boolTrue: string = isPostgres ? 'true' : '1'
-const boolFalse: string = isPostgres ? 'false' : '0'
-
-/**
- * Parameter placeholder helper for cross-database compatibility
- * PostgreSQL uses $1, $2, $3...
- * MySQL and SQLite use ?
- */
-function params(...values: unknown[]): { sql: string, values: unknown[] } {
-  if (isPostgres) {
-    const placeholders = values.map((_, i) => `$${i + 1}`).join(', ')
-    return { sql: placeholders, values }
-  }
-  const placeholders = values.map(() => '?').join(', ')
-  return { sql: placeholders, values }
-}
-
-/**
- * Helper to create a single parameter placeholder
- */
+/** Shorthand for sql.param */
 function param(index: number): string {
-  return isPostgres ? `$${index}` : '?'
+  return sql.param(index)
 }
 
 // ============================================================================

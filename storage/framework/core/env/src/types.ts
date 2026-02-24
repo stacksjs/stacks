@@ -9,8 +9,8 @@ interface EnumObject {
 export const envEnum: EnumObject = {
   APP_ENV: ['local', 'dev', 'development', 'staging', 'prod', 'production'],
   DB_CONNECTION: ['mysql', 'sqlite', 'postgres', 'dynamodb'],
-  MAIL_MAILER: ['smtp', 'mailgun', 'ses', 'postmark', 'sendmail', 'log'],
-  SEARCH_ENGINE_DRIVER: ['opensearch'],
+  MAIL_MAILER: ['smtp', 'mailgun', 'ses', 'postmark', 'sendmail', 'log', 'sendgrid', 'mailtrap'],
+  SEARCH_ENGINE_DRIVER: ['opensearch', 'meilisearch', 'algolia', 'typesense'],
   FRONTEND_APP_ENV: ['development', 'staging', 'production'],
 }
 

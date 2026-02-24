@@ -5,19 +5,11 @@ import { log } from '@stacksjs/logging'
 
 // Detect database driver from environment
 import { env } from '@stacksjs/env'
-const dbDriver = env.DB_CONNECTION || 'sqlite'
-const isPostgres = dbDriver === 'postgres'
-const isMysql = dbDriver === 'mysql'
+import { sqlHelpers } from '@stacksjs/database'
 
-// SQL syntax helpers for cross-database compatibility
-// - PostgreSQL: SERIAL PRIMARY KEY, NOW(), true/false
-// - MySQL: INTEGER AUTO_INCREMENT PRIMARY KEY, NOW(), 1/0
-// - SQLite: INTEGER PRIMARY KEY AUTOINCREMENT, datetime('now'), 1/0
-const _autoIncrement = isPostgres ? 'SERIAL' : 'INTEGER'
-const _primaryKey = isPostgres ? 'PRIMARY KEY' : (isMysql ? 'PRIMARY KEY AUTO_INCREMENT' : 'PRIMARY KEY AUTOINCREMENT')
-const now = isPostgres || isMysql ? 'NOW()' : `datetime('now')`
-const boolTrue = isPostgres ? 'true' : '1'
-const _boolFalse = isPostgres ? 'false' : '0'
+const dbDriver = env.DB_CONNECTION || 'sqlite'
+const sql = sqlHelpers(dbDriver)
+const { isPostgres, isMysql, now, boolTrue, boolFalse } = sql
 
 log.info('Setting up authentication...')
 log.info(`Database driver: ${dbDriver}`)

@@ -3,6 +3,7 @@ import type { StacksEnv } from './types'
 import p from 'node:process'
 import { projectPath } from '@stacksjs/path'
 import fs from 'node:fs'
+import { envEnum } from './types'
 
 const handler: ProxyHandler<StacksEnv> = {
   get: (target: StacksEnv, key: string) => {
@@ -44,6 +45,23 @@ export function writeEnv(key: EnvKey, value: string, options?: { path: string })
 
   // Join the lines back into a string and write it to the .env file
   fs.writeFileSync(envPath, lines.join('\n'))
+}
+
+/**
+ * Validate environment variables against the envEnum constraints.
+ * Returns an array of validation error messages (empty if all valid).
+ */
+export function validateEnv(envProxy: StacksEnv = env): string[] {
+  const errors: string[] = []
+
+  for (const [key, allowedValues] of Object.entries(envEnum)) {
+    const value = envProxy[key]
+    if (value !== undefined && value !== '' && !allowedValues.includes(String(value))) {
+      errors.push(`${key}="${value}" is not valid. Allowed values: ${allowedValues.join(', ')}`)
+    }
+  }
+
+  return errors
 }
 
 export * from './types'

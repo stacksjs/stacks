@@ -83,6 +83,10 @@ export * from './custom'
 // Auth tables migration
 export * from './auth-tables'
 
+// SQL dialect helpers & connection defaults
+export * from './sql-helpers'
+export * from './defaults'
+
 // Re-export bun-query-builder functions and types
 export {
   createQueryBuilder,

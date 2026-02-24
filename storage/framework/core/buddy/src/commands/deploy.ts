@@ -8,7 +8,7 @@ import { runAction } from '@stacksjs/actions'
 import { italic, outro, prompts, runCommand } from '@stacksjs/cli'
 import { app, email as emailConfig, cloud as cloudConfig } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
-import { encryptEnv } from '@stacksjs/env'
+import { encryptEnv, env } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
@@ -391,8 +391,8 @@ export function deploy(buddy: CLI): void {
         }
       }
 
-      // Get domain from options, production env, Bun.env, or config
-      const envUrl = typeof Bun !== 'undefined' ? Bun.env.APP_URL : process.env.APP_URL
+      // Get domain from options, production env, env, or config
+      const envUrl = env.APP_URL
       const domain = options.domain || productionUrl || envUrl || app.url
 
       if ((options.prod || deployEnv === 'production' || deployEnv === 'prod') && !options.yes)
@@ -1390,7 +1390,9 @@ async function getAuthUser(event) {
       const creds = Buffer.from(auth.split(' ')[1], 'base64').toString('utf-8');
       const [email, password] = creds.split(':');
       if (email && password && await authenticate(email, password)) return email;
-    } catch (e) {}
+    } catch (e) {
+      log.debug(`Operation failed: ${e instanceof Error ? e.message : String(e)}`)
+    }
   }
   return null;
 }
@@ -1430,7 +1432,9 @@ async function listMessages(userEmail, mailbox = 'INBOX') {
           s3Key: obj.Key,
         });
       }
-    } catch (e) {}
+    } catch (e) {
+      log.debug(`Operation failed: ${e instanceof Error ? e.message : String(e)}`)
+    }
   }
   return messages.sort((a, b) => new Date(b.date) - new Date(a.date));
 }

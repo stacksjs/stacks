@@ -200,16 +200,16 @@ async function processJob(job: any, _driver: string): Promise<void> {
     // Success - delete the job
     try {
       await deleteJob(jobId)
-      console.log(`[Queue] Job ${jobId} completed`)
+      log.info(`[Queue] Job ${jobId} completed`)
     }
     catch {
-      console.log(`[Queue] Failed to delete completed job ${jobId}`)
+      log.info(`[Queue] Failed to delete completed job ${jobId}`)
     }
   }
   else {
     // Failure - retry or move to failed_jobs
     const errorMessage = jobError.message
-    console.log(`[Queue] Job ${jobId} failed: ${errorMessage}`)
+    log.info(`[Queue] Job ${jobId} failed: ${errorMessage}`)
 
     // Get max attempts from job payload options, default to 1 (no retries)
     const payload = JSON.parse(job.payload || '{}')
@@ -218,29 +218,29 @@ async function processJob(job: any, _driver: string): Promise<void> {
 
     if (currentAttempts >= maxAttempts) {
       // Move to failed jobs
-      console.log(`[Queue] Job ${jobId} exceeded max attempts (${currentAttempts}/${maxAttempts}), moving to failed_jobs`)
+      log.info(`[Queue] Job ${jobId} exceeded max attempts (${currentAttempts}/${maxAttempts}), moving to failed_jobs`)
       try {
         await moveToFailedJobs(job, jobError)
       }
       catch {
-        console.log(`[Queue] Failed to move job ${jobId} to failed_jobs`)
+        log.info(`[Queue] Failed to move job ${jobId} to failed_jobs`)
       }
       try {
         await deleteJob(jobId)
       }
       catch {
-        console.log(`[Queue] Failed to delete failed job ${jobId}`)
+        log.info(`[Queue] Failed to delete failed job ${jobId}`)
       }
     }
     else {
       // Release for retry
-      console.log(`[Queue] Job ${jobId} will be retried (attempt ${currentAttempts}/${maxAttempts})`)
+      log.info(`[Queue] Job ${jobId} will be retried (attempt ${currentAttempts}/${maxAttempts})`)
       try {
         await releaseJob(jobId)
-        console.log(`[Queue] Job ${jobId} released for retry`)
+        log.info(`[Queue] Job ${jobId} released for retry`)
       }
       catch {
-        console.log(`[Queue] Failed to release job ${jobId} for retry`)
+        log.info(`[Queue] Failed to release job ${jobId} for retry`)
       }
     }
   }
