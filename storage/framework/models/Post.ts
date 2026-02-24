@@ -11,8 +11,8 @@ export default defineModel({
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'title', 'author', 'views', 'status', 'poster'],
-      searchable: ['title', 'author', 'body', 'excerpt'],
+      displayable: ['id', 'title', 'slug', 'author', 'views', 'status', 'poster'],
+      searchable: ['title', 'slug', 'author', 'body', 'excerpt'],
       sortable: ['published_at', 'views', 'comments'],
       filterable: ['status'],
     },
@@ -45,6 +45,22 @@ export default defineModel({
       },
       factory: faker => faker.lorem.sentence(),
     },
+
+    slug: {
+      required: true,
+      unique: true,
+      order: 2,
+      fillable: true,
+      validation: {
+        rule: schema.string().min(3).max(255),
+        message: {
+          min: 'Slug must have a minimum of 3 characters',
+          max: 'Slug must have a maximum of 255 characters',
+        },
+      },
+      factory: faker => faker.lorem.slug(),
+    },
+
     poster: {
       required: false,
       order: 4,
@@ -63,12 +79,22 @@ export default defineModel({
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string().min(10).max(1000),
+        rule: schema.string().min(10).max(50000),
         message: {
           min: 'Post body must have a minimum of 10 characters',
         },
       },
       factory: faker => faker.lorem.paragraphs(1),
+    },
+
+    body: {
+      required: false,
+      order: 5.5,
+      fillable: true,
+      validation: {
+        rule: schema.string(),
+      },
+      factory: faker => faker.lorem.paragraphs(5),
     },
 
     excerpt: {

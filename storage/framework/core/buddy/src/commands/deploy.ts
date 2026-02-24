@@ -360,10 +360,10 @@ export function deploy(buddy: CLI): void {
     .option('--yes', descriptions.yes, { default: false })
     .option('--staging', descriptions.staging, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (env: string | undefined, options: DeployOptions) => {
+    .action(async (envArg: string | undefined, options: DeployOptions) => {
       log.debug('Running `buddy deploy` ...', options)
 
-      const deployEnv = env || 'production'
+      const deployEnv = envArg || 'production'
 
       // Clear AWS_PROFILE to prevent credential conflicts when static credentials are provided
       // AWS SDK's defaultProvider prefers profile over static credentials, causing InvalidClientTokenId errors
@@ -1391,7 +1391,7 @@ async function getAuthUser(event) {
       const [email, password] = creds.split(':');
       if (email && password && await authenticate(email, password)) return email;
     } catch (e) {
-      log.debug(`Operation failed: ${e instanceof Error ? e.message : String(e)}`)
+      log.debug('Operation failed: ' + (e instanceof Error ? e.message : String(e)))
     }
   }
   return null;
@@ -1433,7 +1433,7 @@ async function listMessages(userEmail, mailbox = 'INBOX') {
         });
       }
     } catch (e) {
-      log.debug(`Operation failed: ${e instanceof Error ? e.message : String(e)}`)
+      log.debug('Operation failed: ' + (e instanceof Error ? e.message : String(e)))
     }
   }
   return messages.sort((a, b) => new Date(b.date) - new Date(a.date));

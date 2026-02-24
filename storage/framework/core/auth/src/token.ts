@@ -1,7 +1,8 @@
 import type { AuthToken } from '@stacksjs/types'
 export type { AuthToken } from '@stacksjs/types'
 import { Buffer } from 'node:buffer'
-import { randomBytes } from 'node:crypto'
+import { createHmac, randomBytes } from 'node:crypto'
+import process from 'node:process'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
@@ -111,6 +112,8 @@ export class TokenManager {
    * Contains user ID, timestamps, and random signature for security
    */
   static generateJWT(userId: number): string {
+    const appKey = process.env.APP_KEY || 'stacks-default-key'
+
     const header = {
       alg: 'HS256',
       typ: 'JWT',
@@ -125,7 +128,9 @@ export class TokenManager {
 
     const encodedHeader = Buffer.from(JSON.stringify(header)).toString('base64url')
     const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64url')
-    const signature = randomBytes(32).toString('base64url')
+    const signature = createHmac('sha256', appKey)
+      .update(`${encodedHeader}.${encodedPayload}`)
+      .digest('base64url')
 
     return `${encodedHeader}.${encodedPayload}.${signature}`
   }

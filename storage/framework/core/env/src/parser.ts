@@ -129,12 +129,25 @@ function expandVariables(value: string, env: Record<string, string | undefined>)
 /**
  * Expand command substitutions in a value string
  * Supports: $(command)
+ *
+ * Only a small set of safe commands are allowed to prevent
+ * arbitrary code execution from tampered .env files.
  */
+const ALLOWED_ENV_COMMANDS = new Set(['date', 'hostname', 'whoami', 'uname', 'pwd', 'echo'])
+
 function expandCommands(value: string): string {
   // Match $(command) patterns
   return value.replace(/\$\(([^)]+)\)/g, (_match, command) => {
     try {
-      const result = Bun.spawnSync(command.split(' '), {
+      const parts = command.trim().split(/\s+/)
+      const executable = parts[0]
+
+      if (!ALLOWED_ENV_COMMANDS.has(executable)) {
+        console.warn(`[env] Blocked command substitution for disallowed command: ${executable}`)
+        return ''
+      }
+
+      const result = Bun.spawnSync(parts, {
         stdout: 'pipe',
         stderr: 'pipe',
       })

@@ -4,20 +4,26 @@ import { searchEngine } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { Meilisearch } from 'meilisearch'
 
-function client(): Meilisearch {
-  const host = searchEngine.meilisearch?.host || 'http://127.0.0.1:7700'
-  const apiKey = searchEngine.meilisearch?.apiKey || ''
+let _client: Meilisearch | null = null
 
-  if (!host) {
-    log.error('Please specify a search engine host.')
-    throw new Error('Meilisearch host is not configured. Please specify a search engine host.')
+function client(): Meilisearch {
+  if (!_client) {
+    const host = searchEngine.meilisearch?.host || 'http://127.0.0.1:7700'
+    const apiKey = searchEngine.meilisearch?.apiKey || ''
+
+    if (!host) {
+      log.error('Please specify a search engine host.')
+      throw new Error('Meilisearch host is not configured. Please specify a search engine host.')
+    }
+
+    _client = new Meilisearch({ host, apiKey })
   }
 
-  return new Meilisearch({ host, apiKey })
+  return _client
 }
 
 async function search(index: string, params: any): Promise<SearchResponse<Record<string, any>>> {
-  const offsetVal = ((params.page * params.perPage) - 20) || 0
+  const offsetVal = ((params.page - 1) * params.perPage) || 0
   const filter = convertToFilter(params.filter)
   const sort = convertToMeilisearchSorting(params.sort)
 

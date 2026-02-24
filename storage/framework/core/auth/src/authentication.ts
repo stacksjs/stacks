@@ -7,16 +7,18 @@ import type {
   OAuthClientRow,
   PersonalAccessToken,
   TokenCreateOptions,
-  TokenScopes,
 } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, User } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
+import { Buffer } from 'node:buffer'
+import { timingSafeEqual } from 'node:crypto'
 import { decrypt, encrypt, verifyHash } from '@stacksjs/security'
 import { RateLimiter } from './rate-limiter'
 import { TokenManager } from './token'
+import { parseScopes } from './tokens'
 
 export class Auth {
   private static authUser: UserModel | undefined = undefined
@@ -99,24 +101,14 @@ export class Auth {
       .selectAll()
       .executeTakeFirst()
 
-    if (!client)
+    if (!client?.secret)
       return false
 
-    return client.secret === clientSecret
-  }
-
-  private static parseScopes(scopes: string | string[] | null | undefined): TokenScopes {
-    if (!scopes)
-      return []
-    if (Array.isArray(scopes))
-      return scopes as TokenScopes
-    try {
-      const parsed = JSON.parse(scopes)
-      return Array.isArray(parsed) ? parsed as TokenScopes : []
-    }
-    catch {
-      return []
-    }
+    const a = Buffer.from(String(client.secret))
+    const b = Buffer.from(clientSecret)
+    if (a.length !== b.length)
+      return false
+    return timingSafeEqual(a, b)
   }
 
   private static async getTokenFromId(tokenId: number): Promise<PersonalAccessToken | null> {
@@ -135,8 +127,8 @@ export class Auth {
       userId: token.user_id as number,
       clientId: token.oauth_client_id as number,
       name: (token.name as string) || 'auth-token',
-      scopes: this.parseScopes(token.scopes as string),
-      abilities: this.parseScopes(token.scopes as string),
+      scopes: parseScopes(token.scopes as string),
+      abilities: parseScopes(token.scopes as string),
       expiresAt: token.expires_at ? new Date(String(token.expires_at)) : null,
       createdAt: token.created_at ? new Date(String(token.created_at)) : new Date(),
       updatedAt: token.updated_at ? new Date(String(token.updated_at)) : new Date(),
@@ -610,8 +602,8 @@ export class Auth {
       userId: token.user_id,
       clientId: token.oauth_client_id,
       name: token.name || 'auth-token',
-      scopes: this.parseScopes(token.scopes),
-      abilities: this.parseScopes(token.scopes),
+      scopes: parseScopes(token.scopes),
+      abilities: parseScopes(token.scopes),
       expiresAt: token.expires_at ? new Date(token.expires_at) : null,
       createdAt: token.created_at ? new Date(token.created_at) : new Date(),
       updatedAt: token.updated_at ? new Date(token.updated_at) : new Date(),

@@ -125,6 +125,25 @@ if (storage.hasFiles(docsDir) && !docsDistExists) {
   if (isVerbose) log.debug('No docs directory found, skipping documentation build')
 }
 
+// Build blog static site
+const blogDistExists = storage.hasFiles(p.projectPath('dist/blog'))
+if (!blogDistExists) {
+  const blogBuildSpinner = spinner('Building blog...')
+  blogBuildSpinner.start()
+  try {
+    const blogConfig = (await import(p.projectPath('config/blog'))).default
+    const { buildBlogSite } = await import(p.frameworkPath('core/cms/src/build'))
+    await buildBlogSite({ config: blogConfig, outDir: p.projectPath('dist/blog') })
+    blogBuildSpinner.succeed('Blog built successfully')
+  } catch (blogBuildError: any) {
+    blogBuildSpinner.stop()
+    console.log(`⚠ Blog build skipped: ${blogBuildError.message}`)
+    if (isVerbose) log.debug(`Blog build error: ${blogBuildError.stack}`)
+  }
+} else {
+  if (isVerbose) log.debug('Pre-built blog found at dist/blog, skipping build')
+}
+
 // Skip views build for now - vite-config is not set up
 // TODO: Set up vite-config for views build
 // if (config.app.docMode !== true) {
@@ -738,6 +757,75 @@ try {
     }
   } else {
     if (isVerbose) log.debug('No docs build found at dist/docs, skipping docs deployment')
+  }
+
+  // Deploy blog static site to S3
+  const blogDistPath = p.projectPath('dist/blog')
+  const { existsSync: blogExists } = await import('node:fs')
+  if (blogExists(blogDistPath)) {
+    const blogDeploySpinner = spinner('Deploying blog to S3...')
+    blogDeploySpinner.start()
+
+    try {
+      const { S3Client: BlogS3Client, CloudFormationClient: BlogCFClient } = await import('@stacksjs/ts-cloud') as any
+      const { readFileSync: readBlogFile } = await import('node:fs')
+
+      const blogS3 = new BlogS3Client(region)
+      const blogCf = new BlogCFClient(region)
+
+      const stackName = `${projectName}-cloud`
+      const outputs = await blogCf.getStackOutputs(stackName)
+      const blogBucketName = outputs.BlogBucketName
+
+      if (!blogBucketName) {
+        blogDeploySpinner.stop()
+        console.log('⚠ Blog bucket not found in stack outputs')
+      } else {
+        await traverseDirectory(blogDistPath, async (filePath, key) => {
+          const content = readBlogFile(filePath)
+          const contentType = getMimeType(filePath)
+          const cacheControl = key.endsWith('.html')
+            ? 'no-cache, no-store, must-revalidate'
+            : 'public, max-age=31536000, immutable'
+          await withS3Retry(() => blogS3.putObject({ bucket: blogBucketName, key, body: content, contentType, cacheControl }), `upload blog ${key}`)
+          if (isVerbose) log.debug(`  Uploaded blog: ${key}`)
+        }, '', ['.DS_Store'])
+
+        // Invalidate CloudFront cache for blog
+        const blogDistributionId = outputs.blogCloudFrontDistributionId
+        if (blogDistributionId) {
+          if (isVerbose) log.debug('  Invalidating CloudFront cache for blog...')
+          const { AWSClient: BlogAWSClient } = await import('@stacksjs/ts-cloud') as any
+          const blogClient = new BlogAWSClient()
+          await blogClient.request({
+            service: 'cloudfront',
+            region: 'us-east-1',
+            method: 'POST',
+            path: `/2020-05-31/distribution/${blogDistributionId}/invalidation`,
+            headers: {
+              'Content-Type': 'application/xml',
+            },
+            body: `<?xml version="1.0" encoding="UTF-8"?>
+<InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/2020-05-31/">
+  <CallerReference>blog-${Date.now()}</CallerReference>
+  <Paths>
+    <Quantity>1</Quantity>
+    <Items>
+      <Path>/*</Path>
+    </Items>
+  </Paths>
+</InvalidationBatch>`,
+          })
+        }
+
+        blogDeploySpinner.succeed(`Blog deployed to S3 (${blogBucketName})`)
+      }
+    } catch (blogDeployError: any) {
+      blogDeploySpinner.fail(`Blog deployment failed: ${blogDeployError.message}`)
+      if (isVerbose) log.debug(`Blog deploy error: ${blogDeployError.stack}`)
+    }
+  } else {
+    if (isVerbose) log.debug('No blog build found at dist/blog, skipping blog deployment')
   }
 
   // Deploy 404 page and configure CloudFront error responses

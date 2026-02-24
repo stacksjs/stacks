@@ -75,21 +75,13 @@ export function passwordResets(email: string): PasswordResetActions {
   }
 
   async function sendEmail(): Promise<void> {
-    console.log('[PasswordReset.sendEmail] Starting for email:', email)
-
-    console.log('[PasswordReset.sendEmail] Creating reset token...')
     const token = await createResetToken()
-    console.log('[PasswordReset.sendEmail] Token created (length):', token.length)
 
     const url = config.app.url || 'https://localhost:5173'
     const resetUrl = `${url}/password/reset/${token}?email=${encodeURIComponent(email)}`
     const expireMinutes = getTokenExpireMinutes()
     const appName = config.app.name || 'Stacks'
 
-    console.log('[PasswordReset.sendEmail] Reset URL:', resetUrl)
-    console.log('[PasswordReset.sendEmail] Expire minutes:', expireMinutes)
-
-    console.log('[PasswordReset.sendEmail] Rendering template...')
     const { html, text } = await template('password-reset', {
       subject: `Reset Your ${appName} Password`,
       variables: {
@@ -97,22 +89,13 @@ export function passwordResets(email: string): PasswordResetActions {
         expireMinutes,
       },
     })
-    console.log('[PasswordReset.sendEmail] Template rendered')
 
-    console.log('[PasswordReset.sendEmail] Calling mail.send()...')
-    try {
-      await mail.send({
-        to: email,
-        subject: `Reset Your ${appName} Password`,
-        text,
-        html,
-      })
-      console.log('[PasswordReset.sendEmail] mail.send() completed successfully!')
-    }
-    catch (error) {
-      console.error('[PasswordReset.sendEmail] mail.send() failed:', error)
-      throw error
-    }
+    await mail.send({
+      to: email,
+      subject: `Reset Your ${appName} Password`,
+      text,
+      html,
+    })
   }
 
   async function verifyToken(token: string): Promise<boolean> {

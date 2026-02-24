@@ -11,7 +11,8 @@
  * await verifyEmail(userId, token)
  */
 
-import { randomBytes, createHmac } from 'node:crypto'
+import { Buffer } from 'node:buffer'
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { mail, template } from '@stacksjs/email'
@@ -40,7 +41,11 @@ function verifyToken(userId: number, token: string, storedHash: string): boolean
   const appKey = config.app.key || (config.security as any)?.appKey || 'stacks-default-key'
   const payload = `${userId}:${token}`
   const hash = createHmac('sha256', appKey).update(payload).digest('hex')
-  return hash === storedHash
+  const a = Buffer.from(hash)
+  const b = Buffer.from(storedHash)
+  if (a.length !== b.length)
+    return false
+  return timingSafeEqual(a, b)
 }
 
 /**

@@ -144,9 +144,9 @@ export const tsCloud: TsCloudConfig = {
      */
     servers: {
       app: servers.app,
-      app2: servers.app2,
-      web: servers.web,
-      cache: servers.cache,
+      // app2: servers.app2,
+      // web: servers.web,
+      // cache: servers.cache,
     } as Record<string, unknown>,
 
     /**
@@ -263,7 +263,7 @@ export const tsCloud: TsCloudConfig = {
     ssl: {
       enabled: true,
       provider: 'acm', // 'acm' | 'letsencrypt'
-      domains: env.SSL_DOMAINS?.split(',') || ['stacksjs.com', 'www.stacksjs.com', 'docs.stacksjs.com'],
+      domains: env.SSL_DOMAINS?.split(',') || ['stacksjs.com', 'www.stacksjs.com', 'docs.stacksjs.com', 'blog.stacksjs.com'],
       redirectHttp: true,
       // Let's Encrypt configuration (used when provider: 'letsencrypt' or loadBalancer.enabled: false)
       letsEncrypt: {
@@ -306,6 +306,15 @@ export const tsCloud: TsCloudConfig = {
         versioning: true,
       },
       'docs': {
+        public: true,
+        encryption: true,
+        versioning: true,
+        website: {
+          indexDocument: 'index.html',
+          errorDocument: '404.html',
+        },
+      },
+      'blog': {
         public: true,
         encryption: true,
         versioning: true,

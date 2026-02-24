@@ -153,18 +153,39 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
  */
 async function fetchPendingJobs(queueName: string, limit: number, _driver: string): Promise<any[]> {
   const now = Math.floor(Date.now() / 1000)
-
   const { db } = await import('@stacksjs/database')
+  const claimed: any[] = []
 
-  return await db
-    .selectFrom('jobs')
-    .where('queue', '=', queueName)
-    .whereNull('reserved_at')
-    .where('available_at', '<=', now)
-    .orderBy('id', 'asc')
-    .limit(limit)
-    .selectAll()
-    .execute()
+  for (let i = 0; i < limit; i++) {
+    // Atomic claim: select + reserve in one step to prevent race conditions
+    const job = await db
+      .selectFrom('jobs')
+      .where('queue', '=', queueName)
+      .whereNull('reserved_at')
+      .where('available_at', '<=', now)
+      .orderBy('id', 'asc')
+      .limit(1)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!job) break
+
+    // Atomically reserve only if still unreserved (CAS pattern)
+    const result = await db
+      .updateTable('jobs')
+      .set({ reserved_at: now, attempts: ((job as any).attempts || 0) + 1 })
+      .where('id', '=', (job as any).id)
+      .whereNull('reserved_at')
+      .executeTakeFirst()
+
+    const updated = Number((result as any)?.numUpdatedRows ?? 0)
+    if (updated > 0) {
+      claimed.push(job)
+    }
+    // If updated === 0, another worker claimed it first; try next
+  }
+
+  return claimed
 }
 
 /**
@@ -251,15 +272,9 @@ async function processJob(job: any, _driver: string): Promise<void> {
 /**
  * Reserve a job (mark it as being processed)
  */
-async function reserveJob(jobId: number, attempts: number): Promise<void> {
-  const now = Math.floor(Date.now() / 1000)
-
-  const { db } = await import('@stacksjs/database')
-  await db
-    .updateTable('jobs')
-    .set({ reserved_at: now, attempts: attempts + 1 })
-    .where('id', '=', jobId)
-    .execute()
+async function reserveJob(_jobId: number, _attempts: number): Promise<void> {
+  // Job reservation is now handled atomically in fetchPendingJobs
+  // This function is kept for backward compatibility but is a no-op
 }
 
 /**
@@ -279,12 +294,15 @@ async function releaseJob(jobId: number): Promise<void> {
 
   try {
     const { db } = await import('@stacksjs/database')
-    await db.rawQuery(`UPDATE jobs SET reserved_at = NULL, available_at = ${retryAt} WHERE id = ${jobId}`)
+    await db
+      .updateTable('jobs')
+      .set({ reserved_at: null, available_at: retryAt })
+      .where('id', '=', jobId)
+      .execute()
     log.debug(`Job ${jobId} released successfully`)
   }
   catch {
     log.error(`Failed to release job ${jobId}`)
-    // Don't throw - just log the error
   }
 }
 

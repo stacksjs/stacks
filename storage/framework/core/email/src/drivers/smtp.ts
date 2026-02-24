@@ -14,6 +14,8 @@ import { BaseEmailDriver } from './base'
  * Supports STARTTLS (port 587) and direct TLS (port 465)
  */
 export class SMTPDriver extends BaseEmailDriver {
+  private static readonly SMTP_TIMEOUT = 30_000 // 30 seconds
+
   public name = 'smtp'
   private smtpConfig: {
     host: string
@@ -160,6 +162,15 @@ export class SMTPDriver extends BaseEmailDriver {
     content: string,
   ): Promise<string> {
     return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error(`SMTP connection timed out after ${SMTPDriver.SMTP_TIMEOUT}ms`))
+      }, SMTPDriver.SMTP_TIMEOUT)
+
+      const originalResolve = resolve
+      const originalReject = reject
+      resolve = (value: string) => { clearTimeout(timeout); originalResolve(value) }
+      reject = (reason?: any) => { clearTimeout(timeout); originalReject(reason) }
+
       let socket: net.Socket | tls.TLSSocket
       let buffer = ''
       const _currentCommand = ''
@@ -316,6 +327,10 @@ export class SMTPDriver extends BaseEmailDriver {
       }
 
       socket.on('data', handleData)
+      socket.setTimeout(SMTPDriver.SMTP_TIMEOUT)
+      socket.on('timeout', () => {
+        socket.destroy(new Error(`SMTP socket timed out after ${SMTPDriver.SMTP_TIMEOUT}ms`))
+      })
       socket.on('error', (error) => {
         log.error(`[SMTP] Connection error to ${smtpConfig.host}:${smtpConfig.port}:`, error)
         reject(error)

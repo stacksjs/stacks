@@ -855,7 +855,7 @@ export async function revokeClient(clientId: number): Promise<void> {
 // HELPER FUNCTIONS
 // ============================================================================
 
-function parseScopes(scopes: string | string[] | null | undefined): TokenScopes {
+export function parseScopes(scopes: string | string[] | null | undefined): TokenScopes {
   if (!scopes) return []
   if (Array.isArray(scopes)) return scopes as TokenScopes
   try {
