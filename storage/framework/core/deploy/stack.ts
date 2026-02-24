@@ -113,6 +113,48 @@ export async function deployStack(options: StackDeployOptions): Promise<void> {
   }
 
   if (stackExists) {
+    // Re-check current state before acting (handles race conditions)
+    const stateCheck = await withRetry(
+      () => cfn.describeStacks({ stackName: finalStackName }),
+      { label: 'state check' },
+    )
+    const currentStatus = stateCheck.Stacks?.[0]?.StackStatus || ''
+
+    // Wait for any in-progress operation to finish
+    if (currentStatus.endsWith('_IN_PROGRESS')) {
+      console.log(`   Stack is busy (${currentStatus}). Waiting...`)
+      const waitType = currentStatus.startsWith('DELETE')
+        ? 'DELETE_COMPLETE'
+        : currentStatus.startsWith('CREATE')
+          ? 'CREATE_COMPLETE'
+          : 'UPDATE_COMPLETE'
+      await waitForStackComplete(cfn, finalStackName, waitType)
+      // Re-check after operation completes
+      const refreshed = await cfn.describeStacks({ stackName: finalStackName })
+      if (!refreshed.Stacks?.length || refreshed.Stacks[0].StackStatus === 'DELETE_COMPLETE') {
+        stackExists = false
+      }
+    }
+
+    // UPDATE_ROLLBACK_COMPLETE is safe -- previous update rolled back, ready for new update
+    if (currentStatus === 'UPDATE_ROLLBACK_COMPLETE') {
+      console.log('   Stack rolled back from a previous update. Re-deploying...')
+      // Fall through to update below
+    }
+    // Failed initial creation -- must delete and recreate
+    else if (currentStatus === 'ROLLBACK_COMPLETE' || currentStatus === 'ROLLBACK_FAILED' || currentStatus === 'CREATE_FAILED') {
+      console.log(`   Stack is in ${currentStatus} state. Deleting before recreating...`)
+      await cfn.deleteStack(finalStackName)
+      await waitForStackDelete(cfn, finalStackName)
+      stackExists = false
+    }
+    // Fully deleted -- treat as non-existent
+    else if (currentStatus === 'DELETE_COMPLETE') {
+      stackExists = false
+    }
+  }
+
+  if (stackExists) {
     console.log('   📦 Stack exists, updating...')
 
     try {
@@ -120,11 +162,11 @@ export async function deployStack(options: StackDeployOptions): Promise<void> {
         stackName: finalStackName,
         templateBody: template,
         capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
-        tags: [
-          { Key: 'Environment', Value: environment },
-          { Key: 'Project', Value: cloudConfig.project.name },
-          { Key: 'ManagedBy', Value: 'ts-cloud' },
-        ],
+        tags: {
+          Environment: environment,
+          Project: cloudConfig.project.name,
+          ManagedBy: 'stacks',
+        },
       })
 
       console.log(`   ✅ Stack update initiated`)
@@ -147,11 +189,11 @@ export async function deployStack(options: StackDeployOptions): Promise<void> {
       stackName: finalStackName,
       templateBody: template,
       capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
-      tags: [
-        { Key: 'Environment', Value: environment },
-        { Key: 'Project', Value: cloudConfig.project.name },
-        { Key: 'ManagedBy', Value: 'ts-cloud' },
-      ],
+      tags: {
+        Environment: environment,
+        Project: cloudConfig.project.name,
+        ManagedBy: 'stacks',
+      },
       onFailure: 'ROLLBACK',
     })
 

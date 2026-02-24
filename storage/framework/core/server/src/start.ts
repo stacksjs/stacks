@@ -2,16 +2,9 @@
 ;(globalThis as any).__STACKS_BINARY_MODE__ = true
 
 // IMPORTANT: Import router package first to ensure it's initialized before routes
-import { loadRoutes, Router, serve } from '@stacksjs/router'
+import { loadRoutes, serve } from '@stacksjs/router'
 import config from './config-production'
 import routeRegistry from '../../../../../app/Routes'
-
-// Create the router instance HERE in start.ts before importing routes
-// This ensures the router exists before registerRoutes is called
-const route = new Router()
-
-// Store on globalThis so routes can access it if needed
-;(globalThis as any).__STACKS_ROUTER__ = route
 
 console.log('[START] Application starting...')
 console.log('[START] Node version:', process.version)
@@ -28,17 +21,26 @@ console.log('[START] Config loaded:', {
   appUrl: config.app.url,
 })
 
-// Load routes from the registry and start the server
+// Load routes from the registry, then ORM auto-routes, then start the server
 console.log('[START] Loading routes from registry...')
 loadRoutes(routeRegistry)
-  .then(() => {
+  .then(async () => {
     console.log('[START] Routes loaded successfully')
+
+    // Load ORM auto-generated routes (model CRUD endpoints)
+    // These run after manual routes so routeExists() correctly detects conflicts
+    try {
+      await import('../../orm/routes')
+      console.log('[START] ORM routes loaded successfully')
+    } catch (ormError) {
+      console.warn('[START] ORM routes skipped:', ormError instanceof Error ? ormError.message : String(ormError))
+    }
+
     console.log('[START] Calling serve()...')
     try {
       serve({
         port: config.server.port,
         host: config.server.host,
-        router: route,
       } as any)
       console.log('[START] serve() called successfully')
     } catch (error) {

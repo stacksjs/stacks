@@ -528,64 +528,61 @@ try {
         let stxContent = readFileSync(indexPath, 'utf-8')
 
         // Pre-render the STX template to static HTML
-        // 1. Extract server-side variables from <script server> block
+        // 1. Extract and evaluate <script server> block
         const serverBlockMatch = stxContent.match(/<script server>([\s\S]*?)<\/script>/)
-        const serverVars: Record<string, string> = {}
+        let serverVars: Record<string, any> = {}
 
         if (serverBlockMatch) {
           const serverCode = serverBlockMatch[1]
-          // Extract simple const assignments
-          const constMatches = serverCode.matchAll(/const\s+(\w+)\s*=\s*(?:'([^']*)'|"([^"]*)"|([\d.]+))/g)
-          for (const m of constMatches) {
-            serverVars[m[1]] = m[2] ?? m[3] ?? m[4]
+
+          try {
+            // Evaluate the server block using new Function() to properly handle
+            // backtick template literals, complex arrays, and nested objects
+            const varNames = [...serverCode.matchAll(/(?:const|let|var)\s+(\w+)\s*=/g)].map(m => m[1])
+            const evalFn = new Function(`${serverCode}\nreturn { ${varNames.join(', ')} }`)
+            serverVars = evalFn()
+          } catch (evalErr) {
+            if (isVerbose) log.debug(`  Server block evaluation failed: ${evalErr}, falling back to regex`)
+            // Fallback: extract simple const string/number assignments via regex
+            const constMatches = serverCode.matchAll(/const\s+(\w+)\s*=\s*(?:'([^']*)'|"([^"]*)"|([\d.]+))/g)
+            for (const m of constMatches) {
+              serverVars[m[1]] = m[2] ?? m[3] ?? m[4]
+            }
           }
+
           // Remove the <script server> block from output
           stxContent = stxContent.replace(/<script server>[\s\S]*?<\/script>\s*/, '')
         }
 
-        // 2. Extract features array for @foreach
-        const featuresMatch = serverBlockMatch?.[1]?.match(/const features\s*=\s*(\[[\s\S]*?\n\])/m)
-        let featuresArray: any[] = []
-        if (featuresMatch) {
-          try {
-            // Parse the array literal safely by converting JS object syntax to JSON
-            const arrayStr = featuresMatch[1]
-              .replace(/'/g, '"') // single quotes to double quotes
-              .replace(/(\w+)\s*:/g, '"$1":') // unquoted keys to quoted keys
-              .replace(/,\s*([}\]])/g, '$1') // trailing commas
-            featuresArray = JSON.parse(arrayStr)
-          } catch {
-            if (isVerbose) log.debug('Could not parse features array from template')
-          }
-        }
-
-        // 3. Replace {{ variable }} interpolations
+        // 2. Replace {{ variable }} interpolations (simple top-level vars)
         stxContent = stxContent.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, varName) => {
-          return serverVars[varName] ?? ''
+          const val = serverVars[varName]
+          return val !== undefined && val !== null ? String(val) : ''
         })
 
-        // 4. Replace {{ feature.property }} and {!! feature.property !!} inside @foreach
-        const foreachMatch = stxContent.match(/@foreach\s*\((\w+)\s+as\s+(\w+)\)([\s\S]*?)@endforeach/)
-        if (foreachMatch && featuresArray.length > 0) {
-          const itemVar = foreachMatch[2] // 'feature'
-          const template = foreachMatch[3]
-          let rendered = ''
+        // 3. Process @foreach blocks
+        const foreachRegex = /@foreach\s*\((\w+)\s+as\s+(\w+)\)([\s\S]*?)@endforeach/g
+        stxContent = stxContent.replace(foreachRegex, (_, collectionName, itemVar, template) => {
+          const collection = serverVars[collectionName]
+          if (!Array.isArray(collection) || collection.length === 0) return ''
 
-          for (const item of featuresArray) {
+          let rendered = ''
+          for (const item of collection) {
             let itemHtml = template
-            // Replace {{ feature.prop }}
-            itemHtml = itemHtml.replace(new RegExp(`\\{\\{\\s*${itemVar}\\.(\\w+)\\s*\\}\\}`, 'g'), (_, prop) => {
-              return item[prop] ?? ''
+            // Replace {{ item.prop }}
+            itemHtml = itemHtml.replace(new RegExp(`\\{\\{\\s*${itemVar}\\.(\\w+)\\s*\\}\\}`, 'g'), (__, prop) => {
+              const val = item[prop]
+              return val !== undefined && val !== null ? String(val) : ''
             })
-            // Replace {!! feature.prop !!} (raw HTML)
-            itemHtml = itemHtml.replace(new RegExp(`\\{!!\\s*${itemVar}\\.(\\w+)\\s*!!\\}`, 'g'), (_, prop) => {
-              return item[prop] ?? ''
+            // Replace {!! item.prop !!} (raw/unescaped HTML)
+            itemHtml = itemHtml.replace(new RegExp(`\\{!!\\s*${itemVar}\\.(\\w+)\\s*!!\\}`, 'g'), (__, prop) => {
+              const val = item[prop]
+              return val !== undefined && val !== null ? String(val) : ''
             })
             rendered += itemHtml
           }
-
-          stxContent = stxContent.replace(/@foreach\s*\(\w+\s+as\s+\w+\)[\s\S]*?@endforeach/, rendered)
-        }
+          return rendered
+        })
 
         writeFileSync(join(buildDir, 'index.html'), stxContent)
         if (isVerbose) log.debug(`  Built index.html from STX template`)
@@ -632,7 +629,7 @@ try {
       await uploadDir(buildDir)
 
       // Invalidate CloudFront cache if distribution exists
-      const distributionId = outputs.CloudFrontDistributionId
+      const distributionId = outputs.publicCloudFrontDistributionId || outputs.CloudFrontDistributionId
       if (distributionId) {
         if (isVerbose) log.debug('  Invalidating CloudFront cache...')
         const { AWSClient } = await import('@stacksjs/ts-cloud') as any
@@ -705,17 +702,18 @@ try {
 
         await uploadDocsDir(docsDistPath)
 
-        // Invalidate CloudFront cache for /docs paths
-        const distributionId = outputs.CloudFrontDistributionId
-        if (distributionId) {
-          if (isVerbose) log.debug('  Invalidating CloudFront cache for /docs...')
+        // Invalidate CloudFront cache for docs
+        // Use the dedicated docs distribution if available, otherwise fall back to shared one
+        const docsDistributionId = outputs.docsCloudFrontDistributionId || outputs.publicCloudFrontDistributionId || outputs.CloudFrontDistributionId
+        if (docsDistributionId) {
+          if (isVerbose) log.debug('  Invalidating CloudFront cache for docs...')
           const { AWSClient } = await import('@stacksjs/ts-cloud') as any
           const client = new AWSClient()
           await client.request({
             service: 'cloudfront',
             region: 'us-east-1',
             method: 'POST',
-            path: `/2020-05-31/distribution/${distributionId}/invalidation`,
+            path: `/2020-05-31/distribution/${docsDistributionId}/invalidation`,
             headers: {
               'Content-Type': 'application/xml',
             },
@@ -723,10 +721,9 @@ try {
 <InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/2020-05-31/">
   <CallerReference>docs-${Date.now()}</CallerReference>
   <Paths>
-    <Quantity>2</Quantity>
+    <Quantity>1</Quantity>
     <Items>
-      <Path>/docs</Path>
-      <Path>/docs/*</Path>
+      <Path>/*</Path>
     </Items>
   </Paths>
 </InvalidationBatch>`,
@@ -760,7 +757,7 @@ try {
     const outputs = await cf.getStackOutputs(stackName)
     const frontendBucket = outputs.FrontendBucketName
     const docsBucket = outputs.DocsBucketName
-    const distributionId = outputs.CloudFrontDistributionId
+    const distributionId = outputs.publicCloudFrontDistributionId || outputs.CloudFrontDistributionId
 
     // Check for 404.html in docs build output
     const docs404Path = p.projectPath('dist/docs/.bunpress/404.html')

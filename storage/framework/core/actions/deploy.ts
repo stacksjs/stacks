@@ -2172,11 +2172,11 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
           stackName,
           ...templateParam,
           capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
-          tags: [
-            { Key: 'Environment', Value: environment },
-            { Key: 'Project', Value: projectName },
-            { Key: 'ManagedBy', Value: 'stacks' },
-          ],
+          tags: {
+            Environment: environment,
+            Project: projectName,
+            ManagedBy: 'stacks',
+          },
         })
 
         if (waitForCompletion) {
@@ -2252,11 +2252,11 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
         stackName,
         ...templateParam,
         capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
-        tags: [
-          { Key: 'Environment', Value: environment },
-          { Key: 'Project', Value: projectName },
-          { Key: 'ManagedBy', Value: 'stacks' },
-        ],
+        tags: {
+          Environment: environment,
+          Project: projectName,
+          ManagedBy: 'stacks',
+        },
         onFailure: 'ROLLBACK',
         timeoutInMinutes: 30,
       })

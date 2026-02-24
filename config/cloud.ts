@@ -263,10 +263,8 @@ export const tsCloud: TsCloudConfig = {
     ssl: {
       enabled: true,
       provider: 'acm', // 'acm' | 'letsencrypt'
-      domains: env.SSL_DOMAINS?.split(',') || ['stacksjs.com', 'www.stacksjs.com'],
+      domains: env.SSL_DOMAINS?.split(',') || ['stacksjs.com', 'www.stacksjs.com', 'docs.stacksjs.com'],
       redirectHttp: true,
-      // Uncomment for existing ACM certificate:
-      // certificateArn: 'arn:aws:acm:us-east-1:...',
       // Let's Encrypt configuration (used when provider: 'letsencrypt' or loadBalancer.enabled: false)
       letsEncrypt: {
         email: env.LETSENCRYPT_EMAIL || 'admin@stacksjs.com',
@@ -280,7 +278,7 @@ export const tsCloud: TsCloudConfig = {
      */
     dns: {
       domain: env.APP_DOMAIN || 'stacksjs.com',
-      hostedZoneId: env.AWS_HOSTED_ZONE_ID || '', // Route53 hosted zone ID
+      hostedZoneId: env.AWS_HOSTED_ZONE_ID || 'Z01455702Q7952O6RCY37', // Route53 hosted zone ID
     },
 
     /**
