@@ -24,7 +24,7 @@ import { ExitCode } from '@stacksjs/types'
  */
 async function createTemporaryCdkRole(roleName: string): Promise<void> {
   // Import AWSClient for direct IAM API calls
-  const { AWSClient } = await import('@stacksjs/ts-cloud/aws')
+  const { AWSClient } = await import('@stacksjs/ts-cloud')
   const client = new AWSClient()
 
   // Trust policy that allows CloudFormation to assume this role
@@ -128,7 +128,7 @@ async function createTemporaryCdkRole(roleName: string): Promise<void> {
  * Uses raw AWS API calls since AWS SDK has dependency issues with Bun
  */
 async function deleteTemporaryCdkRole(roleName: string): Promise<void> {
-  const { AWSClient } = await import('@stacksjs/ts-cloud/aws')
+  const { AWSClient } = await import('@stacksjs/ts-cloud')
   const client = new AWSClient()
 
   try {
@@ -235,7 +235,7 @@ export function cloud(buddy: CLI): void {
         log.info('Invalidating the CloudFront cache...')
 
         // Use ts-cloud CloudFront client instead of AWS SDK
-        const { CloudFrontClient } = await import('@stacksjs/ts-cloud/aws')
+        const { CloudFrontClient } = await import('@stacksjs/ts-cloud')
         const cloudfront = new CloudFrontClient()
         const distributionId = await getCloudFrontDistributionId()
 

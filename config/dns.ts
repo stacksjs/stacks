@@ -29,7 +29,7 @@ export default {
   mx: [],
   txt: [],
 
-  nameservers: [],
+  nameservers: ['ns-1731.awsdns-24.co.uk', 'ns-355.awsdns-44.com', 'ns-536.awsdns-03.net', 'ns-1395.awsdns-46.org'],
 
   // redirects: ['stacksjs.com', 'buddy.sh'],
 } satisfies DnsConfig

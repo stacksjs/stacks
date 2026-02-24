@@ -42,8 +42,8 @@ function loadAwsCredentialsFromFile(): { accessKeyId?: string, secretAccessKey?:
     const content = readFileSync(credentialsPath, 'utf-8')
     const lines = content.split('\n')
 
-    // Try to find credentials in order: stacks profile, default profile, any profile
-    const profiles = ['stacks', 'default']
+    // Try to find credentials in order: default profile, then stacks profile
+    const profiles = ['default', 'stacks']
     let currentProfile = ''
     let credentials: { accessKeyId?: string, secretAccessKey?: string } = {}
     const profileCredentials: Record<string, { accessKeyId?: string, secretAccessKey?: string }> = {}
@@ -117,8 +117,8 @@ async function setupEmailDnsRecords(emailDomain: string, region: string, logger:
   logger.info('Setting up email DNS records...')
 
   try {
-    const { SESClient } = await import('@stacksjs/ts-cloud/aws')
-    const { Route53Client } = await import('@stacksjs/ts-cloud/aws')
+    const { SESClient } = await import('@stacksjs/ts-cloud')
+    const { Route53Client } = await import('@stacksjs/ts-cloud')
 
     const ses = new SESClient(region)
     const route53 = new Route53Client(region)
@@ -264,7 +264,7 @@ async function setupEmailDnsRecords(emailDomain: string, region: string, logger:
  */
 async function createDefaultMailUser(appName: string, emailDomain: string, region: string, logger: typeof log): Promise<void> {
   try {
-    const { DynamoDBClient } = await import('@stacksjs/ts-cloud/aws')
+    const { DynamoDBClient } = await import('@stacksjs/ts-cloud')
     const crypto = await import('crypto')
 
     const dynamodb = new DynamoDBClient(region)
@@ -707,7 +707,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     const stackName = `${appName}-cloud`
 
     // Use ts-cloud's CloudFormation client
-    const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
+    const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
 
     // Don't pass AWS_PROFILE when we have static credentials to avoid conflicts
     const cfnClient = new CloudFormationClient(
@@ -808,8 +808,14 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     }
 
     if (!stackExists) {
-      log.info('Cloud stack not found')
+      log.info('Cloud stack not found, will be created by deploy action')
     }
+
+    // Stack creation/update is handled by the deploy action's deployStack() function
+    // which uses InfrastructureGenerator and handles large templates via S3 upload
+    return true
+
+    // Legacy template generation below - kept for reference but no longer used
     log.info('Creating/updating cloud infrastructure. This may take a few moments...')
 
     // Get email configuration
@@ -2233,7 +2239,7 @@ echo "Mail server setup complete at $(date)"
 
       // Upload mail server code to S3 (if bucket exists)
       try {
-        const { S3Client: S3 } = await import('@stacksjs/ts-cloud/aws')
+        const { S3Client: S3 } = await import('@stacksjs/ts-cloud')
         const s3Client = new S3(region)
 
         if (mailServerMode === 'serverless') {
@@ -2332,7 +2338,7 @@ echo "Mail server setup complete at $(date)"
 
           // Upload mail server code to S3 now that bucket exists
           try {
-            const { S3Client: S3 } = await import('@stacksjs/ts-cloud/aws')
+            const { S3Client: S3 } = await import('@stacksjs/ts-cloud')
             const s3Client = new S3(region)
             const serverMode = emailConfig?.server?.mode || 'serverless'
 
@@ -2378,10 +2384,10 @@ echo "Mail server setup complete at $(date)"
           stackName,
           templateBody: JSON.stringify(template),
           capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
-          tags: [
-            { Key: 'Environment', Value: process.env.APP_ENV || 'production' },
-            { Key: 'ManagedBy', Value: 'Stacks' },
-          ],
+          tags: {
+            Environment: process.env.APP_ENV || 'production',
+            ManagedBy: 'Stacks',
+          },
         })
 
         log.info(`Stack creation initiated: ${result.StackId}`)

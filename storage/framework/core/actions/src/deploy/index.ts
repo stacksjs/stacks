@@ -73,23 +73,30 @@ if (isVerbose) log.debug('Skipping views build (vite-config not configured)')
 //   cwd: p.corePath('cloud'),
 // })
 
-// Build server
-const serverSpinner = spinner('Building server...')
-serverSpinner.start()
-await runCommand('bun build.ts', {
-  cwd: p.frameworkPath('server'),
-  quiet: !isVerbose,
-})
-serverSpinner.succeed('Server built')
+// Check deployment mode early to skip unnecessary build steps
+const earlyCloudConfig = await import(p.projectPath('config/cloud'))
+const earlyDeploymentMode = earlyCloudConfig?.tsCloud?.mode || 'server'
 
-// Package for deployment
-const packageSpinner = spinner('Packaging for deployment...')
-packageSpinner.start()
-await runCommand('bun zip.ts', {
-  cwd: p.corePath('cloud'),
-  quiet: !isVerbose,
-})
-packageSpinner.succeed('Package ready')
+// Build server and package (only needed for serverless/container mode)
+if (earlyDeploymentMode === 'serverless') {
+  const serverSpinner = spinner('Building server...')
+  serverSpinner.start()
+  await runCommand('bun build.ts', {
+    cwd: p.frameworkPath('server'),
+    quiet: !isVerbose,
+  })
+  serverSpinner.succeed('Server built')
+
+  const packageSpinner = spinner('Packaging for deployment...')
+  packageSpinner.start()
+  await runCommand('bun zip.ts', {
+    cwd: p.corePath('cloud'),
+    quiet: !isVerbose,
+  })
+  packageSpinner.succeed('Package ready')
+} else {
+  if (isVerbose) log.debug('Skipping server build and packaging (server mode)')
+}
 
 // Load AWS credentials from environment-specific .env file if not already set
 if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
@@ -131,6 +138,7 @@ try {
   // Check deployment mode - use relative import from project root
   const cloudConfigModule = await import(p.projectPath('config/cloud'))
   const deploymentMode = cloudConfigModule?.tsCloud?.mode || 'server'
+  const projectName = cloudConfigModule?.tsCloud?.project?.name || cloudConfigModule?.tsCloud?.project?.slug || 'stacks'
 
   // For serverless mode, build and push container image before deploying infrastructure
   if (deploymentMode === 'serverless') {
@@ -150,7 +158,6 @@ try {
       )
     }
 
-    const projectName = cloudConfigModule?.tsCloud?.project?.name || 'stacks'
     const ecrRepository = `${accountId}.dkr.ecr.${region}.amazonaws.com/${projectName}-${environment}-api`
     const imageTag = `${ecrRepository}:latest`
 
@@ -188,7 +195,7 @@ try {
     repoSpinner.start()
 
     try {
-      const { ECRClient } = await import('@stacksjs/ts-cloud/aws') as any
+      const { ECRClient } = await import('@stacksjs/ts-cloud') as any
       const ecr = new ECRClient(region)
       const repoName = `${projectName}-${environment}-api`
 
@@ -221,7 +228,7 @@ try {
     authSpinner.start()
 
     try {
-      const { ECRClient } = await import('@stacksjs/ts-cloud/aws') as any
+      const { ECRClient } = await import('@stacksjs/ts-cloud') as any
       const ecr = new ECRClient(region)
 
       // Get ECR authorization token
@@ -294,7 +301,7 @@ try {
   // Helper function to get AWS account ID using ts-cloud SDK
   async function getAwsAccountId(region: string): Promise<string> {
     try {
-      const { STSClient } = await import('@stacksjs/ts-cloud/aws') as any
+      const { STSClient } = await import('@stacksjs/ts-cloud') as any
       const sts = new STSClient(region)
       const identity = await sts.getCallerIdentity()
       const accountId = identity.Account || process.env.AWS_ACCOUNT_ID || ''
@@ -331,9 +338,9 @@ try {
   try {
     const deployScript = await import(p.projectPath('cloud/deploy-script'))
     if (typeof deployScript.afterDeploy === 'function') {
-      const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws') as any
+      const { CloudFormationClient } = await import('@stacksjs/ts-cloud') as any
       const cf = new CloudFormationClient(region)
-      const stackName = `stacks-cloud-${environment}`
+      const stackName = `${projectName}-cloud`
       let stackOutputs: Record<string, string> = {}
       try {
         stackOutputs = await cf.getStackOutputs(stackName)
@@ -371,9 +378,9 @@ try {
     serverOutputSpinner.start()
 
     try {
-      const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws') as any
+      const { CloudFormationClient } = await import('@stacksjs/ts-cloud') as any
       const cf = new CloudFormationClient(region)
-      const stackName = `stacks-cloud-${environment}`
+      const stackName = `${projectName}-cloud`
       const outputs = await cf.getStackOutputs(stackName)
 
       serverOutputSpinner.succeed('Server instances deployed')
@@ -394,26 +401,25 @@ try {
     }
   }
 
-  if (deploymentMode === 'serverless') {
-  // Deploy frontend to S3
+  // Deploy frontend to S3 (works for both server and serverless modes)
   const frontendSpinner = spinner('Deploying frontend to S3...')
   frontendSpinner.start()
 
   try {
     const { S3Client, CloudFormationClient } = await import('@stacksjs/ts-cloud/aws') as any
-    const { existsSync, readdirSync, statSync, readFileSync, copyFileSync, mkdirSync, rmSync } = await import('node:fs')
-    const { join, extname, relative: _relative } = await import('node:path')
+    const { existsSync, readdirSync, statSync, readFileSync, copyFileSync, mkdirSync, rmSync, writeFileSync } = await import('node:fs')
+    const { join, extname } = await import('node:path')
 
     const s3 = new S3Client(region)
     const cf = new CloudFormationClient(region)
 
     // Get bucket name from stack outputs
-    const stackName = `stacks-cloud-${environment}`
+    const stackName = `${projectName}-cloud`
     const outputs = await cf.getStackOutputs(stackName)
     const bucketName = outputs.FrontendBucketName
 
     if (!bucketName) {
-      frontendSpinner.fail('Frontend bucket not found in stack outputs')
+      ;(frontendSpinner as any).warn('Frontend bucket not found in stack outputs (add storage.public to infrastructure config)')
     } else {
       // Build directory for frontend files
       const buildDir = p.storagePath('framework/frontend-dist')
@@ -425,17 +431,74 @@ try {
       mkdirSync(buildDir, { recursive: true })
       mkdirSync(join(buildDir, 'assets'), { recursive: true })
 
-      // Copy index.stx as index.html
+      // Build the frontend index.html from the STX template
       const indexPath = p.resourcesPath('views/index.stx')
       if (existsSync(indexPath)) {
-        copyFileSync(indexPath, join(buildDir, 'index.html'))
-        if (isVerbose) log.debug(`  Copied index.stx -> index.html`)
+        let stxContent = readFileSync(indexPath, 'utf-8')
+
+        // Pre-render the STX template to static HTML
+        // 1. Extract server-side variables from <script server> block
+        const serverBlockMatch = stxContent.match(/<script server>([\s\S]*?)<\/script>/)
+        const serverVars: Record<string, any> = {}
+
+        if (serverBlockMatch) {
+          const serverCode = serverBlockMatch[1]
+          // Extract simple const assignments
+          const constMatches = serverCode.matchAll(/const\s+(\w+)\s*=\s*(?:'([^']*)'|"([^"]*)"|([\d.]+))/g)
+          for (const m of constMatches) {
+            serverVars[m[1]] = m[2] ?? m[3] ?? m[4]
+          }
+          // Remove the <script server> block from output
+          stxContent = stxContent.replace(/<script server>[\s\S]*?<\/script>\s*/, '')
+        }
+
+        // 2. Extract features array for @foreach
+        const featuresMatch = serverBlockMatch?.[1]?.match(/const features\s*=\s*(\[[\s\S]*?\n\])/m)
+        let featuresArray: any[] = []
+        if (featuresMatch) {
+          try {
+            // Use Function constructor to safely evaluate the array literal
+            featuresArray = new Function(`return ${featuresMatch[1]}`)()
+          } catch {
+            // Fallback: try to parse features manually
+          }
+        }
+
+        // 3. Replace {{ variable }} interpolations
+        stxContent = stxContent.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, varName) => {
+          return serverVars[varName] ?? ''
+        })
+
+        // 4. Replace {{ feature.property }} and {!! feature.property !!} inside @foreach
+        const foreachMatch = stxContent.match(/@foreach\s*\((\w+)\s+as\s+(\w+)\)([\s\S]*?)@endforeach/)
+        if (foreachMatch && featuresArray.length > 0) {
+          const itemVar = foreachMatch[2] // 'feature'
+          const template = foreachMatch[3]
+          let rendered = ''
+
+          for (const item of featuresArray) {
+            let itemHtml = template
+            // Replace {{ feature.prop }}
+            itemHtml = itemHtml.replace(new RegExp(`\\{\\{\\s*${itemVar}\\.(\\w+)\\s*\\}\\}`, 'g'), (_, prop) => {
+              return item[prop] ?? ''
+            })
+            // Replace {!! feature.prop !!} (raw HTML)
+            itemHtml = itemHtml.replace(new RegExp(`\\{!!\\s*${itemVar}\\.(\\w+)\\s*!!\\}`, 'g'), (_, prop) => {
+              return item[prop] ?? ''
+            })
+            rendered += itemHtml
+          }
+
+          stxContent = stxContent.replace(/@foreach\s*\(\w+\s+as\s+\w+\)[\s\S]*?@endforeach/, rendered)
+        }
+
+        writeFileSync(join(buildDir, 'index.html'), stxContent)
+        if (isVerbose) log.debug(`  Built index.html from STX template`)
       } else {
         // Fallback to default index
         const defaultIndex = `<!DOCTYPE html>
 <html><head><title>Stacks</title></head>
 <body><h1>Welcome to Stacks</h1></body></html>`
-        const { writeFileSync } = await import('node:fs')
         writeFileSync(join(buildDir, 'index.html'), defaultIndex)
       }
 
@@ -507,7 +570,7 @@ try {
 
             await s3.putObject({
               bucket: bucketName,
-              key: key,
+              key,
               body: content,
               contentType: contentType,
               cacheControl: cacheControl,
@@ -523,7 +586,7 @@ try {
       const distributionId = outputs.CloudFrontDistributionId
       if (distributionId) {
         if (isVerbose) log.debug('  Invalidating CloudFront cache...')
-        const { AWSClient } = await import('@stacksjs/ts-cloud/aws') as any
+        const { AWSClient } = await import('@stacksjs/ts-cloud') as any
         const client = new AWSClient()
         await client.request({
           service: 'cloudfront',
@@ -562,7 +625,7 @@ try {
     docsDeploySpinner.start()
 
     try {
-      const { S3Client, CloudFormationClient } = await import('@stacksjs/ts-cloud/aws') as any
+      const { S3Client, CloudFormationClient } = await import('@stacksjs/ts-cloud') as any
       const { readdirSync, statSync, readFileSync } = await import('node:fs')
       const { join, extname } = await import('node:path')
 
@@ -570,7 +633,7 @@ try {
       const cf = new CloudFormationClient(region)
 
       // Get docs bucket name from stack outputs
-      const stackName = `stacks-cloud-${environment}`
+      const stackName = `${projectName}-cloud`
       const outputs = await cf.getStackOutputs(stackName)
       const docsBucketName = outputs.DocsBucketName
 
@@ -619,7 +682,7 @@ try {
 
               await s3.putObject({
                 bucket: docsBucketName,
-                key: key,
+                key,
                 body: content,
                 contentType: contentType,
                 cacheControl: cacheControl,
@@ -635,7 +698,7 @@ try {
         const distributionId = outputs.CloudFrontDistributionId
         if (distributionId) {
           if (isVerbose) log.debug('  Invalidating CloudFront cache for /docs...')
-          const { AWSClient } = await import('@stacksjs/ts-cloud/aws') as any
+          const { AWSClient } = await import('@stacksjs/ts-cloud') as any
           const client = new AWSClient()
           await client.request({
             service: 'cloudfront',
@@ -674,7 +737,7 @@ try {
   errorPageSpinner.start()
 
   try {
-    const { S3Client, CloudFormationClient, AWSClient } = await import('@stacksjs/ts-cloud/aws') as any
+    const { S3Client, CloudFormationClient, AWSClient } = await import('@stacksjs/ts-cloud') as any
     const { existsSync: exists404, readFileSync: read404 } = await import('node:fs')
 
     const s3 = new S3Client(region)
@@ -682,7 +745,7 @@ try {
     const awsClient = new AWSClient()
 
     // Get bucket names and distribution ID from stack outputs
-    const stackName = `stacks-cloud-${environment}`
+    const stackName = `${projectName}-cloud`
     const outputs = await cf.getStackOutputs(stackName)
     const frontendBucket = outputs.FrontendBucketName
     const docsBucket = outputs.DocsBucketName
@@ -868,8 +931,6 @@ try {
     ;(errorPageSpinner as any).warn(`404 page configuration skipped: ${errorPageError.message}`)
     if (isVerbose) log.debug(`Error page config error: ${errorPageError.stack}`)
   }
-  } // end serverless-only block
-
   console.log('')
   log.success('Deployment completed successfully!')
 } catch (error) {

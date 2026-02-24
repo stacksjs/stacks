@@ -63,7 +63,7 @@ function mapDiskTypeToAwsVolumeType(diskType: string): string {
  */
 async function getAwsAccountId(region: string): Promise<string> {
   try {
-    const { AWSClient } = await import('@stacksjs/ts-cloud/aws')
+    const { AWSClient } = await import('@stacksjs/ts-cloud')
     const client = new AWSClient()
 
     const params = new URLSearchParams({
@@ -107,8 +107,33 @@ interface DeployFrontendOptions {
 }
 
 /**
- * Generate CloudFormation template for Stacks infrastructure
- * Supports: single instance, multi-instance with ASG, mixed instance types, ALB
+ * Generate CloudFormation template using InfrastructureGenerator
+ * Supports both server and serverless modes based on config
+ */
+async function generateTemplate(options: {
+  environment: string
+  projectName: string
+}): Promise<string> {
+  const { environment } = options
+  const cloudConfig = await getCloudConfig()
+  if (!cloudConfig) {
+    throw new Error('Cloud configuration not found. Ensure config/cloud.ts exports tsCloud.')
+  }
+
+  const { InfrastructureGenerator } = await import('@stacksjs/ts-cloud')
+
+  const generator = new InfrastructureGenerator({
+    config: cloudConfig,
+    environment: environment as 'production' | 'staging' | 'development',
+  })
+
+  // Use compact JSON to stay under CloudFormation 51200 byte inline limit
+  const template = generator.generate().getBuilder().build()
+  return JSON.stringify(template)
+}
+
+/**
+ * @deprecated Use generateTemplate() instead. Kept for backwards compat.
  */
 async function generateStacksTemplate(options: {
   environment: string
@@ -1658,7 +1683,7 @@ async function setupDnsAndSsl(options: {
   console.log('Setting up SSL certificate...')
 
   try {
-    const { Route53Client, ACMClient, AWSClient } = await import('@stacksjs/ts-cloud/aws')
+    const { Route53Client, ACMClient, AWSClient } = await import('@stacksjs/ts-cloud')
     const r53 = new Route53Client(region)
     const acm = new ACMClient(region)
     const client = new AWSClient()
@@ -1709,7 +1734,7 @@ async function setupDnsAndSsl(options: {
         console.log('✓ Certificate issued!')
 
         // 6. Get ALB and Target Group ARN from stack
-        const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
+        const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
         const cf = new CloudFormationClient(region)
         const resources = await cf.listStackResources(stackName)
         const albArn = resources.StackResourceSummaries.find((r: any) => r.LogicalResourceId === 'ApplicationLoadBalancer')?.PhysicalResourceId
@@ -1950,36 +1975,76 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
 
   const projectConfig = await getProjectConfig()
   const projectName = projectConfig.name
-  const stackName = `stacks-cloud-${environment}`
+  const stackName = `${projectName}-cloud`
 
   if (verbose) console.log(`Deploying ${stackName} to ${region}...`)
 
   try {
-    const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
+    const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
     const cf = new CloudFormationClient(region)
 
     // Check deployment mode from cloud config
     const cloudConfig = await getCloudConfig()
     const deploymentMode = cloudConfig?.infrastructure?.compute?.mode || cloudConfig?.mode || 'server'
 
-    // Generate the template based on deployment mode
+    // Generate the template using InfrastructureGenerator
     if (verbose) console.log(`Generating CloudFormation template (${deploymentMode} mode)...`)
 
-    let templateBody: string
-    if (deploymentMode === 'serverless') {
-      // For serverless mode, we need the ECR repository URI
-      // The image will be built and pushed before stack creation
-      templateBody = await generateServerlessTemplate({
-        environment,
-        projectName,
+    const templateBody = await generateTemplate({
+      environment,
+      projectName,
+    })
+
+    // If template exceeds CloudFormation inline limit (51200 bytes), upload to S3
+    const CF_INLINE_LIMIT = 51200
+    let templateUrl: string | undefined
+    if (Buffer.byteLength(templateBody, 'utf-8') > CF_INLINE_LIMIT) {
+      if (verbose) console.log(`Template exceeds inline limit (${Buffer.byteLength(templateBody, 'utf-8')} bytes), uploading to S3...`)
+      const { S3Client: S3, AWSClient } = await import('@stacksjs/ts-cloud')
+      const s3 = new S3(region)
+      const awsClient = new AWSClient()
+      const templateBucket = `${projectName}-cf-templates-${region}`
+
+      // Ensure the template bucket exists
+      try {
+        await awsClient.request({
+          service: 's3',
+          region,
+          method: 'HEAD',
+          path: `/${templateBucket}`,
+          host: `s3.${region}.amazonaws.com`,
+        })
+      } catch {
+        // Bucket doesn't exist, create it
+        const createBody = region === 'us-east-1'
+          ? ''
+          : `<CreateBucketConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><LocationConstraint>${region}</LocationConstraint></CreateBucketConfiguration>`
+        await awsClient.request({
+          service: 's3',
+          region,
+          method: 'PUT',
+          path: `/${templateBucket}`,
+          host: `s3.${region}.amazonaws.com`,
+          body: createBody || undefined,
+        })
+      }
+
+      const templateKey = `${stackName}/template-${Date.now()}.json`
+      await s3.putObject({
+        bucket: templateBucket,
+        key: templateKey,
+        body: templateBody,
+        contentType: 'application/json',
       })
-    } else {
-      // Server mode (EC2-based deployment)
-      templateBody = await generateStacksTemplate({
-        environment,
-        projectName,
-      })
+
+      templateUrl = `https://${templateBucket}.s3.${region}.amazonaws.com/${templateKey}`
+      if (verbose) console.log(`Template uploaded to: ${templateUrl}`)
     }
+
+    // Helper to get the right template parameter for CF API calls
+    const templateParam = templateUrl
+      ? { templateURL: templateUrl }
+      : { templateBody }
 
     // Check if stack exists
     let stackExists = false
@@ -2001,7 +2066,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
           // Clean up any retained resources (S3 buckets with DeletionPolicy: Retain)
           console.log('Cleaning up retained resources...')
           try {
-            const { S3Client } = await import('@stacksjs/ts-cloud/aws')
+            const { S3Client } = await import('@stacksjs/ts-cloud')
             const s3 = new S3Client(region)
 
             // Calculate the bucket names that would have been created
@@ -2057,7 +2122,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
       try {
         await cf.updateStack({
           stackName,
-          templateBody,
+          ...templateParam,
           capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
         })
 
@@ -2083,7 +2148,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
       // Before creating a new stack, clean up any retained resources from previous failed deployments
       console.log('Checking for retained resources...')
       try {
-        const { S3Client } = await import('@stacksjs/ts-cloud/aws')
+        const { S3Client } = await import('@stacksjs/ts-cloud')
         const s3 = new S3Client(region)
 
         // Calculate the bucket names that would be created
@@ -2129,7 +2194,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
         if (hostedZoneId) {
           if (verbose) console.log(`  Checking DNS records in hosted zone: ${hostedZoneId}`)
 
-          const { Route53Client } = await import('@stacksjs/ts-cloud/aws')
+          const { Route53Client } = await import('@stacksjs/ts-cloud')
           const route53 = new Route53Client(region)
 
           // List and delete existing A records for stacksjs.com and www.stacksjs.com
@@ -2169,7 +2234,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
       console.log('')
       const result = await cf.createStack({
         stackName,
-        templateBody,
+        ...templateParam,
         capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
         onFailure: 'ROLLBACK',
         timeoutInMinutes: 15,
@@ -2261,14 +2326,14 @@ export async function deployFrontend(options: DeployFrontendOptions): Promise<vo
   log.info(`Deploying frontend from ${buildDir} to ${environment} in ${region}...`)
 
   try {
-    const { S3Client } = await import('@stacksjs/ts-cloud/aws')
-    const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
+    const { S3Client } = await import('@stacksjs/ts-cloud')
+    const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
 
     const s3 = new S3Client(region)
     const cf = new CloudFormationClient(region)
 
     // Get bucket name from stack outputs
-    const stackName = `stacks-cloud-${environment}`
+    const stackName = `${projectName}-cloud`
     const outputs = await cf.getStackOutputs(stackName)
     const bucketName = outputs.AssetsBucketName
 
@@ -2303,7 +2368,7 @@ export async function getDeploymentStatus(_options: { environment: string, regio
   const { environment, region } = _options
   const stackName = `stacks-cloud-${environment}`
 
-  const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
+  const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
   const cf = new CloudFormationClient(region)
 
   const result = await cf.describeStacks({ stackName })
@@ -2333,13 +2398,13 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
   const { environment, region, verbose } = options
 
   const projectConfig = await getProjectConfig()
-  const stackName = `stacks-cloud-${environment}`
+  const stackName = `${projectName}-cloud`
 
   console.log(`Undeploying ${stackName} from ${region}...`)
   console.log('')
 
   try {
-    const { CloudFormationClient, AWSClient } = await import('@stacksjs/ts-cloud/aws')
+    const { CloudFormationClient, AWSClient } = await import('@stacksjs/ts-cloud')
     const cf = new CloudFormationClient(region)
 
     // Check if stack exists
@@ -2443,7 +2508,7 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
 
     // Clean up any retained resources (S3 buckets with DeletionPolicy: Retain)
     try {
-      const { S3Client } = await import('@stacksjs/ts-cloud/aws')
+      const { S3Client } = await import('@stacksjs/ts-cloud')
       const s3 = new S3Client(region)
 
       // Calculate the bucket names that would have been created
@@ -2510,7 +2575,7 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
       console.log('Some resources could not be deleted automatically')
       console.log('Identifying resources to retain...')
 
-      const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
+      const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
       const cf = new CloudFormationClient(region)
 
       try {

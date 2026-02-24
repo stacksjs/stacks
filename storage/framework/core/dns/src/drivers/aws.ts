@@ -7,7 +7,7 @@ import type { CommandError, DeployOptions, Subprocess } from '@stacksjs/types'
 import type {
   CreateHostedZoneResult,
   HostedZone,
-} from '@stacksjs/ts-cloud/aws'
+} from '@stacksjs/ts-cloud'
 import { runAction } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
 import { Action } from '@stacksjs/enums'
@@ -15,7 +15,7 @@ import { err, handleError, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
-import { Route53Client, Route53DomainsClient } from '@stacksjs/ts-cloud/aws'
+import { Route53Client, Route53DomainsClient } from '@stacksjs/ts-cloud'
 
 /**
  * Normalize a domain by stripping protocol and trailing slash

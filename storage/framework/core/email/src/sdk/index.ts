@@ -83,7 +83,7 @@ export class EmailSDK {
    */
   async send(message: EmailMessage): Promise<SendResult> {
     try {
-      const { SESClient } = await import('@stacksjs/ts-cloud/aws')
+      const { SESClient } = await import('@stacksjs/ts-cloud')
       const ses = new SESClient(this.region)
 
       // Normalize from address
@@ -169,7 +169,7 @@ export class EmailSDK {
    */
   async getInbox(mailbox: string, options?: { limit?: number; offset?: number }): Promise<InboxEmail[]> {
     try {
-      const { S3Client } = await import('@stacksjs/ts-cloud/aws')
+      const { S3Client } = await import('@stacksjs/ts-cloud')
       const s3 = new S3Client(this.region)
 
       const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
@@ -208,7 +208,7 @@ export class EmailSDK {
     raw?: string
   } | null> {
     try {
-      const { S3Client } = await import('@stacksjs/ts-cloud/aws')
+      const { S3Client } = await import('@stacksjs/ts-cloud')
       const s3 = new S3Client(this.region)
 
       const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
@@ -299,7 +299,7 @@ export class EmailSDK {
    */
   async delete(mailbox: string, messageId: string): Promise<boolean> {
     try {
-      const { S3Client } = await import('@stacksjs/ts-cloud/aws')
+      const { S3Client } = await import('@stacksjs/ts-cloud')
       const s3 = new S3Client(this.region)
 
       const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
@@ -367,7 +367,7 @@ export class EmailSDK {
 
   private async updateEmailStatus(mailbox: string, messageId: string, updates: Partial<InboxEmail>): Promise<boolean> {
     try {
-      const { S3Client } = await import('@stacksjs/ts-cloud/aws')
+      const { S3Client } = await import('@stacksjs/ts-cloud')
       const s3 = new S3Client(this.region)
 
       const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]

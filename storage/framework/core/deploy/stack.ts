@@ -56,7 +56,7 @@ export async function deployStack(options: StackDeployOptions): Promise<void> {
   const cfn = new CloudFormationClient(region)
 
   // Determine stack name
-  const finalStackName = stackName || `${cloudConfig.project.slug}-${environment}`
+  const finalStackName = stackName || `${cloudConfig.project.slug}-cloud`
 
   console.log(`\n☁️  Deploying to CloudFormation...`)
   console.log(`   Stack: ${finalStackName}`)

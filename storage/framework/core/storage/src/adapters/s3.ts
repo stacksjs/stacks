@@ -89,18 +89,22 @@ export class S3StorageAdapter implements StorageAdapter {
 
   async read(path: string): Promise<FileContents> {
     const key = this.prefixPath(path)
-    const content = await this.client.getObject(this.bucket, key)
+    const response = await this.client.getObject(this.bucket, key)
 
-    if (!content && content !== '') {
+    if (!response) {
       throw new Error(`Failed to read file: ${path}`)
     }
 
-    return Buffer.from(content)
+    // getObject returns a raw response, read it as text then convert to buffer
+    const text = typeof response === 'string' ? response : await response.text?.() || ''
+    return Buffer.from(text)
   }
 
   async readToString(path: string): Promise<string> {
     const key = this.prefixPath(path)
-    return await this.client.getObject(this.bucket, key)
+    const response = await this.client.getObject(this.bucket, key)
+    if (typeof response === 'string') return response
+    return await response.text?.() || ''
   }
 
   async readToBuffer(path: string): Promise<Buffer> {
@@ -122,16 +126,13 @@ export class S3StorageAdapter implements StorageAdapter {
     const prefix = this.prefixPath(path)
     const normalizedPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`
 
-    const objects = await this.client.listAllObjects({
-      bucket: this.bucket,
-      prefix: normalizedPrefix,
-    })
+    const objects = await this.client.listAllObjects({ bucket: this.bucket, prefix: normalizedPrefix })
+    const keys = objects.map((obj: any) => obj.Key || obj.key)
 
-    if (objects.length === 0) {
+    if (keys.length === 0) {
       return
     }
 
-    const keys = objects.map(obj => obj.Key)
     await this.client.deleteObjects(this.bucket, keys)
   }
 
@@ -151,8 +152,8 @@ export class S3StorageAdapter implements StorageAdapter {
     await this.client.copyObject({
       sourceBucket: this.bucket,
       sourceKey: fromKey,
-      destinationBucket: this.bucket,
-      destinationKey: toKey,
+      bucket: this.bucket,
+      key: toKey,
     })
   }
 
@@ -183,23 +184,16 @@ export class S3StorageAdapter implements StorageAdapter {
     const prefix = this.prefixPath(path)
     const normalizedPrefix = prefix ? `${prefix}/` : undefined
 
-    // Use listAllObjects for deep listing, or listObjects for shallow
     if (deep) {
-      const objects = await this.client.listAllObjects({
-        bucket: this.bucket,
-        prefix: normalizedPrefix,
-      })
-
+      const objects = await this.client.listAllObjects({ bucket: this.bucket, prefix: normalizedPrefix })
       for (const obj of objects) {
         yield {
-          path: this.stripPrefix(obj.Key),
+          path: this.stripPrefix(obj.Key || obj.key),
           type: 'file',
         }
       }
     }
     else {
-      // For shallow listing, we need to use the delimiter approach
-      // ts-cloud's listObjects supports pagination
       let continuationToken: string | undefined
 
       do {
@@ -209,9 +203,9 @@ export class S3StorageAdapter implements StorageAdapter {
           continuationToken,
         })
 
-        for (const obj of result.objects) {
+        for (const obj of result.objects || []) {
           yield {
-            path: this.stripPrefix(obj.Key),
+            path: this.stripPrefix(obj.Key || obj.key),
             type: 'file',
           }
         }
@@ -231,8 +225,13 @@ export class S3StorageAdapter implements StorageAdapter {
 
   async fileExists(path: string): Promise<boolean> {
     const key = this.prefixPath(path)
-    const result = await this.client.headObject(this.bucket, key)
-    return result !== null
+    try {
+      const result = await this.client.headObject(this.bucket, key)
+      return !!result
+    }
+    catch {
+      return false
+    }
   }
 
   async directoryExists(path: string): Promise<boolean> {
@@ -243,7 +242,7 @@ export class S3StorageAdapter implements StorageAdapter {
       maxKeys: 1,
     })
 
-    return result.objects.length > 0
+    return (result.objects || []).length > 0
   }
 
   async publicUrl(path: string, options: PublicUrlOptions = {}): Promise<string> {

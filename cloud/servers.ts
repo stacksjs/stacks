@@ -9,8 +9,8 @@ export const servers = {
     type: 'app',
     size: 't3.micro',
     diskSize: 20, // in GB
-    privateNetwork: 'vpc-123456789', // or create new
-    subnet: 'subnet-123456789',
+        // privateNetwork: 'vpc-123456789', // set to existing VPC ID or omit to create new
+    // subnet: 'subnet-123456789',
     serverOS: 'ubuntu-20-lts-x86_64',
     bunVersion: '1.1.26',
     database: 'sqlite',
@@ -39,8 +39,8 @@ export const servers = {
     type: 'web',
     size: 't3.micro',
     diskSize: 20, // in GB
-    privateNetwork: 'vpc-123456789', // or create new
-    subnet: 'subnet-123456789',
+        // privateNetwork: 'vpc-123456789', // set to existing VPC ID or omit to create new
+    // subnet: 'subnet-123456789',
     serverOS: 'ubuntu-20-lts-x86_64',
     bunVersion: '1.1.26',
   },
@@ -66,8 +66,8 @@ export const servers = {
     type: 'cache',
     size: 't3.micro',
     diskSize: 20, // in GB
-    privateNetwork: 'vpc-123456789', // or create new
-    subnet: 'subnet-123456789',
+        // privateNetwork: 'vpc-123456789', // set to existing VPC ID or omit to create new
+    // subnet: 'subnet-123456789',
     serverOS: 'ubuntu-20-lts-x86_64',
     bunVersion: '1.1.26',
   },

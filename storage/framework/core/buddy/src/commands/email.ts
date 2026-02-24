@@ -61,7 +61,7 @@ export function email(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        const { SESClient } = await import('@stacksjs/ts-cloud/aws')
+        const { SESClient } = await import('@stacksjs/ts-cloud')
         const ses = new SESClient(process.env.AWS_REGION || 'us-east-1')
 
         const emailDomain = emailConfig?.from?.address?.split('@')[1] || 'stacksjs.com'
@@ -101,7 +101,7 @@ export function email(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        const { SESClient } = await import('@stacksjs/ts-cloud/aws')
+        const { SESClient } = await import('@stacksjs/ts-cloud')
         const ses = new SESClient(process.env.AWS_REGION || 'us-east-1')
 
         const emailDomain = emailConfig?.from?.address?.split('@')[1] || 'stacksjs.com'
@@ -192,7 +192,7 @@ export function email(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        const { CloudWatchLogsClient } = await import('@stacksjs/ts-cloud/aws')
+        const { CloudWatchLogsClient } = await import('@stacksjs/ts-cloud')
         const logs = new CloudWatchLogsClient(process.env.AWS_REGION || 'us-east-1')
 
         const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
@@ -256,7 +256,7 @@ export function email(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
+        const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
         const cf = new CloudFormationClient(process.env.AWS_REGION || 'us-east-1')
 
         const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')

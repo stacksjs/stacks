@@ -99,9 +99,28 @@ const features = [
       line-height: 1.75;
     }
 
-    .version-badge {
+    .alpha-badge {
       display: inline-block;
       margin-top: 1rem;
+      padding: 0.375rem 1rem;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(251, 191, 36, 0.1));
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 9999px;
+      font-size: 0.8125rem;
+      color: #fbbf24;
+      font-weight: 600;
+      letter-spacing: 0.025em;
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.1); }
+      50% { box-shadow: 0 0 16px rgba(245, 158, 11, 0.25); }
+    }
+
+    .version-badge {
+      display: inline-block;
+      margin-top: 0.5rem;
       padding: 0.25rem 0.75rem;
       background: rgba(99, 102, 241, 0.1);
       border: 1px solid rgba(99, 102, 241, 0.2);
@@ -237,6 +256,7 @@ const features = [
       <p class="subtitle">
         Build modern web applications, APIs, and cloud infrastructure with an elegant, type-safe framework.
       </p>
+      <span class="alpha-badge">Alpha Coming Soon</span>
       <span class="version-badge">v{{ appVersion }}</span>
     </div>
 
