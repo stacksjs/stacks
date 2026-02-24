@@ -13,27 +13,81 @@ import {
   type ErrorPageConfig,
 } from '@stacksjs/error-handling'
 
-// Store queries for error context
-let recentQueries: Array<{ query: string; time?: number; connection?: string }> = []
+/**
+ * Standard error response structure used across all JSON error responses.
+ */
+export interface ErrorResponseBody {
+  error: string
+  message: string
+  status: number
+  timestamp: string
+  details?: Record<string, unknown>
+}
 
-// Maximum queries to keep in memory
+function buildErrorJson(opts: {
+  error: string
+  message: string
+  status: number
+  details?: Record<string, unknown>
+}): string {
+  const body: ErrorResponseBody = {
+    error: opts.error,
+    message: opts.message,
+    status: opts.status,
+    timestamp: new Date().toISOString(),
+  }
+  if (opts.details) body.details = opts.details
+  return JSON.stringify(body)
+}
+
+const JSON_HEADERS: Record<string, string> = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+}
+
+const JSON_HEADERS_FULL: Record<string, string> = {
+  ...JSON_HEADERS,
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
+// Circular buffer for tracked queries (avoids O(n) shift on every insert)
 const MAX_QUERIES = 50
+const queryBuffer: Array<{ query: string; time?: number; connection?: string } | null> = new Array(MAX_QUERIES).fill(null)
+let queryWriteIndex = 0
+let queryCount = 0
 
 /**
- * Add a query to the recent queries list for error context
+ * Add a query to the recent queries list for error context.
+ * Uses a circular buffer for O(1) insert instead of array.shift().
  */
 export function trackQuery(query: string, time?: number, connection?: string): void {
-  recentQueries.push({ query, time, connection })
-  if (recentQueries.length > MAX_QUERIES) {
-    recentQueries.shift()
+  queryBuffer[queryWriteIndex] = { query, time, connection }
+  queryWriteIndex = (queryWriteIndex + 1) % MAX_QUERIES
+  if (queryCount < MAX_QUERIES) queryCount++
+}
+
+/**
+ * Get tracked queries in insertion order
+ */
+function getRecentQueries(): Array<{ query: string; time?: number; connection?: string }> {
+  if (queryCount === 0) return []
+  const result: Array<{ query: string; time?: number; connection?: string }> = []
+  const start = queryCount < MAX_QUERIES ? 0 : queryWriteIndex
+  for (let i = 0; i < queryCount; i++) {
+    const entry = queryBuffer[(start + i) % MAX_QUERIES]
+    if (entry) result.push(entry)
   }
+  return result
 }
 
 /**
  * Clear tracked queries (e.g., after successful response)
  */
 export function clearTrackedQueries(): void {
-  recentQueries = []
+  queryBuffer.fill(null)
+  queryWriteIndex = 0
+  queryCount = 0
 }
 
 /**
@@ -55,50 +109,62 @@ function getErrorHandlerConfig(): ErrorPageConfig {
 /**
  * Sensitive fields that should be hidden in error pages
  */
-const SENSITIVE_FIELDS = [
+/**
+ * Patterns for detecting sensitive fields (matched case-insensitively).
+ * Each entry is checked via `lowerKey.includes(pattern)`.
+ */
+const SENSITIVE_PATTERNS = [
   'password',
-  'password_confirmation',
   'secret',
   'token',
   'api_key',
-  'apiKey',
-  'api_secret',
-  'apiSecret',
-  'access_token',
-  'accessToken',
-  'refresh_token',
-  'refreshToken',
+  'apikey',
+  'access_key',
+  'accesskey',
   'private_key',
-  'privateKey',
+  'privatekey',
   'credit_card',
-  'creditCard',
+  'creditcard',
   'card_number',
-  'cardNumber',
+  'cardnumber',
   'cvv',
   'ssn',
   'authorization',
+  'credential',
+  'aws_secret',
+  'aws_access',
+  'database_password',
+  'db_password',
+  'encryption_key',
+  'signing_key',
+  'bearer',
+  'session_id',
+  'sessionid',
+  'cookie',
 ]
 
 /**
  * Sanitize object by hiding sensitive fields
  */
-function sanitizeData(data: unknown): unknown {
-  if (!data || typeof data !== 'object') {
+const MAX_SANITIZE_DEPTH = 10
+
+function sanitizeData(data: unknown, depth = 0): unknown {
+  if (!data || typeof data !== 'object' || depth >= MAX_SANITIZE_DEPTH) {
     return data
   }
 
   if (Array.isArray(data)) {
-    return data.map(sanitizeData)
+    return data.map(item => sanitizeData(item, depth + 1))
   }
 
   const sanitized: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
     const lowerKey = key.toLowerCase()
-    if (SENSITIVE_FIELDS.some(field => lowerKey.includes(field.toLowerCase()))) {
+    if (SENSITIVE_PATTERNS.some(pattern => lowerKey.includes(pattern))) {
       sanitized[key] = '********'
     }
     else if (typeof value === 'object' && value !== null) {
-      sanitized[key] = sanitizeData(value)
+      sanitized[key] = sanitizeData(value, depth + 1)
     }
     else {
       sanitized[key] = value
@@ -162,17 +228,12 @@ export async function createErrorResponse(
     const acceptHeader = request.headers.get('Accept') || ''
     if (acceptHeader.includes('application/json')) {
       return new Response(
-        JSON.stringify({
+        buildErrorJson({
           error: 'Internal Server Error',
           message: 'An unexpected error occurred.',
-        }),
-        {
           status,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-          },
-        },
+        }),
+        { status, headers: JSON_HEADERS },
       )
     }
     return new Response(renderProductionErrorPage(status), {
@@ -222,7 +283,7 @@ export async function createErrorResponse(
     }
 
     // Add tracked queries
-    for (const query of recentQueries) {
+    for (const query of getRecentQueries()) {
       handler.addQuery(query.query, query.time, query.connection)
     }
 
@@ -231,22 +292,17 @@ export async function createErrorResponse(
     if (acceptHeader.includes('application/json') && !acceptHeader.includes('text/html')) {
       // Return JSON error for API requests
       return new Response(
-        JSON.stringify({
+        buildErrorJson({
           error: error.name || 'Error',
           message: error.message,
-          handler: options?.handlerPath,
-          stack: error.stack?.split('\n').slice(0, 10),
-          queries: recentQueries.slice(-10),
-        }),
-        {
           status,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          details: {
+            handler: options?.handlerPath,
+            stack: error.stack?.split('\n').slice(0, 10),
+            queries: getRecentQueries().slice(-10),
           },
-        },
+        }),
+        { status, headers: JSON_HEADERS_FULL },
       )
     }
 
@@ -292,14 +348,12 @@ export async function createMiddlewareErrorResponse(
   // For 4xx errors, return JSON in both dev and prod
   if (status >= 400 && status < 500) {
     return new Response(
-      JSON.stringify({ error: error.message }),
-      {
+      buildErrorJson({
+        error: error.name || 'ClientError',
+        message: error.message,
         status,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      },
+      }),
+      { status, headers: JSON_HEADERS },
     )
   }
 
@@ -310,14 +364,12 @@ export async function createMiddlewareErrorResponse(
 
   // Production 5xx
   return new Response(
-    JSON.stringify({ error: 'Internal Server Error' }),
-    {
+    buildErrorJson({
+      error: 'Internal Server Error',
+      message: 'An unexpected error occurred.',
       status,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    },
+    }),
+    { status, headers: JSON_HEADERS },
   )
 }
 
@@ -329,17 +381,13 @@ export function createValidationErrorResponse(
   _request: Request | EnhancedRequest,
 ): Response {
   return new Response(
-    JSON.stringify({
-      error: 'Validation failed',
-      errors,
-    }),
-    {
+    buildErrorJson({
+      error: 'ValidationError',
+      message: 'Validation failed',
       status: 422,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    },
+      details: { errors },
+    }),
+    { status: 422, headers: JSON_HEADERS },
   )
 }
 

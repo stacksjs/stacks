@@ -147,7 +147,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Acti
 
     // Run the entire request handling within the request context
     // This allows Auth and other services to access the current request
-    return (runWithRequest as any)(enhancedReq as any, async () => {
+    return runWithRequest<Promise<Response>>(enhancedReq, async () => {
       const middlewareEntries = routeMiddlewareRegistry.get(routeKey) || []
 
       // Run middleware in order
@@ -166,20 +166,24 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Acti
             await middleware.handle(enhancedReq)
           }
           catch (error) {
-            // Middleware threw an error (e.g., 401 Unauthorized)
-            if (error instanceof Error && 'statusCode' in error) {
+            // Middleware threw an error — always convert to a proper HTTP response
+            const err = error instanceof Error ? error : new Error(String(error))
+            if ('statusCode' in err) {
               return await createMiddlewareErrorResponse(
-                error as Error & { statusCode: number },
+                err as Error & { statusCode: number },
                 enhancedReq,
               )
             }
-            throw error
+            // No statusCode — treat as 500 and return an error response
+            // instead of re-throwing which would crash the handler
+            log.error(`[Router] Middleware '${middlewareName}' threw an unexpected error:`, err)
+            return await createErrorResponse(err, enhancedReq, { status: 500 })
           }
         }
       }
 
       // Call the actual handler with the enhanced request
-      return (wrappedBase as any)(enhancedReq)
+      return wrappedBase(enhancedReq)
     })
   }
 }
@@ -450,8 +454,12 @@ function enhanceWithLaravelMethods(req: EnhancedRequest): EnhancedRequest {
     ;(req as any).query = query
   }
 
-  // Helper to get all input data
+  // Cached input data — computed once on first access
+  let cachedInput: Record<string, any> | null = null
+
   const getAllInput = (): Record<string, any> => {
+    if (cachedInput) return cachedInput
+
     const input: Record<string, any> = {}
 
     // Query parameters
@@ -480,6 +488,7 @@ function enhanceWithLaravelMethods(req: EnhancedRequest): EnhancedRequest {
       }
     }
 
+    cachedInput = input
     return input
   }
 
@@ -668,7 +677,7 @@ function wrapHandler(handler: StacksHandler, skipParsing = false): ActionHandler
 
         const resolvedHandler = await resolveStringHandler(handlerPath)
         // Must await to catch async errors in try-catch
-        return await (resolvedHandler as any)(req)
+        return await resolvedHandler(req)
       }
       catch (error) {
         log.error(`[Router] Error handling request for '${handlerPath}':`, error)
@@ -688,9 +697,14 @@ function wrapHandler(handler: StacksHandler, skipParsing = false): ActionHandler
  * Parse request body and attach to request object
  */
 async function parseRequestBody(req: EnhancedRequest): Promise<void> {
+  // Skip if body was already parsed (avoid double-parsing)
+  if ((req as any)._bodyParsed) return
+  ;(req as any)._bodyParsed = true
+
   const contentType = req.headers.get('content-type') || ''
 
   try {
+    // Clone once up front — only the branch that matches content-type will use it
     if (contentType.includes('application/json')) {
       const body = await req.clone().json()
       ;(req as any).jsonBody = body
@@ -711,9 +725,7 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
 
       formData.forEach((value, key) => {
         if (value instanceof File) {
-          // Handle file uploads
           if (files[key]) {
-            // Multiple files with same key
             if (Array.isArray(files[key])) {
               (files[key] as File[]).push(value)
             }
@@ -726,7 +738,6 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
           }
         }
         else {
-          // Regular form field
           formBody[key] = value
         }
       })
@@ -736,7 +747,6 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
     }
   }
   catch (e) {
-    // Body parsing failed - log it for debugging
     log.debug('[stacks-router] Body parsing failed:', e)
   }
 }

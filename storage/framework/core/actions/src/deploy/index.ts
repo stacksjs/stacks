@@ -20,6 +20,74 @@ const log = {
 // Check if verbose mode is enabled via CLI args
 const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')
 
+const MIME_TYPES: Record<string, string> = {
+  '.html': 'text/html',
+  '.css': 'text/css',
+  '.js': 'application/javascript',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.eot': 'application/vnd.ms-fontobject',
+  '.otf': 'font/otf',
+  '.webp': 'image/webp',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.pdf': 'application/pdf',
+  '.xml': 'application/xml',
+  '.txt': 'text/plain',
+}
+
+function getMimeType(filePath: string): string {
+  const dotIndex = filePath.lastIndexOf('.')
+  const ext = dotIndex >= 0 ? filePath.slice(dotIndex).toLowerCase() : ''
+  return MIME_TYPES[ext] || 'application/octet-stream'
+}
+
+async function traverseDirectory(
+  dir: string,
+  callback: (filePath: string, relativePath: string) => Promise<void>,
+  prefix = '',
+  skipPatterns = ['.DS_Store'],
+): Promise<void> {
+  const { readdirSync, statSync } = await import('node:fs')
+  const { join } = await import('node:path')
+  const items = readdirSync(dir)
+  for (const item of items) {
+    if (skipPatterns.includes(item)) continue
+    const filePath = join(dir, item)
+    const key = prefix ? `${prefix}/${item}` : item
+    if (statSync(filePath).isDirectory()) {
+      await traverseDirectory(filePath, callback, key, skipPatterns)
+    } else {
+      await callback(filePath, key)
+    }
+  }
+}
+
+async function withS3Retry<T>(fn: () => Promise<T>, label = 's3 operation'): Promise<T> {
+  const maxRetries = 3
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn()
+    } catch (error: any) {
+      if (attempt >= maxRetries) throw error
+      const delay = Math.min(500 * 2 ** attempt + Math.random() * 200, 5000)
+      if (isVerbose) log.debug(`  Retrying ${label} (attempt ${attempt + 2}/${maxRetries + 1}) in ${Math.round(delay)}ms...`)
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+  }
+  throw new Error(`${label} failed after ${maxRetries + 1} attempts`) // unreachable but satisfies TS
+}
+
 // Build framework - show output so user knows it's working
 // Temporarily skip framework build due to bun workspace issue
 // Framework was already built in previous deployment
@@ -116,8 +184,13 @@ if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
       for (const line of content.split('\n')) {
         const trimmed = line.trim()
         if (trimmed.startsWith('#') || !trimmed.includes('=')) continue
-        const [key, ...valueParts] = trimmed.split('=')
-        const value = valueParts.join('=').trim()
+        const eqIndex = trimmed.indexOf('=')
+        const key = trimmed.slice(0, eqIndex).trim()
+        let value = trimmed.slice(eqIndex + 1).trim()
+        // Strip surrounding quotes
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1)
+        }
         if (key === 'AWS_ACCESS_KEY_ID' && value) process.env.AWS_ACCESS_KEY_ID = value
         else if (key === 'AWS_SECRET_ACCESS_KEY' && value) process.env.AWS_SECRET_ACCESS_KEY = value
         else if (key === 'AWS_REGION' && value && !process.env.AWS_REGION) process.env.AWS_REGION = value
@@ -323,7 +396,13 @@ try {
       await deployScript.beforeDeploy({ environment, region })
     }
   } catch (hookError: any) {
-    if (isVerbose) log.debug(`beforeDeploy hook skipped: ${hookError.message}`)
+    // Only skip silently if the deploy-script module doesn't exist
+    if (hookError.code === 'ERR_MODULE_NOT_FOUND' || hookError.code === 'MODULE_NOT_FOUND') {
+      if (isVerbose) log.debug('No beforeDeploy hook found (cloud/deploy-script not found)')
+    } else {
+      console.warn(`⚠ beforeDeploy hook failed: ${hookError.message}`)
+      if (isVerbose) log.debug(`beforeDeploy error stack: ${hookError.stack}`)
+    }
   }
 
   // Deploy infrastructure stack
@@ -352,7 +431,12 @@ try {
       await deployScript.afterDeploy({ environment, region, outputs: stackOutputs })
     }
   } catch (hookError: any) {
-    if (isVerbose) log.debug(`afterDeploy hook skipped: ${hookError.message}`)
+    if (hookError.code === 'ERR_MODULE_NOT_FOUND' || hookError.code === 'MODULE_NOT_FOUND') {
+      if (isVerbose) log.debug('No afterDeploy hook found (cloud/deploy-script not found)')
+    } else {
+      console.warn(`⚠ afterDeploy hook failed: ${hookError.message}`)
+      if (isVerbose) log.debug(`afterDeploy error stack: ${hookError.stack}`)
+    }
   }
 
   // Run database migrations after infrastructure is deployed
@@ -533,62 +617,16 @@ try {
       }
 
       // Upload files to S3
-      const getMimeType = (filePath: string): string => {
-        const ext = extname(filePath).toLowerCase()
-        const mimeTypes: Record<string, string> = {
-          '.html': 'text/html',
-          '.css': 'text/css',
-          '.js': 'application/javascript',
-          '.json': 'application/json',
-          '.png': 'image/png',
-          '.jpg': 'image/jpeg',
-          '.jpeg': 'image/jpeg',
-          '.gif': 'image/gif',
-          '.svg': 'image/svg+xml',
-          '.ico': 'image/x-icon',
-          '.woff': 'font/woff',
-          '.woff2': 'font/woff2',
-          '.ttf': 'font/ttf',
-          '.eot': 'application/vnd.ms-fontobject',
-          '.otf': 'font/otf',
-          '.webp': 'image/webp',
-          '.mp4': 'video/mp4',
-          '.webm': 'video/webm',
-          '.mp3': 'audio/mpeg',
-          '.wav': 'audio/wav',
-          '.pdf': 'application/pdf',
-          '.xml': 'application/xml',
-          '.txt': 'text/plain',
-        }
-        return mimeTypes[ext] || 'application/octet-stream'
-      }
-
-      const uploadDir = async (dir: string, prefix: string = '') => {
-        const items = readdirSync(dir)
-        for (const item of items) {
-          if (item === '.DS_Store') continue // Skip macOS files
-          const filePath = join(dir, item)
-          const key = prefix ? `${prefix}/${item}` : item
-
-          if (statSync(filePath).isDirectory()) {
-            await uploadDir(filePath, key)
-          } else {
-            const content = readFileSync(filePath)
-            const contentType = getMimeType(filePath)
-            const cacheControl = item === 'index.html'
-              ? 'no-cache, no-store, must-revalidate'
-              : 'public, max-age=31536000, immutable'
-
-            await s3.putObject({
-              bucket: bucketName,
-              key,
-              body: content,
-              contentType: contentType,
-              cacheControl: cacheControl,
-            })
-            if (isVerbose) log.debug(`  Uploaded: ${key}`)
-          }
-        }
+      const uploadDir = async (dir: string, prefix = '') => {
+        await traverseDirectory(dir, async (filePath, key) => {
+          const content = readFileSync(filePath)
+          const contentType = getMimeType(filePath)
+          const cacheControl = key === 'index.html' || key.endsWith('/index.html')
+            ? 'no-cache, no-store, must-revalidate'
+            : 'public, max-age=31536000, immutable'
+          await withS3Retry(() => s3.putObject({ bucket: bucketName, key, body: content, contentType, cacheControl }), `upload ${key}`)
+          if (isVerbose) log.debug(`  Uploaded: ${key}`)
+        })
       }
 
       await uploadDir(buildDir)
@@ -652,56 +690,17 @@ try {
         docsDeploySpinner.stop()
         console.log('⚠ Docs bucket not found in stack outputs (infrastructure may not be updated yet)')
       } else {
-        // MIME type helper
-        const getMimeType = (filePath: string): string => {
-          const ext = extname(filePath).toLowerCase()
-          const mimeTypes: Record<string, string> = {
-            '.html': 'text/html',
-            '.css': 'text/css',
-            '.js': 'application/javascript',
-            '.json': 'application/json',
-            '.png': 'image/png',
-            '.jpg': 'image/jpeg',
-            '.jpeg': 'image/jpeg',
-            '.gif': 'image/gif',
-            '.svg': 'image/svg+xml',
-            '.ico': 'image/x-icon',
-            '.woff': 'font/woff',
-            '.woff2': 'font/woff2',
-            '.ttf': 'font/ttf',
-            '.xml': 'application/xml',
-            '.txt': 'text/plain',
-          }
-          return mimeTypes[ext] || 'application/octet-stream'
-        }
-
         // Upload docs files to S3 (files go to root since CloudFront routes /docs/* to this bucket)
-        const uploadDocsDir = async (dir: string, prefix: string = '') => {
-          const items = readdirSync(dir)
-          for (const item of items) {
-            if (item === '.DS_Store' || item === '.bunpress') continue
-            const filePath = join(dir, item)
-            const key = prefix ? `${prefix}/${item}` : item
-
-            if (statSync(filePath).isDirectory()) {
-              await uploadDocsDir(filePath, key)
-            } else {
-              const content = readFileSync(filePath)
-              const contentType = getMimeType(filePath)
-              const cacheControl = item.endsWith('.html')
-                ? 'no-cache, no-store, must-revalidate'
-                : 'public, max-age=31536000, immutable'
-
-              await s3.putObject({
-                bucket: docsBucketName,
-                key,
-                body: content,
-                contentType: contentType,
-                cacheControl: cacheControl,
-              })
-              if (isVerbose) log.debug(`  Uploaded docs: ${key}`)
-            }
-          }
+        const uploadDocsDir = async (dir: string, prefix = '') => {
+          await traverseDirectory(dir, async (filePath, key) => {
+            const content = readFileSync(filePath)
+            const contentType = getMimeType(filePath)
+            const cacheControl = key.endsWith('.html')
+              ? 'no-cache, no-store, must-revalidate'
+              : 'public, max-age=31536000, immutable'
+            await withS3Retry(() => s3.putObject({ bucket: docsBucketName, key, body: content, contentType, cacheControl }), `upload docs ${key}`)
+            if (isVerbose) log.debug(`  Uploaded docs: ${key}`)
+          }, '', ['.DS_Store', '.bunpress'])
         }
 
         await uploadDocsDir(docsDistPath)
@@ -826,25 +825,25 @@ try {
 
     // Upload 404.html to frontend bucket
     if (frontendBucket) {
-      await s3.putObject({
+      await withS3Retry(() => s3.putObject({
         bucket: frontendBucket,
         key: '404.html',
         body: html404Content,
         contentType: 'text/html',
         cacheControl: 'no-cache, no-store, must-revalidate',
-      })
+      }), 'upload 404.html to frontend bucket')
       if (isVerbose) log.debug(`  Uploaded 404.html to frontend bucket: ${frontendBucket}`)
     }
 
     // Upload 404.html to docs bucket
     if (docsBucket) {
-      await s3.putObject({
+      await withS3Retry(() => s3.putObject({
         bucket: docsBucket,
         key: '404.html',
         body: html404Content,
         contentType: 'text/html',
         cacheControl: 'no-cache, no-store, must-revalidate',
-      })
+      }), 'upload 404.html to docs bucket')
       if (isVerbose) log.debug(`  Uploaded 404.html to docs bucket: ${docsBucket}`)
     }
 

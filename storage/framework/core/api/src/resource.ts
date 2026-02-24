@@ -22,7 +22,7 @@
  * return UserResource.collection(users).toResponse()
  */
 
-type Request = any
+type Request = Record<string, unknown>
 
 /**
  * Wrapper value types for conditional inclusion
@@ -82,7 +82,7 @@ export interface PaginatedData<T> {
  * Extend this class to create custom API resources that transform
  * your models into JSON-serializable objects.
  */
-export abstract class JsonResource<T = any> {
+export abstract class JsonResource<T = unknown> {
   /** The resource instance being transformed */
   public resource: T
 
@@ -270,7 +270,13 @@ export abstract class JsonResource<T = any> {
   /**
    * Filter out MissingValue and resolve conditional values
    */
-  private filterAndResolve(data: Record<string, any>): Record<string, any> {
+  private static readonly MAX_RESOLVE_DEPTH = 20
+
+  private filterAndResolve(data: Record<string, any>, depth = 0): Record<string, any> {
+    if (depth >= JsonResource.MAX_RESOLVE_DEPTH) {
+      return data // stop recursing — return data as-is to avoid stack overflow
+    }
+
     const result: Record<string, any> = {}
 
     for (const [key, value] of Object.entries(data)) {
@@ -281,7 +287,7 @@ export abstract class JsonResource<T = any> {
 
       // Handle merge values
       if (value instanceof MergeValue) {
-        Object.assign(result, this.filterAndResolve(value.data))
+        Object.assign(result, this.filterAndResolve(value.data, depth + 1))
         continue
       }
 
@@ -296,7 +302,7 @@ export abstract class JsonResource<T = any> {
 
       // Handle nested objects
       if (value !== null && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
-        result[key] = this.filterAndResolve(value)
+        result[key] = this.filterAndResolve(value, depth + 1)
         continue
       }
 
@@ -307,7 +313,7 @@ export abstract class JsonResource<T = any> {
           .map(item => {
             if (item instanceof MergeValue) return item.data
             if (item !== null && typeof item === 'object' && !(item instanceof Date)) {
-              return this.filterAndResolve(item)
+              return this.filterAndResolve(item, depth + 1)
             }
             return item
           })
@@ -340,7 +346,7 @@ export abstract class JsonResource<T = any> {
  *
  * Wraps an array of resources with collection-specific functionality.
  */
-export class ResourceCollection<T = any, R extends JsonResource<T> = JsonResource<T>> {
+export class ResourceCollection<T = unknown, R extends JsonResource<T> = JsonResource<T>> {
   public resources: T[]
   public ResourceClass: new (resource: T) => R
   public additional: Record<string, any> = {}
@@ -433,7 +439,7 @@ export class ResourceCollection<T = any, R extends JsonResource<T> = JsonResourc
  *
  * Handles paginated data with meta and links.
  */
-export class PaginatedResourceCollection<T = any, R extends JsonResource<T> = JsonResource<T>> extends ResourceCollection<T, R> {
+export class PaginatedResourceCollection<T = unknown, R extends JsonResource<T> = JsonResource<T>> extends ResourceCollection<T, R> {
   public meta: PaginationMeta
   public links: PaginationLinks
 

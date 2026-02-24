@@ -100,10 +100,16 @@ export async function deployStack(options: StackDeployOptions): Promise<void> {
       () => cfn.describeStacks({ stackName: finalStackName }),
       { label: 'describeStacks' },
     )
-    stackExists = stacks.length > 0
-  } catch (error) {
-    // Stack doesn't exist
-    stackExists = false
+    stackExists = stacks.Stacks && stacks.Stacks.length > 0
+  } catch (error: any) {
+    const msg = error.message || ''
+    // Only treat "does not exist" as stack-not-found
+    if (msg.includes('does not exist') || msg.includes('Stack with id') || msg.includes('not found')) {
+      stackExists = false
+    } else {
+      // Auth errors, rate limits, network issues — don't silently swallow
+      throw error
+    }
   }
 
   if (stackExists) {
@@ -159,8 +165,8 @@ export async function deployStack(options: StackDeployOptions): Promise<void> {
 
   // Get stack outputs
   if (waitForCompletion) {
-    const stacks = await cfn.describeStacks({ stackName: finalStackName })
-    const stack = stacks[0]
+    const outputsResult = await cfn.describeStacks({ stackName: finalStackName })
+    const stack = outputsResult.Stacks?.[0]
 
     if (stack?.Outputs && stack.Outputs.length > 0) {
       console.log('\n📋 Stack Outputs:')
@@ -191,11 +197,11 @@ async function waitForStackComplete(
   let lastDisplayedEvent: string | null = null
 
   while (Date.now() - startTime < timeoutMs) {
-    const stacks = await withRetry(
+    const pollResult = await withRetry(
       () => cfn.describeStacks({ stackName }),
       { label: 'poll describeStacks' },
     )
-    const stack = stacks[0]
+    const stack = pollResult.Stacks?.[0]
 
     if (!stack) {
       throw new Error(`Stack ${stackName} not found`)
@@ -203,8 +209,8 @@ async function waitForStackComplete(
 
     // Show recent events
     try {
-      const events = await cfn.describeStackEvents(stackName)
-      const recentEvent = events[0]
+      const eventsResult = await cfn.describeStackEvents(stackName)
+      const recentEvent = eventsResult.StackEvents?.[0]
 
       if (recentEvent && recentEvent.Timestamp !== lastDisplayedEvent) {
         const status = recentEvent.ResourceStatus
@@ -283,11 +289,11 @@ async function waitForStackDelete(
 
   while (Date.now() - startTime < timeoutMs) {
     try {
-      const stacks = await withRetry(
+      const deleteResult = await withRetry(
         () => cfn.describeStacks({ stackName }),
         { label: 'poll delete describeStacks' },
       )
-      const stack = stacks[0]
+      const stack = deleteResult.Stacks?.[0]
 
       if (!stack) {
         console.log('   ✅ Stack deleted')
@@ -327,8 +333,8 @@ export async function getStackInfo(options: {
   console.log('📊 Stack Information\n')
 
   const cfn = new CloudFormationClient(region)
-  const stacks = await cfn.describeStacks({ stackName })
-  const stack = stacks[0]
+  const infoResult = await cfn.describeStacks({ stackName })
+  const stack = infoResult.Stacks?.[0]
 
   if (!stack) {
     console.log('   ❌ Stack not found')

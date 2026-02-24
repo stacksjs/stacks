@@ -2049,7 +2049,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
 
     // Helper to get the right template parameter for CF API calls
     const templateParam = templateUrl
-      ? { templateURL: templateUrl }
+      ? { templateUrl }
       : { templateBody }
 
     // Check if stack exists
@@ -2063,9 +2063,51 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
         stackExists = true
         isUpdate = true
 
-        // If stack is in a failed or rollback state, delete it first
-        if (stack.StackStatus.includes('ROLLBACK') || stack.StackStatus.includes('FAILED')) {
-          console.log(`Stack is in ${stack.StackStatus} state. Cleaning up...`)
+        // If an operation is already in progress, wait for it to finish first
+        if (stack.StackStatus.endsWith('_IN_PROGRESS')) {
+          console.log(`Stack is busy (${stack.StackStatus}). Waiting for current operation to finish...`)
+          const inProgressType = stack.StackStatus.startsWith('DELETE')
+            ? 'stack-delete-complete'
+            : stack.StackStatus.startsWith('CREATE')
+              ? 'stack-create-complete'
+              : 'stack-update-complete'
+          try {
+            await cf.waitForStackWithProgress(stackName, inProgressType as any, createProgressCallback())
+          } catch {
+            // If wait fails, re-check status below
+          }
+          // Re-check stack state after waiting
+          const refreshResult = await cf.describeStacks({ stackName })
+          if (!refreshResult.Stacks || refreshResult.Stacks.length === 0) {
+            stackExists = false
+            isUpdate = false
+          } else {
+            const refreshedStatus = refreshResult.Stacks[0].StackStatus
+            if (verbose) console.log(`Stack settled to: ${formatResourceStatus(refreshedStatus)}`)
+            // Re-evaluate with the settled status (fall through to checks below)
+            stack.StackStatus = refreshedStatus
+          }
+        }
+
+        // UPDATE_ROLLBACK_COMPLETE means a previous update failed but the stack
+        // rolled back successfully -- it is safe to run another update.
+        if (stack.StackStatus === 'UPDATE_ROLLBACK_COMPLETE') {
+          console.log('Stack rolled back from a previous update. Re-deploying...')
+          // stackExists stays true, isUpdate stays true -- will run updateStack below
+        }
+        // DELETE_COMPLETE means the stack was fully deleted; treat as non-existent.
+        else if (stack.StackStatus === 'DELETE_COMPLETE') {
+          stackExists = false
+          isUpdate = false
+        }
+        // ROLLBACK_COMPLETE / CREATE_FAILED / ROLLBACK_FAILED mean the initial
+        // creation failed. The only option is to delete and recreate.
+        else if (
+          stack.StackStatus === 'ROLLBACK_COMPLETE'
+          || stack.StackStatus === 'ROLLBACK_FAILED'
+          || stack.StackStatus === 'CREATE_FAILED'
+        ) {
+          console.log(`Stack is in ${stack.StackStatus} state. Deleting before recreating...`)
           await cf.deleteStack(stackName)
           await cf.waitForStackWithProgress(stackName, 'stack-delete-complete', createProgressCallback('delete'))
 
@@ -2130,6 +2172,11 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
           stackName,
           ...templateParam,
           capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
+          tags: [
+            { Key: 'Environment', Value: environment },
+            { Key: 'Project', Value: projectName },
+            { Key: 'ManagedBy', Value: 'stacks' },
+          ],
         })
 
         if (waitForCompletion) {
@@ -2192,44 +2239,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
           }
         }
 
-        // Clean up DNS records from Route53 if they exist
-        const cloudConfig = await getCloudConfig()
-        const hostedZoneId = cloudConfig?.infrastructure?.dns?.hostedZoneId
-        const siteDomain = cloudConfig?.infrastructure?.dns?.domain || 'stacksjs.com'
-
-        if (hostedZoneId) {
-          if (verbose) console.log(`  Checking DNS records in hosted zone: ${hostedZoneId}`)
-
-          const { Route53Client } = await import('@stacksjs/ts-cloud')
-          const route53 = new Route53Client(region)
-
-          // List and delete existing A records for stacksjs.com and www.stacksjs.com
-          try {
-            const records = await route53.listResourceRecordSets({ HostedZoneId: hostedZoneId })
-            const aRecords = (records.ResourceRecordSets || []).filter((r: any) =>
-              r.Type === 'A' && (r.Name === `${siteDomain}.` || r.Name === `www.${siteDomain}.`)
-            )
-
-            if (aRecords.length > 0) {
-              if (verbose) console.log(`  Found ${aRecords.length} existing DNS records to delete`)
-
-              const changes = aRecords.map((record: any) => ({
-                Action: 'DELETE' as const,
-                ResourceRecordSet: record
-              }))
-
-              await route53.changeResourceRecordSets({
-                HostedZoneId: hostedZoneId,
-                ChangeBatch: { Changes: changes }
-              })
-
-              if (verbose) console.log(`  ✓ Deleted DNS records for ${siteDomain}`)
-            }
-          } catch (dnsError: any) {
-            // DNS cleanup errors shouldn't fail deployment
-            if (verbose) console.log(`  ⚠ DNS cleanup warning: ${dnsError.message}`)
-          }
-        }
+        // Note: DNS records are managed by CloudFormation -- no pre-create cleanup needed
       } catch (cleanupError: any) {
         console.log(`⚠ Pre-deployment cleanup error: ${cleanupError.message}`)
         // Don't fail deployment for cleanup issues
@@ -2242,8 +2252,13 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
         stackName,
         ...templateParam,
         capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
+        tags: [
+          { Key: 'Environment', Value: environment },
+          { Key: 'Project', Value: projectName },
+          { Key: 'ManagedBy', Value: 'stacks' },
+        ],
         onFailure: 'ROLLBACK',
-        timeoutInMinutes: 15,
+        timeoutInMinutes: 30,
       })
       if (verbose) console.log(`Stack ID: ${result.StackId}`)
 
@@ -2329,6 +2344,9 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
 export async function deployFrontend(options: DeployFrontendOptions): Promise<void> {
   const { environment, region, buildDir } = options
 
+  const projectConfig = await getProjectConfig()
+  const projectName = projectConfig.name
+
   log.info(`Deploying frontend from ${buildDir} to ${environment} in ${region}...`)
 
   try {
@@ -2372,7 +2390,9 @@ export async function getDeploymentStatus(_options: { environment: string, regio
   outputs: Record<string, string>
 }> {
   const { environment, region } = _options
-  const stackName = `stacks-cloud-${environment}`
+  const projectConfig = await getProjectConfig()
+  const projectName = projectConfig.name
+  const stackName = `${projectName}-cloud`
 
   const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
   const cf = new CloudFormationClient(region)
@@ -2404,6 +2424,7 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
   const { environment, region, verbose } = options
 
   const projectConfig = await getProjectConfig()
+  const projectName = projectConfig.name
   const stackName = `${projectName}-cloud`
 
   console.log(`Undeploying ${stackName} from ${region}...`)
@@ -2421,6 +2442,33 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
         const stack = describeResult.Stacks[0]
         console.log(`Current status: ${formatResourceStatus(stack.StackStatus)}`)
         stackExists = true
+
+        // If an operation is in progress, wait for it to complete first
+        if (stack.StackStatus.endsWith('_IN_PROGRESS')) {
+          console.log(`Waiting for current operation (${stack.StackStatus}) to finish...`)
+          const waitType = stack.StackStatus.startsWith('DELETE')
+            ? 'stack-delete-complete'
+            : stack.StackStatus.startsWith('CREATE')
+              ? 'stack-create-complete'
+              : 'stack-update-complete'
+          try {
+            await cf.waitForStackWithProgress(stackName, waitType as any, createProgressCallback())
+          } catch {
+            // Ignore -- we re-check below
+          }
+          // Re-check after waiting
+          const refreshResult = await cf.describeStacks({ stackName })
+          if (!refreshResult.Stacks || refreshResult.Stacks.length === 0
+            || refreshResult.Stacks[0].StackStatus === 'DELETE_COMPLETE') {
+            console.log('Stack was already deleted during the in-progress operation.')
+            return
+          }
+        }
+
+        // Stack was already deleted
+        if (stack.StackStatus === 'DELETE_COMPLETE') {
+          stackExists = false
+        }
       }
     }
     catch {
