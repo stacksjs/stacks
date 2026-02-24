@@ -25,8 +25,8 @@ import {
 } from 'bun-query-builder'
 import { db } from './utils'
 
-// Use environment variables directly to avoid circular dependencies with @stacksjs/config
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+// Use environment variables via @stacksjs/env for proper type coercion
+import { env as envVars } from '@stacksjs/env'
 
 // Build database config from environment variables
 const dbDriver = envVars.DB_CONNECTION || 'sqlite'
@@ -42,7 +42,7 @@ const dbConfig = {
       host: envVars.DB_HOST || '127.0.0.1',
       username: envVars.DB_USERNAME || 'root',
       password: envVars.DB_PASSWORD || '',
-      port: Number(envVars.DB_PORT) || 3306,
+      port: envVars.DB_PORT ||3306,
       prefix: '',
     },
     postgres: {
@@ -50,7 +50,7 @@ const dbConfig = {
       host: envVars.DB_HOST || '127.0.0.1',
       username: envVars.DB_USERNAME || '',
       password: envVars.DB_PASSWORD || '',
-      port: Number(envVars.DB_PORT) || 5432,
+      port: envVars.DB_PORT ||5432,
       prefix: '',
     },
   },

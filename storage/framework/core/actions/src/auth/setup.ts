@@ -4,8 +4,8 @@ import { db } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 
 // Detect database driver from environment
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
-const dbDriver = envVars.DB_CONNECTION || 'sqlite'
+import { env } from '@stacksjs/env'
+const dbDriver = env.DB_CONNECTION || 'sqlite'
 const isPostgres = dbDriver === 'postgres'
 const isMysql = dbDriver === 'mysql'
 

@@ -47,7 +47,8 @@ if (storage.hasFiles(docsDir) && !docsDistExists) {
     docsSpinner.succeed('Documentation built with BunPress')
   } catch (docsError: any) {
     // BunPress might not be installed - skip gracefully
-    ;(docsSpinner as any).warn(`Documentation build skipped: ${docsError.message}`)
+    docsSpinner.stop()
+    console.log(`⚠ Documentation build skipped: ${docsError.message}`)
     if (isVerbose) log.debug('To build docs manually: cd ~/Code/bunpress && bun bin/cli.ts build --dir /path/to/docs --outdir /path/to/dist/docs')
   }
 } else if (docsDistExists) {
@@ -179,7 +180,8 @@ try {
       const { stdout, stderr } = await execAsync(buildCmd, {
         cwd: p.projectPath(),
         env: process.env,
-        maxBuffer: 1024 * 1024 * 10 // 10MB buffer for Docker output
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer for Docker output
+        timeout: 15 * 60 * 1000, // 15 minute timeout for Docker build
       })
       if (isVerbose && stdout) log.debug(stdout)
       if (isVerbose && stderr) log.debug(stderr)
@@ -368,7 +370,8 @@ try {
   } catch (migrationError: any) {
     // Don't fail the entire deployment if migrations fail
     // The database might not be accessible from the deploy machine
-    ;(migrateSpinner as any).warn(`Database migrations skipped: ${migrationError.message}`)
+    migrateSpinner.stop()
+    console.log(`⚠ Database migrations skipped: ${migrationError.message}`)
     if (isVerbose) log.debug(`Migration error: ${migrationError.stack}`)
   }
 
@@ -396,7 +399,8 @@ try {
       }
       console.log('')
     } catch (outputError: any) {
-      ;(serverOutputSpinner as any).warn(`Could not retrieve server details: ${outputError.message}`)
+      serverOutputSpinner.stop()
+      console.log(`⚠ Could not retrieve server details: ${outputError.message}`)
       if (isVerbose) log.debug(`Output retrieval error: ${outputError.stack}`)
     }
   }
@@ -419,7 +423,8 @@ try {
     const bucketName = outputs.FrontendBucketName
 
     if (!bucketName) {
-      ;(frontendSpinner as any).warn('Frontend bucket not found in stack outputs (add storage.public to infrastructure config)')
+      frontendSpinner.stop()
+      console.log('⚠ Frontend bucket not found in stack outputs (add storage.public to infrastructure config)')
     } else {
       // Build directory for frontend files
       const buildDir = p.storagePath('framework/frontend-dist')
@@ -439,7 +444,7 @@ try {
         // Pre-render the STX template to static HTML
         // 1. Extract server-side variables from <script server> block
         const serverBlockMatch = stxContent.match(/<script server>([\s\S]*?)<\/script>/)
-        const serverVars: Record<string, any> = {}
+        const serverVars: Record<string, string> = {}
 
         if (serverBlockMatch) {
           const serverCode = serverBlockMatch[1]
@@ -457,10 +462,14 @@ try {
         let featuresArray: any[] = []
         if (featuresMatch) {
           try {
-            // Use Function constructor to safely evaluate the array literal
-            featuresArray = new Function(`return ${featuresMatch[1]}`)()
+            // Parse the array literal safely by converting JS object syntax to JSON
+            const arrayStr = featuresMatch[1]
+              .replace(/'/g, '"') // single quotes to double quotes
+              .replace(/(\w+)\s*:/g, '"$1":') // unquoted keys to quoted keys
+              .replace(/,\s*([}\]])/g, '$1') // trailing commas
+            featuresArray = JSON.parse(arrayStr)
           } catch {
-            // Fallback: try to parse features manually
+            if (isVerbose) log.debug('Could not parse features array from template')
           }
         }
 
@@ -638,7 +647,8 @@ try {
       const docsBucketName = outputs.DocsBucketName
 
       if (!docsBucketName) {
-        ;(docsDeploySpinner as any).warn('Docs bucket not found in stack outputs (infrastructure may not be updated yet)')
+        docsDeploySpinner.stop()
+        console.log('⚠ Docs bucket not found in stack outputs (infrastructure may not be updated yet)')
       } else {
         // MIME type helper
         const getMimeType = (filePath: string): string => {
@@ -928,7 +938,8 @@ try {
 
     errorPageSpinner.succeed('404 error page configured')
   } catch (errorPageError: any) {
-    ;(errorPageSpinner as any).warn(`404 page configuration skipped: ${errorPageError.message}`)
+    errorPageSpinner.stop()
+    console.log(`⚠ 404 page configuration skipped: ${errorPageError.message}`)
     if (isVerbose) log.debug(`Error page config error: ${errorPageError.stack}`)
   }
   console.log('')

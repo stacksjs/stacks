@@ -7,6 +7,7 @@
  */
 
 import type { SupportedDialect } from 'bun-query-builder'
+import { env } from '@stacksjs/env'
 
 /**
  * SQLite specific configuration
@@ -235,7 +236,6 @@ export function mergeWithDefaults<T extends keyof DatabaseConnections>(
  * Get the appropriate configuration for a driver from environment variables
  */
 export function getConfigFromEnv(driver: SupportedDialect): DatabaseConnections[keyof DatabaseConnections] {
-  const env = typeof Bun !== 'undefined' ? Bun.env : process.env
 
   switch (driver) {
     case 'sqlite':
@@ -248,7 +248,7 @@ export function getConfigFromEnv(driver: SupportedDialect): DatabaseConnections[
       return {
         name: env.DB_DATABASE || 'stacks',
         host: env.DB_HOST || '127.0.0.1',
-        port: Number(env.DB_PORT) || 3306,
+        port: env.DB_PORT ||3306,
         username: env.DB_USERNAME || 'root',
         password: env.DB_PASSWORD || '',
         prefix: env.DB_PREFIX || '',
@@ -258,7 +258,7 @@ export function getConfigFromEnv(driver: SupportedDialect): DatabaseConnections[
       return {
         name: env.DB_DATABASE || 'stacks',
         host: env.DB_HOST || '127.0.0.1',
-        port: Number(env.DB_PORT) || 5432,
+        port: env.DB_PORT ||5432,
         username: env.DB_USERNAME || 'postgres',
         password: env.DB_PASSWORD || '',
         prefix: env.DB_PREFIX || '',
@@ -274,8 +274,6 @@ export function getConfigFromEnv(driver: SupportedDialect): DatabaseConnections[
  * Detect the best available driver based on environment
  */
 export function detectDriver(): SupportedDialect {
-  const env = typeof Bun !== 'undefined' ? Bun.env : process.env
-
   // Check for explicit configuration
   if (env.DB_CONNECTION) {
     return env.DB_CONNECTION as SupportedDialect

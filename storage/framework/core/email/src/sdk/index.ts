@@ -225,7 +225,15 @@ export class EmailSDK {
 
       // Get metadata
       const metaResult = await s3.getObject(this.bucket, `${basePath}/metadata.json`)
-      const metadata = metaResult ? JSON.parse(metaResult) : {}
+      let metadata: Record<string, unknown> = {}
+      if (metaResult) {
+        try {
+          metadata = JSON.parse(metaResult)
+        }
+        catch (parseError: any) {
+          console.debug(`[email-sdk] Failed to parse email metadata: ${parseError.message}`)
+        }
+      }
 
       // Try to get HTML body
       let html: string | undefined
@@ -233,8 +241,11 @@ export class EmailSDK {
         const htmlResult = await s3.getObject(this.bucket, `${basePath}/body.html`)
         html = htmlResult || undefined
       }
-      catch {
-        // No HTML version
+      catch (error: any) {
+        // Expected when email has no HTML version (NoSuchKey)
+        if (!error.message?.includes('NoSuchKey') && !error.message?.includes('404')) {
+          console.debug(`[email-sdk] Failed to fetch HTML body: ${error.message}`)
+        }
       }
 
       // Try to get text body
@@ -243,8 +254,11 @@ export class EmailSDK {
         const textResult = await s3.getObject(this.bucket, `${basePath}/body.txt`)
         text = textResult || undefined
       }
-      catch {
-        // No text version
+      catch (error: any) {
+        // Expected when email has no text version (NoSuchKey)
+        if (!error.message?.includes('NoSuchKey') && !error.message?.includes('404')) {
+          console.debug(`[email-sdk] Failed to fetch text body: ${error.message}`)
+        }
       }
 
       return { metadata, html, text }
@@ -329,8 +343,11 @@ export class EmailSDK {
         try {
           await s3.deleteObject(this.bucket, key)
         }
-        catch {
-          // Ignore errors for files that don't exist
+        catch (error: any) {
+          // Expected for optional files (body.html, body.txt) that may not exist
+          if (!error.message?.includes('NoSuchKey') && !error.message?.includes('404')) {
+            console.debug(`[email-sdk] Failed to delete ${key}: ${error.message}`)
+          }
         }
       }
 
@@ -346,7 +363,8 @@ export class EmailSDK {
 
       return true
     }
-    catch {
+    catch (error: any) {
+      console.debug(`[email-sdk] Failed to delete email ${messageId}: ${error.message}`)
       return false
     }
   }
@@ -390,7 +408,8 @@ export class EmailSDK {
 
       return true
     }
-    catch {
+    catch (error: any) {
+      console.debug(`[email-sdk] Failed to update email status for ${messageId}: ${error.message}`)
       return false
     }
   }

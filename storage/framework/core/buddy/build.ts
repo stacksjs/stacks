@@ -40,9 +40,9 @@ const result = await Bun.build({
     '@stacksjs/utils',
     '@stacksjs/validation',
     '@stacksjs/ts-cloud',
+    '@stacksjs/clapp',
     'ts-security-crypto',
     'bun-query-builder',
-    'cac',
   ],
 
   plugins: [dts({ root: '.', outdir: './dist' })],

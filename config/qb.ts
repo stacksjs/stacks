@@ -1,22 +1,17 @@
 import type { QueryBuilderConfig, SupportedDialect } from 'bun-query-builder'
+import { env } from '@stacksjs/env'
 
-// Use direct environment variable access to avoid circular dependencies
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
-
-
-
-
-const dialect = (envVars.DB_CONNECTION as SupportedDialect) || 'sqlite'
+const dialect = (env.DB_CONNECTION as SupportedDialect) || 'sqlite'
 
 // For SQLite, use file path; for other databases, use connection params
 const databaseConfig = dialect === 'sqlite'
-  ? { database: envVars.DB_DATABASE_PATH || 'database/stacks.sqlite' }
+  ? { database: env.DB_DATABASE_PATH || 'database/stacks.sqlite' }
   : {
-      database: envVars.DB_DATABASE || 'stacks',
-      username: envVars.DB_USERNAME || '',
-      password: envVars.DB_PASSWORD || '',
-      host: envVars.DB_HOST || 'localhost',
-      port: Number(envVars.DB_PORT) || 5432,
+      database: env.DB_DATABASE || 'stacks',
+      username: env.DB_USERNAME || '',
+      password: env.DB_PASSWORD || '',
+      host: env.DB_HOST || 'localhost',
+      port: env.DB_PORT || 5432,
     }
 
 export default {

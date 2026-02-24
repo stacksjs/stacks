@@ -1,7 +1,5 @@
 import type { Ports } from '@stacksjs/types'
-
-// Use direct environment variable access to avoid circular dependencies
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+import { env } from '@stacksjs/env'
 
 /**
  * **Stacks Ports**
@@ -11,15 +9,15 @@ const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  frontend: Number(envVars.PORT ?? 3000),
-  backend: Number(envVars.PORT_BACKEND ?? 3001),
-  admin: Number(envVars.PORT_ADMIN ?? 3002),
-  library: Number(envVars.PORT_LIBRARY ?? 3003),
-  desktop: Number(envVars.PORT_DESKTOP ?? 3004),
-  email: Number(envVars.PORT_EMAIL ?? 3005),
-  docs: Number(envVars.PORT_DOCS ?? 3006),
-  inspect: Number(envVars.PORT_INSPECT ?? 3007),
-  api: Number(envVars.PORT_API ?? 3008),
-  systemTray: Number(envVars.PORT_SYSTEM_TRAY ?? 3009),
+  frontend: env.PORT ?? 3000,
+  backend: env.PORT_BACKEND ?? 3001,
+  admin: env.PORT_ADMIN ?? 3002,
+  library: env.PORT_LIBRARY ?? 3003,
+  desktop: env.PORT_DESKTOP ?? 3004,
+  email: env.PORT_EMAIL ?? 3005,
+  docs: env.PORT_DOCS ?? 3006,
+  inspect: env.PORT_INSPECT ?? 3007,
+  api: env.PORT_API ?? 3008,
+  systemTray: env.PORT_SYSTEM_TRAY ?? 3009,
   database: 3010,
 } satisfies Ports

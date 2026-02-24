@@ -6,8 +6,8 @@ import { join } from 'node:path'
 import process from 'node:process'
 import Database from 'bun:sqlite'
 
-// Use environment variables directly to avoid circular dependencies
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+// Use environment variables via @stacksjs/env for proper type coercion
+import { env as envVars } from '@stacksjs/env'
 
 function getDriver(): string {
   return envVars.DB_CONNECTION || 'sqlite'

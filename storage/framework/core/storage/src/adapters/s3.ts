@@ -229,7 +229,11 @@ export class S3StorageAdapter implements StorageAdapter {
       const result = await this.client.headObject(this.bucket, key)
       return !!result
     }
-    catch {
+    catch (error: any) {
+      // Expected for non-existent files (404/NoSuchKey)
+      if (!error.message?.includes('404') && !error.message?.includes('NoSuchKey') && !error.message?.includes('NotFound')) {
+        console.debug(`[s3] Unexpected error checking file existence for ${path}: ${error.message}`)
+      }
       return false
     }
   }

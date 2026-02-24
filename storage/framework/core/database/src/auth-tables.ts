@@ -14,7 +14,7 @@ import { log } from '@stacksjs/logging'
 import { db } from './utils'
 
 // Detect database driver from environment
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+import { env as envVars } from '@stacksjs/env'
 
 function getDbDriver(): string {
   return envVars.DB_CONNECTION || 'sqlite'

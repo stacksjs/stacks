@@ -20,7 +20,7 @@ process.on('uncaughtException', (error) => {
 })
 
 // Environment variables
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+import { env as envVars } from '@stacksjs/env'
 
 // Worker state
 let activeJobCount = 0

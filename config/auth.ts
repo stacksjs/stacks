@@ -1,7 +1,5 @@
 import type { AuthConfig } from '@stacksjs/types'
-
-// Use direct environment variable access to avoid circular dependencies
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+import { env } from '@stacksjs/env'
 
 /**
  * **Authentication Configuration**
@@ -39,22 +37,22 @@ export default {
   /**
    * The username field used for authentication.
    */
-  username: envVars.AUTH_USERNAME_FIELD || 'email',
+  username: env.AUTH_USERNAME_FIELD || 'email',
 
   /**
    * The password field used for authentication.
    */
-  password: envVars.AUTH_PASSWORD_FIELD || 'password',
+  password: env.AUTH_PASSWORD_FIELD || 'password',
 
   /**
    * The token expiry time in milliseconds (default: 30 days).
    */
-  tokenExpiry: Number(envVars.AUTH_TOKEN_EXPIRY) || 30 * 24 * 60 * 60 * 1000,
+  tokenExpiry: env.AUTH_TOKEN_EXPIRY ||30 * 24 * 60 * 60 * 1000,
 
   /**
    * The token rotation time in hours (default: 24 hours).
    */
-  tokenRotation: Number(envVars.AUTH_TOKEN_ROTATION) || 24,
+  tokenRotation: env.AUTH_TOKEN_ROTATION ||24,
 
   /**
    * The token abilities that are granted by default.
@@ -76,7 +74,7 @@ export default {
      *
      * @default 60
      */
-    expire: Number(envVars.AUTH_PASSWORD_RESET_EXPIRE) || 60,
+    expire: env.AUTH_PASSWORD_RESET_EXPIRE ||60,
 
     /**
      * Throttle time in seconds between password reset requests.
@@ -84,6 +82,6 @@ export default {
      *
      * @default 60
      */
-    throttle: Number(envVars.AUTH_PASSWORD_RESET_THROTTLE) || 60,
+    throttle: env.AUTH_PASSWORD_RESET_THROTTLE ||60,
   },
 } satisfies AuthConfig

@@ -15,7 +15,7 @@ type AnySchema = DatabaseSchema<any> & Record<string, { columns: Record<string, 
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
 // Read from environment variables first
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+import { env as envVars } from '@stacksjs/env'
 
 interface DbConnectionConfig {
   database?: string
@@ -48,7 +48,7 @@ let dbConfig: DbConfig = {
       host: envVars.DB_HOST || '127.0.0.1',
       username: envVars.DB_USERNAME || 'root',
       password: envVars.DB_PASSWORD || '',
-      port: Number(envVars.DB_PORT) || 3306,
+      port: envVars.DB_PORT ||3306,
       prefix: '',
     },
     postgres: {
@@ -56,7 +56,7 @@ let dbConfig: DbConfig = {
       host: envVars.DB_HOST || '127.0.0.1',
       username: envVars.DB_USERNAME || '',
       password: envVars.DB_PASSWORD || '',
-      port: Number(envVars.DB_PORT) || 5432,
+      port: envVars.DB_PORT ||5432,
       prefix: '',
     },
   },

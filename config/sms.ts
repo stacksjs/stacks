@@ -1,7 +1,5 @@
 import type { SmsConfig } from '@stacksjs/types'
-
-// Use direct environment variable access to avoid circular dependencies
-const env = typeof Bun !== 'undefined' ? Bun.env : process.env
+import { env } from '@stacksjs/env'
 
 /**
  * **SMS Configuration**

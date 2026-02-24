@@ -24,14 +24,14 @@ async function loadConfig() {
   }
   catch {
     // Config not available, use defaults from env
-    const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+    const { env } = await import('@stacksjs/env')
 
-    const client = new S3Client(envVars.AWS_REGION || 'us-east-1')
+    const client = new S3Client(env.AWS_REGION || 'us-east-1')
 
     _adapter = createS3Storage(client, {
-      bucket: envVars.AWS_S3_BUCKET || 'stacks',
-      prefix: envVars.AWS_S3_PREFIX || 'stx',
-      region: envVars.AWS_REGION || 'us-east-1',
+      bucket: env.AWS_S3_BUCKET || 'stacks',
+      prefix: env.AWS_S3_PREFIX || 'stx',
+      region: env.AWS_REGION || 'us-east-1',
     })
   }
 }

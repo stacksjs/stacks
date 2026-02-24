@@ -1,7 +1,5 @@
 import type { PhoneConfig } from '@stacksjs/types'
-
-// Use direct environment variable access to avoid circular dependencies
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+import { env } from '@stacksjs/env'
 
 /**
  * **Phone Configuration**
@@ -15,7 +13,7 @@ export default {
   provider: 'connect', // Amazon Connect
 
   instance: {
-    alias: envVars.CONNECT_INSTANCE_ALIAS || `${envVars.APP_NAME?.toLowerCase() || 'stacks'}-phone`,
+    alias: env.CONNECT_INSTANCE_ALIAS || `${env.APP_NAME?.toLowerCase() || 'stacks'}-phone`,
     inboundCallsEnabled: true,
     outboundCallsEnabled: true,
   },
@@ -25,7 +23,7 @@ export default {
       type: 'TOLL_FREE',
       countryCode: 'US',
       description: 'Main business line',
-      notifyOnCall: ['chris@stacksjs.com'],
+      notifyOnCall: [env.PHONE_NOTIFY_EMAIL || 'admin@example.com'],
     },
   ],
 
@@ -58,14 +56,14 @@ export default {
       {
         name: 'Forward to Chris (Business Hours)',
         condition: 'always', // Forward all calls during business hours
-        forwardTo: '+18088218241',
+        forwardTo: env.PHONE_FORWARD_NUMBER || '',
         ringTimeout: 20, // seconds before going to voicemail
         priority: 1,
       },
       {
-        name: 'Forward to Chris (After Hours)',
+        name: 'Forward (After Hours)',
         condition: 'after_hours', // Forward outside business hours
-        forwardTo: '+18088218241',
+        forwardTo: env.PHONE_FORWARD_NUMBER || '',
         ringTimeout: 15,
         priority: 2,
       },

@@ -11,11 +11,43 @@ import { AWSCloudFormationClient as CloudFormationClient, InfrastructureGenerato
 // Import tsCloud config from Stacks config system
 import { tsCloud as config } from '~/config/cloud'
 
+/**
+ * Retry an async operation with exponential backoff and jitter
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  options: { maxRetries?: number; baseDelayMs?: number; maxDelayMs?: number; label?: string } = {},
+): Promise<T> {
+  const { maxRetries = 3, baseDelayMs = 500, maxDelayMs = 10000, label = 'operation' } = options
+  let lastError: Error | undefined
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn()
+    }
+    catch (error: any) {
+      lastError = error
+      // Don't retry on non-transient errors
+      const message = error.message || ''
+      if (message.includes('ValidationError') || message.includes('AccessDenied') || message.includes('InvalidParameter')) {
+        throw error
+      }
+      if (attempt < maxRetries) {
+        const delay = Math.min(baseDelayMs * 2 ** attempt + Math.random() * baseDelayMs, maxDelayMs)
+        console.log(`   ⟳ Retrying ${label} (attempt ${attempt + 2}/${maxRetries + 1}) in ${Math.round(delay)}ms...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
+  }
+  throw lastError
+}
+
 export interface StackDeployOptions {
   environment: string
   region: string
   stackName?: string
   waitForCompletion?: boolean
+  verbose?: boolean
+  timeoutMinutes?: number
 }
 
 /**
@@ -64,7 +96,10 @@ export async function deployStack(options: StackDeployOptions): Promise<void> {
   // Check if stack exists
   let stackExists = false
   try {
-    const stacks = await cfn.describeStacks({ stackName: finalStackName })
+    const stacks = await withRetry(
+      () => cfn.describeStacks({ stackName: finalStackName }),
+      { label: 'describeStacks' },
+    )
     stackExists = stacks.length > 0
   } catch (error) {
     // Stack doesn't exist
@@ -144,16 +179,22 @@ export async function deployStack(options: StackDeployOptions): Promise<void> {
 async function waitForStackComplete(
   cfn: CloudFormationClient,
   stackName: string,
-  targetStatus: string
+  targetStatus: string,
+  timeoutMinutes = 20,
 ): Promise<void> {
-  console.log(`\n⏳ Waiting for stack to reach ${targetStatus}...`)
+  console.log(`\n⏳ Waiting for stack to reach ${targetStatus} (timeout: ${timeoutMinutes}m)...`)
 
-  const maxAttempts = 120 // 10 minutes (5s interval)
-  let attempts = 0
+  const startTime = Date.now()
+  const timeoutMs = timeoutMinutes * 60 * 1000
+  let pollInterval = 5000 // start at 5s
+  const maxPollInterval = 15000 // cap at 15s
   let lastDisplayedEvent: string | null = null
 
-  while (attempts < maxAttempts) {
-    const stacks = await cfn.describeStacks({ stackName })
+  while (Date.now() - startTime < timeoutMs) {
+    const stacks = await withRetry(
+      () => cfn.describeStacks({ stackName }),
+      { label: 'poll describeStacks' },
+    )
     const stack = stacks[0]
 
     if (!stack) {
@@ -174,7 +215,7 @@ async function waitForStackComplete(
         lastDisplayedEvent = recentEvent.Timestamp
       }
     } catch {
-      // Ignore event fetch errors
+      // Ignore event fetch errors - non-critical
     }
 
     // Check if complete
@@ -191,12 +232,13 @@ async function waitForStackComplete(
       throw new Error(`Stack operation failed: ${stack.StackStatus}`)
     }
 
-    // Wait before next check
-    await new Promise(resolve => setTimeout(resolve, 5000))
-    attempts++
+    // Wait with increasing interval (exponential backoff capped at 15s)
+    await new Promise(resolve => setTimeout(resolve, pollInterval))
+    pollInterval = Math.min(pollInterval * 1.2, maxPollInterval)
   }
 
-  throw new Error(`Timeout waiting for stack to reach ${targetStatus}`)
+  const elapsedMin = Math.round((Date.now() - startTime) / 60000)
+  throw new Error(`Timeout after ${elapsedMin}m waiting for stack to reach ${targetStatus}`)
 }
 
 /**
@@ -230,16 +272,21 @@ export async function deleteStack(options: {
  */
 async function waitForStackDelete(
   cfn: CloudFormationClient,
-  stackName: string
+  stackName: string,
+  timeoutMinutes = 30,
 ): Promise<void> {
-  console.log('\n⏳ Waiting for stack deletion...')
+  console.log(`\n⏳ Waiting for stack deletion (timeout: ${timeoutMinutes}m)...`)
 
-  const maxAttempts = 120 // 10 minutes
-  let attempts = 0
+  const startTime = Date.now()
+  const timeoutMs = timeoutMinutes * 60 * 1000
+  let pollInterval = 5000
 
-  while (attempts < maxAttempts) {
+  while (Date.now() - startTime < timeoutMs) {
     try {
-      const stacks = await cfn.describeStacks({ stackName })
+      const stacks = await withRetry(
+        () => cfn.describeStacks({ stackName }),
+        { label: 'poll delete describeStacks' },
+      )
       const stack = stacks[0]
 
       if (!stack) {
@@ -260,11 +307,12 @@ async function waitForStackDelete(
       throw error
     }
 
-    await new Promise(resolve => setTimeout(resolve, 5000))
-    attempts++
+    await new Promise(resolve => setTimeout(resolve, pollInterval))
+    pollInterval = Math.min(pollInterval * 1.2, 15000)
   }
 
-  throw new Error('Timeout waiting for stack deletion')
+  const elapsedMin = Math.round((Date.now() - startTime) / 60000)
+  throw new Error(`Timeout after ${elapsedMin}m waiting for stack deletion`)
 }
 
 /**

@@ -9,7 +9,7 @@ import { appPath } from '@stacksjs/path'
 import process from 'node:process'
 
 // Environment variables
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+import { env as envVars } from '@stacksjs/env'
 
 function getQueueDriver(): string {
   return envVars.QUEUE_DRIVER || 'sync'

@@ -108,7 +108,7 @@ export default {
     port: env.BROADCAST_PORT || 6001,
     host: env.BROADCAST_HOST || 'localhost',
     cors: {
-      origin: env.BROADCAST_CORS_ORIGIN || '*',
+      origin: env.BROADCAST_CORS_ORIGIN || env.APP_URL || 'http://localhost:3000',
       methods: ['GET', 'POST'],
     },
   },

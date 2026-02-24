@@ -51,19 +51,35 @@ export async function deleteHostedZone(domainName: string): Promise<Result<strin
   if (!recordSets || !recordSets.ResourceRecordSets)
     return err(handleError(`No DNS records found for domain: ${domainName}`))
 
-  for (const recordSet of recordSets.ResourceRecordSets) {
-    if (recordSet.Type !== 'NS' && recordSet.Type !== 'SOA') {
+  // Batch delete for safety — collect all changes, apply in one batch
+  const changes = recordSets.ResourceRecordSets
+    .filter((rs: any) => rs.Type !== 'NS' && rs.Type !== 'SOA')
+    .map((recordSet: any) => ({ Action: 'DELETE' as const, ResourceRecordSet: recordSet }))
+
+  if (changes.length > 0) {
+    try {
       await route53.changeResourceRecordSets({
         HostedZoneId: hostedZone.Id,
-        ChangeBatch: {
-          Changes: [
-            {
-              Action: 'DELETE',
-              ResourceRecordSet: recordSet,
-            },
-          ],
-        },
+        ChangeBatch: { Changes: changes },
       })
+    }
+    catch (batchError: any) {
+      log.warn(`Batch delete failed (${changes.length} records), falling back to individual deletion`)
+      const failures: string[] = []
+      for (const change of changes) {
+        try {
+          await route53.changeResourceRecordSets({
+            HostedZoneId: hostedZone.Id,
+            ChangeBatch: { Changes: [change] },
+          })
+        }
+        catch (individualError: any) {
+          failures.push(`${change.ResourceRecordSet.Name} (${change.ResourceRecordSet.Type}): ${individualError.message}`)
+        }
+      }
+      if (failures.length > 0) {
+        return err(handleError(`Failed to delete ${failures.length} DNS record(s):\n${failures.join('\n')}`))
+      }
     }
   }
 
@@ -92,7 +108,7 @@ export async function deleteHostedZoneRecords(domainName: string): Promise<Resul
   if (!hostedZone)
     return err(handleError(`Hosted Zone not found for domain: ${domainName}`))
 
-  // Delete all record sets (except NS and SOA)
+  // Delete all record sets (except NS and SOA) — batch for atomicity
   const recordSets = await route53.listResourceRecordSets({
     HostedZoneId: hostedZone.Id,
   })
@@ -100,19 +116,34 @@ export async function deleteHostedZoneRecords(domainName: string): Promise<Resul
   if (!recordSets || !recordSets.ResourceRecordSets)
     return err(handleError(`No DNS records found for domain: ${domainName}`))
 
-  for (const recordSet of recordSets.ResourceRecordSets) {
-    if (recordSet.Type !== 'NS' && recordSet.Type !== 'SOA') {
+  const changes = recordSets.ResourceRecordSets
+    .filter((rs: any) => rs.Type !== 'NS' && rs.Type !== 'SOA')
+    .map((recordSet: any) => ({ Action: 'DELETE' as const, ResourceRecordSet: recordSet }))
+
+  if (changes.length > 0) {
+    try {
       await route53.changeResourceRecordSets({
         HostedZoneId: hostedZone.Id,
-        ChangeBatch: {
-          Changes: [
-            {
-              Action: 'DELETE',
-              ResourceRecordSet: recordSet,
-            },
-          ],
-        },
+        ChangeBatch: { Changes: changes },
       })
+    }
+    catch (batchError: any) {
+      log.warn(`Batch delete failed, falling back to individual deletion`)
+      const failures: string[] = []
+      for (const change of changes) {
+        try {
+          await route53.changeResourceRecordSets({
+            HostedZoneId: hostedZone.Id,
+            ChangeBatch: { Changes: [change] },
+          })
+        }
+        catch (individualError: any) {
+          failures.push(`${change.ResourceRecordSet.Name} (${change.ResourceRecordSet.Type}): ${individualError.message}`)
+        }
+      }
+      if (failures.length > 0) {
+        return err(handleError(`Failed to delete ${failures.length} DNS record(s):\n${failures.join('\n')}`))
+      }
     }
   }
 

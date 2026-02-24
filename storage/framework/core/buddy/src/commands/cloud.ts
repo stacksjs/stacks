@@ -171,6 +171,29 @@ async function deleteTemporaryCdkRole(roleName: string): Promise<void> {
   }
 }
 
+interface ResultLike {
+  isErr?: boolean | (() => boolean)
+  error?: string | Error
+  value?: unknown
+}
+
+function isResultError(result: unknown): result is ResultLike & { error: string } {
+  if (!result || typeof result !== 'object') return false
+  const r = result as ResultLike
+  if (typeof r.isErr === 'function') return r.isErr()
+  return !!r.isErr
+}
+
+function getResultError(result: unknown): string {
+  if (!result || typeof result !== 'object') return 'Unknown error'
+  return String((result as ResultLike).error || 'Unknown error')
+}
+
+function getResultValue(result: unknown): unknown {
+  if (!result || typeof result !== 'object') return undefined
+  return (result as ResultLike).value
+}
+
 export function cloud(buddy: CLI): void {
   const descriptions = {
     cloud: 'Interact with the Stacks Cloud',
@@ -207,11 +230,11 @@ export function cloud(buddy: CLI): void {
           stdin: 'pipe',
         })
 
-        if ((result as any).isErr) {
+        if (isResultError(result)) {
           await outro(
             'While running the cloud command, there was an issue',
             { startTime, useSeconds: true },
-            (result as any).error,
+            getResultError(result),
           )
           process.exit(ExitCode.FatalError)
         }
@@ -327,11 +350,11 @@ export function cloud(buddy: CLI): void {
 
         const result = await addJumpBox()
 
-        if ((result as any).isErr) {
+        if (isResultError(result)) {
           await outro(
             'While running the cloud:add command, there was an issue',
             { startTime, useSeconds: true },
-            (result as any).error,
+            getResultError(result),
           )
           process.exit(ExitCode.FatalError)
         }
@@ -386,8 +409,8 @@ export function cloud(buddy: CLI): void {
 
         const result = await deleteJumpBox()
 
-        if ((result as any).isErr) {
-          await outro('While removing your jump-box, there was an issue', { startTime, useSeconds: true }, (result as any).error)
+        if (isResultError(result)) {
+          await outro('While removing your jump-box, there was an issue', { startTime, useSeconds: true }, getResultError(result))
           process.exit(ExitCode.FatalError)
         }
 
@@ -558,123 +581,49 @@ export function cloud(buddy: CLI): void {
       // sleep for 2 seconds to get the user to read the message
       await new Promise(resolve => setTimeout(resolve, 2000))
 
-      log.info('Removing any jump-boxes...')
-      try {
-        const result = await deleteJumpBox()
-        if (result && typeof (result as any).isErr === 'function' && (result as any).isErr) {
-          if ((result as any).error !== 'Jump-box not found') {
-            log.warn(`Jump-box cleanup issue: ${(result as any).error}`)
+      const cleanupSteps: { label: string; fn: () => Promise<unknown>; ignoreErrors?: string[] }[] = [
+        { label: 'jump-boxes', fn: deleteJumpBox, ignoreErrors: ['Jump-box not found'] },
+        { label: 'retained S3 buckets', fn: deleteStacksBuckets },
+        { label: 'retained Lambda functions', fn: deleteStacksFunctions, ignoreErrors: ['No stacks functions found'] },
+        { label: 'remaining Stacks logs', fn: deleteLogGroups },
+        { label: 'stored parameters', fn: deleteParameterStore },
+        { label: 'VPCs', fn: deleteVpcs },
+        { label: 'Subnets', fn: deleteSubnets },
+        { label: 'CDK remnants', fn: deleteCdkRemnants },
+        { label: 'IAM users', fn: deleteIamUsers },
+      ]
+
+      const errors: { label: string; error: string }[] = []
+
+      for (const step of cleanupSteps) {
+        log.info(`Removing any ${step.label}...`)
+        try {
+          const result = await step.fn()
+          if (isResultError(result)) {
+            const errMsg = getResultError(result)
+            if (!step.ignoreErrors?.includes(errMsg)) {
+              log.warn(`${step.label} cleanup issue: ${errMsg}`)
+              errors.push({ label: step.label, error: errMsg })
+            }
+          }
+          else {
+            const value = getResultValue(result)
+            if (value) log.info(String(value))
           }
         }
-      }
-      catch (e: any) {
-        log.warn(`Jump-box cleanup skipped: ${e.message || 'AWS SDK error'}`)
-      }
-
-      log.info('Removing any retained S3 buckets...')
-      try {
-        const result2 = await deleteStacksBuckets()
-        if (result2 && typeof (result2 as any).isErr === 'function' && (result2 as any).isErr) {
-          log.warn(`S3 cleanup issue: ${(result2 as any).error}`)
+        catch (e: any) {
+          const errMsg = e.message || 'AWS SDK error'
+          log.warn(`${step.label} cleanup skipped: ${errMsg}`)
+          errors.push({ label: step.label, error: errMsg })
         }
       }
-      catch (e: any) {
-        log.warn(`S3 cleanup skipped: ${e.message || 'AWS SDK error'}`)
-      }
 
-      log.info('Removing any retained Lambda functions...')
-      try {
-        const result3 = await deleteStacksFunctions()
-        if (result3 && typeof (result3 as any).isErr === 'function' && (result3 as any).isErr) {
-          if ((result3 as any).error !== 'No stacks functions found') {
-            log.warn(`Lambda cleanup issue: ${(result3 as any).error}`)
-          }
-        }
-        else if ((result3 as any)?.value) {
-          log.info((result3 as any).value)
+      if (errors.length > 0) {
+        log.warn(`Cleanup completed with ${errors.length} issue(s):`)
+        for (const { label, error } of errors) {
+          log.warn(`  - ${label}: ${error}`)
         }
       }
-      catch (e: any) {
-        log.warn(`Lambda cleanup skipped: ${e.message || 'AWS SDK error'}`)
-      }
-
-      log.info('Removing any remaining Stacks logs...')
-      try {
-        const result4 = await deleteLogGroups()
-        if (result4 && typeof (result4 as any).isErr === 'function' && (result4 as any).isErr) {
-          log.warn(`Log groups cleanup issue: ${(result4 as any).error}`)
-        }
-      }
-      catch (e: any) {
-        log.warn(`Log groups cleanup skipped: ${e.message || 'AWS SDK error'}`)
-      }
-
-      // log.info('Removing any Backup Vaults...')
-      // const result5 = await deleteBackupVaults()
-
-      // if (result5.isErr) {
-      //   await outro('While deleting the Backup Vaults, there was an issue', { startTime, useSeconds: true }, result5.error)
-      //   process.exit(ExitCode.FatalError)
-      // }
-
-      log.info('Removing any stored parameters...')
-      try {
-        const result7 = await deleteParameterStore()
-        if (result7 && typeof (result7 as any).isErr === 'function' && (result7 as any).isErr) {
-          log.warn(`Parameter store cleanup issue: ${(result7 as any).error}`)
-        }
-      }
-      catch (e: any) {
-        log.warn(`Parameter store cleanup skipped: ${e.message || 'AWS SDK error'}`)
-      }
-
-      // delete all vpcs & subnets & internet gateways
-      log.info('Removing any VPCs...')
-      try {
-        const result9 = await deleteVpcs()
-        if (result9 && typeof (result9 as any).isErr === 'function' && (result9 as any).isErr) {
-          log.warn(`VPC cleanup issue: ${(result9 as any).error}`)
-        }
-      }
-      catch (e: any) {
-        log.warn(`VPC cleanup skipped: ${e.message || 'AWS SDK error'}`)
-      }
-
-      log.info('Removing any Subnets...')
-      try {
-        const result10 = await deleteSubnets()
-        if (result10 && typeof (result10 as any).isErr === 'function' && (result10 as any).isErr) {
-          log.warn(`Subnet cleanup issue: ${(result10 as any).error}`)
-        }
-      }
-      catch (e: any) {
-        log.warn(`Subnet cleanup skipped: ${e.message || 'AWS SDK error'}`)
-      }
-
-      log.info('Removing any CDK remnants...')
-      try {
-        const result6 = await deleteCdkRemnants()
-        if (result6 && typeof (result6 as any).isErr === 'function' && (result6 as any).isErr) {
-          log.warn(`CDK remnants cleanup issue: ${(result6 as any).error}`)
-        }
-      }
-      catch (e: any) {
-        log.warn(`CDK remnants cleanup skipped: ${e.message || 'AWS SDK error'}`)
-      }
-
-      log.info('Removing any IAM users...')
-      try {
-        const result8 = await deleteIamUsers()
-        if (result8 && typeof (result8 as any).isErr === 'function' && (result8 as any).isErr) {
-          log.warn(`IAM users cleanup issue: ${(result8 as any).error}`)
-        }
-      }
-      catch (e: any) {
-        log.warn(`IAM users cleanup skipped: ${e.message || 'AWS SDK error'}`)
-      }
-
-      // TODO: needs to delete all Backup Vaults
-      // TODO: needs to delete all KMS keys
 
       await outro('AWS resources have been removed', {
         startTime,
@@ -721,11 +670,11 @@ export function cloud(buddy: CLI): void {
           },
         ) // TODO: this should be the cloud path
 
-        if ((result as any).isErr) {
+        if (isResultError(result)) {
           await outro(
             'While running the cloud command, there was an issue',
             { startTime, useSeconds: true },
-            (result as any).error,
+            getResultError(result),
           )
           process.exit(ExitCode.FatalError)
         }

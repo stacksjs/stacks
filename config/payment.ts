@@ -1,7 +1,5 @@
 import type { PaymentConfig } from '@stacksjs/types'
-
-// Use direct environment variable access to avoid circular dependencies
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+import { env } from '@stacksjs/env'
 
 /**
  * **Payment Configuration**
@@ -14,8 +12,8 @@ export default {
   driver: 'stripe',
 
   stripe: {
-    publishableKey: envVars.STRIPE_PUBLISHABLE_KEY || '',
-    secretKey: envVars.STRIPE_SECRET_KEY || '',
+    publishableKey: env.STRIPE_PUBLISHABLE_KEY || '',
+    secretKey: env.STRIPE_SECRET_KEY || '',
   },
 
   // wip

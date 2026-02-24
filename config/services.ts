@@ -1,7 +1,5 @@
 import type { ServicesConfig } from '@stacksjs/types'
-
-// Use direct environment variable access to avoid circular dependencies
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+import { env } from '@stacksjs/env'
 
 /**
  * **Services**
@@ -17,37 +15,37 @@ export default {
   },
 
   aws: {
-    accountId: envVars.AWS_ACCOUNT_ID || '',
-    appId: envVars.AWS_ACCESS_KEY_ID || '',
-    apiKey: envVars.AWS_SECRET_ACCESS_KEY || '',
-    region: envVars.AWS_DEFAULT_REGION || 'us-east-1',
+    accountId: env.AWS_ACCOUNT_ID || '',
+    appId: env.AWS_ACCESS_KEY_ID || '',
+    apiKey: env.AWS_SECRET_ACCESS_KEY || '',
+    region: env.AWS_DEFAULT_REGION || 'us-east-1',
   },
 
   github: {
-    clientId: envVars.GITHUB_CLIENT_ID || '',
-    clientSecret: envVars.GITHUB_CLIENT_SECRET || '',
-    redirectUrl: envVars.GITHUB_REDIRECT_URL || 'http://localhost:3000/auth/github/callback',
+    clientId: env.GITHUB_CLIENT_ID || '',
+    clientSecret: env.GITHUB_CLIENT_SECRET || '',
+    redirectUrl: env.GITHUB_REDIRECT_URL || 'http://localhost:3000/auth/github/callback',
     scopes: ['read:user', 'user:email'],
   },
 
   google: {
-    clientId: envVars.GOOGLE_CLIENT_ID || '',
-    clientSecret: envVars.GOOGLE_CLIENT_SECRET || '',
-    redirectUrl: envVars.GOOGLE_REDIRECT_URL || 'http://localhost:3000/auth/google/callback',
+    clientId: env.GOOGLE_CLIENT_ID || '',
+    clientSecret: env.GOOGLE_CLIENT_SECRET || '',
+    redirectUrl: env.GOOGLE_REDIRECT_URL || 'http://localhost:3000/auth/google/callback',
     scopes: ['profile', 'email'],
   },
 
   facebook: {
-    clientId: envVars.FACEBOOK_CLIENT_ID || '',
-    clientSecret: envVars.FACEBOOK_CLIENT_SECRET || '',
-    redirectUrl: envVars.FACEBOOK_REDIRECT_URL || 'http://localhost:3000/auth/facebook/callback',
+    clientId: env.FACEBOOK_CLIENT_ID || '',
+    clientSecret: env.FACEBOOK_CLIENT_SECRET || '',
+    redirectUrl: env.FACEBOOK_REDIRECT_URL || 'http://localhost:3000/auth/facebook/callback',
     scopes: ['email', 'public_profile'],
   },
 
   twitter: {
-    clientId: envVars.TWITTER_CLIENT_ID || '',
-    clientSecret: envVars.TWITTER_CLIENT_SECRET || '',
-    redirectUrl: envVars.TWITTER_REDIRECT_URL || 'http://localhost:3000/auth/twitter/callback',
+    clientId: env.TWITTER_CLIENT_ID || '',
+    clientSecret: env.TWITTER_CLIENT_SECRET || '',
+    redirectUrl: env.TWITTER_REDIRECT_URL || 'http://localhost:3000/auth/twitter/callback',
     scopes: ['tweet.read', 'users.read', 'offline.access'],
   },
 
@@ -57,19 +55,19 @@ export default {
   },
 
   mailgun: {
-    apiKey: envVars.MAILGUN_API_KEY,
-    domain: envVars.MAILGUN_DOMAIN,
-    endpoint: envVars.MAILGUN_ENDPOINT || 'api.mailgun.net',
-    maxRetries: envVars.MAILGUN_MAX_RETRIES ? Number.parseInt(envVars.MAILGUN_MAX_RETRIES) : 3,
-    retryTimeout: envVars.MAILGUN_RETRY_TIMEOUT ? Number.parseInt(envVars.MAILGUN_RETRY_TIMEOUT) : 1000,
+    apiKey: env.MAILGUN_API_KEY,
+    domain: env.MAILGUN_DOMAIN,
+    endpoint: env.MAILGUN_ENDPOINT || 'api.mailgun.net',
+    maxRetries: env.MAILGUN_MAX_RETRIES || 3,
+    retryTimeout: env.MAILGUN_RETRY_TIMEOUT || 1000,
   },
 
   mailtrap: {
-    host: envVars.MAILTRAP_HOST,
-    token: envVars.MAILTRAP_TOKEN,
-    inboxId: envVars.MAILTRAP_INBOX_ID,
-    maxRetries: envVars.MAILTRAP_MAX_RETRIES ? Number.parseInt(envVars.MAILTRAP_MAX_RETRIES) : 3,
-    retryTimeout: envVars.MAILTRAP_RETRY_TIMEOUT ? Number.parseInt(envVars.MAILTRAP_RETRY_TIMEOUT) : 1000,
+    host: env.MAILTRAP_HOST,
+    token: env.MAILTRAP_TOKEN,
+    inboxId: env.MAILTRAP_INBOX_ID,
+    maxRetries: env.MAILTRAP_MAX_RETRIES || 3,
+    retryTimeout: env.MAILTRAP_RETRY_TIMEOUT || 1000,
   },
 
   hetzner: {
@@ -83,16 +81,16 @@ export default {
   },
 
   sendgrid: {
-    apiKey: envVars.SENDGRID_API_KEY,
-    maxRetries: envVars.SENDGRID_MAX_RETRIES ? Number.parseInt(envVars.SENDGRID_MAX_RETRIES) : 3,
-    retryTimeout: envVars.SENDGRID_RETRY_TIMEOUT ? Number.parseInt(envVars.SENDGRID_RETRY_TIMEOUT) : 1000,
+    apiKey: env.SENDGRID_API_KEY,
+    maxRetries: env.SENDGRID_MAX_RETRIES || 3,
+    retryTimeout: env.SENDGRID_RETRY_TIMEOUT || 1000,
   },
 
   ses: {
-    region: envVars.AWS_SES_REGION || 'us-east-1',
+    region: env.AWS_SES_REGION || 'us-east-1',
     credentials: {
-      accessKeyId: envVars.AWS_ACCESS_KEY_ID,
-      secretAccessKey: envVars.AWS_SECRET_ACCESS_KEY,
+      accessKeyId: env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
     },
   },
 
@@ -101,14 +99,14 @@ export default {
    * Works with HELO, Mailtrap Desktop, Mailhog, Mailpit, etc.
    */
   smtp: {
-    host: envVars.MAIL_HOST || '127.0.0.1',
-    port: envVars.MAIL_PORT ? Number.parseInt(envVars.MAIL_PORT) : 2525,
+    host: env.MAIL_HOST || '127.0.0.1',
+    port: env.MAIL_PORT || 2525,
     // Handle "null" string from .env files (Laravel-style)
-    username: (envVars.MAIL_USERNAME && envVars.MAIL_USERNAME !== 'null') ? envVars.MAIL_USERNAME : '',
-    password: (envVars.MAIL_PASSWORD && envVars.MAIL_PASSWORD !== 'null') ? envVars.MAIL_PASSWORD : '',
-    encryption: (envVars.MAIL_ENCRYPTION && envVars.MAIL_ENCRYPTION !== 'null' ? envVars.MAIL_ENCRYPTION : null) as 'tls' | 'ssl' | null,
-    maxRetries: envVars.MAIL_MAX_RETRIES ? Number.parseInt(envVars.MAIL_MAX_RETRIES) : 3,
-    retryTimeout: envVars.MAIL_RETRY_TIMEOUT ? Number.parseInt(envVars.MAIL_RETRY_TIMEOUT) : 1000,
+    username: (env.MAIL_USERNAME && env.MAIL_USERNAME !== 'null') ? env.MAIL_USERNAME : '',
+    password: (env.MAIL_PASSWORD && env.MAIL_PASSWORD !== 'null') ? env.MAIL_PASSWORD : '',
+    encryption: (env.MAIL_ENCRYPTION && env.MAIL_ENCRYPTION !== 'null' ? env.MAIL_ENCRYPTION : null) as 'tls' | 'ssl' | null,
+    maxRetries: env.MAIL_MAX_RETRIES || 3,
+    retryTimeout: env.MAIL_RETRY_TIMEOUT || 1000,
   },
 
   // lemonSqueezy: {
@@ -117,62 +115,62 @@ export default {
   // },
 
   slack: {
-    appId: envVars.SLACK_APP_ID,
-    clientId: envVars.SLACK_CLIENT_ID,
-    secretKey: envVars.SLACK_SECRET_KEY,
-    webhookUrl: envVars.SLACK_WEBHOOK_URL,
-    botToken: envVars.SLACK_BOT_TOKEN,
-    maxRetries: envVars.SLACK_MAX_RETRIES ? Number.parseInt(envVars.SLACK_MAX_RETRIES) : 3,
-    retryTimeout: envVars.SLACK_RETRY_TIMEOUT ? Number.parseInt(envVars.SLACK_RETRY_TIMEOUT) : 1000,
+    appId: env.SLACK_APP_ID,
+    clientId: env.SLACK_CLIENT_ID,
+    secretKey: env.SLACK_SECRET_KEY,
+    webhookUrl: env.SLACK_WEBHOOK_URL,
+    botToken: env.SLACK_BOT_TOKEN,
+    maxRetries: env.SLACK_MAX_RETRIES || 3,
+    retryTimeout: env.SLACK_RETRY_TIMEOUT || 1000,
   },
 
   discord: {
-    webhookUrl: envVars.DISCORD_WEBHOOK_URL,
-    botToken: envVars.DISCORD_BOT_TOKEN,
-    maxRetries: envVars.DISCORD_MAX_RETRIES ? Number.parseInt(envVars.DISCORD_MAX_RETRIES) : 3,
-    retryTimeout: envVars.DISCORD_RETRY_TIMEOUT ? Number.parseInt(envVars.DISCORD_RETRY_TIMEOUT) : 1000,
+    webhookUrl: env.DISCORD_WEBHOOK_URL,
+    botToken: env.DISCORD_BOT_TOKEN,
+    maxRetries: env.DISCORD_MAX_RETRIES || 3,
+    retryTimeout: env.DISCORD_RETRY_TIMEOUT || 1000,
   },
 
   teams: {
-    webhookUrl: envVars.TEAMS_WEBHOOK_URL,
-    maxRetries: envVars.TEAMS_MAX_RETRIES ? Number.parseInt(envVars.TEAMS_MAX_RETRIES) : 3,
-    retryTimeout: envVars.TEAMS_RETRY_TIMEOUT ? Number.parseInt(envVars.TEAMS_RETRY_TIMEOUT) : 1000,
+    webhookUrl: env.TEAMS_WEBHOOK_URL,
+    maxRetries: env.TEAMS_MAX_RETRIES || 3,
+    retryTimeout: env.TEAMS_RETRY_TIMEOUT || 1000,
   },
 
   // Push Notification Services
   expo: {
-    accessToken: envVars.EXPO_ACCESS_TOKEN,
+    accessToken: env.EXPO_ACCESS_TOKEN,
   },
 
   fcm: {
-    serverKey: envVars.FCM_SERVER_KEY,
-    projectId: envVars.FCM_PROJECT_ID,
-    clientEmail: envVars.FCM_CLIENT_EMAIL,
-    privateKey: envVars.FCM_PRIVATE_KEY,
+    serverKey: env.FCM_SERVER_KEY,
+    projectId: env.FCM_PROJECT_ID,
+    clientEmail: env.FCM_CLIENT_EMAIL,
+    privateKey: env.FCM_PRIVATE_KEY,
   },
 
   // AI Services
   openai: {
-    apiKey: envVars.OPENAI_API_KEY,
-    model: envVars.OPENAI_MODEL || 'gpt-4o',
-    embeddingModel: envVars.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small',
-    baseUrl: envVars.OPENAI_BASE_URL || 'https://api.openai.com/v1',
+    apiKey: env.OPENAI_API_KEY,
+    model: env.OPENAI_MODEL || 'gpt-4o',
+    embeddingModel: env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small',
+    baseUrl: env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
   },
 
   anthropic: {
-    apiKey: envVars.ANTHROPIC_API_KEY,
-    model: envVars.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514',
-    maxTokens: envVars.ANTHROPIC_MAX_TOKENS ? Number.parseInt(envVars.ANTHROPIC_MAX_TOKENS) : 4096,
+    apiKey: env.ANTHROPIC_API_KEY,
+    model: env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514',
+    maxTokens: env.ANTHROPIC_MAX_TOKENS || 4096,
   },
 
   ollama: {
-    host: envVars.OLLAMA_HOST || 'http://localhost:11434',
-    model: envVars.OLLAMA_MODEL || 'llama3.2',
-    embeddingModel: envVars.OLLAMA_EMBEDDING_MODEL || 'nomic-embed-text',
+    host: env.OLLAMA_HOST || 'http://localhost:11434',
+    model: env.OLLAMA_MODEL || 'llama3.2',
+    embeddingModel: env.OLLAMA_EMBEDDING_MODEL || 'nomic-embed-text',
   },
 
   stripe: {
-    secretKey: envVars.STRIPE_SECRET_KEY,
-    publicKey: envVars.STRIPE_PUBLISHABLE_KEY,
+    secretKey: env.STRIPE_SECRET_KEY,
+    publicKey: env.STRIPE_PUBLISHABLE_KEY,
   },
 } satisfies ServicesConfig

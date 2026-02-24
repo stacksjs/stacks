@@ -1,7 +1,5 @@
 import type { EmailConfig } from '@stacksjs/types'
-
-// Use direct environment variable access to avoid circular dependencies
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+import { env } from '@stacksjs/env'
 
 /**
  * **Email Configuration**
@@ -12,11 +10,11 @@ const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
  */
 export default {
   from: {
-    name: envVars.MAIL_FROM_NAME || 'Stacks',
-    address: envVars.MAIL_FROM_ADDRESS || 'no-reply@stacksjs.com',
+    name: env.MAIL_FROM_NAME || 'Stacks',
+    address: env.MAIL_FROM_ADDRESS || `no-reply@${env.MAIL_DOMAIN || 'example.com'}`,
   },
 
-  domain: envVars.MAIL_DOMAIN || 'stacksjs.com',
+  domain: env.MAIL_DOMAIN || 'example.com',
 
   /**
    * Mailbox users for IMAP/SMTP access.
@@ -34,7 +32,7 @@ export default {
     'glenn',
   ],
 
-  url: envVars.APP_URL || 'https://stacksjs.com',
+  url: env.APP_URL || 'https://stacksjs.com',
   charset: 'UTF-8',
 
   server: {
@@ -47,13 +45,13 @@ export default {
      * - 'serverless': Lightweight TypeScript/Bun server (default, ~$3/month)
      * - 'server': Full-featured Zig mail server with IMAP, POP3, CalDAV, etc.
      */
-    mode: (envVars.MAIL_SERVER_MODE || 'serverless') as 'serverless' | 'server',
+    mode: (env.MAIL_SERVER_MODE || 'serverless') as 'serverless' | 'server',
 
     /**
      * Path to the Zig mail server repository (only used when mode is 'server')
      * @default '/Users/chrisbreuer/Code/mail' or process.env.MAIL_SERVER_PATH
      */
-    serverPath: envVars.MAIL_SERVER_PATH || '/Users/chrisbreuer/Code/mail',
+    serverPath: env.MAIL_SERVER_PATH || '/Users/chrisbreuer/Code/mail',
 
     storage: {
       retentionDays: 90,
@@ -276,5 +274,5 @@ export default {
     complaints: true,
   },
 
-  default: (envVars.MAIL_MAILER || envVars.MAIL_DRIVER || 'smtp') as 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp' | 'postmark',
+  default: (env.MAIL_MAILER || env.MAIL_DRIVER || 'smtp') as 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp' | 'postmark',
 } satisfies EmailConfig

@@ -32,11 +32,10 @@ import { getCurrentRequest } from '@stacksjs/router'
 // DATABASE DRIVER DETECTION & SQL HELPERS
 // ============================================================================
 
-/** Environment variables accessor */
-const envVars = typeof Bun !== 'undefined' ? Bun.env : process.env
+import { env } from '@stacksjs/env'
 
 /** Current database driver */
-const dbDriver: DatabaseDriver = (envVars.DB_CONNECTION as DatabaseDriver) || 'sqlite'
+const dbDriver: DatabaseDriver = (env.DB_CONNECTION as DatabaseDriver) || 'sqlite'
 
 /** Check if using PostgreSQL */
 const isPostgres: boolean = dbDriver === 'postgres'

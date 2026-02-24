@@ -1,6 +1,7 @@
 import type { CloudConfig } from '@stacksjs/types'
 import type { CloudConfig as TsCloudConfig } from '@stacksjs/ts-cloud-types'
 import { servers } from '~/cloud/servers'
+import { env } from '@stacksjs/env'
 
 /**
  * Stacks Cloud Configuration
@@ -262,13 +263,13 @@ export const tsCloud: TsCloudConfig = {
     ssl: {
       enabled: true,
       provider: 'acm', // 'acm' | 'letsencrypt'
-      domains: ['stacksjs.com', 'www.stacksjs.com'],
+      domains: env.SSL_DOMAINS?.split(',') || ['stacksjs.com', 'www.stacksjs.com'],
       redirectHttp: true,
       // Uncomment for existing ACM certificate:
       // certificateArn: 'arn:aws:acm:us-east-1:...',
       // Let's Encrypt configuration (used when provider: 'letsencrypt' or loadBalancer.enabled: false)
       letsEncrypt: {
-        email: 'admin@stacksjs.com',
+        email: env.LETSENCRYPT_EMAIL || 'admin@stacksjs.com',
         staging: false, // Set to true for testing
         autoRenew: true,
       },
@@ -278,8 +279,8 @@ export const tsCloud: TsCloudConfig = {
      * DNS Configuration
      */
     dns: {
-      domain: 'stacksjs.com',
-      hostedZoneId: 'Z01455702Q7952O6RCY37', // Route53 hosted zone for stacksjs.com
+      domain: env.APP_DOMAIN || 'stacksjs.com',
+      hostedZoneId: env.AWS_HOSTED_ZONE_ID || '', // Route53 hosted zone ID
     },
 
     /**
@@ -415,16 +416,17 @@ export const tsCloud: TsCloudConfig = {
      * Cache Configuration (ElastiCache)
      * Redis or Memcached for in-memory caching
      */
-    cache: {
-      type: 'redis',
-      nodeType: 'cache.t3.micro',
-      redis: {
-        engineVersion: '7.1',
-        numCacheNodes: 2,
-        automaticFailoverEnabled: true,
-        snapshotRetentionLimit: 7,
-      },
-    },
+    // Cache temporarily disabled for initial deployment - enable after stack is stable
+    // cache: {
+    //   type: 'redis',
+    //   nodeType: 'cache.t3.micro',
+    //   redis: {
+    //     engineVersion: '7.1',
+    //     numCacheNodes: 2,
+    //     automaticFailoverEnabled: true,
+    //     snapshotRetentionLimit: 7,
+    //   },
+    // },
 
     /**
      * Email Configuration (SES)
@@ -501,7 +503,7 @@ export const tsCloud: TsCloudConfig = {
     main: {
       root: '/var/www/app',
       path: '/',
-      domain: 'stacksjs.com',
+      domain: env.APP_DOMAIN || 'stacksjs.com',
     },
   },
 }
