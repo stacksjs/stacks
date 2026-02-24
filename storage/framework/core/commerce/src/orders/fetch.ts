@@ -134,14 +134,14 @@ export async function compareOrdersByPeriod(_daysRange: number = 30): Promise<{
 
   // Current period (last N days)
   const currentPeriodStart = new Date(today)
-  currentPeriodStart.setDate(today.getDate() - daysRange)
+  currentPeriodStart.setDate(today.getDate() - _daysRange)
 
   // Previous period (N days before the current period)
   const previousPeriodEnd = new Date(currentPeriodStart)
   previousPeriodEnd.setDate(previousPeriodEnd.getDate() - 1)
 
   const previousPeriodStart = new Date(previousPeriodEnd)
-  previousPeriodStart.setDate(previousPeriodEnd.getDate() - daysRange)
+  previousPeriodStart.setDate(previousPeriodEnd.getDate() - _daysRange)
 
   // Get orders for current period
   const currentPeriodOrders = await db
@@ -173,7 +173,7 @@ export async function compareOrdersByPeriod(_daysRange: number = 30): Promise<{
     previous_period: previousCount,
     difference,
     percentage_change: percentageChange,
-    days_range: daysRange,
+    days_range: _daysRange,
   }
 }
 
@@ -217,14 +217,14 @@ export async function calculateOrderMetrics(_daysRange: number = 30): Promise<{
 
   // Current period (last N days)
   const currentPeriodStart = new Date(today)
-  currentPeriodStart.setDate(today.getDate() - daysRange)
+  currentPeriodStart.setDate(today.getDate() - _daysRange)
 
   // Previous period (N days before the current period)
   const previousPeriodEnd = new Date(currentPeriodStart)
   previousPeriodEnd.setDate(previousPeriodEnd.getDate() - 1)
 
   const previousPeriodStart = new Date(previousPeriodEnd)
-  previousPeriodStart.setDate(previousPeriodEnd.getDate() - daysRange)
+  previousPeriodStart.setDate(previousPeriodEnd.getDate() - _daysRange)
 
   // Get values for current period
   const currentPeriodValues = await db
@@ -334,7 +334,7 @@ export async function calculateOrderMetrics(_daysRange: number = 30): Promise<{
         is_increase: aovDifference >= 0,
       },
     },
-    days_range: daysRange,
+    days_range: _daysRange,
   }
 }
 
@@ -349,7 +349,7 @@ export async function fetchDailyOrderTrends(_daysRange: number = 30): Promise<{
 }[]> {
   const today = new Date()
   const startDate = new Date(today)
-  startDate.setDate(today.getDate() - daysRange)
+  startDate.setDate(today.getDate() - _daysRange)
 
   // Query to get daily order counts and revenue
   const dailyOrders = await db

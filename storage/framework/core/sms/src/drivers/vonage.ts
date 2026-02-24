@@ -19,7 +19,7 @@ import type {
 
 const API_BASE = 'https://rest.nexmo.com'
 const MESSAGES_API_BASE = 'https://api.nexmo.com/v1/messages'
-const VERIFY_API_BASE = 'https://api.nexmo.com/verify'
+const _VERIFY_API_BASE = 'https://api.nexmo.com/verify'
 const VERIFY_V2_API_BASE = 'https://api.nexmo.com/v2/verify'
 
 export class VonageDriver implements SmsDriver, SmsVerificationDriver {

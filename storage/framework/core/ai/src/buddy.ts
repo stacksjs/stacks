@@ -375,11 +375,11 @@ export async function configureGitUser(): Promise<void> {
   const currentState = buddyState.getState()
   if (!currentState.repo || !currentState.github) return
 
-  const { $ } = await import('bun')
+  const { $: _$ } = await import('bun')
   const { name, email } = currentState.github
 
-  await $`cd ${currentState.repo.path} && git config user.name ${name}`.quiet()
-  await $`cd ${currentState.repo.path} && git config user.email ${email}`.quiet()
+  await _$`cd ${currentState.repo.path} && git config user.name ${name}`.quiet()
+  await _$`cd ${currentState.repo.path} && git config user.email ${email}`.quiet()
 
   console.log(`Git configured for ${name} <${email}>`)
 }
@@ -394,16 +394,16 @@ export async function commitChanges(): Promise<string> {
     throw new Error('No repository opened')
   }
 
-  const { $ } = await import('bun')
+  const { $: _$ } = await import('bun')
 
   if (currentState.github) {
     await configureGitUser()
   }
 
-  await $`cd ${currentState.repo.path} && git add -A`.quiet()
-  await $`cd ${currentState.repo.path} && git commit -m ${CONFIG.commitMessage}`.quiet()
+  await _$`cd ${currentState.repo.path} && git add -A`.quiet()
+  await _$`cd ${currentState.repo.path} && git commit -m ${CONFIG.commitMessage}`.quiet()
 
-  const hashResult = await $`cd ${currentState.repo.path} && git rev-parse --short HEAD`.quiet()
+  const hashResult = await _$`cd ${currentState.repo.path} && git rev-parse --short HEAD`.quiet()
   const commitHash = hashResult.text().trim()
 
   currentState.repo.hasChanges = false
@@ -422,8 +422,8 @@ export async function pushChanges(): Promise<void> {
     throw new Error('No repository opened')
   }
 
-  const { $ } = await import('bun')
-  await $`cd ${currentState.repo.path} && git push`.quiet()
+  const { $: _$ } = await import('bun')
+  await _$`cd ${currentState.repo.path} && git push`.quiet()
 }
 
 // =============================================================================

@@ -2,7 +2,7 @@ import { parseOptions } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { cors, route } from '@stacksjs/router'
 
-const options = parseOptions()
+const _options = parseOptions()
 const port = config.ports?.api || 3008
 
 // Enable CORS middleware

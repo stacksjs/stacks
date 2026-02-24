@@ -181,10 +181,10 @@ export function useAuth(): AuthComposable {
 // Strict auth guard middleware
 // Usage: call in setup() of page/component, or in router beforeEach
 // Pass { guest: true } for guest-only pages
-export function authGuard({ guest = false }: { guest?: boolean } = {}): void {
+export function authGuard({ guest: _guest = false }: { guest?: boolean } = {}): void {
   const { isAuthenticated } = useAuth()
 
-  if (guest) {
+  if (_guest) {
     // Guest-only page: block if authenticated
     if (isAuthenticated.value) {
       window.location.replace('/')

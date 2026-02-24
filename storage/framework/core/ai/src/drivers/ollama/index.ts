@@ -448,7 +448,7 @@ export async function deleteModel(name: string): Promise<void> {
 /**
  * Show model information
  */
-export async function showModel(name: string): Promise<{
+export async function showModel(_name: string): Promise<{
   modelfile: string
   parameters: string
   template: string
@@ -465,7 +465,7 @@ export async function showModel(name: string): Promise<{
   const response = await fetch(`${config.host}/api/show`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name: _name }),
   })
 
   if (!response.ok) {

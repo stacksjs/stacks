@@ -1601,7 +1601,7 @@ exports.handler = async (event) => {
       const mailServerPath = emailConfig?.server?.serverPath || '/Users/chrisbreuer/Code/mail'
       // For 'server' mode, use x86_64 instance (Zig compilation), for 'serverless' use ARM
       const instanceType = mailServerConfig.type || (mailServerMode === 'server' ? 't3.small' : 't4g.nano')
-      const useSpot = mailServerConfig.spot || false
+      const _useSpot = mailServerConfig.spot || false
       const diskSize = mailServerConfig.diskSize || (mailServerMode === 'server' ? 30 : 8)
       const mailSubdomain = emailConfig?.server?.subdomain || 'mail'
       // Port configuration

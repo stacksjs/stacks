@@ -65,7 +65,7 @@ export class BunStorageAdapter implements StorageAdapter {
     const fullPath = this.resolvePath(path)
     const bunFile = file(fullPath)
     if (!(await bunFile.exists())) {
-      throw new Error('File not found: ' + path)
+      throw new Error(`File not found: ${path}`)
     }
     return await bunFile.arrayBuffer().then(buf => new Uint8Array(buf))
   }
@@ -74,7 +74,7 @@ export class BunStorageAdapter implements StorageAdapter {
     const fullPath = this.resolvePath(path)
     const bunFile = file(fullPath)
     if (!(await bunFile.exists())) {
-      throw new Error('File not found: ' + path)
+      throw new Error(`File not found: ${path}`)
     }
     return await bunFile.text()
   }
@@ -83,7 +83,7 @@ export class BunStorageAdapter implements StorageAdapter {
     const fullPath = this.resolvePath(path)
     const bunFile = file(fullPath)
     if (!(await bunFile.exists())) {
-      throw new Error('File not found: ' + path)
+      throw new Error(`File not found: ${path}`)
     }
     const arrayBuffer = await bunFile.arrayBuffer()
     return Buffer.from(arrayBuffer)
@@ -93,7 +93,7 @@ export class BunStorageAdapter implements StorageAdapter {
     const fullPath = this.resolvePath(path)
     const bunFile = file(fullPath)
     if (!(await bunFile.exists())) {
-      throw new Error('File not found: ' + path)
+      throw new Error(`File not found: ${path}`)
     }
     const arrayBuffer = await bunFile.arrayBuffer()
     return new Uint8Array(arrayBuffer)
@@ -137,7 +137,7 @@ export class BunStorageAdapter implements StorageAdapter {
     const fullPath = this.resolvePath(path)
     const bunFile = file(fullPath)
     if (!(await bunFile.exists())) {
-      throw new Error('File not found: ' + path)
+      throw new Error(`File not found: ${path}`)
     }
     const stats = await Bun.file(fullPath).stat()
     const isDir = stats.isDirectory()
@@ -195,13 +195,13 @@ export class BunStorageAdapter implements StorageAdapter {
 
   async publicUrl(path: string, options: PublicUrlOptions = {}): Promise<string> {
     const domain = options.domain || 'http://localhost'
-    return domain + '/' + path
+    return `${domain}/${path}`
   }
 
   async temporaryUrl(path: string, options: TemporaryUrlOptions): Promise<string> {
     const expiry = normalizeExpiryToDate(options.expiresIn)
-    const token = Buffer.from(path + ':' + expiry.getTime()).toString('base64url')
-    return 'http://localhost/temp/' + token
+    const token = Buffer.from(`${path}:${expiry.getTime()}`).toString('base64url')
+    return `http://localhost/temp/${token}`
   }
 
   async checksum(path: string, options: ChecksumOptions = {}): Promise<string> {
@@ -209,7 +209,7 @@ export class BunStorageAdapter implements StorageAdapter {
     const fullPath = this.resolvePath(path)
     const bunFile = file(fullPath)
     if (!(await bunFile.exists())) {
-      throw new Error('File not found: ' + path)
+      throw new Error(`File not found: ${path}`)
     }
     const hasher = new Bun.CryptoHasher(algorithm)
     const arrayBuffer = await bunFile.arrayBuffer()
@@ -221,7 +221,7 @@ export class BunStorageAdapter implements StorageAdapter {
     const fullPath = this.resolvePath(path)
     const bunFile = file(fullPath)
     if (!(await bunFile.exists())) {
-      throw new Error('File not found: ' + path)
+      throw new Error(`File not found: ${path}`)
     }
     return bunFile.type || 'application/octet-stream'
   }

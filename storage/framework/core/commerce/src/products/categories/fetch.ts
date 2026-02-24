@@ -184,7 +184,7 @@ export async function compareCategoryGrowth(_daysRange: number = 30): Promise<{
 
   // Current period (last N days)
   const currentPeriodStart = new Date()
-  currentPeriodStart.setDate(today.getDate() - daysRange)
+  currentPeriodStart.setDate(today.getDate() - _daysRange)
   const currentPeriodStartStr = formatDate(currentPeriodStart)
 
   // Previous period (N days before the current period)
@@ -193,7 +193,7 @@ export async function compareCategoryGrowth(_daysRange: number = 30): Promise<{
   const previousPeriodEndStr = formatDate(previousPeriodEnd)
 
   const previousPeriodStart = new Date(previousPeriodEnd)
-  previousPeriodStart.setDate(previousPeriodEnd.getDate() - daysRange)
+  previousPeriodStart.setDate(previousPeriodEnd.getDate() - _daysRange)
   const previousPeriodStartStr = formatDate(previousPeriodStart)
 
   // Get categories for current period
@@ -226,7 +226,7 @@ export async function compareCategoryGrowth(_daysRange: number = 30): Promise<{
     previous_period: previousCount,
     difference,
     percentage_change: percentageChange,
-    days_range: daysRange,
+    days_range: _daysRange,
   }
 }
 

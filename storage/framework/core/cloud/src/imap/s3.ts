@@ -618,7 +618,7 @@ export class S3Client {
     const payloadHash = crypto.createHash('sha256').update(policyString).digest('hex')
 
     // Use path-style URL: s3.region.amazonaws.com/bucket?policy
-    const canonicalUri = '/' + bucket
+    const canonicalUri = `/${bucket}`
     const canonicalQuerystring = 'policy='
 
     const requestHeaders: Record<string, string> = {
@@ -660,7 +660,7 @@ export class S3Client {
       crypto.createHash('sha256').update(canonicalRequest).digest('hex'),
     ].join('\n')
 
-    const kDate = crypto.createHmac('sha256', 'AWS4' + secretAccessKey).update(dateStamp).digest()
+    const kDate = crypto.createHmac('sha256', `AWS4${secretAccessKey}`).update(dateStamp).digest()
     const kRegion = crypto.createHmac('sha256', kDate).update(this.region).digest()
     const kService = crypto.createHmac('sha256', kRegion).update('s3').digest()
     const kSigning = crypto.createHmac('sha256', kService).update('aws4_request').digest()
@@ -700,7 +700,7 @@ export class S3Client {
     const payloadHash = crypto.createHash('sha256').update('').digest('hex')
 
     // Use path-style URL: s3.region.amazonaws.com/bucket?policy
-    const canonicalUri = '/' + bucket
+    const canonicalUri = `/${bucket}`
     const canonicalQuerystring = 'policy='
 
     const requestHeaders: Record<string, string> = {
@@ -741,7 +741,7 @@ export class S3Client {
       crypto.createHash('sha256').update(canonicalRequest).digest('hex'),
     ].join('\n')
 
-    const kDate = crypto.createHmac('sha256', 'AWS4' + secretAccessKey).update(dateStamp).digest()
+    const kDate = crypto.createHmac('sha256', `AWS4${secretAccessKey}`).update(dateStamp).digest()
     const kRegion = crypto.createHmac('sha256', kDate).update(this.region).digest()
     const kService = crypto.createHmac('sha256', kRegion).update('s3').digest()
     const kSigning = crypto.createHmac('sha256', kService).update('aws4_request').digest()

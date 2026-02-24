@@ -13,11 +13,11 @@ const isMysql = dbDriver === 'mysql'
 // - PostgreSQL: SERIAL PRIMARY KEY, NOW(), true/false
 // - MySQL: INTEGER AUTO_INCREMENT PRIMARY KEY, NOW(), 1/0
 // - SQLite: INTEGER PRIMARY KEY AUTOINCREMENT, datetime('now'), 1/0
-const autoIncrement = isPostgres ? 'SERIAL' : 'INTEGER'
-const primaryKey = isPostgres ? 'PRIMARY KEY' : (isMysql ? 'PRIMARY KEY AUTO_INCREMENT' : 'PRIMARY KEY AUTOINCREMENT')
+const _autoIncrement = isPostgres ? 'SERIAL' : 'INTEGER'
+const _primaryKey = isPostgres ? 'PRIMARY KEY' : (isMysql ? 'PRIMARY KEY AUTO_INCREMENT' : 'PRIMARY KEY AUTOINCREMENT')
 const now = isPostgres || isMysql ? 'NOW()' : `datetime('now')`
 const boolTrue = isPostgres ? 'true' : '1'
-const boolFalse = isPostgres ? 'false' : '0'
+const _boolFalse = isPostgres ? 'false' : '0'
 
 log.info('Setting up authentication...')
 log.info(`Database driver: ${dbDriver}`)

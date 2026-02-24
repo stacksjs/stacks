@@ -24,7 +24,7 @@ export function parse(src: string, options: ParseOptions = {}): ParseResult {
   const lines = src.split('\n')
 
   for (let i = 0; i < lines.length; i++) {
-    let line = lines[i].trim()
+    const line = lines[i].trim()
 
     // Skip empty lines and comments
     if (!line || line.startsWith('#')) {
@@ -46,7 +46,7 @@ export function parse(src: string, options: ParseOptions = {}): ParseResult {
       continue
     }
 
-    let key = match[1].trim()
+    const key = match[1].trim()
     let value = match[2].trim()
 
     // Handle quoted values
@@ -132,7 +132,7 @@ function expandVariables(value: string, env: Record<string, string | undefined>)
  */
 function expandCommands(value: string): string {
   // Match $(command) patterns
-  return value.replace(/\$\(([^)]+)\)/g, (match, command) => {
+  return value.replace(/\$\(([^)]+)\)/g, (_match, command) => {
     try {
       const result = Bun.spawnSync(command.split(' '), {
         stdout: 'pipe',

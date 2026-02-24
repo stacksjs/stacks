@@ -162,9 +162,9 @@ export class SMTPDriver extends BaseEmailDriver {
     return new Promise((resolve, reject) => {
       let socket: net.Socket | tls.TLSSocket
       let buffer = ''
-      let currentCommand = ''
-      let commandQueue: Array<{ cmd: string, resolve: (response: string) => void, reject: (error: Error) => void }> = []
-      let isProcessing = false
+      const _currentCommand = ''
+      const commandQueue: Array<{ cmd: string, resolve: (response: string) => void, reject: (error: Error) => void }> = []
+      const _isProcessing = false
 
       const processResponse = (response: string) => {
         log.debug(`[SMTP] Server: ${response.trim()}`)
@@ -190,7 +190,7 @@ export class SMTPDriver extends BaseEmailDriver {
         return new Promise((res, rej) => {
           commandQueue.push({ cmd, resolve: res, reject: rej })
           log.debug(`[SMTP] Client: ${cmd}`)
-          socket.write(cmd + '\r\n')
+          socket.write(`${cmd}\r\n`)
         })
       }
 
@@ -220,7 +220,7 @@ export class SMTPDriver extends BaseEmailDriver {
           })
 
           // Send EHLO
-          const ehloResponse = await sendCommand(`EHLO ${config.email.domain || 'localhost'}`)
+          const _ehloResponse = await sendCommand(`EHLO ${config.email.domain || 'localhost'}`)
 
           // Handle STARTTLS if needed
           if (smtpConfig.encryption === 'starttls' && !(socket instanceof tls.TLSSocket)) {
@@ -275,7 +275,7 @@ export class SMTPDriver extends BaseEmailDriver {
           await sendCommand('DATA')
 
           // Send email content (no response expected until final .)
-          socket.write(content + '\r\n.\r\n')
+          socket.write(`${content}\r\n.\r\n`)
           await new Promise<string>((res, rej) => {
             commandQueue.push({ cmd: 'DATA_END', resolve: res, reject: rej })
           })

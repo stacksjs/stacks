@@ -167,7 +167,7 @@ export async function fetchPaymentStatsByMethod(_daysRange: number = 30): Promis
   const today = new Date()
 
   const startDate = new Date(today)
-  startDate.setDate(today.getDate() - daysRange)
+  startDate.setDate(today.getDate() - _daysRange)
 
   // Get total stats for the period
   const totalStats = await db

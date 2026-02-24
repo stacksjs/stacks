@@ -215,7 +215,7 @@ export function mailCommands(buddy: CLI): void {
         // Test the API
         const response = await fetch(`${apiUrl}/mailboxes`, {
           headers: {
-            'Authorization': 'Basic ' + Buffer.from('test@stacksjs.com:test').toString('base64'),
+            'Authorization': `Basic ${Buffer.from('test@stacksjs.com:test').toString('base64')}`,
           },
         })
 

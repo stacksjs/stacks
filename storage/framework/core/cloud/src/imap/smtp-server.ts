@@ -175,7 +175,7 @@ export class SmtpServer {
    */
   private send(session: SmtpSession, message: string): void {
     if (!session.socket.destroyed) {
-      session.socket.write(message + '\r\n')
+      session.socket.write(`${message}\r\n`)
     }
   }
 
@@ -462,7 +462,7 @@ export class SmtpServer {
     } else {
       // Handle dot-stuffing (lines starting with . have the dot removed)
       const actualLine = line.startsWith('.') ? line.slice(1) : line
-      session.dataBuffer += actualLine + '\r\n'
+      session.dataBuffer += `${actualLine}\r\n`
     }
   }
 
