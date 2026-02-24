@@ -250,8 +250,8 @@ export function getAvailableDrivers(): string[] {
  * Get repository structure for context
  */
 export async function getRepoContext(repoPath: string): Promise<string> {
-  const { $ } = await import('bun')
-  const treeResult = await $`cd ${repoPath} && find . -type f -not -path "*/node_modules/*" -not -path "*/.git/*" -not -name "*.lock" | head -50`.quiet()
+  const { $: _$ } = await import('bun')
+  const treeResult = await _$`cd ${repoPath} && find . -type f -not -path "*/node_modules/*" -not -path "*/.git/*" -not -name "*.lock" | head -50`.quiet()
   const files = treeResult.text().trim()
 
   let readme = ''
@@ -279,7 +279,7 @@ ${packageJson ? `package.json:\n${packageJson}\n` : ''}
  * Clone or open a repository
  */
 export async function openRepository(input: string): Promise<RepoState> {
-  const { $ } = await import('bun')
+  const { $: _$ } = await import('bun')
   let repoPath: string
   let repoName: string
 
@@ -289,11 +289,11 @@ export async function openRepository(input: string): Promise<RepoState> {
 
     if (existsSync(repoPath)) {
       console.log(`Repository already exists, pulling latest...`)
-      await $`cd ${repoPath} && git pull --rebase`.quiet()
+      await _$`cd ${repoPath} && git pull --rebase`.quiet()
     }
     else {
       console.log(`Cloning ${input}...`)
-      await $`git clone ${input} ${repoPath}`.quiet()
+      await _$`git clone ${input} ${repoPath}`.quiet()
     }
   }
   else {
@@ -310,13 +310,13 @@ export async function openRepository(input: string): Promise<RepoState> {
     repoName = repoPath.split('/').pop() || 'repo'
   }
 
-  const branchResult = await $`cd ${repoPath} && git branch --show-current`.quiet()
+  const branchResult = await _$`cd ${repoPath} && git branch --show-current`.quiet()
   const branch = branchResult.text().trim()
 
-  const statusResult = await $`cd ${repoPath} && git status --porcelain`.quiet()
+  const statusResult = await _$`cd ${repoPath} && git status --porcelain`.quiet()
   const hasChanges = statusResult.text().trim().length > 0
 
-  const lastCommitResult = await $`cd ${repoPath} && git log -1 --format="%h %s"`.quiet()
+  const lastCommitResult = await _$`cd ${repoPath} && git log -1 --format="%h %s"`.quiet()
   const lastCommit = lastCommitResult.text().trim()
 
   const repoState: RepoState = {

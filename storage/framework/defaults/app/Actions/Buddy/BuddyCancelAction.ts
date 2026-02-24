@@ -12,10 +12,10 @@ export default new Action({
   method: 'POST',
   async handle(_request: RequestInstance) {
     try {
-      const { $ } = await import('bun')
+      const { $: _$ } = await import('bun')
 
       // Find and kill claude CLI processes
-      const result = await $`pkill -f "claude --print" || true`.quiet().nothrow()
+      const _result = await _$`pkill -f "claude --print" || true`.quiet().nothrow()
 
       return response.json({
         success: true,

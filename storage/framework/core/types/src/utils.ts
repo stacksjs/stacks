@@ -16,7 +16,7 @@ export type Arrayable<T> = T | Array<T>
 /**
  * Constructor.
  */
-export type Constructor<T = void> = new (...args: any[]) => T
+export type Constructor<T = void> = new (..._args: any[]) => T
 
 /**
  * Defines an intersection type of all union items.

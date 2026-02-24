@@ -4,7 +4,7 @@ import { mock } from 'bun:test'
  * Minimal but functional ref implementation for testing composables.
  * Supports subscribe/watch so composables that depend on reactivity work in tests.
  */
-type Subscriber<T> = (newVal: T, oldVal: T) => void
+type Subscriber<T> = (_newVal: T, _oldVal: T) => void
 
 function ref<T>(initial: T) {
   let _value = initial

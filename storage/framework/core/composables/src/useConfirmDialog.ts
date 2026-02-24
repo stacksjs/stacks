@@ -28,7 +28,7 @@ export function useConfirmDialog<T = any, C = any>(): UseConfirmDialogReturn<T, 
   const cancelHook = createEventHook<void>()
   const revealHook = createEventHook<T | undefined>()
 
-  let resolvePromise: ((result: { data?: C, isCanceled: boolean }) => void) | null = null
+  let resolvePromise: ((_result: { data?: C, isCanceled: boolean }) => void) | null = null
 
   function reveal(data?: T): Promise<{ data?: C, isCanceled: boolean }> {
     isRevealed.value = true

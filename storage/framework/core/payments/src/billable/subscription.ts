@@ -138,7 +138,7 @@ export const manageSubscription: SubscriptionManager = (() => {
     return (subscription as Record<string, unknown>).provider_status === 'trialing'
   }
 
-  async function isIncomplete(user: UserModel, type: string): Promise<boolean> {
+  async function isIncomplete(_user: UserModel, type: string): Promise<boolean> {
     const subscription = await db.selectFrom('subscriptions').where('type', '=', type).selectAll().executeTakeFirst()
 
     if (!subscription)
@@ -159,7 +159,7 @@ export const manageSubscription: SubscriptionManager = (() => {
     return active || trial
   }
 
-  async function storeSubscription(user: UserModel, type: string, lookupKey: string, options: Stripe.Subscription): Promise<SubscriptionsTable | undefined> {
+  async function storeSubscription(user: UserModel, type: string, _lookupKey: string, options: Stripe.Subscription): Promise<SubscriptionsTable | undefined> {
     const data = removeNullValues({
       user_id: user.id,
       type,

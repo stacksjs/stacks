@@ -7,7 +7,7 @@
 
 export type PluralCategory = 'zero' | 'one' | 'two' | 'few' | 'many' | 'other'
 
-export type PluralRule = (n: number) => PluralCategory
+export type PluralRule = (_n: number) => PluralCategory
 
 /**
  * Get the plural category for a number in a given locale

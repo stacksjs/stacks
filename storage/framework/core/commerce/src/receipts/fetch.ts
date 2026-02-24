@@ -27,7 +27,7 @@ export async function fetchAll(): Promise<ReceiptJsonResponse[]> {
  * @returns Object containing counts for each status and total
  */
 export async function fetchPrintJobStats(
-  startDate: Date | number,
+  _startDate: Date | number,
   endDate: Date | number,
 ): Promise<{
     total: number
@@ -38,7 +38,7 @@ export async function fetchPrintJobStats(
     averagePages: number
     averageDuration: number
   }> {
-  const start = typeof startDate === 'number' ? startDate : startDate.getTime()
+  const start = typeof _startDate === 'number' ? _startDate : _startDate.getTime()
   const end = typeof endDate === 'number' ? endDate : endDate.getTime()
 
   const stats = await db
@@ -75,7 +75,7 @@ export async function fetchPrintJobStats(
  * @returns Object containing success rate percentage and detailed counts
  */
 export async function fetchSuccessRate(
-  startDate: Date | number,
+  _startDate: Date | number,
   endDate: Date | number,
 ): Promise<{
     successRate: number
@@ -84,7 +84,7 @@ export async function fetchSuccessRate(
     failed: number
     warning: number
   }> {
-  const start = typeof startDate === 'number' ? startDate : startDate.getTime()
+  const start = typeof _startDate === 'number' ? _startDate : _startDate.getTime()
   const end = typeof endDate === 'number' ? endDate : endDate.getTime()
 
   const stats = await db
@@ -124,14 +124,14 @@ export async function fetchSuccessRate(
  * @returns Object containing total pages and average pages per receipt
  */
 export async function fetchPageStats(
-  startDate: Date | number,
+  _startDate: Date | number,
   endDate: Date | number,
 ): Promise<{
     totalPages: number
     averagePagesPerReceipt: number
     totalReceipts: number
   }> {
-  const start = typeof startDate === 'number' ? startDate : startDate.getTime()
+  const start = typeof _startDate === 'number' ? _startDate : _startDate.getTime()
   const end = typeof endDate === 'number' ? endDate : endDate.getTime()
 
   const stats = await db
@@ -160,7 +160,7 @@ export async function fetchPageStats(
  * @returns Object containing average print time and related statistics
  */
 export async function fetchPrintTimeStats(
-  startDate: Date | number,
+  _startDate: Date | number,
   endDate: Date | number,
 ): Promise<{
     averageDuration: number
@@ -168,7 +168,7 @@ export async function fetchPrintTimeStats(
     maxDuration: number
     totalJobs: number
   }> {
-  const start = typeof startDate === 'number' ? startDate : startDate.getTime()
+  const start = typeof _startDate === 'number' ? _startDate : _startDate.getTime()
   const end = typeof endDate === 'number' ? endDate : endDate.getTime()
 
   const stats = await db
@@ -199,7 +199,7 @@ export async function fetchPrintTimeStats(
  * @returns Object containing prints per hour statistics
  */
 export async function fetchPrintsPerHour(
-  startDate: Date | number,
+  _startDate: Date | number,
   endDate: Date | number,
 ): Promise<{
     totalPrints: number
@@ -210,7 +210,7 @@ export async function fetchPrintsPerHour(
       count: number
     }>
   }> {
-  const start = typeof startDate === 'number' ? startDate : startDate.getTime()
+  const start = typeof _startDate === 'number' ? _startDate : _startDate.getTime()
   const end = typeof endDate === 'number' ? endDate : endDate.getTime()
 
   const receipts = await db

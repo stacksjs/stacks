@@ -1,4 +1,4 @@
-type SSRHandler = (...args: any[]) => any
+type SSRHandler = (..._args: any[]) => any
 
 const handlers = new Map<string, SSRHandler>()
 

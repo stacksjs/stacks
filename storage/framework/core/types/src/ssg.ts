@@ -1,3 +1,3 @@
 import type { ViteSSGContext } from '.'
 
-export type UserModule = (ctx: ViteSSGContext) => void
+export type UserModule = (_ctx: ViteSSGContext) => void

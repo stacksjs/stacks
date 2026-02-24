@@ -156,13 +156,13 @@ function buildSeparator(
   let separator = char.repeat(width)
 
   if (alignment === 'left') {
-    separator = ':' + separator.slice(1)
+    separator = `:${separator.slice(1)}`
   }
   else if (alignment === 'right') {
     separator = separator.slice(0, -1) + ':'
   }
   else if (alignment === 'center') {
-    separator = ':' + separator.slice(2) + ':'
+    separator = `:${separator.slice(2)}:`
   }
 
   return separator

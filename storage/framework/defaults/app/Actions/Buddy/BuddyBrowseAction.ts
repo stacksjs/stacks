@@ -13,11 +13,11 @@ export default new Action({
   method: 'POST',
   async handle(_request: RequestInstance) {
     try {
-      const { $ } = await import('bun')
+      const { $: _$ } = await import('bun')
 
       // Use osascript to open native folder picker on macOS
       const script = `osascript -e 'POSIX path of (choose folder with prompt "Select project folder")'`
-      const result = await $`sh -c ${script}`.quiet()
+      const result = await _$`sh -c ${script}`.quiet()
       const selectedPath = result.text().trim().replace(/\/$/, '') // Remove trailing slash
 
       if (selectedPath) {

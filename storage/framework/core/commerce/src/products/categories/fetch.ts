@@ -172,7 +172,7 @@ export async function fetchStats(): Promise<CategoryStats> {
  * Compare category growth between different time periods
  * @param daysRange Number of days to look back (7, 30, 60, etc.)
  */
-export async function compareCategoryGrowth(daysRange: number = 30): Promise<{
+export async function compareCategoryGrowth(_daysRange: number = 30): Promise<{
   current_period: number
   previous_period: number
   difference: number

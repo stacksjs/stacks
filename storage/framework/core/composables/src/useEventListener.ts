@@ -32,7 +32,7 @@ export function useEventListener(
 
   if (isRef(target)) {
     // Watch the ref so that if the target changes, we re-bind
-    watch(target, (newTarget, _oldTarget) => {
+    watch(target, (_newTarget, _oldTarget) => {
       cleanup()
       cleanup = register(unref(target) as EventTarget | null | undefined)
     })

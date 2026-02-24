@@ -257,7 +257,7 @@ export async function fetchCountByStatus(
  * @returns Object containing total conversion rate and breakdown by status
  */
 export async function fetchConversionRates(
-  startDate?: Date,
+  _startDate?: Date,
   endDate?: Date,
 ): Promise<{
     totalConversionRate: number
@@ -268,8 +268,8 @@ export async function fetchConversionRates(
     .select(['status', (eb: any) => eb.fn.count('id').as('count')] as any)
     .groupBy('status') as any
 
-  if (startDate && endDate) {
-    const startDateStr = formatDate(startDate)
+  if (_startDate && endDate) {
+    const startDateStr = formatDate(_startDate)
     const endDateStr = formatDate(endDate)
     query = query
       .where('created_at', '>=', startDateStr)

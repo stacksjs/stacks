@@ -176,7 +176,7 @@ async function registerPolicy(modelName: string, policyName: string): Promise<vo
 
       // Add the new policy
       const newPolicy = `  '${modelName}': '${policyName}',\n`
-      const updatedPolicies = existingPolicies.trimEnd() + '\n' + newPolicy
+      const updatedPolicies = `${existingPolicies.trimEnd()}\n${newPolicy}`
 
       content = content.replace(
         /export const policies[^{]*\{([^}]*)\}/,

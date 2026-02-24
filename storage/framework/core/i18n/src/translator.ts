@@ -32,7 +32,7 @@ const defaultConfig: I18nConfig = {
  */
 let currentLocale = 'en'
 let fallbackLocale = 'en'
-let translations: Translations = {}
+const translations: Translations = {}
 let config: I18nConfig = { ...defaultConfig }
 
 /**

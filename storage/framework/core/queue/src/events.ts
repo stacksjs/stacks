@@ -46,7 +46,7 @@ export interface QueueEventPayload {
 /**
  * Queue event handler type
  */
-export type QueueEventHandler = (payload: QueueEventPayload) => void | Promise<void>
+export type QueueEventHandler = (_payload: QueueEventPayload) => void | Promise<void>
 
 /**
  * Queue events emitter
@@ -204,12 +204,12 @@ export function getQueueEvents(): QueueEvents {
  */
 export function onQueueEvent(
   event: QueueEventType | '*',
-  handler: QueueEventHandler | ((event: QueueEventType, payload: QueueEventPayload) => void | Promise<void>),
+  handler: QueueEventHandler | ((_event: QueueEventType, _payload: QueueEventPayload) => void | Promise<void>),
 ): () => void {
   const events = getQueueEvents()
 
   if (event === '*') {
-    return events.onAny(handler as (event: QueueEventType, payload: QueueEventPayload) => void | Promise<void>)
+    return events.onAny(handler as (_event: QueueEventType, _payload: QueueEventPayload) => void | Promise<void>)
   }
 
   return events.on(event, handler as QueueEventHandler)
@@ -364,7 +364,7 @@ export class QueueMetrics {
       : 0
 
     // Calculate throughput (jobs per second over last minute)
-    const oneMinuteAgo = Date.now() - 60000
+    const _oneMinuteAgo = Date.now() - 60000
     const recentCompleted = this.durations.filter((_, i) => {
       // This is a rough approximation
       return i >= this.durations.length - 60

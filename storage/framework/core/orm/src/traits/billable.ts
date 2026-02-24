@@ -1,6 +1,6 @@
 import { db } from '@stacksjs/database'
 
-export function createBillableMethods(tableName: string) {
+export function createBillableMethods(_tableName: string) {
   return {
     async createStripeUser(model: any, options: any): Promise<any> {
       const { manageCustomer } = await import('@stacksjs/payments')

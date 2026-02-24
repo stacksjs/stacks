@@ -3,7 +3,7 @@ import { onUnmounted, ref, watch } from '@stacksjs/stx'
 import type { MaybeRef } from './_shared'
 import { unref } from './_shared'
 
-export type TransitionFunction = (t: number) => number
+export type TransitionFunction = (_t: number) => number
 
 export interface UseTransitionOptions {
   /** Duration in milliseconds. Default: 300 */
@@ -102,7 +102,7 @@ export function useTransition(
  * Execute a transition between values.
  */
 export function executeTransition(
-  from: number,
+  _from: number,
   to: number,
   options: UseTransitionOptions = {},
 ): Promise<void> {

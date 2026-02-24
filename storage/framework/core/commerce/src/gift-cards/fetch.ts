@@ -192,7 +192,7 @@ export async function checkBalance(code: string): Promise<{ valid: boolean, bala
  * Compare active gift cards between different time periods
  * @param daysRange Number of days to look back (7, 30, 60, etc.)
  */
-export async function compareActiveGiftCards(daysRange: number = 30): Promise<{
+export async function compareActiveGiftCards(_daysRange: number = 30): Promise<{
   current_period: number
   previous_period: number
   difference: number
@@ -263,7 +263,7 @@ export async function compareActiveGiftCards(daysRange: number = 30): Promise<{
  * with clear increase/decrease indicators
  * @param daysRange Number of days to look back (7, 30, 60, etc.)
  */
-export async function calculateGiftCardValues(daysRange: number = 30): Promise<{
+export async function calculateGiftCardValues(_daysRange: number = 30): Promise<{
   current_period: {
     total_initial_value: number
     total_remaining_balance: number

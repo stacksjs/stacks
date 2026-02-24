@@ -123,7 +123,7 @@ export async function fetchStats(): Promise<OrderStats> {
  * Compare orders between different time periods
  * @param daysRange Number of days to look back (7, 30, 60, etc.)
  */
-export async function compareOrdersByPeriod(daysRange: number = 30): Promise<{
+export async function compareOrdersByPeriod(_daysRange: number = 30): Promise<{
   current_period: number
   previous_period: number
   difference: number
@@ -181,7 +181,7 @@ export async function compareOrdersByPeriod(daysRange: number = 30): Promise<{
  * Calculate order values and metrics for different time periods
  * @param daysRange Number of days to look back (7, 30, 60, etc.)
  */
-export async function calculateOrderMetrics(daysRange: number = 30): Promise<{
+export async function calculateOrderMetrics(_daysRange: number = 30): Promise<{
   current_period: {
     total_orders: number
     total_revenue: number
@@ -342,7 +342,7 @@ export async function calculateOrderMetrics(daysRange: number = 30): Promise<{
  * Get daily order counts for a time period
  * @param daysRange Number of days to look back
  */
-export async function fetchDailyOrderTrends(daysRange: number = 30): Promise<{
+export async function fetchDailyOrderTrends(_daysRange: number = 30): Promise<{
   date: string
   order_count: number
   revenue: number

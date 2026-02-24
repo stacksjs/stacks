@@ -14,7 +14,7 @@ export interface OnKeyStrokeOptions {
   target?: MaybeRef<EventTarget | null>
 }
 
-type KeyFilter = string | string[] | ((event: KeyboardEvent) => boolean)
+type KeyFilter = string | string[] | ((_event: KeyboardEvent) => boolean)
 
 /**
  * Listen for specific key strokes.

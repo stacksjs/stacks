@@ -24,7 +24,7 @@ const requestStorage = new AsyncLocalStorage<EnhancedRequest>()
  * Set the current request context
  * Called by middleware/router when handling a request
  */
-export function setCurrentRequest(req: EnhancedRequest): void {
+export function setCurrentRequest(_req: EnhancedRequest): void {
   // Note: This only works within the async context started by runWithRequest
   const store = requestStorage.getStore()
   if (store) {

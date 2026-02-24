@@ -107,7 +107,7 @@ function shouldRunNow(cronExpression: string, lastRun: Date | null): boolean {
 /**
  * Match a single cron part against the current value
  */
-function matchesCronPart(part: string, current: number, min: number, max: number): boolean {
+function matchesCronPart(part: string, current: number, _min: number, _max: number): boolean {
   // Wildcard
   if (part === '*') {
     return true

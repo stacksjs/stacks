@@ -11,7 +11,7 @@ import { log } from '@stacksjs/logging'
 import process from 'node:process'
 
 // Prevent unhandled rejections from crashing the worker
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason, _promise) => {
   log.error(`Unhandled Rejection: ${reason}`)
 })
 
@@ -151,7 +151,7 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
 /**
  * Fetch pending jobs from the database
  */
-async function fetchPendingJobs(queueName: string, limit: number, driver: string): Promise<any[]> {
+async function fetchPendingJobs(queueName: string, limit: number, _driver: string): Promise<any[]> {
   const now = Math.floor(Date.now() / 1000)
 
   const { db } = await import('@stacksjs/database')

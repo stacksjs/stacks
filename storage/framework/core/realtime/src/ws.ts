@@ -17,7 +17,7 @@ export function setBunSocket(server: BroadcastServer | null): void {
  * Note: This function is now a no-op. WebSocket events are tracked internally by ts-broadcasting.
  */
 export async function storeWebSocketEvent(
-  type: 'disconnection' | 'error' | 'success',
+  _type: 'disconnection' | 'error' | 'success',
   socket: string,
   details: string,
 ): Promise<void> {

@@ -325,7 +325,7 @@ export async function fetchTablesTurnedToday(): Promise<{
  * @returns Object containing seating rate and status breakdown
  */
 export async function fetchSeatingRate(
-  startDate: Date,
+  _startDate: Date,
   endDate: Date,
 ): Promise<{
     totalEntries: number
@@ -333,7 +333,7 @@ export async function fetchSeatingRate(
     seatingRate: number
     statusBreakdown: Record<string, { count: number, percentage: number }>
   }> {
-  const startDateStr = formatDate(startDate)
+  const startDateStr = formatDate(_startDate)
   const endDateStr = formatDate(endDate)
 
   const results = await db
@@ -372,7 +372,7 @@ export async function fetchSeatingRate(
  * @returns Object containing no-show statistics and related information
  */
 export async function fetchNoShowStats(
-  startDate: Date,
+  _startDate: Date,
   endDate: Date,
 ): Promise<{
     totalNoShows: number
@@ -382,7 +382,7 @@ export async function fetchNoShowStats(
     breakdownByTablePreference: Record<string, number>
     breakdownByPartySize: Record<number, number>
   }> {
-  const startDateStr = formatDate(startDate)
+  const startDateStr = formatDate(_startDate)
   const endDateStr = formatDate(endDate)
 
   // Build base query for no-show entries

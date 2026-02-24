@@ -753,7 +753,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
   let currentGroupMiddleware: string[] = []
 
   // Helper to register a route with group middleware applied
-  function registerRoute(method: string, path: string, handler: StacksHandler) {
+  function registerRoute(method: string, path: string, _handler: StacksHandler) {
     const fullPath = currentPrefix + path
     const routeKey = `${method}:${fullPath}`
 

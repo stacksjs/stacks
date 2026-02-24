@@ -11,12 +11,12 @@ type UserModel = typeof User
 /**
  * Gate callback function type
  */
-export type GateCallback<T = any> = (user: UserModel | null, ...args: T[]) => boolean | Promise<boolean> | AuthorizationResponse
+export type GateCallback<T = any> = (_user: UserModel | null, ..._args: T[]) => boolean | Promise<boolean> | AuthorizationResponse
 
 /**
  * Policy method type
  */
-export type PolicyMethod<T = any> = (user: UserModel | null, model?: T, ...args: any[]) => boolean | Promise<boolean> | AuthorizationResponse
+export type PolicyMethod<T = any> = (_user: UserModel | null, _model?: T, ..._args: any[]) => boolean | Promise<boolean> | AuthorizationResponse
 
 /**
  * Authorization response for detailed allow/deny

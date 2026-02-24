@@ -42,7 +42,7 @@ function restoreCase(word: string, token: string): string {
 }
 
 function interpolate(str: string, ...args: any[]): string {
-  return str.replace(/\$(\d{1,2})/g, (match, index) => args[Number(index)] || '')
+  return str.replace(/\$(\d{1,2})/g, (_match, index) => args[Number(index)] || '')
 }
 
 function replace(word: string, rule: Rule): string {

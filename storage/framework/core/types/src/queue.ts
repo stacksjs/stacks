@@ -25,7 +25,7 @@ export interface QueueRateLimiter {
   /** Duration in milliseconds */
   duration: number
   /** Key prefix for rate limiting */
-  keyPrefix?: string | ((data: any) => string)
+  keyPrefix?: string | ((_data: any) => string)
 }
 
 /**

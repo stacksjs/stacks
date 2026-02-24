@@ -8,7 +8,7 @@ interface PluginContext {
 export function install(ctx: PluginContext) {
   const { checkAuthentication } = useAuth()
 
-  ctx.router.beforeEach(async (to, from, next) => {
+  ctx.router.beforeEach(async (to, _from, next) => {
     const isAuthenticated = await checkAuthentication()
 
     // If route explicitly doesn't require auth (guest-only pages like login/signup)

@@ -158,7 +158,7 @@ export async function template(
 
   // Wrap in layout if specified
   if (layout !== false) {
-    let layoutHtml = loadLayout(layout)
+    const layoutHtml = loadLayout(layout)
 
     if (!layoutHtml) {
       console.warn(`[Email Template] Layout "${layout}" not found, using content only`)

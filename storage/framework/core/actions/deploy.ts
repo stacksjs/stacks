@@ -218,14 +218,14 @@ async function cleanPackageJson(filePath) {
     // Remove link: dependencies
     for (const key of Object.keys(pkg.dependencies || {})) {
       if (typeof pkg.dependencies[key] === 'string' && pkg.dependencies[key].startsWith('link:')) {
-        console.log('[' + filePath + '] Removing linked dependency: ' + key);
+        console.log(`[${filePath}] Removing linked dependency: ${key}`);
         delete pkg.dependencies[key];
         modified = true;
       }
     }
     for (const key of Object.keys(pkg.devDependencies || {})) {
       if (typeof pkg.devDependencies[key] === 'string' && pkg.devDependencies[key].startsWith('link:')) {
-        console.log('[' + filePath + '] Removing linked devDependency: ' + key);
+        console.log(`[${filePath}] Removing linked devDependency: ${key}`);
         delete pkg.devDependencies[key];
         modified = true;
       }
@@ -233,14 +233,14 @@ async function cleanPackageJson(filePath) {
     // Also handle workspace: dependencies
     for (const key of Object.keys(pkg.dependencies || {})) {
       if (typeof pkg.dependencies[key] === 'string' && pkg.dependencies[key].startsWith('workspace:')) {
-        console.log('[' + filePath + '] Removing workspace dependency: ' + key);
+        console.log(`[${filePath}] Removing workspace dependency: ${key}`);
         delete pkg.dependencies[key];
         modified = true;
       }
     }
     for (const key of Object.keys(pkg.devDependencies || {})) {
       if (typeof pkg.devDependencies[key] === 'string' && pkg.devDependencies[key].startsWith('workspace:')) {
-        console.log('[' + filePath + '] Removing workspace devDependency: ' + key);
+        console.log(`[${filePath}] Removing workspace devDependency: ${key}`);
         delete pkg.devDependencies[key];
         modified = true;
       }
@@ -248,10 +248,10 @@ async function cleanPackageJson(filePath) {
 
     if (modified) {
       await Bun.write(filePath, JSON.stringify(pkg, null, 2));
-      console.log('[' + filePath + '] Cleaned');
+      console.log(`[${filePath}] Cleaned`);
     }
   } catch (e) {
-    console.log('[' + filePath + '] Error: ' + e.message);
+    console.log(`[${filePath}] Error: ${e.message}`);
   }
 }
 
@@ -363,15 +363,15 @@ const server = Bun.serve({
     // Handle static assets (CSS, JS, images, fonts, etc.)
     if (isStaticAsset(pathname)) {
       const assetPaths = [
-        './public/dist' + pathname,
-        './public' + pathname,
-        './storage/public' + pathname,
-        '.' + pathname,
+        `./public/dist${pathname}`,
+        `./public${pathname}`,
+        `./storage/public${pathname}`,
+        `.${pathname}`,
       ]
 
       // For /assets/* URLs, also check resources/assets directory
       if (pathname.startsWith('/assets/')) {
-        assetPaths.push('./resources' + pathname)
+        assetPaths.push(`./resources${pathname}`)
       }
 
       for (const assetPath of assetPaths) {
@@ -430,7 +430,7 @@ const server = Bun.serve({
     })
   }
 })
-console.log('Stacks Server running at http://localhost:' + server.port)
+console.log(`Stacks Server running at http://localhost:${server.port}`)
 SERVEREOF
 cat > /etc/systemd/system/stacks.service << 'SERVICEEOF'
 [Unit]
@@ -774,7 +774,7 @@ echo "Setup complete!"
       'ca-central-1': 'ZQSVJUPU6J1EY',
     }
 
-    const albHostedZoneId = albHostedZoneIds[options.environment === 'production' ? 'us-east-1' : 'us-east-1'] || 'Z35SXDOTRQ7X7K'
+    const _albHostedZoneId = albHostedZoneIds[options.environment === 'production' ? 'us-east-1' : 'us-east-1'] || 'Z35SXDOTRQ7X7K'
 
     // Create DNS A record for each SSL domain
     sslDomains.forEach((domain: string, index: number) => {
@@ -2296,11 +2296,11 @@ export async function deployFrontend(options: DeployFrontendOptions): Promise<vo
 /**
  * Get deployment status and outputs
  */
-export async function getDeploymentStatus(options: { environment: string, region: string }): Promise<{
+export async function getDeploymentStatus(_options: { environment: string, region: string }): Promise<{
   status: string
   outputs: Record<string, string>
 }> {
-  const { environment, region } = options
+  const { environment, region } = _options
   const stackName = `stacks-cloud-${environment}`
 
   const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')

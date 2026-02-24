@@ -48,7 +48,7 @@ export function mergeArrayable<T>(...args: Nullable<Arrayable<T>>[]): Array<T> {
   return args.flatMap(i => toArray(i))
 }
 
-export type PartitionFilter<T> = (i: T, idx: number, arr: readonly T[]) => any
+export type PartitionFilter<T> = (_i: T, _idx: number, _arr: readonly T[]) => any
 
 /**
  * Divide an array into two parts by a filter function
@@ -61,24 +61,24 @@ export type PartitionFilter<T> = (i: T, idx: number, arr: readonly T[]) => any
  * console.log(even) // [2, 4]
  * ```
  */
-export function partition<T>(array: readonly T[], f1: PartitionFilter<T>): [T[], T[]]
-export function partition<T>(array: readonly T[], f1: PartitionFilter<T>, f2: PartitionFilter<T>): [T[], T[], T[]]
+export function partition<T>(array: readonly T[], _f1: PartitionFilter<T>): [T[], T[]]
+export function partition<T>(array: readonly T[], _f1: PartitionFilter<T>, _f2: PartitionFilter<T>): [T[], T[], T[]]
 export function partition<T>(
   array: readonly T[],
-  f1: PartitionFilter<T>,
+  _f1: PartitionFilter<T>,
   f2: PartitionFilter<T>,
   f3: PartitionFilter<T>,
 ): [T[], T[], T[], T[]]
 export function partition<T>(
   array: readonly T[],
-  f1: PartitionFilter<T>,
+  _f1: PartitionFilter<T>,
   f2: PartitionFilter<T>,
   f3: PartitionFilter<T>,
   f4: PartitionFilter<T>,
 ): [T[], T[], T[], T[], T[]]
 export function partition<T>(
   array: readonly T[],
-  f1: PartitionFilter<T>,
+  _f1: PartitionFilter<T>,
   f2: PartitionFilter<T>,
   f3: PartitionFilter<T>,
   f4: PartitionFilter<T>,
@@ -86,7 +86,7 @@ export function partition<T>(
 ): [T[], T[], T[], T[], T[], T[]]
 export function partition<T>(
   array: readonly T[],
-  f1: PartitionFilter<T>,
+  _f1: PartitionFilter<T>,
   f2: PartitionFilter<T>,
   f3: PartitionFilter<T>,
   f4: PartitionFilter<T>,

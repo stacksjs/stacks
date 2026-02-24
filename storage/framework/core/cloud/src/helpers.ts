@@ -61,7 +61,7 @@ async function cwlRequest(region: string, action: string, payload: Record<string
 /**
  * Helper to make raw EFS API calls since EFSClient is not available
  */
-async function efsRequest(action: string, method: string, path: string): Promise<Record<string, unknown>> {
+async function efsRequest(_action: string, method: string, path: string): Promise<Record<string, unknown>> {
   const client = new AWSClient()
   const result = await client.request({
     service: 'elasticfilesystem',

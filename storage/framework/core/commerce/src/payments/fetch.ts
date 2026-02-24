@@ -159,7 +159,7 @@ export async function fetchPaymentStats(daysRange: number = 30): Promise<Payment
  *
  * @param daysRange Number of days to look back
  */
-export async function fetchPaymentStatsByMethod(daysRange: number = 30): Promise<Record<string, {
+export async function fetchPaymentStatsByMethod(_daysRange: number = 30): Promise<Record<string, {
   count: number
   revenue: number
   percentage_of_total: number

@@ -17,10 +17,10 @@ export interface UseWebNotificationReturn {
   permissionGranted: Ref<boolean>
   show: (overrideOptions?: UseWebNotificationOptions) => Promise<Notification | undefined>
   close: () => void
-  onClick: Ref<((evt: Event) => void) | null>
-  onShow: Ref<((evt: Event) => void) | null>
-  onError: Ref<((evt: Event) => void) | null>
-  onClose: Ref<((evt: Event) => void) | null>
+  onClick: Ref<((_evt: Event) => void) | null>
+  onShow: Ref<((_evt: Event) => void) | null>
+  onError: Ref<((_evt: Event) => void) | null>
+  onClose: Ref<((_evt: Event) => void) | null>
 }
 
 /**

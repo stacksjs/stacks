@@ -67,7 +67,7 @@ export default new Middleware({
     // If result is a Response (429), throw it to short-circuit the request
     if (result instanceof Response) {
       // Transform the response to match stacks format
-      const body = await result.clone().json().catch(() => ({}))
+      const _body = await result.clone().json().catch(() => ({}))
       const retryAfter = result.headers.get('Retry-After') || '60'
 
       throw new Response(JSON.stringify({

@@ -36,7 +36,7 @@ export type WebhookEventType =
   | 'setup_intent.setup_failed'
   | string
 
-export type WebhookHandler = (event: Stripe.Event) => Promise<void> | void
+export type WebhookHandler = (_event: Stripe.Event) => Promise<void> | void
 
 export interface WebhookConfig {
   secret: string

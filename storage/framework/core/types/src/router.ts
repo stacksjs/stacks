@@ -5,7 +5,7 @@ import type { HttpMethod } from './request'
 
 type ActionPath = string
 // need to refactor before, after, view to be a part of some other type
-export type RouteCallback = ((params?: Record<string, any>) => any | string | object) | ((req: any, res: any) => Promise<void>)
+export type RouteCallback = ((_params?: Record<string, any>) => any | string | object) | ((req: any, res: any) => Promise<void>)
 
 export interface RequestData {
   [key: string]: any
@@ -63,7 +63,7 @@ export type RedirectCode = Extract<StatusCode, 301 | 302>
 
 export interface RouteParam { [key: string]: string | number }
 
-export type MiddlewareFn = (request: Request) => Promise<void>
+export type MiddlewareFn = (_request: Request) => Promise<void>
 
 export interface Middlewares {
   logger: MiddlewareFn

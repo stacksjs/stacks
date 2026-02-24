@@ -128,7 +128,7 @@ async function registerCommand(name: string, signature: string): Promise<void> {
 
       // Add the new command before the closing brace
       const newCommand = `  '${signature}': '${name}',\n`
-      const updatedCommands = existingCommands.trimEnd() + '\n' + newCommand
+      const updatedCommands = `${existingCommands.trimEnd()}\n${newCommand}`
 
       content = content.replace(
         /export default \{[\s\S]*\} satisfies/,

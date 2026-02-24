@@ -93,7 +93,7 @@ export class Macroable {
 /**
  * Create a macroable class
  */
-export function createMacroable<T extends new (...args: any[]) => any>(
+export function createMacroable<T extends new (..._args: any[]) => any>(
   BaseClass: T = class {} as any,
 ): T & MacroableConstructor {
   return class extends BaseClass {
@@ -150,7 +150,7 @@ export function createMacroable<T extends new (...args: any[]) => any>(
 /**
  * Mixin for adding macroable functionality to existing classes
  */
-export function macroable<T extends new (...args: any[]) => any>(
+export function macroable<T extends new (..._args: any[]) => any>(
   target: T,
 ): T & MacroableConstructor {
   const macros = new Map<string, Function>()

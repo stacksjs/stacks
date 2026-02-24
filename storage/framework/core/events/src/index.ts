@@ -6,8 +6,8 @@ export type EventType = string | symbol
 
 // An event handler can take an optional event argument
 // and should not return a value
-export type Handler<T = unknown> = (event: T) => void
-export type WildcardHandler<T = Record<string, unknown>> = (type: keyof T, event: T[keyof T]) => void
+export type Handler<T = unknown> = (_event: T) => void
+export type WildcardHandler<T = Record<string, unknown>> = (_type: keyof T, _event: T[keyof T]) => void
 
 // An array of all currently registered event handlers for a type
 export type EventHandlerList<T = unknown> = Array<Handler<T>>
@@ -22,14 +22,14 @@ export type EventHandlerMap<Events extends Record<EventType, unknown>> = Map<
 export interface Emitter<Events extends Record<EventType, unknown>> {
   all: EventHandlerMap<Events>
 
-  on: (<Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>) => void) &
-    ((type: '*', handler: WildcardHandler<Events>) => void)
+  on: (<Key extends keyof Events>(_type: Key, _handler: Handler<Events[Key]>) => void) &
+    ((_type: '*', _handler: WildcardHandler<Events>) => void)
 
-  off: (<Key extends keyof Events>(type: Key, handler?: Handler<Events[Key]>) => void) &
-    ((type: '*', handler?: WildcardHandler<Events>) => void)
+  off: (<Key extends keyof Events>(_type: Key, _handler?: Handler<Events[Key]>) => void) &
+    ((_type: '*', _handler?: WildcardHandler<Events>) => void)
 
-  emit: (<Key extends keyof Events>(type: Key, event: Events[Key]) => void) &
-    (<Key extends keyof Events>(type: undefined extends Events[Key] ? Key : never) => void)
+  emit: (<Key extends keyof Events>(_type: Key, _event: Events[Key]) => void) &
+    (<Key extends keyof Events>(_type: undefined extends Events[Key] ? Key : never) => void)
 }
 
 /**

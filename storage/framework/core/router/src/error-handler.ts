@@ -326,7 +326,7 @@ export async function createMiddlewareErrorResponse(
  */
 export function createValidationErrorResponse(
   errors: Record<string, string[]>,
-  request: Request | EnhancedRequest,
+  _request: Request | EnhancedRequest,
 ): Response {
   return new Response(
     JSON.stringify({

@@ -60,7 +60,7 @@ const colors = {
   strikethrough: isColorSupported ? '\x1B[9m' : '',
 }
 
-type ColorFn = (text: string | number) => string
+type ColorFn = (_text: string | number) => string
 
 function createColorFn(code: string, endCode: string = colors.reset): ColorFn {
   return (text: string | number): string => {

@@ -374,10 +374,10 @@ export function formatE164(phoneNumber: string, defaultCountryCode?: string): st
   const countryCode = defaultCountryCode || smsConfig.defaultCountryCode || '1'
 
   if (cleaned.startsWith('00')) {
-    cleaned = '+' + cleaned.slice(2)
+    cleaned = `+${cleaned.slice(2)}`
   }
   else if (!cleaned.startsWith('+')) {
-    cleaned = '+' + countryCode + cleaned
+    cleaned = `+${countryCode}${cleaned}`
   }
 
   return cleaned

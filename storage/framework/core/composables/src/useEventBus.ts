@@ -1,6 +1,6 @@
 import { onUnmounted } from '@stacksjs/stx'
 
-export type EventBusListener<T = any> = (event: T) => void
+export type EventBusListener<T = any> = (_event: T) => void
 
 export interface UseEventBusReturn<T = any> {
   on: (listener: EventBusListener<T>) => () => void

@@ -6,7 +6,7 @@
  * @returns A memoized version of the function with cache control methods
  */
 export function useMemoize<T, Args extends any[]>(
-  fn: (...args: Args) => T,
+  fn: (..._args: Args) => T,
   getKey?: (...args: Args) => string,
 ): ((...args: Args) => T) & {
   load: (...args: Args) => T

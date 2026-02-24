@@ -312,7 +312,7 @@ export class SmtpServer {
       // AUTH LOGIN - multi-step
       this.send(session, '334 VXNlcm5hbWU6') // "Username:" in base64
       // Set up state to receive username
-      const originalHandler = session.socket.listeners('data')[0] as (...args: any[]) => void
+      const originalHandler = session.socket.listeners('data')[0] as (..._args: any[]) => void
       session.socket.removeAllListeners('data')
 
       let step = 'username'

@@ -25,7 +25,7 @@ export interface DebounceOptions {
  * @param options - Options object
  * @returns The debounced function
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (..._args: any[]) => any>(
   fn: T,
   wait: number = 0,
   options: DebounceOptions = {},
