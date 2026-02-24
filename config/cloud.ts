@@ -149,6 +149,25 @@ export const tsCloud: TsCloudConfig = {
     },
 
     /**
+     * Jump Box / Bastion Host
+     *
+     * Provides SSH access to your private cloud resources.
+     * Set to `true` for a default t3.micro jump box, or configure options.
+     *
+     * Connect via: buddy cloud:ssh
+     * Or via SSM: aws ssm start-session --target <instance-id>
+     */
+    jumpBox: true,
+    // jumpBox: {
+    //   enabled: true,
+    //   size: 'micro',
+    //   keyName: 'stacks-production',
+    //   allowedCidrs: ['0.0.0.0/0'],
+    //   databaseTools: true,
+    //   mountEfs: true,
+    // },
+
+    /**
      * Container Configuration (for serverless mode only)
      *
      * Defines ECS Fargate containers running your Bun API.
@@ -266,15 +285,39 @@ export const tsCloud: TsCloudConfig = {
     /**
      * Storage Configuration
      * S3 buckets for frontend, assets, uploads, etc.
+     *
+     * Mirrors the old CDK StorageStack defaults:
+     * - public: website-hosting bucket for frontend (index.html)
+     * - private: locked-down bucket for uploads, secrets, etc.
+     * - docs: website-hosting bucket for documentation (conditional)
+     * - logs: access-log bucket (retained on delete for audit)
      */
     storage: {
-      'assets': {
-        encryption: true,
-        versioning: false,
-      },
-      'uploads': {
+      'public': {
+        public: true,
         encryption: true,
         versioning: true,
+        website: {
+          indexDocument: 'index.html',
+          errorDocument: 'index.html',
+        },
+      },
+      'private': {
+        encryption: true,
+        versioning: true,
+      },
+      'docs': {
+        public: true,
+        encryption: true,
+        versioning: true,
+        website: {
+          indexDocument: 'index.html',
+          errorDocument: '404.html',
+        },
+      },
+      'logs': {
+        encryption: true,
+        versioning: false,
       },
       'backups': {
         encryption: true,
@@ -304,6 +347,26 @@ export const tsCloud: TsCloudConfig = {
     },
 
     /**
+     * Queue Configuration (SQS)
+     * Background job processing, event-driven tasks, and scheduled work.
+     *
+     * Jobs defined in app/Jobs/*.ts are auto-discovered at deploy time
+     * and scheduled via EventBridge rules targeting these queues.
+     */
+    queues: {
+      jobs: {
+        visibilityTimeout: 120,
+        deadLetterQueue: true,
+        maxReceiveCount: 3,
+      },
+      // Uncomment for ordered processing:
+      // orders: {
+      //   fifo: true,
+      //   contentBasedDeduplication: true,
+      // },
+    },
+
+    /**
      * Database Configuration (optional)
      */
     databases: {
@@ -326,6 +389,25 @@ export const tsCloud: TsCloudConfig = {
       // 'frontend': {
       //   origin: 'stacks-production-frontend.s3.us-east-1.amazonaws.com',
       //   customDomain: 'cdn.stacks-js.org',
+      // },
+    },
+
+    /**
+     * Redirects Configuration
+     * Domain-level and path-level URL redirects.
+     *
+     * Domain redirects create S3 redirect buckets.
+     * Path redirects create CloudFront Functions.
+     */
+    redirects: {
+      // Redirect these domains to your primary domain
+      // domains: ['www.stacksjs.com', 'stacks.dev'],
+      // target: 'stacksjs.com',
+
+      // Path-level redirects (source -> target)
+      // paths: {
+      //   '/old-page': '/new-page',
+      //   '/blog/old-post': '/blog/new-post',
       // },
     },
 
