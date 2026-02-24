@@ -89,7 +89,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
   }
 
   if (model.morphOne) {
-    relationships.push(await processMorphOne(model.morphOne, model, modelName, 'belongsToMany'))
+    relationships.push(await processMorphOne(model.morphOne, model, modelName, 'morphOne'))
   }
 
   return relationships

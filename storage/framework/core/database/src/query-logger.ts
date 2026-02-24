@@ -260,26 +260,11 @@ async function enhanceWithQueryAnalysis(logRecord: QueryLogRecord): Promise<void
  * Get EXPLAIN plan for a query
  * Note: This is a simplified implementation
  */
-async function getExplainPlan(query: string): Promise<any> {
-  log.info('Getting explain plan for query:', query)
-  try {
-    // This should be implemented based on the specific database driver
-    // For demonstration, we'll return a mock result
-    return {
-      plan: 'MOCK EXPLAIN PLAN',
-      indexesUsed: ['primary_key'],
-      missingIndexes: [],
-    }
-
-    // In a real implementation, you would:
-    // 1. Run EXPLAIN on the query
-    // 2. Parse the output to identify indexes used
-    // 3. Identify potential missing indexes
-  }
-  catch (error) {
-    log.debug('Error getting explain plan:', error)
-    return null
-  }
+async function getExplainPlan(_query: string): Promise<any> {
+  // EXPLAIN plan analysis is not yet implemented.
+  // A real implementation would run EXPLAIN on the query, parse the output
+  // to identify indexes used, and identify potential missing indexes.
+  return null
 }
 
 /**

@@ -52,15 +52,15 @@ function formatMessage(...args: any[]): string {
 }
 
 export interface Log {
-  info: (...args: any[]) => void
-  success: (msg: string) => void
-  error: (err: string | Error | object | unknown, options?: LogErrorOptions) => void
-  warn: (arg: string, options?: Record<string, any>) => void
-  warning: (arg: string) => void
-  debug: (...args: any[]) => void
-  dump: (...args: any[]) => void
-  dd: (...args: any[]) => void
-  echo: (...args: any[]) => void
+  info: (...args: any[]) => Promise<void>
+  success: (msg: string) => Promise<void>
+  error: (err: string | Error | object | unknown, options?: LogErrorOptions) => Promise<void>
+  warn: (arg: string, options?: Record<string, any>) => Promise<void>
+  warning: (arg: string) => Promise<void>
+  debug: (...args: any[]) => Promise<void>
+  dump: (...args: any[]) => Promise<void>
+  dd: (...args: any[]) => Promise<void>
+  echo: (...args: any[]) => Promise<void>
   time: (label: string) => (metadata?: Record<string, any>) => Promise<void>
 }
 

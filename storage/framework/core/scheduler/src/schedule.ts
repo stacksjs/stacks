@@ -337,6 +337,10 @@ export class Schedule implements UntimedSchedule {
   }
 
   private start(): ScheduledJob {
+    if (!this.cronPattern && this.intervalMs === null) {
+      return { stop: () => {}, nextRun: () => null }
+    }
+
     const task = this.wrapTask(this.task)
     let stopped = false
     let timer: ReturnType<typeof setTimeout> | ReturnType<typeof setInterval> | null = null

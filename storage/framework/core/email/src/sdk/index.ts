@@ -436,7 +436,9 @@ export class EmailSDK {
   private renderTemplate(template: string, data: Record<string, any>): string {
     let result = template
     for (const [key, value] of Object.entries(data)) {
-      result = result.replace(new RegExp(`{{\\s*${key}\\s*}}`, 'g'), String(value))
+      // Escape special regex characters in the key to prevent regex injection
+      const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      result = result.replace(new RegExp(`{{\\s*${escapedKey}\\s*}}`, 'g'), String(value))
     }
     return result
   }

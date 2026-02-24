@@ -64,15 +64,10 @@ export function config(options: ServerOptions): {
     },
   }
 
-  if (
-    options.type
-    && ['frontend', 'api', 'library', 'desktop', 'docs', 'example', 'dashboard', 'system-tray', 'database'].includes(
-      options.type,
-    )
-  ) {
+  if (options.type && options.type in serversMap) {
     return {
-      host: serversMap[options.type].host,
-      port: serversMap[options.type].port,
+      host: serversMap[options.type as keyof typeof serversMap].host,
+      port: serversMap[options.type as keyof typeof serversMap].port,
       open: false,
       // open: true,
     }

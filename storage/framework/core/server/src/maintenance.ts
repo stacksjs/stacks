@@ -111,8 +111,7 @@ export async function down(options: Partial<MaintenancePayload> = {}): Promise<v
   log.info('Application is now in maintenance mode.')
 
   if (payload.secret) {
-    log.info(`Bypass secret: ${payload.secret}`)
-    log.info(`Bypass URL: your-app.com/${payload.secret}`)
+    log.info('Maintenance bypass secret has been configured')
   }
 }
 

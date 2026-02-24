@@ -196,9 +196,7 @@ function getDb(): ReturnType<typeof createQueryBuilder> {
     // Ensure query builder config is updated before creating instance
     updateQueryBuilderConfig()
 
-    console.log('[database] Creating query builder instance...')
     _dbInstance = createQueryBuilder()
-    console.log('[database] Query builder created:', typeof _dbInstance, Object.keys(_dbInstance || {}))
   }
   return _dbInstance
 }

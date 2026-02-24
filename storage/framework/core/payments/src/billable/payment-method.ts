@@ -41,7 +41,7 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       })
     }
 
-    storePaymentMethod(user, stripePaymentMethod)
+    await storePaymentMethod(user, stripePaymentMethod)
 
     return stripePaymentMethod as Stripe.Response<Stripe.PaymentMethod>
   }
@@ -95,7 +95,7 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       },
     })
 
-    await db.updateTable('payment_methods').set({ is_default: false }).where('user_id', '=', 1).executeTakeFirst()
+    await db.updateTable('payment_methods').set({ is_default: false }).where('user_id', '=', user.id).executeTakeFirst()
 
     await db.updateTable('payment_methods').set({ is_default: true }).where('id', '=', paymentId).executeTakeFirst()
 
