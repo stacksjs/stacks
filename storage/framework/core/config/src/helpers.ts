@@ -37,19 +37,18 @@ export type LocalUrlType =
   | 'inspect'
   | 'desktop'
 
-export async function localUrl({
-  domain = config.app.url || 'stacks',
-  type = 'frontend' as LocalUrlType,
-  localhost = false,
-  https = undefined as boolean | undefined,
-  network = undefined as boolean | undefined,
-}: {
+export async function localUrl(options: {
   domain?: string
   type?: LocalUrlType
   network?: boolean
   localhost?: boolean
   https?: boolean
 } = {}): Promise<string> {
+  const domain = options.domain ?? config.app.url ?? 'stacks'
+  const type: LocalUrlType = options.type ?? 'frontend'
+  const localhost = options.localhost ?? false
+  const https = options.https
+  const network = options.network
   let url = domain.replace(/\.[^.]+$/, '.localhost')
 
   switch (type) {

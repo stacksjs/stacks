@@ -102,10 +102,10 @@ export async function fetchCountByAllPartySizes(): Promise<Record<number, number
  */
 export async function fetchBetweenDates(
   startDate: Date,
-  endDate: Date,
+  _endDate: Date,
 ): Promise<WaitlistRestaurantJsonResponse[]> {
   const startDateStr = formatDate(startDate)
-  const endDateStr = formatDate(endDate)
+  const endDateStr = formatDate(_endDate)
 
   return await db
     .selectFrom('waitlist_restaurants')
@@ -123,10 +123,10 @@ export async function fetchBetweenDates(
  */
 export async function fetchSeatedBetweenDates(
   startDate: Date,
-  endDate: Date,
+  _endDate: Date,
 ): Promise<WaitlistRestaurantJsonResponse[]> {
   const startDateStr = formatDate(startDate)
-  const endDateStr = formatDate(endDate)
+  const endDateStr = formatDate(_endDate)
 
   return await db
     .selectFrom('waitlist_restaurants')
@@ -326,7 +326,7 @@ export async function fetchTablesTurnedToday(): Promise<{
  */
 export async function fetchSeatingRate(
   _startDate: Date,
-  endDate: Date,
+  _endDate: Date,
 ): Promise<{
     totalEntries: number
     seatedEntries: number
@@ -334,7 +334,7 @@ export async function fetchSeatingRate(
     statusBreakdown: Record<string, { count: number, percentage: number }>
   }> {
   const startDateStr = formatDate(_startDate)
-  const endDateStr = formatDate(endDate)
+  const endDateStr = formatDate(_endDate)
 
   const results = await db
     .selectFrom('waitlist_restaurants')
@@ -373,7 +373,7 @@ export async function fetchSeatingRate(
  */
 export async function fetchNoShowStats(
   _startDate: Date,
-  endDate: Date,
+  _endDate: Date,
 ): Promise<{
     totalNoShows: number
     noShowRate: number
@@ -383,7 +383,7 @@ export async function fetchNoShowStats(
     breakdownByPartySize: Record<number, number>
   }> {
   const startDateStr = formatDate(_startDate)
-  const endDateStr = formatDate(endDate)
+  const endDateStr = formatDate(_endDate)
 
   // Build base query for no-show entries
   const noShowQuery = db

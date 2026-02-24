@@ -103,7 +103,7 @@ export function useTransition(
  */
 export function executeTransition(
   _from: number,
-  to: number,
+  _to: number,
   options: UseTransitionOptions = {},
 ): Promise<void> {
   return new Promise((resolve) => {

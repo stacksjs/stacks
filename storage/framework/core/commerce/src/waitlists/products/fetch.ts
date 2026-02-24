@@ -28,16 +28,16 @@ export async function fetchAll(): Promise<WaitlistProductJsonResponse[]> {
  */
 export async function fetchCountBySource(
   startDate?: Date,
-  endDate?: Date,
+  _endDate?: Date,
 ): Promise<Record<string, number>> {
   let query = db
     .selectFrom('waitlist_products')
     .select(['source', (eb: any) => eb.fn.count('id').as('count')] as any)
     .groupBy('source') as any
 
-  if (startDate && endDate) {
+  if (startDate && _endDate) {
     const startDateStr = formatDate(startDate)
-    const endDateStr = formatDate(endDate)
+    const endDateStr = formatDate(_endDate)
     query = query
       .where('created_at', '>=', startDateStr)
       .where('created_at', '<=', endDateStr)
@@ -99,16 +99,16 @@ export async function fetchCountByQuantity(quantity: number): Promise<number> {
  */
 export async function fetchCountByAllQuantities(
   startDate?: Date,
-  endDate?: Date,
+  _endDate?: Date,
 ): Promise<Record<number, number>> {
   let query = db
     .selectFrom('waitlist_products')
     .select(['quantity', (eb: any) => eb.fn.count('id').as('count')] as any)
     .groupBy('quantity') as any
 
-  if (startDate && endDate) {
+  if (startDate && _endDate) {
     const startDateStr = formatDate(startDate)
-    const endDateStr = formatDate(endDate)
+    const endDateStr = formatDate(_endDate)
     query = query
       .where('created_at', '>=', startDateStr)
       .where('created_at', '<=', endDateStr)
@@ -231,16 +231,16 @@ export async function fetchWaiting(): Promise<WaitlistProductJsonResponse[]> {
 export async function fetchCountByStatus(
   status: string,
   startDate?: Date,
-  endDate?: Date,
+  _endDate?: Date,
 ): Promise<number> {
   let query = db
     .selectFrom('waitlist_products')
     .select(((eb: any) => eb.fn.count('id').as('count')) as any)
     .where('status', '=', status) as any
 
-  if (startDate && endDate) {
+  if (startDate && _endDate) {
     const startDateStr = formatDate(startDate)
-    const endDateStr = formatDate(endDate)
+    const endDateStr = formatDate(_endDate)
     query = query
       .where('created_at', '>=', startDateStr)
       .where('created_at', '<=', endDateStr)
@@ -258,7 +258,7 @@ export async function fetchCountByStatus(
  */
 export async function fetchConversionRates(
   _startDate?: Date,
-  endDate?: Date,
+  _endDate?: Date,
 ): Promise<{
     totalConversionRate: number
     statusBreakdown: Record<string, { count: number, percentage: number }>
@@ -268,9 +268,9 @@ export async function fetchConversionRates(
     .select(['status', (eb: any) => eb.fn.count('id').as('count')] as any)
     .groupBy('status') as any
 
-  if (_startDate && endDate) {
+  if (_startDate && _endDate) {
     const startDateStr = formatDate(_startDate)
-    const endDateStr = formatDate(endDate)
+    const endDateStr = formatDate(_endDate)
     query = query
       .where('created_at', '>=', startDateStr)
       .where('created_at', '<=', endDateStr)
@@ -331,15 +331,15 @@ export async function fetchCountBetweenDates(
  */
 export async function fetchCountByDateGrouped(
   startDate?: Date,
-  endDate?: Date,
+  _endDate?: Date,
 ): Promise<{ date: string, count: number }[]> {
   let query = db
     .selectFrom('waitlist_products')
     .select(['created_at'])
 
-  if (startDate && endDate) {
+  if (startDate && _endDate) {
     const startDateStr = formatDate(startDate)
-    const endDateStr = formatDate(endDate)
+    const endDateStr = formatDate(_endDate)
     query = query
       .where('created_at', '>=', startDateStr)
       .where('created_at', '<=', endDateStr)

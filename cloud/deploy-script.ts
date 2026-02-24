@@ -26,7 +26,7 @@ export async function beforeDeploy({ environment, region }: { environment: strin
  * Runs after the infrastructure stack has been successfully deployed.
  * Use this for post-deployment tasks like cache warming, notifications, or smoke tests.
  */
-export async function afterDeploy({ environment, region: _region, outputs }: { environment: string, region: string, outputs: Record<string, string> }): Promise<void> {
+export async function afterDeploy({ environment, outputs }: { environment: string, region: string, outputs: Record<string, string> }): Promise<void> {
   console.log(`  Deployment to ${environment} complete`)
 
   // Example: Log useful outputs

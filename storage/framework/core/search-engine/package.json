@@ -55,6 +55,7 @@
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.5"
+    "better-dx": "^0.2.5",
+    "meilisearch": "^0.48.0"
   }
 }

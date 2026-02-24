@@ -66,32 +66,32 @@ export function partition<T>(array: readonly T[], _f1: PartitionFilter<T>, _f2: 
 export function partition<T>(
   array: readonly T[],
   _f1: PartitionFilter<T>,
-  f2: PartitionFilter<T>,
-  f3: PartitionFilter<T>,
+  _f2: PartitionFilter<T>,
+  _f3: PartitionFilter<T>,
 ): [T[], T[], T[], T[]]
 export function partition<T>(
   array: readonly T[],
   _f1: PartitionFilter<T>,
-  f2: PartitionFilter<T>,
-  f3: PartitionFilter<T>,
-  f4: PartitionFilter<T>,
+  _f2: PartitionFilter<T>,
+  _f3: PartitionFilter<T>,
+  _f4: PartitionFilter<T>,
 ): [T[], T[], T[], T[], T[]]
 export function partition<T>(
   array: readonly T[],
   _f1: PartitionFilter<T>,
-  f2: PartitionFilter<T>,
-  f3: PartitionFilter<T>,
-  f4: PartitionFilter<T>,
-  f5: PartitionFilter<T>,
+  _f2: PartitionFilter<T>,
+  _f3: PartitionFilter<T>,
+  _f4: PartitionFilter<T>,
+  _f5: PartitionFilter<T>,
 ): [T[], T[], T[], T[], T[], T[]]
 export function partition<T>(
   array: readonly T[],
   _f1: PartitionFilter<T>,
-  f2: PartitionFilter<T>,
-  f3: PartitionFilter<T>,
-  f4: PartitionFilter<T>,
-  f5: PartitionFilter<T>,
-  f6: PartitionFilter<T>,
+  _f2: PartitionFilter<T>,
+  _f3: PartitionFilter<T>,
+  _f4: PartitionFilter<T>,
+  _f5: PartitionFilter<T>,
+  _f6: PartitionFilter<T>,
 ): [T[], T[], T[], T[], T[], T[], T[]]
 export function partition<T>(array: readonly T[], ...filters: PartitionFilter<T>[]): any {
   const result: T[][] = Array.from({ length: filters.length + 1 })

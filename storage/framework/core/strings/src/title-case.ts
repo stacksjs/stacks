@@ -2,8 +2,10 @@
 // for much of this code
 
 const TOKENS = /(\S+)|(.)/g
-const IS_SPECIAL_CASE = /[.#][\p{L}\p{N}]/u // #tag, example.com, etc.
-const IS_MANUAL_CASE = /\p{Ll}(?=\p{Lu})/u // iPhone, iOS, etc.
+// Matches special cases like #tag, example.com, etc.
+const IS_SPECIAL_CASE = /[.#][\p{L}\p{N}]/u
+// Matches camelCase boundaries like iPhone, iOS, etc.
+const IS_MANUAL_CASE = /\p{Ll}(?=\p{Lu})/u
 const ALPHANUMERIC_PATTERN = /[\p{L}\p{N}]+/gu
 const IS_ACRONYM = /^(\P{L})*(?:\p{L}\.){2,}(\P{L})*$/u
 

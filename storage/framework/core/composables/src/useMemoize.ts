@@ -6,7 +6,7 @@
  * @returns A memoized version of the function with cache control methods
  */
 export function useMemoize<T, Args extends any[]>(
-  fn: (..._args: Args) => T,
+  _fn: (..._args: Args) => T,
   getKey?: (...args: Args) => string,
 ): ((...args: Args) => T) & {
   load: (...args: Args) => T
@@ -22,7 +22,7 @@ export function useMemoize<T, Args extends any[]>(
     const key = keyFn(...args)
     if (cache.has(key))
       return cache.get(key)!
-    const result = fn(...args)
+    const result = _fn(...args)
     cache.set(key, result)
     return result
   } as ((...args: Args) => T) & {
@@ -34,7 +34,7 @@ export function useMemoize<T, Args extends any[]>(
 
   memoized.load = (...args: Args): T => {
     const key = keyFn(...args)
-    const result = fn(...args)
+    const result = _fn(...args)
     cache.set(key, result)
     return result
   }
