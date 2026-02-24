@@ -412,6 +412,72 @@ export const tsCloud: TsCloudConfig = {
     },
 
     /**
+     * Cache Configuration (ElastiCache)
+     * Redis or Memcached for in-memory caching
+     */
+    cache: {
+      type: 'redis',
+      nodeType: 'cache.t3.micro',
+      redis: {
+        engineVersion: '7.1',
+        numCacheNodes: 2,
+        automaticFailoverEnabled: true,
+        snapshotRetentionLimit: 7,
+      },
+    },
+
+    /**
+     * Email Configuration (SES)
+     * Amazon SES for transactional email sending
+     *
+     * Domain is auto-detected from dns.domain if not specified.
+     * DNS records (SPF, DKIM, DMARC) are auto-created when hostedZoneId is available.
+     */
+    email: {
+      domain: 'stacksjs.com',
+      configurationSet: true,
+      enableDkim: true,
+    },
+
+    /**
+     * Search Configuration (OpenSearch)
+     * Full-text search engine powered by OpenSearch
+     */
+    // search: {
+    //   instanceType: 't3.small.search',
+    //   instanceCount: 1,
+    //   volumeSize: 10,
+    //   volumeType: 'gp3',
+    //   encryption: {
+    //     atRest: true,
+    //     nodeToNode: true,
+    //   },
+    //   autoTune: true,
+    // },
+
+    /**
+     * File System Configuration (EFS)
+     * Elastic File System for shared storage across instances
+     */
+    // fileSystem: {
+    //   shared: {
+    //     encrypted: true,
+    //     performanceMode: 'generalPurpose',
+    //     throughputMode: 'bursting',
+    //   },
+    // },
+
+    /**
+     * AI Configuration (Bedrock)
+     * Amazon Bedrock for AI/ML model access
+     */
+    // ai: {
+    //   models: ['anthropic.claude-3-5-sonnet-20241022-v2:0'],
+    //   allowStreaming: true,
+    //   service: 'ecs', // 'ecs' | 'ec2' | 'lambda'
+    // },
+
+    /**
      * Monitoring Configuration (optional)
      */
     monitoring: {
