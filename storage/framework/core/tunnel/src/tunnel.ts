@@ -1,14 +1,22 @@
-// wip
-export type LocalTunnel = string
+import type { TunnelClient } from 'localtunnels'
+import { startLocalTunnel } from 'localtunnels'
+
+export interface LocalTunnel {
+  url: string
+  subdomain: string
+  client: TunnelClient
+  close: () => void
+}
 
 export async function localTunnel(options?: { port: number }): Promise<LocalTunnel> {
-  const port = 3000
+  const port = options?.port || 3000
 
-  if (!options?.port)
-    options = { port }
+  const client = await startLocalTunnel({ port })
 
-  // eslint-disable-next-line no-console
-  console.log('Creating local tunnel', options.port)
-
-  return 'localTunnel'
+  return {
+    url: client.getTunnelUrl(),
+    subdomain: client.getSubdomain(),
+    client,
+    close: () => client.disconnect(),
+  }
 }

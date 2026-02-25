@@ -46,6 +46,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "localtunnels": "link:localtunnels"
+  },
   "devDependencies": {
     "better-dx": "^0.2.5"
   }
