@@ -31,8 +31,9 @@ export default new Action({
     sendSubscriptionConfirmation({
       to: email,
       subscriberUuid: subscriber.uuid,
-    }).catch((err: any) => {
-      console.error(`Failed to send confirmation email to ${email}:`, err.message)
+    }).catch((err: unknown) => {
+      const message = err instanceof Error ? err.message : String(err)
+      console.error(`Failed to send confirmation email to ${email}:`, message)
     })
 
     return { success: true, subscriber }

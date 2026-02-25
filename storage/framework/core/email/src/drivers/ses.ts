@@ -1,7 +1,7 @@
 import type { EmailMessage, EmailResult } from '@stacksjs/types'
-import type { RenderOptions } from '@vue-email/compiler'
 import { SESClient } from '@stacksjs/ts-cloud'
 import { config } from '@stacksjs/config'
+import type { TemplateOptions } from '../template'
 import { template } from '../template'
 import { BaseEmailDriver } from './base'
 
@@ -19,14 +19,14 @@ export class SESDriver extends BaseEmailDriver {
     return this.client
   }
 
-  public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
+  public async send(message: EmailMessage, options?: TemplateOptions): Promise<EmailResult> {
     try {
       this.validateMessage(message)
 
       // Only attempt to render template if one is provided
       let htmlContent: string | undefined
       if (message.template) {
-        const templ = await template(message.template, options as any)
+        const templ = await template(message.template, options)
         if (templ && 'html' in templ) {
           htmlContent = templ.html
         }

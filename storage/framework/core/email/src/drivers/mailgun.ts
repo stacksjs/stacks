@@ -1,8 +1,8 @@
 import type { EmailAddress, EmailMessage, EmailResult } from '@stacksjs/types'
-import type { RenderOptions } from '@vue-email/compiler'
 import { Buffer } from 'node:buffer'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
+import type { TemplateOptions } from '../template'
 import { template } from '../template'
 import { BaseEmailDriver } from './base'
 
@@ -30,7 +30,7 @@ export class MailgunDriver extends BaseEmailDriver {
     }
   }
 
-  public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
+  public async send(message: EmailMessage, options?: TemplateOptions): Promise<EmailResult> {
     const { domain } = this.getConfig()
     const logContext = {
       provider: this.name,
@@ -47,7 +47,7 @@ export class MailgunDriver extends BaseEmailDriver {
       // Only attempt to render template if one is provided
       let htmlContent: string | undefined
       if (message.template) {
-        const templ = await template(message.template, options as any)
+        const templ = await template(message.template, options)
         if (templ && 'html' in templ) {
           htmlContent = templ.html
         }

@@ -40,8 +40,9 @@ export default new Action({
         headers: { 'Content-Type': 'text/html' },
       })
     }
-    catch (error: any) {
-      console.error('Unsubscribe error:', error.message)
+    catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
+      console.error('Unsubscribe error:', message)
       return new Response(unsubscribePage('Error', 'Something went wrong. Please try again later.', false), {
         headers: { 'Content-Type': 'text/html' },
       })

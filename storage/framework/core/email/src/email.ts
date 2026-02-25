@@ -7,6 +7,22 @@ import { SendGridDriver } from './drivers/sendgrid'
 import { SESDriver } from './drivers/ses'
 import { SMTPDriver } from './drivers/smtp'
 
+/** Result returned by email handler callbacks */
+interface EmailHandlerResult {
+  message: string
+}
+
+/** Configuration for the sender address */
+interface EmailFromAddress {
+  name: string
+  address: string
+}
+
+/** Configuration for the Mail singleton */
+interface MailConfig {
+  defaultDriver?: string
+}
+
 /**
  * Email notification class for defining email notifications
  */
@@ -14,10 +30,10 @@ export class Email {
   public name: string
   public subject: string
   public to: string
-  public from?: { name: string; address: string }
+  public from?: EmailFromAddress
   public template: string
-  public handle?: () => Promise<{ message: string }>
-  public onError?: (error: Error) => Promise<{ message: string }>
+  public handle?: () => Promise<EmailHandlerResult>
+  public onError?: (error: Error) => Promise<EmailHandlerResult>
   public onSuccess?: () => void
 
   constructor(options: Message) {
@@ -31,7 +47,7 @@ export class Email {
     this.onSuccess = options.onSuccess
   }
 
-  async send(to?: string): Promise<{ message: string }> {
+  async send(to?: string): Promise<EmailHandlerResult> {
     const recipient = to || this.to
     if (!recipient) {
       throw new Error('No recipient specified for email')
@@ -59,9 +75,9 @@ export class Email {
 
       return { message: 'Email sent' }
     }
-    catch (error) {
+    catch (error: unknown) {
       if (this.onError) {
-        return this.onError(error as Error)
+        return this.onError(error instanceof Error ? error : new Error(String(error)))
       }
       throw error
     }
@@ -72,7 +88,7 @@ class Mail {
   private drivers: Map<string, EmailDriver> = new Map()
   private defaultDriver: string
 
-  constructor(options: { defaultDriver?: string } = {}) {
+  constructor(options: MailConfig = {}) {
     this.defaultDriver = options.defaultDriver || config.email.default || 'ses'
     this.registerDefaultDrivers()
   }
@@ -91,7 +107,7 @@ class Mail {
     if (!driver)
       throw new Error(`Email driver '${this.defaultDriver}' is not available`)
 
-    const defaultFrom = {
+    const defaultFrom: EmailFromAddress = {
       name: config.email.from?.name || 'Stacks',
       address: config.email.from?.address || 'no-reply@stacksjs.com',
     }

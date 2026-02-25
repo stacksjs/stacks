@@ -297,14 +297,24 @@ export interface EmailResult {
   success: boolean
   provider: string
   messageId?: string
-  [key: string]: any
+  /** Additional metadata from the email provider */
+  metadata?: Record<string, unknown>
 }
 
 // Base configuration interface
 export interface EmailDriverConfig {
   maxRetries?: number
   retryTimeout?: number
-  [key: string]: any
+}
+
+/** Options for email template rendering */
+export interface EmailTemplateOptions {
+  /** Template variables to replace */
+  variables?: Record<string, string | number | boolean | undefined | null>
+  /** Layout to wrap the template in */
+  layout?: string | false
+  /** Subject line for the email */
+  subject?: string
 }
 
 // Email driver interface
@@ -313,7 +323,7 @@ export interface EmailDriver {
   name: string
 
   /** Send an email */
-  send: (message: EmailMessage, options?: RenderOptions) => Promise<EmailResult>
+  send: (message: EmailMessage, options?: EmailTemplateOptions) => Promise<EmailResult>
 
   /** Configure the driver */
   configure: (config: EmailDriverConfig) => void

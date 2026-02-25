@@ -104,10 +104,15 @@ export function url(routeName: string, params: Record<string, string | number> =
   return `${appUrl}${resolvedPath}${queryString}`
 }
 
+/** Represents a middleware module with a handle method */
+interface MiddlewareHandler {
+  handle: (req: EnhancedRequest) => Promise<void> | void
+}
+
 /**
  * Cache for loaded middleware handlers
  */
-const middlewareCache = new Map<string, any>()
+const middlewareCache = new Map<string, MiddlewareHandler | null>()
 
 /**
  * Cache for the middleware alias map (loaded once from app/Middleware.ts)
@@ -152,9 +157,9 @@ async function resolveMiddlewareName(name: string): Promise<string> {
 /**
  * Load a middleware by name
  */
-async function loadMiddleware(name: string): Promise<any> {
+async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
   if (middlewareCache.has(name)) {
-    return middlewareCache.get(name)
+    return middlewareCache.get(name) ?? null
   }
 
   const className = await resolveMiddlewareName(name)
@@ -163,18 +168,20 @@ async function loadMiddleware(name: string): Promise<any> {
   try {
     const userPath = p.appPath(`Middleware/${className}.ts`)
     const middleware = await import(userPath)
-    middlewareCache.set(name, middleware.default)
-    return middleware.default
+    const handler = middleware.default as MiddlewareHandler | null
+    middlewareCache.set(name, handler)
+    return handler
   }
   catch {
     // Fall back to framework defaults
     try {
       const defaultPath = p.storagePath(`framework/defaults/app/Middleware/${className}.ts`)
       const middleware = await import(defaultPath)
-      middlewareCache.set(name, middleware.default)
-      return middleware.default
+      const handler = middleware.default as MiddlewareHandler | null
+      middlewareCache.set(name, handler)
+      return handler
     }
-    catch (err) {
+    catch (err: unknown) {
       log.error(`[Router] Failed to load middleware '${name}' (resolved to '${className}'):`, err)
       return null
     }
@@ -531,12 +538,12 @@ function enhanceWithLaravelMethods(req: EnhancedRequest): EnhancedRequest {
   }
 
   // Cached input data — computed once on first access
-  let cachedInput: Record<string, any> | null = null
+  let cachedInput: Record<string, unknown> | null = null
 
-  const getAllInput = (): Record<string, any> => {
+  const getAllInput = (): Record<string, unknown> => {
     if (cachedInput) return cachedInput
 
-    const input: Record<string, any> = {}
+    const input: Record<string, unknown> = {}
 
     // Query parameters
     for (const [key, value] of Object.entries(query || {})) {
@@ -581,7 +588,7 @@ function enhanceWithLaravelMethods(req: EnhancedRequest): EnhancedRequest {
     return (value !== undefined ? value : defaultValue) as T
   }
 
-  ;(req as any).all = (): Record<string, any> => getAllInput()
+  ;(req as any).all = (): Record<string, unknown> => getAllInput()
 
   ;(req as any).only = <T extends Record<string, unknown>>(keys: string[]): T => {
     const input = getAllInput()
@@ -952,7 +959,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     },
 
     // Serve the router
-    async serve(options: ServerOptions = {}): Promise<Server<any>> {
+    async serve(options: ServerOptions = {}): Promise<Server<unknown>> {
       return bunRouter.serve(options)
     },
 
@@ -994,7 +1001,7 @@ export interface StacksRouterInstance {
   group: (options: GroupOptions, callback: () => void | Promise<void>) => StacksRouterInstance | Promise<StacksRouterInstance>
   health: () => StacksRouterInstance
   use: (middleware: ActionHandler) => StacksRouterInstance
-  serve: (options?: ServerOptions) => Promise<Server<any>>
+  serve: (options?: ServerOptions) => Promise<Server<unknown>>
   handleRequest: (req: Request) => Promise<Response>
   importRoutes: () => Promise<void>
 }
@@ -1020,6 +1027,6 @@ export async function serverResponse(request: Request, _body?: string): Promise<
 }
 
 // Export serve function that uses the default router
-export async function serve(options: ServerOptions = {}): Promise<Server<any>> {
+export async function serve(options: ServerOptions = {}): Promise<Server<unknown>> {
   return route.serve(options)
 }

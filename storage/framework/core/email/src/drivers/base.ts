@@ -1,4 +1,6 @@
-import type { EmailAddress, EmailDriver, EmailDriverConfig, EmailMessage, EmailResult, RenderOptions } from '@stacksjs/types'
+import type { EmailAddress, EmailDriver, EmailDriverConfig, EmailMessage, EmailResult } from '@stacksjs/types'
+import type { TemplateOptions } from '../template'
+import { config as appConfig } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 
 export abstract class BaseEmailDriver implements EmailDriver {
@@ -17,13 +19,13 @@ export abstract class BaseEmailDriver implements EmailDriver {
     this.config = { ...this.config, ...config }
   }
 
-  public abstract send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult>
+  public abstract send(message: EmailMessage, options?: TemplateOptions): Promise<EmailResult>
 
   /**
    * Validates email message fields
    */
   protected validateMessage(message: EmailMessage): boolean {
-    if (!message.from?.address && !this.config.email.from?.address) {
+    if (!message.from?.address && !appConfig.email.from?.address) {
       throw new Error('Email sender address is required either in message or config')
     }
 

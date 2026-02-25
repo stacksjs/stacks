@@ -3,14 +3,20 @@ import { fs } from '@stacksjs/storage'
 import { resourcesPath } from '@stacksjs/path'
 import { join } from 'node:path'
 
-interface TemplateResult {
+export interface TemplateResult {
   html: string
   text: string
 }
 
-interface TemplateOptions {
+/** Allowed types for email template variable values */
+export type TemplateVariableValue = string | number | boolean | undefined | null
+
+/** Map of variable names to their values for template replacement */
+export type TemplateVariables = Record<string, TemplateVariableValue>
+
+export interface TemplateOptions {
   /** Template variables to replace */
-  variables?: Record<string, any>
+  variables?: TemplateVariables
   /** Layout to wrap the template in (default: 'base', ignored for .stx templates) */
   layout?: string | false
   /** Subject line for the email */
@@ -20,7 +26,7 @@ interface TemplateOptions {
 /**
  * Get default template variables from config
  */
-function getDefaultVariables(): Record<string, any> {
+function getDefaultVariables(): TemplateVariables {
   const primaryColor = config.app.primaryColor || '#3b82f6'
 
   return {
@@ -47,7 +53,7 @@ function darkenColor(hex: string, percent: number): string {
 /**
  * Replace template variables in HTML
  */
-function replaceVariables(html: string, variables: Record<string, any>): string {
+function replaceVariables(html: string, variables: TemplateVariables): string {
   let result = html
 
   for (const [key, value] of Object.entries(variables)) {
@@ -172,7 +178,7 @@ export async function template(
   } = options
 
   // Merge default variables with provided ones
-  const allVariables: Record<string, any> = {
+  const allVariables: TemplateVariables = {
     ...getDefaultVariables(),
     subject,
     ...variables,
@@ -193,8 +199,9 @@ export async function template(
       const result = await renderEmail(resolved.path, allVariables)
       return result
     }
-    catch (error: any) {
-      console.error(`[Email Template] STX render error for "${templateName}":`, error.message)
+    catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
+      console.error(`[Email Template] STX render error for "${templateName}":`, message)
       return { html: '', text: '' }
     }
   }
@@ -236,7 +243,7 @@ export async function template(
  */
 export function renderHtml(
   htmlContent: string,
-  variables: Record<string, any> = {},
+  variables: TemplateVariables = {},
 ): TemplateResult {
   const allVariables = {
     ...getDefaultVariables(),

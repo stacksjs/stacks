@@ -1,8 +1,8 @@
 import type { EmailAddress, EmailMessage, EmailResult } from '@stacksjs/types'
-import type { RenderOptions } from '@vue-email/compiler'
 import { Buffer } from 'node:buffer'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
+import type { TemplateOptions } from '../template'
 import { template } from '../template'
 import { BaseEmailDriver } from './base'
 
@@ -17,7 +17,7 @@ export class SendGridDriver extends BaseEmailDriver {
     return this.apiKey
   }
 
-  public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
+  public async send(message: EmailMessage, options?: TemplateOptions): Promise<EmailResult> {
     const logContext = {
       provider: this.name,
       to: message.to,
@@ -32,7 +32,7 @@ export class SendGridDriver extends BaseEmailDriver {
       // Only attempt to render template if one is provided
       let htmlContent: string | undefined
       if (message.template) {
-        const templ = await template(message.template, options as any)
+        const templ = await template(message.template, options)
         if (templ && 'html' in templ) {
           htmlContent = templ.html
         }
@@ -128,7 +128,7 @@ export class SendGridDriver extends BaseEmailDriver {
       : Buffer.from(binary).toString('base64')
   }
 
-  private async sendWithRetry(payload: any, attempt = 1): Promise<any> {
+  private async sendWithRetry(payload: Record<string, unknown>, attempt = 1): Promise<Response> {
     try {
       const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
         method: 'POST',
@@ -147,7 +147,7 @@ export class SendGridDriver extends BaseEmailDriver {
       log.info(`[${this.name}] Email sent successfully`, { attempt })
       return response
     }
-    catch (error) {
+    catch (error: unknown) {
       if (attempt < (config.services.sendgrid?.maxRetries ?? 3)) {
         const retryTimeout = config.services.sendgrid?.retryTimeout ?? 1000
         log.warn(`[${this.name}] Email send failed, retrying (${attempt}/${config.services.sendgrid?.maxRetries ?? 3})`)

@@ -1,8 +1,8 @@
 import type { EmailAddress, EmailMessage, EmailResult, MailtrapResponse } from '@stacksjs/types'
-import type { RenderOptions } from '@vue-email/compiler'
 import { Buffer } from 'node:buffer'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
+import type { TemplateOptions } from '../template'
 import { template } from '../template'
 import { BaseEmailDriver } from './base'
 
@@ -26,7 +26,7 @@ export class MailtrapDriver extends BaseEmailDriver {
     }
   }
 
-  public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
+  public async send(message: EmailMessage, options?: TemplateOptions): Promise<EmailResult> {
     const { inboxId } = this.getConfig()
     const logContext = {
       provider: this.name,
@@ -41,7 +41,7 @@ export class MailtrapDriver extends BaseEmailDriver {
       this.validateMessage(message)
       let templ
       if (message.template)
-        templ = await template(message.template, options as any)
+        templ = await template(message.template, options)
 
       // Use template HTML if available, otherwise use direct HTML from message
       const htmlContent = templ?.html || message.html
@@ -105,7 +105,7 @@ export class MailtrapDriver extends BaseEmailDriver {
       : Buffer.from(binary).toString('base64')
   }
 
-  private async sendWithRetry(payload: any, attempt = 1): Promise<any> {
+  private async sendWithRetry(payload: Record<string, unknown>, attempt = 1): Promise<MailtrapResponse> {
     const { host, token, inboxId } = this.getConfig()
 
     if (!inboxId) {
@@ -134,7 +134,7 @@ export class MailtrapDriver extends BaseEmailDriver {
       log.info(`[${this.name}] Email sent successfully`, { attempt, messageId: data.message_ids?.[0] })
       return data
     }
-    catch (error) {
+    catch (error: unknown) {
       if (attempt < (config.services.mailtrap?.maxRetries ?? 3)) {
         const retryTimeout = config.services.mailtrap?.retryTimeout ?? 1000
         log.warn(`[${this.name}] Email send failed, retrying (${attempt}/${config.services.mailtrap?.maxRetries ?? 3})`)
