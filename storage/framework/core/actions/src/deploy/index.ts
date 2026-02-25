@@ -73,6 +73,32 @@ async function traverseDirectory(
   }
 }
 
+/**
+ * Get the STX signals client-side runtime script.
+ * Dynamically imports from the stx package to get the full signals runtime
+ * with state(), derived(), effect(), @model, @show, @text, @class, :bind, @event support.
+ */
+async function getSignalsRuntime(): Promise<string> {
+  try {
+    const { generateSignalsRuntime } = await import(
+      /* @vite-ignore */ '/Users/chrisbreuer/Code/Tools/stx/packages/stx/src/signals.ts'
+    )
+    return `<script>\n${generateSignalsRuntime()}\n</script>`
+  } catch (e) {
+    if (isVerbose) log.debug('Failed to import signals runtime from stx, using fallback path')
+    try {
+      // Fallback: try from node_modules
+      const { generateSignalsRuntime } = await import(
+        /* @vite-ignore */ '@stacksjs/stx/signals'
+      )
+      return `<script>\n${generateSignalsRuntime()}\n</script>`
+    } catch {
+      console.warn('Could not load STX signals runtime')
+      return ''
+    }
+  }
+}
+
 async function withS3Retry<T>(fn: () => Promise<T>, label = 's3 operation'): Promise<T> {
   const maxRetries = 3
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -515,7 +541,7 @@ try {
   frontendSpinner.start()
 
   try {
-    const { S3Client, CloudFormationClient } = await import('@stacksjs/ts-cloud/aws') as any
+    const { S3Client, CloudFormationClient } = await import('@stacksjs/ts-cloud') as any
     const { existsSync, readdirSync, statSync, readFileSync, copyFileSync, mkdirSync, rmSync, writeFileSync } = await import('node:fs')
     const { join, extname } = await import('node:path')
 
@@ -602,6 +628,31 @@ try {
           }
           return rendered
         })
+
+        // Replace /api/email/subscribe with Lambda function URL if available
+        const subscribeApiUrl = outputs.SubscribeApiUrl
+        if (subscribeApiUrl && stxContent.includes('/api/email/subscribe')) {
+          stxContent = stxContent.replace(/['"]\/api\/email\/subscribe['"]/g, `'${subscribeApiUrl}'`)
+          if (isVerbose) log.debug(`  Replaced subscribe API URL with Lambda: ${subscribeApiUrl}`)
+        }
+
+        // Inject STX signals runtime if reactive directives are present
+        // The runtime must load BEFORE any scope scripts that use state()/effect()
+        if (/data-stx-scope|@model|@show|@text|@class|@style|@bind:|@if=|@for=/.test(stxContent)) {
+          const signalsRuntime = await getSignalsRuntime()
+          if (signalsRuntime) {
+            // Inject right after <body> tag so it loads before scope scripts
+            const bodyMatch = stxContent.match(/<body[^>]*>/)
+            if (bodyMatch) {
+              const insertPos = (stxContent.indexOf(bodyMatch[0]) ?? 0) + bodyMatch[0].length
+              stxContent = stxContent.slice(0, insertPos) + '\n' + signalsRuntime + stxContent.slice(insertPos)
+            } else {
+              // No body tag found, prepend
+              stxContent = signalsRuntime + '\n' + stxContent
+            }
+            if (isVerbose) log.debug('  Injected STX signals runtime for client-side reactivity')
+          }
+        }
 
         writeFileSync(join(buildDir, 'index.html'), stxContent)
         if (isVerbose) log.debug(`  Built index.html from STX template`)

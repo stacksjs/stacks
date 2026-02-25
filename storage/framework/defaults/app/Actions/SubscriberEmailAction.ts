@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { SubscriberEmail } from '@stacksjs/orm'
+import { Subscriber, SubscriberEmail } from '@stacksjs/orm'
 
 export default new Action({
   name: 'SubscriberEmailAction',
@@ -8,15 +8,24 @@ export default new Action({
 
   async handle(request: RequestInstance) {
     const email = request.get('email')
+    const source = request.get('source') || 'homepage'
 
-    // Check if email already exists
-    const existing = await SubscriberEmail.where('email', email).first()
-    if (existing) {
+    if (!email || !email.includes('@')) {
+      return { success: false, message: 'A valid email is required' }
+    }
+
+    // Check if subscriber already exists
+    const existingSubscriber = await Subscriber.where('email', email).first()
+    if (existingSubscriber) {
       return { success: true, message: 'Already subscribed' }
     }
 
-    const model = await SubscriberEmail.create({ email })
+    // Create subscriber record
+    const subscriber = await Subscriber.create({ email, status: 'subscribed', source })
 
-    return { success: true, subscriber: model }
+    // Log the email event
+    await SubscriberEmail.create({ email, source })
+
+    return { success: true, subscriber }
   },
 })

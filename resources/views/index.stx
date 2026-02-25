@@ -242,6 +242,113 @@ const features = [
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
+
+    .subscribe-section {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2.5rem 2rem;
+      background: rgba(31, 41, 55, 0.3);
+      border: 1px solid #1f2937;
+      border-radius: 1rem;
+    }
+
+    .subscribe-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #f9fafb;
+      margin-bottom: 0.5rem;
+    }
+
+    .subscribe-description {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-bottom: 1.5rem;
+    }
+
+    .subscribe-form {
+      display: flex;
+      gap: 0.5rem;
+      max-width: 28rem;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 480px) {
+      .subscribe-form {
+        flex-direction: column;
+      }
+    }
+
+    .subscribe-input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      background: rgba(17, 24, 39, 0.8);
+      border: 1px solid #374151;
+      border-radius: 0.5rem;
+      color: #f9fafb;
+      font-size: 0.875rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .subscribe-input::placeholder {
+      color: #4b5563;
+    }
+
+    .subscribe-input:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .subscribe-btn {
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, #6366f1, #818cf8);
+      border: none;
+      border-radius: 0.5rem;
+      color: #fff;
+      font-size: 0.875rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .subscribe-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+
+    .subscribe-btn:active {
+      transform: translateY(0);
+    }
+
+    .subscribe-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .subscribe-feedback {
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      min-height: 1.25rem;
+    }
+
+    .subscribe-feedback.success {
+      color: #34d399;
+    }
+
+    .subscribe-feedback.error {
+      color: #f87171;
+    }
+
+    .subscribe-privacy {
+      margin-top: 0.75rem;
+      font-size: 0.6875rem;
+      color: #4b5563;
+    }
   </style>
   <link rel="preconnect" href="https://fonts.bunny.net">
   <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700" rel="stylesheet" />
@@ -272,6 +379,84 @@ const features = [
         </a>
       @endforeach
     </div>
+
+    <div class="subscribe-section" data-stx-scope="subscribe">
+      <h2 class="subscribe-title">Stay in the loop</h2>
+      <p class="subscribe-description">Get notified when we launch and receive updates on new features.</p>
+      <form class="subscribe-form" @submit.prevent="subscribe()">
+        <input
+          type="email"
+          class="subscribe-input"
+          @model="email"
+          placeholder="you@example.com"
+          required
+          autocomplete="email"
+        >
+        <button type="submit" class="subscribe-btn" :disabled="loading()">
+          <span @text="loading() ? 'Subscribing...' : 'Subscribe'"></span>
+        </button>
+      </form>
+      <div
+        class="subscribe-feedback"
+        @class="{ success: success(), error: error() }"
+        @show="feedback()"
+        @text="feedback()"
+      ></div>
+      <p class="subscribe-privacy">No spam, unsubscribe at any time.</p>
+    </div>
+    <script>
+    (function() {
+      const email = state('');
+      const loading = state(false);
+      const feedback = state('');
+      const success = state(false);
+      const error = state(false);
+
+      async function subscribe() {
+        feedback.set('');
+        success.set(false);
+        error.set(false);
+
+        if (!email() || !email().includes('@')) {
+          feedback.set('Please enter a valid email address.');
+          error.set(true);
+          return;
+        }
+
+        loading.set(true);
+
+        try {
+          const res = await fetch('/api/email/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email(), source: 'homepage' })
+          });
+
+          const data = await res.json();
+
+          if (data.success) {
+            feedback.set(data.message === 'Already subscribed'
+              ? 'You are already subscribed!'
+              : 'Thanks for subscribing!');
+            success.set(true);
+            email.set('');
+          } else {
+            feedback.set(data.message || 'Something went wrong. Please try again.');
+            error.set(true);
+          }
+        } catch (err) {
+          feedback.set('Could not connect. Please try again later.');
+          error.set(true);
+        }
+
+        loading.set(false);
+      }
+
+      window.stx = window.stx || {};
+      window.stx._scopes = window.stx._scopes || {};
+      window.stx._scopes['subscribe'] = { email, loading, feedback, success, error, subscribe };
+    })();
+    </script>
 
     <div class="footer">
       <div class="tech-stack">
