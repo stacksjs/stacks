@@ -13,8 +13,9 @@ route.get('/', () => response.text('hello world')) // $API_URL
 route.get('/hello/world', () => response.text('hello world, buddy')) // $API_URL/hello/world
 route.get('/json', () => response.json({ message: 'Hello JSON!', status: 'ok', timestamp: Date.now() }))
 
-// Email subscription endpoint
-route.post('/api/email/subscribe', 'Actions/SubscriberEmailAction')
+// Email subscription & unsubscribe endpoints
+route.post('/api/email/subscribe', 'Actions/SubscriberEmailAction').name('email.subscribe')
+route.get('/api/email/unsubscribe', 'Actions/UnsubscribeAction').name('email.unsubscribe')
 route.post('/login', 'Actions/Auth/LoginAction')
 route.post('/register', 'Actions/Auth/RegisterAction')
 route.get('/generate-registration-options', 'Actions/Auth/GenerateRegistrationAction')

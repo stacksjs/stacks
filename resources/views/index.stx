@@ -32,12 +32,66 @@ const features = [
 </script>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ appName }}</title>
+  <script>
+    (function() {
+      var t = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   <style>
+    :root, [data-theme="dark"] {
+      --bg: #0e0e0e;
+      --bg-secondary: rgba(255, 255, 255, 0.03);
+      --bg-card: rgba(255, 255, 255, 0.04);
+      --bg-card-hover: rgba(255, 255, 255, 0.07);
+      --bg-input: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.14);
+      --text: #ececec;
+      --text-secondary: #a0a0a0;
+      --text-muted: #666;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --accent-glow: rgba(99, 102, 241, 0.25);
+      --success: #34d399;
+      --error: #f87171;
+      --warning: #fbbf24;
+      --warning-bg: rgba(245, 158, 11, 0.12);
+      --warning-border: rgba(245, 158, 11, 0.25);
+      --shadow: rgba(0, 0, 0, 0.4);
+      --toggle-bg: rgba(255, 255, 255, 0.08);
+      --toggle-hover: rgba(255, 255, 255, 0.12);
+    }
+
+    [data-theme="light"] {
+      --bg: #f8f8f8;
+      --bg-secondary: rgba(0, 0, 0, 0.02);
+      --bg-card: rgba(0, 0, 0, 0.02);
+      --bg-card-hover: rgba(0, 0, 0, 0.05);
+      --bg-input: #fff;
+      --border: rgba(0, 0, 0, 0.08);
+      --border-hover: rgba(0, 0, 0, 0.15);
+      --text: #1a1a1a;
+      --text-secondary: #555;
+      --text-muted: #999;
+      --accent: #4f46e5;
+      --accent-light: #6366f1;
+      --accent-glow: rgba(79, 70, 229, 0.2);
+      --success: #059669;
+      --error: #dc2626;
+      --warning: #d97706;
+      --warning-bg: rgba(245, 158, 11, 0.08);
+      --warning-border: rgba(245, 158, 11, 0.2);
+      --shadow: rgba(0, 0, 0, 0.08);
+      --toggle-bg: rgba(0, 0, 0, 0.05);
+      --toggle-hover: rgba(0, 0, 0, 0.1);
+    }
+
     *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
@@ -46,8 +100,8 @@ const features = [
 
     body {
       font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
-      background-color: #111827;
-      color: #d1d5db;
+      background-color: var(--bg);
+      color: var(--text-secondary);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -55,12 +109,42 @@ const features = [
       justify-content: center;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      transition: background-color 0.3s, color 0.3s;
     }
 
     .container {
       width: 100%;
       max-width: 64rem;
       padding: 2rem;
+      position: relative;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 2rem;
+      right: 2rem;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border);
+      background: var(--toggle-bg);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--toggle-hover);
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+
+    .theme-toggle svg {
+      width: 1.125rem;
+      height: 1.125rem;
     }
 
     .header {
@@ -78,22 +162,22 @@ const features = [
     .logo-diamond {
       width: 3rem;
       height: 3rem;
-      background: linear-gradient(135deg, #818cf8, #6366f1);
+      background: linear-gradient(135deg, var(--accent-light), var(--accent));
       transform: rotate(45deg);
       border-radius: 0.5rem;
-      box-shadow: 0 0 40px rgba(99, 102, 241, 0.3);
+      box-shadow: 0 0 40px var(--accent-glow);
     }
 
     .logo-text {
       font-size: 2.25rem;
       font-weight: 700;
-      color: #f9fafb;
+      color: var(--text);
       letter-spacing: -0.025em;
     }
 
     .subtitle {
       font-size: 1.125rem;
-      color: #6b7280;
+      color: var(--text-muted);
       max-width: 36rem;
       margin: 0 auto;
       line-height: 1.75;
@@ -103,30 +187,30 @@ const features = [
       display: inline-block;
       margin-top: 1rem;
       padding: 0.375rem 1rem;
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(251, 191, 36, 0.1));
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
       border-radius: 9999px;
       font-size: 0.8125rem;
-      color: #fbbf24;
+      color: var(--warning);
       font-weight: 600;
       letter-spacing: 0.025em;
       animation: pulse-glow 3s ease-in-out infinite;
     }
 
     @keyframes pulse-glow {
-      0%, 100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.1); }
-      50% { box-shadow: 0 0 16px rgba(245, 158, 11, 0.25); }
+      0%, 100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.08); }
+      50% { box-shadow: 0 0 16px rgba(245, 158, 11, 0.2); }
     }
 
     .version-badge {
       display: inline-block;
       margin-top: 0.5rem;
       padding: 0.25rem 0.75rem;
-      background: rgba(99, 102, 241, 0.1);
-      border: 1px solid rgba(99, 102, 241, 0.2);
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.15);
       border-radius: 9999px;
       font-size: 0.75rem;
-      color: #818cf8;
+      color: var(--accent-light);
       font-weight: 500;
     }
 
@@ -146,8 +230,8 @@ const features = [
     .card {
       display: block;
       padding: 1.5rem;
-      background: rgba(31, 41, 55, 0.5);
-      border: 1px solid #374151;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
       border-radius: 0.75rem;
       text-decoration: none;
       color: inherit;
@@ -155,10 +239,10 @@ const features = [
     }
 
     .card:hover {
-      background: rgba(55, 65, 81, 0.5);
-      border-color: #4b5563;
+      background: var(--bg-card-hover);
+      border-color: var(--border-hover);
       transform: translateY(-2px);
-      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 10px 30px -10px var(--shadow);
     }
 
     .card-header {
@@ -171,37 +255,37 @@ const features = [
     .card-icon {
       width: 1.5rem;
       height: 1.5rem;
-      color: #818cf8;
+      color: var(--accent-light);
       flex-shrink: 0;
     }
 
     .card-title {
       font-size: 1rem;
       font-weight: 600;
-      color: #f9fafb;
+      color: var(--text);
     }
 
     .card-arrow {
       margin-left: auto;
-      color: #4b5563;
+      color: var(--text-muted);
       transition: color 0.2s, transform 0.2s;
     }
 
     .card:hover .card-arrow {
-      color: #818cf8;
+      color: var(--accent-light);
       transform: translateX(4px);
     }
 
     .card-description {
       font-size: 0.875rem;
-      color: #9ca3af;
+      color: var(--text-secondary);
       line-height: 1.625;
     }
 
     .footer {
       text-align: center;
       padding-top: 2rem;
-      border-top: 1px solid #1f2937;
+      border-top: 1px solid var(--border);
     }
 
     .tech-stack {
@@ -213,18 +297,18 @@ const features = [
     }
 
     .tech-link {
-      color: #6b7280;
+      color: var(--text-muted);
       text-decoration: none;
       font-size: 0.8125rem;
       transition: color 0.15s;
     }
 
     .tech-link:hover {
-      color: #818cf8;
+      color: var(--accent-light);
     }
 
     .tech-separator {
-      color: #374151;
+      color: var(--border);
       font-size: 0.75rem;
       user-select: none;
     }
@@ -233,11 +317,11 @@ const features = [
       display: inline-block;
       margin-top: 0.75rem;
       padding: 0.125rem 0.5rem;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.2);
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.15);
       border-radius: 9999px;
       font-size: 0.6875rem;
-      color: #34d399;
+      color: var(--success);
       font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -247,21 +331,21 @@ const features = [
       text-align: center;
       margin-bottom: 3rem;
       padding: 2.5rem 2rem;
-      background: rgba(31, 41, 55, 0.3);
-      border: 1px solid #1f2937;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
       border-radius: 1rem;
     }
 
     .subscribe-title {
       font-size: 1.25rem;
       font-weight: 600;
-      color: #f9fafb;
+      color: var(--text);
       margin-bottom: 0.5rem;
     }
 
     .subscribe-description {
       font-size: 0.875rem;
-      color: #6b7280;
+      color: var(--text-muted);
       margin-bottom: 1.5rem;
     }
 
@@ -281,28 +365,28 @@ const features = [
     .subscribe-input {
       flex: 1;
       padding: 0.75rem 1rem;
-      background: rgba(17, 24, 39, 0.8);
-      border: 1px solid #374151;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
       border-radius: 0.5rem;
-      color: #f9fafb;
+      color: var(--text);
       font-size: 0.875rem;
       font-family: inherit;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .subscribe-input::placeholder {
-      color: #4b5563;
+      color: var(--text-muted);
     }
 
     .subscribe-input:focus {
-      border-color: #6366f1;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
     }
 
     .subscribe-btn {
       padding: 0.75rem 1.5rem;
-      background: linear-gradient(135deg, #6366f1, #818cf8);
+      background: var(--accent);
       border: none;
       border-radius: 0.5rem;
       color: #fff;
@@ -315,8 +399,9 @@ const features = [
     }
 
     .subscribe-btn:hover {
+      background: var(--accent-light);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+      box-shadow: 0 4px 12px var(--accent-glow);
     }
 
     .subscribe-btn:active {
@@ -333,28 +418,51 @@ const features = [
     .subscribe-feedback {
       margin-top: 0.75rem;
       font-size: 0.8125rem;
+      font-weight: 500;
       min-height: 1.25rem;
     }
 
     .subscribe-feedback.success {
-      color: #34d399;
+      color: var(--success);
     }
 
     .subscribe-feedback.error {
-      color: #f87171;
+      color: var(--error);
     }
 
     .subscribe-privacy {
       margin-top: 0.75rem;
       font-size: 0.6875rem;
-      color: #4b5563;
+      color: var(--text-muted);
     }
   </style>
   <link rel="preconnect" href="https://fonts.bunny.net">
   <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700" rel="stylesheet" />
 </head>
 <body>
-  <div class="container">
+  <div class="container" data-stx-scope="theme">
+    <button class="theme-toggle" @click="toggle()" aria-label="Toggle theme">
+      <svg @show="isDark()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
+      <svg @show="!isDark()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
+    </button>
+    <script>
+    (function() {
+      var initial = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      var isDark = state(initial === 'dark');
+
+      function toggle() {
+        isDark.set(!isDark());
+        var next = isDark() ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+      }
+
+      window.stx = window.stx || {};
+      window.stx._scopes = window.stx._scopes || {};
+      window.stx._scopes['theme'] = { isDark, toggle };
+    })();
+    </script>
+
     <div class="header">
       <div class="logo">
         <div class="logo-diamond"></div>
@@ -392,15 +500,15 @@ const features = [
           required
           autocomplete="email"
         >
-        <button type="submit" class="subscribe-btn" :disabled="loading()">
-          <span @text="loading() ? 'Subscribing...' : 'Subscribe'"></span>
+        <button type="submit" class="subscribe-btn" :disabled="loading">
+          <span @text="loading ? 'Subscribing...' : 'Subscribe'"></span>
         </button>
       </form>
       <div
         class="subscribe-feedback"
         @class="{ success: success(), error: error() }"
         @show="feedback()"
-        @text="feedback()"
+        @text="feedback"
       ></div>
       <p class="subscribe-privacy">No spam, unsubscribe at any time.</p>
     </div>

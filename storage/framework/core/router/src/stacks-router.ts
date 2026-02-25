@@ -30,10 +30,78 @@ interface GroupOptions {
 }
 
 /**
- * Chainable route interface for middleware support
+ * Chainable route interface for middleware and naming support
  */
 interface ChainableRoute {
   middleware: (name: string) => ChainableRoute
+  name: (routeName: string) => ChainableRoute
+}
+
+/**
+ * Named route registry - maps route names to their paths
+ * e.g., 'email.unsubscribe' → '/api/email/unsubscribe'
+ */
+const namedRouteRegistry = new Map<string, string>()
+
+/**
+ * Generate a full URL for a named route, like Laravel's route() helper.
+ *
+ * @example
+ * ```typescript
+ * // Define a named route
+ * route.get('/api/email/unsubscribe', 'Actions/UnsubscribeAction').name('email.unsubscribe')
+ *
+ * // Generate URL
+ * url('email.unsubscribe', { token: 'abc-123' })
+ * // → https://stacksjs.com/api/email/unsubscribe?token=abc-123
+ *
+ * // With path parameters
+ * route.get('/users/{id}/posts/{postId}', handler).name('user.post')
+ * url('user.post', { id: 42, postId: 7 })
+ * // → https://stacksjs.com/users/42/posts/7
+ * ```
+ */
+export function url(routeName: string, params: Record<string, string | number> = {}): string {
+  const routePath = namedRouteRegistry.get(routeName)
+  if (!routePath) {
+    throw new Error(`Route '${routeName}' is not defined. Available routes: ${[...namedRouteRegistry.keys()].join(', ')}`)
+  }
+
+  let appUrl: string
+  try {
+    // Dynamically import config to get app URL
+    appUrl = process.env.APP_URL || 'https://localhost'
+  }
+  catch {
+    appUrl = 'https://localhost'
+  }
+
+  // Normalize the base URL
+  appUrl = appUrl.replace(/\/$/, '')
+  if (!appUrl.startsWith('http')) {
+    appUrl = `https://${appUrl}`
+  }
+
+  // Substitute path parameters like {id}, {postId}
+  let resolvedPath = routePath
+  const queryParams: Record<string, string> = {}
+
+  for (const [key, value] of Object.entries(params)) {
+    const placeholder = `{${key}}`
+    if (resolvedPath.includes(placeholder)) {
+      resolvedPath = resolvedPath.replace(placeholder, String(value))
+    }
+    else {
+      // Not a path param — add as query string
+      queryParams[key] = String(value)
+    }
+  }
+
+  const queryString = Object.keys(queryParams).length > 0
+    ? `?${new URLSearchParams(queryParams).toString()}`
+    : ''
+
+  return `${appUrl}${resolvedPath}${queryString}`
 }
 
 /**
@@ -197,12 +265,20 @@ function createChainableRoute(routeKey: string): ChainableRoute {
     routeMiddlewareRegistry.set(routeKey, [])
   }
 
+  // Extract the path from routeKey (format: "METHOD:/path")
+  const routePath = routeKey.includes(':') ? routeKey.substring(routeKey.indexOf(':') + 1) : routeKey
+
   const chain: ChainableRoute = {
     middleware(name: string) {
       const middlewareList = routeMiddlewareRegistry.get(routeKey)
       if (middlewareList) {
         middlewareList.push(name)
       }
+      return chain
+    },
+
+    name(routeName: string) {
+      namedRouteRegistry.set(routeName, routePath)
       return chain
     },
   }

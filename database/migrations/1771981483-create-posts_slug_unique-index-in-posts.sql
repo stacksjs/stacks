@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS "posts_posts_slug_unique" ON "posts" ("slug");

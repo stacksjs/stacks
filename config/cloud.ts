@@ -442,11 +442,11 @@ export const tsCloud: TsCloudConfig = {
      * Domain is auto-detected from dns.domain if not specified.
      * DNS records (SPF, DKIM, DMARC) are auto-created when hostedZoneId is available.
      */
-    // email: {
-    //   domain: 'stacksjs.com',
-    //   configurationSet: true,
-    //   enableDkim: true,
-    // },
+    email: {
+      domain: 'stacksjs.com',
+      configurationSet: true,
+      enableDkim: true,
+    },
 
     /**
      * Search Configuration (OpenSearch)

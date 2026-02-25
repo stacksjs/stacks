@@ -11,10 +11,10 @@ import { env } from '@stacksjs/env'
 export default {
   from: {
     name: env.MAIL_FROM_NAME || 'Stacks',
-    address: env.MAIL_FROM_ADDRESS || `no-reply@${env.MAIL_DOMAIN || 'example.com'}`,
+    address: env.MAIL_FROM_ADDRESS || `hello@${env.MAIL_DOMAIN || 'stacksjs.com'}`,
   },
 
-  domain: env.MAIL_DOMAIN || 'example.com',
+  domain: env.MAIL_DOMAIN || 'stacksjs.com',
 
   /**
    * Mailbox users for IMAP/SMTP access.
@@ -274,5 +274,5 @@ export default {
     complaints: true,
   },
 
-  default: (env.MAIL_MAILER || env.MAIL_DRIVER || 'smtp') as 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp' | 'postmark',
+  default: (env.MAIL_MAILER || env.MAIL_DRIVER || 'ses') as 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp' | 'postmark',
 } satisfies EmailConfig

@@ -9,17 +9,12 @@ export const servers = {
     type: 'app',
     size: 't3.micro',
     diskSize: 20, // in GB
-        // privateNetwork: 'vpc-123456789', // set to existing VPC ID or omit to create new
+    // privateNetwork: 'vpc-123456789', // set to existing VPC ID or omit to create new
     // subnet: 'subnet-123456789',
     serverOS: 'ubuntu-20-lts-x86_64',
     bunVersion: '1.1.26',
     database: 'sqlite',
     databaseName: 'stacks',
-    // This is the "post provision recipe" that is executed on the server after the server is provisioned
-    userData: `#!/bin/bash
-      echo "Hello World from App Server 1!" > /tmp/test.txt
-      chown ubuntu:ubuntu /tmp/test.txt
-    `,
   },
 
   app2: {

@@ -1,0 +1,99 @@
+<script server>
+const email = props.email || ''
+const unsubscribeUrl = props.unsubscribeUrl || '#'
+const appName = props.appName || 'Stacks'
+const appUrl = props.appUrl || 'https://stacksjs.com'
+const primaryColor = props.primaryColor || '#3451b2'
+const year = props.year || new Date().getFullYear()
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Welcome to {{ appName }}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #0e0e0e; line-height: 1.6; color: #d4d4d4;">
+  <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto;">
+
+          <!-- Logo -->
+          <tr>
+            <td style="text-align: center; padding-bottom: 32px;">
+              <h1 style="color: #ececec; font-size: 28px; font-weight: 600; margin: 0;">{{ appName }}</h1>
+            </td>
+          </tr>
+
+          <!-- Main Content -->
+          <tr>
+            <td style="background-color: #1a1a1a; border-radius: 12px; padding: 40px;">
+
+              <h2 style="color: #ececec; font-size: 22px; font-weight: 600; margin: 0 0 16px;">Thanks for subscribing!</h2>
+
+              <p style="color: #a0a0a0; font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
+                You're now on the list. We'll keep you in the loop on new releases, features, and framework updates.
+              </p>
+
+              <p style="color: #a0a0a0; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                {{ appName }} is a rapid application development framework that helps you build type-safe web apps, APIs, and cloud infrastructure with ease.
+              </p>
+
+              <!-- CTA Button -->
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 24px;">
+                <tr>
+                  <td>
+                    <a href="{{ appUrl }}" style="display: inline-block; background-color: {{ primaryColor }}; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 500;">
+                      Visit {{ appName }}
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Divider -->
+              <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin: 8px 0 24px;">
+                <tr>
+                  <td style="border-top: 1px solid #2a2a2a;"></td>
+                </tr>
+              </table>
+
+              <!-- Links -->
+              <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+                <tr>
+                  <td style="color: #666; font-size: 13px;">
+                    <a href="https://docs.stacksjs.com" style="color: #888; text-decoration: none;">Docs</a>
+                    &nbsp;&middot;&nbsp;
+                    <a href="https://github.com/stacksjs/stacks" style="color: #888; text-decoration: none;">GitHub</a>
+                    &nbsp;&middot;&nbsp;
+                    <a href="https://discord.gg/stacksjs" style="color: #888; text-decoration: none;">Discord</a>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="text-align: center; padding-top: 32px;">
+              <p style="color: #555; font-size: 13px; margin: 0 0 8px;">
+                You received this email because {{ email }} subscribed at {{ appUrl }}.
+              </p>
+              <p style="margin: 0;">
+                <a href="{{ unsubscribeUrl }}" style="color: #666; font-size: 12px; text-decoration: underline;">Unsubscribe</a>
+              </p>
+              <p style="color: #444; font-size: 11px; margin: 12px 0 0;">
+                &copy; {{ year }} {{ appName }}. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

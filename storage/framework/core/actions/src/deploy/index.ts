@@ -534,6 +534,278 @@ try {
       console.log(`⚠ Could not retrieve server details: ${outputError.message}`)
       if (isVerbose) log.debug(`Output retrieval error: ${outputError.stack}`)
     }
+
+    // Deploy API server code to EC2 instances
+    const serverDeploySpinner = spinner('Deploying API server to EC2...')
+    serverDeploySpinner.start()
+
+    try {
+      const { S3Client, CloudFormationClient, AWSClient } = await import('@stacksjs/ts-cloud') as any
+      const { readFileSync: readServerFile, existsSync: serverFileExists } = await import('node:fs')
+      const { resolve } = await import('node:path')
+
+      const s3 = new S3Client(region)
+      const cf = new CloudFormationClient(region)
+      const awsClient = new AWSClient()
+
+      const stackName = `${projectName}-cloud`
+      const outputs = await cf.getStackOutputs(stackName)
+      const bucketName = outputs.FrontendBucketName
+
+      // Find the EC2 instance ID from stack outputs
+      let instanceId: string | undefined
+      for (const [key, value] of Object.entries(outputs)) {
+        if ((key as string).endsWith('InstanceId') && typeof value === 'string') {
+          instanceId = value as string
+          break
+        }
+      }
+
+      if (!instanceId || !bucketName) {
+        serverDeploySpinner.stop()
+        if (!instanceId) console.log('⚠ No EC2 instance found in stack outputs, skipping server deploy')
+        if (!bucketName) console.log('⚠ No S3 bucket found for staging server artifacts')
+      } else {
+        // Upload ts-cloud dist to S3 for EC2 to download
+        const tsCloudDistPath = resolve(p.projectPath('node_modules/@stacksjs/ts-cloud/dist/index.js'))
+        if (serverFileExists(tsCloudDistPath)) {
+          const tsCloudDist = readServerFile(tsCloudDistPath)
+          await withS3Retry(() => s3.putObject({
+            bucket: bucketName,
+            key: '_deploy/ts-cloud-dist.js',
+            body: tsCloudDist,
+            contentType: 'application/javascript',
+          }), 'upload ts-cloud dist')
+          if (isVerbose) log.debug('  Uploaded ts-cloud dist to S3')
+        }
+
+        // Generate the production API server code with SES email integration
+        const serverCode = `import { Database } from "bun:sqlite";
+import { SESClient } from "./ts-cloud-dist.js";
+
+const db = new Database("/var/www/api/stacks.db");
+db.run(\`CREATE TABLE IF NOT EXISTS subscribers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL UNIQUE,
+  status TEXT DEFAULT 'subscribed',
+  source TEXT DEFAULT 'homepage',
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+)\`);
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+const ses = new SESClient("${region}");
+
+async function sendWelcomeEmail(email) {
+  try {
+    await ses.sendSimpleEmail({
+      from: "hello@stacksjs.com",
+      to: email,
+      subject: "Welcome to Stacks!",
+      html: \`<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#0e0e0e;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;margin:0 auto;padding:40px 20px;">
+    <tr><td style="text-align:center;padding-bottom:32px;"><h1 style="color:#ececec;font-size:28px;font-weight:600;margin:0;">Stacks</h1></td></tr>
+    <tr><td style="background-color:#1a1a1a;border-radius:12px;padding:32px;">
+      <h2 style="color:#ececec;font-size:22px;font-weight:600;margin:0 0 16px;">Welcome aboard!</h2>
+      <p style="color:#a0a0a0;font-size:16px;line-height:1.6;margin:0 0 16px;">Thanks for subscribing to Stacks. You will be the first to know about new releases, features, and updates.</p>
+      <p style="color:#a0a0a0;font-size:16px;line-height:1.6;margin:0 0 24px;">Stacks is a rapid application development framework that helps you build type-safe web apps, APIs, and cloud infrastructure with ease.</p>
+      <a href="https://stacksjs.com" style="display:inline-block;background-color:#6366f1;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:500;">Visit Stacks</a>
+    </td></tr>
+    <tr><td style="text-align:center;padding-top:32px;"><p style="color:#666;font-size:13px;margin:0;">You received this email because you subscribed at stacksjs.com</p></td></tr>
+  </table>
+</body>
+</html>\`,
+      text: "Welcome to Stacks! Thanks for subscribing. You will be the first to know about new releases, features, and updates. Visit us at https://stacksjs.com",
+    });
+    console.log(\`Welcome email sent to \${email}\`);
+  } catch (err) {
+    console.error(\`Failed to send welcome email to \${email}:\`, err.message);
+  }
+}
+
+const server = Bun.serve({
+  port: 80,
+  hostname: "0.0.0.0",
+  async fetch(req) {
+    const url = new URL(req.url);
+
+    if (req.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: CORS_HEADERS });
+    }
+
+    if (url.pathname === "/health" || url.pathname === "/api/health") {
+      return Response.json({ status: "ok" }, { headers: CORS_HEADERS });
+    }
+
+    if (url.pathname === "/api/email/subscribe" && req.method === "POST") {
+      try {
+        const body = await req.json();
+        const email = (body.email || "").trim().toLowerCase();
+        if (!email || !email.includes("@")) {
+          return Response.json(
+            { success: false, message: "A valid email is required" },
+            { status: 400, headers: CORS_HEADERS },
+          );
+        }
+
+        const existing = db.query("SELECT id FROM subscribers WHERE email = ?").get(email);
+        if (existing) {
+          return Response.json(
+            { success: true, message: "Already subscribed" },
+            { headers: CORS_HEADERS },
+          );
+        }
+
+        db.run("INSERT INTO subscribers (email, source) VALUES (?, ?)", [email, body.source || "homepage"]);
+
+        // Send welcome email asynchronously (do not block the response)
+        sendWelcomeEmail(email);
+
+        return Response.json(
+          { success: true, message: "Thanks for subscribing!" },
+          { headers: CORS_HEADERS },
+        );
+      } catch (e) {
+        return Response.json(
+          { success: false, message: "Server error" },
+          { status: 500, headers: CORS_HEADERS },
+        );
+      }
+    }
+
+    return Response.json({ error: "Not found" }, { status: 404, headers: CORS_HEADERS });
+  },
+});
+
+console.log(\`Stacks API server running on port \${server.port}\`);
+`
+
+        // Upload server.ts to S3
+        await withS3Retry(() => s3.putObject({
+          bucket: bucketName,
+          key: '_deploy/server.ts',
+          body: Buffer.from(serverCode),
+          contentType: 'application/typescript',
+        }), 'upload server.ts')
+        if (isVerbose) log.debug('  Uploaded server.ts to S3')
+
+        // Use SSM SendCommand to deploy files to EC2 and restart the service
+        // Handles both first-time setup and subsequent deploys
+        const ssmCommand = [
+          // Ensure API directory exists
+          'mkdir -p /var/www/api',
+          // Download deployment artifacts from S3
+          `aws s3 cp s3://${bucketName}/_deploy/ts-cloud-dist.js /var/www/api/ts-cloud-dist.js`,
+          `aws s3 cp s3://${bucketName}/_deploy/server.ts /var/www/api/server.ts`,
+          // Create systemd service if it doesn't exist (first-time setup)
+          `if [ ! -f /etc/systemd/system/stacks-api.service ]; then
+cat > /etc/systemd/system/stacks-api.service << 'SERVICEFILE'
+[Unit]
+Description=Stacks Bun API Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/api
+ExecStart=/root/.bun/bin/bun server.ts
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+SERVICEFILE
+systemctl daemon-reload
+systemctl enable stacks-api
+fi`,
+          // Restart the API server
+          'systemctl restart stacks-api',
+          'echo "API server deployed and restarted"',
+        ].join(' && ')
+
+        // Call SSM SendCommand via AWSClient
+        const ssmResult = await awsClient.request({
+          service: 'ssm',
+          region,
+          method: 'POST',
+          path: '/',
+          headers: {
+            'Content-Type': 'application/x-amz-json-1.1',
+            'X-Amz-Target': 'AmazonSSM.SendCommand',
+          },
+          body: JSON.stringify({
+            InstanceIds: [instanceId],
+            DocumentName: 'AWS-RunShellScript',
+            Parameters: {
+              commands: [ssmCommand],
+            },
+            TimeoutSeconds: 120,
+          }),
+        })
+
+        const commandId = ssmResult?.Command?.CommandId
+        if (commandId) {
+          // Wait for the command to complete
+          let attempts = 0
+          while (attempts < 30) {
+            await new Promise(resolve => setTimeout(resolve, 3000))
+            try {
+              const invocation = await awsClient.request({
+                service: 'ssm',
+                region,
+                method: 'POST',
+                path: '/',
+                headers: {
+                  'Content-Type': 'application/x-amz-json-1.1',
+                  'X-Amz-Target': 'AmazonSSM.GetCommandInvocation',
+                },
+                body: JSON.stringify({
+                  CommandId: commandId,
+                  InstanceId: instanceId,
+                }),
+              })
+
+              const status = invocation?.Status
+              if (status === 'Success') {
+                serverDeploySpinner.succeed('API server deployed to EC2')
+                break
+              } else if (status === 'Failed' || status === 'Cancelled' || status === 'TimedOut') {
+                const errOutput = invocation?.StandardErrorContent || 'Unknown error'
+                serverDeploySpinner.fail(`API server deploy failed: ${errOutput}`)
+                break
+              }
+              // InProgress - keep waiting
+            } catch {
+              // Command may not be ready yet
+            }
+            attempts++
+          }
+          if (attempts >= 30) {
+            serverDeploySpinner.fail('API server deploy timed out waiting for SSM command')
+          }
+        } else {
+          serverDeploySpinner.fail('Failed to send SSM command')
+        }
+
+        // Clean up deployment artifacts from S3
+        try {
+          await s3.deleteObject({ bucket: bucketName, key: '_deploy/ts-cloud-dist.js' })
+          await s3.deleteObject({ bucket: bucketName, key: '_deploy/server.ts' })
+        } catch {
+          // Non-critical cleanup
+        }
+      }
+    } catch (serverDeployError: any) {
+      serverDeploySpinner.fail(`API server deployment failed: ${serverDeployError.message}`)
+      if (isVerbose) log.debug(`Server deploy error: ${serverDeployError.stack}`)
+    }
   }
 
   // Deploy frontend to S3 (works for both server and serverless modes)
@@ -628,13 +900,6 @@ try {
           }
           return rendered
         })
-
-        // Replace /api/email/subscribe with Lambda function URL if available
-        const subscribeApiUrl = outputs.SubscribeApiUrl
-        if (subscribeApiUrl && stxContent.includes('/api/email/subscribe')) {
-          stxContent = stxContent.replace(/['"]\/api\/email\/subscribe['"]/g, `'${subscribeApiUrl}'`)
-          if (isVerbose) log.debug(`  Replaced subscribe API URL with Lambda: ${subscribeApiUrl}`)
-        }
 
         // Inject STX signals runtime if reactive directives are present
         // The runtime must load BEFORE any scope scripts that use state()/effect()
