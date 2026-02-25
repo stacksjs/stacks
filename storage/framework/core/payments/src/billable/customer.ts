@@ -70,7 +70,11 @@ export const manageCustomer: ManageCustomer = (() => {
   }
 
   async function updateStripeCustomer(user: UserModel, options: Stripe.CustomerCreateParams = {}): Promise<Stripe.Response<Stripe.Customer>> {
-    const customer = await stripe.customers.update(user.stripe_id || '', options)
+    if (!user.stripe_id) {
+      throw new Error('User does not have a Stripe customer ID. Create a customer first.')
+    }
+
+    const customer = await stripe.customers.update(user.stripe_id, options)
 
     return customer
   }

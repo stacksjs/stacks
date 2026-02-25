@@ -3,6 +3,10 @@ import type { CommandError, Subprocess } from '@stacksjs/types'
 import type { ZlibCompressionOptions } from 'bun'
 import { runCommand } from '@stacksjs/cli'
 
+function shellEscape(arg: string): string {
+  return `'${arg.replace(/'/g, "'\\''")}'`
+}
+
 interface ZipOptions {
   cwd?: string
 }
@@ -13,19 +17,20 @@ export async function zip(
   options?: ZipOptions,
 ): Promise<Result<Subprocess, CommandError>> {
   const toPath = to || 'archive.zip'
-  const fromPath = Array.isArray(from) ? from.join(' ') : from
 
-  if (Array.isArray(from))
-    return runCommand(`zip -r ${toPath} ${fromPath}`, options)
+  if (Array.isArray(from)) {
+    const fromPath = from.map(f => shellEscape(f)).join(' ')
+    return runCommand(`zip -r ${shellEscape(toPath)} ${fromPath}`, options)
+  }
 
-  return runCommand(`zip -r ${to} ${from}`, options)
+  return runCommand(`zip -r ${shellEscape(toPath)} ${shellEscape(from)}`, options)
 }
 
 export async function unzip(paths: string | string[]): Promise<Result<Subprocess, CommandError>> {
   if (Array.isArray(paths))
-    return runCommand(`unzip ${paths.join(' ')}`)
+    return runCommand(`unzip ${paths.map(p => shellEscape(p)).join(' ')}`)
 
-  return runCommand(`unzip ${paths}`)
+  return runCommand(`unzip ${shellEscape(paths)}`)
 }
 
 export function archive(paths: string | string[]): Promise<Result<Subprocess, CommandError>> {

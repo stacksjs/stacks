@@ -93,7 +93,11 @@ export class UploadedFile {
    * @returns The stored path
    */
   async storeAs(path: string, name: string, disk: string = 'local'): Promise<string> {
-    const fullPath = path ? join(path, name) : name
+    if (name.includes('..')) {
+      throw new Error('Invalid filename: path traversal detected')
+    }
+    const sanitizedName = basename(name)
+    const fullPath = path ? join(path, sanitizedName) : sanitizedName
     const contents = await this.bytes()
 
     await Storage.disk(disk).write(fullPath, contents)

@@ -77,18 +77,29 @@ export function constructEvent(
 /**
  * Handle an incoming webhook event
  */
-export async function handleWebhookEvent(event: Stripe.Event): Promise<{ handled: boolean, eventType: string }> {
+export async function handleWebhookEvent(event: Stripe.Event): Promise<{ handled: boolean, eventType: string, errors?: string[] }> {
   const eventHandlers = handlers.get(event.type) || []
 
   if (eventHandlers.length === 0) {
     return { handled: false, eventType: event.type }
   }
 
+  const errors: string[] = []
+
   for (const handler of eventHandlers) {
-    await handler(event)
+    try {
+      await handler(event)
+    }
+    catch (error) {
+      errors.push(error instanceof Error ? error.message : String(error))
+    }
   }
 
-  return { handled: true, eventType: event.type }
+  return {
+    handled: true,
+    eventType: event.type,
+    ...(errors.length > 0 ? { errors } : {}),
+  }
 }
 
 /**

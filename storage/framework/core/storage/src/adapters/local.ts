@@ -1,4 +1,5 @@
 import { Buffer } from 'node:buffer'
+import { createHmac } from 'node:crypto'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { access, constants, copyFile, lstat, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
 import { basename, dirname, join, relative } from 'node:path'
@@ -217,9 +218,11 @@ export class LocalStorageAdapter implements StorageAdapter {
   }
 
   async temporaryUrl(path: string, options: TemporaryUrlOptions): Promise<string> {
-    // For local storage, we'd need a separate service to handle temporary URLs
     const expiry = normalizeExpiryToDate(options.expiresIn)
-    const token = Buffer.from(`${path}:${expiry.getTime()}`).toString('base64url')
+    const payload = `${path}:${expiry.getTime()}`
+    const appKey = process.env.APP_KEY || 'stacks-default-key'
+    const signature = createHmac('sha256', appKey).update(payload).digest('hex')
+    const token = Buffer.from(`${payload}:${signature}`).toString('base64url')
     return `http://localhost/temp/${token}`
   }
 

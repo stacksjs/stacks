@@ -45,7 +45,8 @@ export class S3StorageAdapter implements StorageAdapter {
   private stripPrefix(path: string): string {
     if (!this.prefix)
       return path
-    return path.replace(new RegExp(`^${this.prefix}/`), '')
+    const prefixWithSlash = `${this.prefix}/`
+    return path.startsWith(prefixWithSlash) ? path.slice(prefixWithSlash.length) : path
   }
 
   private async contentsToBuffer(contents: FileContents): Promise<Buffer> {

@@ -143,7 +143,8 @@ export class SmsSDK {
   private renderTemplate(template: string, data: Record<string, any>): string {
     let result = template
     for (const [key, value] of Object.entries(data)) {
-      result = result.replace(new RegExp(`{{\\s*${key}\\s*}}`, 'g'), String(value))
+      const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      result = result.replace(new RegExp(`\\{\\{\\s*${escapedKey}\\s*\\}\\}`, 'g'), String(value))
     }
     return result
   }
@@ -179,7 +180,11 @@ export class Communication {
       const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
       const { start, end } = user.preferences.quietHours
 
-      if (currentTime >= start && currentTime <= end) {
+      const isInQuietHours = start <= end
+        ? (currentTime >= start && currentTime <= end)
+        : (currentTime >= start || currentTime <= end)
+
+      if (isInQuietHours) {
         // During quiet hours, only send high priority
         return {
           success: false,

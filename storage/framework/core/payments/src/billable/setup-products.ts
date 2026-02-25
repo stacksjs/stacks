@@ -1,6 +1,6 @@
 import type { Err, Ok } from '@stacksjs/error-handling'
 import { saas } from '@stacksjs/config'
-import { ok } from '@stacksjs/error-handling'
+import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { stripe } from '@stacksjs/payments'
 
@@ -47,9 +47,9 @@ export async function createStripeProduct(): Promise<Ok<string, never> | Err<str
 
     return ok('Migrations generated') as any
   }
-  catch (err: any) {
-    log.error(err)
+  catch (error: any) {
+    log.error(error)
 
-    return err(err)
+    return err(error)
   }
 }

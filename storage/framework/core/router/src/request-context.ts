@@ -15,13 +15,10 @@ const requestStorage = new AsyncLocalStorage<EnhancedRequest>()
  * Set the current request context
  * Called by middleware/router when handling a request
  */
-export function setCurrentRequest(_req: EnhancedRequest): void {
-  // Note: This only works within the async context started by runWithRequest
-  const store = requestStorage.getStore()
-  if (store) {
-    // If we're in a context, we can't replace it - this is expected
-    return
-  }
+export function setCurrentRequest(req: EnhancedRequest): void {
+  // Use enterWith to set the request context for the current async scope.
+  // This is useful for testing and middleware that operate outside of runWithRequest.
+  requestStorage.enterWith(req)
 }
 
 /**

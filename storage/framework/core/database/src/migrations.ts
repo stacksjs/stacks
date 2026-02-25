@@ -5,7 +5,7 @@
  * powered by bun-query-builder.
  */
 
-import type { Err, Ok, Result } from '@stacksjs/error-handling'
+import type { Result } from '@stacksjs/error-handling'
 import { log as _log } from '@stacksjs/logging'
 
 // Defensive log wrapper to handle cases where log methods might not be initialized
@@ -119,20 +119,25 @@ const FRAMEWORK_TABLES = [
 /**
  * Reset the database (drop all tables)
  */
-export async function resetDatabase(): Promise<Ok<string, never>> {
-  // Configure bun-query-builder with stacks database settings
-  configureQueryBuilder()
+export async function resetDatabase(): Promise<Result<string, Error>> {
+  try {
+    // Configure bun-query-builder with stacks database settings
+    configureQueryBuilder()
 
-  const modelsDir = path.userModelsPath()
-  const dialect = getDialect()
+    const modelsDir = path.userModelsPath()
+    const dialect = getDialect()
 
-  // Drop framework tables first (OAuth, passkeys, etc.)
-  await dropFrameworkTables(dialect)
+    // Drop framework tables first (OAuth, passkeys, etc.)
+    await dropFrameworkTables(dialect)
 
-  // Then drop user model tables
-  await qbResetDatabase(modelsDir, { dialect })
+    // Then drop user model tables
+    await qbResetDatabase(modelsDir, { dialect })
 
-  return ok('All tables dropped successfully!') as any
+    return ok('All tables dropped successfully!')
+  }
+  catch (error) {
+    return err(handleError('Database reset failed', error))
+  }
 }
 
 /**
@@ -211,7 +216,7 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'postgres'): Pr
  * Generate migrations based on model changes
  * This is the new bun-query-builder style that compares models to generate diffs
  */
-export async function generateMigrations(): Promise<Ok<string, never> | Err<string, any>> {
+export async function generateMigrations(): Promise<Result<string, Error>> {
   try {
     log.info('Generating migrations...')
 
@@ -230,17 +235,17 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
       log.info('No changes detected')
     }
 
-    return ok('Migrations generated') as any
+    return ok('Migrations generated')
   }
   catch (error) {
-    return err(error) as any
+    return err(handleError('Migration generation failed', error))
   }
 }
 
 /**
  * Generate fresh migrations (full regeneration, ignoring previous state)
  */
-export async function generateMigrations2(): Promise<Ok<string, never> | Err<string, any>> {
+export async function generateMigrations2(): Promise<Result<string, Error>> {
   try {
     log.info('Generating fresh migrations...')
 
@@ -253,10 +258,10 @@ export async function generateMigrations2(): Promise<Ok<string, never> | Err<str
     await qbGenerateMigration(modelsDir, { dialect, full: true })
 
     log.success('Migrations generated')
-    return ok('Migrations generated') as any
+    return ok('Migrations generated')
   }
   catch (error) {
-    return err(error) as any
+    return err(handleError('Fresh migration generation failed', error))
   }
 }
 
