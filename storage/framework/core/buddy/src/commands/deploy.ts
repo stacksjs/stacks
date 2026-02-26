@@ -426,6 +426,69 @@ export function deploy(buddy: CLI): void {
       await outro('Project deployed.', { startTime, useSeconds: true })
     })
 
+  buddy
+    .command('deploy:tunnel', 'Deploy a custom tunnel server to AWS EC2')
+    .option('--domain <domain>', 'Domain for the tunnel server (required, must not be localtunnel.dev)')
+    .option('--region <region>', 'AWS region', { default: 'us-east-1' })
+    .option('--enable-ssl', 'Enable SSL via Let\'s Encrypt + Porkbun DNS')
+    .option('--instance-type <type>', 'EC2 instance type', { default: 't3.micro' })
+    .option('--prefix <prefix>', 'Resource name prefix', { default: 'localtunnel' })
+    .option('--verbose', 'Enable verbose output', { default: false })
+    .action(async (options: {
+      domain?: string
+      region?: string
+      enableSsl?: boolean
+      instanceType?: string
+      prefix?: string
+      verbose?: boolean
+    }) => {
+      if (!options.domain) {
+        log.error('--domain is required for tunnel server deployment')
+        log.info('Example: buddy deploy:tunnel --domain tunnel.mycompany.com --enable-ssl')
+        process.exit(ExitCode.InvalidArgument)
+      }
+
+      if (options.domain === 'localtunnel.dev') {
+        log.error('Cannot deploy to localtunnel.dev — it is the shared Stacks tunnel service')
+        log.info('Use a custom domain instead, e.g.: buddy deploy:tunnel --domain tunnel.mycompany.com')
+        process.exit(ExitCode.InvalidArgument)
+      }
+
+      console.log()
+      log.info(`Deploying tunnel server to ${options.domain}...`)
+      console.log(`  Region:        ${options.region}`)
+      console.log(`  Instance Type: ${options.instanceType}`)
+      console.log(`  SSL:           ${options.enableSsl ? 'enabled' : 'disabled'}`)
+      console.log()
+
+      try {
+        const { deployTunnelServer } = await import('@stacksjs/tunnel')
+        const result = await deployTunnelServer({
+          domain: options.domain,
+          region: options.region,
+          instanceType: options.instanceType,
+          prefix: options.prefix,
+          enableSsl: options.enableSsl,
+          verbose: options.verbose,
+        })
+
+        console.log()
+        log.success('Tunnel server deployed!')
+        console.log(`  Server URL:    ${result.serverUrl}`)
+        console.log(`  Public IP:     ${result.publicIp}`)
+        console.log(`  Instance ID:   ${result.instanceId}`)
+        console.log()
+        log.info(`Connect with: buddy share --server ${options.domain}`)
+      }
+      catch (error: any) {
+        log.error(`Tunnel deployment failed: ${error.message}`)
+        if (options.verbose) {
+          console.error(error.stack)
+        }
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
   buddy.on('deploy:*', () => {
     log.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)

@@ -5,6 +5,8 @@ import { ExitCode } from '@stacksjs/types'
 
 interface ShareOptions {
   port?: string
+  server?: string
+  subdomain?: string
   verbose?: boolean
 }
 
@@ -12,12 +14,16 @@ export function share(buddy: CLI): void {
   const descriptions = {
     share: 'Share your local development server via a public tunnel',
     port: 'Local port to share (overrides default for the given type)',
+    server: 'Tunnel server URL (default: localtunnel.dev)',
+    subdomain: 'Request a specific subdomain',
     verbose: 'Enable verbose output',
   }
 
   buddy
     .command('share [type]', descriptions.share)
     .option('-p, --port <port>', descriptions.port)
+    .option('--server <url>', descriptions.server, { default: 'localtunnel.dev' })
+    .option('--subdomain <name>', descriptions.subdomain)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (type: string | undefined, options: ShareOptions) => {
       const perf = await intro('buddy share')
@@ -45,14 +51,45 @@ export function share(buddy: CLI): void {
         process.exit(ExitCode.InvalidArgument)
       }
 
+      const server = options.server || 'localtunnel.dev'
+
       console.log()
       console.log(`  ${green('➜')}  ${bold('Sharing')}:  ${cyan(serviceType)} ${dim(`on port ${port}`)}`)
-      console.log(`  ${dim('➜')}  ${dim('Connecting to tunnel server...')}`)
+      console.log(`  ${dim('➜')}  ${dim(`Connecting to ${server}...`)}`)
       console.log()
 
       try {
         const { localTunnel } = await import('@stacksjs/tunnel')
-        const tunnel = await localTunnel({ port })
+
+        const tunnel = await localTunnel({
+          port,
+          server,
+          subdomain: options.subdomain,
+          verbose: options.verbose,
+          onConnect: (info) => {
+            if (options.verbose) {
+              console.log(`  ${dim(`Connected: ${info.url}`)}`)
+            }
+          },
+          onRequest: (req) => {
+            if (options.verbose) {
+              console.log(`  ${dim('→')} ${req.method} ${req.url}`)
+            }
+          },
+          onResponse: (res) => {
+            if (options.verbose) {
+              console.log(`  ${dim('←')} ${res.status} ${dim(`(${res.size} bytes, ${res.duration}ms)`)}`)
+            }
+          },
+          onError: (error) => {
+            if (options.verbose) {
+              console.log(`  ${dim('✗')} ${error.message}`)
+            }
+          },
+          onReconnecting: (info) => {
+            console.log(`  ${dim('↻')} Reconnecting... (attempt ${info.attempt})`)
+          },
+        })
 
         console.log(`  ${green('➜')}  ${bold('Public URL')}:  ${cyan(tunnel.url)}`)
         console.log(`  ${green('➜')}  ${bold('Subdomain')}:   ${cyan(tunnel.subdomain)}`)
@@ -61,6 +98,11 @@ export function share(buddy: CLI): void {
         console.log()
         console.log(`  ${dim('Press Ctrl+C to stop sharing')}`)
         console.log()
+
+        if (options.verbose) {
+          console.log(`  ${dim('Verbose mode — showing all requests')}`)
+          console.log()
+        }
 
         const cleanup = () => {
           console.log()
@@ -77,7 +119,14 @@ export function share(buddy: CLI): void {
         await new Promise(() => {})
       }
       catch (error: any) {
-        log.error(`Failed to create tunnel: ${error.message}`)
+        if (error.message?.includes('timeout') || error.message?.includes('ECONNREFUSED')) {
+          log.error(`Could not reach tunnel server at ${server}`)
+          log.info('Check that the server is running and accessible.')
+          log.info(`You can verify with: curl -sk https://${server}/status`)
+        }
+        else {
+          log.error(`Failed to create tunnel: ${error.message}`)
+        }
 
         if (options.verbose) {
           log.error(error.stack)

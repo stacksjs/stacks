@@ -327,7 +327,43 @@ type InfrastructureOptions = Partial<{
   cli: boolean
   docs: boolean
   fileSystem: boolean
+
+  /**
+   * **Tunnel Configuration**
+   *
+   * Deploy a custom tunnel server for sharing local dev servers.
+   * Only needed for custom domains — localtunnel.dev is the shared default.
+   *
+   * @example
+   * ```ts
+   * tunnel: {
+   *   enabled: true,
+   *   domain: 'tunnel.mycompany.com',
+   *   ssl: { enabled: true },
+   * }
+   * ```
+   */
+  tunnel: TunnelCloudConfig
 }>
+
+export interface TunnelCloudConfig {
+  /** Enable custom tunnel server deployment (opt-in) */
+  enabled: boolean
+  /** Custom domain for the tunnel server (must NOT be localtunnel.dev) */
+  domain?: string
+  /** AWS region to deploy to */
+  region?: string
+  /** EC2 instance type */
+  instanceType?: string
+  /** Resource name prefix */
+  prefix?: string
+  /** SSL configuration */
+  ssl?: {
+    enabled: boolean
+    porkbunApiKey?: string
+    porkbunSecretKey?: string
+  }
+}
 
 export interface CloudOptions {
   sites: {

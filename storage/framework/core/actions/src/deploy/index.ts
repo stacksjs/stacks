@@ -1616,6 +1616,48 @@ fi`,
     console.log(`⚠ 404 page configuration skipped: ${errorPageError.message}`)
     if (isVerbose) log.debug(`Error page config error: ${errorPageError.stack}`)
   }
+  // ============================================
+  // Tunnel server deployment (custom domains only)
+  // ============================================
+  try {
+    const tunnelCloudConfig = await import(p.projectPath('config/cloud'))
+    const tunnelConfig = tunnelCloudConfig?.tsCloud?.infrastructure?.tunnel
+
+    if (tunnelConfig?.enabled) {
+      const tunnelDomain = tunnelConfig.domain || ''
+
+      if (!tunnelDomain || tunnelDomain === 'localtunnel.dev') {
+        console.log('ℹ Tunnel: Using shared localtunnel.dev (no custom tunnel deployment needed)')
+      }
+      else {
+        const tunnelSpinner = spinner(`Deploying tunnel server to ${tunnelDomain}...`)
+        tunnelSpinner.start()
+        try {
+          const { deployTunnelServer } = await import('@stacksjs/tunnel')
+          await deployTunnelServer({
+            domain: tunnelDomain,
+            region: tunnelConfig.region || tunnelCloudConfig?.tsCloud?.project?.region || 'us-east-1',
+            instanceType: tunnelConfig.instanceType,
+            prefix: tunnelConfig.prefix,
+            enableSsl: tunnelConfig.ssl?.enabled,
+            porkbunApiKey: tunnelConfig.ssl?.porkbunApiKey,
+            porkbunSecretKey: tunnelConfig.ssl?.porkbunSecretKey,
+            verbose: isVerbose,
+          })
+          tunnelSpinner.succeed(`Tunnel server deployed to ${tunnelDomain}`)
+        }
+        catch (tunnelError: any) {
+          tunnelSpinner.stop()
+          console.log(`⚠ Tunnel deployment skipped: ${tunnelError.message}`)
+          if (isVerbose) log.debug(`Tunnel deploy error: ${tunnelError.stack}`)
+        }
+      }
+    }
+  }
+  catch {
+    // Tunnel config not available — skip silently
+  }
+
   console.log('')
   log.success('Deployment completed successfully!')
 } catch (error) {

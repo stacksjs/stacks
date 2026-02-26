@@ -498,6 +498,23 @@ export const tsCloud: TsCloudConfig = {
     // },
 
     /**
+     * Tunnel Configuration
+     *
+     * Deploy a custom tunnel server for `buddy share`.
+     * Only needed if you want your own tunnel domain — localtunnel.dev
+     * is the shared Stacks default and requires no deployment.
+     *
+     * Set enabled: true and provide a custom domain to deploy a
+     * dedicated tunnel server via `buddy deploy:tunnel`.
+     */
+    // tunnel: {
+    //   enabled: false,
+    //   // domain: 'tunnel.mycompany.com',  // must NOT be localtunnel.dev
+    //   // region: 'us-east-1',
+    //   // ssl: { enabled: true },
+    // },
+
+    /**
      * Monitoring Configuration (optional)
      */
     monitoring: {
